@@ -7,15 +7,15 @@ acceptance criteria come from spec §18. The work still to do is tracked in
 [BACKLOG.md](BACKLOG.md), item by item and milestone by milestone. This file
 doesn't copy it.
 
-Last updated: 2026-09-26.
+Last updated: 2026-09-27.
 
 ## Status
 
 | Milestone | Status | Acceptance criteria (spec §18) |
 |---|---|---|
 | **M0 — Architecture skeleton** | ✅ Done 2026-09-26, no open blocker | Analyze clean, every test passes, every app builds. All met: analyze clean, tests 32/5/53/47, every flavor's APK, the iOS dev/prod builds and the admin web build succeed (see [Verification](#verification-2026-09-26-in-the-repo)) |
-| **M1 — Core (`nesty_core`)** | ✅ Done 2026-09-26 (see [M1](#m1--core-nesty_core--done-2026-09-26)); owner questions Q30–Q38 open, none blocking | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve. All met |
-| M2 — Playable game (placeholder art; the design art was pulled in, D23) | In progress (started 2026-09-26, D23). Done so far: the nesty_render foundation (layout, skins, renderers, sprites, themes), the 30 authored levels and `bundle check` in CI | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
+| **M1 — Core (`nesty_core`)** | ✅ Done 2026-09-26 (see [M1](#m1--core-nesty_core--done-2026-09-26)); owner questions Q30–Q38 confirmed 2026-09-26 | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve. All met |
+| M2 — Playable game (placeholder art; the design art was pulled in, D23) | **Code complete 2026-09-27; acceptance waits on the owner's device check.** Built: the nesty_render foundation, the 30 authored levels and `bundle check` in CI, the phase-4 Lottie contracts (D40–D52), every Lottie lane, the services, the bloc, the UI kit, the Flame board and the screens (D53–D57), then a review fix pass (12 of 13 findings fixed, D58). Every automated gate passes, including the on-device playthrough of L1, L2 and L16. Left: the 60 fps profile on a real mid-range Android (the owner's, steps in [M2 acceptance](#m2-acceptance-spec-18)) and the manual L1–30 pass (see [M2](#m2--playable-game--code-complete-acceptance-pending)) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
 | M3 — App shell and meta | Not started | Kill the app mid-level and it resumes exactly where it was. The daily puzzle is identical on two devices on the same date |
 | M4 — Firebase content | Not started | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
 | M5 — Admin panel | Not started | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
@@ -327,8 +327,8 @@ rules kernel + session, solver, simulator, generator + curve, bundle codec +
 `nesty_levels`), then reviewed, fixed and integrated. The design-foundation
 render work (plan phase 3: `BoardLayout`, the skin pipeline and renderers,
 `BoardSprites` and `ThemeBackground`) and the 30 authored M2 levels were built
-in the same round. Decisions are D26–D39; the open owner questions are
-Q30–Q38.
+in the same round. Decisions are D26–D39; the owner confirmed their open
+questions Q30–Q38 on 2026-09-26.
 
 ### Acceptance (spec §18)
 
@@ -406,10 +406,326 @@ them; timings vary ±15 % between runs. Memory is typed-list bytes, not RSS.
 Not run in this pass: app builds (no app code changed), the Stop hook, CI on
 GitHub.
 
+## M2 — Playable game — code complete, acceptance pending
+
+Started 2026-09-26 (D23). The nesty_render foundation and the 30 authored
+levels were built with M1 (above); phase 4 built and integrated the game
+(below), and a review fix pass followed on 2026-09-27. The acceptance status
+is in [M2 acceptance](#m2-acceptance-spec-18); what is left is in
+[BACKLOG.md](BACKLOG.md) under "M2".
+
+### Phase 4 C0: Lottie contracts (2026-09-26)
+
+The owner decided that every animation ships as Lottie (D40). The contracts
+stage turned that decision, `design/lottie/LOTTIE.md` and the verified
+lottie 3.6.1 behaviour in `docs/plans/lottie-analysis/` into one design and a
+set of frozen Dart contracts, so the phase-4 lanes can build in parallel.
+
+- **Design:** [plans/m2-lottie-design.md](plans/m2-lottie-design.md), which is
+  authoritative for everything animated and supersedes those parts of
+  [plans/design-foundation-m2-design.md](plans/design-foundation-m2-design.md).
+  It covers:
+  - the mapping from each event to its file, with start times, cues and
+    reservations (clack 537 ms, complete t0 667, unlocks and ice at t0 + 700,
+    the counter at t0 + 1250, the win at the batch end + 250);
+  - image-slot compensation, including the callback for animated scales;
+  - the `DollPartRasters` spec, BoardFit placement and the travel-hold fix;
+  - paused glass and ice compositions, text overlays, pools and reduced
+    motion;
+  - the hand-coded gap motions and the hand-off rules;
+  - which files are M2 and which M3, lane ownership and the test plan.
+- **Designer request:**
+  [plans/lottie-reexport-request.md](plans/lottie-reexport-request.md).
+- **Package:** `lottie: 3.6.1`, pinned exactly in `apps/game`. It adds
+  `archive` 4.3.0 and `posix` 6.5.2 transitively; no locked version changed.
+  See D41 and "Package reasons".
+- **Frozen contracts:**
+  - `apps/game/lib/features/fx/`: `FxId` (29 files), `FxSpec`
+    (frames, markers, canvas, anchor, kind, travel with its holds, roles,
+    image layers), `FxCue` and `FxTiming`, `FxImageSource` (`FxImageSlot`,
+    `FxRaster`, `FxImageRequest`), `FxLibrary`, and `FakeFxLibrary`
+    (registered for both environments).
+  - `nesty_render`: the `DollPartRasters` / `DollPartSet` API. `DollPartSet`
+    is complete; `prepare` is stubbed for the render lane.
+  - `features/gameplay/bloc/`: the `…Effect` hierarchy, `GameplayEvent`,
+    `GameplayState` (freezed), and a `GameplayBloc` skeleton with
+    `GameplayStarted` implemented.
+  - Service interfaces:
+    - `AudioService.play(effect, {dollSize, comboStep})`;
+    - `HapticPattern` with `win`, `unlock`, `iceCrack` and `button`;
+    - new `SolverService` (latest wins) and `SkinService` / `LevelSkin`,
+      each with a fake registered for both environments;
+    - `LevelRepository.entryAt(order)`.
+- **C0 probes** (scratchpad `lt/test/{anim_scale_comp,tail_hold,precomp_comp}_test.dart`):
+  - a scale callback compensates the animated-scale image layers
+    (`glow_ring`, `extra_slot`, `ice_shatter`) within 1 px at 3×;
+  - precomp children compensate through the key path `[precomp, child]`;
+  - lottie skips the travel callback only on interior holds, never after the
+    last keyframe (so `doll_invalid` is fine).
+
+#### Verification (2026-09-26)
+
+| Command | Outcome |
+|---|---|
+| `flutter pub add --directory=apps/game lottie:3.6.1`, then `flutter pub get` (root) | exact pin added; path dependencies unchanged; the lock gains `lottie` 3.6.1, `archive` 4.3.0 and `posix` 6.5.2 only |
+| `cd apps/game && dart run build_runner build` | 30 outputs (`gameplay_bloc.freezed.dart`, `di.config.dart`) |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `cd apps/game && flutter test` | all pass (new: fx, bloc, solver, skin, repository, DI) |
+| `cd packages/nesty_render && flutter test` | all pass (new: `doll_part_rasters_test.dart`) |
+
+### Phase 4: lanes and integration (2026-09-26)
+
+The stage B and C lanes of [plans/m2-lottie-design.md](plans/m2-lottie-design.md)
+§16 built everything against the frozen contracts; the integrator then wired
+and verified the whole app. BACKLOG "M2" has the ticked items and what is
+left.
+
+- **Tools:** `sync_design_assets` ships the 29 `design/lottie/*.json` byte for
+  byte to `apps/game/assets/lottie/` (never `images/` or LOTTIE.md; a stray
+  PNG is removed) and validates them on sync and `--check`: the contract
+  table, the hooks the game drives, and the features lottie 3.6.1 can't draw.
+  `gen_fx_spec` writes `fx_spec.gen.dart` (`fxSpecs`, `fxSpecOf`), drift-checked
+  in tools, in the game and in CI. The asset manifest test covers the 29 files
+  (parsed with `fromBytes`, no PNG) and `bundle.json`.
+- **Render:** `DollPartRasters.prepare`/`preparePlaceholder` split lid and body
+  on a whole pixel row (`splitRowPx`, within half a pixel of art y 400) by
+  erasing rows after drawing, because any clip changed Skia's edge
+  anti-aliasing by up to 32/255. Parity with `SvgSkinRenderer` is 100 % within
+  8/255 outside 388–412. `PartRasterDollRenderer` draws the rest sprites with
+  the Lottie's own transform (60 dolls: 64 µs per frame). Also
+  `BoardFit.toReference`/`boardSpaceOrigin`, `BoardSpriteImage.cropOrigin`,
+  the glass and ice composition origins, and `SymbolRaster` for the padlock
+  symbol. Classic at 150 dp × DPR 3: five colours and the silhouette are
+  5.94 MB, prepared in 35 ms.
+- **FX runtime:** `AssetFxLibrary` (one file per event-loop turn, the loader
+  first; a file that doesn't match its spec is left out), `FxImages`,
+  `FxDelegates` (every workaround of D43), the pure `FxPlayer`/`FxPlan`,
+  `LottieFxComponent` (driven by the board's tick, with a cached rest picture
+  for glass and ice), `LottieFxView` with the Flutter text overlay (D44), and
+  fixed pools. The equivalence sweep fails 32 cases when the compensation is
+  broken on purpose.
+- **Timeline:** `BoardTimeline` is pure Dart and plans each effect from the
+  files' frames: the §7 times are pinned by 86 tests (clack 536.7 ms, bonk 180,
+  complete 666.7, dust and sparkles from 1366.7, counter 1916.7, Won at the
+  batch end + 250). Sprite hand-offs are counted hides plus `SyncSlot`
+  commands; a later plan for a clip cancels the earlier one's pending commands;
+  sparkle tails don't delay Won (Q53). `WinOverlaySchedule` times the win
+  overlay.
+- **Services:** `SoLoudAudioService` (the clack rate precomputed per size,
+  silent failure), token haptic patterns, `IsolateSolverService` (one worker,
+  latest wins), `BundledLevelRepository` (validator rules 1–7 at splash; an
+  invalid level is skipped, Q43), `InMemorySaveService` with the booster
+  wallet, `SymbolsMode.large`, and `AssetSkinService` + `LevelSkinImages` (the
+  `FxImageSource`) with a placeholder fallback chain that never throws (D54).
+- **Bloc:** every §11 handler on `GameSession`, `tap_policy.dart`,
+  `win_reward.dart`, `NextLevelPressed` and `GameplayStatus.allLevelsDone`
+  (D55). A hint is charged only when it arrives; results for an older
+  `moveSeq` are dropped.
+- **UI:** `AppTheme` from the tokens, the tactile component kit
+  (`core/ui/nesty_ui.dart`: surfaces painted as the prototypes' box shadows,
+  buttons, pills, booster buttons, sheets, banners, toggles), the Lottie label
+  painter, and all 62 M2 ARB keys.
+- **Flame board:** `NestyGame` and `BoardComponent` (input forwarded only, 48 dp
+  column hit tests, the drag clamped to the board frame), `ShelfLayer`,
+  `SlotComponent` (paused glass and ice with cached rest pictures, static
+  fallbacks), `NestComponent`, `FxLayer`, `HintLayer`, and reconciliation with
+  core's state at every idle. It handles Flame's one-tick delay for adding and
+  removing components (a new level, a late library, a resize during the
+  re-pitch).
+- **Screens:** the gameplay page (frame 2.2) with the HUD, booster bar,
+  soft-stuck banner and chapter ribbon; the win overlay (2.8), out-of-moves
+  sheet (3.5), Pause (3.9) and All Levels Done (4.9); Splash (1.1) with real
+  load progress; the Home hero (2.1); the dev level picker; and a guard that
+  keeps Home and Gameplay behind the loaded levels (D56).
+
+#### Integration (stage D)
+
+- **DI:** the real environment resolves `SoLoudAudioService`,
+  `SystemHapticsService`, `IsolateSolverService`, `BundledLevelRepository`,
+  `AssetSkinService`, `AssetFxLibrary` and `InMemorySaveService`; the fake
+  environment the fakes, with `FakeLevelRepository.fixtures()` (levels 1–3).
+  `di_test` checks both.
+- **`test/app_flow_test.dart`** runs Splash → Home → PLAY → the laid-out board
+  (2 shelves × 3 slots, one component per slot) → a tap on red2's column that
+  goes Flutter gestures → Flame → the bloc and selects it → Pause → Home. It
+  replaces the screens lane's `home_flow_test.dart`, which covered the same
+  path without the board checks.
+- **On-device playthrough** (D57): `integration_test/playthrough_test.dart`
+  runs the dev flavor with every real service. It plays L1 and L2 to the win
+  overlay and L16 into Out of Moves (one move: the r1c1 tower's top onto the
+  only empty stand, the shortest Out-of-Moves line a breadth-first search found
+  in levels 1–30), then Restart, Pause and Home. Taps land on slot centres
+  from `BoardLayout`, checked against the board's own layout;
+  mid-animation screenshots are taken at a fixed time of the board's timeline
+  with the engine paused. `test_driver/integration_test.dart` saves the 18
+  screenshots on the host.
+- **iOS flavor guard (D8 amended):** the Run Script accepted only
+  `main_<flavor>.dart`, so `flutter drive` failed. It now also accepts an
+  `integration_test/*.dart` target, in `Debug-<flavor>` only. `pod install`
+  added the `integration_test` pod and a "[CP] Embed Pods Frameworks" phase
+  (`Podfile.lock`, `project.pbxproj`).
+- **Package:** `integration_test` and `flutter_driver` (SDK) as game dev
+  dependencies (rule-9 rows below).
+- No compile or analyzer error needed fixing: the lanes left the tree green
+  except the two expected failures (`di_test`'s real-environment flips and the
+  old `app_flow_test`).
+
+#### On-device playthrough results (2026-09-26)
+
+Both runs pass with no Flutter error, no overflow and no board
+reconciliation: every slot's view matched core's state at every idle.
+
+- **iPhone 16 simulator, iOS 18.3** (393×852): 28 s for the whole flow.
+- **Android emulator, API 35, 1080×1920 at 420 dpi** (411×731 dp, 1.5 GB
+  RAM): 32 s. Google Play services crash-loop on this image ("NetworkCapability
+  37 out of range"); the game is unaffected.
+
+Compared with the App Flow frames at 390×844 (the renders of 1.1–4.9):
+- Splash (1.1) and Home (2.1) match, minus the M3 pieces (tiles, bottom nav,
+  the coin pill's "+", an enabled gear) and plus the dev picker. The splash's
+  first frames drew the placeholder dolls until the skin loaded (Q58, since
+  fixed: they fade in with the art).
+- The board (2.2), a selection (2.3), the nest (2.4, the lid up and the mover
+  dropping in), the completion (2.5, the hop, then the flight with the dust
+  puff) and the swallow (1.6's move, the lid open mid-air) match. The booster
+  badges are absent because the dev flavor's boosters never run out.
+- The win overlay (1.5, 2.8) matches, minus the ×3 button (M6) and the locked
+  figurine art (M3). The HUD's coin pill already shows the new balance while
+  the overlay counts "+10" up (Q57, since fixed: the HUD holds the old
+  balance until the next level).
+- Out of Moves (3.5) and Pause (3.9) match; the Undo row has no "Free · N
+  left" chip in the dev flavor, the +1 Slot row no price (M3/M6), and Settings
+  is disabled until M3.
+
+#### Verification (2026-09-26, integration)
+
+| Command | Outcome |
+|---|---|
+| `flutter pub get` (root), then `flutter pub get --enforce-lockfile` | The lock gains `flutter_driver`, `fuchsia_remote_debug_protocol`, `integration_test` (SDK), `process` 5.0.6, `sync_http` 0.3.1 and `webdriver` 3.2.0; no locked version changed |
+| `gen_design_tokens`, `sync_design_assets`, `gen_fx_spec`, `gen_nesty_icons` with `--check` | all unchanged (29 Lottie files, 29 specs, 48 glyphs) |
+| `dart run nesty_tools:todo_index`, then `--check` | regenerated after the lanes (100 markers) and again after the integration's test changes: 98 tagged markers; unchanged |
+| `dart run nesty_tools:nesty_levels bundle check` | 30 levels OK, 0 errors, 0 warnings |
+| `cd apps/game && flutter gen-l10n && dart run build_runner build` | no generated file changed (hashes compared) |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `dart format --set-exit-if-changed` over every non-generated Dart file | 0 changed |
+| `cd packages/nesty_core && dart test -x slow` | 1,200 pass |
+| `cd packages/nesty_render && flutter test` | 520 pass |
+| `cd apps/game && flutter test` | 903 pass |
+| `cd apps/admin && flutter test` | 47 pass |
+| `cd tools && dart test` | 269 pass |
+| `flutter drive --flavor dev --driver test_driver/integration_test.dart --target integration_test/playthrough_test.dart` on the iPhone 16 simulator and on the API 35 emulator | both pass, 18 screenshots each |
+| `flutter build apk --debug --flavor dev\|stg\|prod -t lib/main_<f>.dart` | all three build: `com.futrix.nesty.dev` `[DEV] Nesty`, `.stg` `[STG] Nesty`, `com.futrix.nesty` `Nesty`; 29 Lottie files, no PNG |
+| `flutter build ios --debug --no-codesign --flavor dev\|prod -t lib/main_<f>.dart` | both build; prod: `com.futrix.nesty`, `Nesty` |
+| `cd apps/admin && flutter build web -t lib/main_prod.dart` | builds |
+
+### M2 review and fix pass (2026-09-27)
+
+A review of the integrated game raised 13 findings: 2 major, 9 minor and 2
+nits. Each was confirmed with a probe on a snapshot of the tree before it was
+fixed, and each fix comes with a regression test. Twelve are fixed and one
+is the owner's call (Q59). The behaviour decisions are D58.
+
+| Finding | Severity | Outcome |
+|---|---|---|
+| PERF-RULES-1: a looping widget Lottie repaints its whole page layer at 60 fps | major | **Fixed.** `LottieFxView` paints in its own `RepaintBoundary`, so a playing clip repaints only itself and a resting one replays its layer. The probe's sibling surface went from 31 paints in 30 frames to 1 (`lottie_fx_view_test`) |
+| CORRECTNESS-1: Continue shows the next level with the previous level's skin, whose missing colours draw nothing | major | **Fixed.** The win overlay prefetches the next level's art for the layout the board will give it (`LevelSkinLoader.prefetch`, `GameplayBoard.layoutFor`). Continue waits for it (at most 2 s), and the layout the board reports adopts it in the same update, so the level's first frame draws its own dolls (`level_skin_loader_test`, `gameplay_view_test`; the playthrough now checks it on the device) |
+| CORRECTNESS-2: Undo or Restart pressed mid-drag leaves the drag live, and its release applies a phantom move | minor | **Fixed.** The bloc ends the drag with the reset; the board's reset ends the live drag, and its release sends nothing (bloc and board tests) |
+| CORRECTNESS-3: a drag released while paused keeps the nest selected and parks the doll where the finger was | minor | **Fixed.** A drop while paused puts the doll down (`SelectionChangedEffect(previous, byDrag)`), which flies it home on Resume. The dragged doll stays where it is drawn while paused (bloc and board tests) |
+| CORRECTNESS-4: +1 Slot twice within the 300 ms re-pitch makes the bottom row jump | minor | **Fixed.** A second re-pitch waits for the running one and starts from its end layout, where the row really is; a queued re-pitch that a resize overtook is skipped (timeline and board tests; the step went from 29 px to at most 4.4 px per frame) |
+| FIDELITY-1: the 1.5× `fx_sparkle` over the counter when a family lands is never drawn | minor | **Fixed.** `onFamilyLanded` carries the scale to the HUD, and `FamilyCounter` bursts a 96 × 96 `fx_sparkle` on the counter's centre with the bump, drawn only while it plays |
+| FIDELITY-2: the winning batch greys the pause button and the boosters for about 2.4 s | minor | **Fixed.** At Won the HUD and the booster bar keep their look and only swallow touches (`locked`), as frame 2.5 draws them |
+| FIDELITY-3: the subtle belly symbol lacks the cream disc the App Flow boards draw | minor | **Not changed: owner question Q59.** The prototype preview art has the disc; tokens.json, README §3, the generator and `skins/classic/renders` don't |
+| FIDELITY-4: every return to Home flashes placeholder dolls | minor | **Fixed.** Home keeps the showcase rasters while a level covers it (D58: the part-raster cache holds them anyway) |
+| FIDELITY-5: after L30, Home's PLAY reads "Level 31" | minor | **Fixed.** It reads "PLAY · All done!" (screen reader: "You've finished all levels!") and opens All Levels Done. `TODO(design)` until M3's Bonus Endless |
+| FIDELITY-6: soft stuck suggests Undo when Undo is impossible | minor | **Fixed.** With nothing to undo the banner suggests Restart ("Try Restart? You can keep playing too.") and Undo doesn't glow. What it suggests holds while it slides out. `TODO(design)` |
+| PERF-RULES-2: `LottieLabelPainter.paint` allocates an `Offset` per frame | nit | **Fixed.** The text origin is computed per layout; the file is under the FX hot-path guard |
+| PERF-RULES-3: percent semantics and the "+N" tag built outside ARB | nit | **Fixed for the percent** (`progressPercent`, the locale's percent format). The "+N" tag and ice badge digits are `TODO(M7)` for the translations, since every launch language writes "+3" the same way |
+
+Also in this pass:
+- The four `TODO(M2)` markers moved to their milestones. The unlock-symbol
+  raster swap went to M5, because the first locked levels (L31+) ship with its
+  bundle. The tabular figures went to M7 (Q29), and the load-failure copy to
+  `TODO(design)`.
+- Three ARB keys were added: `progressPercent`, `homeAllLevelsDone` and
+  `softStuckBodyRestart`, each with a description. The game now has 65 M2
+  keys.
+- `GameplayBoard` gained `layoutFor`, and
+  `GameplayBoardCallbacks.onFamilyLanded` gained the sparkle scale. Both are
+  page-internal seams.
+
+### M2 acceptance (spec §18)
+
+Spec §18 M2: "Levels 1–30 can be played start to finish at 60 fps on a
+mid-range Android device."
+
+| Part | Status | Evidence |
+|---|---|---|
+| Levels 1–30 are valid, solvable and on the §3.7/§6.6 schedule | **Pass** | `nesty_levels bundle check`: 30 levels, 0 errors, 0 warnings (CI runs it) |
+| They play start to finish in the app | **Pass on the automated path; the manual pass is open** | The playthrough plays L1 and L2 to the win overlay (with Continue and each next level's own art) and L16 into Out of Moves on the iPhone 16 simulator; `app_flow_test` plays Splash → Home → a board tap → Pause → Home; the bloc and board suites cover every §2–§4 flow. The manual L1–30 pass on the dev flavor (BACKLOG M2) is still to do |
+| At 60 fps on a mid-range Android | **Needs the owner's device** | A simulator, an emulator and a debug build don't count (`.claude/rules/flame.md`), so this can't be measured here. The code side is ready: the hot paths are guarded against allocation, widget Lotties no longer repaint their pages, and the solver runs in an isolate |
+
+**How to run the 60 fps check (the owner, with `/perf-profile`):**
+1. Use a physical Android phone, mid-range or better yet the 2 GB phone rule 8
+   targets. Note its model, RAM and Android version.
+2. From `apps/game`, run
+   `flutter run --profile --flavor dev -t lib/main_dev.dart -d <device>`, or
+   the VS Code config "Game [DEV] (profile mode, physical device)". Keep
+   Impeller (the default).
+3. Open DevTools from the URL `flutter run` prints (Performance, then
+   Memory), or press `P` for the performance overlay.
+4. Play these flows three times each:
+   - Splash → Home, with the idle dolls and twinkles for 10 s;
+   - L1 → L2 by Continue, with the completion (hops, flight, dust, sparkle
+     trail, the counter bump and its sparkle) and the win overlay (ribbon,
+     confetti, hopping families, coin burst);
+   - L16, with the tower reveals and an invalid move onto a tower;
+   - a drag, +1 Slot twice, and Pause → Resume;
+   - Home ↔ a level, twice.
+   The dev flavor's "Jump to a level" reaches L16 and any other level.
+5. It passes when the UI and raster threads both stay under 16.7 ms per frame
+   during moves, completions and the win overlay (no red bars, no GC spike
+   during a move), and a level's GPU images stay near the §4 budget (about
+   12 MB typical, 25 MB at most).
+6. Record the device, the build and the frame numbers here, then tick the two
+   M2 items in BACKLOG. If a flow misses, `/perf-profile <flow>` walks
+   through the usual suspects.
+
+#### Verification (2026-09-27, fix and close)
+
+| Command | Outcome |
+|---|---|
+| probes of the review (`scratchpad/rv/nesty/apps/game/test/zz_review/`) on a snapshot of the tree | every finding reproduced before the fixes |
+| `flutter pub get --enforce-lockfile` (root) | passes: no dependency or lock change |
+| `cd apps/game && flutter gen-l10n && dart run build_runner build` | the 3 new ARB keys generated; build_runner changed no file (hashes compared) |
+| `gen_design_tokens`, `sync_design_assets`, `gen_fx_spec`, `gen_nesty_icons` with `--check` | all exit 0 and unchanged (29 Lottie files, 29 specs, 48 glyphs) |
+| `dart run nesty_tools:todo_index`, then `--check` | 102 tagged markers (4 new; the 4 `TODO(M2)` retagged), unchanged on the check |
+| `dart run nesty_tools:nesty_levels bundle check` | 30 levels OK, 0 errors, 0 warnings |
+| `dart format --output=none --set-exit-if-changed` over every non-generated Dart file | 593 files, 0 changed |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `cd packages/nesty_core && dart test -x slow` | 1,200 pass |
+| `cd packages/nesty_render && flutter test` | 520 pass |
+| `cd apps/game && flutter test` | 929 pass (903 before the pass; 26 new regression tests) |
+| `cd apps/admin && flutter test` | 47 pass |
+| `cd tools && dart test` | 269 pass |
+| `NESTY_SCREENSHOT_DIR=… flutter drive --flavor dev --driver test_driver/integration_test.dart --target integration_test/playthrough_test.dart` on the iPhone 16 simulator (iOS 18.3) | passes in 118 s with 18 fresh screenshots (scratchpad `m2_screens_final/ios/`); Continue to L2 and L3 now also asserts each level's own skin in its first laid-out frame. The first attempt failed to build: the integration's cleanup had deleted `apps/game/build/` but not `apps/game/.dart_tool/flutter_build/`, whose stamps still said the iOS native assets were built (README "Troubleshooting", BACKLOG "Tech debt") |
+| `flutter build ios --debug --no-codesign --flavor dev -t lib/main_dev.dart` | builds (after the same stamp cleanup) |
+| `flutter build apk --debug --flavor dev -t lib/main_dev.dart` | builds `app-dev-debug.apk` |
+| `cd apps/admin && flutter build web -t lib/main_prod.dart` | builds |
+
+The screenshots match the integration's, with the fixes visible: the HUD and
+the booster bar at full strength while the set flies (05b), level 2's blue
+dolls drawn from its first frame (07), and Home's shelf with its skin art on
+the way back (13). Afterwards the simulator was shut down, and the build
+folders were removed together with `apps/game/.dart_tool/flutter_build/`.
+Nothing was committed.
+
 ## Decisions log
 
-D1–D13 are dated 2026-09-25, and D14–D39 2026-09-26 (D26–D39 are the M1 and
-render build and review decisions). D1, D8 and D12 were
+D1–D13 are dated 2026-09-25, D14–D57 2026-09-26 and D58 2026-09-27 (D26–D39
+are the M1 and render build and review decisions; D40–D52 are the M2 Lottie
+decisions, the owner's of 2026-09-26 and the contracts stage's; D53–D57 are
+the M2 phase-4 lanes' and the integration's; D58 is the M2 review fix
+pass's). D1, D8 and D12 were
 amended on 2026-09-26. D18–D23 are the owner's decisions for the round that
 covers the design foundation, M1 and M2, copied from its approved plan.
 
@@ -534,6 +850,10 @@ covers the design foundation, M1 and M2, copied from its approved plan.
       lib/main_<f>.dart`, or `flutter build ios --config-only` with the same
       flags.
     - A plain flavorless `flutter build ios` now also fails at this step.
+    - **Amended again (2026-09-26, D57):** an `integration_test/*.dart`
+      target is accepted too, in the `Debug-<flavor>` configurations only,
+      so `flutter drive` runs the on-device playthrough while an Archive can
+      never ship a test entry point.
     - Only debug device builds were tried. Profile, release and Archive
       were not.
   - **Android:** `appCategory="game"`, because Android 16 ignores portrait
@@ -929,6 +1249,253 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   compares with a VM-computed constant and the VM run can't see a web-only
   divergence. The architecture guard also bans `~`, 64-bit typed lists and
   `HashMap`/`HashSet` in core's `lib/`.
+- **D40. Every animation ships as Lottie (owner, 2026-09-26).**
+  - All 29 files in `design/lottie/` ship. LOTTIE.md says 28; the folder and
+    its own table hold 29.
+  - Widget transitions that wrap live content stay Flutter animations on
+    `tokens.motion.ui`: tactile press, sheet, modal, tab lift and banners.
+  - The board timeline still owns the event order, the sound and haptic cues
+    and input gating, and a Lottie never changes game state.
+  - **Timing comes from each file's frame count, at 60 fps.** Examples: the
+    clack lands at 537 ms (the move's 16 frames plus the lid's 16.2), a
+    completion starts at 667 ms, and its unlocks and ice at t0 + 700.
+  - **Motions with no file are hand-coded** (m2-lottie-design §9):
+    - the tower reveal's 18 dp drop, with deeper silhouettes shifting down
+      (towers show their true size);
+    - the 11 dp settle after an unlock;
+    - the case, ice and silhouette shake on an invalid move;
+    - drag cancel and drag invalid;
+    - the 300 ms re-pitch;
+    - the tag and badge counts;
+    - the coin count-up.
+  - **Split between milestones:**
+    - M2: the splash loader, idle dolls, twinkles, the toggles in Pause and
+      the chapter ribbon (L21 opens ch02).
+    - M3: the tutorial hands, the Settings toggles and the spinner.
+- **D41. `lottie: 3.6.1`, pinned exactly; no `flame_lottie` (rule 9).**
+  - **Why lottie:** the owner decided every animation is Lottie. It is a
+    pure-Dart player.
+  - **Why 3.6.1:** it is the newest release that resolves on Flutter
+    3.41.2 / Dart 3.11. 3.4.0–3.5.1 need Flutter 3.44 and 3.6.0 is
+    retracted. It adds only `archive` 4.3.0 and `posix` 6.5.2 to the lock,
+    and no locked version changes.
+  - **Why pinned exactly:** it is 8 days old, and the workarounds (D43) depend
+    on its internals. The equivalence tests pin them.
+  - **No `flame_lottie`:** it can't play segments, pause on a frame, change
+    speed or swap delegates on a pooled component.
+  - **Where it draws:** board clips use our `LottieFxComponent` over
+    `LottieDrawable`, inside Flame for z-order, pooling and same-frame
+    hand-off. The HUD, overlays and screens use our `LottieFxView`.
+- **D42. Rule-8 exception, scoped.** lottie allocates inside its own draw:
+  - a `Paint` per fill;
+  - a `LottieFrameInfo` per callback evaluation;
+  - two `Rect`s per image;
+  - trim-path metrics.
+
+  Our position and scale callbacks must return a new `Offset`, which is the
+  API's type. Everything else in our code is allocation-free per frame:
+  - delegates built once per pooled drawable;
+  - mutable per-clip state;
+  - prebuilt rasters;
+  - cached rest pictures and text painters.
+
+  Text layers are hidden (D44) because they were the hot spot.
+- **D43. Export defects are worked around in code.** The owner decided this,
+  and a re-export request went to the designer
+  (`docs/plans/lottie-reexport-request.md`). The workarounds:
+  - **Image-slot compensation.** lottie 3.6.1 draws images at their pixel
+    size, so each image layer's scale becomes `k / rasterScale` and its anchor
+    `(a − origin) × rasterScale`. Animated-scale layers get a callback over the
+    authored value.
+  - **The travel-hold fix.** An anchor delegate stands in whenever the
+    position callback was skipped.
+  - **`padlock_ping` hidden at rest.**
+  - **The 11 dp settle** is blended into the unlock's last hop.
+  - **`doll_reveal`'s silhouette** is hidden after the wipe, so its shadow
+    isn't drawn twice.
+  - **BoardFit placement** (D46).
+  - **Loading.** Compositions load with `LottieComposition.fromBytes`, and
+    unused roles get a 1×1 blank image.
+  - **lottie 3.6.1 quirks** also handled: construct a drawable before setting
+    its delegates; never share a `ValueDelegate`; clamp marker ends; use
+    inferred-type closures, since `LottieFrameInfo` isn't exported.
+- **D44. Localized text is drawn by Flutter, not by the Lottie text layers.**
+  - Text layers cost 0.4–2.3 ms per frame, can't be resized with a
+    `textStyle` delegate, and are LTR-only. So the counter and ribbon files
+    are drawn with their text hidden (a text delegate that returns '').
+  - A cached `TextPainter` with the ARB string follows the `counter` or
+    `ribbon` null's transform, captured in the same paint.
+  - Too-long strings scale to fit the band instead of wrapping.
+- **D45. The lid and body split hard at art y 400 everywhere (owner; impact
+  I.1).**
+  - `DollPartRasters` builds, per colour, a full-artboard lid (y < 400) and
+    body (y ≥ 400), plus the silhouette (shadow included), at
+    `artHeightPx = tallest doll × DPR`. The height is rounded up to a multiple
+    of 3 so the width is whole.
+  - Gold uses the ramp-rewritten masks, and the bodies bake the symbols mode.
+  - Rest sprites draw the same rasters through `PartRasterDollRenderer`, so
+    hand-offs are pixel-identical.
+  - The goldens exclude the 388–412 band.
+  - D37's `interior` / `bodyFront` nest passes and the SVG layer rasters are
+    no longer used by the game; they stay for the admin and the goldens.
+- **D46. Everything on the board is placed through BoardFit (owner; impact
+  I.2).**
+  - **Board-space files:** translated to `(originX, originY − 142·s)` and
+    scaled by `s`, with the travel remap in reference units.
+  - **In-place files:** doll files scale by `s`, board pieces by the slot's
+    `s·q`.
+  - **Doll size:** `doll_size = h / (150·scale)`.
+  - Every authored motion distance scales with the board. At 390×844 this is
+    exactly LOTTIE.md, and nothing clips on other screens. The dragged doll's
+    drawn position is clamped to the board frame.
+- **D47. Win families hop (owner; impact I.5).** The overlay plays
+  `doll_win_hop` per completed family with a 150 ms stagger (App Flow 2.8).
+  `doll_win_dance` ships but is unused in M2: the board is empty at Won.
+- **D48. Reduced motion (owner; impact I.6).**
+  - One-shot clips, tweens, cue offsets and staggers run at half duration.
+  - The shakes are removed: static position delegates on `doll_invalid`'s
+    `target` and `fx_ice`'s `ice`, and the hand-coded shake is off.
+  - No confetti. `doll_pick` holds the end of `lift` instead of wobbling.
+  - Ambient loops (idle, twinkle, the win hop) pause on frame 0.
+  - Loops that carry information (select glow, hint arrow, booster glow,
+    extra slot, spinner, tutorial hands) stay at 1×.
+- **D49. `IceShattered` has no haptic.** This follows LOTTIE.md and
+  `tokens.haptics`. The earlier M2 design said medium.
+- **D50. The placeholder PNGs are not shipped (owner; impact I.7).**
+  - They are the wrong sizes for lottie-flutter, take 1.79 MB on disk and
+    8.2 MiB decoded.
+  - `design/lottie/images/` stays in `design/` only.
+  - `LottieComposition.fromBytes` never decodes them.
+- **D51. Ice stages follow `BoardLayout.iceFrame` (owner; impact I.4).**
+  - A crack segment plays only when the stage advances. Stage `n` rests on
+    frame `16n`; the shatter always starts at frame 48.
+  - An `IceCracked` that doesn't advance the stage still fires its cue and
+    counts the badge down.
+  - The M5 editor caps authored ice at 3.
+- **D52. The M2 bloc contract.**
+  - **Effect names.** The game's effects are `SelectionChangedEffect`,
+    `MoveAppliedEffect(MoveApplied)`, `MoveRejectedEffect`,
+    `BoardResetEffect`, `HintShownEffect`, `HintClearedEffect` and
+    `ExtraSlotAddedEffect(ExtraSlotAdded)`. The `…Effect` suffix resolves
+    D27's name clash with core's exports.
+  - Each new effect bumps `GameplayState.effectSeq`.
+  - `LevelRepository.entryAt(order)` returns core's `LevelBundleEntry`, so
+    the state carries the level's order, chapter, tier, version and reward.
+  - `SolverService` has one request in flight at a time (latest wins).
+    Superseded or failed requests complete with null, and results come back
+    as events tagged with their move sequence.
+  - Owner-confirmed on 2026-09-26: the recorded M1 and render defaults
+    Q30–Q38. Early towerless levels keep their §6.6 tier labels.
+- **D53. The FX runtime and the timeline keep separate types.** The runtime's
+  pooled, mutable types are `FxDrawable`, `FxDrawableParams`, `FxRange` and
+  `FxLayout`; the timeline's immutable descriptors are `FxClip`,
+  `FxClipParams`, `FxSegment` and `FxPlacement`.
+  - `features/fx` never imports the gameplay folder, so the Flame board maps
+    one onto the other: a hold or speed 0 becomes `FxPlan.rest(from)`, a loop
+    `FxPlan(FxRange(from, to), loop: true)`; the params go to `setSize`,
+    `setTravel`, `targetPos`, the rim and tint colours and
+    `reducedMotion = !shake`. Q54 asks whether to keep one segment type.
+  - Clips are driven, never self-running (`autoAdvance` false): each tick the
+    board advances the live clips, then `timeline.advance(dt)`, then schedules
+    the queued effects, so a clip starts in the frame its sprite hides (§10.1).
+- **D54. The M2 services.**
+  - The frozen interfaces grew, additively: `dispose()` on `AudioService`,
+    `SaveService` and `SkinService` (injectable types the dispose hook on the
+    interface), `SkinService.background`, and the save's wallet:
+    `currentLevel`, `coins`/`addCoins`/`spendCoins`, `recordWin`,
+    `boosterCount`/`useBooster`/`addBoosters` (a starter gift of 3 hints and
+    2 slots, §8), `freeUndosPerLevel`, `unlimitedBoosters` (the dev flavor)
+    and `changes`.
+  - `InMemorySaveService` is the real save until M3 (D13). A fresh launch
+    starts at level 1 with 0 coins (Q46).
+  - `entryAt(order)` returns the first playable entry at or after `order`, so
+    an invalid bundled level never blocks progress (Q43).
+  - Sounds load from memory; `SoLoud.instance` is touched only in `init`, so
+    DI and tests never load the native library. In the background voices
+    pause and resume on return (Q45).
+  - The skin service's fallback chain is part rasters, then placeholder
+    rasters, then the placeholder painter; it never throws (rule 3).
+- **D55. The gameplay bloc beyond the frozen contract.**
+  - Constructor: (`LevelRepository`, `SolverService`, `RemoteConfigService`,
+    `SaveService`, `AnalyticsService`); +1 Slot is free in debug builds.
+  - A drag that starts on another pickable nest switches the selection
+    (Q40). A drop on nothing, or back on the nest's own slot, cancels. Any tap
+    or drag start clears a visible hint first.
+  - The soft-stuck check runs 300 ms after a move, an undo or +1 Slot (Q41)
+    and is skipped while a hint for the same board is pending.
+  - A hint is charged only when it arrives; a null result uses
+    `Solver.fallbackHint`; no move with an unsolvable verdict sets soft stuck
+    and charges nothing.
+  - A win pays `winRewardFor(tier)`: medium reads `reward_easy` until Q5 is
+    decided, clamped at 0 or above, and calls `SaveService.recordWin`.
+  - `NextLevelPressed` (only when won) loads the next entry;
+    `GameplayStatus.allLevelsDone` follows the last level (Bonus Endless is
+    M3). Analytics log the §14.4 events, with `booster_use{source: free}`
+    for every M2 use (Q42).
+- **D56. The gameplay page.**
+  - The page builds `NestyGame` once, behind the `GameplayBoard` seam
+    (`NestyGameBoard`; page tests use a recording fake).
+  - The board's reports time the overlays: `onFamilyLanded` bumps the
+    counter, `onWon` opens the win overlay, `onOutOfMoves` the sheet (a
+    dismissed sheet stays closed until the board runs out again).
+  - Every layout the board reports prepares the level's art
+    (`LevelSkinLoader`: the latest request wins, a failure keeps the current
+    art).
+  - Continue sends `NextLevelPressed` and stays on the page (Q49). Pause
+    pauses the bloc and the engine; the back button and the app going to the
+    background open it.
+  - Chapter numbers come from the bundle's `chapterId`s. The splash weights
+    its progress (Lottie 45 %, skin 35 %, save and levels 15 %, audio 5 %);
+    only a save or level failure offers a retry.
+- **D57. The on-device playthrough.**
+  - `apps/game/integration_test/playthrough_test.dart` runs the real
+    `main_dev.dart` under the integration binding with the `fullyLive` frame
+    policy, and `test_driver/integration_test.dart` saves its screenshots
+    through `flutter drive` (`NESTY_SCREENSHOT_DIR`, by default
+    `build/integration_test/screenshots/`).
+  - Effects are scheduled in Flame's next tick, so the test waits until the
+    board's latest scheduled state equals the bloc's and its timeline is idle.
+    Mid-animation screenshots pause the engine at a timeline time.
+  - `integration_test` and `flutter_driver` (SDK) are game dev dependencies,
+    and the D8 guard accepts an `integration_test/` target in `Debug-<flavor>`
+    only. CI doesn't run it (it needs a device).
+  - `test/app_flow_test.dart` is the widget-level flow on fakes; it absorbed
+    the screens lane's `home_flow_test.dart`.
+- **D58. The M2 review fix pass (2026-09-27).** The behaviour the fixes chose
+  (see [M2 review and fix pass](#m2-review-and-fix-pass-2026-09-27)):
+  - **The next level's art is prepared during the win overlay.** The page
+    prefetches it for `GameplayBoard.layoutFor(GameState.initial(next))`,
+    the same layout the board computes on the same viewport. Continue waits
+    for it, at most `GameplayView.nextArtWait` (2 s, rule 3), and the
+    board's `onLayout` for that level adopts it synchronously, in the same
+    Flame update as the reset. A skin holds only its own level's colours,
+    so this is what keeps a new colour from drawing nothing.
+  - **A reset ends a drag,** in the bloc and on the board: undo, restart
+    and a new level. The finger's release then sends nothing. A drag
+    released while paused puts the doll down: the bloc emits the drag
+    cancel, and the doll flies home from where it is drawn on Resume.
+  - **A second +1 Slot during the re-pitch is queued, not dropped.** Its
+    re-pitch starts when the first ends, from that layout, and input stays
+    locked through both. Each press of an enabled booster is honoured (it
+    spends one in stg/prod); Q60 asks whether to ignore the second press
+    instead.
+  - **Won locks the chrome without greying it.** The pause button and the
+    booster bar keep the look they had and take no touch (`IgnorePointer`),
+    through the winning batch and under the win overlay. Undo still shows
+    disabled after the winning completion, as after any completion (§2.4).
+  - **Soft stuck with nothing to undo suggests Restart** (always free), and
+    Undo doesn't glow. The banner fixes its suggestion when it shows and
+    keeps it while it slides out. No frame shows it (`TODO(design)`).
+  - **Home keeps the showcase rasters while a level covers it.** The
+    part-raster cache (24 MB) keeps its own handles of them anyway, so
+    releasing them freed little and cost a placeholder flash on every
+    return. The worst case adds about 5 MB to a level (17.6 + 5.2 MB, under
+    §4's 25 MB).
+  - **Home past the last level** reads "PLAY · All done!" and opens All
+    Levels Done; M3's Bonus Endless replaces it.
+  - **Every `LottieFxView` is its own repaint boundary** (rule 8): a clip
+    never repaints its neighbours, and a resting one costs nothing when they
+    repaint.
 
 ## Package reasons (CLAUDE.md rule 9)
 
@@ -937,7 +1504,7 @@ against every member's `pubspec.yaml` on 2026-09-26. "§13.2" says whether
 spec §13.2 lists the package (it was amended for D1/D2). The root
 `pubspec.yaml` only declares the workspace and has no dependencies. In the
 apps every constraint is a caret on the locked version, except `auto_route`
-(exact pin) and `intl` (`any`). In core and tools, `lints: ^6.0.0` and
+and `lottie` (exact pins) and `intl` (`any`). In core and tools, `lints: ^6.0.0` and
 `test: ^1.25.6` are lower floors than the locked versions.
 
 The design foundation round (2026-09-26) added `flutter_svg`, `xml`,
@@ -947,6 +1514,16 @@ lock entries are `http` 1.6.0, `path_parsing` 1.1.0, `petitparser` 7.0.2,
 `vector_graphics_compiler` 1.3.0. The fonts are not packages: they are built
 by `tools/fonts/build_fonts.sh` from pinned upstream commits with fontTools
 4.60.1 in a throwaway venv (never a project dependency).
+
+The M2 Lottie contracts (2026-09-26, D41) added `lottie` to the game. Its
+new transitive lock entries are `archive` 4.3.0 and `posix` 6.5.2; no locked
+version changed. `flame_lottie` was evaluated and not added.
+
+The M2 integration (2026-09-26, D57) added `integration_test` and
+`flutter_driver` (SDK) as game dev dependencies. Their new lock entries are
+`process` 5.0.6, `sync_http` 0.3.1 and `webdriver` 3.2.0, plus the SDK's
+`flutter_driver`, `fuchsia_remote_debug_protocol` and `integration_test`; no
+locked version changed.
 
 ### Runtime dependencies
 
@@ -965,11 +1542,12 @@ by `tools/fonts/build_fonts.sh` from pinned upstream commits with fontTools
 | `json_annotation` | 4.12.0 | game, admin | **Not used yet.** Declared for app-side JSON DTOs from M3–M5 (Firestore document wrappers §5.2/§14.1, cache files). Level JSON itself is never parsed here: it goes through `nesty_core`'s `LevelCodec` (rule 2). Remove it if M5 ends without a use | yes |
 | `hive_ce` | 2.20.0 | game | Local database (D2): the `settings` box in `HiveDatabaseService`, and pure-Dart `Hive.init` in round-trip tests | yes |
 | `hive_ce_flutter` | 2.3.4 | game | `Hive.initFlutter` in the app documents directory. Brings `path_provider` (§13.2) in transitively | yes |
-| `nesty_core` (path) | 0.1.0 | render, game, admin, tools | The single rule implementation (rule 2). `nesty_render` keys its palette, renderer API and generated `DollColorTokens` on `DollColor`. `tools` uses it to cross-check the tokens' doll colors (and for the M1–M2 level CLIs). The apps declare it but do not import it yet (M1/M2) | — |
-| `nesty_render` (path) | 0.1.0 | game, admin, tools | Shared doll rendering and layout math. The apps don't import it from `lib/` yet (M2); the game's asset tests use its tokens and `svg_tools.dart`. `tools` imports only the Flutter-free `package:nesty_render/svg_tools.dart` (the asset sync's validator; `svg_tools_purity_test.dart` keeps it free of `dart:ui`) | — |
+| `nesty_core` (path) | 0.1.0 | render, game, admin, tools | The single rule implementation (rule 2). `nesty_render` keys its palette, renderer API and generated `DollColorTokens` on `DollColor`. `tools` uses it to cross-check the tokens' doll colors (and for the M1–M2 level CLIs). The game imports it since M2 (the bloc's `GameSession`, the board, the bundled repository, the solver isolate); the admin declares it but doesn't import it yet | — |
+| `nesty_render` (path) | 0.1.0 | game, admin, tools | Shared doll rendering and layout math. The game imports it from `lib/` since M2 (layout, part rasters, the rest renderer, sprites, backgrounds); the admin doesn't yet. `tools` imports only the Flutter-free `package:nesty_render/svg_tools.dart` (the asset sync's validator; `svg_tools_purity_test.dart` keeps it free of `dart:ui`) | — |
 | `flutter_svg` | 2.3.0 | render | Spec §12.2: turns the layered skin, board and theme SVGs into `ui.Image` rasters once per size (Phase 3 skin rasterizer, board sprites, theme background; rule 8). For now only `bundled_svg_render_test.dart` uses it: flutter_svg compiles all 39 shipped SVGs with no warnings. Added in the design foundation round (2026-09-26) | yes |
 | `xml` | 7.0.1 | render, tools | Flutter-free SVG parsing in `package:nesty_render/svg_tools.dart`: the spec §12.2 validator and metadata strip now, the skin layer splitter in Phase 3, and the admin upload check in M5. 7.0.1 is the newest that `vector_graphics_compiler` (via flutter_svg) accepts (`<=7.0.1`). `tools` declares it too (the plan listed it) but uses it only through `svg_tools.dart` so far | yes |
-| `flutter_soloud` | 4.1.7 | game | Spec §11.3: low-latency SFX with per-play playback speed, needed for the per-size clack pitch (D19) and the combo chimes. Not imported yet (the audio service is Phase 4). **Why 4.x, not 5.x:** 5.x needs `native_toolchain_c` ^0.19.4, which needs `meta` ^1.19, but Flutter 3.41.2 pins `meta` 1.17.0. 4.1.7 is a classic FFI plugin (CMake on Android; podspec plus CMake on iOS), and the dev APK and iOS builds both link it. Upgrade with the SDK (Q23, BACKLOG "Later") | yes |
+| `flutter_soloud` | 4.1.7 | game | Spec §11.3: low-latency SFX with per-play playback speed, needed for the per-size clack pitch (D19) and the combo chimes. Imported by `SfxEngine` (`core/services/audio/sfx_engine.dart`) under `SoLoudAudioService` since M2 phase 4. **Why 4.x, not 5.x:** 5.x needs `native_toolchain_c` ^0.19.4, which needs `meta` ^1.19, but Flutter 3.41.2 pins `meta` 1.17.0. 4.1.7 is a classic FFI plugin (CMake on Android; podspec plus CMake on iOS), and the dev APK and iOS builds both link it. Upgrade with the SDK (Q23, BACKLOG "Later") | yes |
+| `lottie` | 3.6.1 (pinned exactly) | game | **Owner decision (D40): every animation in the design ships as Lottie** (29 files). A pure-Dart Lottie player: board clips through our `LottieFxComponent` over `LottieDrawable`, the HUD, overlays and screens through `LottieFxView` (m2-lottie-design §2). **Why 3.6.1:** the newest release that resolves on Flutter 3.41.2 / Dart 3.11 (3.4.0–3.5.1 need Flutter 3.44; 3.6.0 is retracted). **Why the exact pin:** the export workarounds depend on its internals (image layers drawn at bitmap size, the travel-hold callback skip, the swapped progress fields for point values), and the equivalence tests pin them (D43). It brings `archive` 4.3.0 and `posix` 6.5.2 transitively. No `flame_lottie` (D41) | — |
 | `path` | 1.9.1 | tools | Repo-relative path handling in the `nesty_tools` CLIs. Already in the lock transitively | — |
 
 ### Dev dependencies
@@ -988,6 +1566,8 @@ by `tools/fonts/build_fonts.sh` from pinned upstream commits with fontTools
 | `hive_ce_generator` | 1.11.1 | game | No adapters yet (settings are primitives). Kept so the first `@GenerateAdapters` type needs no dependency change. It currently does nothing | yes |
 | `bloc_test` | 10.0.0 | game, admin | `blocTest` for the base cubit/bloc, `LanguageCubit`, `SplashCubit`, `HomeCubit`, `LoginCubit`, `SessionCubit` | yes |
 | `mocktail` | 1.0.5 | game, admin | Mocks for failure paths the fakes don't cover (a failing `SaveService`, `DatabaseService` or `AuthService.signOut`) | yes |
+| `integration_test` (SDK) | — | game | The on-device playthrough `integration_test/playthrough_test.dart` (D57): the integration binding and `takeScreenshot`. Its iOS pod is linked in every configuration, and only registered in debug (BACKLOG "Tech debt") | — |
+| `flutter_driver` (SDK) | — | game | The host side of `flutter drive`: `test_driver/integration_test.dart` runs `integrationDriver` and saves the screenshots (D57). It brings `process`, `sync_http`, `webdriver` and the SDK's `fuchsia_remote_debug_protocol` into the lock | — |
 
 ## Open questions
 
@@ -1169,13 +1749,15 @@ reused.
   - a patched "Fredoka Tabular" built by `build_fonts.sh` (the OFL allows it
     under a new name).
 
-- [ ] **Q30. How should the towerless levels L3–L15 be graded (D26)?**
+- [x] **Q30. How should the towerless levels L3–L15 be graded (D26)?**
   Applied default (a): an open-slot-only board keeps its §6.6 tier (badge and
   coins) with a `tierOverride` reason. The alternatives: (b) declare them
   easy and relax the §6.6 pattern check for towerless boards (L6 and L10
   then pay easy coins and lose their badges); (c) introduce towers before
   L16, against §3.7.
-- [ ] **Q31. What does the game do with an expert-only generated level
+  Resolved 2026-09-26: owner-confirmed default (a). Open-slot-only boards
+  keep their §6.6 tier (badge and coins) with a `tierOverride` (D26, D52).
+- [x] **Q31. What does the game do with an expert-only generated level
   (spec §6.4, D33)?** Bonus 40 (superhard, smart 0/300) and bonus 99 (medium,
   smart 142/300) of bonus levels 1–100 are expert only, and no admin reviews
   device-generated levels. Options: (a) the generator treats expert only as
@@ -1183,19 +1765,28 @@ reused.
   (b) the app shows the flag, which `GeneratorSuccess.simulation.expertOnly`
   already carries; (c) the §6.4 flag applies only to admin-authored levels.
   Decide before M3's Bonus Endless and daily.
-- [ ] **Q32. Relax the exhaustive-search targets (design §5)?** An
+  Resolved 2026-09-26: the owner confirmed the recorded default. The
+  generator keeps returning an expert-only level with
+  `simulation.expertOnly` set (D33). What the app shows for one is settled
+  when Bonus Endless is built (M3, BACKLOG).
+- [x] **Q32. Relax the exhaustive-search targets (design §5)?** An
   exhaustive 435,588-node proof takes 2.28 s on the VM (target 2 s) at
   191–289k nodes/s (target 300k); budget-limited searches, hints (35–38 ms)
   and soft-stuck checks (20–22 ms) are well inside. The admin steps the
   search, so the page never blocks. Proposed: "admin 500k ≤ 3 s VM worst
   case". The next levers are hashing only the changed key words and a
   count-only kernel routine.
-- [ ] **Q33. Cap the admin generator's params, or scale the admin budget by
+  Resolved 2026-09-26: owner-confirmed. The relaxed target "admin 500k ≤ 3 s
+  VM worst case" stands; the speed levers stay in BACKLOG "Later".
+- [x] **Q33. Cap the admin generator's params, or scale the admin budget by
   board size (design §5 heap ≤ 64 MB)?** The widest board
   `Generator.checkParams` accepts (4×5, 17 depth-4 towers, 72 cells) holds
   72.3 MiB of typed lists at 500k nodes (80.3 MB peak), about 152 B/node.
   Typical boards stay at 86–125 B/node, 37–44 MB. No curve row comes near.
-- [ ] **Q34. Confirm the default difficulty curve (design A16, D33) before
+  Resolved 2026-09-26: owner-confirmed as built. No cap and no budget
+  scaling for now; no curve row comes near the limit. The M5 admin generator
+  re-checks it (BACKLOG M5).
+- [x] **Q34. Confirm the default difficulty curve (design A16, D33) before
   M3.** Every row has one set per color and 1 empty slot unless noted; S =
   shelves × slots, T = towers × depth:
 
@@ -1216,7 +1807,10 @@ reused.
   boards; levels 1–15 can only reach easy (D26), so the generator returns the
   closest tier there. Any change alters generated levels and needs a
   `Generator.version` bump.
-- [ ] **Q35. Confirm the recorded M1 defaults (design A-list and the build
+  Resolved 2026-09-26: owner-confirmed. The default curve table (A16) is the
+  curve. BACKLOG M3 drops its `TODO(M3)`; any later change still needs a
+  `Generator.version` bump.
+- [x] **Q35. Confirm the recorded M1 defaults (design A-list and the build
   steps' readings).** Each is implemented, tested and changeable:
   - A3 fallback step 3: the first non-pointless placement, then the first
     placement; a hint on a won state returns no move (`none`, `solved`).
@@ -1234,17 +1828,27 @@ reused.
     deal kept after 20, invalid daily dates rejected.
   - Freeze the PRNG (D28), simulator (D32) and generator (D33) definitions
     under `Generator.version` 1 before M3 ships dailies.
-- [ ] **Q36. Bundle policy (D34).** Should an expert-only bundled level fail
+  Resolved 2026-09-26: owner-confirmed. Every listed default stands. The
+  PRNG, simulator and generator definitions are frozen under
+  `Generator.version` 1 before M3 ships dailies (BACKLOG M3).
+- [x] **Q36. Bundle policy (D34).** Should an expert-only bundled level fail
   CI rather than warn? Are the tutorials (L1–L2) plus open-slot boards the
   right set for `tierOverride`, or should intro levels (L16, L31, L51) be
   allowed? Keep the M2 layout limits (2–3 shelves, ≤ 4 slots) for every
   bundled level, or only for 1–30? May bundle entries start at `version` 0?
   Should unknown top-level bundle keys be ignored for forward compatibility?
-- [ ] **Q37. Authored levels (D35).** Is L16's 4,3 board with two depth-4
+  Resolved 2026-09-26: owner-confirmed as built. An expert-only bundled
+  level warns. `tierOverride` covers the tutorials and open-slot boards. The
+  M2 layout limits apply to every bundled level, bundle entries start at
+  `version` 1, and unknown top-level keys stay errors. Revisit when bundling
+  moves to a Firestore export (BACKLOG M5).
+- [x] **Q37. Authored levels (D35).** Is L16's 4,3 board with two depth-4
   towers right for the tower intro (the design's 4,3,3 TOWER16 board is L18,
   easy)? The easy tower levels all simulate 100 % casual; should easy aim
   for 70–95 %? Check L6 (HARD) and L10 (SUPER HARD) in the M2 playtest.
-- [ ] **Q38. Render defaults (D36–D38).** The doll clamp gap 8/3 dp; a buried
+  Resolved 2026-09-26: owner-confirmed. The authored levels stand as built
+  (D35). L6 and L10 are still checked in the M2 playtest (BACKLOG M2).
+- [x] **Q38. Render defaults (D36–D38).** The doll clamp gap 8/3 dp; a buried
   nest two or more sizes smaller than the top stays hidden behind it at 18 dp
   per depth; pips on an occupied extra slot; the 4-shelf preset scaling every
   piece by 104/150 (and a top-row tower's maxSize-6 doll standing 2 dp into
@@ -1253,6 +1857,105 @@ reused.
   both symbol sizes per atlas page; chapters 7+ cycling ch01–ch06; the
   theme's swap-on-ready; lazy glass frames 1–2; sprite fit as
   `preserveAspectRatio` meet.
+  Resolved 2026-09-26: owner-confirmed. Every listed render default stands
+  (D36–D38).
+- [ ] **Q39. A tap on an unpickable slot with nothing selected (M2).** An
+  empty, locked or iced slot tapped with no nest lifted is ignored today
+  (`TODO(design)` in `tap_policy.dart`; frame 2.6 doesn't cover it). Should it
+  shake the slot like an invalid move?
+- [ ] **Q40. Dragging another nest while one is tap-lifted (M2, D55).** The
+  drag start switches the selection (the drag reads as an explicit pick),
+  while a tap there is an invalid move (D22). Keep that, or make the drag
+  start invalid too?
+- [ ] **Q41. The soft-stuck re-check (M2, D55).** It runs after an undo and
+  after +1 Slot as well as after moves, so the banner stays right when an undo
+  lands on another stuck board. The contract said "after each applied move".
+  OK?
+- [ ] **Q42. `booster_use` sources (M2, §14.4).** The spec allows `free`,
+  `coins` and `ad`; M2 logs every inventory use as `free`. Should an inventory
+  use have its own source?
+- [ ] **Q43. Skipped bundled levels (M2, §5.3, D54).** An invalid bundled
+  level makes `entryAt(itsOrder)` return the next playable one, and
+  `levelCount` is the last available order. Is that the intended reading of
+  "skipped with a log entry"?
+- [ ] **Q44. Undos in the dev flavor (M2).** Boosters never run out there
+  (`unlimitedBoosters`), and the bloc makes undos unlimited too (`canUndo`
+  ignores the free-undo count), so the out-of-moves sheet shows no "Free · N
+  left" chip. Is unlimited undo intended in dev?
+- [ ] **Q45. Sound effects when the app goes to the background (M2, D54).**
+  Voices pause and resume on return. Cut short one-shots instead?
+- [ ] **Q46. Starting coins (M3, §7.3).** A fresh install starts with 0 coins;
+  the spec gives no starting balance.
+- [ ] **Q47. Figurine names and empty fallbacks (M3).** The design names only
+  the Classic, Sailor and Baker Families. Should 4–10 be "The <Name> Family"?
+  `figurineName`, `tierName` and `chapterName` return '' for an unknown id,
+  and the win card then hides "Next up".
+- [ ] **Q48. When a button's sound and haptic fire (M2).** On activation (a
+  tap, or the screen reader's action), so a drag off the button stays
+  silent; not on touch-down. OK?
+- [ ] **Q49. Continue on the win overlay (M2, frame 2.11, D56).** It loads the
+  next level inside the same page (`NextLevelPressed`), keeping the Flame game
+  alive with no route transition, where the earlier M2 design replaced the
+  route. Is that the intended flow?
+- [ ] **Q50. The chapter ribbon's look (M2, frame 4.7).** The game follows the
+  Lottie file's one-line ribbon ("CHAPTER 2 · Rainy Café Corner",
+  m2-lottie-design §12), not NestyBoard's two-line blue card. Confirm the
+  Lottie look wins.
+- [ ] **Q51. M3 entries shown disabled (M2).** Home's settings gear and
+  Pause's Settings tile are greyed out until M3, while the design draws them
+  enabled. Keep them disabled, or enabled with no action?
+- [ ] **Q52. An invalid move onto a tower (M2).** The whole tower (top doll,
+  silhouettes) shakes by hand in sync, following §7 and
+  `FxImageRequest.hideTarget`, rather than §9.3's "the top doll shakes in the
+  file"; the "+N" tag stays still. OK?
+- [ ] **Q53. Win timing and the combo clock (M2).** Won opens at 2117 + 250 ms
+  as §7 says, while the last trail sparkles still fade under the scrim. The
+  combo runs on board time (it stops while paused) and resets on start and
+  restart, not on undo. OK?
+- [ ] **Q54. Pools and segment types (M2, D53).** Pools follow
+  m2-lottie-design §14 (2 per doll file, glass and ice one per slot), not
+  LOTTIE.md's "dolls one per slot". And the timeline's `FxSegment` duplicates
+  the runtime's `FxRange`/`FxPlan`: keep both or merge them?
+- [ ] **Q55. Ice on an iced tower (M5, L51+).** `fx_ice` is anchored on the
+  doll at the tower's surface (design §8), which puts the ice 5·fs above the
+  static `iceRect` anchored on the stand. Should the ice follow the stand
+  instead?
+- [ ] **Q56. Anchors of `ui_toggle` and `ui_splash_loader` (M2).** LOTTIE.md
+  says only "toggle box" and "bar box"; the game takes their top-left, with
+  the canvas as the widget's box. Or their centre?
+- [x] **Q57. The HUD coins at Won (M2, frames 2.8, 1.5).** The bloc pays the
+  reward at Won, so the HUD's coin pill shows the new balance while the win
+  overlay counts "+10" up at 700 ms; the frames show the HUD still at the old
+  balance. Hold the HUD until the count-up ends?
+  **Resolved 2026-09-27 (owner: match the design):** the HUD shows the balance
+  before the reward from Won (the flying set and the overlay, whose settled
+  frame 2.8 still shows the old balance) until the next level starts
+  (`GameplayView`, `gameplay_view_test` "keeps the old balance").
+- [x] **Q58. The splash before the skin loads (M2, frame 1.1).** For about a
+  second the three shelf dolls and the wordmark's doll draw with the
+  procedural placeholder, then swap to the skin. Hide them until the art
+  lands, or keep the placeholder?
+  **Resolved 2026-09-27 (owner: match the design):** they stay hidden until the
+  showcase's art lands, then fade in over `motion.ui.modalIn` (240 ms, none with
+  reduced motion). With no showcase the placeholder draws them at once
+  (rule 3); a showcase that fails leaves them hidden on the splash, and Home
+  draws its placeholder dolls (`SplashView`, `Wordmark.dollShown`,
+  `splash_page_test`).
+- [ ] **Q59. The subtle belly symbol: bare ink, or on a cream disc (M7,
+  review FIDELITY-3)?** Every App Flow board frame (2.1–2.6, 1.3, 1.6) draws
+  its dolls from `design/prototypes/skins/classic/preview/doll-*.svg`, which
+  put the symbol on an r 55 `#FFF8EC` disc with a 5-unit ring in the colour's
+  light shade. tokens.json (`skin.symbolSize` 110, no subtle disc), design
+  README §3 ("filled with ink at 94 %"), `generator/nesty-doll.js` and
+  `skins/classic/renders/*.svg` draw the bare symbol, and the game follows
+  them. The precedence puts App Flow above the README, but tokens.json above
+  both, and the tokens define only the large mode's disc. Which is canonical
+  for `subtle`? If it is the disc, the subtle body raster (skin and
+  placeholder) gains it, and the goldens change.
+- [ ] **Q60. +1 Slot pressed again during the re-pitch (M2, D58).** The
+  second press is queued: a second slot re-pitches in after the first, and a
+  second booster is spent in stg/prod. Or ignore presses during the 300 ms
+  re-pitch, as the board's global lock does for taps?
 
 ### Notes for later milestones (not questions)
 
@@ -1292,16 +1995,26 @@ the tracker. They stay here as history. New notes go into BACKLOG.md instead.
 [BACKLOG.md](BACKLOG.md) is the tracker for everything still to do. This
 section only says where to look.
 
-1. **This round (D23):** the design foundation and M1 are done, and so are
-   M2's nesty_render foundation and 30 levels. Next is M2 phase 4 (the
-   gameplay bloc, Flame board, timeline, screens and services), in the order
-   of the approved plan; the open items are in BACKLOG under "M2". M2's
-   acceptance needs the owner to run a 60 fps check on a real mid-range
-   Android device.
-2. **Owner decisions from M1** (none blocks M2): Q30 (towerless grading),
-   Q31 (expert-only generated levels, before M3), Q34 (curve table, before
-   M3), Q35 (the recorded defaults to freeze before dailies), then Q32, Q33,
-   Q36–Q38.
+1. **This round (D23):** the design foundation and M1 are done, and M2 is
+   code complete (D53–D58): the app plays on an iOS simulator and an Android
+   emulator with every real service, and the review fix pass is in. Left for
+   M2's acceptance (BACKLOG "M2"):
+   - the owner's 60 fps check on a real mid-range Android device in a
+     profile build, following [M2 acceptance](#m2-acceptance-spec-18)
+     (`/perf-profile`);
+   - the manual L1–30 pass on the dev flavor;
+   - the owner's answers to Q39–Q60 (none blocks the acceptance).
+
+   The unlock-symbol raster swap moved to M5, the tabular figures (Q29) to
+   M7 and the load-failure copy to the design gaps. The on-device
+   playthrough runs with `NESTY_SCREENSHOT_DIR=<dir> flutter drive --flavor
+   dev --driver test_driver/integration_test.dart --target
+   integration_test/playthrough_test.dart -d <device>` from `apps/game`.
+   The newer design delivery in `export/nesty-v3/` (Lottie v3, jingles,
+   docs) is imported in its own round, after M2 is committed.
+2. **The designer's Lottie re-export** ([plans/lottie-reexport-request.md](plans/lottie-reexport-request.md))
+   blocks nothing. The workarounds ship; swap it in when it arrives (BACKLOG
+   M7).
 3. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
    can supply or decide, with the milestone each one blocks. The first ones
    due are Q3 and Q5 (before M3), the music files, and the 9 missing figurine

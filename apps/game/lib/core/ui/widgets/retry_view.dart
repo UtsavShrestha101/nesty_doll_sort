@@ -1,13 +1,15 @@
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
+import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
+import 'package:nesty_game/core/ui/widgets/buttons/tactile_button.dart';
 
 /// Minimal "something went wrong — try again" body for a failed local load.
 ///
 /// The text comes from [exception]'s kind (`AppExceptionL10n`), never from
 /// its message.
 ///
-/// TODO(M2): replace with the design's modal card style (design/README.md
-/// "Components").
+/// TODO(design): no frame shows a load failure; this uses the body style
+/// and a secondary button until one does.
 class RetryView extends StatelessWidget {
   const RetryView({required this.exception, required this.onRetry, super.key});
 
@@ -16,19 +18,27 @@ class RetryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          exception.localizedMessage(context.localizations),
-          style: context.bodyLarge,
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: onRetry,
-          child: Text(context.localizations.retry),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            exception.localizedMessage(context.localizations),
+            style: context.bodyText,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          TactileButton(
+            label: context.localizations.retry,
+            icon: NestyIcons.restartAlt,
+            variant: TactileButtonVariant.secondary,
+            size: TactileButtonSize.small,
+            expand: false,
+            onPressed: onRetry,
+          ),
+        ],
+      ),
     );
   }
 }

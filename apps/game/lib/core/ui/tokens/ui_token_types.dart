@@ -38,6 +38,41 @@ final class NestyShadow {
       spreadRadius: spread,
     );
   }
+
+  /// True for a CSS "solid edge" layer (`0 Npx 0 color`): the bottom lip of
+  /// every tactile surface, which shrinks to `AppShadowTokens.pressedEdge`
+  /// when pressed (design/README.md "Tactile depth").
+  bool get isSolidEdge =>
+      !inset && dx == 0 && dy > 0 && blur == 0 && spread == 0;
+
+  NestyShadow copyWith({
+    bool? inset,
+    double? dx,
+    double? dy,
+    double? blur,
+    double? spread,
+    Color? color,
+  }) => NestyShadow(
+    inset: inset ?? this.inset,
+    dx: dx ?? this.dx,
+    dy: dy ?? this.dy,
+    blur: blur ?? this.blur,
+    spread: spread ?? this.spread,
+    color: color ?? this.color,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NestyShadow &&
+      other.inset == inset &&
+      other.dx == dx &&
+      other.dy == dy &&
+      other.blur == blur &&
+      other.spread == spread &&
+      other.color == color;
+
+  @override
+  int get hashCode => Object.hash(inset, dx, dy, blur, spread, color);
 }
 
 /// A gradient stop position: a fraction of the gradient line, or an

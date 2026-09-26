@@ -27,13 +27,13 @@ void runDatabaseServiceContract(
       await database.setSoundEnabled(false);
       await database.setMusicEnabled(false);
       await database.setHapticsEnabled(false);
-      await database.setSymbolsMode(SymbolsMode.assist);
+      await database.setSymbolsMode(SymbolsMode.large);
       await database.setLanguage('pt_BR');
 
       expect(database.soundEnabled, isFalse);
       expect(database.musicEnabled, isFalse);
       expect(database.hapticsEnabled, isFalse);
-      expect(database.symbolsMode, SymbolsMode.assist);
+      expect(database.symbolsMode, SymbolsMode.large);
       expect(database.languageCode, 'pt_BR');
     });
 

@@ -29,7 +29,9 @@ class GameplayRoute extends PageRouteInfo<GameplayRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<GameplayRouteArgs>();
-      return GameplayPage(levelNumber: args.levelNumber, key: args.key);
+      return WrappedRoute(
+        child: GameplayPage(levelNumber: args.levelNumber, key: args.key),
+      );
     },
   );
 }

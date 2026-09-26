@@ -33,7 +33,8 @@ drift; CI runs the checks in the "Generated code is committed and fresh" job.
 | Command | Reads | Writes |
 |---|---|---|
 | `dart run nesty_tools:gen_design_tokens [--check]` | `design/tokens.json` | `packages/nesty_render/lib/src/tokens/render_tokens.gen.dart`, `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart` |
-| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio}` | `apps/game/assets/{skins,symbols,board,themes,audio}/` |
+| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie}/` |
+| `dart run nesty_tools:gen_fx_spec [--check]` | `design/lottie/*.json`, the contract table `lib/src/fx/lottie_contract.dart` | `apps/game/lib/features/fx/fx_spec.gen.dart` |
 | `dart run nesty_tools:gen_nesty_icons [--check]` | `tools/fonts/nesty_symbols.txt`, `apps/game/assets/fonts/NestySymbolsRounded.codepoints` | `apps/game/lib/core/ui/icons/nesty_icons.gen.dart` |
 | `dart run nesty_tools:todo_index [--check]` | every first-party source file | `docs/TODO_INDEX.md` |
 | `dart run nesty_tools:nesty_levels bundle build` / `bundle check` | `tools/levels/manifest.json`, `tools/levels/authored/*.json` | `apps/game/assets/levels/bundle.json` (`bundle check` writes nothing) |
@@ -83,10 +84,57 @@ groups in paint order and a valid `skin.json`). Nothing is written if any
 file fails. Files the design no longer has are removed, and `--check` also
 fails when `apps/game/pubspec.yaml` doesn't list a synced folder.
 
+It also ships the 29 Lottie exports, `design/lottie/*.json` →
+`lottie/<name>.json`, byte for byte; see "Lottie" below.
+
 Not synced on purpose: `design/skins/classic/renders/` (golden references for
 the renderer tests), `museum/` and `store/` (nested `<svg>` and
 `mix-blend-mode`, which flutter_svg can't draw; museum PNGs come in M3 and
-store icons in M8), `generator/` and `prototypes/`.
+store icons in M8), `generator/` and `prototypes/`, and `design/lottie/`'s
+`LOTTIE.md` and `images/` (the placeholder PNGs are never shipped or decoded,
+PROGRESS D50; a PNG found in `assets/lottie/` is removed like any stale file).
+
+### Lottie (`lib/src/fx/`, `gen_fx_spec`)
+
+Every animation ships as Lottie (PROGRESS D40–D52,
+[docs/plans/m2-lottie-design.md](../docs/plans/m2-lottie-design.md)).
+
+- **The contract** (`lottie_contract.dart`) is LOTTIE.md's "Files" table as
+  Dart, in `FxId` order: canvas, length, markers, loop, and the anchor, kind
+  and travel S/T the JSON can't carry. It also lists the image slots
+  (`FxImageSlot` ids and declared sizes) and, per file, the hooks the runtime
+  keys on: the `<role>_size` nulls, `travel`, `target_pos`, the `rim_tint` and
+  `tint` fills, the text layers, and the nulls of §6–§13 (`target`, `ice`,
+  `doll`, `padlock_ping`, `doll_silhouette`, `color_doll`, `counter`,
+  `ribbon`). `test/fx/lottie_contract_test.dart` parses LOTTIE.md and the
+  game's `FxId`/`FxImageSlot` sources, so the table can't drift from either.
+- **Validation** (`lottie_validation.dart`, run by both scripts; nothing is
+  written on an issue): it parses; `v` 5.7.x, `fr` 60, `ip` 0; `w`/`h`/`op`
+  and the markers equal the contract; the image asset ids are exactly the
+  contract's, each an image slot at its declared size, none embedded, every
+  `refId` resolves; the hooks are present, unique, and nowhere else; each
+  image layer's anchor is static (the compensation of §3 needs it); `travel`
+  is an unparented null at S with a static zero anchor, on the S→T line, with
+  no spatial tangents (the remap is a projection). Features are **blocked,
+  not allow-listed**, so trim paths and polystars stay fine: expressions,
+  effects (`ef`), layer styles (`sy`), merge paths (`mm`), luma mattes
+  (`tt` 3/4), matte parents (`tp`), 3D (`ddd`), time remap (`tm`), layer
+  types above 5, shape types lottie 3.6.1 drops, and text outside
+  `ui_family_counter`, `ui_win_ribbon` and `ui_chapter_ribbon`.
+- **`gen_fx_spec`** writes `const Map<FxId, FxSpec> fxSpecs` and
+  `fxSpecOf(id)`: frames, canvas, anchor, kind, markers, travel S/T with its
+  holds (equal consecutive keyframes or `h: 1`: lottie skips the position
+  callback there, §6), size roles, image layers with their key paths
+  (precomp children as `[precomp, child]`), authored scale and anchor and
+  whether the scale is animated, text layers, colour fills, loop. The board
+  timeline reads it and stays pure Dart. `test/fx/fx_spec_codegen_test.dart`
+  checks the committed file; the game's `fx_spec_drift_test.dart` re-reads
+  the shipped JSON independently.
+
+When the designer's re-export arrives (m2-lottie-design §18): the owner drops
+it into `design/lottie/`, then run `sync_design_assets` and `gen_fx_spec`. A
+changed length, marker, canvas or hook fails validation until the contract
+table (and LOTTIE.md, which the contract test reads) agree.
 
 ### Fonts and icons (`tools/fonts/`)
 

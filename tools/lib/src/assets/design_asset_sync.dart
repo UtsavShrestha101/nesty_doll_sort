@@ -3,14 +3,24 @@ import 'dart:io';
 
 import 'package:nesty_render/svg_tools.dart';
 import 'package:nesty_tools/src/file_writes.dart';
+import 'package:nesty_tools/src/fx/lottie_contract.dart';
+import 'package:nesty_tools/src/fx/lottie_sources.dart';
 import 'package:path/path.dart' as p;
 
 /// Repo-relative asset root of the game.
 const gameAssetsDir = 'apps/game/assets';
 
 /// Asset folders the sync owns completely: anything in them that the plan
-/// does not produce is removed (or reported by `--check`).
-const syncedAssetRoots = ['skins', 'symbols', 'board', 'themes', 'audio'];
+/// does not produce is removed (or reported by `--check`). For `lottie/`
+/// that includes any PNG: the placeholders never ship (PROGRESS D50).
+const syncedAssetRoots = [
+  'skins',
+  'symbols',
+  'board',
+  'themes',
+  'audio',
+  gameLottieDir,
+];
 
 /// Board SVGs that are not copied: their pips are baked in for maxSize 6,
 /// while the game draws pips itself on the `-blank` variants (spec §10.3).
@@ -66,7 +76,13 @@ final class AssetSyncPlan {
 }
 
 /// Builds the sync plan from `design/` under [repoRoot].
-AssetSyncPlan planDesignAssetSync(Directory repoRoot) {
+///
+/// [lottieTable] is the contract the Lottie exports are validated against
+/// (tests pass a smaller one for a scratch repo).
+AssetSyncPlan planDesignAssetSync(
+  Directory repoRoot, {
+  List<LottieFileContract> lottieTable = lottieContracts,
+}) {
   final design = Directory(p.join(repoRoot.path, 'design'));
   final assets = <PlannedAsset>[];
   final issues = <String>[];
@@ -195,6 +211,23 @@ AssetSyncPlan planDesignAssetSync(Directory repoRoot) {
         destination: 'audio/$name',
         bytes: bytes,
         sourceSize: bytes.length,
+      ),
+    );
+  }
+
+  // Lottie: design/lottie/*.json → lottie/<name>.json, byte for byte, after
+  // validation against the LOTTIE.md contract (lib/src/fx/). Never
+  // images/ (placeholders, D50) or LOTTIE.md.
+  final lottie = readDesignLottie(repoRoot, contracts: lottieTable);
+  issues.addAll(lottie.issues);
+  for (final source in lottie.sources) {
+    assets.add(
+      PlannedAsset(
+        category: gameLottieDir,
+        source: source.path,
+        destination: '$gameLottieDir/${source.name}.json',
+        bytes: source.bytes,
+        sourceSize: source.bytes.length,
       ),
     );
   }

@@ -1,14 +1,17 @@
 // The game is offline-first (CLAUDE.md rule 3): every sound, symbol, skin,
-// board sprite, theme and font the code references must be in the bundle.
-// These checks load through the real asset bundle, so a folder missing from
-// pubspec.yaml fails here, not on a device. Later features extend the lists
-// (levels bundle, museum PNGs, music).
+// board sprite, theme, level, animation and font the code references must
+// be in the bundle. These checks load through the real asset bundle, so a
+// folder missing from pubspec.yaml fails here, not on a device. Later
+// features extend the lists (museum PNGs, music).
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lottie/lottie.dart';
+import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_render/nesty_render.dart';
 import 'package:nesty_render/svg_tools.dart';
 
@@ -114,6 +117,57 @@ void main() {
       isNot(contains('assets/board/slot-stand.svg')),
       reason: 'the baked-pip stands are not used (spec §10.3)',
     );
+  });
+
+  test('the offline level bundle ships and decodes without issues', () async {
+    expectAssets(['assets/levels/bundle.json']);
+    final result = LevelBundleCodec.decodeString(
+      await rootBundle.loadString('assets/levels/bundle.json'),
+    );
+    expect(result.issues, isEmpty);
+    final levels = result.bundle!.levels;
+    expect(levels, isNotEmpty);
+    expect(
+      [for (final e in levels) e.order],
+      [for (var i = 1; i <= levels.length; i++) i],
+    );
+  });
+
+  group('Lottie (PROGRESS D40, D50)', () {
+    test('exactly the 29 FxId files ship under assets/lottie/, no PNG', () {
+      final shipped = assets
+          .where((a) => a.startsWith('${FxId.assetDirectory}/'))
+          .toSet();
+      expect(shipped, {for (final id in FxId.values) id.assetPath});
+      expect(assets.where((a) => a.endsWith('.png')), isEmpty);
+    });
+
+    test('each parses with LottieComposition.fromBytes, clean, decoding no '
+        'image', () async {
+      for (final id in FxId.values) {
+        final data = await rootBundle.load(id.assetPath);
+        final composition = await LottieComposition.fromBytes(
+          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+        );
+        // lottie logs every feature it can't draw as a warning. The one it
+        // logs for more than 4 image layers is advice, not a failure: every
+        // doll and board piece is an image slot by design (LOTTIE.md
+        // "Image slots"), so fx_glass_unlock (6) and fx_ice (7) get it.
+        final warnings = composition.warnings.where(
+          (w) => !w.contains('Lottie should primarily be used with shapes'),
+        );
+        expect(warnings, isEmpty, reason: id.fileName);
+        expect(composition.frameRate, 60, reason: id.fileName);
+        // D50: fromBytes never loads the placeholder PNGs.
+        for (final image in composition.images.values) {
+          expect(
+            image.loadedImage,
+            isNull,
+            reason: '${id.fileName} ${image.id}',
+          );
+        }
+      }
+    });
   });
 
   test('the bundled font families are registered', () async {

@@ -32,17 +32,35 @@ void main() {
   test('settings survive closing and reopening the box', () async {
     final first = await HiveDatabaseService.open(directory: directory.path);
     await first.setHapticsEnabled(false);
-    await first.setSymbolsMode(SymbolsMode.assist);
+    await first.setSymbolsMode(SymbolsMode.large);
     await first.setLanguage('ja');
     await first.close();
     expect(Hive.isBoxOpen(HiveBoxes.settings), isFalse);
 
     final second = await HiveDatabaseService.open(directory: directory.path);
     expect(second.hapticsEnabled, isFalse);
-    expect(second.symbolsMode, SymbolsMode.assist);
+    expect(second.symbolsMode, SymbolsMode.large);
     expect(second.languageCode, 'ja');
     expect(second.soundEnabled, SettingsDefaults.sound);
     await second.close();
+  });
+
+  test('a legacy stored "assist" reads as large symbols and is rewritten as '
+      '"large" on the next write (PROGRESS D19)', () async {
+    Hive.init(directory.path);
+    final raw = await Hive.openBox<Object>(HiveBoxes.settings);
+    await raw.put(SettingsKeys.symbols, 'assist');
+    await raw.close();
+
+    final database = await HiveDatabaseService.open(directory: directory.path);
+    expect(database.symbolsMode, SymbolsMode.large);
+
+    await database.setSymbolsMode(database.symbolsMode);
+    expect(
+      Hive.box<Object>(HiveBoxes.settings).get(SettingsKeys.symbols),
+      'large',
+    );
+    await database.close();
   });
 
   test('values of the wrong type fall back to defaults', () async {

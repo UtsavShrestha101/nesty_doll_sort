@@ -5,12 +5,19 @@ import 'package:flutter/painting.dart' show ColorFilter;
 import 'package:flutter_svg/flutter_svg.dart' show PictureInfo;
 import 'package:nesty_render/src/palette/doll_palette.dart';
 import 'package:nesty_render/src/raster/svg_raster.dart';
+import 'package:nesty_render/src/skin/part_rows.dart';
 import 'package:nesty_render/src/skin/skin_image_set.dart';
 import 'package:nesty_render/src/skin/skin_layer.dart';
 import 'package:nesty_render/src/skin/skin_loader.dart';
 import 'package:nesty_render/src/skin/skin_manifest.dart';
 import 'package:nesty_render/src/skin/svg/svg_color_rewriter.dart';
 import 'package:nesty_render/src/svg_tools/svg_validator.dart';
+
+/// Draws one [SkinLayer] from a skin's parsed vector pictures in art units,
+/// through a colour-filter layer when [tint] is given. Handed to
+/// [SkinRasterizer.rasterizeArtboard]'s `paint` callback, and valid only
+/// while that callback runs.
+typedef SkinLayerPainter = void Function(SkinLayer layer, {ColorFilter? tint});
 
 /// Turns a [SkinSource] into [SkinImageSet]s (spec §12.2, CLAUDE.md rule 8).
 ///
@@ -24,6 +31,10 @@ import 'package:nesty_render/src/svg_tools/svg_validator.dart';
 /// Gold's masks are separate rasters with their grays rewritten through the
 /// ramp ([SvgColorRewriter]), since a gradient map cannot be a draw-time
 /// colour filter (D19).
+///
+/// [rasterizeArtboard] draws whole-artboard images from the same parsed
+/// layers without the crop probe: the game's doll part rasters
+/// (`DollPartRasters`, docs/plans/m2-lottie-design.md §4).
 final class SkinRasterizer {
   SkinRasterizer(this.source, {this.probeHeightPx = 96, this.cropPaddingPx = 2})
     : assert(probeHeightPx > 0),
@@ -38,6 +49,7 @@ final class SkinRasterizer {
   /// Cache identity: skin id and version.
   String get cacheKey => manifest.cacheKey;
 
+  Future<_Prepared>? _parsed;
   Future<_Prepared>? _prepared;
   bool _disposed = false;
 
@@ -82,11 +94,81 @@ final class SkinRasterizer {
     return set;
   }
 
+  /// Rasterizes one whole-artboard image of `widthPx × artHeightPx` px,
+  /// `widthPx = round(artboard.width · r)` with `r = artHeightPx /
+  /// artboard.height`, for `DollPartRasters` (m2-lottie-design §4).
+  ///
+  /// [paint] draws in art units (the canvas is scaled by `r`) and calls its
+  /// `layer` argument to draw one [SkinLayer] from the parsed vector
+  /// pictures, through a [ColorFilter] layer when given a `tint` (the flat
+  /// colours' `BlendMode.modulate`: linear in the gray, so it equals
+  /// `SvgSkinRenderer`'s draw-time tint of the gray raster).
+  ///
+  /// Only the pixel rows `[rowTop, rowBottom)` are kept, cut on whole
+  /// pixels: the hard lid/body split, so the two parts never share a pixel.
+  ///
+  /// Needs the parsed layers only, not the crop probe.
+  Future<ui.Image> rasterizeArtboard(
+    int artHeightPx, {
+    required void Function(ui.Canvas canvas, SkinLayerPainter layer) paint,
+    int rowTop = 0,
+    int? rowBottom,
+  }) async {
+    if (artHeightPx < 1) {
+      throw ArgumentError.value(artHeightPx, 'artHeightPx', 'must be ≥ 1');
+    }
+    final bottom = rowBottom ?? artHeightPx;
+    if (rowTop < 0 || bottom > artHeightPx || rowTop > bottom) {
+      throw RangeError('rows [$rowTop, $bottom) are not inside the raster');
+    }
+    final parsed = await _parse();
+    // The pictures are drawn synchronously below; after a dispose they may
+    // already be gone.
+    if (_disposed) throw StateError('SkinRasterizer used after dispose');
+    final artboard = manifest.artboard;
+    final scale = artHeightPx / artboard.height;
+    final width = math.max(1, (artboard.width * scale).round());
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder)
+      ..save()
+      ..scale(scale);
+    void layer(SkinLayer layer, {ColorFilter? tint}) {
+      if (tint != null) canvas.saveLayer(null, ui.Paint()..colorFilter = tint);
+      _drawParts(canvas, parsed.parts[layer.index]);
+      if (tint != null) canvas.restore();
+    }
+
+    paint(canvas, layer);
+    canvas.restore();
+    eraseRowsOutside(canvas, width, artHeightPx, rowTop, bottom);
+    final picture = recorder.endRecording();
+    try {
+      return await picture.toImage(width, artHeightPx);
+    } finally {
+      picture.dispose();
+    }
+  }
+
   /// Frees the parsed pictures. Image sets already made stay valid.
   void dispose() {
     if (_disposed) return;
     _disposed = true;
-    _prepared?.then((p) => p.dispose(), onError: (Object _) {});
+    _parsed?.then((p) => p.dispose(), onError: (Object _) {});
+  }
+
+  /// [rasterizePictures]' drawing, onto a canvas already in art units.
+  static void _drawParts(ui.Canvas canvas, List<SvgRasterPart> parts) {
+    for (final part in parts) {
+      final layered = part.opacity < 1 || part.colorFilter != null;
+      if (layered) {
+        final paint = ui.Paint()
+          ..color = ui.Color.fromRGBO(0, 0, 0, part.opacity.clamp(0, 1));
+        if (part.colorFilter case final filter?) paint.colorFilter = filter;
+        canvas.saveLayer(null, paint);
+      }
+      canvas.drawPicture(part.picture);
+      if (layered) canvas.restore();
+    }
   }
 
   Future<SkinLayerImage?> _rasterizeLayer(
@@ -121,14 +203,26 @@ final class SkinRasterizer {
     );
   }
 
+  /// Parsed and probed: what [rasterize] and [cropRects] need.
   Future<_Prepared> _prepare() {
     if (_disposed) {
       return Future.error(StateError('SkinRasterizer used after dispose'));
     }
-    return _prepared ??= _parseAndProbe();
+    return _prepared ??= _parse().then((prepared) async {
+      await _probe(prepared);
+      return prepared;
+    });
   }
 
-  Future<_Prepared> _parseAndProbe() async {
+  /// Parsed only: what [rasterizeArtboard] needs.
+  Future<_Prepared> _parse() {
+    if (_disposed) {
+      return Future.error(StateError('SkinRasterizer used after dispose'));
+    }
+    return _parsed ??= _parseLayers();
+  }
+
+  Future<_Prepared> _parseLayers() async {
     final gold = DollPalette.values.firstWhere((s) => s.usesGradientMap).tint;
     final layers = source.layers;
     final sources = <String, String>{
@@ -156,7 +250,6 @@ final class SkinRasterizer {
       for (final layer in SkinLayer.values) {
         prepared.parts.add(_partsFor(layer, pictures));
       }
-      await _probe(prepared);
     } on Object {
       prepared.dispose();
       rethrow;

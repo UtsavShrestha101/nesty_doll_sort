@@ -225,6 +225,7 @@
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+				3110F836A9895E71E3C53205 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -296,6 +297,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		3110F836A9895E71E3C53205 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -347,7 +365,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Fail when the Dart entry point or flavor doesn't match this configuration\n# (Xcode Archive / fastlane build_app after a flutter run of another flavor).\n# FLUTTER_TARGET and FLAVOR come from Flutter/Generated.xcconfig; see\n# docs/PROGRESS.md D8.\nif [ -n \"$NESTY_FLAVOR\" ]; then\n  case \"$FLUTTER_TARGET\" in\n    main_${NESTY_FLAVOR}.dart|*/main_${NESTY_FLAVOR}.dart) ;;\n    *) echo \"error: FLUTTER_TARGET=$FLUTTER_TARGET does not match the ${NESTY_FLAVOR} configuration. Build with: flutter build ipa --flavor ${NESTY_FLAVOR} -t lib/main_${NESTY_FLAVOR}.dart\" >&2; exit 1;;\n  esac\n  if [ \"$FLAVOR\" != \"$NESTY_FLAVOR\" ]; then\n    echo \"error: Generated.xcconfig FLAVOR=$FLAVOR does not match the ${NESTY_FLAVOR} configuration. Re-run flutter build with --flavor ${NESTY_FLAVOR} -t lib/main_${NESTY_FLAVOR}.dart\" >&2\n    exit 1\n  fi\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
+			shellScript = "# Fail when the Dart entry point or flavor doesn't match this configuration\n# (Xcode Archive / fastlane build_app after a flutter run of another flavor).\n# FLUTTER_TARGET and FLAVOR come from Flutter/Generated.xcconfig; see\n# docs/PROGRESS.md D8.\nif [ -n \"$NESTY_FLAVOR\" ]; then\n  case \"$FLUTTER_TARGET\" in\n    main_${NESTY_FLAVOR}.dart|*/main_${NESTY_FLAVOR}.dart) ;;\n    # On-device tests (flutter drive / flutter test integration_test/),\n    # debug builds only, so an Archive can never ship a test entry point.\n    integration_test/*.dart|*/integration_test/*.dart)\n      case \"$CONFIGURATION\" in\n        Debug-*) ;;\n        *) echo \"error: FLUTTER_TARGET=$FLUTTER_TARGET is a test entry point; only Debug-${NESTY_FLAVOR} may build it. Build with: flutter build ipa --flavor ${NESTY_FLAVOR} -t lib/main_${NESTY_FLAVOR}.dart\" >&2; exit 1;;\n      esac;;\n    *) echo \"error: FLUTTER_TARGET=$FLUTTER_TARGET does not match the ${NESTY_FLAVOR} configuration. Build with: flutter build ipa --flavor ${NESTY_FLAVOR} -t lib/main_${NESTY_FLAVOR}.dart\" >&2; exit 1;;\n  esac\n  if [ \"$FLAVOR\" != \"$NESTY_FLAVOR\" ]; then\n    echo \"error: Generated.xcconfig FLAVOR=$FLAVOR does not match the ${NESTY_FLAVOR} configuration. Re-run flutter build with --flavor ${NESTY_FLAVOR} -t lib/main_${NESTY_FLAVOR}.dart\" >&2\n    exit 1\n  fi\nfi\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 		CCEF85CE02B206647AA36E53 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

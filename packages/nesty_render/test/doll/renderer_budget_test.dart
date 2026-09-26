@@ -97,4 +97,105 @@ void main() {
     four.dispose();
     six.dispose();
   });
+
+  // docs/plans/m2-lottie-design.md §4 "Budget": the game's doll art is the
+  // part rasters alone (the SVG layer sets above stay for the admin and the
+  // goldens). At 150 dp × DPR 3 a part is 300×450 = 0.54 MB; five colours
+  // plus the silhouette ≈ 5.9 MB, gold adds 1.1.
+  test('classic part rasters at DPR 3 fit the Lottie budget', () async {
+    final rasterizer = SkinRasterizer(await loadClassic());
+    final atlas = await loadSymbols();
+    final parts = DollPartRasters();
+    addTearDown(() {
+      parts.dispose();
+      atlas.dispose();
+      rasterizer.dispose();
+    });
+    await rasterizer.ensureReady();
+
+    final px = DollPartRasters.artHeightPxFor(
+      tallestDollHeight: 150,
+      devicePixelRatio: 3,
+    );
+    const five = [
+      DollColor.red,
+      DollColor.blue,
+      DollColor.green,
+      DollColor.yellow,
+      DollColor.purple,
+    ];
+    final watch = Stopwatch()..start();
+    final set = await parts.prepare(
+      skin: rasterizer,
+      colors: five,
+      symbols: DollSymbols.subtle,
+      artHeightPx: px,
+      symbolAtlas: atlas,
+    );
+    final prepareMs = watch.elapsedMilliseconds;
+    watch.reset();
+    final withGold = await parts.prepare(
+      skin: rasterizer,
+      colors: [...five, DollColor.gold],
+      symbols: DollSymbols.subtle,
+      artHeightPx: px,
+      symbolAtlas: atlas,
+    );
+    final goldMs = watch.elapsedMilliseconds; // 2 new images, 11 cache hits
+    // The typical M2 board: 117 dp tallest (maxSize 4) at DPR 3.
+    final typicalPx = DollPartRasters.artHeightPxFor(
+      tallestDollHeight: 117,
+      devicePixelRatio: 3,
+    );
+    final typical = await parts.prepare(
+      skin: rasterizer,
+      colors: five,
+      symbols: DollSymbols.subtle,
+      artHeightPx: typicalPx,
+      symbolAtlas: atlas,
+    );
+
+    // Rest-sprite cost on the UI thread: 60 dolls a frame, 3 heights.
+    final sprites = PartRasterDollRenderer(set.clone());
+    final params = DollPaintParams()
+      ..baseX = 100
+      ..baseY = 200;
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    watch.reset();
+    const frames = 200;
+    for (var f = 0; f < frames; f++) {
+      for (var d = 0; d < 60; d++) {
+        params
+          ..color = five[d % 5]
+          ..height = _maxSize6[3 + d % 3];
+        sprites.paint(canvas, params);
+      }
+    }
+    final paintUs = watch.elapsedMicroseconds / frames;
+    recorder.endRecording().dispose();
+    sprites.dispose();
+
+    // ignore: avoid_print
+    print(
+      'classic part rasters @DPR3: $px px, 5 colours + silhouette '
+      '${_mb(set.byteSize)} in ${prepareMs}ms; + gold '
+      '${_mb(withGold.byteSize)} (+${goldMs}ms); 117 dp ($typicalPx px) '
+      '${_mb(typical.byteSize)}; 60 rest sprites '
+      '${paintUs.toStringAsFixed(0)}µs/frame',
+    );
+    expect(px, 450);
+    expect(set.byteSize, 11 * 300 * 450 * 4); // 5.94 MB
+    expect(withGold.byteSize - set.byteSize, 2 * 300 * 450 * 4); // 1.08 MB
+    expect(typical.byteSize, lessThan(set.byteSize));
+    // The cache holds each image once, however many sets share it.
+    expect(
+      parts.byteSize,
+      withGold.byteSize + typical.byteSize,
+      reason: 'the gold set reuses the five colours and the silhouette',
+    );
+    for (final s in [set, withGold, typical]) {
+      s.dispose();
+    }
+  });
 }

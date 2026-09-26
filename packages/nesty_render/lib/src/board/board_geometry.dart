@@ -9,6 +9,10 @@ typedef _K = BoardLayoutConstants;
 /// Maps reference units (the 390×592 board frame, y 142…734 on the design
 /// screen) to logical px on the device: one uniform [scale] and an origin
 /// that centres the frame in the board area (render §1).
+///
+/// Every board Lottie is placed through it (docs/plans/m2-lottie-design.md
+/// §5, PROGRESS D46), so each authored distance scales with the board and
+/// the placement equals LOTTIE.md's on the 390×844 reference screen.
 final class BoardFit {
   BoardFit({required this.scale, required this.originX, required this.originY})
     : frame = Rect.fromLTWH(
@@ -16,7 +20,8 @@ final class BoardFit {
         originY,
         _K.referenceWidth * scale,
         _K.frameHeight * scale,
-      );
+      ),
+      boardSpaceOrigin = Offset(originX, originY - _K.frameTop * scale);
 
   /// Logical px per reference px. 1 on the 390×844 reference screen.
   final double scale;
@@ -30,11 +35,33 @@ final class BoardFit {
   /// The 390×592 reference frame on the device.
   final Rect frame;
 
+  /// Where the 390×844 reference screen's top-left lands: `(originX,
+  /// originY − 142·s)`. A board-space Lottie (`doll_move`, `doll_complete`,
+  /// `doll_invalid`, `ui_drag_hand`) is translated here and scaled by
+  /// [scale], so its canvas is exactly the reference screen (§5).
+  final Offset boardSpaceOrigin;
+
   double x(double referenceX) => originX + referenceX * scale;
 
   double y(double referenceY) => originY + (referenceY - _K.frameTop) * scale;
 
   double length(double reference) => reference * scale;
+
+  /// The inverse of [x]: the reference x of logical [x].
+  double referenceX(double x) => (x - originX) / scale;
+
+  /// The inverse of [y]: the reference y of logical [y].
+  double referenceY(double y) => (y - originY) / scale + _K.frameTop;
+
+  /// The inverse of [length].
+  double referenceLength(double length) => length / scale;
+
+  /// A logical point in reference units: the board-space files' travel
+  /// remap takes `src` and `dst` this way (§5, §6). Allocates the
+  /// [Offset]: call it per event, not per frame ([referenceX] and
+  /// [referenceY] don't allocate).
+  Offset toReference(double x, double y) =>
+      Offset(referenceX(x), referenceY(y));
 }
 
 /// Everything a painter or hit test needs for one slot, in logical px.
@@ -154,6 +181,14 @@ final class SlotGeometry {
         centerX + hitHalfWidth,
         hitBottom,
       ),
+      glassCompositionOrigin: Offset(
+        centerX - glassCompositionAnchor.dx * fit.scale * q,
+        fit.y(lockedBaseRef) - glassCompositionAnchor.dy * fit.scale * q,
+      ),
+      iceCompositionOrigin: Offset(
+        centerX - iceCompositionAnchor.dx * fit.scale * q,
+        fit.y(surfaceRef) - iceCompositionAnchor.dy * fit.scale * q,
+      ),
       towerRaise: fit.length(_K.towerDepthRaise * q),
       // Room above the tallest doll for its tower's silhouettes before they
       // reach the HUD over the board frame (review RENDER-4).
@@ -189,6 +224,8 @@ final class SlotGeometry {
     required this.iceRect,
     required this.iceBadgeRect,
     required this.hitRect,
+    required this.glassCompositionOrigin,
+    required this.iceCompositionOrigin,
     required double towerRaise,
     required double buriedHeadroom,
     required List<double> dollHeights,
@@ -277,6 +314,29 @@ final class SlotGeometry {
   /// least 48×48 (spec §10.3).
   final Rect hitRect;
 
+  /// `fx_glass_unlock`'s doll base in its 180×240 canvas (LOTTIE.md
+  /// "Files"). Its case's top-left is at (47, 40).
+  static const glassCompositionAnchor = Offset(90, 163);
+
+  /// `fx_ice`'s doll base in its 180×240 canvas (LOTTIE.md "Files"). Its
+  /// ice's top-left is at (42, 40).
+  static const iceCompositionAnchor = Offset(90, 170.8);
+
+  /// Top-left of this slot's paused `fx_glass_unlock` composition, drawn at
+  /// [furnitureScale] (m2-lottie-design §8): its doll base
+  /// ([glassCompositionAnchor]) on ([centerX], [lockedDollBaseY]), which
+  /// puts its case on [glassCaseRect] (`glassCaseRect.topLeft − (47, 40)·fs`).
+  final Offset glassCompositionOrigin;
+
+  /// Top-left of this slot's paused `fx_ice` composition, drawn at
+  /// [furnitureScale] (m2-lottie-design §8): its doll base
+  /// ([iceCompositionAnchor]) on ([centerX], [surfaceY]), which puts its
+  /// ice on [iceRect] (`iceRect.topLeft − (42, 40)·fs`) on an open stand.
+  // TODO(design): an iced tower has no frame. Its stand is 5·q taller, so
+  // the composition, anchored on the doll, draws its ice 5·fs above the
+  // static `iceRect` fallback, which stays on the stand's bottom.
+  final Offset iceCompositionOrigin;
+
   final double _towerRaise;
 
   final double _buriedHeadroom;
@@ -287,6 +347,31 @@ final class SlotGeometry {
   /// slot, else on the stand surface.
   double get restingBaseY =>
       shape.kind == SlotShapeKind.locked ? lockedDollBaseY : surfaceY;
+
+  /// Where a locked slot's doll rests once its case has shattered: the stand
+  /// surface, [unlockSettle] below the case floor. `fx_glass_unlock` ends on
+  /// it through the hand-coded settle (m2-lottie-design §9.2). For other
+  /// slots it is [restingBaseY].
+  double get unlockedDollBaseY => surfaceY;
+
+  /// How far the freed doll drops from the case floor to the stand: 11 dp
+  /// at furniture scale 1 (the case floor is `surface − 134 + 123`).
+  double get unlockSettle => surfaceY - lockedDollBaseY;
+
+  /// Centre y of [standRect]: where `ui_extra_slot` pulses (anchor (55, 25)
+  /// on the stand centre).
+  double get standCenterY => standRect.top + standRect.height / 2;
+
+  /// Centre y of [glowRingRect], `surface − 2·fs`: where `fx_select_glow`'s
+  /// anchor (70, 40) goes, at [centerX].
+  double get glowCenterY => glowRingRect.top + glowRingRect.height / 2;
+
+  /// Centre y of [hintArrowRect] for a resting doll of [size],
+  /// `dollTop − 33·fs`: where `ui_hint_arrow`'s anchor (30, 45) goes, at
+  /// [centerX]. Allocation-free.
+  double hintArrowCenterY(int size) =>
+      dollTopY(size) +
+      (_K.hintArrowOffsetY + _K.hintArrowHeight / 2) * furnitureScale;
 
   /// Centre x of pip [position], 0 = leftmost = the biggest size
   /// (tokens.json `layout.pip.order`, NestyBoard:164).
@@ -417,9 +502,11 @@ final class BoardGeometry {
     required this.familyCounterTarget,
   }) : shelves = List.unmodifiable(shelves),
        dollHeights = List.unmodifiable(dollHeights),
-       slots = List.unmodifiable([
-         for (final shelf in shelves) ...shelf.slots,
-       ]) {
+       slots = List.unmodifiable([for (final shelf in shelves) ...shelf.slots]),
+       familyCounterTargetReference = fit.toReference(
+         familyCounterTarget.dx,
+         familyCounterTarget.dy,
+       ) {
     for (final slot in slots) {
       _byId[slot.id] = slot;
     }
@@ -455,6 +542,21 @@ final class BoardGeometry {
 
   /// Where a completed set flies to (render §1: `(W/2, padding.top + 70)`).
   final Offset familyCounterTarget;
+
+  /// [familyCounterTarget] in reference units: (195, 129) on the 390×844
+  /// reference screen, and `doll_complete`'s travel `dst` before its
+  /// `+ (0, 0.1 × doll height)` (m2-lottie-design §5, §6).
+  ///
+  /// Vertical centring slack moves it up by `slack / (2s)`; see
+  /// [familyCounterInBoardSpace].
+  final Offset familyCounterTargetReference;
+
+  /// Whether [familyCounterTargetReference] is inside the board-space
+  /// canvas (reference y > 0), which holds while the board area's vertical
+  /// slack is below `2·(142·s − 13)`: on every phone the layout supports.
+  /// A board-space clip past it would be cut at the canvas top, so the
+  /// timeline asserts it in debug (m2-lottie-design §5).
+  bool get familyCounterInBoardSpace => familyCounterTargetReference.dy > 0;
 
   final Map<String, SlotGeometry> _byId = {};
 

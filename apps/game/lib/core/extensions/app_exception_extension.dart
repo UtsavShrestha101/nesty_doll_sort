@@ -6,8 +6,9 @@ extension AppExceptionL10n on AppException {
   /// [AppExceptionKind], so adding a kind forces a decision here.
   /// [AppException.message] is for logs and is never shown.
   ///
-  /// TODO(M2): split `storage` and `content` (bundled levels failed to load)
-  /// into their own keys once those screens exist.
+  /// TODO(design): split `storage` and `content` (bundled levels failed to
+  /// load) into their own keys once a load-failure screen is designed; no
+  /// frame shows one (moved from M2, BACKLOG "Design gaps").
   String localizedMessage(AppLocalizations l10n) => switch (kind) {
     AppExceptionKind.storage ||
     AppExceptionKind.content ||

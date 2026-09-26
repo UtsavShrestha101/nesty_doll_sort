@@ -20,8 +20,8 @@ enum SoundEffect {
 /// Audio (spec §11.3). Implementations respect the sound/music settings and
 /// never throw: a missing or failing file is silence, not a crash.
 ///
-/// TODO(M2): a real flutter_soloud implementation (spec §11.3, PROGRESS D19)
-/// with per-size clack pitch and the combo chime steps.
+/// The real implementation is `SoLoudAudioService` (flutter_soloud; the
+/// mix rules are `SfxMix`); tests and the fake env use `FakeAudioService`.
 /// TODO(M3): separate SFX/music volumes and the two music loops.
 abstract interface class AudioService {
   /// Loads SFX into memory so the first play has no latency.
@@ -29,5 +29,14 @@ abstract interface class AudioService {
 
   /// Plays a one-shot effect. Deliberately synchronous: gameplay fires these
   /// on every move and must not await them.
-  void play(SoundEffect effect);
+  ///
+  /// [dollSize] (1–6) sets the [SoundEffect.clack] pitch: the merged nest's
+  /// outer size, `NestedInto.merged` (tokens.json `sound.clackPitch`).
+  /// [comboStep] (1–5) picks `complete_{comboStep}` for
+  /// [SoundEffect.complete]. Both are ignored by the other effects; a
+  /// missing one plays size 3 / step 1.
+  void play(SoundEffect effect, {int? dollSize, int? comboStep});
+
+  /// Stops the engine and frees the sounds (DI reset); unusable afterwards.
+  Future<void> dispose();
 }

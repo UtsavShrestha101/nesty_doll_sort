@@ -22,6 +22,11 @@ import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 /// skin fails to load. Everything is built in the constructor; painting
 /// allocates nothing (CLAUDE.md rule 8).
 ///
+/// In the game it also draws the rule-3 part rasters
+/// (`DollPartRasters.preparePlaceholder`): its closed doll cut on the lid
+/// split row, for the Lottie image slots and the rest sprites alike when
+/// the skin fails (docs/plans/m2-lottie-design.md §4).
+///
 /// Symbols come from [symbols] once [prepare] has obtained a page; without
 /// an atlas (widget tests, the fake DI env) the doll is drawn without one.
 final class PlaceholderDollPainter implements DollRenderer {

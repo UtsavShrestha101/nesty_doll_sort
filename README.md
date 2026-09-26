@@ -15,9 +15,12 @@ The pre-M1 architecture skeleton (M0) is done: workspace, base cubits, DI,
 Hive, routing, flavors, l10n, fake services, CI. The design handoff is in
 `design/`, and its tokens, art, sound and fonts are wired into the build by
 the `nesty_tools` pipelines. M1 (core rules, solver, simulator, generator)
-is done; M2 (playable game) is in progress, with its rendering foundation and
-30 authored levels built. Milestones, decisions and open questions are tracked in
-[docs/PROGRESS.md](docs/PROGRESS.md), and every remaining item in
+is done. M2 (playable game) is code complete: levels 1–30 play end to end on
+the design's art and Lottie animations, and every automated check passes,
+including an on-device playthrough. Its acceptance, 60 fps on a mid-range
+Android device, is the owner's check on a real phone; the steps are in
+[docs/PROGRESS.md](docs/PROGRESS.md) under "M2 acceptance". Milestones,
+decisions and open questions are tracked there, and every remaining item in
 [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Repository layout
@@ -178,6 +181,27 @@ cd apps/game             && flutter test      # cubit + widget tests on fake ser
 cd apps/admin            && flutter test
 cd tools                 && dart test         # nesty_tools
 ```
+
+The on-device playthrough (the dev flavor with every real service: levels 1
+and 2 to the win overlay, level 16 into Out of Moves, Pause, Home) needs a
+booted simulator or emulator. It saves its screenshots through the driver,
+into `$NESTY_SCREENSHOT_DIR` or `apps/game/build/integration_test/screenshots/`:
+
+```bash
+cd apps/game && flutter drive --flavor dev --driver test_driver/integration_test.dart \
+  --target integration_test/playthrough_test.dart -d <device-id>
+```
+
+The 60 fps check (M2's acceptance) runs a profile build on a physical phone:
+`cd apps/game && flutter run --profile --flavor dev -t lib/main_dev.dart -d
+<device-id>`, then DevTools' Performance view. The flows to play and the pass
+bar are in [docs/PROGRESS.md](docs/PROGRESS.md) under "M2 acceptance".
+
+**Troubleshooting.** If an iOS build fails with "NativeAssetsManifest.json
+references objective_c, which was not found", `apps/game/build/` was deleted
+without `apps/game/.dart_tool/flutter_build/`, whose stamps still say the
+native assets are built. Run `flutter clean` in `apps/game` (or delete that
+folder too) and build again.
 
 CI (`.github/workflows/ci.yaml`) runs on Flutter 3.41.2, and every job starts
 with `flutter pub get --enforce-lockfile`. It has three jobs:

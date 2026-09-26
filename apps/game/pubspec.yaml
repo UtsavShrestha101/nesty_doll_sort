@@ -25,6 +25,7 @@ dependencies:
   injectable: ^3.0.0
   intl: any
   json_annotation: ^4.12.0
+  lottie: 3.6.1
   nesty_core:
     path: ../../packages/nesty_core
   nesty_render:
@@ -32,6 +33,12 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  # The on-device playthrough (integration_test/) and its `flutter drive`
+  # driver, which saves the screenshots on the host (PROGRESS rule-9 table).
+  integration_test:
+    sdk: flutter
+  flutter_driver:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.15.1
@@ -74,6 +81,11 @@ flutter:
     # `dart run nesty_tools:nesty_levels bundle build` from tools/levels/
     # (never by hand); CI's `bundle check` fails if it is stale.
     - assets/levels/
+    # Every animation (PROGRESS D40): the 29 design/lottie/*.json, copied
+    # byte for byte and validated by `sync_design_assets` (never the
+    # placeholder images/, D50). Loaded once by FxLibrary with
+    # LottieComposition.fromBytes; their specs are fx_spec.gen.dart.
+    - assets/lottie/
     # Font licences, shown on the licence page (registered in bootstrap.dart).
     - assets/fonts/Fredoka-OFL.txt
     - assets/fonts/Nunito-OFL.txt

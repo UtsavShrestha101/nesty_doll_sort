@@ -1,48 +1,55 @@
 import 'dart:async';
 
-import 'package:flame/game.dart';
 import 'package:nesty_game/core/common_imports.dart';
-import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
-import 'package:nesty_game/features/gameplay/widgets/booster_bar.dart';
-import 'package:nesty_game/features/gameplay/widgets/gameplay_top_bar.dart';
+import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/audio/audio_service.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/core/services/skin/skin_service.dart';
+import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
+import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
+import 'package:nesty_game/features/gameplay/pages/gameplay_services.dart';
+import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 
-/// Spec §10.2 #3: top bar, centered board, booster bar.
+/// The gameplay route (spec §10.2 #3): level [levelNumber] in play order.
 ///
-/// TODO(M2): a gameplay controller (cubit or `BaseAsyncBloc`) that owns the
-/// nesty_core `GameSession` for [levelNumber]; the Flame game only renders
-/// it. Win / Out of Moves / soft-stuck overlays (spec §2.3, §10.2).
+/// Its boundary creates the level's [GameplayBloc] (which loads the level
+/// at once) and resolves the services the screen reads; [GameplayView] is
+/// the screen.
 @RoutePage()
-class GameplayPage extends StatefulWidget {
+class GameplayPage extends StatelessWidget implements AutoRouteWrapper {
   const GameplayPage({required this.levelNumber, super.key});
 
   /// 1-based global play order (spec §7.1).
   final int levelNumber;
 
   @override
-  State<GameplayPage> createState() => _GameplayPageState();
-}
-
-class _GameplayPageState extends State<GameplayPage> {
-  // Created once per page, never in build(), so rebuilds don't recreate the
-  // game (and its loaded components).
-  final NestyGame _game = NestyGame();
+  Widget wrappedRoute(BuildContext context) => RepositoryProvider(
+    create: (_) => GameplayServices(
+      skins: get<SkinService>(),
+      levels: get<LevelRepository>(),
+      database: get<DatabaseService>(),
+      fx: get<FxLibrary>(),
+      feedback: ServiceFeedbackSink(
+        audio: get<AudioService>(),
+        haptics: get<HapticsService>(),
+      ),
+    ),
+    child: BlocProvider(
+      create: (_) => get<GameplayBloc>()..add(GameplayStarted(levelNumber)),
+      child: this,
+    ),
+  );
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            GameplayTopBar(
-              levelNumber: widget.levelNumber,
-              // TODO(M2): open the pause menu (spec §10.2 #14, frame 3.9).
-              onPause: () => unawaited(context.router.maybePop()),
-            ),
-            Expanded(child: GameWidget<NestyGame>(game: _game)),
-            const BoosterBar(),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => GameplayView(
+    levelNumber: levelNumber,
+    services: context.read<GameplayServices>(),
+    // Home is under the level (Home → Play); navigate pops back to it, or
+    // opens it if the level was reached some other way.
+    onHome: () => unawaited(context.router.navigate(const HomeRoute())),
+  );
 }

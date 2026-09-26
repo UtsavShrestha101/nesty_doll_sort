@@ -11,6 +11,18 @@
     "description": "Accessibility label for the splash loading bar (spec §10.2 #1)."
   },
 
+  "progressPercent": "{value}",
+  "@progressPercent": {
+    "description": "Screen-reader value of a progress bar (the splash loader, frame 1.1, and the win card's chapter bar, frame 2.8; spec §16): the progress as a percentage in the locale's format (42%, %42, 42 %). {value} runs from 0 to 1.",
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "format": "percentPattern",
+        "example": "0.42"
+      }
+    }
+  },
+
   "genericLoadFailed": "Something went wrong.",
   "@genericLoadFailed": {
     "description": "Shown when local data (save file, bundled levels) fails to load."
@@ -55,5 +67,515 @@
   "restart": "Restart",
   "@restart": {
     "description": "Restart the current level (spec §2.4). Always free."
+  },
+
+  "splashDollSort": "DOLL SORT",
+  "@splashDollSort": {
+    "description": "The orange chip under the wordmark on the splash screen (frame 1.1, spec §10.2 #1). Keep it short and uppercase; it has +0.12 em letter spacing."
+  },
+
+  "splashCaption": "Dusting the shelves…",
+  "@splashCaption": {
+    "description": "Caption under the splash loading bar while the save, levels and art load (frame 1.1, spec §10.2 #1)."
+  },
+
+  "homePlay": "PLAY",
+  "@homePlay": {
+    "description": "Small caption above \"Level N\" on the Home play button (frame 2.1, spec §10.2 #2). Uppercase, +0.14 em letter spacing."
+  },
+
+  "homeAllLevelsDone": "All done!",
+  "@homeAllLevelsDone": {
+    "description": "Big line of the Home play button, in place of \"Level N\", once every bundled level is won; the button then opens All Levels Done (frame 4.9, spec §7.1, §10.2 #15). No frame shows this state; M3's Bonus Endless replaces it with the bonus level. Keep it short: it is set at 36 pt."
+  },
+
+  "playSemantics": "Play level {level}",
+  "@playSemantics": {
+    "description": "Screen-reader label of the Home play button for an easy or medium level (frame 2.1, spec §10.2 #2).",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "56"
+      }
+    }
+  },
+
+  "playLevelSemantics": "Play level {level}, {tier}",
+  "@playLevelSemantics": {
+    "description": "Screen-reader label of the Home play button for a hard or super hard level (frame 2.1, spec §6.6). {tier} is tierName.",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "56"
+      },
+      "tier": {
+        "type": "String",
+        "example": "Hard"
+      }
+    }
+  },
+
+  "coinPillShopSemantics": "{count, plural, =1{1 coin. Get more coins} other{{count} coins. Get more coins}}",
+  "@coinPillShopSemantics": {
+    "description": "Screen-reader label of the Home coin pill, whose green plus opens the Shop (frame 2.1, spec §10.2 #2).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "830"
+      }
+    }
+  },
+
+  "tierHard": "HARD",
+  "@tierHard": {
+    "description": "Red tier badge on the level pill and the Home play button for hard levels (spec §6.6, frames 2.1, 2.2). Keep it very short and uppercase."
+  },
+
+  "tierSuperHard": "SUPER HARD",
+  "@tierSuperHard": {
+    "description": "Purple tier badge on the level pill for super hard levels (spec §6.6, frame 4.4). Keep it very short and uppercase; the chip is tiny."
+  },
+
+  "tierName": "{tier, select, easy{Easy} medium{Medium} hard{Hard} superhard{Super Hard} other{}}",
+  "@tierName": {
+    "description": "A level tier's name in running text, e.g. the Pause card's \"Level 56 · Hard\" (spec §6.6, frame 3.9). {tier} is the nesty_core Tier id.",
+    "placeholders": {
+      "tier": {
+        "type": "String",
+        "example": "hard"
+      }
+    }
+  },
+
+  "levelWithTier": "Level {level} · {tier}",
+  "@levelWithTier": {
+    "description": "The Pause card's subtitle and the level pill's screen-reader label (frame 3.9, spec §6.6). {tier} is tierName.",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "56"
+      },
+      "tier": {
+        "type": "String",
+        "example": "Hard"
+      }
+    }
+  },
+
+  "familyCounter": "{done} / {total}",
+  "@familyCounter": {
+    "description": "The family counter under the level pill: families completed of the level's total, drawn over the ui_family_counter animation (frame 2.2, spec §10.2 #3, §11.1). Keep the digits and slash.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "4"
+      }
+    }
+  },
+
+  "familyCounterSemantics": "{total, plural, =1{{done} of 1 family done} other{{done} of {total} families done}}",
+  "@familyCounterSemantics": {
+    "description": "Screen-reader label of the family counter (frame 2.2, spec §10.2 #3).",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "4"
+      }
+    }
+  },
+
+  "coinsSemantics": "{count, plural, =1{1 coin} other{{count} coins}}",
+  "@coinsSemantics": {
+    "description": "Screen-reader label of the HUD coin pill (frame 2.2, spec §7).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "830"
+      }
+    }
+  },
+
+  "levelDaily": "Daily",
+  "@levelDaily": {
+    "description": "The daily puzzle's level pill, next to a date chip (frame 5.3, spec §7.4). Stub until the daily puzzle ships."
+  },
+
+  "levelDailySemantics": "Daily puzzle, {date}",
+  "@levelDailySemantics": {
+    "description": "Screen-reader label of the daily puzzle's level pill (frame 5.3, spec §7.4). {date} is the short date shown on the chip.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sep 26"
+      }
+    }
+  },
+
+  "bonusLevelTitle": "Bonus Level {number}",
+  "@bonusLevelTitle": {
+    "description": "The level pill on a device-generated Bonus Endless level (frame 4.10, spec §7.1). Stub until bonus levels ship.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "closeSemantics": "Close",
+  "@closeSemantics": {
+    "description": "Screen-reader label of the round close button on cards and popups (frames 3.2, 3.9)."
+  },
+
+  "backSemantics": "Back",
+  "@backSemantics": {
+    "description": "Screen-reader label of the back arrow in screen headers (spec §10.2)."
+  },
+
+  "boosterCountSemantics": "{count, plural, =1{{booster}, 1 left} other{{booster}, {count} left}}",
+  "@boosterCountSemantics": {
+    "description": "Screen-reader label of a booster button whose badge shows how many are left (frame 2.2, spec §8). {booster} is its label (Undo, Hint, +Slot).",
+    "placeholders": {
+      "booster": {
+        "type": "String",
+        "example": "Hint"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "boosterAdSemantics": "{booster}, watch an ad for one more",
+  "@boosterAdSemantics": {
+    "description": "Screen-reader label of a booster with none left whose badge offers a rewarded ad (frame 3.2, spec §8, §9.1).",
+    "placeholders": {
+      "booster": {
+        "type": "String",
+        "example": "Hint"
+      }
+    }
+  },
+
+  "boosterCoinSemantics": "{price, plural, =1{{booster}, 1 coin} other{{booster}, {price} coins}}",
+  "@boosterCoinSemantics": {
+    "description": "Screen-reader label of a booster with none left whose badge shows its coin price (frame 3.3, spec §8).",
+    "placeholders": {
+      "booster": {
+        "type": "String",
+        "example": "Undo"
+      },
+      "price": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "20"
+      }
+    }
+  },
+
+  "softStuckTitle": "Hmm, this looks stuck",
+  "@softStuckTitle": {
+    "description": "Title of the banner shown when legal moves remain but the solver finds no win (frame 3.4, spec §2.4)."
+  },
+
+  "softStuckBody": "Try Undo? You can keep playing too.",
+  "@softStuckBody": {
+    "description": "Second line of the soft-stuck banner (frame 3.4, spec §2.4)."
+  },
+
+  "softStuckBodyRestart": "Try Restart? You can keep playing too.",
+  "@softStuckBodyRestart": {
+    "description": "Second line of the soft-stuck banner when nothing can be undone (a completed family cleared the undo history, or the free undos are used up); its button restarts the level, which is always free (frame 3.4's banner, spec §2.3, §2.4). No frame shows this state."
+  },
+
+  "softStuckAction": "Undo",
+  "@softStuckAction": {
+    "description": "The soft-stuck banner's button, which undoes the last move (frame 3.4, spec §8)."
+  },
+
+  "oomTitle": "No moves left!",
+  "@oomTitle": {
+    "description": "Title of the out-of-moves sheet (frame 3.5, spec §2.4, §10.2 #5)."
+  },
+
+  "oomSubtitle": "Pick a way to keep sorting.",
+  "@oomSubtitle": {
+    "description": "Subtitle of the out-of-moves sheet (frame 3.5)."
+  },
+
+  "oomUndoSubtitle": "Take back your last move",
+  "@oomUndoSubtitle": {
+    "description": "Undo row subtitle in the out-of-moves sheet (frame 3.5, spec §8)."
+  },
+
+  "oomUndoFree": "{count, plural, =1{Free · 1 left} other{Free · {count} left}}",
+  "@oomUndoFree": {
+    "description": "Tag on the Undo row while free undos remain this level (frame 3.5, spec §8).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "oomSlotTitle": "+1 Slot",
+  "@oomSlotTitle": {
+    "description": "Extra-slot row title in the out-of-moves sheet (frame 3.5, spec §3.6, §8)."
+  },
+
+  "oomSlotSubtitle": "Add a stand for this level",
+  "@oomSlotSubtitle": {
+    "description": "Extra-slot row subtitle when an ad or coins can pay for it (frame 3.5, spec §3.6)."
+  },
+
+  "oomSlotOffline": "Coins only while offline",
+  "@oomSlotOffline": {
+    "description": "Extra-slot row subtitle when offline, so only the coin price is offered (frame 3.7, spec §9.1)."
+  },
+
+  "oomRestartSubtitle": "Start this level fresh, for free",
+  "@oomRestartSubtitle": {
+    "description": "Restart row subtitle in the out-of-moves sheet (frame 3.5, spec §2.4)."
+  },
+
+  "coinPrice": "{count, plural, =1{1 coin} other{{count} coins}}",
+  "@coinPrice": {
+    "description": "Label of a coin price button, e.g. buying one more hint (frames 3.2, 3.3, spec §8).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "60"
+      }
+    }
+  },
+
+  "watchAd": "Watch ad",
+  "@watchAd": {
+    "description": "Label of a rewarded-ad button that grants a booster (frames 3.2, 3.3, spec §9.1)."
+  },
+
+  "watchAdSemantics": "Watch an ad",
+  "@watchAdSemantics": {
+    "description": "Screen-reader label of the small ▶-only rewarded-ad button (frame 3.5, spec §9.1)."
+  },
+
+  "offlineTitle": "Offline",
+  "@offlineTitle": {
+    "description": "Title of the offline banner (frame 3.7, spec §9.1, rule 3)."
+  },
+
+  "offlineAds": "Ad buttons switch to coin prices",
+  "@offlineAds": {
+    "description": "Second line of the offline banner over the out-of-moves sheet (frame 3.7, spec §9.1)."
+  },
+
+  "connectToWatchAd": "Connect to watch an ad",
+  "@connectToWatchAd": {
+    "description": "Red note under a disabled coin button when the player can't afford it and is offline (frame 3.8, spec §9.1)."
+  },
+
+  "winTitle": "Level Complete!",
+  "@winTitle": {
+    "description": "The win ribbon, drawn over the ui_win_ribbon animation (frame 2.8, spec §10.2 #4). The band fits about 22 characters; longer text shrinks."
+  },
+
+  "winContinue": "Continue",
+  "@winContinue": {
+    "description": "The win screen's main button, to the next level (frame 2.8, spec §10.2 #4)."
+  },
+
+  "winTripleCoins": "×3 coins",
+  "@winTripleCoins": {
+    "description": "Rewarded-ad button on the win screen that triples the level's coins (frame 2.8, spec §9.1). Hidden until ads ship (M6) and offline."
+  },
+
+  "winRewardAdded": "Reward added",
+  "@winRewardAdded": {
+    "description": "The ×3 button after its ad was watched (frame 2.9, spec §9.1)."
+  },
+
+  "winCoins": "+{count}",
+  "@winCoins": {
+    "description": "The coins won, counting up in the win screen's coin pill (frame 2.8, spec §7.3).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "25"
+      }
+    }
+  },
+
+  "winChapter": "Chapter {number}",
+  "@winChapter": {
+    "description": "The win screen's chapter card label (frame 2.8, spec §7.1, §7.2).",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+
+  "winChapterProgress": "{done} / {total}",
+  "@winChapterProgress": {
+    "description": "Levels done in this chapter on the win screen's chapter card (frame 2.8, spec §7.1).",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "16"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "20"
+      }
+    }
+  },
+
+  "winNextUp": "Next up: {name}",
+  "@winNextUp": {
+    "description": "The chapter card's line naming the figurine family this chapter unlocks (frame 2.8, spec §7.2). {name} is figurineName.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "The Baker Family"
+      }
+    }
+  },
+
+  "winChapterDone": "Chapter complete! Your prize is next.",
+  "@winChapterDone": {
+    "description": "The chapter card's line on the chapter's last level (frame 2.8 at 20 / 20, spec §7.2)."
+  },
+
+  "figurineName": "{figurine, select, classic{The Classic Family} sailor{The Sailor Family} baker{The Baker Family} other{}}",
+  "@figurineName": {
+    "description": "A museum figurine family's name (spec §7.2, frames 1.5, 2.8). {figurine} is the museum item id; ids without a design name are empty and their line is hidden.",
+    "placeholders": {
+      "figurine": {
+        "type": "String",
+        "example": "classic"
+      }
+    }
+  },
+
+  "chapterRibbon": "CHAPTER {number} · {name}",
+  "@chapterRibbon": {
+    "description": "The ribbon on a chapter's first level, drawn over the ui_chapter_ribbon animation, fading after about 2 s (frame 4.7, spec §7.1). {name} is chapterName. The band fits about 22 characters; longer text shrinks.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      },
+      "name": {
+        "type": "String",
+        "example": "Rainy Café Corner"
+      }
+    }
+  },
+
+  "chapterName": "{theme, select, ch01{Sunny Toy Shop} ch02{Rainy Café Corner} ch03{Seaside Market} ch04{Snowy Cabin} ch05{Night Carnival} ch06{Spring Garden Shed} other{}}",
+  "@chapterName": {
+    "description": "A chapter's name, which is its board theme's name (spec §7.1, §12.4; frames 4.6, 4.7, 7.7). {theme} is the theme id.",
+    "placeholders": {
+      "theme": {
+        "type": "String",
+        "example": "ch02"
+      }
+    }
+  },
+
+  "pauseTitle": "Paused",
+  "@pauseTitle": {
+    "description": "The pause card's ribbon title (frame 3.9, spec §10.2 #14)."
+  },
+
+  "resume": "Resume",
+  "@resume": {
+    "description": "Closes the pause card and returns to the level (frame 3.9, spec §10.2 #14)."
+  },
+
+  "home": "Home",
+  "@home": {
+    "description": "Pause card tile that leaves the level for Home (frame 3.9, spec §10.2 #14)."
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Pause card tile and Home gear that open Settings (frames 2.1, 3.9, spec §10.2 #13). Also the gear's screen-reader label."
+  },
+
+  "settingSound": "Sound",
+  "@settingSound": {
+    "description": "Sound effects toggle in Pause and Settings (frames 3.9, 8.1, spec §11.3)."
+  },
+
+  "settingMusic": "Music",
+  "@settingMusic": {
+    "description": "Music toggle in Pause and Settings (frames 3.9, 8.1, spec §11.3)."
+  },
+
+  "settingHaptics": "Haptics",
+  "@settingHaptics": {
+    "description": "Vibration toggle in Pause and Settings (frames 3.9, 8.1, spec §11.2)."
+  },
+
+  "allLevelsTitle": "You've finished all levels!",
+  "@allLevelsTitle": {
+    "description": "Title shown after the last published level (frame 4.9, spec §7.1, §10.2 #15)."
+  },
+
+  "allLevelsBody": "New chapters are coming — play bonus levels meanwhile.",
+  "@allLevelsBody": {
+    "description": "Body of the all-levels-done card (frame 4.9, spec §10.2 #15)."
+  },
+
+  "allLevelsPlayBonus": "Play Bonus Level {number}",
+  "@allLevelsPlayBonus": {
+    "description": "Teal button on the all-levels-done card that starts a generated bonus level (frame 4.9, spec §7.1).",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "allLevelsBackHome": "Back to Home",
+  "@allLevelsBackHome": {
+    "description": "Text button under the all-levels-done card (frame 4.9)."
+  },
+
+  "devLevelPickerTitle": "Jump to a level",
+  "@devLevelPickerTitle": {
+    "description": "Title of the dev-flavor level picker sheet (dev builds only; plan P4)."
   }
 }

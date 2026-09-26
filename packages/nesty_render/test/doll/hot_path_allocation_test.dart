@@ -6,10 +6,17 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _files = [
+// The DollRenderers: each must paint inside its hot path.
+const _renderers = [
   'lib/src/doll/svg_skin_renderer.dart',
   'lib/src/doll/placeholder_doll_painter.dart',
   'lib/src/doll/fallback_doll_renderer.dart',
+  // The game's rest sprites (m2-lottie-design §4, §14).
+  'lib/src/doll/part_raster_doll_renderer.dart',
+];
+
+const _files = [
+  ..._renderers,
   'lib/src/doll/doll_effects.dart',
   // Sprite lookups and draws run in the Flame board's render (render §1).
   'lib/src/board/board_sprites.dart',
@@ -114,7 +121,7 @@ void main() {
   });
 
   test('the renderers paint inside their hot path', () {
-    for (final path in _files.take(3)) {
+    for (final path in _renderers) {
       final source = File(path).readAsStringSync();
       final hot = RegExp(
         r'// ── Hot path:[^\n]*\n([\s\S]*?)// ── End of hot path\. ──',

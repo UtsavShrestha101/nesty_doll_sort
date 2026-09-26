@@ -249,6 +249,57 @@ void main() {
       }
     });
 
+    test(
+      'pixelScale and cropOrigin place the image as a Lottie slot',
+      () async {
+        // m2-lottie-design §3: an image layer authored at scale k = 1 and
+        // anchor a over the declared box, filled with this raster, is drawn
+        // at scale k / pixelScale and anchor (a − cropOrigin) × pixelScale.
+        // The result must be the sprite's own draw into the declared box.
+        const px = 2.5; // a fractional DPR × furniture scale
+        const a = ui.Offset(58, 26); // glow_ring's authored anchor
+        const position = ui.Offset(70, 40); // its layer position
+        for (final sprite in BoardSprite.values.where((s) => !s.tiles)) {
+          final image = await library.rasterize(sprite, px);
+          expect(image.cropOrigin, image.offset / image.pixelScale);
+          final box = sprite.designSize;
+          final width = ((position.dx - a.dx + box.width) * px).ceil();
+          final height = ((position.dy - a.dy + box.height) * px).ceil();
+          final lottie = await capture(width, height, (canvas) {
+            final anchor = (a - image.cropOrigin) * image.pixelScale;
+            canvas
+              ..scale(px)
+              ..translate(position.dx, position.dy)
+              ..scale(1 / image.pixelScale)
+              ..translate(-anchor.dx, -anchor.dy)
+              ..drawImageRect(
+                image.image,
+                ui.Offset.zero &
+                    ui.Size(
+                      image.image.width.toDouble(),
+                      image.image.height.toDouble(),
+                    ),
+                ui.Offset.zero &
+                    ui.Size(
+                      image.image.width.toDouble(),
+                      image.image.height.toDouble(),
+                    ),
+                ui.Paint()..filterQuality = ui.FilterQuality.low,
+              );
+          });
+          final sprited = await capture(width, height, (canvas) {
+            canvas.scale(px);
+            image.draw(canvas, (position - a) & box);
+          });
+          final diff = ImageDiff(await rgbaOf(lottie), await rgbaOf(sprited));
+          expect(diff.withinFraction, 1, reason: '$sprite $diff');
+          image.dispose();
+          lottie.dispose();
+          sprited.dispose();
+        }
+      },
+    );
+
     test('reports and skips a sprite that fails to parse', () async {
       final errors = <Object>[];
       final partial = await BoardSpriteLibrary.fromSvgs({

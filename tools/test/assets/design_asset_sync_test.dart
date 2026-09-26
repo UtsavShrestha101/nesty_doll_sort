@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:nesty_tools/src/assets/design_asset_sync.dart';
 import 'package:nesty_tools/src/file_writes.dart';
+import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/repo_root.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -31,6 +32,14 @@ String _skinJson(String id) =>
     '{"skinId":"$id","splitY":400,"lidLiftPx":120,'
     '"symbolAnchor":[256,590],"symbolSize":110,"version":1}';
 
+/// The scratch repo's one Lottie export: the owner's `fx_sparkle`, checked
+/// against its real contract entry.
+final _fakeLottieTable = [lottieContractOf('fx_sparkle')!];
+
+/// [planDesignAssetSync] for a [_fakeRepo].
+AssetSyncPlan _plan(Directory root) =>
+    planDesignAssetSync(root, lottieTable: _fakeLottieTable);
+
 /// A minimal repo with one of everything the sync copies.
 Directory _fakeRepo() {
   final root = Directory.systemTemp.createTempSync('nesty_sync_');
@@ -57,11 +66,20 @@ Directory _fakeRepo() {
     ...'WAVE'.codeUnits,
     1, 2, 3,
   ]);
+  write(
+    'design/lottie/fx_sparkle.json',
+    File(
+      p.join(findRepoRoot().path, 'design/lottie/fx_sparkle.json'),
+    ).readAsBytesSync(),
+  );
+  write('design/lottie/LOTTIE.md', '# Lottie');
+  write('design/lottie/images/glow_ring.png', [0x89, 0x50, 0x4e, 0x47]);
   write('design/tokens.json', '{"dollColor":{"red":{"symbol":"heart"}}}');
   write(
     'apps/game/pubspec.yaml',
     'flutter:\n  assets:\n'
         '    - assets/audio/\n    - assets/board/\n'
+        '    - assets/lottie/\n'
         '    - assets/skins/classic/\n    - assets/symbols/\n'
         '    - assets/themes/ch07/\n',
   );
@@ -84,19 +102,36 @@ void main() {
         counts[a.category] = (counts[a.category] ?? 0) + 1;
       }
       // 7 skins × (svg + json), 11 symbols, 17 board − 2 baked-pip stands,
-      // 6 chapter themes, 17 placeholder SFX.
+      // 6 chapter themes, 17 placeholder SFX, 29 Lottie files.
       expect(counts, {
         'skins': 14,
         'symbols': 11,
         'board': 15,
         'themes': 6,
         'audio': 17,
+        'lottie': 29,
       });
       final destinations = plan.assets.map((a) => a.destination);
       expect(destinations, contains('skins/forest-bear/skin.svg'));
       expect(destinations, contains('themes/ch06/background.svg'));
       expect(destinations, isNot(contains('board/slot-stand.svg')));
       expect(destinations, isNot(contains('board/tower-base.svg')));
+      expect(destinations, contains('lottie/doll_pick.json'));
+      expect(
+        destinations.where((d) => d.startsWith('lottie/')),
+        everyElement(endsWith('.json')),
+        reason: 'no placeholder PNG and no LOTTIE.md ships (D50)',
+      );
+    });
+
+    test('ships the Lottie exports byte for byte', () {
+      for (final a in plan.assets.where((a) => a.category == 'lottie')) {
+        expect(
+          a.bytes,
+          File(p.join(root.path, a.source)).readAsBytesSync(),
+          reason: a.destination,
+        );
+      }
     });
 
     test('strips every C2PA block', () {
@@ -127,11 +162,12 @@ void main() {
   group('sync behaviour', () {
     test('writes sanitized copies, then is a no-op', () {
       final root = _fakeRepo();
-      final plan = planDesignAssetSync(root);
+      final plan = _plan(root);
       expect(plan.issues, isEmpty);
       expect(plan.assetDirectories, [
         'assets/audio/',
         'assets/board/',
+        'assets/lottie/',
         'assets/skins/classic/',
         'assets/symbols/',
         'assets/themes/ch07/',
@@ -151,41 +187,33 @@ void main() {
         isTrue,
       );
 
-      final second = applyAssetSyncPlan(planDesignAssetSync(root), root);
+      final second = applyAssetSyncPlan(_plan(root), root);
       expect(second.outcomes.values.toSet(), {WriteOutcome.unchanged});
       expect(second.hasDrift, isFalse);
     });
 
     test('removes files the design no longer has (dry run only reports)', () {
       final root = _fakeRepo();
-      applyAssetSyncPlan(planDesignAssetSync(root), root);
+      applyAssetSyncPlan(_plan(root), root);
       final stale = File(p.join(root.path, gameAssetsDir, 'board', 'old.svg'))
         ..writeAsStringSync('x');
 
-      final check = applyAssetSyncPlan(
-        planDesignAssetSync(root),
-        root,
-        dryRun: true,
-      );
+      final check = applyAssetSyncPlan(_plan(root), root, dryRun: true);
       expect(check.removed, ['board/old.svg']);
       expect(check.hasDrift, isTrue);
       expect(stale.existsSync(), isTrue);
 
-      applyAssetSyncPlan(planDesignAssetSync(root), root);
+      applyAssetSyncPlan(_plan(root), root);
       expect(stale.existsSync(), isFalse);
     });
 
     test('detects an edited asset as drift', () {
       final root = _fakeRepo();
-      applyAssetSyncPlan(planDesignAssetSync(root), root);
+      applyAssetSyncPlan(_plan(root), root);
       File(
         p.join(root.path, gameAssetsDir, 'symbols', 'heart.svg'),
       ).writeAsStringSync('<svg/>');
-      final check = applyAssetSyncPlan(
-        planDesignAssetSync(root),
-        root,
-        dryRun: true,
-      );
+      final check = applyAssetSyncPlan(_plan(root), root, dryRun: true);
       expect(check.outcomes['symbols/heart.svg'], WriteOutcome.updated);
     });
 
@@ -194,13 +222,10 @@ void main() {
       File(
         p.join(root.path, 'apps/game/pubspec.yaml'),
       ).writeAsStringSync('flutter:\n  assets:\n    - assets/audio/\n');
-      final result = applyAssetSyncPlan(
-        planDesignAssetSync(root),
-        root,
-        dryRun: true,
-      );
+      final result = applyAssetSyncPlan(_plan(root), root, dryRun: true);
       expect(result.missingPubspecDirs, [
         'assets/board/',
+        'assets/lottie/',
         'assets/skins/classic/',
         'assets/symbols/',
         'assets/themes/ch07/',
@@ -215,7 +240,7 @@ void main() {
       File(
         p.join(root.path, 'design/skins/classic/skin.json'),
       ).writeAsStringSync(_skinJson('ocean'));
-      final plan = planDesignAssetSync(root);
+      final plan = _plan(root);
       expect(
         plan.issues,
         containsAll([
@@ -232,9 +257,71 @@ void main() {
       File(
         p.join(root.path, 'design/tokens.json'),
       ).writeAsStringSync('{"dollColor":{"blue":{"symbol":"drop"}}}');
+      expect(_plan(root).issues, contains(contains('missing drop.svg')));
+    });
+
+    test('copies the Lottie JSON only: never LOTTIE.md or images/', () {
+      final root = _fakeRepo();
+      applyAssetSyncPlan(_plan(root), root);
+      final lottie = Directory(p.join(root.path, gameAssetsDir, 'lottie'));
+      expect(
+        lottie
+            .listSync(recursive: true)
+            .map((e) => p.relative(e.path, from: lottie.path)),
+        ['fx_sparkle.json'],
+      );
+    });
+
+    test('removes a PNG from assets/lottie (placeholders never ship)', () {
+      final root = _fakeRepo();
+      applyAssetSyncPlan(_plan(root), root);
+      final png = File(
+        p.join(root.path, gameAssetsDir, 'lottie', 'images', 'glow_ring.png'),
+      )..createSync(recursive: true);
+      final check = applyAssetSyncPlan(_plan(root), root, dryRun: true);
+      expect(check.removed, ['lottie/images/glow_ring.png']);
+      expect(check.hasDrift, isTrue);
+      applyAssetSyncPlan(_plan(root), root);
+      expect(png.existsSync(), isFalse);
+    });
+
+    test('detects an edited Lottie file as drift', () {
+      final root = _fakeRepo();
+      applyAssetSyncPlan(_plan(root), root);
+      File(
+        p.join(root.path, gameAssetsDir, 'lottie', 'fx_sparkle.json'),
+      ).writeAsStringSync('{}');
+      expect(
+        applyAssetSyncPlan(
+          _plan(root),
+          root,
+          dryRun: true,
+        ).outcomes['lottie/fx_sparkle.json'],
+        WriteOutcome.updated,
+      );
+    });
+
+    test('an invalid or missing Lottie export blocks the whole sync', () {
+      final root = _fakeRepo();
+      final sparkle = File(p.join(root.path, 'design/lottie/fx_sparkle.json'));
+      sparkle.writeAsStringSync(
+        sparkle.readAsStringSync().replaceFirst('"fr":60', '"fr":30'),
+      );
+      final plan = _plan(root);
+      expect(plan.issues, [
+        'design/lottie/fx_sparkle.json: frameRate: fr is 30, expected 60',
+      ]);
+      expect(() => applyAssetSyncPlan(plan, root), throwsStateError);
+
+      sparkle.deleteSync();
+      expect(
+        _plan(root).issues,
+        contains(contains('design/lottie/fx_sparkle.json: missing')),
+      );
       expect(
         planDesignAssetSync(root).issues,
-        contains(contains('missing drop.svg')),
+        contains(contains('design/lottie/doll_pick.json: missing')),
+        reason: 'the default table wants all 29 files',
       );
     });
 
@@ -244,7 +331,7 @@ void main() {
         p.join(root.path, 'design/themes/Chapter 8.svg'),
       ).writeAsStringSync(_svg(''));
       File(p.join(root.path, 'design/audio/Pick.mp3')).writeAsStringSync('x');
-      expect(planDesignAssetSync(root).issues, hasLength(2));
+      expect(_plan(root).issues, hasLength(2));
     });
   });
 }

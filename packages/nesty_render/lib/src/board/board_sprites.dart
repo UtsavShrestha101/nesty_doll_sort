@@ -122,6 +122,13 @@ enum BoardSprite {
 /// [draw] maps the full design box onto a destination rect, so callers pass
 /// the layout's rects (`SlotGeometry.standRect`, `glassCaseRect`, `iceRect`,
 /// `glowRingRect`) as they are and never see the crop.
+///
+/// It also fills a Lottie image slot whose declared box is the sprite's
+/// [BoardSprite.designSize] (`glow_ring`, `hint_arrow`, `extra_slot`,
+/// `glass_case_*`, `ice_*`): lottie 3.6.1 draws the bitmap at its own pixel
+/// size, so the FX runtime compensates the layer with the raster's scale
+/// [pixelScale] and its crop [cropOrigin] (docs/plans/m2-lottie-design.md
+/// §3: `FxRaster(image, scale: pixelScale, origin: cropOrigin)`).
 final class BoardSpriteImage {
   BoardSpriteImage._({
     required this.sprite,
@@ -132,6 +139,7 @@ final class BoardSpriteImage {
     required this.fullHeight,
     ImageShader? shader,
   }) : _shader = shader,
+       cropOrigin = offset / pixelScale,
        tilePaint = shader == null ? null : (Paint()..shader = shader);
 
   final BoardSprite sprite;
@@ -144,6 +152,11 @@ final class BoardSpriteImage {
   /// Where [image]'s top-left sits in the full design box, in image px: the
   /// transparent margin the crop removed.
   final Offset offset;
+
+  /// [offset] in design (reference) px: where [image]'s top-left sits in the
+  /// sprite's [BoardSprite.designSize] box. The `FxRaster.origin` of a
+  /// Lottie image slot filled with this sprite; [pixelScale] is its scale.
+  final Offset cropOrigin;
 
   /// The full design box in image px.
   final double fullWidth;

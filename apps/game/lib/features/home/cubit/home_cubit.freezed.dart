@@ -14,8 +14,16 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HomeState {
 
-/// Level the big play button starts (spec §10.2 #2).
- int get currentLevel;
+/// The level the play button starts (spec §10.2 #2): the save's
+/// current level, moved past any skipped bundled level.
+ int get currentLevel;/// Its tier, for the play button's HARD / SUPER HARD badge (§6.6).
+ Tier get tier;/// Its chapter (`ch01`): Home's background follows the player's
+/// chapter.
+ String get chapterId;/// The coin pill.
+ int get coins;/// Levels available offline.
+ int get levelCount;/// Every bundled level is won: Play shows All Levels Done (frame 4.9)
+/// until Bonus Endless (M3).
+ bool get allLevelsDone;
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +34,16 @@ $HomeStateCopyWith<HomeState> get copyWith => _$HomeStateCopyWithImpl<HomeState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeState&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeState&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.chapterId, chapterId) || other.chapterId == chapterId)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.allLevelsDone, allLevelsDone) || other.allLevelsDone == allLevelsDone));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentLevel);
+int get hashCode => Object.hash(runtimeType,currentLevel,tier,chapterId,coins,levelCount,allLevelsDone);
 
 @override
 String toString() {
-  return 'HomeState(currentLevel: $currentLevel)';
+  return 'HomeState(currentLevel: $currentLevel, tier: $tier, chapterId: $chapterId, coins: $coins, levelCount: $levelCount, allLevelsDone: $allLevelsDone)';
 }
 
 
@@ -46,7 +54,7 @@ abstract mixin class $HomeStateCopyWith<$Res>  {
   factory $HomeStateCopyWith(HomeState value, $Res Function(HomeState) _then) = _$HomeStateCopyWithImpl;
 @useResult
 $Res call({
- int currentLevel
+ int currentLevel, Tier tier, String chapterId, int coins, int levelCount, bool allLevelsDone
 });
 
 
@@ -63,10 +71,15 @@ class _$HomeStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentLevel = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentLevel = null,Object? tier = null,Object? chapterId = null,Object? coins = null,Object? levelCount = null,Object? allLevelsDone = null,}) {
   return _then(_self.copyWith(
 currentLevel: null == currentLevel ? _self.currentLevel : currentLevel // ignore: cast_nullable_to_non_nullable
-as int,
+as int,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
+as Tier,chapterId: null == chapterId ? _self.chapterId : chapterId // ignore: cast_nullable_to_non_nullable
+as String,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
+as int,levelCount: null == levelCount ? _self.levelCount : levelCount // ignore: cast_nullable_to_non_nullable
+as int,allLevelsDone: null == allLevelsDone ? _self.allLevelsDone : allLevelsDone // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -151,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentLevel)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentLevel,  Tier tier,  String chapterId,  int coins,  int levelCount,  bool allLevelsDone)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeState() when $default != null:
-return $default(_that.currentLevel);case _:
+return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.levelCount,_that.allLevelsDone);case _:
   return orElse();
 
 }
@@ -172,10 +185,10 @@ return $default(_that.currentLevel);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentLevel)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentLevel,  Tier tier,  String chapterId,  int coins,  int levelCount,  bool allLevelsDone)  $default,) {final _that = this;
 switch (_that) {
 case _HomeState():
-return $default(_that.currentLevel);case _:
+return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.levelCount,_that.allLevelsDone);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -192,10 +205,10 @@ return $default(_that.currentLevel);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentLevel)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentLevel,  Tier tier,  String chapterId,  int coins,  int levelCount,  bool allLevelsDone)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeState() when $default != null:
-return $default(_that.currentLevel);case _:
+return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.levelCount,_that.allLevelsDone);case _:
   return null;
 
 }
@@ -207,11 +220,24 @@ return $default(_that.currentLevel);case _:
 
 
 class _HomeState implements HomeState {
-  const _HomeState({this.currentLevel = 1});
+  const _HomeState({this.currentLevel = 1, this.tier = Tier.easy, this.chapterId = 'ch01', this.coins = 0, this.levelCount = 0, this.allLevelsDone = false});
   
 
-/// Level the big play button starts (spec §10.2 #2).
+/// The level the play button starts (spec §10.2 #2): the save's
+/// current level, moved past any skipped bundled level.
 @override@JsonKey() final  int currentLevel;
+/// Its tier, for the play button's HARD / SUPER HARD badge (§6.6).
+@override@JsonKey() final  Tier tier;
+/// Its chapter (`ch01`): Home's background follows the player's
+/// chapter.
+@override@JsonKey() final  String chapterId;
+/// The coin pill.
+@override@JsonKey() final  int coins;
+/// Levels available offline.
+@override@JsonKey() final  int levelCount;
+/// Every bundled level is won: Play shows All Levels Done (frame 4.9)
+/// until Bonus Endless (M3).
+@override@JsonKey() final  bool allLevelsDone;
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
@@ -223,16 +249,16 @@ _$HomeStateCopyWith<_HomeState> get copyWith => __$HomeStateCopyWithImpl<_HomeSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeState&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeState&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.chapterId, chapterId) || other.chapterId == chapterId)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.allLevelsDone, allLevelsDone) || other.allLevelsDone == allLevelsDone));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentLevel);
+int get hashCode => Object.hash(runtimeType,currentLevel,tier,chapterId,coins,levelCount,allLevelsDone);
 
 @override
 String toString() {
-  return 'HomeState(currentLevel: $currentLevel)';
+  return 'HomeState(currentLevel: $currentLevel, tier: $tier, chapterId: $chapterId, coins: $coins, levelCount: $levelCount, allLevelsDone: $allLevelsDone)';
 }
 
 
@@ -243,7 +269,7 @@ abstract mixin class _$HomeStateCopyWith<$Res> implements $HomeStateCopyWith<$Re
   factory _$HomeStateCopyWith(_HomeState value, $Res Function(_HomeState) _then) = __$HomeStateCopyWithImpl;
 @override @useResult
 $Res call({
- int currentLevel
+ int currentLevel, Tier tier, String chapterId, int coins, int levelCount, bool allLevelsDone
 });
 
 
@@ -260,10 +286,15 @@ class __$HomeStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentLevel = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentLevel = null,Object? tier = null,Object? chapterId = null,Object? coins = null,Object? levelCount = null,Object? allLevelsDone = null,}) {
   return _then(_HomeState(
 currentLevel: null == currentLevel ? _self.currentLevel : currentLevel // ignore: cast_nullable_to_non_nullable
-as int,
+as int,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
+as Tier,chapterId: null == chapterId ? _self.chapterId : chapterId // ignore: cast_nullable_to_non_nullable
+as String,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
+as int,levelCount: null == levelCount ? _self.levelCount : levelCount // ignore: cast_nullable_to_non_nullable
+as int,allLevelsDone: null == allLevelsDone ? _self.allLevelsDone : allLevelsDone // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

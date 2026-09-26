@@ -1,0 +1,42 @@
+/// The design's component library (design/README.md "Components",
+/// docs/plans/design-foundation-m2-design.md §2 "Components"), built on the
+/// generated tokens. Import this instead of the files one by one.
+library;
+
+export 'package:nesty_game/core/ui/colors/app_colors.dart';
+export 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
+export 'package:nesty_game/core/ui/lottie/lottie_text_overlay.dart';
+export 'package:nesty_game/core/ui/theme/app_text_styles.dart';
+export 'package:nesty_game/core/ui/theme/app_theme.dart';
+export 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
+export 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
+export 'package:nesty_game/core/ui/widgets/booster/booster_button.dart';
+export 'package:nesty_game/core/ui/widgets/brand/wordmark.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/ad_play_glyph.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/coin_price_button.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/icon_tactile_button.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/nesty_close_button.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/play_button.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/rewarded_ad_button.dart';
+export 'package:nesty_game/core/ui/widgets/buttons/tactile_button.dart';
+export 'package:nesty_game/core/ui/widgets/coins/coin_icon.dart';
+export 'package:nesty_game/core/ui/widgets/coins/coin_pill.dart';
+export 'package:nesty_game/core/ui/widgets/feedback/nesty_banner.dart';
+export 'package:nesty_game/core/ui/widgets/hud/level_pill.dart';
+export 'package:nesty_game/core/ui/widgets/hud/tier_chip.dart';
+export 'package:nesty_game/core/ui/widgets/modal/modal_card.dart';
+export 'package:nesty_game/core/ui/widgets/number/nesty_number_text.dart';
+export 'package:nesty_game/core/ui/widgets/progress/nesty_progress_bar.dart';
+export 'package:nesty_game/core/ui/widgets/retry_view.dart';
+export 'package:nesty_game/core/ui/widgets/scrim.dart';
+export 'package:nesty_game/core/ui/widgets/sheet/nesty_sheet.dart';
+export 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
+export 'package:nesty_game/core/ui/widgets/surface/surface_painter.dart';
+export 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
+export 'package:nesty_game/core/ui/widgets/surface/surface_styles.dart';
+export 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
+export 'package:nesty_game/core/ui/widgets/tactile/tactile_surface.dart';
+export 'package:nesty_game/core/ui/widgets/tactile/touch_target.dart';
+export 'package:nesty_game/core/ui/widgets/toggle/nesty_toggle.dart';
+export 'package:nesty_game/core/ui/widgets/wood/plank_strip.dart';
+export 'package:nesty_game/core/ui/widgets/wood/wood_bar.dart';

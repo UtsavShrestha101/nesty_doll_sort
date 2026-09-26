@@ -5,14 +5,23 @@ Flame. Game rules come from [`nesty_core`](../../packages/nesty_core/README.md)
 and doll drawing from [`nesty_render`](../../packages/nesty_render/README.md).
 This app owns the screens, the services and the Flame board.
 
-**Status: M0 skeleton.**
-- Splash → Home → Gameplay is wired end to end, with placeholder, unstyled
-  pages.
-- The Flame board is empty until M2.
-- In the real environment every service except haptics, the Remote Config
-  defaults and the settings database is still an offline fake.
+**Status: M2 code complete** (2026-09-27; its acceptance, 60 fps on a
+mid-range Android, is the owner's device check).
+- Splash → Home → Gameplay plays the 30 bundled levels end to end on the
+  design's art: the tokens' theme, the Classic skin as part rasters, the
+  board sprites, the chapter backgrounds, the 29 Lottie files, the SFX and
+  the haptic patterns.
+- The Flame board renders `nesty_core`'s state and plays every `MoveEvent`
+  through the board timeline; the HUD, booster bar, soft-stuck banner, win
+  overlay, out-of-moves sheet, pause dialog and All Levels Done are Flutter
+  widgets around it.
+- The real environment runs the bundled levels, the isolate solver, the
+  asset skin and FX library, SoLoud audio, system haptics and Hive
+  settings. The save is in memory until M3; ads, purchases, analytics and
+  Remote Config are offline stand-ins until M4 and M6.
 
-See [docs/PROGRESS.md](../../docs/PROGRESS.md).
+See [docs/PROGRESS.md](../../docs/PROGRESS.md) (M2, D40–D58) and
+[docs/plans/m2-lottie-design.md](../../docs/plans/m2-lottie-design.md).
 
 ## Run
 
@@ -56,20 +65,26 @@ lib/
     extensions/            # context.localizations, AppException -> localized message
     flavor/                # Flavor, FlavorConfig, FlavorValues
     models/                # small app-level enums (SymbolsMode)
-    repository/            # LevelRepository + fake
+    repository/            # LevelRepository: bundled levels + fake
     router/                # AppRouter + app_router.gr.dart (generated)
-    services/<name>/       # one folder per service: interface, real, fake
-    ui/                    # placeholder colors, theme, shared widgets (TODO(design))
+    services/<name>/       # one folder per service: interface, real, fake (audio, haptics, save, skin, solver, …)
+    ui/                    # theme and tokens, nesty_ui.dart (the tactile component kit), Lottie labels
   features/
-    splash/  {cubit, pages}
-    home/    {cubit, pages}
-    gameplay/{pages, widgets, game/}   # game/ = NestyGame + Flame components
+    splash/   {cubit, pages}
+    home/     {cubit, pages, showcase}   # showcase = the shelf dolls' art
+    gameplay/ {bloc, game, overlays, pages, widgets}
+      # bloc = GameplayBloc over GameSession; game = NestyGame, the Flame
+      # components and the pure-Dart board timeline
+    fx/                    # the Lottie runtime: FxId, specs, library, player, delegates, views
+    dev/                   # the dev flavor's level picker
   l10n/                    # app_en.arb + generated AppLocalizations
+assets/                    # synced from design/ by nesty_tools (never edit): skins, board, symbols, themes, audio, lottie; levels/bundle.json
 test/
-  app/, core/              # mirror lib/app and lib/core
-  features/<name>/         # flat: <name>_cubit_test.dart, widget tests (booster_bar_test.dart)
-  app_flow_test.dart       # Splash -> Home -> Gameplay with the real GameWidget
+  app/, core/, features/   # mirror lib/
+  app_flow_test.dart       # Splash -> Home -> PLAY -> a board tap -> Pause -> Home on fakes
   helpers/                 # test_dependencies.dart wires the fake env
+integration_test/          # playthrough_test.dart: the on-device playthrough (flutter drive)
+test_driver/               # integration_test.dart: saves the playthrough's screenshots on the host
 ```
 
 New features go in `features/<name>/{cubit,pages,widgets,model}`. The
@@ -150,11 +165,14 @@ New features go in `features/<name>/{cubit,pages,widgets,model}`. The
 | `PurchaseService` | `FakePurchaseService` (declines) | `FakePurchaseService` | M6 (`in_app_purchase`) |
 | `AnalyticsService` | `FakeAnalyticsService` (logs only) | `FakeAnalyticsService` | M4 (Firebase Analytics) |
 | `RemoteConfigService` | `DefaultsRemoteConfigService` (the 17 spec §9.4 defaults) | `FakeRemoteConfigService` | M4 (Firebase Remote Config, same defaults) |
-| `LevelRepository` | `FakeLevelRepository` (0 levels) | `FakeLevelRepository` | M2 (bundled levels), M4 (sync) |
-| `SaveService` | `FakeSaveService` | `FakeSaveService` | M3 |
-| `AudioService` | `FakeAudioService` | `FakeAudioService` | M3 |
-| `HapticsService` | `SystemHapticsService` | `FakeHapticsService` | Done |
+| `LevelRepository` | `BundledLevelRepository` (the 30 levels of `assets/levels/bundle.json`) | `FakeLevelRepository` (levels 1–3) | Done; M4 adds the sync |
+| `SaveService` | `InMemorySaveService` (level, coins, the booster wallet; PROGRESS D13) | `FakeSaveService` | M3 (the persistent save) |
+| `AudioService` | `SoLoudAudioService` (the 17 SFX) | `FakeAudioService` | Done; M7 final audio |
+| `HapticsService` | `SystemHapticsService` (token patterns) | `FakeHapticsService` | Done |
 | `DatabaseService` | `HiveDatabaseService` (in-memory fallback) | `FakeDatabaseService` | Done |
+| `SolverService` | `IsolateSolverService` (hints and soft stuck off the UI isolate) | `FakeSolverService` | Done |
+| `SkinService` | `AssetSkinService` (the bundled Classic skin as part rasters, board sprites, backgrounds) | `FakeSkinService` (placeholder dolls) | Done; M3 the shop's skin, M4 downloads |
+| `FxLibrary` | `AssetFxLibrary` (the 29 Lottie files, parsed at splash) | `FakeFxLibrary` | Done |
 
 Every network-backed implementation must fail silently (CLAUDE.md rule 3).
 
@@ -174,16 +192,22 @@ CI fails on drift.
 flutter test
 ```
 
-- **What is covered** (13 files, 53 tests):
-  - the base cubit and bloc, including event order;
-  - DI in both environments;
-  - a database contract suite that the Hive and fake implementations both
-    pass, plus the Hive locale stream on delete and rollback;
-  - the Remote Config defaults (checked against the spec), haptics and the
-    error-message mapper;
-  - each cubit;
-  - the booster bar at 320×568, 360×640 and 393×852, at 1.0× and 1.3× text;
-  - the full Splash → Home → Gameplay flow with the real `GameWidget`.
+- **What is covered** (88 files, 929 tests on 2026-09-27):
+  - the base cubit and bloc, DI in both environments, the database contract
+    suite, Remote Config defaults and the error-message mapper;
+  - every service: bundled levels, the skin service, the isolate solver,
+    audio pitch and combos, haptic patterns, the in-memory save;
+  - the Lottie runtime: the shipped files, their specs, the image-slot
+    compensation and travel workarounds, pools, reduced motion, hot-path
+    guards;
+  - the gameplay bloc (tap and drag policy, boosters, hints, soft stuck,
+    win, out of moves, next level), the board timeline's §7 times and the
+    Flame board (input, hand-offs, effects, pause, rendering);
+  - the screens and widgets on several phone sizes at 1.0× and 1.3× text;
+  - the app flow on fakes (`app_flow_test.dart`).
+- **On a device:** `integration_test/playthrough_test.dart` plays levels 1
+  and 2 to the win overlay and level 16 into Out of Moves with every real
+  service, and saves 18 screenshots (the root README has the command).
 - **Wiring:** tests use the fake environment through
   `test/helpers/test_dependencies.dart` (`configureTestDependencies()` /
   `resetDependencies()`).

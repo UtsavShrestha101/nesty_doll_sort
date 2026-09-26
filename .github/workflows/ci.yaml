@@ -97,7 +97,8 @@ jobs:
         working-directory: apps/admin
         run: flutter test
 
-      # Pure Dart: token/icon codegen, design asset sync, docs/TODO_INDEX.md.
+      # Pure Dart: token/icon/FX-spec codegen, design asset sync and Lottie
+      # validation, docs/TODO_INDEX.md.
       - name: Test tools (pure Dart)
         working-directory: tools
         run: dart test
@@ -132,14 +133,18 @@ jobs:
 
       # nesty_tools outputs (tools/README.md). The generators rewrite their
       # files so the diff below catches drift; the --check modes fail on their
-      # own (asset sync also checks apps/game/pubspec.yaml; todo_index also
-      # rejects `TODO`/`FIXME` comments that carry no milestone tag).
-      - name: Regenerate design tokens and icons; check design assets and TODO index
+      # own (asset sync also validates every Lottie export against the
+      # LOTTIE.md contract and checks apps/game/pubspec.yaml; gen_fx_spec
+      # --check fails when fx_spec.gen.dart differs from design/lottie;
+      # todo_index also rejects `TODO`/`FIXME` comments that carry no
+      # milestone tag).
+      - name: Regenerate design tokens and icons; check design assets, FX specs and TODO index
         run: |
           set -euo pipefail
           dart run nesty_tools:gen_design_tokens
           dart run nesty_tools:gen_nesty_icons
           dart run nesty_tools:sync_design_assets --check
+          dart run nesty_tools:gen_fx_spec --check
           dart run nesty_tools:todo_index --check
 
       # The game's bundled levels (tools/levels/README.md): bundle.json is
@@ -156,7 +161,7 @@ jobs:
         run: |
           untracked="$(git ls-files --others --exclude-standard)"
           if ! git --no-pager diff --exit-code --stat || [ -n "$untracked" ]; then
-            echo "::error::Generated files are stale or missing. Run 'flutter gen-l10n', then 'dart run build_runner build', in apps/game and apps/admin; and 'dart run nesty_tools:gen_design_tokens' and 'dart run nesty_tools:gen_nesty_icons' at the root. Commit the result."
+            echo "::error::Generated files are stale or missing. Run 'flutter gen-l10n', then 'dart run build_runner build', in apps/game and apps/admin; and 'dart run nesty_tools:gen_design_tokens', 'dart run nesty_tools:gen_nesty_icons' and 'dart run nesty_tools:gen_fx_spec' at the root. Commit the result."
             if [ -n "$untracked" ]; then printf 'Untracked:\n%s\n' "$untracked"; fi
             exit 1
           fi

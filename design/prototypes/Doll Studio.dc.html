@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><script src="./nesty-doll.js"></script><style>body{margin:0;background:#EFE4D2;font-family:'Nunito',sans-serif;color:#5B3A21}a{color:#C4631E}a:hover{color:#8A3F10}input[type=range]{accent-color:#F2893B}textarea{font:500 12px/1.45 ui-monospace,Menlo,monospace}</style></helmet>
+<div style="width:1360px;padding:52px 56px 80px;box-sizing:border-box;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px">
+<div><div style="font:700 13px/1 'Nunito',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9A6A44">Nesty · parametric doll asset</div><div style="margin-top:10px;font:700 52px/1 'Fredoka',sans-serif">Doll Studio</div><div style="margin-top:12px;font:600 16px/1.55 'Nunito',sans-serif;color:#7A5234;max-width:760px;text-wrap:pretty">One layered outer shell per skin. Pass any color and any symbol SVG and it renders a new doll with the same math the game uses at runtime, so the number of variants has no limit.</div></div>
+<div style="display:flex;gap:10px;flex:none"><div onClick="{{ onDownload }}" style="height:52px;padding:0 20px;border-radius:20px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #C4631E;display:flex;align-items:center;gap:8px;color:#fff;font:700 17px/1 'Fredoka',sans-serif;cursor:pointer;user-select:none" style-active="transform:translateY(3px);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 2px 0 #C4631E"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">download</span>Download SVG</div><div onClick="{{ onCopy }}" style="height:52px;padding:0 18px;border-radius:20px;background:linear-gradient(180deg,#FFFDF7,#FCEFD8);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;align-items:center;gap:8px;color:#6E4526;font:700 17px/1 'Fredoka',sans-serif;cursor:pointer;user-select:none" style-active="transform:translateY(3px);box-shadow:inset 0 2px 0 #fff,0 2px 0 #D8B07A"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">data_object</span>{{ copyLabel }}</div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:600px minmax(0,1fr);gap:28px;align-items:start">
+<div style="border-radius:30px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:18px;display:flex;flex-direction:column;gap:16px">
+<div style="position:relative;height:500px;border-radius:22px;overflow:hidden;background:radial-gradient(ellipse 70% 60% at 50% 34%,#FFF6DF,#F6DDB0 62%,#EBC690)">
+<div style="position:absolute;left:0;right:0;top:444px;height:40px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 40px"></div>
+<div style="position:absolute;left:50%;top:405px;width:250px;height:94px;margin-left:-125px;background:url(skins/classic/board/slot-stand-blank.svg) center/100% 100% no-repeat"></div>
+<div style="position:absolute;left:0;right:0;top:40px;height:392px;display:flex;align-items:flex-end;justify-content:center"><x-import component-from-global-scope="nesty-doll" color="{{ dollColor }}" symbol="{{ dollSymbol }}" svg="{{ dollSvg }}" mode="{{ mode }}" skin="{{ skin }}" lid="{{ lid }}" height="{{ bigH }}" hint-size="240px,360px"></x-import></div>
+<div style="position:absolute;left:14px;top:14px;display:flex;align-items:center;gap:8px;padding:7px 12px 7px 7px;border-radius:14px;background:rgba(255,249,236,.92);box-shadow:0 3px 0 #E2C9A3"><div style="width:22px;height:22px;border-radius:50%;background:{{ baseHex }};box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)"></div><span style="font:700 15px/1 'Fredoka',sans-serif">{{ colorName }}</span><span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ baseHex }}</span></div>
+<div style="position:absolute;right:14px;top:14px;padding:6px 10px;border-radius:12px;background:rgba(255,249,236,.92);font:700 12px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ skinLabel }} · {{ modeLabel }}</div>
+</div>
+<div style="border-radius:20px;background:#FCEBD0;padding:14px 16px 0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:baseline;font:700 14px/1 'Fredoka',sans-serif;color:#7A5234"><span>Family lineup · maxSize {{ maxSize }}</span><span style="font:600 11px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ lineupNote }}</span></div>
+<div style="margin-top:10px;height:168px;display:flex;align-items:flex-end;justify-content:center;gap:10px">
+<sc-for list="{{ lineup }}" as="d" hint-placeholder-count="4"><x-import component-from-global-scope="nesty-doll" color="{{ dollColor }}" symbol="{{ dollSymbol }}" svg="{{ dollSvg }}" mode="{{ mode }}" skin="{{ skin }}" height="{{ d.h }}" hint-size="60px,120px"></x-import></sc-for>
+</div>
+<div style="height:18px;margin:0 -16px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 18px"></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+<sc-for list="{{ states }}" as="s" hint-placeholder-count="4"><div style="border-radius:18px;background:#FCEBD0;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:8px"><div style="height:124px;display:flex;align-items:flex-end"><x-import component-from-global-scope="nesty-doll" color="{{ dollColor }}" symbol="{{ dollSymbol }}" svg="{{ dollSvg }}" mode="{{ s.mode }}" skin="{{ skin }}" lid="{{ s.lid }}" silhouette="{{ s.sil }}" height="118" hint-size="70px,118px"></x-import></div><span style="font:700 12px/1.2 'Fredoka',sans-serif;color:#7A5234;text-align:center">{{ s.label }}</span></div></sc-for>
+</div>
+</div>
+
+<div style="border-radius:30px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:24px 26px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60;letter-spacing:.08em">COLOR</span><div onClick="{{ onRandom }}" style="height:34px;padding:0 12px;border-radius:12px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 3px 0 #D8B07A;display:flex;align-items:center;gap:6px;font:700 14px/1 'Fredoka',sans-serif;color:#6E4526;cursor:pointer;user-select:none"><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1">casino</span>Random</div></div>
+<div style="display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:8px">
+<sc-for list="{{ swatches }}" as="w" hint-placeholder-count="11"><div onClick="{{ w.pick }}" title="{{ w.name }}" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer"><div style="width:40px;height:40px;border-radius:50%;background:{{ w.bg }};box-shadow:{{ w.ring }}"></div><span style="font:700 10px/1 'Fredoka',sans-serif;color:#8A5B3A">{{ w.name }}</span></div></sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:12px">
+<input type="color" value="{{ baseHex }}" onInput="{{ onColorInput }}" style="width:52px;height:44px;border:0;padding:0;border-radius:12px;background:none;cursor:pointer">
+<input value="{{ hexDraft }}" onChange="{{ onHexText }}" spellcheck="false" style="width:130px;height:44px;box-sizing:border-box;border:0;border-radius:14px;background:#FFFDF7;box-shadow:inset 0 0 0 2px #E2C9A3;padding:0 14px;font:700 16px/1 ui-monospace,Menlo,monospace;color:#5B3A21;outline:none">
+<div style="flex:1;display:flex;gap:6px">
+<sc-for list="{{ shadeChips }}" as="c" hint-placeholder-count="3"><div style="flex:1;border-radius:12px;background:#FFFDF7;box-shadow:inset 0 0 0 2px #EAD3B0;padding:6px;display:flex;align-items:center;gap:7px;min-width:0"><div style="width:26px;height:26px;flex:none;border-radius:8px;background:{{ c.hex }}"></div><div style="min-width:0"><div style="font:700 11px/1.1 'Fredoka',sans-serif;color:#7A5234">{{ c.label }}</div><div style="font:600 10.5px/1.2 ui-monospace,Menlo,monospace;color:#9A6A44">{{ c.hex }}</div></div></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60;letter-spacing:.08em">SYMBOL</span>
+<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px">
+<sc-for list="{{ symbols }}" as="y" hint-placeholder-count="11"><div onClick="{{ y.pick }}" title="{{ y.name }}" style="height:46px;border-radius:14px;background:{{ y.bg }};box-shadow:{{ y.ring }};display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:24px;height:24px;background:{{ inkHex }};-webkit-mask:url(icons/{{ y.name }}.svg) center/contain no-repeat;mask:url(icons/{{ y.name }}.svg) center/contain no-repeat"></div></div></sc-for>
+<div onClick="{{ pickCustom }}" title="Custom SVG" style="height:46px;border-radius:14px;background:{{ customBg }};box-shadow:{{ customRing }};display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Material Symbols Rounded';font-size:24px;color:#8A5B3A;font-variation-settings:'FILL' 1">upload_file</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px">
+<textarea value="{{ custom }}" onChange="{{ onCustomText }}" placeholder="Paste any single-color SVG (any viewBox). It is scaled into the belly badge and painted in the ink shade." spellcheck="false" style="height:84px;box-sizing:border-box;border:0;border-radius:14px;background:#FFFDF7;box-shadow:inset 0 0 0 2px #E2C9A3;padding:10px 12px;color:#5B3A21;resize:none;outline:none"></textarea>
+<label style="height:84px;border-radius:14px;background:#FFFDF7;box-shadow:inset 0 0 0 2px #E2C9A3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font:700 13px/1.2 'Fredoka',sans-serif;color:#8A5B3A;text-align:center"><span style="font-family:'Material Symbols Rounded';font-size:26px;color:#C4631E;font-variation-settings:'FILL' 1">file_upload</span>Upload .svg<input type="file" accept=".svg,image/svg+xml" onChange="{{ onFile }}" style="display:none"></label>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60;letter-spacing:.08em">SYMBOL STYLE</span>
+<div style="height:44px;border-radius:22px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.25);display:flex;padding:4px;box-sizing:border-box;gap:4px"><sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><div onClick="{{ m.pick }}" style="flex:1;border-radius:18px;background:{{ m.bg }};box-shadow:{{ m.sh }};display:flex;align-items:center;justify-content:center;font:700 14px/1 'Fredoka',sans-serif;color:{{ m.c }};cursor:pointer">{{ m.label }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60;letter-spacing:.08em">FAMILY SIZE (maxSize)</span>
+<div style="height:44px;border-radius:22px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.25);display:flex;padding:4px;box-sizing:border-box;gap:4px"><sc-for list="{{ sizes }}" as="m" hint-placeholder-count="4"><div onClick="{{ m.pick }}" style="flex:1;border-radius:18px;background:{{ m.bg }};box-shadow:{{ m.sh }};display:flex;align-items:center;justify-content:center;font:700 14px/1 'Fredoka',sans-serif;color:{{ m.c }};cursor:pointer">{{ m.label }}</div></sc-for></div></div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60;letter-spacing:.08em">SKIN (outer shell)</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ skins }}" as="k" hint-placeholder-count="7"><div onClick="{{ k.pick }}" style="height:38px;padding:0 14px;border-radius:13px;background:{{ k.bg }};box-shadow:{{ k.sh }};display:flex;align-items:center;font:700 14px/1 'Fredoka',sans-serif;color:{{ k.c }};cursor:pointer">{{ k.label }}</div></sc-for></div></div>
+
+<div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between"><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60;letter-spacing:.08em">LID LIFT</span><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ lidLabel }}</span></div>
+<input type="range" min="0" max="1" step="0.05" value="{{ lid }}" onInput="{{ onLid }}" style="width:100%"></div>
+</div>
+</div>
+
+<div style="border-radius:30px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:24px 26px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div><div style="font:700 26px/1.1 'Fredoka',sans-serif">Variant wall</div><div style="margin-top:4px;font:600 14px/1.4 'Nunito',sans-serif;color:#8A5B3A">24 colors from the OKLCH wheel with random symbols, all on the {{ skinLabel }} shell. Click one to edit it.</div></div><div onClick="{{ onShuffle }}" style="height:44px;padding:0 16px;border-radius:16px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;display:flex;align-items:center;gap:6px;color:#fff;font:700 16px/1 'Fredoka',sans-serif;cursor:pointer;user-select:none"><span style="font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1">shuffle</span>Shuffle</div></div>
+<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px">
+<sc-for list="{{ wall }}" as="v" hint-placeholder-count="24"><div onClick="{{ v.pick }}" style="border-radius:16px;background:#FCEBD0;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer" style-hover="box-shadow:inset 0 0 0 2px #F2893B"><div style="height:104px;display:flex;align-items:flex-end"><x-import component-from-global-scope="nesty-doll" color="{{ v.hex }}" symbol="{{ v.sym }}" skin="{{ skin }}" mode="{{ mode }}" height="100" hint-size="66px,100px"></x-import></div><span style="font:600 10px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ v.hex }}</span></div></sc-for>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:28px;align-items:start">
+<div style="border-radius:30px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:24px 26px">
+<div style="font:700 26px/1.1 'Fredoka',sans-serif">How the template works</div>
+<div style="margin-top:6px;font:600 14px/1.5 'Nunito',sans-serif;color:#8A5B3A">Every skin is one 512×768 SVG with the 8 group ids from spec §12.2. The generator and the game apply the same four steps.</div>
+<div style="margin-top:16px;display:flex;flex-direction:column">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:34px 190px minmax(0,1fr);gap:12px;align-items:baseline;padding:11px 0;border-bottom:1px dashed rgba(110,60,25,.2)"><span style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#B98A60">{{ s.n }}</span><span style="font:700 15px/1.3 'Fredoka',sans-serif">{{ s.t }}</span><span style="font:600 13.5px/1.5 'Nunito',sans-serif;color:#6E4526">{{ s.d }}</span></div></sc-for>
+</div>
+</div>
+<div style="border-radius:30px;background:#3A2416;padding:22px 24px;box-shadow:0 5px 0 #24160C">
+<div style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#E8B94A;letter-spacing:.08em">DOLL CONFIG · current</div>
+<pre style="margin:14px 0 0;font:500 12.5px/1.6 ui-monospace,Menlo,monospace;color:#FBE7C4;white-space:pre-wrap">{{ configJson }}</pre>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SYMS = ['heart', 'flower', 'sun', 'leaf', 'wave', 'drop', 'star', 'bow', 'moon', 'acorn', 'crown'];
+const PRE = [['red', 'Cherry', '#E5484D', 'heart'], ['orange', 'Tangerine', '#F2893B', 'flower'], ['yellow', 'Sunflower', '#F5C518', 'sun'], ['green', 'Leaf', '#46A758', 'leaf'], ['teal', 'Lagoon', '#12A594', 'wave'], ['blue', 'Sky', '#3E8EDE', 'drop'], ['purple', 'Grape', '#8E4EC6', 'star'], ['pink', 'Bubblegum', '#E93D82', 'bow'], ['navy', 'Midnight', '#2F3E8F', 'moon'], ['brown', 'Cocoa', '#A0673C', 'acorn'], ['gold', 'Gold', '#D4A22C', 'crown']];
+const SKINS = [['classic', 'Classic'], ['ocean', 'Ocean'], ['space', 'Space'], ['sweets', 'Sweets'], ['forest', 'Forest · fox'], ['forest-bear', 'Forest · bear'], ['winter', 'Winter']];
+const F = [0.42, 0.54, 0.66, 0.78, 0.89, 1];
+const seg = (on) => ({ bg: on ? 'linear-gradient(180deg,#FFF9EE,#FCEBD0)' : 'transparent', sh: on ? 'inset 0 2px 0 #fff,0 3px 0 #D8B07A' : 'none', c: on ? '#5B3A21' : '#8A5B3A' });
+const isHex = v => /^#([0-9a-f]{6})$/i.test(v);
+function rng(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 16807) % 2147483647) / 2147483647); }
+class Component extends DCLogic {
+  state = { color: 'blue', symbol: 'drop', custom: '', mode: 'subtle', skin: 'classic', lid: 0, maxSize: 4, seed: 3, hexDraft: '#3E8EDE', copied: false };
+  componentDidMount() { const tick = () => { if (window.NestyDoll) this.forceUpdate(); else setTimeout(tick, 60); }; tick(); }
+  setColor(color, extra = {}) { const ND = window.NestyDoll; const hex = ND ? ND.resolve(color).base : color; this.setState({ color, hexDraft: hex, ...extra }); }
+  opts() { const s = this.state; return { color: s.color, symbol: s.symbol === 'custom' ? undefined : s.symbol, symbolSvg: s.symbol === 'custom' ? s.custom : undefined, mode: s.mode, skin: s.skin, lid: s.lid }; }
+  renderVals() {
+    const s = this.state, ND = window.NestyDoll;
+    const c = ND ? ND.resolve(s.color) : { name: 'Sky', base: '#3E8EDE', ink: '#326497', light: '#95C1ED' };
+    const custom = s.symbol === 'custom';
+    const R = rng(s.seed);
+    const wall = Array.from({ length: 24 }, (_, i) => {
+      const h = ((s.seed * 53 + i * 360 / 24 + R() * 10) % 360) * Math.PI / 180, L = 0.56 + R() * 0.16, C = 0.12 + R() * 0.08;
+      const hex = ND ? ND.oklchHex(L, C, h) : '#3E8EDE', sym = SYMS[Math.floor(R() * SYMS.length)];
+      return { hex, sym, pick: () => this.setColor(hex, { symbol: sym }) };
+    });
+    const N = s.maxSize, lineup = Array.from({ length: N }, (_, i) => ({ h: Math.round((N === 3 ? F[i] / F[2] : F[i]) * 150) })).reverse();
+    const config = { id: c.id || 'custom-' + c.base.slice(1).toLowerCase(), name: c.name, base: c.base, ink: c.ink, light: c.light, symbol: custom ? 'custom.svg' : s.symbol, symbolMode: s.mode, skin: s.skin, lidLift: s.lid, maxSize: N };
+    return {
+      dollColor: s.color, dollSymbol: custom ? '' : s.symbol, dollSvg: custom ? s.custom : '', mode: s.mode, skin: s.skin, lid: s.lid, bigH: s.lid > 0 ? 392 : 360,
+      baseHex: c.base, inkHex: c.ink, colorName: c.name, hexDraft: s.hexDraft, maxSize: N,
+      skinLabel: SKINS.find(k => k[0] === s.skin)[1], modeLabel: { subtle: 'subtle symbol', large: 'large symbol', none: 'no symbol' }[s.mode],
+      lineupNote: N === 3 ? 'size 3 scaled to 1.00 (§10.3)' : 'heights ' + F.slice(0, N).join(' / '),
+      lineup, lidLabel: s.lid > 0 ? `${Math.round(s.lid * 120)} px of 120 (lidLiftPx)` : 'closed',
+      states: [{ label: 'Closed', lid: 0, sil: false, mode: s.mode }, { label: 'Lid open 30%', lid: 0.3, sil: false, mode: s.mode }, { label: 'Tower silhouette', lid: 0, sil: true, mode: 'none' }, { label: 'Assist · large symbol', lid: 0, sil: false, mode: 'large' }],
+      shadeChips: [{ label: 'Base · body tint', hex: c.base }, { label: 'Ink · symbol', hex: c.ink }, { label: 'Light · highlight', hex: c.light }],
+      swatches: PRE.map(([key, name, hex, sym]) => ({ name, bg: key === 'gold' ? 'linear-gradient(135deg,#8C5E12,#F2CC5B 45%,#FFF6C8 55%,#C89220)' : hex, ring: s.color === key ? '0 0 0 3px #FFF9EE,0 0 0 6px #F2893B' : 'inset 0 -3px 0 rgba(0,0,0,.15)', pick: () => this.setColor(key, { symbol: sym }) })),
+      symbols: SYMS.map(name => ({ name, bg: s.symbol === name ? '#FFF1E4' : '#FFFDF7', ring: s.symbol === name ? 'inset 0 0 0 3px #F2893B' : 'inset 0 0 0 2px #EAD3B0', pick: () => this.setState({ symbol: name }) })),
+      customBg: custom ? '#FFF1E4' : '#FFFDF7', customRing: custom ? 'inset 0 0 0 3px #F2893B' : 'inset 0 0 0 2px #EAD3B0',
+      pickCustom: () => this.setState({ symbol: 'custom' }), custom: s.custom,
+      onCustomText: e => this.setState({ custom: e.target.value, symbol: 'custom' }),
+      onFile: e => { const f = e.target.files && e.target.files[0]; if (!f) return; f.text().then(t => this.setState({ custom: t, symbol: 'custom' })); },
+      modes: [['subtle', 'Subtle'], ['large', 'Large'], ['none', 'None']].map(([k, label]) => ({ label, ...seg(s.mode === k), pick: () => this.setState({ mode: k }) })),
+      sizes: [3, 4, 5, 6].map(n => ({ label: String(n), ...seg(s.maxSize === n), pick: () => this.setState({ maxSize: n }) })),
+      skins: SKINS.map(([k, label]) => ({ label, ...seg(s.skin === k), bg: s.skin === k ? 'linear-gradient(180deg,#FFF9EE,#FCEBD0)' : '#F3E3C8', sh: s.skin === k ? 'inset 0 0 0 2px #F2893B,0 3px 0 #D8B07A' : 'none', pick: () => this.setState({ skin: k }) })),
+      onLid: e => this.setState({ lid: parseFloat(e.target.value) }),
+      onColorInput: e => this.setColor(e.target.value.toUpperCase()),
+      onHexText: e => { const v = e.target.value.trim(), hex = v[0] === '#' ? v : '#' + v; this.setState({ hexDraft: v }); if (isHex(hex)) this.setState({ color: hex.toUpperCase() }); },
+      onRandom: () => { const R2 = Math.random; const hex = ND ? ND.oklchHex(0.55 + R2() * 0.18, 0.12 + R2() * 0.09, R2() * Math.PI * 2) : '#3E8EDE'; this.setColor(hex, { symbol: SYMS[Math.floor(R2() * SYMS.length)] }); },
+      onShuffle: () => this.setState(st => ({ seed: st.seed + 1 })), wall,
+      copyLabel: s.copied ? 'Copied' : 'Copy config',
+      onCopy: () => { navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(config, null, 2)); this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1400); },
+      onDownload: () => { if (!ND) return; ND.render(this.opts()).then(svg => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })); a.download = `nesty-doll-${config.id}-${s.skin}.svg`; a.click(); }); },
+      configJson: JSON.stringify(config, null, 2),
+      steps: [
+        { n: '01', t: 'Tint the masks', d: 'bottom_mask and top_mask are grayscale. Each gray is multiplied by the base color (out = base × gray / 255), the same as BlendMode.modulate. Gold uses a metallic ramp instead of a flat multiply.' },
+        { n: '02', t: 'Keep paint untinted', d: 'bottom_detail, face, top_detail, shine_top and shine_bottom draw on top unchanged, so every color keeps the same apron, face and gloss.' },
+        { n: '03', t: 'Place the symbol', d: 'Any SVG is scaled to fit a 110 px box centered on (256, 590) and filled with the ink shade. Large mode draws 117 px on a cream badge, r 92, ringed in ink.' },
+        { n: '04', t: 'Lift the lid', d: 'top_mask, face, top_detail and shine_top move up by lidLiftPx × t (120 px at t = 1). A dark rim at y 400 shows the hollow. Halves can render separately for animation.' },
+        { n: '05', t: 'Derive shades', d: 'For any new base color: ink = OKLCH(L − 0.17, C × 0.85, h) and light = OKLCH(L + 0.17, C × 0.6, h), clipped to sRGB. The 11 spec colors keep their fixed tokens.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

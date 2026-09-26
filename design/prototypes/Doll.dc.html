@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"></helmet>
+<div style="position:relative;width:64em;height:100em;font-size:{{ fs }}px;flex:none">
+<sc-if value="{{ shadow }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:2em;right:2em;bottom:-5em;height:11em;border-radius:50%;background:radial-gradient(closest-side,rgba(70,35,10,.5),rgba(70,35,10,0))"></div></sc-if>
+<div style="position:absolute;inset:0;border-radius:50% 50% 46% 46% / 40% 40% 60% 60%;background:{{ bodyBg }};box-shadow:inset -5em -5em 9em rgba(40,10,0,.25), inset 3em 3em 6em rgba(255,255,255,.2), inset -1.8em 0 0 rgba(255,222,170,.45);overflow:hidden">
+<div style="position:absolute;left:0;right:0;top:46em;height:1.1em;background:rgba(40,10,0,.2);box-shadow:0 1em 0 rgba(255,255,255,.2)"></div>
+<div style="position:absolute;left:12em;right:12em;top:53em;height:40em;border-radius:50%;background:radial-gradient(circle at 40% 32%,#FFFDF7,{{ apron }});box-shadow:0 0 0 2em {{ trim }}, inset 0 -2.5em 3em rgba(120,60,20,.14);display:flex;align-items:center;justify-content:center">
+<sc-if value="{{ symbols }}" hint-placeholder-val="{{ true }}"><span style="font-family:'Material Symbols Rounded';font-variation-settings:'FILL' 1,'wght' 600;font-size:27em;line-height:1;color:{{ symColor }};user-select:none">{{ icon }}</span></sc-if>
+</div>
+<div style="position:absolute;left:16em;top:9em;width:32em;height:32em;border-radius:50%;background:radial-gradient(circle at 42% 38%,#FFF3E4,#F5CFAE);box-shadow:0 0 0 2.6em {{ trim }}, 0 0 0 3.8em rgba(40,10,0,.12)"></div>
+<div style="position:absolute;left:18.5em;top:9em;width:27em;height:10em;border-radius:50% 50% 45% 45% / 100% 100% 35% 35%;background:linear-gradient(180deg,#5A3120,#7A4428)"></div>
+<div style="position:absolute;left:23em;top:24em;width:5.2em;height:5.6em;border-radius:50%;background:#35200F"></div>
+<div style="position:absolute;left:35.8em;top:24em;width:5.2em;height:5.6em;border-radius:50%;background:#35200F"></div>
+<div style="position:absolute;left:18.5em;top:29.5em;width:7em;height:5.5em;border-radius:50%;background:#FF8A86;opacity:.75"></div>
+<div style="position:absolute;left:38.5em;top:29.5em;width:7em;height:5.5em;border-radius:50%;background:#FF8A86;opacity:.75"></div>
+<div style="position:absolute;left:28.6em;top:30.5em;width:6.8em;height:3.4em;border-bottom:1.8em solid #8A3526;border-radius:0 0 4em 4em;box-sizing:border-box"></div>
+<div style="position:absolute;left:5em;top:9em;width:10em;height:42em;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,0) 88%);transform:rotate(14deg)"></div>
+<div style="position:absolute;left:6.5em;top:58em;width:4.5em;height:12em;border-radius:50%;background:rgba(255,255,255,.4);transform:rotate(-8deg)"></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:120,&quot;height&quot;:150},&quot;color&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;cherry&quot;,&quot;tangerine&quot;,&quot;sunflower&quot;,&quot;leaf&quot;,&quot;lagoon&quot;,&quot;sky&quot;,&quot;grape&quot;,&quot;bubblegum&quot;,&quot;midnight&quot;,&quot;cocoa&quot;,&quot;gold&quot;],&quot;default&quot;:&quot;cherry&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:1,&quot;max&quot;:4,&quot;default&quot;:3,&quot;tsType&quot;:&quot;number&quot;},&quot;h&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;symbols&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;shadow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const PAL = { cherry:'#E5484D', tangerine:'#F2893B', sunflower:'#F5C518', leaf:'#46A758', lagoon:'#12A594', sky:'#3E8EDE', grape:'#8E4EC6', bubblegum:'#E93D82', midnight:'#2F3E8F', cocoa:'#A0673C' };
+const ICON = { cherry:'favorite', tangerine:'local_florist', sunflower:'sunny', leaf:'eco', lagoon:'waves', sky:'water_drop', grape:'star', bubblegum:'featured_seasonal_and_gifts', midnight:'bedtime', cocoa:'nutrition', gold:'crown' };
+const H = { 1:42, 2:62, 3:86, 4:112 };
+function mix(a, b, t) {
+  const p = h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const x = p(a), y = p(b);
+  return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+class Component extends DCLogic {
+  renderVals() {
+    const c = this.props.color || 'cherry';
+    const h = this.props.h || H[this.props.size || 3];
+    const gold = c === 'gold';
+    const base = gold ? '#D4A22C' : PAL[c] || PAL.cherry;
+    return {
+      fs: h / 100,
+      shadow: this.props.shadow ?? true,
+      symbols: this.props.symbols ?? true,
+      icon: ICON[c] || 'favorite',
+      bodyBg: gold
+        ? 'linear-gradient(115deg,rgba(255,255,255,0) 38%,rgba(255,255,255,.45) 47%,rgba(255,255,255,0) 56%),radial-gradient(120% 95% at 30% 22%,#FFF6C8 0%,#F2CC5B 24%,#C89220 56%,#8C5E12 100%)'
+        : `radial-gradient(130% 100% at 30% 24%, ${mix(base,'#ffffff',.42)} 0%, ${base} 42%, ${mix(base,'#000000',.34)} 100%)`,
+      trim: gold ? '#FFE9A3' : mix(base, '#ffffff', .68),
+      apron: gold ? '#FFF0C2' : mix(base, '#FFF4E0', .84),
+      symColor: gold ? '#9A6A12' : mix(base, '#000000', c === 'sunflower' ? .3 : .12),
+    };
+  }
+}
+</script>
+</body>
+</html>

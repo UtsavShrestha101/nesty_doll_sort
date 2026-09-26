@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes no-hop{0%,55%,100%{transform:translateY(0) scaleY(1)}20%{transform:translateY(-22px) scaleY(1.03)}40%{transform:translateY(0) scaleY(.92)}}@keyframes no-tw{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}@keyframes no-spin{to{transform:rotate(360deg)}}</style></helmet>
+<div style="position:relative;width:390px;height:844px;border-radius:46px;overflow:hidden;background:#F4D29C;box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+<sc-if value="{{ hasBoard }}" hint-placeholder-val="{{ true }}"><dc-import name="NestyBoard" scene="{{ board }}" bare="{{ true }}" hint-size="390px,844px" style="position:absolute;left:0;top:0"></dc-import></sc-if>
+<div style="position:absolute;inset:0;background:{{ dim }};z-index:30"></div>
+
+<sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;z-index:31">
+<sc-for list="{{ confetti }}" as="k" hint-placeholder-count="0"><div style="position:absolute;left:{{ k.x }}px;top:{{ k.y }}px;width:{{ k.w }}px;height:{{ k.h }}px;border-radius:{{ k.br }};background:{{ k.bg }};transform:rotate({{ k.r }}deg)"></div></sc-for>
+<div style="position:absolute;left:44px;right:44px;top:118px;height:64px">
+<div style="position:absolute;left:-16px;top:16px;width:48px;height:44px;background:#C4631E;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,14px 50%)"></div><div style="position:absolute;right:-16px;top:16px;width:48px;height:44px;background:#C4631E;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 50%,100% 100%,0 100%)"></div>
+<div style="position:absolute;inset:0 6px 8px;border-radius:14px;background:linear-gradient(180deg,#F9A964,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 6px 0 #B8561A;display:flex;align-items:center;justify-content:center;color:#fff;font:700 28px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">{{ wTitle }}</div>
+</div>
+<div style="position:absolute;left:10px;right:10px;top:350px;height:30px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 30px"></div>
+<sc-for list="{{ hoppers }}" as="d" hint-placeholder-count="0"><div style="position:absolute;left:{{ d.x }}px;top:{{ d.y }}px;width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat;transform-origin:50% 96%;animation:no-hop 1.3s ease-in-out {{ d.delay }}s infinite"></div></sc-for>
+<div style="position:absolute;left:0;right:0;top:404px;display:flex;justify-content:center"><div style="display:flex;align-items:center;gap:10px;padding:10px 20px 10px 10px;border-radius:26px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;font:700 30px/1 'Fredoka',sans-serif;color:#8C5E12;font-variant-numeric:tabular-nums"><div style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -3px 0 rgba(120,70,0,.35),inset 0 0 0 2px rgba(255,240,180,.6)"></div>{{ wCoins }}<sc-if value="{{ x3claimed }}" hint-placeholder-val="{{ false }}"><div style="padding:5px 8px;border-radius:10px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);color:#fff;font:700 14px/1 'Fredoka',sans-serif;box-shadow:0 3px 0 #5530A8">×3</div></sc-if></div></div>
+<sc-if value="{{ isProg }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:28px;right:28px;top:484px;padding:12px 12px 12px 16px;border-radius:22px;background:rgba(255,249,236,.96);box-shadow:0 5px 0 #D8B07A;display:flex;align-items:center;gap:12px">
+<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;font:700 14px/1 'Fredoka',sans-serif;color:#7A5234"><span>{{ pLabel }}</span><span style="font-variant-numeric:tabular-nums">{{ pCount }}</span></div><div style="margin-top:8px;height:16px;border-radius:8px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.3);padding:2px;box-sizing:border-box"><div style="width:{{ pPct }}%;height:100%;border-radius:6px;background:linear-gradient(180deg,#7FD08D,#46A758);box-shadow:inset 0 2px 0 rgba(255,255,255,.45)"></div></div><div style="margin-top:7px;font:700 13px/1.2 'Nunito',sans-serif;color:#8A5B3A">{{ pNext }}</div></div>
+<div style="width:62px;height:62px;flex:none;border-radius:14px;background:#F3E2C6 url({{ pArt }}) center/90% no-repeat;box-shadow:inset 0 0 0 2px #EAD3B0"></div>
+</div></sc-if>
+<sc-if value="{{ isStreak }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:28px;right:28px;top:484px;padding:12px 16px 12px 12px;border-radius:22px;background:rgba(255,249,236,.96);box-shadow:0 5px 0 #D8B07A;display:flex;align-items:center;gap:12px"><div style="width:52px;height:52px;flex:none;border-radius:50%;background:linear-gradient(180deg,#FFB27A,#F2702B);box-shadow:0 3px 0 #B8501A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:32px;color:#FFF6E6;font-variation-settings:'FILL' 1">local_fire_department</div><div style="flex:1;min-width:0"><div style="font:700 20px/1.1 'Fredoka',sans-serif">5-day streak</div><div style="margin-top:3px;font:700 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">Two more days to the Day 7 chest</div></div></div></sc-if>
+<div style="position:absolute;left:28px;right:28px;top:630px;display:flex;flex-direction:column;gap:14px">
+<sc-if value="{{ x3offer }}" hint-placeholder-val="{{ false }}"><div style="height:58px;border-radius:22px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);box-shadow:inset 0 2px 0 rgba(255,255,255,.3),0 6px 0 #5530A8;display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;font:700 20px/1 'Fredoka',sans-serif"><div style="width:30px;height:24px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:10px solid #7C4DDB;border-top:6.5px solid transparent;border-bottom:6.5px solid transparent;margin-left:3px"></div></div>×3 coins</div></sc-if>
+<sc-if value="{{ x3claimed }}" hint-placeholder-val="{{ false }}"><div style="height:58px;border-radius:22px;background:#E9DDF9;box-shadow:inset 0 0 0 2px #C9B3F0;display:flex;align-items:center;justify-content:center;gap:8px;color:#5530A8;font:700 18px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1,'wght' 700">check_circle</span>Reward added</div></sc-if>
+<div style="height:58px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#fff;font:700 21px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">{{ wCont }}</div>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:20px;right:20px;top:62px;display:flex;align-items:center;gap:10px;padding:9px 16px 9px 10px;border-radius:20px;background:#FFE1E1;box-shadow:inset 0 2px 0 #FFF2F2,0 4px 0 #E8A5A7;z-index:33"><div style="width:30px;height:30px;border-radius:50%;background:#E5484D;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:20px;color:#fff;font-variation-settings:'wght' 700;flex:none">wifi_off</div><div><div style="font:700 16px/1.1 'Fredoka',sans-serif">Offline</div><div style="font:700 12px/1.3 'Nunito',sans-serif;color:#8A5B3A">Ad buttons switch to coin prices</div></div></div></sc-if>
+
+<sc-if value="{{ isOom }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;bottom:0;border-radius:34px 34px 0 0;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 -10px 30px rgba(60,25,5,.3);padding:14px 22px 40px;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="width:44px;height:5px;border-radius:3px;background:rgba(110,70,40,.25)"></div>
+<div style="margin-top:20px;font:700 30px/1.1 'Fredoka',sans-serif">No moves left!</div>
+<div style="margin-top:6px;font:600 15px/1.4 'Nunito',sans-serif;color:#7A5234">Pick a way to keep sorting.</div>
+<div style="margin-top:20px;width:100%;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A"><div style="width:44px;height:44px;border-radius:14px;background:#F6E2C2;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600">undo</div><div style="flex:1"><div style="font:700 18px/1.1 'Fredoka',sans-serif">Undo</div><div style="font:600 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">Take back your last move</div></div><div style="padding:8px 12px;border-radius:14px;background:#DDF3E2;color:#2F7A3E;font:700 14px/1 'Fredoka',sans-serif;box-shadow:inset 0 0 0 2px #A6DDB3">Free · 1 left</div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 0 0 3px #A6DDB3"><div style="width:44px;height:44px;border-radius:14px;background:#CDEFD6;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#2F7A3E;font-variation-settings:'FILL' 1,'wght' 600">add_box</div><div style="flex:1;min-width:0"><div style="font:700 18px/1.1 'Fredoka',sans-serif">+1 Slot</div><div style="font:600 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">{{ slotSub }}</div></div><div style="display:flex;gap:6px"><sc-if value="{{ oomOn }}" hint-placeholder-val="{{ true }}"><div style="width:44px;height:40px;border-radius:14px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);box-shadow:0 4px 0 #5530A8;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:11px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px"></div></div></sc-if><div style="height:40px;padding:0 10px 0 6px;border-radius:14px;background:linear-gradient(180deg,#FFF1C9,#F9DC8A);box-shadow:0 4px 0 #D4A93A;display:flex;align-items:center;gap:4px;font:700 15px/1 'Fredoka',sans-serif;color:#8C5E12"><div style="width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></div>150</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A"><div style="width:44px;height:44px;border-radius:14px;background:#F6E2C2;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600">restart_alt</div><div style="flex:1"><div style="font:700 18px/1.1 'Fredoka',sans-serif">Restart</div><div style="font:600 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">Start this level fresh, for free</div></div><span style="font-family:'Material Symbols Rounded';font-size:26px;color:#B98A60">chevron_right</span></div>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ isBuy }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;top:226px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 8px 0 #D8B07A,0 20px 40px rgba(60,25,5,.35);padding:40px 22px 22px;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:9px 22px;border-radius:16px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;color:#fff;font:700 18px/1 'Fredoka',sans-serif;white-space:nowrap">{{ bTitle }}</div>
+<div style="position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:50%;background:#F6E2C2;box-shadow:inset 0 -3px 0 #E3C394;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px;color:#6E4526;font-variation-settings:'wght' 700">close</div>
+<div style="width:112px;height:112px;border-radius:50%;background:{{ bIconBg }};box-shadow:0 0 0 8px {{ bHalo }},inset 0 -5px 0 rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:64px;color:{{ bIconC }};font-variation-settings:'FILL' 1,'wght' 600">{{ bIcon }}</div>
+<div style="margin-top:18px;font:700 17px/1.4 'Nunito',sans-serif;color:#5B3A21;text-align:center;text-wrap:pretty">{{ bText }}</div>
+<sc-if value="{{ bOnline }}" hint-placeholder-val="{{ true }}"><div style="margin-top:22px;width:100%;display:flex;gap:10px">
+<div style="flex:1;height:56px;border-radius:20px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #C4631E;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;font:700 18px/1 'Fredoka',sans-serif"><div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:0 0 0 2px rgba(255,255,255,.6)"></div>{{ bPrice }}</div>
+<div style="flex:1;height:56px;border-radius:20px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);box-shadow:inset 0 2px 0 rgba(255,255,255,.3),0 5px 0 #5530A8;display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;font:700 18px/1 'Fredoka',sans-serif"><div style="width:26px;height:20px;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #7C4DDB;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div>Watch ad</div>
+</div></sc-if>
+<sc-if value="{{ bOffline }}" hint-placeholder-val="{{ false }}"><div style="margin-top:22px;width:100%;height:56px;border-radius:20px;background:#E8DCCB;box-shadow:inset 0 2px 3px rgba(90,45,15,.18);display:flex;align-items:center;justify-content:center;gap:7px;color:#A48B72;font:700 18px/1 'Fredoka',sans-serif"><div style="width:22px;height:22px;border-radius:50%;background:#CDB89C"></div>{{ bPrice }}</div><div style="margin-top:10px;display:flex;align-items:center;gap:6px;font:700 14px/1.3 'Nunito',sans-serif;color:#C33338"><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'wght' 700">wifi_off</span>Connect to watch an ad</div></sc-if>
+<div style="margin-top:14px;font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">{{ bBal }}</div>
+</div></sc-if>
+
+<sc-if value="{{ isIntro }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:24px;right:24px;top:170px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 8px 0 #D8B07A,0 20px 40px rgba(60,25,5,.35);padding:22px 20px 22px;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="padding:5px 12px;border-radius:10px;background:#E93D82;color:#fff;font:700 12px/1 'Fredoka',sans-serif;letter-spacing:.12em;box-shadow:0 3px 0 #B32463">{{ introBadge }}</div>
+<div style="margin-top:10px;font:700 34px/1 'Fredoka',sans-serif">{{ introTitle }}</div>
+<div style="position:relative;margin-top:16px;width:302px;height:230px;border-radius:22px;background:linear-gradient(180deg,#FCEBCB,#F3D4A0);overflow:hidden">
+<div style="position:absolute;left:0;right:0;bottom:12px;height:30px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 30px"></div>
+<sc-for list="{{ illus }}" as="q" hint-placeholder-count="0"><div style="position:absolute;left:{{ q.x }}px;top:{{ q.y }}px;width:{{ q.w }}px;height:{{ q.h }}px;background:{{ q.bgi }} center/100% 100% no-repeat;opacity:{{ q.op }}"></div></sc-for>
+<sc-for list="{{ arrows }}" as="a" hint-placeholder-count="0"><div style="position:absolute;left:{{ a.x }}px;top:96px;font-family:'Material Symbols Rounded';font-size:34px;color:#C4631E;font-variation-settings:'FILL' 1,'wght' 700">arrow_forward</div></sc-for>
+<sc-for list="{{ chips }}" as="c" hint-placeholder-count="0"><div style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;min-width:24px;height:24px;padding:0 5px;box-sizing:border-box;border-radius:12px;background:{{ c.bg }};box-shadow:0 0 0 2px #FFFFFF;display:flex;align-items:center;justify-content:center;color:#fff;font:700 13px/1 'Fredoka',sans-serif">{{ c.t }}</div></sc-for>
+</div>
+<div style="margin-top:16px;font:600 16px/1.45 'Nunito',sans-serif;color:#6E4526;text-align:center;text-wrap:pretty;max-width:300px">{{ introText }}</div>
+<div style="margin-top:20px;width:100%;height:58px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#fff;font:700 21px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">Got it</div>
+</div></sc-if>
+
+<sc-if value="{{ isPause }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;top:190px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 8px 0 #D8B07A,0 20px 40px rgba(60,25,5,.35);padding:40px 22px 22px;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:9px 22px;border-radius:16px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;color:#fff;font:700 18px/1 'Fredoka',sans-serif;white-space:nowrap">Paused</div>
+<div style="font:700 15px/1 'Fredoka',sans-serif;color:#9A6A44">Level 56 · Hard</div>
+<div style="margin-top:12px;width:100%;display:flex;flex-direction:column">
+<sc-for list="{{ toggles }}" as="t" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px dashed rgba(110,60,25,.2)"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#8A5B3A;font-variation-settings:'FILL' 1">{{ t.icon }}</span><span style="flex:1;font:700 17px/1 'Nunito',sans-serif">{{ t.label }}</span><div style="width:54px;height:30px;border-radius:15px;background:{{ t.track }};box-shadow:inset 0 2px 3px rgba(60,25,5,.25);position:relative"><div style="position:absolute;top:3px;left:{{ t.knob }}px;width:24px;height:24px;border-radius:50%;background:#FFFDF7;box-shadow:0 2px 0 rgba(90,50,20,.3)"></div></div></div></sc-for>
+</div>
+<div style="margin-top:20px;width:100%;height:56px;border-radius:20px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#fff;font:700 20px/1 'Fredoka',sans-serif">Resume</div>
+<div style="margin-top:14px;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<div style="height:62px;border-radius:18px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 14px/1 'Fredoka',sans-serif;color:#6E4526"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1,'wght' 600">restart_alt</span>Restart</div>
+<div style="height:62px;border-radius:18px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 14px/1 'Fredoka',sans-serif;color:#6E4526"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1,'wght' 600">home</span>Home</div>
+<div style="height:62px;border-radius:18px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 14px/1 'Fredoka',sans-serif;color:#6E4526"><span style="font-family:'Material Symbols Rounded';font-size:24px;font-variation-settings:'FILL' 1,'wght' 600">settings</span>Settings</div>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ isChapter }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;z-index:31">
+<div style="position:absolute;left:50%;top:0;width:360px;height:600px;margin-left:-180px;background:linear-gradient(180deg,rgba(255,244,210,.55),rgba(255,236,190,.1));clip-path:polygon(40% 0,60% 0,100% 100%,0 100%)"></div>
+<div style="position:absolute;left:50%;top:430px;width:340px;height:110px;margin-left:-170px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,240,200,.75),rgba(255,240,200,0))"></div>
+<div style="position:absolute;left:0;right:0;top:96px;text-align:center"><div style="font:700 14px/1 'Fredoka',sans-serif;letter-spacing:.14em;color:#FFE3B8">CHAPTER 3 COMPLETE</div><div style="margin-top:10px;font:700 34px/1.1 'Fredoka',sans-serif;color:#FFF6E6;text-shadow:0 3px 0 rgba(40,20,5,.5)">The Baker Family</div></div>
+<div style="position:absolute;left:50%;top:190px;width:310px;height:310px;margin-left:-155px;background:url(museum/03-baker.svg) center/contain no-repeat"></div>
+<sc-for list="{{ sparks }}" as="s" hint-placeholder-count="0"><div style="position:absolute;left:{{ s.x }}px;top:{{ s.y }}px;font-family:'Material Symbols Rounded';font-size:{{ s.s }}px;color:#FFF3B0;font-variation-settings:'FILL' 1;animation:no-tw 2.2s ease-in-out {{ s.d }}s infinite">star</div></sc-for>
+<div style="position:absolute;left:0;right:0;top:530px;display:flex;flex-direction:column;align-items:center;gap:14px">
+<div style="font:700 22px/1.2 'Fredoka',sans-serif;color:#FFF6E6">Added to your Museum!</div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 20px 9px 9px;border-radius:24px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:0 5px 0 #D8B07A;font:700 24px/1 'Fredoka',sans-serif;color:#8C5E12"><div style="width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></div>+150 coins</div>
+<div style="margin-top:4px;font:700 14px/1.3 'Nunito',sans-serif;color:#FFE3B8">Next: Chapter 4 · Snowy Cabin</div>
+</div>
+<div style="position:absolute;left:28px;right:28px;top:732px;height:58px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#fff;font:700 21px/1 'Fredoka',sans-serif">Continue</div>
+</div></sc-if>
+
+<sc-if value="{{ isAds }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:24px;right:24px;top:140px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 8px 0 #D8B07A,0 20px 40px rgba(60,25,5,.35);padding:26px 22px 20px;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="position:relative;width:100%;height:150px;border-radius:22px;background:linear-gradient(180deg,#FCEBCB,#F3D4A0);overflow:hidden">
+<div style="position:absolute;left:0;right:0;bottom:8px;height:26px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 26px"></div>
+<div style="position:absolute;left:96px;top:26px;width:72px;height:108px;background:url(skins/classic/preview/doll-cherry.svg) center bottom/contain no-repeat"></div>
+<div style="position:absolute;left:164px;top:58px;width:52px;height:78px;background:url(skins/classic/preview/doll-sky.svg) center bottom/contain no-repeat"></div>
+<div style="position:absolute;right:22px;top:20px;width:52px;height:52px;border-radius:16px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);box-shadow:0 4px 0 #5530A8;display:flex;align-items:center;justify-content:center;overflow:hidden;transform:rotate(8deg)"><div style="width:26px;height:20px;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #7C4DDB;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="position:absolute;left:50%;top:50%;width:56px;height:5px;margin:-2.5px 0 0 -28px;border-radius:3px;background:#E5484D;box-shadow:0 0 0 2px #fff;transform:rotate(-40deg)"></div></div>
+</div>
+<div style="margin-top:18px;font:700 28px/1.1 'Fredoka',sans-serif;text-align:center">Play without ads</div>
+<div style="margin-top:14px;width:100%;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:10px;align-items:flex-start"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#46A758;font-variation-settings:'FILL' 1,'wght' 700">check_circle</span><span style="font:600 15px/1.4 'Nunito',sans-serif;color:#5B3A21">No more ads between levels.</span></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#46A758;font-variation-settings:'FILL' 1,'wght' 700">check_circle</span><span style="font:600 15px/1.4 'Nunito',sans-serif;color:#5B3A21">▶ reward videos stay, but only when you tap one.</span></div>
+<div style="display:flex;gap:10px;align-items:flex-start"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#46A758;font-variation-settings:'FILL' 1,'wght' 700">check_circle</span><span style="font:600 15px/1.4 'Nunito',sans-serif;color:#5B3A21">Pay once. Restore it on any device.</span></div>
+</div>
+<div style="margin-top:20px;width:100%;height:60px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#fff;font:700 24px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">$2.99</div>
+<div style="margin-top:16px;font:700 16px/1 'Fredoka',sans-serif;color:#8A5B3A">No thanks</div>
+<div style="margin-top:12px;font:600 12px/1 'Nunito',sans-serif;color:#9A6A44;text-decoration:underline">Restore purchase</div>
+</div></sc-if>
+
+<sc-if value="{{ isBonus }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:24px;right:24px;top:150px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 8px 0 #D8B07A,0 20px 40px rgba(60,25,5,.35);padding:22px 20px 22px;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="position:relative;width:100%;height:190px;border-radius:22px;background:radial-gradient(ellipse 70% 80% at 50% 30%,#FFF6DC,#F7DDA8 70%,#EFC98A);overflow:hidden">
+<div style="position:absolute;left:0;right:0;bottom:10px;height:28px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 28px"></div>
+<sc-for list="{{ bonusDolls }}" as="d" hint-placeholder-count="0"><div style="position:absolute;left:{{ d.x }}px;top:{{ d.y }}px;width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat;transform-origin:50% 96%;animation:no-hop 1.3s ease-in-out {{ d.delay }}s infinite"></div></sc-for>
+<sc-for list="{{ bonusSparks }}" as="s" hint-placeholder-count="0"><div style="position:absolute;left:{{ s.x }}px;top:{{ s.y }}px;font-family:'Material Symbols Rounded';font-size:{{ s.s }}px;color:#F5B418;font-variation-settings:'FILL' 1;animation:no-tw 2.2s ease-in-out {{ s.d }}s infinite">star</div></sc-for>
+</div>
+<div style="margin-top:18px;font:700 28px/1.15 'Fredoka',sans-serif;text-align:center;text-wrap:pretty">You've finished all levels!</div>
+<div style="margin-top:10px;font:600 16px/1.45 'Nunito',sans-serif;color:#6E4526;text-align:center;text-wrap:pretty">New chapters are coming — play bonus levels meanwhile.</div>
+<div style="margin-top:20px;width:100%;height:58px;border-radius:22px;background:linear-gradient(180deg,#3FC6B4,#12A594);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #0B7568;display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;font:700 20px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(5,70,60,.3)"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1">star</span>Play Bonus Level 1</div>
+<div style="margin-top:16px;font:700 16px/1 'Fredoka',sans-serif;color:#8A5B3A">Back to Home</div>
+</div></sc-if>
+
+<sc-if value="{{ isRate }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(20,10,4,.35);z-index:34;display:flex;align-items:center;justify-content:center">
+<div style="width:272px;border-radius:16px;background:rgba(248,246,242,.97);box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden;font-family:system-ui,-apple-system,sans-serif;text-align:center;color:#1C1C1E">
+<div style="padding:20px 18px 16px;display:flex;flex-direction:column;align-items:center">
+<div style="width:60px;height:60px;border-radius:14px;background:url(store/app-icon-180.png) center/cover;box-shadow:0 2px 6px rgba(0,0,0,.2)"></div>
+<div style="margin-top:12px;font:600 17px/1.3 system-ui,-apple-system,sans-serif">Enjoying Nesty?</div>
+<div style="margin-top:4px;font:400 13px/1.35 system-ui,-apple-system,sans-serif;color:#3A3A3C">Tap a star to rate it on the App Store.</div>
+</div>
+<div style="border-top:1px solid rgba(60,60,67,.2);padding:10px 0;display:flex;justify-content:center;gap:6px;font-family:'Material Symbols Rounded';font-size:30px;color:#2F7AE5;font-variation-settings:'FILL' 0,'wght' 400"><span>star</span><span>star</span><span>star</span><span>star</span><span>star</span></div>
+<div style="border-top:1px solid rgba(60,60,67,.2);padding:12px 0;font:400 17px/1.2 system-ui,-apple-system,sans-serif;color:#2F7AE5">Not Now</div>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ isInter }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:#171310;z-index:31;display:flex;flex-direction:column;align-items:center;padding:64px 22px 44px;box-sizing:border-box">
+<div style="align-self:stretch;display:flex;justify-content:space-between;align-items:center"><div style="padding:5px 10px;border-radius:8px;background:#F5C518;color:#3A2A05;font:700 12px/1 'Nunito',sans-serif;letter-spacing:.06em">AD</div><div style="position:relative;width:36px;height:36px;border-radius:50%;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;color:#fff;font:700 15px/1 'Nunito',sans-serif"><div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(#fff 0 62%,transparent 62% 100%);-webkit-mask:radial-gradient(circle,transparent 14px,#000 15px);mask:radial-gradient(circle,transparent 14px,#000 15px)"></div>5</div></div>
+<div style="margin-top:22px;flex:1;align-self:stretch;border-radius:22px;background:repeating-linear-gradient(-45deg,#26201B 0 14px,#2E2721 14px 28px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px;box-sizing:border-box"><div style="font:600 13px/1.5 ui-monospace,Menlo,monospace;color:#CBBBA8">interstitial ad creative</div><div style="font:500 12px/1.5 ui-monospace,Menlo,monospace;color:#8C7B69">full-screen · served by AdMob<br>close unlocks after 5 s</div></div>
+<div style="margin-top:18px;display:flex;align-items:center;gap:8px;font:700 14px/1 'Nunito',sans-serif;color:#E8D8C4"><span style="font-family:'Material Symbols Rounded';font-size:18px;color:#F2893B;font-variation-settings:'FILL' 1">play_circle</span>Level 57 is up next</div>
+</div></sc-if>
+
+<sc-if value="{{ isAtt }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,#FFF9EE,#FBE7C4);display:flex;flex-direction:column;align-items:center;padding:110px 30px 44px;box-sizing:border-box;z-index:31">
+<div style="position:relative;width:220px;height:200px">
+<div style="position:absolute;left:10px;right:10px;bottom:10px;height:26px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 26px;border-radius:6px"></div>
+<div style="position:absolute;left:66px;top:22px;width:92px;height:138px;background:url(skins/classic/preview/doll-lagoon.svg) center bottom/contain no-repeat"></div>
+<div style="position:absolute;right:14px;top:10px;width:54px;height:54px;border-radius:50%;background:#FFE1E6;box-shadow:0 4px 0 #F2A8B6;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:30px;color:#E5484D;font-variation-settings:'FILL' 1">favorite</div>
+</div>
+<div style="margin-top:22px;font:700 30px/1.15 'Fredoka',sans-serif;text-align:center;text-wrap:pretty">Help keep Nesty free</div>
+<div style="margin-top:14px;font:600 16px/1.5 'Nunito',sans-serif;color:#6E4526;text-align:center;text-wrap:pretty">Next, iOS will ask if Nesty may use your activity from other apps and websites.</div>
+<div style="margin-top:18px;width:100%;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:18px;background:#FFFDF7;box-shadow:0 3px 0 #E2C9A3"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#46A758;font-variation-settings:'FILL' 1">thumb_up</span><span style="font:600 14.5px/1.45 'Nunito',sans-serif;color:#5B3A21">If you allow it, the ads you see fit you better, and that helps fund new levels.</span></div>
+<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:18px;background:#FFFDF7;box-shadow:0 3px 0 #E2C9A3"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#3E8EDE;font-variation-settings:'FILL' 1">sentiment_satisfied</span><span style="font:600 14.5px/1.45 'Nunito',sans-serif;color:#5B3A21">Either choice is fine. The game plays exactly the same, and you can change it later in Settings.</span></div>
+</div>
+<div style="flex:1"></div>
+<div style="width:100%;height:60px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#fff;font:700 21px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">Continue</div>
+</div></sc-if>
+<sc-if value="{{ isAttSys }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(20,12,6,.4);z-index:35;display:flex;align-items:center;justify-content:center">
+<div style="width:272px;border-radius:16px;background:rgba(248,246,242,.97);box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden;text-align:center;color:#1C1C1E">
+<div style="padding:20px 18px 16px"><div style="font:600 17px/1.3 system-ui,-apple-system,sans-serif">Allow “Nesty” to track your activity across other companies’ apps and websites?</div><div style="margin-top:8px;font:400 13px/1.4 system-ui,-apple-system,sans-serif;color:#3A3A3C">Your data is used to show ads that fit you better. It helps keep Nesty free.</div></div>
+<div style="border-top:1px solid rgba(60,60,67,.2);padding:12px 0;font:400 17px/1.2 system-ui,-apple-system,sans-serif;color:#2F7AE5">Ask App Not to Track</div>
+<div style="border-top:1px solid rgba(60,60,67,.2);padding:12px 0;font:400 17px/1.2 system-ui,-apple-system,sans-serif;color:#2F7AE5">Allow</div>
+</div>
+</div></sc-if>
+
+<div style="position:absolute;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 34px 0 40px;box-sizing:border-box;font:700 16px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:24px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.75"><div style="width:80%;height:100%;background:currentColor;border-radius:2px"></div></div></div>
+<div style="position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#120B06;z-index:41"></div>
+<div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:42"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;win1&quot;,&quot;win56&quot;,&quot;win56x3&quot;,&quot;win60&quot;,&quot;dailyWin&quot;,&quot;rate&quot;,&quot;oom&quot;,&quot;oomOffline&quot;,&quot;buyHint&quot;,&quot;buyUndo&quot;,&quot;buyOffline&quot;,&quot;introTower&quot;,&quot;introGlass&quot;,&quot;introIce&quot;,&quot;introGold&quot;,&quot;pause&quot;,&quot;chapter&quot;,&quot;removeAds&quot;,&quot;bonus&quot;,&quot;interstitial&quot;,&quot;att&quot;,&quot;attSystem&quot;],&quot;default&quot;:&quot;win56&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const P = 'skins/classic/preview/', B = 'skins/classic/board/';
+const R = Math.round;
+const doll = (c, cx, base, h, op = 1) => ({ bgi: `url(${P}doll-${c}.svg)`, w: R(h * 2 / 3), h: R(h), x: R(cx - h / 3), y: R(base - h * 742 / 768), op });
+const img = (src, x, y, w, h, op = 1) => ({ bgi: `url(${B}${src})`, x, y, w, h, op });
+function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const hop = cols => { const n = cols.length, sp = Math.min(84, 330 / n), h = n > 4 ? 88 : 104; return cols.map((c, i) => ({ ...doll(c, 195 + (i - (n - 1) / 2) * sp, 361, h), delay: i * .15 })); };
+const DIM = 'rgba(60,30,10,.55)';
+const WIN = o => ({ isWin: true, wTitle: 'Level Complete!', wCont: 'Continue', x3offer: true, x3claimed: false, isProg: true, isStreak: false, ...o });
+const P56 = { pLabel: 'Chapter 3', pCount: '16 / 20', pPct: 80, pNext: 'Next up: The Baker Family', pArt: 'museum/03-baker-locked.svg', hop: ['cherry', 'sky', 'leaf', 'grape'] };
+const INTRO = {
+  introTower: { introBadge: 'NEW', introTitle: 'Towers!', introText: 'Only the top nest can move. Clear it to reveal the doll hiding underneath.', board: 'tower16',
+    illus: [img('tower-base-blank.svg', 26, 172, 90, 39), img('doll-silhouette.svg', 31, 64, 80, 120), img('doll-silhouette.svg', 37, 80, 68, 102), doll('sky', 71, 185, 84), img('tower-base-blank.svg', 196, 172, 90, 39), img('doll-silhouette.svg', 201, 64, 80, 120), doll('leaf', 241, 185, 102)],
+    arrows: [{ x: 133 }], chips: [{ x: 90, y: 160, t: '+2', bg: '#7B4824' }, { x: 260, y: 160, t: '+1', bg: '#7B4824' }] },
+  introGlass: { introBadge: 'NEW', introTitle: 'Glass Cases', introText: 'A locked doll is freed when the family on its padlock is complete.', board: 'glass31',
+    illus: [doll('leaf', 72, 158, 86), img('glass-case-0.svg', 26, 36, 92, 153), doll('leaf', 244, 172, 86), img('glass-case-2.svg', 198, 36, 92, 153)],
+    arrows: [{ x: 133 }], chips: [{ x: 128, y: 40, t: '★', bg: '#8E4EC6' }] },
+  introIce: { introBadge: 'NEW', introTitle: 'Ice', introText: 'Every family you finish cracks the ice. At zero, the doll is free.', board: 'ice51',
+    illus: [img('slot-stand-blank.svg', 20, 170, 70, 26), doll('sky', 55, 179, 76), img('ice-0.svg', 17, 60, 76, 127), img('slot-stand-blank.svg', 124, 170, 70, 26), doll('sky', 159, 179, 76), img('ice-2.svg', 121, 60, 76, 127), img('slot-stand-blank.svg', 228, 170, 70, 26), doll('sky', 263, 179, 76), img('ice-shatter.svg', 225, 60, 76, 127)],
+    arrows: [], chips: [{ x: 76, y: 56, t: '2', bg: '#3E8EDE' }, { x: 180, y: 56, t: '1', bg: '#3E8EDE' }] },
+  introGold: { introBadge: 'v1.1', introTitle: 'Golden Doll', introText: 'Gold counts as any color. It joins whichever family it nests into.', board: 'gold101',
+    illus: [doll('cherry', 58, 185, 110), doll('gold', 118, 185, 72), doll('sky', 200, 185, 110), doll('gold', 260, 185, 72)],
+    arrows: [], chips: [{ x: 96, y: 52, t: '✓', bg: '#46A758' }, { x: 238, y: 52, t: '✓', bg: '#46A758' }] },
+};
+const BUY = {
+  buyHint: { board: 'noHints', bTitle: 'Hint', bIcon: 'lightbulb', bIconBg: 'radial-gradient(circle at 40% 35%,#FFF6C8,#FFE08A 60%,#F5C518)', bHalo: 'rgba(255,224,138,.35)', bIconC: '#8C5E12', bText: 'Shows your next best move.', bPrice: '60 coins', bOnline: true, bBal: 'You have 830 coins' },
+  buyUndo: { board: 'noUndo', bTitle: 'Undo', bIcon: 'undo', bIconBg: 'radial-gradient(circle at 40% 35%,#FFFBF2,#F6E2C2 60%,#E3C394)', bHalo: 'rgba(227,195,148,.35)', bIconC: '#6E4526', bText: 'Your 2 free undos are used. Take back one more move.', bPrice: '20 coins', bOnline: true, bBal: 'You have 830 coins' },
+  buyOffline: { board: 'fullBroke', offline: true, bTitle: '+1 Slot', bIcon: 'add_box', bIconBg: 'radial-gradient(circle at 40% 35%,#EFFCF2,#BDECC8 60%,#7FD08D)', bHalo: 'rgba(127,208,141,.3)', bIconC: '#2F7A3E', bText: 'Adds one empty stand for this level.', bPrice: '150 coins', bOnline: false, bBal: 'You have 40 coins' },
+};
+const S = {
+  win1: { board: 'won1', ...WIN({ wCoins: '+10', hop: ['cherry'], pLabel: 'Chapter 1', pCount: '1 / 20', pPct: 5, pNext: 'Next up: The Classic Family', pArt: 'museum/01-classic-locked.svg' }) },
+  win56: { board: 'won56', ...WIN({ wCoins: '+25', ...P56 }) },
+  win56x3: { board: 'won56', ...WIN({ wCoins: '+75', ...P56, x3offer: false, x3claimed: true }) },
+  win60: { board: 'won60', ...WIN({ wCoins: '+50', hop: ['midnight', 'sunflower', 'cherry', 'lagoon', 'grape'], pLabel: 'Chapter 3', pCount: '20 / 20', pPct: 100, pNext: 'Chapter complete! Your prize is next.', pArt: 'museum/03-baker-locked.svg' }) },
+  dailyWin: { board: 'wonDaily', ...WIN({ wTitle: 'Daily solved!', wCoins: '+50', hop: ['grape', 'sunflower', 'cherry', 'lagoon', 'bubblegum'], x3offer: false, isProg: false, isStreak: true, wCont: 'Back to Daily' }) },
+  rate: { board: 'won15', ...WIN({ wCoins: '+10', hop: ['tangerine', 'sky', 'cherry', 'leaf'], pLabel: 'Chapter 1', pCount: '15 / 20', pPct: 75, pNext: 'Next up: The Classic Family', pArt: 'museum/01-classic-locked.svg' }), isRate: true },
+  oom: { board: 'full', isOom: true, oomOn: true, slotSub: 'Add a stand for this level' },
+  oomOffline: { board: 'full', isOom: true, oomOn: false, offline: true, slotSub: 'Coins only while offline' },
+  pause: { board: 'play', isPause: true },
+  chapter: { board: 'won60', dim: 'rgba(25,12,4,.86)', isChapter: true },
+  removeAds: { board: 'next57', isAds: true },
+  bonus: { board: 'won200', isBonus: true },
+  interstitial: { hasBoard: false, isInter: true, dim: 'transparent' },
+  att: { hasBoard: false, isAtt: true, dim: 'transparent', light: true },
+  attSystem: { hasBoard: false, isAtt: true, isAttSys: true, dim: 'transparent', light: true },
+};
+Object.keys(INTRO).forEach(k => { S[k] = { isIntro: true, ...INTRO[k] }; });
+Object.keys(BUY).forEach(k => { S[k] = { isBuy: true, bOffline: !BUY[k].bOnline, ...BUY[k] }; });
+
+class Component extends DCLogic {
+  renderVals() {
+    const sc = S[this.props.scene || 'win56'] || S.win56;
+    const Rn = rnd(11), cols = ['#E5484D', '#F5C518', '#46A758', '#3E8EDE', '#8E4EC6', '#E93D82', '#FFFFFF', '#F2893B'];
+    const confetti = Array.from({ length: 46 }, (_, i) => { const big = Rn() > .5; return { x: R(Rn() * 380), y: R(60 + Rn() * 560), w: big ? 12 : 8, h: big ? 6 : 8, br: big ? '2px' : '50%', bg: cols[i % cols.length], r: R(Rn() * 180) }; });
+    const flags = ['isWin', 'isProg', 'isStreak', 'x3offer', 'x3claimed', 'isOom', 'oomOn', 'offline', 'isBuy', 'bOnline', 'bOffline', 'isIntro', 'isPause', 'isChapter', 'isAds', 'isBonus', 'isRate', 'isInter', 'isAtt', 'isAttSys'];
+    const out = {};
+    flags.forEach(f => { out[f] = !!sc[f]; });
+    return {
+      ...out,
+      hasBoard: sc.hasBoard !== false, board: sc.board || 'play', dim: sc.dim || DIM,
+      sbc: sc.light ? '#3A2414' : '#FFF4E0', hi: sc.light ? 'rgba(40,20,8,.75)' : 'rgba(255,240,215,.85)',
+      confetti, hoppers: hop(sc.hop || []),
+      wTitle: sc.wTitle || '', wCoins: sc.wCoins || '', wCont: sc.wCont || 'Continue',
+      pLabel: sc.pLabel || '', pCount: sc.pCount || '', pPct: sc.pPct || 0, pNext: sc.pNext || '', pArt: sc.pArt || '',
+      slotSub: sc.slotSub || '',
+      bTitle: sc.bTitle || '', bIcon: sc.bIcon || '', bIconBg: sc.bIconBg || '#fff', bHalo: sc.bHalo || 'transparent', bIconC: sc.bIconC || '#6E4526', bText: sc.bText || '', bPrice: sc.bPrice || '', bBal: sc.bBal || '',
+      introBadge: sc.introBadge || '', introTitle: sc.introTitle || '', introText: sc.introText || '', illus: (sc.illus || []).map(o => ({ op: 1, ...o })), arrows: sc.arrows || [], chips: sc.chips || [],
+      toggles: [['volume_up', 'Sound', true], ['music_note', 'Music', false], ['vibration', 'Haptics', true]].map(([icon, label, on]) => ({ icon, label, track: on ? '#46A758' : '#D9C2A0', knob: on ? 27 : 3 })),
+      sparks: [{ x: 70, y: 230, s: 22, d: 0 }, { x: 300, y: 214, s: 26, d: .7 }, { x: 52, y: 400, s: 16, d: 1.3 }, { x: 320, y: 410, s: 18, d: 1.8 }, { x: 196, y: 190, s: 14, d: 1 }],
+      bonusDolls: ['cherry', 'sunflower', 'leaf', 'sky', 'grape'].map((c, i) => ({ ...doll(c, 58 + i * 57, 170, [96, 80, 108, 84, 70][i]), delay: i * .14 })),
+      bonusSparks: [{ x: 30, y: 24, s: 20, d: 0 }, { x: 150, y: 14, s: 16, d: .6 }, { x: 290, y: 30, s: 22, d: 1.2 }],
+    };
+  }
+}
+</script>
+</body>
+</html>

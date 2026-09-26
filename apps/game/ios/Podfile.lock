@@ -1,15 +1,21 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_soloud (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_soloud (from `.symlinks/plugins/flutter_soloud/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_soloud:
+    :path: ".symlinks/plugins/flutter_soloud/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_soloud: afb28a948107649185ab1a3a111ca050be09493f
 
 PODFILE CHECKSUM: 96b2a728e74a676f10a54fe467c5129f5d588a81
 

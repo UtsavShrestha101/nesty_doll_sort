@@ -26,6 +26,8 @@ void bootstrap() {
         DeviceOrientation.portraitUp,
       ]);
 
+      _registerFontLicenses();
+
       // TODO(M4): Firebase + Crashlytics go here, before DI:
       //   await Firebase.initializeApp(
       //     options: DefaultFirebaseOptions.currentPlatform,
@@ -66,4 +68,35 @@ void bootstrap() {
       );
     },
   );
+}
+
+/// The bundled fonts' licences, shown on Flutter's licence page. The OFL
+/// (Fredoka, Nunito) and Apache 2.0 (Material Symbols) both require shipping
+/// the licence text with the font; the files come from the pinned upstream
+/// commits in tools/fonts/build_fonts.sh.
+const _fontLicenses = <(List<String>, String, String?)>[
+  (['Fredoka'], 'assets/fonts/Fredoka-OFL.txt', null),
+  (['Nunito'], 'assets/fonts/Nunito-OFL.txt', null),
+  (
+    ['Material Symbols Rounded'],
+    'assets/fonts/MaterialSymbols-LICENSE.txt',
+    // Apache 2.0 §4(b): say that the shipped file was changed.
+    'Modified: the app ships NestySymbolsRounded.ttf, a glyph subset and '
+        'static instance (FILL 1, wght 600, GRAD 0, opsz 24) of Material '
+        'Symbols Rounded with its filled glyph variants mapped directly, made '
+        'with tools/fonts/build_fonts.sh.',
+  ),
+];
+
+// Lazy: the stream only runs when the licence page is opened.
+void _registerFontLicenses() {
+  LicenseRegistry.addLicense(() async* {
+    for (final (packages, asset, notice) in _fontLicenses) {
+      final text = await rootBundle.loadString(asset);
+      yield LicenseEntryWithLineBreaks(
+        packages,
+        notice == null ? text : '$notice\n\n$text',
+      );
+    }
+  });
 }

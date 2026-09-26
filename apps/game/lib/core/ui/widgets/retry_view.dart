@@ -6,7 +6,8 @@ import 'package:nesty_game/core/error/app_exception.dart';
 /// The text comes from [exception]'s kind (`AppExceptionL10n`), never from
 /// its message.
 ///
-/// TODO(design): replace with the design-system modal/card style.
+/// TODO(M2): replace with the design's modal card style (design/README.md
+/// "Components").
 class RetryView extends StatelessWidget {
   const RetryView({required this.exception, required this.onRetry, super.key});
 

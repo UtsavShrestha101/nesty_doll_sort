@@ -34,8 +34,10 @@ before touching code.
   as the fallback when a skin fails.
 
 ## Workflow
-1. Read the spec sections involved (§3, §10.3, §11.1, §12) and any `design/board/`
-   or `design/motion/` exports.
+1. Read the spec sections involved (§3, §10.3, §11.1, §12), `design/board/`,
+   `design/tokens.json` (`motion`, `sound`, `haptics`), and
+   `design/prototypes/Nesty Motion & Sound.dc.html`, which shows every §11
+   animation live with its timings.
 2. Implement. Put pure math in nesty_render (unit-testable without Flame).
 3. Run `flutter analyze` in `apps/game` and `packages/nesty_render`, then their tests.
 4. For performance claims, give numbers from profile mode on a physical device

@@ -4,7 +4,7 @@ import 'package:nesty_core/nesty_core.dart';
 
 // TODO(M2): PlaceholderDollPainter implements DollRenderer: the procedural
 // doll of spec §12.5, and the fallback whenever a skin fails to load.
-// TODO(M7): SvgSkinRenderer + SkinCache implement DollRenderer: skin layers
+// TODO(M2): SvgSkinRenderer + SkinCache implement DollRenderer: skin layers
 // rasterized once per needed size into cached ui.Images and tinted with
 // BlendMode.modulate (spec §12.2, §13.5).
 

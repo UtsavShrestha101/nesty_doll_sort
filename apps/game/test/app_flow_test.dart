@@ -55,7 +55,7 @@ void main() {
       expect(button.enabled, isFalse, reason: label);
     }
 
-    // Placeholder pause returns to Home (TODO(M3): pause menu).
+    // Placeholder pause returns to Home (TODO(M2): pause menu, frame 3.9).
     await tester.tap(find.byTooltip('Pause'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));

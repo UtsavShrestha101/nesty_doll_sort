@@ -9,8 +9,8 @@ extension BuildContextX on BuildContext {
 
   TextTheme get textTheme => Theme.of(this).textTheme;
 
-  // Text style getters. TODO(design): map to the design-system type scale
-  // (display, h1, h2, button, body, caption, number) once tokens exist.
+  // Text style getters. TODO(M2): map to the design type scale in
+  // `AppTextStyleTokens` (display, h1, h2, button, body, caption, number).
   TextStyle get displayLarge => textTheme.displayLarge ?? const TextStyle();
   TextStyle get displayMedium => textTheme.displayMedium ?? const TextStyle();
   TextStyle get displaySmall => textTheme.displaySmall ?? const TextStyle();

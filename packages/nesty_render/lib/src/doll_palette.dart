@@ -3,9 +3,9 @@ import 'dart:ui' show Color;
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:nesty_core/nesty_core.dart';
 
-// TODO(M7): add `ink` and `light` shades to DollSwatch.
-// TODO(design): take base/ink/light from design/tokens.json
-// `dollColor.<id>.{base,ink,light}` once it exists.
+// TODO(M2): add `ink` and `light` shades to DollSwatch, and take
+// base/ink/light from the generated `DollColorTokens` (design/tokens.json
+// `dollColor.<id>`).
 
 /// How one [DollColor] is painted.
 ///
@@ -61,8 +61,8 @@ abstract final class DollPalette {
 
   // The spec only says "gradient" for gold. These stops are a placeholder
   // metallic ramp so gold is distinguishable until the design lands.
-  // TODO(M7): final metallic gold rendering (spec §12.3, §3.5).
-  // TODO(design): replace with design/tokens.json `dollColor.gold`.
+  // TODO(M2): the gold gradient map from `DollColorTokens.gold` (ramp, gray^2
+  // input; spec §12.3, §3.5, PROGRESS D22: rendering now, rules in v1.1).
   static const _gold = DollSwatch(
     base: Color(0xFFD9A93A),
     gradient: [Color(0xFFFFE9A3), Color(0xFFD9A93A), Color(0xFF9C6F1E)],

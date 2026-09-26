@@ -5,6 +5,8 @@ library;
 
 export 'package:nesty_render/src/doll_palette.dart';
 export 'package:nesty_render/src/doll_renderer.dart';
+export 'package:nesty_render/src/tokens/render_token_types.dart';
+export 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 
-// TODO(M2): export PlaceholderDollPainter (spec §12.5) and BoardLayout
-// (spec §10.3). TODO(M7): export SvgSkinRenderer and SkinCache (spec §12.2).
+// TODO(M2): export PlaceholderDollPainter (spec §12.5), BoardLayout
+// (spec §10.3), SvgSkinRenderer and SkinCache (spec §12.2; pulled in, D23).

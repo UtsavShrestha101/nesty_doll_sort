@@ -2,7 +2,8 @@ import 'package:nesty_game/core/common_imports.dart';
 
 /// Gameplay top bar (spec §10.2 #3): pause and the level title.
 ///
-/// TODO(M3): tier badge and coin pill. TODO(design): final styling.
+/// TODO(M2): the design HUD (frame 2.2): level pill with its tier, coin pill
+/// and family counter.
 class GameplayTopBar extends StatelessWidget {
   const GameplayTopBar({
     required this.levelNumber,
@@ -32,7 +33,7 @@ class GameplayTopBar extends StatelessWidget {
             ),
           ),
           // Balances the pause button so the title stays centered.
-          // TODO(M3): replace with the coin pill.
+          // TODO(M2): replace with the coin pill.
           const SizedBox(width: 48),
         ],
       ),

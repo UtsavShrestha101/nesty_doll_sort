@@ -12,10 +12,12 @@ levels and upload art. The full game and technical design is in
 ## Status
 
 The pre-M1 architecture skeleton (M0) is done: workspace, base cubits, DI,
-Hive, routing, flavors, l10n, fake services, CI. No game rules are implemented
-yet, and every screen is an unstyled placeholder until the design exports
-arrive in `design/`. Milestones, decisions and open questions are tracked in
-[docs/PROGRESS.md](docs/PROGRESS.md).
+Hive, routing, flavors, l10n, fake services, CI. The design handoff is in
+`design/`, and its tokens, art, sound and fonts are wired into the build by
+the `nesty_tools` pipelines. M1 (core rules) and M2 (playable game) are in
+progress. Milestones, decisions and open questions are tracked in
+[docs/PROGRESS.md](docs/PROGRESS.md), and every remaining item in
+[docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Repository layout
 
@@ -30,7 +32,9 @@ nesty/
     GAME_SPEC.md             # game + tech spec (source of truth)
     DESIGN_BRIEF.md          # brief for the design exports
     PROGRESS.md              # milestone status, decisions, package reasons, open questions
-  design/                    # design exports, added by the owner (not in the repo yet)
+    BACKLOG.md               # every remaining item, one section per milestone, plus owner inputs
+    TODO_INDEX.md            # generated index of the TODO(<tag>) markers in code
+  design/                    # design handoff (owner-managed, read-only): tokens, art, SFX, prototypes
   packages/
     nesty_core/              # pure Dart: models, rules, solver, generator, simulator, level codec
     nesty_render/            # Flutter (no Flame): doll painters, skins, layout math
@@ -38,7 +42,7 @@ nesty/
     game/                    # Flutter + Flame mobile game (Android, iOS), flavors dev/stg/prod
     admin/                   # Flutter Web admin panel
   firebase/                  # Firestore/Storage rules, indexes, emulator config
-  tools/                     # developer scripts (planned)
+  tools/                     # nesty_tools: design token/asset/icon pipelines, fonts, TODO index
   .claude/                   # Claude Code settings, hooks, rules, agents, skills
   .github/workflows/ci.yaml  # CI: format, analyze, tests, generated-code drift, builds
   .vscode/                   # launch configs per app and flavor, extension recommendations
@@ -60,8 +64,12 @@ Each package has its own README: [game](apps/game/README.md),
   - On the owner's machine, `flutter --version` prints `3.43.0-1.0.pre-35`.
     That SDK is 3.41.2 with one local commit on top, not a newer release.
 - For Android: Android Studio or the Android SDK (compileSdk 36, minSdk 24)
-  and a JDK.
-- For iOS (macOS only): Xcode and CocoaPods. The deployment target is iOS 14.
+  and a JDK, plus the NDK and CMake from the SDK manager (the `flutter_soloud`
+  audio plugin builds native code).
+- For iOS (macOS only): Xcode, CocoaPods and CMake (`brew install cmake`;
+  `flutter_soloud`'s pod builds with it). The deployment target is iOS 14.
+- Only to rebuild the bundled fonts (`tools/fonts/build_fonts.sh`): `python3`
+  and `curl`. The script installs fontTools in a throwaway venv.
 - For the admin: Chrome.
 - Optional: the Firebase CLI (`npm install -g firebase-tools`, which also
   needs a JDK) for local emulators.
@@ -137,8 +145,22 @@ cd apps/game  && flutter gen-l10n && dart run build_runner build
 cd apps/admin && flutter gen-l10n && dart run build_runner build
 ```
 
+The design pipelines run from anywhere in the repo (details in
+[tools/README.md](tools/README.md)). Each takes `--check`, which writes
+nothing and fails on drift:
+
+```bash
+dart run nesty_tools:gen_design_tokens    # design/tokens.json → *.gen.dart token files
+dart run nesty_tools:sync_design_assets   # design/ art + SFX → apps/game/assets
+dart run nesty_tools:gen_nesty_icons      # NestyIcons from the bundled icon font
+dart run nesty_tools:todo_index           # docs/TODO_INDEX.md from TODO(<tag>) markers
+tools/fonts/build_fonts.sh [--verify]     # bundled fonts from pinned upstream (network)
+```
+
 Generated files (`*.freezed.dart`, `*.g.dart`, `*.gr.dart`, `di.config.dart`,
-`lib/l10n/app_localizations*.dart`) are committed and never edited by hand.
+`lib/l10n/app_localizations*.dart`, `*.gen.dart`, `docs/TODO_INDEX.md`, the
+synced `apps/game/assets/` folders and fonts) are committed and never edited
+by hand.
 CI regenerates them and fails if anything changed. build_runner 2.15 always
 replaces conflicting outputs, so it needs no `--delete-conflicting-outputs`
 flag. It still accepts that flag and ignores it.
@@ -153,14 +175,16 @@ cd packages/nesty_core   && dart test         # must always pass
 cd packages/nesty_render && flutter test
 cd apps/game             && flutter test      # cubit + widget tests on fake services
 cd apps/admin            && flutter test
+cd tools                 && dart test         # nesty_tools
 ```
 
 CI (`.github/workflows/ci.yaml`) runs on Flutter 3.41.2, and every job starts
 with `flutter pub get --enforce-lockfile`. It has three jobs:
 - **Format, analyze and test:** the steps above, plus a format check, with
   `flutter analyze --fatal-infos --fatal-warnings`.
-- **Codegen drift:** regenerates code in both apps and fails if any file
-  changed or appeared.
+- **Codegen drift:** regenerates code in both apps and the design tokens and
+  icons, checks the synced design assets and the TODO index, and fails if any
+  file changed or appeared.
 - **Build:** the game's dev debug APK and the admin's web build.
 
 iOS isn't built in CI.
@@ -213,6 +237,10 @@ cd firebase && firebase emulators:start      # Auth :9099, Firestore :8080, Stor
   (source of truth)
 - [docs/PROGRESS.md](docs/PROGRESS.md): milestones, decisions, package
   reasons, open questions
+- [docs/BACKLOG.md](docs/BACKLOG.md): every remaining item by milestone, and
+  the owner inputs still needed
+- [design/README.md](design/README.md): the design handoff (components,
+  screens by frame id, motion, sound)
 - [docs/DESIGN_BRIEF.md](docs/DESIGN_BRIEF.md): design brief
 - [CLAUDE.md](CLAUDE.md): working rules for Claude Code in this repo. Its
   Commands section matches this README.

@@ -31,9 +31,11 @@ features, run `/plan` first.
    `features/login/`: `LoginCubit extends BaseAsyncCubit<AdminUser>` with no
    state file is a deliberate exception (see its class comment). Conventions
    change, so copy what is there now, not this file.
-3. **Read the spec entry** for the screen (§10.2) and check for
-   `design/screens/<name>*.png`. Scaffold only. Build no visuals beyond a
-   placeholder, and leave `// TODO(design): ...` when there is no export.
+3. **Read the spec entry** for the screen (§10.2), and find its frame(s) in
+   `design/prototypes/Nesty App Flow.dc.html` by the ids in `design/README.md`
+   "Screens". Scaffold only. Build no visuals beyond a placeholder, and leave
+   `// TODO(design): ...` when there is no frame. Also add the gap to
+   `docs/BACKLOG.md`.
 4. **Create:**
    ```
    apps/<app>/lib/features/<feature_name>/

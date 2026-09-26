@@ -20,9 +20,9 @@ enum SoundEffect {
 /// Audio (spec §11.3). Implementations respect the sound/music settings and
 /// never throw: a missing or failing file is silence, not a crash.
 ///
-/// TODO(M3): add a real implementation (flame_audio or flutter_soloud, spec
-/// §11.3) with separate SFX/music volumes, the two music loops, per-size
-/// clack pitch and the combo chime steps.
+/// TODO(M2): a real flutter_soloud implementation (spec §11.3, PROGRESS D19)
+/// with per-size clack pitch and the combo chime steps.
+/// TODO(M3): separate SFX/music volumes and the two music loops.
 abstract interface class AudioService {
   /// Loads SFX into memory so the first play has no latency.
   Future<void> preload();

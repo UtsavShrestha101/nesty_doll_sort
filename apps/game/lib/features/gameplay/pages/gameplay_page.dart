@@ -35,7 +35,7 @@ class _GameplayPageState extends State<GameplayPage> {
           children: [
             GameplayTopBar(
               levelNumber: widget.levelNumber,
-              // TODO(M3): open the pause menu (spec §10.2 #14) instead.
+              // TODO(M2): open the pause menu (spec §10.2 #14, frame 3.9).
               onPause: () => unawaited(context.router.maybePop()),
             ),
             Expanded(child: GameWidget<NestyGame>(game: _game)),

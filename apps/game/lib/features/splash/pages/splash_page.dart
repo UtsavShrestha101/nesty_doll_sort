@@ -8,7 +8,7 @@ import 'package:nesty_game/features/splash/cubit/splash_cubit.dart';
 
 /// Spec §10.2 #1: logo and a quick loading bar, then Home.
 ///
-/// TODO(design): logo wordmark and styled loading bar (design/screens/splash).
+/// TODO(M2): wordmark and striped loading bar (frame 1.1).
 @RoutePage()
 class SplashPage extends StatelessWidget implements AutoRouteWrapper {
   const SplashPage({super.key});

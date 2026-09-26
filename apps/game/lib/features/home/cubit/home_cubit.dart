@@ -9,8 +9,8 @@ part 'home_state.dart';
 
 /// Home screen state (spec §10.2 #2).
 ///
-/// TODO(M3): coins, tier badge of the current level, Daily/Museum/Remove Ads
-/// tiles, and refresh when returning from a won level.
+/// TODO(M2): coins, the tier badge of the current level, and refresh when
+/// returning from a won level. TODO(M3): Daily/Museum/Remove Ads tiles.
 @injectable
 class HomeCubit extends BaseAsyncCubit<HomeState> {
   HomeCubit(this._save);

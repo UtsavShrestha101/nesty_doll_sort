@@ -73,7 +73,8 @@ void main() {
     expect(get<DatabaseService>(), isA<FakeDatabaseService>());
     expect(get<RemoteConfigService>(), isA<DefaultsRemoteConfigService>());
     expect(get<HapticsService>(), isA<SystemHapticsService>());
-    // TODO(M3/M4/M6): flip these as real implementations land.
+    // TODO(M2/M3/M4/M6): flip these as real implementations land (M2: the
+    // bundled LevelRepository and the in-memory SaveService).
     expect(get<AdsService>(), isA<FakeAdsService>());
     expect(get<SaveService>(), isA<FakeSaveService>());
     expect(get<LevelRepository>(), isA<FakeLevelRepository>());

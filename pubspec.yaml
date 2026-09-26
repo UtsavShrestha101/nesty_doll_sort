@@ -10,3 +10,4 @@ workspace:
   - packages/nesty_render
   - apps/game
   - apps/admin
+  - tools

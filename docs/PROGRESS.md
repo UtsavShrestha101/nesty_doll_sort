@@ -3,7 +3,9 @@
 The running record of the project (CLAUDE.md "Workflow"): milestone status,
 decisions with their reasons, why each package is here (CLAUDE.md rule 9), and
 open questions. The spec is [GAME_SPEC.md](GAME_SPEC.md); milestones and their
-acceptance criteria come from spec §18.
+acceptance criteria come from spec §18. The work still to do is tracked in
+[BACKLOG.md](BACKLOG.md), item by item and milestone by milestone. This file
+doesn't copy it.
 
 Last updated: 2026-09-26.
 
@@ -12,8 +14,8 @@ Last updated: 2026-09-26.
 | Milestone | Status | Acceptance criteria (spec §18) |
 |---|---|---|
 | **M0 — Architecture skeleton** | ✅ Done 2026-09-26, no open blocker | Analyze clean, every test passes, every app builds. All met: analyze clean, tests 32/5/53/47, every flavor's APK, the iOS dev/prod builds and the admin web build succeed (see [Verification](#verification-2026-09-26-in-the-repo)) |
-| M1 — Core (`nesty_core`) | Not started | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve |
-| M2 — Playable game (placeholder art) | Not started | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
+| M1 — Core (`nesty_core`) | In progress (started 2026-09-26, D23) | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve |
+| M2 — Playable game (placeholder art; the design art was pulled in, D23) | In progress (started 2026-09-26, D23) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
 | M3 — App shell and meta | Not started | Kill the app mid-level and it resumes exactly where it was. The daily puzzle is identical on two devices on the same date |
 | M4 — Firebase content | Not started | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
 | M5 — Admin panel | Not started | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
@@ -319,8 +321,9 @@ statements and the iOS archive note are updated. D14–D17 are added.
 
 ## Decisions log
 
-D1–D13 are dated 2026-09-25, and D14–D17 2026-09-26. D1, D8 and D12 were
-amended on 2026-09-26.
+D1–D13 are dated 2026-09-25, and D14–D25 2026-09-26. D1, D8 and D12 were
+amended on 2026-09-26. D18–D23 are the owner's decisions for the round that
+covers the design foundation, M1 and M2, copied from its approved plan.
 
 - **D1. aquabuildr stack instead of Riverpod / go_router (owner decision).**
   The owner asked for "base cubits" and "Hive" on the pattern of the team's
@@ -517,6 +520,165 @@ amended on 2026-09-26.
     console.
   - Hive's in-memory fallback and `LanguageCubit`'s persist failure also
     `debugPrint` in debug.
+- **D18. The design handoff is in `design/` (2026-09-26, commit 3a8dfca).**
+  - **The move:**
+    - The owner's `design_handoff_nesty/` went into `design/`: its `design/*`
+      folders, `prototypes/` as `design/prototypes/`, and `README.md` as
+      `design/README.md`.
+    - The `.DS_Store` files and `design_handoff_nesty/` were deleted.
+    - `design/` stays owner-managed and read-only (D4).
+  - **What it contains:**
+    - `tokens.json`, 7 layered skins, board pieces, 11 symbols and the
+      ch01–ch06 backgrounds.
+    - Museum figurines as SVG and PNG, and store icons.
+    - 17 placeholder WAVs, and the reference generators `nesty-doll.js` and
+      `nesty-sfx.js`.
+    - 62 HTML frames in 8 flows (`design/prototypes/Nesty App Flow.dc.html`).
+    - No fonts and no music.
+  - **The screens are HTML prototypes,** not the PNGs `docs/DESIGN_BRIEF.md`
+    asked for. The `.claude` agents and skills now point at
+    `design/prototypes/`.
+  - **Sources of truth:** rules come from GAME_SPEC.md. Look, layout, motion,
+    sound and copy come from `design/`. Precedence inside the handoff is in
+    D22.
+  - **Closed questions:** this ends D4's wait and resolves Q15. For Q14, the
+    handoff says to bundle the Fredoka and Nunito TTFs but ships none, so
+    tooling fetches the OFL files.
+  - **Audit findings that shaped the plan:**
+    - Every SVG embeds a ~7.7 KB C2PA `<metadata>` block. It is stripped when
+      the file is copied into app assets.
+    - The museum and store SVGs use nested `<svg>` and mix-blend-mode, which
+      flutter_svg can't render. The museum uses `design/museum/png/`, and the
+      store art will be re-exported for M8.
+    - `design/store/icon_1024.png` has an alpha channel.
+    - There is no Android adaptive icon and no 512 px Play icon.
+  - The remaining gaps are in [BACKLOG.md](BACKLOG.md) under "Owner inputs
+    needed".
+- **D19. The handoff's "Decisions to confirm" are accepted (owner,
+  2026-09-26).**
+  - A family counter under the level pill is the fly-in target for a
+    completed set.
+  - A "Privacy choices" row in Settings lets players change UMP consent later.
+  - Gold uses a gradient-map tint, per stop and pre-rasterized, not modulate.
+  - `DollColor` stays a fixed enum. Open-ended playable colors would be a
+    spec change (BACKLOG "Later"). New skins, symbols and cosmetic variants
+    need no code change.
+  - There is no "watch a video for coins" shop row, because §9.1 lists no
+    such placement.
+  - **Placeholder SFX:** the 17 WAVs are the SFX until final audio (M7).
+    - Their clacks have +1 semitone baked in.
+    - So the game plays them at `2^(−2(size−3)/12)` instead of the README's
+      `2^(−2(size−3.5)/12)`.
+  - The settings `symbols` value for large symbols is `large`, replacing
+    `assist` (Q4). A stored `assist` is read as `large`.
+  - Also accepted from the README's list: Level 56 (Hard) is the flow's
+    example level, and frames 1.2, 8.6 and 8.7 show system UI for placement
+    only.
+- **D20. All art is bundled, a deviation from spec §13.5.**
+  - **What:** all 7 skins and the 6 chapter themes ship in the app. §13.5
+    bundles only Classic and ch01.
+  - **Why:**
+    - The handoff delivers all of them.
+    - They then work offline from the first launch (rule 3).
+    - Storage delivery isn't built until M4.
+  - **Cost:** app size, checked against the < 60 MB budget in M8.
+  - Storage download (M4) remains for skins and themes added after release.
+- **D21. Towers follow spec §3.2, not the design (owner).**
+  - Buried nests are wood silhouettes at their true size: their size shows,
+    their color doesn't.
+  - Each is raised 18 dp per depth behind the top nest so it stays visible.
+  - The design's walnut "+N" tag is kept.
+  - The design itself draws every buried nest at `topHeight + 18 × depth`.
+  - This resolves Q18.
+- **D22. Gaps between the spec and the design resolve "according to the
+  design" (owner).**
+  - **Tap policy (frame 2.6).** This replaces §2.2's "tapping a different
+    pickable nest switches the selection".
+    - Tapping the selected nest cancels, and tapping a legal target moves.
+    - Any other tap is invalid, including a pickable nest of the wrong color
+      or size: the target shakes, the nest drifts back and the selection
+      clears.
+    - Drag: a drop on a legal target moves, a drop on any other slot is
+      invalid, and a drop on nothing cancels.
+  - **Extra slot.**
+    - It is always appended to the bottom shelf, which re-pitches, instead of
+      going below the shelf when it is full (§3.6). The layout shrinks stands
+      and dolls if the row gets tight.
+    - At most 2 per level ("Two per level at most").
+    - It stays for the rest of the level, including after Restart ("Add a
+      stand for this level").
+  - **Gold.** The design marks it v1.1, "only if it ships". The gold rendering
+    is built now. The gold rules are hooked into core, but the validator
+    rejects gold until v1.1.
+  - **Soft stuck.** The response is frame 3.4's banner ("Hmm, this looks
+    stuck / Try Undo?…") plus a glowing Undo. When the solver says the level
+    is stuck, Hint gives no move and charges nothing.
+  - **Precedence inside the handoff:** `tokens.json`, then the App Flow
+    frames, then the README, then the Design System sheet.
+    - The sheet is stale. Where it differs, tokens win: counter bump 1.22,
+      wobble period 400 ms, win dance 1400 ms with a 120 ms stagger.
+  - **Undesigned boards** (1 or 4 shelves, 5-slot rows, maxSize 6 on 3
+    shelves) extend the design's system through `BoardLayout` scaling, marked
+    `TODO(design)`.
+- **D23. This round's scope is the design foundation, M1 and M2 (owner).**
+  - M3 (museum, daily, shop, settings, tutorial, save and resume) is the next
+    round.
+  - **Pulled into M2:**
+    - M7's design integration: tokens, the Classic and other skin SVG
+      pipeline, chapter themes, fonts and icons.
+    - The SFX and haptics parts of the M3 audio and haptics service.
+  - M2 is therefore no longer "placeholder art". `PlaceholderDollPainter`
+    (§12.5) stays as the fallback when a skin can't load.
+  - The M2 acceptance criterion is unchanged.
+  - Item-level status is in BACKLOG under "Design foundation", "M1" and "M2".
+- **D24. Remaining work is tracked in [BACKLOG.md](BACKLOG.md) (owner
+  request, 2026-09-26).** The owner asked for every future-milestone to-do to
+  be tracked, so none is lost.
+  - **BACKLOG.md is the curated checklist:**
+    - one section per milestone, then v1.1, Later, Owner inputs needed and
+      Tech debt;
+    - every item names its source.
+  - **In code,** deferrals carry `TODO(<tag>)`, where the tag is `M1`…`M8`,
+    `design`, `v1.1` or `later`.
+    - `dart run nesty_tools:todo_index` generates `docs/TODO_INDEX.md` from
+      them.
+    - CI fails on an untagged TODO.
+  - Every deferral gets a BACKLOG item, a tagged TODO, or both.
+  - PROGRESS.md keeps the history (what was done, decisions, questions) and
+    points at BACKLOG rather than copying it.
+  - The `/milestone` skill and CLAUDE.md's Workflow read BACKLOG at each
+    milestone's start and update it at the end.
+- **D25. Design foundation pipelines (plan P1, done 2026-09-26).** Everything
+  the game takes from `design/` is generated and committed, and CI checks it
+  for drift. The commands are in `tools/README.md` and CLAUDE.md "Commands".
+  - **Tokens:** `gen_design_tokens` emits only `static const` values. Their
+    types are hand-written next to the output (`render_token_types.dart`,
+    `ui_token_types.dart`), so helpers can be added without touching generated
+    files. Each of the 466 tokens.json leaves is emitted, or it is on a tested
+    list of 21 documented-only leaves (prose, font sources, and `haptics.*`,
+    which the haptics service hand-writes). An unmapped leaf or an unknown
+    value shape fails the codegen.
+  - **Assets:** `sync_design_assets` owns `apps/game/assets/{skins,symbols,
+    board,themes,audio}`. It strips the C2PA `<metadata>` block at the text
+    level, so each SVG is otherwise byte-identical to the export. The spec
+    §12.2 allowlist validator is Flutter-free
+    (`package:nesty_render/svg_tools.dart`), so the admin upload can reuse it
+    in M5.
+  - **Fonts:** `tools/fonts/build_fonts.sh` builds them from pinned upstream
+    commits. It checks each input's SHA-256, runs fontTools 4.60.1 in a
+    throwaway venv, and its output is byte-reproducible (`--verify`). The icon
+    font is exactly the README's 48 glyphs. At FILL 1, Material Symbols swaps
+    most icons for `<name>.fill` glyphs through GSUB, which subsetting drops.
+    So `bake_feature_variations.py` points the cmap at those glyphs first.
+    This was a review fix: before it, the outline glyphs only looked filled
+    because their holes collapsed into cancelling contours.
+  - **TODO index:** only comments and Markdown prose are scanned. `design/`,
+    `.claude/` (its docs describe the marker convention), build output and
+    generated files are skipped. A combined tag such as `M3/M4` is listed under
+    each milestone.
+  - **Audio plugin:** `flutter_soloud` is pinned to 4.1.7, because 5.x can't
+    resolve on Flutter 3.41.2 ("Package reasons"). It builds native code, so
+    iOS builds need CMake on the Mac.
 
 ## Package reasons (CLAUDE.md rule 9)
 
@@ -525,8 +687,16 @@ against every member's `pubspec.yaml` on 2026-09-26. "§13.2" says whether
 spec §13.2 lists the package (it was amended for D1/D2). The root
 `pubspec.yaml` only declares the workspace and has no dependencies. In the
 apps every constraint is a caret on the locked version, except `auto_route`
-(exact pin) and `intl` (`any`). In core, `lints: ^6.0.0` and
+(exact pin) and `intl` (`any`). In core and tools, `lints: ^6.0.0` and
 `test: ^1.25.6` are lower floors than the locked versions.
+
+The design foundation round (2026-09-26) added `flutter_svg`, `xml`,
+`flutter_soloud` and the `tools` member (`nesty_tools`). Their new transitive
+lock entries are `http` 1.6.0, `path_parsing` 1.1.0, `petitparser` 7.0.2,
+`vector_graphics` 1.2.3, `vector_graphics_codec` 1.1.13 and
+`vector_graphics_compiler` 1.3.0. The fonts are not packages: they are built
+by `tools/fonts/build_fonts.sh` from pinned upstream commits with fontTools
+4.60.1 in a throwaway venv (never a project dependency).
 
 ### Runtime dependencies
 
@@ -545,15 +715,19 @@ apps every constraint is a caret on the locked version, except `auto_route`
 | `json_annotation` | 4.12.0 | game, admin | **Not used yet.** Declared for app-side JSON DTOs from M3–M5 (Firestore document wrappers §5.2/§14.1, cache files). Level JSON itself is never parsed here: it goes through `nesty_core`'s `LevelCodec` (rule 2). Remove it if M5 ends without a use | yes |
 | `hive_ce` | 2.20.0 | game | Local database (D2): the `settings` box in `HiveDatabaseService`, and pure-Dart `Hive.init` in round-trip tests | yes |
 | `hive_ce_flutter` | 2.3.4 | game | `Hive.initFlutter` in the app documents directory. Brings `path_provider` (§13.2) in transitively | yes |
-| `nesty_core` (path) | 0.1.0 | render, game, admin | The single rule implementation (rule 2). `nesty_render` keys its palette and renderer API on `DollColor`. The apps declare it but do not import it yet (M1/M2) | — |
-| `nesty_render` (path) | 0.1.0 | game, admin | Shared doll rendering and layout math. Declared, not imported yet (M2) | — |
+| `nesty_core` (path) | 0.1.0 | render, game, admin, tools | The single rule implementation (rule 2). `nesty_render` keys its palette, renderer API and generated `DollColorTokens` on `DollColor`. `tools` uses it to cross-check the tokens' doll colors (and for the M1–M2 level CLIs). The apps declare it but do not import it yet (M1/M2) | — |
+| `nesty_render` (path) | 0.1.0 | game, admin, tools | Shared doll rendering and layout math. The apps don't import it from `lib/` yet (M2); the game's asset tests use its tokens and `svg_tools.dart`. `tools` imports only the Flutter-free `package:nesty_render/svg_tools.dart` (the asset sync's validator; `svg_tools_purity_test.dart` keeps it free of `dart:ui`) | — |
+| `flutter_svg` | 2.3.0 | render | Spec §12.2: turns the layered skin, board and theme SVGs into `ui.Image` rasters once per size (Phase 3 skin rasterizer, board sprites, theme background; rule 8). For now only `bundled_svg_render_test.dart` uses it: flutter_svg compiles all 39 shipped SVGs with no warnings. Added in the design foundation round (2026-09-26) | yes |
+| `xml` | 7.0.1 | render, tools | Flutter-free SVG parsing in `package:nesty_render/svg_tools.dart`: the spec §12.2 validator and metadata strip now, the skin layer splitter in Phase 3, and the admin upload check in M5. 7.0.1 is the newest that `vector_graphics_compiler` (via flutter_svg) accepts (`<=7.0.1`). `tools` declares it too (the plan listed it) but uses it only through `svg_tools.dart` so far | yes |
+| `flutter_soloud` | 4.1.7 | game | Spec §11.3: low-latency SFX with per-play playback speed, needed for the per-size clack pitch (D19) and the combo chimes. Not imported yet (the audio service is Phase 4). **Why 4.x, not 5.x:** 5.x needs `native_toolchain_c` ^0.19.4, which needs `meta` ^1.19, but Flutter 3.41.2 pins `meta` 1.17.0. 4.1.7 is a classic FFI plugin (CMake on Android; podspec plus CMake on iOS), and the dev APK and iOS builds both link it. Upgrade with the SDK (Q23, BACKLOG "Later") | yes |
+| `path` | 1.9.1 | tools | Repo-relative path handling in the `nesty_tools` CLIs. Already in the lock transitively | — |
 
 ### Dev dependencies
 
 | Package | Locked | Used in | Why | §13.2 |
 |---|---|---|---|---|
-| `test` | 1.29.0 | core | Unit tests and the architecture guard | — |
-| `lints` | 6.1.0 | core | Base lint set for core's strict `analysis_options.yaml` | — |
+| `test` | 1.29.0 | core, tools | Unit tests and the architecture guard; the `nesty_tools` codegen, sync and TODO-index tests | — |
+| `lints` | 6.1.0 | core, tools | Base lint set for the pure-Dart members' strict `analysis_options.yaml` | — |
 | `flutter_test` (SDK) | — | render, game, admin | Widget and unit tests | — |
 | `flutter_lints` | 6.0.0 | render, game, admin | Base lint set for the Flutter members | — |
 | `build_runner` | 2.15.1 | game, admin | Runs the freezed, injectable, auto_route and hive_ce generators | yes |
@@ -590,10 +764,12 @@ reused.
   box, or in the spec's atomic JSON file (temp file + rename, schema version,
   migrations)? Today Hive holds only device settings. §13.3 is deliberately
   unchanged until this is decided.
-- [ ] **Q4. What is the settings `symbols` value for large symbols?** §13.3
+- [x] **Q4. What is the settings `symbols` value for large symbols?** §13.3
   shows only `"subtle"`. The large mode is "assist mode" in §10.2, §12.3 and
   §16, and "Large" in DESIGN_BRIEF Prompt 9. The skeleton persists
-  `"assist"`.
+  `"assist"`. Resolved 2026-09-26: `large`, the handoff's decision the owner
+  accepted (D19). A stored `assist` is read as `large`. The rename is built in
+  M2 (BACKLOG).
 - [ ] **Q5. Is `reward_medium` missing from spec §9.4?** §7.3 pays easy and
   medium 10 each, but §9.4 has only `reward_easy`, `reward_hard` and
   `reward_superhard`. Should medium read `reward_easy` (M3), or should a
@@ -625,11 +801,19 @@ reused.
   `FLUTTER_VERSION: "3.41.2"`, the published stable the local SDK is built
   on. nesty_render's floor was relaxed to `>=3.41.0`, and every job runs
   `pub get --enforce-lockfile` (D15). Whether to upgrade is Q23.
-- [ ] **Q14. Fonts.** DESIGN_BRIEF names Fredoka (display) and Nunito (body).
+- [x] **Q14. Fonts.** DESIGN_BRIEF names Fredoka (display) and Nunito (body).
   They must be bundled as assets, not fetched at runtime with `google_fonts`
   (offline first launch, rule 3). Will the owner supply the font files with
-  `design/`, or may they be added from the OFL releases?
-- [ ] **Q15. The `design/` exports are missing.** These are needed:
+  `design/`, or may they be added from the OFL releases? Resolved 2026-09-26:
+  they are bundled as assets and sourced by tooling. The handoff ships no font
+  files (D18), so the tooling adds the static Fredoka 500/600/700 and Nunito
+  500–800 TTFs from google/fonts at a pinned commit, with OFL.txt, and the
+  licenses are registered at startup (BACKLOG "Design foundation").
+- [x] **Q15. The `design/` exports are missing.** Resolved 2026-09-26: the
+  design handoff was delivered and is in `design/` (D18, commit 3a8dfca). Its
+  screens are HTML prototypes in `design/prototypes/`, not PNGs. The admin
+  designs are still missing (BACKLOG "Owner inputs needed"). The original
+  question said these were needed:
   - `design/tokens.json`, which replaces the placeholder `AppColors`, the
     gold gradient and the doll ink/light shades;
   - the screens (game and admin);
@@ -643,10 +827,13 @@ reused.
   rechecked in M7/M8.
 - [ ] **Q17. Should dev and stg builds get distinct app icons and a
   `versionNameSuffix` (M8)?** Icons need design assets.
-- [ ] **Q18. Can hidden tower nests show their size but not their color
+- [x] **Q18. Can hidden tower nests show their size but not their color
   (spec §3.2)?** `DollRenderer` has a `silhouette` flag that ignores color.
   The paint-splash reveal (§11.1) is assumed to be composed by the caller.
-  Confirm in M2.
+  Confirm in M2. Resolved 2026-09-26: yes. Buried nests are wood silhouettes
+  at their true size with the color hidden, following spec §3.2 rather than
+  the design (D21). In the plan, the reveal wipe is a `DollRenderer` paint
+  option driven by the board timeline.
 - [ ] **Q19. Where does a solvable fixture record its expected optimal move
   count (M1)?** The suggestion is to keep fixture files as pure §5.1 level
   JSON and put the expectations in the test.
@@ -715,8 +902,21 @@ reused.
     `[DEV] `/`[STG] ` prefix in `FlavorValues`.
   - Or it can stay as a deliberately unlocalized brand name.
   - This was the review's one uncertain finding.
+- [ ] **Q29. How should coins and counters get tabular figures (M2)?** The
+  design says "Use tabular figures for coins and counters" (tokens.json
+  `fontSize.number.tabular`), and numbers use Fredoka. But Fredoka's digits
+  are proportional (advances 379–566 units) and it has no `tnum` feature, so
+  `FontFeature.tabularFigures()` has no effect. Nunito's digits are already
+  fixed-width. The options:
+  - a fixed-width digit layout widget (simplest, no font change);
+  - Nunito for numbers (changes the look);
+  - a patched "Fredoka Tabular" built by `build_fonts.sh` (the OFL allows it
+    under a new name).
 
 ### Notes for later milestones (not questions)
+
+Since 2026-09-26 each note below is also an item in [BACKLOG.md](BACKLOG.md),
+the tracker. They stay here as history. New notes go into BACKLOG.md instead.
 
 - **M6:** before `google_mobile_ads` is added, the AdMob App IDs must be in
   place, or the app crashes at launch: `GADApplicationIdentifier` in
@@ -743,15 +943,23 @@ reused.
   fails the build. Profile and release iOS builds haven't been tried yet.
 - **Before the first push:** the owner runs `git init` and adds the remote.
   CI has only been simulated locally, so watch its first run on
-  `ubuntu-latest`.
+  `ubuntu-latest`. (By 2026-09-26 the repo existed with a GitHub `origin`.
+  Watching CI's first run is a BACKLOG "Tech debt" item.)
 
 ## Next step
 
-1. Start **M1 — Core** in `packages/nesty_core`: models, codec, validator,
-   rules, `GameSession`, PRNG, solver, simulator and generator (spec §4–§6),
-   with the tests CLAUDE.md "Testing" requires. M0's acceptance criteria
-   pass, and nothing blocks M1. Q9 (web-safe hashing) and Q19 (fixture
-   expectations) should be answered early in M1.
-2. Owner decisions that don't block M1 but are cheapest to take early: Q23
+[BACKLOG.md](BACKLOG.md) is the tracker for everything still to do. This
+section only says where to look.
+
+1. **This round (D23):** first the design foundation, then M1 and M2, in the
+   order of the approved plan. The open items are in BACKLOG under "Design
+   foundation", "M1" and "M2". Q9 (web-safe hashing) and Q19 (fixture
+   expectations) are answered early in M1. M2's acceptance needs the owner to
+   run a 60 fps check on a real mid-range Android device.
+2. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
+   can supply or decide, with the milestone each one blocks. The first ones
+   due are Q3 and Q5 (before M3), the music files, and the 9 missing figurine
+   flavor texts.
+3. Owner decisions that block nothing but are cheapest to take early: Q23
    (SDK upgrade), Q24 (deny globs), Q25 (rule 10 wording) and Q27 (Gradle
    wrapper).

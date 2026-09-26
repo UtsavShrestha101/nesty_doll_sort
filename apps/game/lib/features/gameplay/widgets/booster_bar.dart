@@ -4,8 +4,8 @@ import 'package:nesty_game/core/common_imports.dart';
 ///
 /// All disabled until the board is playable.
 /// TODO(M2): wire to the gameplay controller (undo, solver hint, extra slot,
-/// restart). TODO(M3): inventory count bubbles and the booster purchase
-/// popup. TODO(design): booster buttons from the design system.
+/// restart). TODO(M2): booster buttons and count badges from the design
+/// (design/README.md "Components"). TODO(M3): the booster purchase popup.
 class BoosterBar extends StatelessWidget {
   const BoosterBar({super.key});
 

@@ -1,0 +1,36 @@
+{
+  "skinId": "winter",
+  "name": "Seasons: Winter",
+  "splitY": 400,
+  "lidLiftPx": 120,
+  "symbolAnchor": [
+    256,
+    590
+  ],
+  "symbolSize": 110,
+  "artboard": [
+    512,
+    768
+  ],
+  "groups": [
+    "shadow",
+    "bottom_mask",
+    "bottom_detail",
+    "top_mask",
+    "face",
+    "top_detail",
+    "shine_top",
+    "shine_bottom"
+  ],
+  "tinted": [
+    "bottom_mask",
+    "top_mask"
+  ],
+  "lidGroups": [
+    "top_mask",
+    "face",
+    "top_detail",
+    "shine_top"
+  ],
+  "version": 1
+}

@@ -1,0 +1,24 @@
+name: nesty_tools
+description: "Developer CLIs for Nesty: design token codegen, design asset sync, TODO index (and later the level tools)."
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+# Pure Dart: every script runs with `dart run nesty_tools:<name>` (also in CI).
+# nesty_render is a Flutter package, but only its Flutter-free
+# `svg_tools.dart` library is imported here, so no dart:ui is compiled.
+dependencies:
+  nesty_core:
+    path: ../packages/nesty_core
+  nesty_render:
+    path: ../packages/nesty_render
+  path: ^1.9.1
+  xml: ^7.0.1
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6

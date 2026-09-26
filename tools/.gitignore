@@ -1,0 +1,4 @@
+# https://dart.dev/guides/libraries/private-files
+.dart_tool/
+# Only the workspace root keeps a lockfile.
+pubspec.lock

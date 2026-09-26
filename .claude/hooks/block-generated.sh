@@ -12,6 +12,13 @@
 #     GeneratedPluginRegistrant.*, ios/Flutter/Generated.xcconfig,
 #     flutter_export_environment.sh, .flutter-plugins-dependencies
 #   - design/** (CLAUDE.md: design exports are read-only for Claude)
+#   - nesty_tools outputs (tools/README.md):
+#       *.gen.dart            gen_design_tokens (tokens), gen_nesty_icons (icons)
+#       docs/TODO_INDEX.md    todo_index
+#       apps/game/assets/{skins,symbols,board,themes,audio}/**
+#                             sync_design_assets (copied from design/)
+#       apps/game/assets/fonts/**, tools/fonts/SHA256SUMS
+#                             tools/fonts/build_fonts.sh
 #
 # Deliberately allowed: hive_adapters.g.yaml (hive_ce's schema file; it may
 # need a hand edit during a migration, see .claude/rules/hive.md).
@@ -40,6 +47,12 @@ block() {
 case "$REL" in
   design/*)
     block "design/ holds the owner's design exports and is read-only for Claude (CLAUDE.md). If a design is missing, use design/tokens.json + spec §12 and leave a // TODO(design): note in code instead." ;;
+  docs/TODO_INDEX.md)
+    block "docs/TODO_INDEX.md is generated from the TODO(<tag>) markers in the code. Add, retag or remove the marker in the source file, then run: dart run nesty_tools:todo_index" ;;
+  apps/game/assets/skins/*|apps/game/assets/symbols/*|apps/game/assets/board/*|apps/game/assets/themes/*|apps/game/assets/audio/*)
+    block "${REL#apps/game/} is copied from design/ (metadata stripped, validated). Change the design export (owner-managed) and run: dart run nesty_tools:sync_design_assets" ;;
+  apps/game/assets/fonts/*|tools/fonts/SHA256SUMS)
+    block "${REL} is built from pinned upstream fonts. Change tools/fonts/build_fonts.sh or tools/fonts/nesty_symbols.txt and run: tools/fonts/build_fonts.sh" ;;
 esac
 
 case "$BASE" in
@@ -49,6 +62,13 @@ case "$BASE" in
     block "pubspec.lock is owned by pub. Change pubspec.yaml (only with a reason in docs/PROGRESS.md, CLAUDE.md rule 9) and run \`dart pub get\` at the repo root." ;;
   *.g.dart|*.freezed.dart|*.gr.dart|*.config.dart)
     block "$BASE is generated. Edit the annotated source (@freezed / @JsonSerializable / @injectable / @AutoRouterConfig / @GenerateAdapters) and run: cd $PKG_REL && dart run build_runner build" ;;
+  *.gen.dart)
+    case "$BASE" in
+      nesty_icons.gen.dart)
+        block "$BASE is generated from the font subset's codepoints. Edit tools/fonts/nesty_symbols.txt, run tools/fonts/build_fonts.sh (it regenerates this file), or just: dart run nesty_tools:gen_nesty_icons" ;;
+      *)
+        block "$BASE is generated from design/tokens.json by tools/lib/src/tokens/. Change the codegen (or the owner changes the tokens) and run: dart run nesty_tools:gen_design_tokens" ;;
+    esac ;;
   GeneratedPluginRegistrant.*|Generated.xcconfig|flutter_export_environment.sh|.flutter-plugins-dependencies)
     block "$BASE is written by the Flutter tool on every \`flutter pub get\` / build and is gitignored. Change pubspec.yaml, the Gradle files or the Xcode build settings instead." ;;
 esac

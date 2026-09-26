@@ -4,7 +4,7 @@ import 'package:nesty_game/core/services/audio/audio_service.dart';
 
 /// Silent [AudioService].
 ///
-/// TODO(M3): drop `AppEnv.real` from `env` once the real audio service exists.
+/// TODO(M2): drop `AppEnv.real` from `env` once the real audio service exists.
 @LazySingleton(as: AudioService, env: [AppEnv.fake, AppEnv.real])
 class FakeAudioService implements AudioService {
   @override

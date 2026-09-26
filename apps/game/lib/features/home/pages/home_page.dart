@@ -8,8 +8,9 @@ import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 
 /// Spec §10.2 #2. Placeholder layout: only the big "Level N" play button.
 ///
-/// TODO(design): toy-shop background, coin pill, settings gear, tiles and
-/// bottom nav (design/screens/home).
+/// TODO(M2): the Home hero of frame 2.1: chapter background, coin pill,
+/// wordmark, settings gear, idle dolls and PLAY with Level N and its tier.
+/// TODO(M3): the Daily/Museum/Remove Ads tiles and the bottom nav.
 @RoutePage()
 class HomePage extends StatelessWidget implements AutoRouteWrapper {
   const HomePage({super.key});

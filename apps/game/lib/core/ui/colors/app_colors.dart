@@ -3,8 +3,8 @@ import 'package:flutter/painting.dart';
 /// UI color tokens: "cream, warm wood and soft pastels" (spec §12.1,
 /// docs/DESIGN_BRIEF.md Prompt 1). Never hard-code a hex value in a widget.
 ///
-/// TODO(design): every value below is a placeholder. Replace them with
-/// `design/tokens.json` → `color.*` once the design system is exported.
+/// TODO(M2): every value below is a placeholder. Replace them with the
+/// generated `AppColorTokens` (design/tokens.json `color.*`).
 ///
 /// Doll colors are deliberately NOT here: they belong to the rendering
 /// package (nesty_render) keyed by nesty_core's doll color ids (spec §12.3),

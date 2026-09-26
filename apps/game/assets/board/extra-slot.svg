@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" width="160" height="60">
+<defs><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C9F5D5" stop-opacity=".95"></stop><stop offset=".55" stop-color="#8FE0A6" stop-opacity=".45"></stop><stop offset="1" stop-color="#8FE0A6" stop-opacity="0"></stop></radialGradient>
+<radialGradient id="top" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#F0FFF4"></stop><stop offset=".6" stop-color="#B4EBC5"></stop><stop offset="1" stop-color="#6CC07C"></stop></radialGradient>
+<linearGradient id="face" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#66BE78"></stop><stop offset="1" stop-color="#2F7A3E"></stop></linearGradient></defs>
+<ellipse cx="80" cy="30" rx="80" ry="30" fill="url(#glow)"></ellipse>
+<path d="M10 22V36A70 15 0 0 0 150 36V22Z" fill="url(#face)"></path>
+<path d="M10 36A70 15 0 0 0 150 36" fill="none" stroke="#1F5A2C" stroke-width="2" stroke-opacity=".6"></path>
+<ellipse cx="80" cy="22" rx="70" ry="15" fill="url(#top)"></ellipse>
+<ellipse cx="80" cy="22" rx="56" ry="10.5" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round" stroke-opacity=".9"></ellipse>
+<path d="M14 20A70 15 0 0 1 146 20" fill="none" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="2"></path>
+<g fill="#1F5A2C" opacity=".55" transform="translate(0 1.5)"><rect x="60" y="39" width="15" height="5" rx="2.5"></rect><rect x="65" y="34" width="5" height="15" rx="2.5"></rect><path d="M83 36.5L89 33.2Q92 31.8 92 35V47.5Q92 50 89.5 50Q87 50 87 47.5V38.4L85.6 39.1Q83 40.3 82.4 38Q82 37.2 83 36.5Z"></path></g>
+<g fill="#FFFFFF"><rect x="60" y="39" width="15" height="5" rx="2.5"></rect><rect x="65" y="34" width="5" height="15" rx="2.5"></rect><path d="M83 36.5L89 33.2Q92 31.8 92 35V47.5Q92 50 89.5 50Q87 50 87 47.5V38.4L85.6 39.1Q83 40.3 82.4 38Q82 37.2 83 36.5Z"></path></g>
+<path d="M20 5Q20 10 25 10Q20 10 20 15Q20 10 15 10Q20 10 20 5Z" fill="#FFFFFF" opacity="1"></path><path d="M142 2Q142 8 148 8Q142 8 142 14Q142 8 136 8Q142 8 142 2Z" fill="#FFFFFF" opacity="1"></path><path d="M150 36Q150 40 154 40Q150 40 150 44Q150 40 146 40Q150 40 150 36Z" fill="#FFFFFF" opacity="0.9"></path><path d="M12 40.5Q12 44 15.5 44Q12 44 12 47.5Q12 44 8.5 44Q12 44 12 40.5Z" fill="#FFFFFF" opacity="0.9"></path>
+</svg>

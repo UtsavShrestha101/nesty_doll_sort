@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version)",
+      "Bash(dart --version)",
+      "Bash(flutter pub get*)",
+      "Bash(dart pub get*)",
+      "Bash(flutter pub deps*)",
+      "Bash(dart pub deps*)",
+      "Bash(dart pub outdated*)",
+      "Bash(flutter analyze*)",
+      "Bash(dart analyze*)",
+      "Bash(flutter test*)",
+      "Bash(dart test*)",
+      "Bash(dart format*)",
+      "Bash(dart fix --dry-run*)",
+      "Bash(dart run build_runner build*)",
+      "Bash(flutter gen-l10n*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch --show-current)",
+      "Bash(git rev-parse*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr list*)",
+      "Bash(gh pr diff*)",
+      "Bash(gh pr checks*)",
+      "Bash(gh issue view*)",
+      "Bash(gh run list*)",
+      "Bash(gh run view*)",
+      "WebFetch(domain:docs.flutter.dev)",
+      "WebFetch(domain:api.flutter.dev)",
+      "WebFetch(domain:dart.dev)",
+      "WebFetch(domain:pub.dev)",
+      "WebFetch(domain:bloclibrary.dev)",
+      "WebFetch(domain:docs.flame-engine.org)",
+      "WebFetch(domain:firebase.google.com)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:docs.hive.isar.community)"
+    ],
+    "ask": [
+      "Bash(firebase deploy*)",
+      "Bash(flutter pub add*)",
+      "Bash(dart pub add*)",
+      "Bash(flutter pub upgrade*)",
+      "Bash(dart pub upgrade*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)",
+      "Bash(rm -rf $HOME*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(flutterfire configure*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.keystore)",
+      "Read(**/*.jks)",
+      "Read(**/*.p12)",
+      "Read(**/*.p8)",
+      "Read(**/key.properties)",
+      "Read(**/google-services.json)",
+      "Read(**/GoogleService-Info.plist)",
+      "Read(**/secrets/**)",
+      "Write(**/.env)",
+      "Edit(**/.env)",
+      "Write(**/.env.*)",
+      "Edit(**/.env.*)",
+      "Write(**/secrets/**)",
+      "Edit(**/secrets/**)",
+      "Write(**/*.pem)",
+      "Edit(**/*.pem)",
+      "Write(**/*.keystore)",
+      "Edit(**/*.keystore)",
+      "Write(**/*.jks)",
+      "Edit(**/*.jks)",
+      "Write(**/*.p12)",
+      "Edit(**/*.p12)",
+      "Write(**/*.p8)",
+      "Edit(**/*.p8)",
+      "Write(**/key.properties)",
+      "Edit(**/key.properties)",
+      "Write(**/*.g.dart)",
+      "Edit(**/*.g.dart)",
+      "Write(**/*.freezed.dart)",
+      "Edit(**/*.freezed.dart)",
+      "Write(**/*.gr.dart)",
+      "Edit(**/*.gr.dart)",
+      "Write(**/*.config.dart)",
+      "Edit(**/*.config.dart)",
+      "Write(**/lib/l10n/app_localizations*.dart)",
+      "Edit(**/lib/l10n/app_localizations*.dart)",
+      "Write(**/firebase_options*.dart)",
+      "Edit(**/firebase_options*.dart)",
+      "Write(**/google-services.json)",
+      "Edit(**/google-services.json)",
+      "Write(**/GoogleService-Info.plist)",
+      "Edit(**/GoogleService-Info.plist)",
+      "Write(design/**)",
+      "Edit(design/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-secrets.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-generated.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-on-write.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/test-on-stop.sh",
+            "timeout": 180
+          }
+        ]
+      }
+    ]
+  }
+}

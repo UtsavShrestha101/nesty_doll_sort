@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch/PR cancels the run it supersedes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Flutter SDK pin: stable channel only (CLAUDE.md rule 1), kept equal to the SDK
+# the repo is developed with so CI resolves, analyzes and generates exactly like
+# local (docs/PROGRESS.md Q13).
+#
+# Why 3.41.2 and not what `flutter --version` prints locally: the local SDK
+# reports "3.43.0-1.0.pre-35" on channel stable, but that checkout is Flutter
+# 3.41.2 stable plus one local commit (`git describe`: 3.41.2-1-g5408e0f3048;
+# same engine d96704abcc, Dart 3.11.0). The version string is not a published
+# release, so subosito/flutter-action can't install it. 3.41.2 is the published
+# stable it is built on, and the closest one that satisfies `sdk: ^3.11.0`:
+# on it every package resolves to the committed pubspec.lock. Newer stables
+# (3.44+, Dart 3.12+) re-resolve SDK-pinned packages (matcher, meta, test,
+# test_api, test_core), which `--enforce-lockfile` below rejects. Keep every
+# member's `flutter:` bound at or below this pin (nesty_render: ">=3.41.0",
+# flame 1.38.2's floor): the local SDK's pre-release version string accepts
+# bounds a real 3.41.2 rejects. When the local SDK is upgraded, bump this pin
+# and commit the re-resolved lockfile in the same change.
+env:
+  FLUTTER_VERSION: "3.41.2"
+
+jobs:
+  analyze-and-test:
+    name: Format, analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter --version
+
+      # One `pub get` at the root resolves every workspace member. The lockfile
+      # is committed, so CI must not re-resolve it.
+      - name: Install dependencies (workspace)
+        run: flutter pub get --enforce-lockfile
+
+      # Generated files are skipped: their formatting belongs to the generators.
+      - name: Check formatting
+        run: |
+          git ls-files -z -- '*.dart' \
+            | grep -zvE '\.(g|freezed|gr|config|gen)\.dart$|/lib/l10n/app_localizations[^/]*\.dart$|/firebase_options[^/]*\.dart$' \
+            | xargs -0 --no-run-if-empty dart format --output=none --set-exit-if-changed
+
+      # Zero-warnings policy: infos fail the build too.
+      - name: Analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Test nesty_core (pure Dart)
+        working-directory: packages/nesty_core
+        run: dart test
+
+      - name: Test nesty_render
+        working-directory: packages/nesty_render
+        run: flutter test
+
+      - name: Test game
+        working-directory: apps/game
+        run: flutter test
+
+      - name: Test admin
+        working-directory: apps/admin
+        run: flutter test
+
+  codegen-drift:
+    name: Generated code is committed and fresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get --enforce-lockfile
+
+      # Per app, gen-l10n first: the build_runner generators resolve imports of
+      # app_localizations.dart. build_runner 2.15 always replaces conflicting
+      # outputs, so it takes no flag for that.
+      - name: Regenerate (gen-l10n, then build_runner) in each app
+        run: |
+          set -euo pipefail
+          for app in apps/game apps/admin; do
+            echo "::group::$app"
+            (cd "$app" && flutter gen-l10n && dart run build_runner build)
+            echo "::endgroup::"
+          done
+
+      # `git diff` only sees tracked files, so new untracked outputs are checked too.
+      - name: Fail if regeneration changed anything
+        run: |
+          untracked="$(git ls-files --others --exclude-standard)"
+          if ! git --no-pager diff --exit-code --stat || [ -n "$untracked" ]; then
+            echo "::error::Generated files are stale or missing. Run 'flutter gen-l10n', then 'dart run build_runner build', in apps/game and apps/admin, and commit the result."
+            if [ -n "$untracked" ]; then printf 'Untracked:\n%s\n' "$untracked"; fi
+            exit 1
+          fi
+
+  build:
+    name: Build (game Android dev, admin web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Android build (AGP 8, Kotlin jvmTarget 17) needs JDK 17.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get --enforce-lockfile
+
+      # The game has no flavorless build: always --flavor <f> -t lib/main_<f>.dart.
+      # iOS needs a macOS runner and is built locally (the /milestone skill).
+      - name: Build game APK (dev, debug)
+        working-directory: apps/game
+        run: flutter build apk --debug --flavor dev -t lib/main_dev.dart
+
+      - name: Build admin (web, prod entry point)
+        working-directory: apps/admin
+        run: flutter build web -t lib/main_prod.dart

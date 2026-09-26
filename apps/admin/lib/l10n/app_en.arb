@@ -1,0 +1,146 @@
+{
+  "@@locale": "en",
+
+  "appName": "Nesty Admin",
+  "@appName": {
+    "description": "Product name at the top of the sign-in form (spec §15)."
+  },
+
+  "emailLabel": "Email",
+  "@emailLabel": {
+    "description": "Label of the email field on the sign-in form (spec §15 Auth)."
+  },
+
+  "passwordLabel": "Password",
+  "@passwordLabel": {
+    "description": "Label of the password field on the sign-in form (spec §15 Auth)."
+  },
+
+  "emailRequired": "Enter your email.",
+  "@emailRequired": {
+    "description": "Validation message when the sign-in email field is empty."
+  },
+
+  "passwordRequired": "Enter your password.",
+  "@passwordRequired": {
+    "description": "Validation message when the sign-in password field is empty."
+  },
+
+  "signIn": "Sign in",
+  "@signIn": {
+    "description": "Button that submits the sign-in form (spec §15 Auth)."
+  },
+
+  "signingIn": "Signing in",
+  "@signingIn": {
+    "description": "Accessibility label for the progress indicator shown in the sign-in button while signing in."
+  },
+
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Signs the current user out. Navigation rail button and the Not authorized screen."
+  },
+
+  "signedInAs": "Signed in as {email}",
+  "@signedInAs": {
+    "description": "Shows which account is signed in, on the Not authorized screen.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "someone@example.com"
+      }
+    }
+  },
+
+  "notAuthorizedTitle": "Not authorized",
+  "@notAuthorizedTitle": {
+    "description": "Title shown to signed-in users without an admins/{uid} document (spec §15 Auth)."
+  },
+
+  "notAuthorizedMessage": "This account doesn't have admin access. The owner adds admins in the Firebase console.",
+  "@notAuthorizedMessage": {
+    "description": "Explains the Not authorized screen. Admin documents are created by hand in the console (spec §14.1)."
+  },
+
+  "errorInvalidCredentials": "Wrong email or password.",
+  "@errorInvalidCredentials": {
+    "description": "Sign-in failed because the email or password was rejected."
+  },
+
+  "errorNetwork": "Can't reach the server. Check your connection and try again.",
+  "@errorNetwork": {
+    "description": "A request failed because Firebase could not be reached."
+  },
+
+  "errorGeneric": "Something went wrong. Try again.",
+  "@errorGeneric": {
+    "description": "Fallback for any other failure."
+  },
+
+  "comingInMilestone": "Coming in {milestone}",
+  "@comingInMilestone": {
+    "description": "Note under the title of a screen that isn't built yet. The placeholder is a milestone code from the project plan (spec §18); don't translate it.",
+    "placeholders": {
+      "milestone": {
+        "type": "String",
+        "example": "M5"
+      }
+    }
+  },
+
+  "dashboardTitle": "Dashboard",
+  "@dashboardTitle": {
+    "description": "Dashboard screen title and navigation label (spec §15 #1)."
+  },
+
+  "levelsTitle": "Levels",
+  "@levelsTitle": {
+    "description": "Levels list screen title and navigation label (spec §15 #2)."
+  },
+
+  "levelEditorTitle": "Edit level {levelId}",
+  "@levelEditorTitle": {
+    "description": "Level editor screen title (spec §15 #3). The placeholder is a level id, not translated.",
+    "placeholders": {
+      "levelId": {
+        "type": "String",
+        "example": "L0024"
+      }
+    }
+  },
+
+  "generatorTitle": "Generator",
+  "@generatorTitle": {
+    "description": "Level generator screen title and navigation label (spec §15 #4)."
+  },
+
+  "chaptersTitle": "Chapters",
+  "@chaptersTitle": {
+    "description": "Chapters screen title and navigation label (spec §15 #5)."
+  },
+
+  "skinsTitle": "Skins",
+  "@skinsTitle": {
+    "description": "Doll skins screen title and navigation label (spec §15 #6)."
+  },
+
+  "themesTitle": "Themes",
+  "@themesTitle": {
+    "description": "Board themes screen title and navigation label (spec §15 #7)."
+  },
+
+  "museumItemsTitle": "Museum items",
+  "@museumItemsTitle": {
+    "description": "Doll Museum items screen title and navigation label (spec §15 #7, §7.2)."
+  },
+
+  "dailyOverridesTitle": "Daily overrides",
+  "@dailyOverridesTitle": {
+    "description": "Daily puzzle overrides screen title and navigation label (spec §15 #8, §7.5)."
+  },
+
+  "exportBundleTitle": "Export bundle",
+  "@exportBundleTitle": {
+    "description": "Export level bundle screen title and navigation label (spec §15 #9)."
+  }
+}

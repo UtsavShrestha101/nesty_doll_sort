@@ -1,0 +1,129 @@
+import 'dart:developer' as developer;
+
+import 'package:flutter/foundation.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+import 'package:nesty_game/core/models/symbols_mode.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
+import 'package:nesty_game/core/services/database/hive_boxes.dart';
+import 'package:nesty_game/core/services/database/settings_schema.dart';
+
+/// Hive-backed [DatabaseService].
+///
+/// Construct it only through [open] / [openOrFallback], which initialise Hive
+/// and open every box exactly once. DI calls [openOrFallback] from bootstrap
+/// (`DatabaseModule`, `@preResolve`), so features only ever see opened boxes.
+class HiveDatabaseService implements DatabaseService {
+  HiveDatabaseService._(this._settings);
+
+  final Box<Object> _settings;
+
+  /// Initialises Hive and opens all boxes. Throws if storage is unavailable.
+  ///
+  /// [directory] switches to pure-Dart `Hive.init(directory)` (no platform
+  /// channels), which is what the round-trip tests use. Without it Hive lives
+  /// in `<app documents>/hive` via `Hive.initFlutter`.
+  static Future<HiveDatabaseService> open({String? directory}) async {
+    if (directory == null) {
+      await Hive.initFlutter(HiveBoxes.directory);
+    } else {
+      Hive.init(directory);
+    }
+    // Generated adapters get registered here once a type needs one — see
+    // hive_type_ids.dart. Settings are primitives, so there are none yet.
+    final settings = await Hive.openBox<Object>(HiveBoxes.settings);
+    return HiveDatabaseService._(settings);
+  }
+
+  /// [open], but never throws.
+  ///
+  /// Offline-first (CLAUDE.md rule 3): a storage failure must not brick the
+  /// app. Hive already recovers truncated/corrupt box files on its own
+  /// (`crashRecovery`), so what remains are environment failures such as an
+  /// unavailable documents directory or a held file lock. Deleting data would
+  /// not fix those, so we log and fall back to the in-memory implementation:
+  /// the game stays fully playable with default settings, and changes simply
+  /// don't persist this session.
+  static Future<DatabaseService> openOrFallback({String? directory}) async {
+    try {
+      return await open(directory: directory);
+    } on Object catch (error, stackTrace) {
+      // TODO(M4): report as a Crashlytics non-fatal.
+      developer.log(
+        'Hive failed to open; using in-memory settings for this session.',
+        name: 'nesty.database',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      // developer.log never reaches the `flutter run` terminal.
+      if (kDebugMode) debugPrint('[nesty.database] Hive failed: $error');
+      return FakeDatabaseService();
+    }
+  }
+
+  // Reads are type-checked: a value of the wrong type (corruption, or a
+  // future schema) falls back to its default instead of throwing.
+  bool _readBool(String key, bool fallback) {
+    final value = _settings.get(key);
+    return value is bool ? value : fallback;
+  }
+
+  String _readString(String key, String fallback) {
+    final value = _settings.get(key);
+    return value is String ? value : fallback;
+  }
+
+  @override
+  bool get soundEnabled =>
+      _readBool(SettingsKeys.sound, SettingsDefaults.sound);
+
+  @override
+  Future<void> setSoundEnabled(bool enabled) =>
+      _settings.put(SettingsKeys.sound, enabled);
+
+  @override
+  bool get musicEnabled =>
+      _readBool(SettingsKeys.music, SettingsDefaults.music);
+
+  @override
+  Future<void> setMusicEnabled(bool enabled) =>
+      _settings.put(SettingsKeys.music, enabled);
+
+  @override
+  bool get hapticsEnabled =>
+      _readBool(SettingsKeys.haptics, SettingsDefaults.haptics);
+
+  @override
+  Future<void> setHapticsEnabled(bool enabled) =>
+      _settings.put(SettingsKeys.haptics, enabled);
+
+  @override
+  SymbolsMode get symbolsMode =>
+      SymbolsMode.fromStorage(_settings.get(SettingsKeys.symbols));
+
+  @override
+  Future<void> setSymbolsMode(SymbolsMode mode) =>
+      _settings.put(SettingsKeys.symbols, mode.storageValue);
+
+  @override
+  String get languageCode =>
+      _readString(SettingsKeys.locale, SettingsDefaults.locale);
+
+  @override
+  Future<void> setLanguage(String languageCode) =>
+      _settings.put(SettingsKeys.locale, languageCode);
+
+  @override
+  Stream<String> get languageStream =>
+      _settings.watch(key: SettingsKeys.locale).map((event) {
+        // hive_ce puts the *removed* value on a delete event, and a failed
+        // first write rolls back as a delete carrying the value that never
+        // persisted. A deleted key reads back as the default, so emit that.
+        if (event.deleted) return SettingsDefaults.locale;
+        final value = event.value;
+        return value is String ? value : SettingsDefaults.locale;
+      });
+
+  @override
+  Future<void> close() => Hive.close();
+}

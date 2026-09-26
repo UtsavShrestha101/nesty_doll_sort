@@ -1,0 +1,71 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Game [DEV]",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/game",
+      "program": "${workspaceFolder}/apps/game/lib/main_dev.dart",
+      "args": ["--flavor", "dev"]
+    },
+    {
+      "name": "Game [STG]",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/game",
+      "program": "${workspaceFolder}/apps/game/lib/main_stg.dart",
+      "args": ["--flavor", "stg"]
+    },
+    {
+      "name": "Game [PROD]",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/game",
+      "program": "${workspaceFolder}/apps/game/lib/main_prod.dart",
+      "args": ["--flavor", "prod"]
+    },
+    {
+      "name": "Game [DEV] (profile mode, physical device)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "cwd": "${workspaceFolder}/apps/game",
+      "program": "${workspaceFolder}/apps/game/lib/main_dev.dart",
+      "args": ["--flavor", "dev"]
+    },
+    {
+      "name": "Admin [DEV] (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/admin",
+      "program": "${workspaceFolder}/apps/admin/lib/main_dev.dart",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Admin [DEV] (Chrome, fake services)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/admin",
+      "program": "${workspaceFolder}/apps/admin/lib/main_dev.dart",
+      "deviceId": "chrome",
+      "args": ["--dart-define=NESTY_FAKE_SERVICES=true"]
+    },
+    {
+      "name": "Admin [STG] (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/admin",
+      "program": "${workspaceFolder}/apps/admin/lib/main_stg.dart",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Admin [PROD] (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/apps/admin",
+      "program": "${workspaceFolder}/apps/admin/lib/main_prod.dart",
+      "deviceId": "chrome"
+    }
+  ]
+}

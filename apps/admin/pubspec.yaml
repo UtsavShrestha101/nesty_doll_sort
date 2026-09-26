@@ -1,0 +1,44 @@
+name: nesty_admin
+description: "Nesty admin panel — Flutter Web app for authoring levels and uploading art."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.0
+
+resolution: workspace
+
+dependencies:
+  auto_route: 11.1.0
+  bloc: ^9.2.1
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
+  freezed_annotation: ^3.1.0
+  get_it: ^9.3.0
+  injectable: ^3.0.0
+  intl: any
+  json_annotation: ^4.12.0
+  nesty_core:
+    path: ../../packages/nesty_core
+  nesty_render:
+    path: ../../packages/nesty_render
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.15.1
+  freezed: ^3.2.5
+  json_serializable: ^6.14.1
+  injectable_generator: ^3.0.2
+  auto_route_generator: ^10.5.0
+  mocktail: ^1.0.5
+  bloc_test: ^10.0.0
+
+flutter:
+  uses-material-design: true
+  # ARB localization from day one (spec §16); see l10n.yaml.
+  generate: true

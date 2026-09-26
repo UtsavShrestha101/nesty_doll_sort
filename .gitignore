@@ -1,0 +1,155 @@
+# Nesty workspace .gitignore — covers every member (packages/*, apps/*).
+#
+# Deliberately NOT ignored: docs/, CLAUDE.md, .claude/ and design/ are
+# committed, and so is generated Dart (*.g.dart, *.freezed.dart,
+# *.gr.dart, di.config.dart, lib/l10n/app_localizations*.dart) — CI checks it
+# for drift instead (.github/workflows/ci.yaml). Firebase config produced by
+# `flutterfire configure` (firebase_options*.dart, google-services.json,
+# GoogleService-Info.plist) is also committed once the owner generates it: it
+# is not a secret — access is enforced by firebase/*.rules — and CI needs it.
+
+# ---------------------------------------------------------------- OS / editors
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.atom/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code: launch configs and extension recommendations are shared; personal
+# workspace state is not.
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ---------------------------------------------------------------- Claude Code
+# Personal permission grants and personal instructions; the shared config is
+# .claude/settings.json and CLAUDE.md.
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ---------------------------------------------------------------- Dart / Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+**/doc/api/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.log
+
+# Build output lives at each member's root (Android and iOS builds included).
+# Anchored so a source folder that happens to be called "build" is not hidden.
+/build/
+/apps/*/build/
+/packages/*/build/
+/tools/build/
+coverage/
+
+# Only the workspace root keeps a lockfile: members resolve against it, so a
+# member lockfile means pub was run outside the workspace.
+/packages/*/pubspec.lock
+/apps/*/pubspec.lock
+
+# Golden-test diff output (written next to goldens on a mismatch).
+**/failures/
+
+# Symbolication / obfuscation output from release builds (M8).
+app.*.symbols
+app.*.map.json
+*.dSYM/
+*.dSYM.zip
+
+# ---------------------------------------------------------------- Android
+# The Gradle wrapper (gradlew, gradlew.bat, gradle/wrapper/*) is meant to be
+# committed, so it is not listed here. Note: the Flutter-template
+# apps/game/android/.gitignore still ignores gradle-wrapper.jar, gradlew and
+# gradlew.bat, and a nested .gitignore wins over this file.
+**/android/.gradle/
+**/android/.kotlin/
+**/android/captures/
+**/android/local.properties
+**/android/.cxx/
+**/android/app/.cxx/
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/**/GeneratedPluginRegistrant.java
+
+# ---------------------------------------------------------------- iOS / Xcode
+**/ios/**/dgph
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/**/.generated/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/**/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+.build/
+.buildlog/
+.swiftpm/
+
+# ---------------------------------------------------------------- Secrets
+# Signing material and env files never enter the repo (CLAUDE.md rule 5).
+key.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+*.p8
+*.mobileprovision
+*.provisionprofile
+*service-account*.json
+*service_account*.json
+*firebase-adminsdk*.json
+.env
+.env.*
+!.env.example
+secrets/
+
+# ---------------------------------------------------------------- Firebase CLI
+# .firebaserc is left trackable on purpose (project ids are not secrets); see
+# firebase/.firebaserc.example.
+.firebase/
+firebase-debug*.log
+firestore-debug.log
+storage-debug.log
+ui-debug.log
+database-debug.log
+pubsub-debug.log
+# Local emulator exports (firebase emulators:export ./emulator-data).
+/firebase/emulator-data/

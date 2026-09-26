@@ -1,0 +1,38 @@
+// Cloud Storage security rules — Nesty (spec §14.2, §14.3).
+//
+// STATUS: written from the spec §14.3 prose ("public read of skins/, themes/
+// and museum/; writes only when the user's uid has a document in admins/,
+// through a firestore.exists check"). Finalised in M5 (spec §18) together with
+// emulator-backed rules tests. Every path not matched below is denied.
+//
+// TODO(M5): consider constraining admin uploads by size and content type
+// (image/svg+xml, image/png, image/webp) once the admin upload flow (spec §15
+// screens 6–7) exists — the spec does not define limits yet.
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Cross-service lookup into Firestore: same admin definition as firestore.rules.
+    function isAdmin() {
+      return request.auth != null &&
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // skins/{skinId}/v{version}/{group}.svg|.png and skins/{skinId}/preview.png
+    match /skins/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // themes/{themeId}/v{version}/...
+    match /themes/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // museum/{itemId}.png
+    match /museum/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

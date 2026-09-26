@@ -1,0 +1,10 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include "Generated.xcconfig"
+
+// Base configuration of Profile-* and Release-* for every flavor (dev, stg, prod).
+// They share the pods settings of the "Release" pods configuration (kept in the
+// Podfile for this reason); they are identical per flavor while no pod is limited
+// to specific configurations. CocoaPods cannot see that and would warn once per
+// flavor configuration that integration "will not work", so the token below
+// silences it.
+// @COCOAPODS_SILENCE_WARNINGS@ //

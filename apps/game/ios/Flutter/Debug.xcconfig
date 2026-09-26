@@ -1,0 +1,9 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+// Base configuration of Debug-dev, Debug-stg and Debug-prod. All three share the
+// pods settings of the "Debug" pods configuration (kept in the Podfile for this
+// reason); they are identical per flavor while no pod is limited to specific
+// configurations. CocoaPods cannot see that and would warn once per flavor
+// configuration that integration "will not work", so the token below silences it.
+// @COCOAPODS_SILENCE_WARNINGS@ //

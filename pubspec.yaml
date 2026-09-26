@@ -1,0 +1,12 @@
+name: nesty_workspace
+description: Nesty Doll Sort — Dart pub workspace root (game, admin, core, render).
+publish_to: none
+
+environment:
+  sdk: ^3.11.0
+
+workspace:
+  - packages/nesty_core
+  - packages/nesty_render
+  - apps/game
+  - apps/admin

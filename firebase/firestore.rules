@@ -1,0 +1,43 @@
+// Firestore security rules — Nesty (spec §14.1, §14.3).
+//
+// STATUS: this is the spec §14.3 SKETCH, transcribed with its semantics kept
+// exactly (only whitespace and comments differ). It is finalised in M5 (spec
+// §18, "Admin panel ... plus security rules"). Do not loosen it; tighten it in
+// M5 together with emulator-backed rules tests.
+//
+// Known gap to resolve in M5 (not changed here because the spec text is the
+// source of truth): Firestore grants access when ANY matching rule allows it,
+// and the catch-all `/{col}/{id}` below also matches `levels/{id}` and
+// `admins/{uid}`. For levels that adds nothing, but for admins it means an
+// existing admin CAN write `admins/*` through the catch-all, even though the
+// `admins` block says `allow write: if false` (spec §14.1: admins are
+// "created manually in the console"). Tracked as an open question for M5.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    // An admin is a signed-in user with a document at admins/{uid} (spec §15 Auth).
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(db)/documents/admins/$(request.auth.uid));
+    }
+
+    // Players only ever read published levels; the game's sync query filters
+    // on status == 'published' (spec §13.4), which these rules require.
+    match /levels/{id} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Public content the game reads offline-first (spec §13.4, §13.5, §7.5).
+    match /{col}/{id} {
+      allow read: if col in ['config', 'chapters', 'skins', 'themes', 'museumItems', 'dailyOverrides'];
+      allow write: if isAdmin();
+    }
+
+    // The admin panel reads its own admins doc to decide "Not authorized" (spec §15).
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "@@locale": "en",
+
+  "appName": "Nesty",
+  "@appName": {
+    "description": "Short product name shown on the splash screen. The final name is TBD (spec header)."
+  },
+
+  "splashLoading": "Loading…",
+  "@splashLoading": {
+    "description": "Accessibility label for the splash loading bar (spec §10.2 #1)."
+  },
+
+  "genericLoadFailed": "Something went wrong.",
+  "@genericLoadFailed": {
+    "description": "Shown when local data (save file, bundled levels) fails to load."
+  },
+
+  "retry": "Try again",
+  "@retry": {
+    "description": "Button that retries a failed load."
+  },
+
+  "levelTitle": "Level {level}",
+  "@levelTitle": {
+    "description": "Level label on the Home play button and the gameplay top bar (spec §10.2 #2, #3).",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "example": "24"
+      }
+    }
+  },
+
+  "pause": "Pause",
+  "@pause": {
+    "description": "Tooltip for the gameplay pause button (spec §10.2 #3)."
+  },
+
+  "boosterUndo": "Undo",
+  "@boosterUndo": {
+    "description": "Undo booster button label (spec §8)."
+  },
+
+  "boosterHint": "Hint",
+  "@boosterHint": {
+    "description": "Hint booster button label (spec §8)."
+  },
+
+  "boosterExtraSlot": "+Slot",
+  "@boosterExtraSlot": {
+    "description": "Extra slot booster button label (spec §3.6, §8). Keep it short."
+  },
+
+  "restart": "Restart",
+  "@restart": {
+    "description": "Restart the current level (spec §2.4). Always free."
+  }
+}

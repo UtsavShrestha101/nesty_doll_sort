@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "your-nesty-dev-project-id",
+    "dev": "your-nesty-dev-project-id",
+    "stg": "your-nesty-stg-project-id",
+    "prod": "your-nesty-prod-project-id"
+  }
+}

@@ -36,6 +36,7 @@ drift; CI runs the checks in the "Generated code is committed and fresh" job.
 | `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio}` | `apps/game/assets/{skins,symbols,board,themes,audio}/` |
 | `dart run nesty_tools:gen_nesty_icons [--check]` | `tools/fonts/nesty_symbols.txt`, `apps/game/assets/fonts/NestySymbolsRounded.codepoints` | `apps/game/lib/core/ui/icons/nesty_icons.gen.dart` |
 | `dart run nesty_tools:todo_index [--check]` | every first-party source file | `docs/TODO_INDEX.md` |
+| `dart run nesty_tools:nesty_levels bundle build` / `bundle check` | `tools/levels/manifest.json`, `tools/levels/authored/*.json` | `apps/game/assets/levels/bundle.json` (`bundle check` writes nothing) |
 | `tools/fonts/build_fonts.sh [--verify]` | pinned upstream fonts (network) | `apps/game/assets/fonts/`, `tools/fonts/SHA256SUMS`, then runs `gen_nesty_icons` |
 
 All outputs are generated: never edit them by hand
@@ -116,13 +117,40 @@ tag. Markers inside `backticks` or fenced code are references and are
 skipped; `design/`, `.claude/`, build output and generated files are not
 scanned.
 
+### `nesty_levels`
+
+The level tools (design §4). Every rule, the solver, the simulator and the
+generator come from `nesty_core`; the CLI only reads files, calls core and
+prints. Run `dart run nesty_tools:nesty_levels --help` for the full usage.
+
+| Command | Does |
+|---|---|
+| `validate [paths] [--loader] [--budget N]` | Validation rules 1–8 (spec §5.3); `--loader` checks rules 1–7 like the game's loader (design A6). |
+| `solve [paths] [--budget N]` | Verdict, optimal moves, nodes, branching and the move list (spec §6.3). Fails unless every level is solved. |
+| `simulate [paths] [--runs N] [--seed S] [--move-cap N]` | Casual and smart bot wins, the suggested tier and "expert only" (spec §6.4). |
+| `report [paths] [--budget N] [--json]` | One row per level: order, id, chapter, declared and simulated tier, casual %, smart %, solver moves, nodes, status. `--json` prints the same as a JSON array. |
+| `bundle build` | `tools/levels/manifest.json` + `authored/` → `apps/game/assets/levels/bundle.json` (2-space indent, fixed key order, sorted by order, `rewardCoins` from the tier). Refuses a changed board whose `version` wasn't raised (spec §13.3). |
+| `bundle check` | CI: the bundle is fresh, and every level passes rules 1–8, has the declared tier the simulator gives (design A32; a `tierOverride` reason may keep the declared tier on the tutorials and on open-slot-only boards, which always simulate easy, D26), and follows the §6.6 pattern, the §3.7 schedule, 20-level chapters and the M2 layout (2–3 shelves, ≤ 4 slots per shelf). |
+| `generate --params <json\|file> --seed S [--count N]`, `--bonus N [--count C]`, `--daily YYYYMMDD` `[--verify] [--out DIR]` | Runs the generator (spec §6.5) on explicit params and seeds, the Bonus Endless curve (§7.1) or a date's daily puzzle (§7.5). `--verify` re-validates each level with rules 1–8 on a fresh solve (the M1 acceptance check). |
+| `fixtures check` | nesty_core's solver fixtures (`packages/nesty_core/test/fixtures/`) are canonical, pass rules 1–7 and give the verdicts and optimal move counts in `test/solver/fixture_expectations.dart`. |
+
+A path is a level file (spec §5.1), a bundle, the manifest or a folder of
+level files, relative to the current directory; with no path, commands read
+the game's bundle. The kind is told from the file's `format`, never from its
+name. Exit codes: 0 ok, 1 a check failed, 64 bad usage. Findings go to
+stderr as `severity subject path: code: message`, with core's `IssueCodes` or
+the tools' own `FindingCodes` (`lib/src/levels/finding.dart`).
+
+`generate --params` takes the spec §6.5 params by their `GeneratorParams`
+names, with `targetTier` as a tier id, for example
+`{"colors":3,"maxSize":3,"shelves":2,"slotsPerShelf":3,"emptySlots":1,"targetTier":"medium"}`.
+`setsPerColor`, `towers`, `towerDepth`, `locked` and `iceSlots` are optional.
+
+The manifest's schema and the authoring workflow are in
+[`levels/README.md`](levels/README.md).
+
 ## Planned scripts
 
 | Script | Milestone | Purpose |
 |---|---|---|
-| `validate_levels` | M2 | Load a level JSON file or `apps/game/assets/levels/bundle.json`, run the spec §5.3 validator and the solver (admin budget, §6.3) on every level, print a per-level report, exit non-zero on any failure. CI runs it on the bundled levels. |
-| `export_level_bundle` | M5 | Headless version of the admin's "Export bundle" (spec §15 screen 9): read the first N `levels` where `status == published` ordered by `order` (the query and composite index from spec §13.4 / `firebase/firestore.indexes.json`), validate each one, and write `apps/game/assets/levels/bundle.json` with stable key order and `order`-sorted levels. The admin button stays the primary path; the script exists so a bundle can be rebuilt reproducibly in CI or on a release branch. |
-| `generate_levels` | M1–M2 | Batch-run the core generator (spec §6.5) with explicit params and seed to produce fixtures or draft levels, including `generatorVersion`. Used for the M1 acceptance check ("100 generated levels pass validation and solve"). |
-| `simulate_levels` | M1–M5 | Run the casual and smart bots (spec §6.4) over a file of levels and print win rates and the suggested tier. It is the same computation as the admin's Simulate button. |
-
-With `--json`, the level scripts will print machine-readable output for CI.
+| `export_level_bundle` | M5 | Headless version of the admin's "Export bundle" (spec §15 screen 9): read the first N `levels` where `status == published` ordered by `order` (the query and composite index from spec §13.4 / `firebase/firestore.indexes.json`), validate each one, and write `apps/game/assets/levels/bundle.json` through `LevelBundleCodec`, then run `nesty_levels bundle check`'s checks on it. The admin button stays the primary path; the script exists so a bundle can be rebuilt reproducibly in CI or on a release branch. |

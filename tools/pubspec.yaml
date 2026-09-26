@@ -1,5 +1,5 @@
 name: nesty_tools
-description: "Developer CLIs for Nesty: design token codegen, design asset sync, TODO index (and later the level tools)."
+description: "Developer CLIs for Nesty: design token codegen, design asset sync, TODO index and the level tools (nesty_levels)."
 publish_to: none
 version: 0.1.0
 

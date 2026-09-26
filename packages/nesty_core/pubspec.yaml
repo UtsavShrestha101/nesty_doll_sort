@@ -1,7 +1,7 @@
 name: nesty_core
 description: "Pure-Dart game rules, models, level codec, solver, simulator and generator for Nesty."
 publish_to: none
-version: 0.1.0
+version: 0.2.0
 # repository: https://github.com/my_org/my_repo
 
 environment:

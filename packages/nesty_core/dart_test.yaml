@@ -1,0 +1,19 @@
+# Test runner configuration for nesty_core (docs/plans/m1-core-design.md §5).
+#
+# Tags must be declared here, or `dart test` warns about them.
+#
+#   dart test                    # everything on the VM (CI)
+#   dart test -x slow            # the quick loop (Stop hook, local runs)
+#   dart test test/parity        # VM half of the VM/web parity check
+#   dart test -p chrome,node test/parity
+#
+# Tests that read files or use dart:io / dart:isolate carry @TestOn('vm'),
+# so the whole suite also loads on the web platforms.
+tags:
+  # Long runs, such as the M1 acceptance test (100 generated levels validate
+  # and solve, spec §18). Excluded from the quick loop with `-x slow`.
+  slow:
+    timeout: 10x
+  # VM/web parity suites under test/parity/: the same expected values must
+  # hold on the VM, in dart2js (chrome, node) and in wasm (D11, Q9).
+  parity:

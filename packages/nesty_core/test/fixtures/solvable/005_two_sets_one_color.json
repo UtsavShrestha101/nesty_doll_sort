@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "005_two_sets_one_color",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "open", "nest": ["red3"]},
+      {"type": "open", "nest": ["red2", "red1"]},
+      {"type": "open", "nest": null} ],
+    [ {"type": "open", "nest": ["red3"]},
+      {"type": "open", "nest": ["red2"]},
+      {"type": "open", "nest": ["red1"]} ]
+  ]
+}

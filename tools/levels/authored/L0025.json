@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "L0025",
+  "maxSize": 4,
+  "shelves": [
+    [ {"type": "tower", "stack": [["pink2"], ["brown3", "brown2"], ["brown1"]]},
+      {"type": "open", "nest": ["blue1"]},
+      {"type": "open", "nest": ["pink1"]} ],
+    [ {"type": "open", "nest": ["brown4"]},
+      {"type": "tower", "stack": [["blue3", "blue2"], ["pink4", "pink3"], ["blue4"]]},
+      {"type": "open", "nest": null} ]
+  ]
+}

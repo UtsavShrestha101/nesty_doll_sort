@@ -14,8 +14,9 @@ levels and upload art. The full game and technical design is in
 The pre-M1 architecture skeleton (M0) is done: workspace, base cubits, DI,
 Hive, routing, flavors, l10n, fake services, CI. The design handoff is in
 `design/`, and its tokens, art, sound and fonts are wired into the build by
-the `nesty_tools` pipelines. M1 (core rules) and M2 (playable game) are in
-progress. Milestones, decisions and open questions are tracked in
+the `nesty_tools` pipelines. M1 (core rules, solver, simulator, generator)
+is done; M2 (playable game) is in progress, with its rendering foundation and
+30 authored levels built. Milestones, decisions and open questions are tracked in
 [docs/PROGRESS.md](docs/PROGRESS.md), and every remaining item in
 [docs/BACKLOG.md](docs/BACKLOG.md).
 

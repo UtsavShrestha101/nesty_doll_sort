@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "L0004",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "open", "nest": ["blue3"]},
+      {"type": "open", "nest": ["blue2", "blue1"]},
+      {"type": "open", "nest": null},
+      {"type": "open", "nest": ["green1"]} ],
+    [ {"type": "open", "nest": ["green3", "green2"]},
+      {"type": "open", "nest": ["orange3"]},
+      {"type": "open", "nest": ["orange2", "orange1"]} ]
+  ]
+}

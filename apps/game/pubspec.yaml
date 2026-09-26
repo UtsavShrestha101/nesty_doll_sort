@@ -70,6 +70,10 @@ flutter:
     - assets/themes/ch04/
     - assets/themes/ch05/
     - assets/themes/ch06/
+    # The offline levels (spec §13.4): bundle.json, written by
+    # `dart run nesty_tools:nesty_levels bundle build` from tools/levels/
+    # (never by hand); CI's `bundle check` fails if it is stale.
+    - assets/levels/
     # Font licences, shown on the licence page (registered in bootstrap.dart).
     - assets/fonts/Fredoka-OFL.txt
     - assets/fonts/Nunito-OFL.txt

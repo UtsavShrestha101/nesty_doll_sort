@@ -11,6 +11,15 @@ Spec sections are docs/GAME_SPEC.md. Where this document and an **owner override
 - The game loader validates rules 1–7 and trusts bundled levels for rule 8; CI (`nesty_levels bundle check`) proves every bundled level solvable (A6).
 - All other ambiguities (A3–A32 below) use the recommended defaults and are recorded in PROGRESS.
 
+## Amendments from the M1 build and review (2026-09-26)
+Recorded as docs/PROGRESS.md D26–D39; where they differ from the sections below, they win.
+- Solver nodes store packed canonical keys, not cells; solutions replay on the real board (D31). The node arena grows in chunks (no copy); `peakBytes` bounds memory.
+- The default simulation seed hashes the board only (`schemaVersion`, `maxSize`, `shelves`), not the id (D32).
+- Codec: unknown keys are reported sorted by code unit and `schema.invalidJson` has no args, so the VM and the web agree (D29). Ice above `LayoutLimits.maxIce` (2^31 − 1) is `schema.valueOutOfRange` and the engine refuses it.
+- `SolverSnapshot.decode` rejects cells that contradict `completedSets` (D31).
+- `bundle check` accepts `tierOverride` on open-slot-only boards, which always simulate easy (D26, amends A32).
+- CI runs the parity suites on node, Chrome and dart2wasm; core guards ban `~`, 64-bit typed lists and `HashMap`/`HashSet` (D39).
+
 ## 0. Architecture — one rules engine, models as views
 A small allocation-free engine over a compact mutable board (`src/rules/engine/`) is the **only** implementation of §4.
 `Rules`, `GameSession` (UI + admin playtest), solver, simulator and generator all call it (CLAUDE.md rule 2).

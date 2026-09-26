@@ -14,8 +14,8 @@ Last updated: 2026-09-26.
 | Milestone | Status | Acceptance criteria (spec §18) |
 |---|---|---|
 | **M0 — Architecture skeleton** | ✅ Done 2026-09-26, no open blocker | Analyze clean, every test passes, every app builds. All met: analyze clean, tests 32/5/53/47, every flavor's APK, the iOS dev/prod builds and the admin web build succeed (see [Verification](#verification-2026-09-26-in-the-repo)) |
-| M1 — Core (`nesty_core`) | In progress (started 2026-09-26, D23) | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve |
-| M2 — Playable game (placeholder art; the design art was pulled in, D23) | In progress (started 2026-09-26, D23) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
+| **M1 — Core (`nesty_core`)** | ✅ Done 2026-09-26 (see [M1](#m1--core-nesty_core--done-2026-09-26)); owner questions Q30–Q38 open, none blocking | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve. All met |
+| M2 — Playable game (placeholder art; the design art was pulled in, D23) | In progress (started 2026-09-26, D23). Done so far: the nesty_render foundation (layout, skins, renderers, sprites, themes), the 30 authored levels and `bundle check` in CI | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
 | M3 — App shell and meta | Not started | Kill the app mid-level and it resumes exactly where it was. The daily puzzle is identical on two devices on the same date |
 | M4 — Firebase content | Not started | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
 | M5 — Admin panel | Not started | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
@@ -319,9 +319,97 @@ statements and the iOS archive note are updated. D14–D17 are added.
 - In debug, `runGuarded` prints every non-cancelled failure. Tests that
   exercise expected failures print a few extra lines.
 
+## M1 — Core (`nesty_core`) — done (2026-09-26)
+
+Built in parallel steps from [plans/m1-core-design.md](plans/m1-core-design.md)
+(contracts, PRNG + Hash64 + parity harness, codec + validator + fixtures,
+rules kernel + session, solver, simulator, generator + curve, bundle codec +
+`nesty_levels`), then reviewed, fixed and integrated. The design-foundation
+render work (plan phase 3: `BoardLayout`, the skin pipeline and renderers,
+`BoardSprites` and `ThemeBackground`) and the 30 authored M2 levels were built
+in the same round. Decisions are D26–D39; the open owner questions are
+Q30–Q38.
+
+### Acceptance (spec §18)
+
+| Criterion | Evidence | Result |
+|---|---|---|
+| All §4 rules are unit-tested | `test/rules/` and `test/session/`: every rule, every `InvalidMoveReason` with its precedence, towers, locks (first completion only), ice (cracked vs shattered), the exact event order and payloads, `legalMoves` order and completeness, won and out of moves, the §5.1 example as a 4-move scenario, undo, restart and extra slots | Pass |
+| Solver fixtures pass | 8 solvable (optimal 2/3/4/5/3/2/2/12 moves), 3 unsolvable (lock deadlock, never-thawing ice, no space), and solvable 008 gives `unknown` at a 50-node budget. Every value was worked out by hand and confirmed by an independent Python implementation of §4; every solution replays through `Rules.tryMove` to `Won` | Pass |
+| The generator is deterministic | 21 golden cases (level digest, attempt, tier, bot wins, solution length, nodes) and a parity suite, identical on the VM, node (dart2js), Chrome and dart2wasm; same seed + params give the same bytes | Pass |
+| 100 generated levels pass validation and solve | `dart test -t slow`: bonus levels 1–100 (seed 1 000 000 + n) pass rules 1–8 on a fresh admin-budget solve and replay to `Won` (the bundle step also checked it with `nesty_levels generate --bonus 1 --count 100 --verify`) | Pass |
+
+M1 is **done**. The benchmark targets of design §5 are not §18 criteria; two
+of them are missed on exhaustive searches (below, Q32).
+
+### M1 review and fix pass
+
+A review of the finished M1 core and render work raised 19 findings. Each
+was confirmed against the code before it was fixed (1 blocker, 3 major, 10
+minor, 5 nits).
+
+| Finding | Confirmed | Change |
+|---|---|---|
+| SPEC-01 (blocker) towerless L3–L15 can't meet the §6.6 pattern and A32 | Yes (proof in D26) | `BundlePolicy.checkTier` accepts a `tierOverride` on open-slot-only boards (D26, Q30); tests for both cases; `bundle check` passes |
+| SPEC-02 / DETERMINISM-003 ice ≥ 2^31 wraps in `Int32List` | Yes (2^31 and 2^32 validated as solvable) | `LayoutLimits.maxIce` = 2^31 − 1: the validator reports `schema.valueOutOfRange`, `BoardLayout` refuses larger counters |
+| SPEC-03 device-generated levels can be expert only | Yes (bonus 40 and 99 of 1–100) | Documented on `GeneratorSuccess.simulation`; test pins bonus 40's flag; the policy is an owner question (Q31). No behaviour change |
+| DETERMINISM-001 CI never runs the web parity | Yes | CI step: `dart test -p node test/parity test/generator/golden_test.dart`, `-p chrome test/parity`, `-p chrome -c dart2wasm test/parity` |
+| DETERMINISM-002 issue order and args differ on dart2js | Yes | Unknown keys reported sorted by code unit; `schema.invalidJson` has no args (the parser text stays in the message); new `test/parity/codec_parity_test.dart` |
+| DETERMINISM-004 decoding quadratic in the issue count | Yes | Both decoders count errors as they are added |
+| DETERMINISM-005 admin search above 64 MB; growth holds both arrays | Yes (72.3 MiB at 500k on a 72-cell board; the reviewer measured ~86 MiB for the store alone during its last doubling) | `NodeStore` grows in 1,024-row chunks (never copied, no transient); `AStarSearch.peakBytes` bounds the peak (43.6 MB for the 435k proof); the worst-case board is in the solver benchmark. 72.3 MiB held (80.3 MB peak) on that board remains: Q33 |
+| DETERMINISM-006 exhaustive throughput and admin time targets | Yes (187–191k nodes/s, 2.3 s for 435,588 nodes) | `Kernel.applyLegal` skips re-checking kernel-listed moves (~3 %); the remaining gap is Q32 |
+| DETERMINISM-007 guards miss the web-safe arithmetic rules | Yes (no violations in lib today) | Guards for `~`, 64-bit typed lists and `HashMap`/`HashSet`, with self-tests |
+| DETERMINISM-008 snapshot decode accepts contradicting `completedSets` | Yes (RangeError from the queue) | `decode` checks that the cells lost only whole sets and that they add up to `completedSets`; FormatException tests |
+| RENDER-1 the host's rim is painted over the guest | Yes | `DollPart.interior` and `DollPart.bodyFront`, `DollPaintParams.shadow`; the z-order of the design's nest frame (D37); pixel tests |
+| RENDER-2 +Slot flashes the placeholder | Yes | `DollRenderer.canPaint`; `FallbackDollRenderer` uses it; re-layout test |
+| RENDER-3 sealed/frozen dolls overflow on 5–6-slot rows | Yes | Dolls shrink with the crowded row's pieces (D36); the crowded test now checks sealed and frozen dolls |
+| RENDER-4 top-shelf silhouettes reach the HUD | Yes | `buriedBaseY(depth, buried:)` compresses the step only when needed (D36, `TODO(design)`); top-row towers in the crowded test |
+| RENDER-5 golden gate can't see the subtle symbol | Yes (all goldens passed with it removed) | Gate ≥ 99.9 % / mean < 0.5, a symbol-box gate, and negative controls (missing symbol, 100 % ink); a mutation that drops the symbol now fails 22 tests |
+| RENDER-6 `BoardSprites.image` keeps every scale asked for | Yes | A miss rasterizes only when nothing held is within 10 % |
+| RENDER-7 gold layers rasterized for every height | Yes (23 % of layer bytes) | Not fixed: needs a gold flag through `DollRenderer.prepare` and the cache key; deferred (BACKLOG v1.1) |
+| RENDER-8 hot-path guard misses allocating constructs | Yes (no violations today) | Patterns for typed lists, `Offset & Size`, Rect/Offset makers, image/mask filters and closures, with self-tests |
+| RENDER-9 dolls on fractional device pixels | Yes | Upright, unscaled dolls snap their base to the device grid |
+
+### Benchmarks (2026-09-26, this Mac, VM JIT unless noted)
+
+| Target (design §5) | Measured | Met? |
+|---|---|---|
+| Hint 30k ≤ 100 ms VM, ≤ 400 ms dart2js | 35–38 ms VM; 52–57 ms dart2js on node | Yes |
+| Soft-stuck 20k ≤ 70 ms | 20–22 ms VM; 30–32 ms node | Yes |
+| Solver ≥ 300k nodes/s VM | 1.28M nodes/s on a budget-limited search (the widest generator board); 191–289k nodes/s when every node is expanded | Budget-limited only (Q32) |
+| Admin 500k ≤ 2 s VM, ≤ 8 s Chrome | 435,588-node exhaustive proof 2.28 s VM, 3.48 s dart2js on node | Web yes, VM no (Q32) |
+| Heap ≤ 64 MB | 43.6 MB peak (37.1 MB held) for the 435k proof; 80.3 MB peak on the widest generator board (Q33) | Typical boards only |
+| Simulator ≤ 250 ms/level | worst 82.7 ms (19 slots, 5 towers), mean 7.7 ms | Yes |
+| Generator median ≤ 1.5 s, p95 ≤ 5 s | bonus 1–300: median 14 ms, p95 101 ms, max 252 ms; dailies 2027: median 23 ms, p95 72 ms | Yes |
+| Kernel apply ≤ 1 µs, `tryMove` facade ≤ 20 µs | 45 ns, 0.4 µs (kernel step, scratch benchmark; BACKLOG M1 leftovers) | Yes |
+
+`dart run benchmark/{solver,simulator,generator}_benchmark.dart` reproduce
+them; timings vary ±15 % between runs. Memory is typed-list bytes, not RSS.
+
+### Verification (2026-09-26, final)
+
+| Command | Outcome |
+|---|---|
+| `flutter pub get --enforce-lockfile` (root) | exit 0, `pubspec.lock` unchanged |
+| `dart run nesty_tools:gen_design_tokens --check` / `sync_design_assets --check` / `gen_nesty_icons --check` | all unchanged |
+| `dart run nesty_tools:todo_index` then `--check` | regenerated; unchanged (83 tagged markers) |
+| `dart run nesty_tools:nesty_levels bundle check` | 30 levels: OK (0 errors, 0 warnings) |
+| `dart run nesty_tools:nesty_levels fixtures check` | 11 fixtures OK |
+| `flutter analyze --fatal-infos --fatal-warnings` (root); `dart analyze --fatal-infos` (core, tools) | No issues found |
+| `dart format --output=none --set-exit-if-changed` (all non-generated Dart) | 0 changed |
+| `cd packages/nesty_core && dart test -x slow` / `-t slow` / `dart test` | 1,200 / 128 / 1,328 pass |
+| `dart test -p node test/parity test/generator/golden_test.dart` / `-p chrome test/parity` / `-p chrome -c dart2wasm test/parity` | 66 / 42 / 42 pass |
+| `cd packages/nesty_core && dart test -p node` (the whole suite in dart2js; VM-only files skipped) | 1,219 pass |
+| `cd tools && dart test` | 183 pass |
+| `flutter test` in nesty_render / apps/game / apps/admin | 466 / 63 / 47 pass |
+
+Not run in this pass: app builds (no app code changed), the Stop hook, CI on
+GitHub.
+
 ## Decisions log
 
-D1–D13 are dated 2026-09-25, and D14–D25 2026-09-26. D1, D8 and D12 were
+D1–D13 are dated 2026-09-25, and D14–D39 2026-09-26 (D26–D39 are the M1 and
+render build and review decisions). D1, D8 and D12 were
 amended on 2026-09-26. D18–D23 are the owner's decisions for the round that
 covers the design foundation, M1 and M2, copied from its approved plan.
 
@@ -680,6 +768,168 @@ covers the design foundation, M1 and M2, copied from its approved plan.
     resolve on Flutter 3.41.2 ("Package reasons"). It builds native code, so
     iOS builds need CMake on the Mac.
 
+- **D26. Towerless levels keep their §6.6 tier by `tierOverride` (M1 review
+  SPEC-01; owner-confirmable, Q30).** Spec §3.7 allows no towers before L16,
+  no locks before L31 and no ice before L51, and §6.6 plus design A24 give
+  L3, 5, 6, 7, 9, 10, 13 and 15 a medium, hard or superhard tier. On a board
+  of open slots without ice every color that isn't complete holds the same
+  number k of dolls of each size, so for every size s > 1 the nests whose
+  inner doll is s are as many as those whose outer doll is s − 1: there is
+  always a legal merge, every merge lowers the nest count by 1, and the
+  casual bot (a merge 70 % of the time) wins 300 of 300. No towerless board
+  can satisfy A32, so `BundlePolicy.checkTier` lets an open-slot-only board
+  (every slot an `OpenSlot` with ice 0) keep its declared tier with a
+  `tierOverride` reason, like the tutorials; anywhere else an override is
+  still an error. The levels keep their §6.6 badges and coins (§7.3). The
+  alternatives (declare them easy and relax the pattern for towerless
+  boards; move towers before L16, against §3.7) are the owner's call.
+- **D27. The core public API as built (M1).** Design §1 holds, with these
+  additions and deviations (every one is exported and tested):
+  - `MoveResult` has `move`; `MoveApplied({move, state, events,
+    completedSet})`, `MoveRejected({move, reason})` with `targetId` =
+    `move.to`. `NestDirection { inside, swallow }`. `BoardPosition` lives in
+    `slot_id.dart`; `UndoEntry`, `UndoResult` and `ExtraSlotAdded` in
+    `session_types.dart`. Event payloads carry what the animations need
+    (`Picked.fromTower/leftEmptyTower`, `NestedInto.moving/target/merged`,
+    `Revealed.hiddenBelow`, `Completed.setsCompleted/totalSets`, …).
+  - Rejection precedence (tested, owner-confirmable in Q35): unknown slot,
+    same slot, source frozen, source locked, source empty, target frozen,
+    target locked, color, size. `targetOccupied` is §4's `else invalid`
+    branch, unreachable in play.
+  - `Rules.legalMoves` lists by source, then target, in `slotIds` order: the
+    simulator's and the fallback hint's determinism depend on it.
+  - `GameSession.restore(level, state, history, {undosUsed})`; `restart()`
+    keeps `undosUsed` and the extra slots (per level, D22; Q35).
+  - `Solver.hintFrom`, `SolverTask`, `SolverSnapshot.start/decode`,
+    `SolverRun.maxBudget`, `SimulationResult.fromStats/isExpertOnly`,
+    `Generator.buildAttempt/defaultId/maxSetsPerColor`,
+    `DifficultyCurve.dailyTier/maxLevelNumber`, `LevelSolver`,
+    `ValidationOptions.solver` (default `Solver.solve`),
+    `LayoutLimits.maxIce`.
+  - Name clash for M2: core exports `MoveApplied`, `MoveRejected`,
+    `Completed`, `Won`, `Placed`; the game's `BoardEffect` names must differ
+    or import core with a prefix.
+- **D28. PRNG and Hash64 definitions (resolves Q9; frozen under
+  `Generator.version` 1).** `Prng` is xoshiro128** 1.1. Seeding: lo = seed
+  mod 2^32, hi = seed ÷ 2^32; splitmix32 streams A from lo and B from
+  hi ^ 0x510E527F; state (A1, A2^B1, A3^B2, A4^B3), so distinct seeds give
+  distinct states and the all-zero state is impossible.
+  `derive(seed, a, [b])` = MurmurHash3_x86_32 over the little-endian words
+  [lo, hi, a, b] with seed 0xA54FF53A. `nextInt` rejection-samples (no
+  modulo bias, no 64-bit product); `shuffle` is Durstenfeld. `Hash64` is two
+  MurmurHash3_x86_32 halves (seeds 0x6A09E667 / 0xBB67AE85) in web-safe u32
+  arithmetic, no `fixnum`. Reference vectors come from an independent Python
+  implementation checked against the upstream C.
+- **D29. Codec and validator semantics (M1, review DETERMINISM-002,
+  SPEC-02).** Integers are read by value (`3.0` is `3`; fractions and
+  |x| > 2^53 − 1 are `schema.wrongType`), so the browser and the VM agree.
+  The codec reports only what a `Level` can't hold; the validator reports
+  everything a `Level` can hold, so code-built and JSON levels get the same
+  checks. Issue order is document order with the known fields in canonical
+  order, then unknown keys **sorted by code unit** (JSON key order isn't
+  portable), and `schema.invalidJson` has no args (the parser's text differs
+  by platform). Ice above `LayoutLimits.maxIce` (2^31 − 1, a representation
+  limit, not a game rule) is `schema.valueOutOfRange`, and `BoardLayout`
+  refuses it, so a counter never wraps and plays as thawed. Rule 8 without a
+  solver is `solver.unproven` as an error; `generatorVersion` must be ≥ 1;
+  rule 6 applies per lock, literally (mutual deadlocks are rule 8's).
+  Decoders count errors as they go (linear, DETERMINISM-004).
+- **D30. The rules engine (M1).** Nest code `gold << 10 | color << 6 |
+  outer << 3 | length` in a `Uint16List`; `BoardLayout` compiled once per
+  `Level` (Expando cache), up to 28 authored slots + 2 reserved extras
+  (looser than the validator's 22, so rule 7 never throws on a rule-2
+  failure; Q35); current ice and per-color completions are derived. Gold is
+  merged per §3.5 in the kernel, but the `Nest` view drops it (v1.1).
+  `Kernel.applyLegal` applies a move the kernel itself listed without
+  re-checking (the solver's inner loop).
+- **D31. The solver (M1, review DETERMINISM-005/008).** Deviation from design
+  §3: stored nodes are packed canonical keys (three 10-bit codes per word
+  without gold), a visited-table hit is confirmed by comparing them, and the
+  solution is rebuilt by replaying on the real start board (first legal move
+  reaching the next stored state). This halved search time. Pruning adds a
+  free-pair merge symmetry (A30). Fallback step 3 (A3) takes the first
+  non-pointless placement, then the first placement. A won root is `solved`
+  with no moves; the root is always stored. Snapshot format v1 is
+  self-contained, and `decode` rejects cells that contradict
+  `completedSets`. The node arena grows in 1,024-row chunks, never copied,
+  and `peakBytes` bounds the search's memory.
+- **D32. The simulator (M1; owner-confirmable, Q35).** Default seed =
+  `Hash64.ofString(board JSON).lo` over `schemaVersion`, `maxSize` and
+  `shelves` only, so renaming a level or the generator's metadata can't move
+  its tier. Run i of bot b (casual 0, smart 1) uses `Prng(derive(simSeed, b,
+  i))`. Casual: one `nextInt(100)` only when merges exist. Smart (A17
+  reading): candidates minus pointless moves, score (alive, rank,
+  mergesAfter) with "alive" extended to boards that have a non-pointless
+  move, ties by PRNG. A board with only pointless moves is a loss at once.
+  Expert only = smart wins < 150/300.
+- **D33. The generator and curve (M1; owner-confirmable, Q31, Q34).** Draw
+  order per attempt stream `Prng(derive(seed, i))`: colors (one palette
+  shuffle), segment cuts, roles, segments (≤ ⌊towers/2⌋ mergeable tower tops,
+  20 deals, best kept), locks (a lock never opens on a color that waits on
+  the sealed color when one set per color), ice (never on a lock). Bottom
+  shelf = `min(slotsPerShelf, 4)`. Attempts are validated with
+  `Validator.validate` (rules 1–8, admin budget) and simulated; closest tier
+  by tier distance, then band centre, then earliest. `bonusParams(n)` takes
+  the global level number. `dailyParams` uses the 31–50 boards with medium on
+  weekdays and hard on weekends, and `dailySeed` rejects dates that don't
+  exist. The stage table is the A16 default in `DifficultyCurve`'s doc (Q34).
+  An expert-only result is returned with `simulation.expertOnly` set; the
+  generator doesn't reject it (§6.5 step 4 matches tier only; Q31).
+- **D34. Level bundle and `nesty_levels` (M1/M2).** `LevelBundleCodec` decode
+  semantics (format and version first; entries with errors skipped;
+  duplicate orders and ids skipped; one `bundle.orderGap` per gap; unknown
+  top-level keys are errors but the bundle loads). Manifest schema in
+  `tools/levels/README.md` (order = position, id = file name, every
+  authored file listed). `bundle build` refuses an edited board whose
+  `version` wasn't raised. `BundlePolicy` formalizes §3.7 ("introduces at
+  Ln": absent before, present at Ln; maxSize 6 is only a cap; L3–9 ≤ 4
+  colors), applies the M2 layout (2–3 shelves, ≤ 4 slots) to every bundled
+  level, and treats expert only as a warning (Q36). CI runs `bundle check`.
+- **D35. The 30 authored M2 levels.** One set per color everywhere, maxSize 3
+  for L1–9 and 4 from L10, no locks, ice or gold, chapters 1–20 / 21–30.
+  L1/L2 are the design tutorials and carry no override (both simulate easy).
+  The towerless medium/hard/superhard levels (D26) are "harder" by more
+  nests, split families and one empty slot. L16 is a 4,3 board with two
+  depth-4 towers (the design's 4,3,3 TOWER16 board can only simulate easy, so
+  it is L18); L16–L20 use depth-4 towers (Q37). Tiers were tuned with the
+  same Validator, Solver and Simulator `bundle check` runs.
+- **D36. Board layout extensions (render R1, review RENDER-3/4).** The doll
+  clamp gap is 8/3 dp (the design's own TUT1 gap), not design §1's 4, which
+  would shrink the designed tutorial. Undesigned rows and presets scale every
+  slot piece by `q = min(standScaleForPitch, preset.pieceScale)`. On 5–6-slot
+  rows the dolls shrink at least by that row's piece shrink × the 4-slot
+  clamp, so a sealed doll keeps its case's proportions and a frozen one its
+  ice's. On the top shelf the D21 18 dp step per buried nest shrinks only
+  when the deepest of the tower's buried nests would reach the HUD
+  (`buriedBaseY(depth, buried:)`, `TODO(design)`). The kind enum is
+  `SlotShapeKind`; the whole column is the ≥ 48 dp hit area.
+- **D37. Doll rendering (render R2, review RENDER-1/2/5/9).** `DollRenderer`
+  adds `canPaint(h)` (any prepared raster, resampled) next to the exact
+  `isReadyFor(h)`; `FallbackDollRenderer` uses `canPaint`, so a re-layout
+  keeps the skin on screen. Nest z-order follows the design's nest frame
+  with `DollPart.interior` and `DollPart.bodyFront` and a `shadow` flag:
+  inside = host lid → host interior → guest (no shadow) → host bodyFront.
+  `prepare` is additive (LRU past 8 heights); rasters are keyed by artboard
+  pixel height; 9 layers; the symbol atlas holds both sizes per exact
+  height; the shine sweep crosses the whole doll over its duration (Q38).
+  Upright, unscaled dolls snap to device pixels. Goldens compare every
+  classic reference render (≥ 99.9 % within 8/255, mean < 0.5, plus the
+  symbol box).
+- **D38. Board sprites and themes (render R3, review RENDER-6).**
+  `BoardSpriteLibrary` (parsed once per app) is split from `BoardSprites` (one
+  board's images). `prepare` rasterizes the plank, stands, glow ring, hint
+  arrow and the intact glass case at every scale on the board; glass and ice
+  frames are lazy (`also:`, `ensure`, or a miss). A miss rasterizes only when
+  nothing held is within 10 %. Sprites are cropped once to their alpha. Theme
+  backgrounds swap when the new image is ready; `ChapterTheme.forChapter`
+  cycles ch01–ch06 until chapters 7–10 have art (Q38).
+- **D39. VM/web parity in CI and web-safe arithmetic guards (review
+  DETERMINISM-001/007).** CI runs the parity suites on node, Chrome and
+  dart2wasm (and the generator goldens on node), because each parity case
+  compares with a VM-computed constant and the VM run can't see a web-only
+  divergence. The architecture guard also bans `~`, 64-bit typed lists and
+  `HashMap`/`HashSet` in core's `lib/`.
+
 ## Package reasons (CLAUDE.md rule 9)
 
 Versions are the resolved versions in the root `pubspec.lock`, checked
@@ -783,11 +1033,14 @@ reused.
 - [ ] **Q8. Extract the duplicated base layer (D6) into a shared package,
   such as `packages/nesty_app_core`?** The error kinds differ per app, so
   the package would need a strategy for them.
-- [ ] **Q9. Web-safe solver hashing (M1, spec §6.2).** In the browser a
+- [x] **Q9. Web-safe solver hashing (M1, spec §6.2).** In the browser a
   Dart `int` is a JS number: exact to 2^53, with 32-bit bitwise operators.
   The 64-bit canonical hash therefore needs a web-safe design, such as two
   32-bit halves or `fixnum`. `fixnum` is already in the lock transitively; a
-  direct dependency would need a reason recorded here.
+  direct dependency would need a reason recorded here. Resolved 2026-09-26:
+  `Hash64` is two MurmurHash3_x86_32 halves in web-safe u32 arithmetic, no
+  `fixnum` (D28); parity holds on the VM, node, Chrome and dart2wasm, and CI
+  runs the web half (D39).
 - [ ] **Q10. Confirm the bundle id `com.futrix.nesty` (and `.dev`, `.stg`)
   before any store upload.** It can't change after publishing.
 - [ ] **Q11. Is `DEVELOPMENT_TEAM` `Z674BG8G6U` the right Apple team?** It
@@ -834,9 +1087,12 @@ reused.
   at their true size with the color hidden, following spec §3.2 rather than
   the design (D21). In the plan, the reveal wipe is a `DollRenderer` paint
   option driven by the board timeline.
-- [ ] **Q19. Where does a solvable fixture record its expected optimal move
+- [x] **Q19. Where does a solvable fixture record its expected optimal move
   count (M1)?** The suggestion is to keep fixture files as pure §5.1 level
-  JSON and put the expectations in the test.
+  JSON and put the expectations in the test. Resolved 2026-09-26: the
+  fixtures stay pure §5.1 JSON, and the expectations are consts in
+  `packages/nesty_core/test/solver/fixture_expectations.dart`
+  (`test/fixtures/README.md`).
 - [ ] **Q20. Tighten the spec §14.3 rules sketch for M5?** Both rules files
   keep the sketch's semantics. A one-off emulator check on 2026-09-26
   confirmed these gaps (details in `firebase/README.md`):
@@ -913,6 +1169,91 @@ reused.
   - a patched "Fredoka Tabular" built by `build_fonts.sh` (the OFL allows it
     under a new name).
 
+- [ ] **Q30. How should the towerless levels L3–L15 be graded (D26)?**
+  Applied default (a): an open-slot-only board keeps its §6.6 tier (badge and
+  coins) with a `tierOverride` reason. The alternatives: (b) declare them
+  easy and relax the §6.6 pattern check for towerless boards (L6 and L10
+  then pay easy coins and lose their badges); (c) introduce towers before
+  L16, against §3.7.
+- [ ] **Q31. What does the game do with an expert-only generated level
+  (spec §6.4, D33)?** Bonus 40 (superhard, smart 0/300) and bonus 99 (medium,
+  smart 142/300) of bonus levels 1–100 are expert only, and no admin reviews
+  device-generated levels. Options: (a) the generator treats expert only as
+  a tier miss and keeps looking (a `Generator.version` bump and new goldens);
+  (b) the app shows the flag, which `GeneratorSuccess.simulation.expertOnly`
+  already carries; (c) the §6.4 flag applies only to admin-authored levels.
+  Decide before M3's Bonus Endless and daily.
+- [ ] **Q32. Relax the exhaustive-search targets (design §5)?** An
+  exhaustive 435,588-node proof takes 2.28 s on the VM (target 2 s) at
+  191–289k nodes/s (target 300k); budget-limited searches, hints (35–38 ms)
+  and soft-stuck checks (20–22 ms) are well inside. The admin steps the
+  search, so the page never blocks. Proposed: "admin 500k ≤ 3 s VM worst
+  case". The next levers are hashing only the changed key words and a
+  count-only kernel routine.
+- [ ] **Q33. Cap the admin generator's params, or scale the admin budget by
+  board size (design §5 heap ≤ 64 MB)?** The widest board
+  `Generator.checkParams` accepts (4×5, 17 depth-4 towers, 72 cells) holds
+  72.3 MiB of typed lists at 500k nodes (80.3 MB peak), about 152 B/node.
+  Typical boards stay at 86–125 B/node, 37–44 MB. No curve row comes near.
+- [ ] **Q34. Confirm the default difficulty curve (design A16, D33) before
+  M3.** Every row has one set per color and 1 empty slot unless noted; S =
+  shelves × slots, T = towers × depth:
+
+  | Levels | Easy | Medium | Hard | Superhard |
+  |---|---|---|---|---|
+  | 1 (all tiers) | 1 color, size 3, 2×3, empty 3 | same | same | same |
+  | 2 (all tiers) | 2 colors, size 3, 2×3, empty 2 | same | same | same |
+  | 3–9 | 3 colors, size 3, 2×4, empty 2 | 3 colors, size 3, 3×3, empty 2 | 4 colors, size 3, 3×3 | 4 colors, size 3, 3×4, empty 2 |
+  | 10–15 | 3 colors, size 4, 3×3, empty 2 | 4 colors, size 4, 3×3 | 4 colors, size 4, 3×4, empty 2 | 5 colors, size 4, 3×4 |
+  | 16–30 | 5 colors, 3×3, T 4×3 | 6 colors, 3×3, T 5×4 | 7 colors, 3×3, T 6×4 | 8 colors, 3×3, T 7×4 |
+  | 31–50 | 6 colors, 3×3, T 4×3, 1 lock | 5 colors, 2×4, T 4×4, 1 lock | 6 colors, 3×3, T 5×4, 1 lock | 6 colors, 2×4, T 5×4, 1 lock |
+  | 51–70 | 6 colors, T 4×3, 1 ice | 6 colors, T 5×3, 1 lock, 1 ice | 7 colors, T 5×4, 1 lock, 1 ice | 7 colors, T 6×4, 1 ice |
+  | 71–120 | 6 colors, size 5, T 4×3, 1 lock, 1 ice | 6 colors, size 5, T 4×4, 1 lock | 6 colors, size 5, T 5×4, 1 ice | 6 colors, size 5, T 7×4 |
+  | 121+ | as 71–120 | as 71–120 | as 71–120 | 6 colors, size 6, T 7×4 |
+
+  Also: `bonusParams` takes the global play order (not the "Bonus Level N"
+  count); the daily is medium on weekdays and hard on weekends on the 31–50
+  boards; levels 1–15 can only reach easy (D26), so the generator returns the
+  closest tier there. Any change alters generated levels and needs a
+  `Generator.version` bump.
+- [ ] **Q35. Confirm the recorded M1 defaults (design A-list and the build
+  steps' readings).** Each is implemented, tested and changeable:
+  - A3 fallback step 3: the first non-pointless placement, then the first
+    placement; a hint on a won state returns no move (`none`, `solved`).
+  - A17 smart bot: the lookahead drops moves to boards with no non-pointless
+    move; "doesn't fill the last empty slot" counts empty, open-like,
+    interactable slots (iced ones don't); "most merges after" counts ordered
+    moves; when every candidate is dead the best-ranked is still played.
+  - The default simulation seed hashes the board only (D32).
+  - Rejection precedence (D27); `targetOccupied` unreachable.
+  - `restart()` keeps `undosUsed` and the extra slots.
+  - `solver.unproven` without a solver is an error; `generatorVersion` ≥ 1;
+    rule 6 applied per lock, literally.
+  - The engine lays out up to 28 authored slots (the validator's limit is 22).
+  - Generator readings: the lock wait-cycle rule, no ice on a lock, the best
+    deal kept after 20, invalid daily dates rejected.
+  - Freeze the PRNG (D28), simulator (D32) and generator (D33) definitions
+    under `Generator.version` 1 before M3 ships dailies.
+- [ ] **Q36. Bundle policy (D34).** Should an expert-only bundled level fail
+  CI rather than warn? Are the tutorials (L1–L2) plus open-slot boards the
+  right set for `tierOverride`, or should intro levels (L16, L31, L51) be
+  allowed? Keep the M2 layout limits (2–3 shelves, ≤ 4 slots) for every
+  bundled level, or only for 1–30? May bundle entries start at `version` 0?
+  Should unknown top-level bundle keys be ignored for forward compatibility?
+- [ ] **Q37. Authored levels (D35).** Is L16's 4,3 board with two depth-4
+  towers right for the tower intro (the design's 4,3,3 TOWER16 board is L18,
+  easy)? The easy tower levels all simulate 100 % casual; should easy aim
+  for 70–95 %? Check L6 (HARD) and L10 (SUPER HARD) in the M2 playtest.
+- [ ] **Q38. Render defaults (D36–D38).** The doll clamp gap 8/3 dp; a buried
+  nest two or more sizes smaller than the top stays hidden behind it at 18 dp
+  per depth; pips on an occupied extra slot; the 4-shelf preset scaling every
+  piece by 104/150 (and a top-row tower's maxSize-6 doll standing 2 dp into
+  the HUD there); the shine sweep crossing the doll over the full 300 ms
+  (the prototype's CSS crosses in the middle ~40 %); the placeholder's look;
+  both symbol sizes per atlas page; chapters 7+ cycling ch01–ch06; the
+  theme's swap-on-ready; lazy glass frames 1–2; sprite fit as
+  `preserveAspectRatio` meet.
+
 ### Notes for later milestones (not questions)
 
 Since 2026-09-26 each note below is also an item in [BACKLOG.md](BACKLOG.md),
@@ -951,15 +1292,20 @@ the tracker. They stay here as history. New notes go into BACKLOG.md instead.
 [BACKLOG.md](BACKLOG.md) is the tracker for everything still to do. This
 section only says where to look.
 
-1. **This round (D23):** first the design foundation, then M1 and M2, in the
-   order of the approved plan. The open items are in BACKLOG under "Design
-   foundation", "M1" and "M2". Q9 (web-safe hashing) and Q19 (fixture
-   expectations) are answered early in M1. M2's acceptance needs the owner to
-   run a 60 fps check on a real mid-range Android device.
-2. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
+1. **This round (D23):** the design foundation and M1 are done, and so are
+   M2's nesty_render foundation and 30 levels. Next is M2 phase 4 (the
+   gameplay bloc, Flame board, timeline, screens and services), in the order
+   of the approved plan; the open items are in BACKLOG under "M2". M2's
+   acceptance needs the owner to run a 60 fps check on a real mid-range
+   Android device.
+2. **Owner decisions from M1** (none blocks M2): Q30 (towerless grading),
+   Q31 (expert-only generated levels, before M3), Q34 (curve table, before
+   M3), Q35 (the recorded defaults to freeze before dailies), then Q32, Q33,
+   Q36–Q38.
+3. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
    can supply or decide, with the milestone each one blocks. The first ones
    due are Q3 and Q5 (before M3), the music files, and the 9 missing figurine
    flavor texts.
-3. Owner decisions that block nothing but are cheapest to take early: Q23
+4. Owner decisions that block nothing but are cheapest to take early: Q23
    (SDK upgrade), Q24 (deny globs), Q25 (rule 10 wording) and Q27 (Gradle
    wrapper).

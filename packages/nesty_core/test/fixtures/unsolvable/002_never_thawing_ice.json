@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "u002_never_thawing_ice",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "open", "nest": ["red3"], "ice": 2},
+      {"type": "open", "nest": ["red2", "red1"]},
+      {"type": "open", "nest": null} ],
+    [ {"type": "open", "nest": ["blue3", "blue2"]},
+      {"type": "open", "nest": ["blue1"]} ]
+  ]
+}

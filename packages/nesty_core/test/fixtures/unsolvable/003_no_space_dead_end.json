@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "u003_no_space_dead_end",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "tower", "stack": [["green2", "green1"], ["red3"], ["blue3"]]},
+      {"type": "tower", "stack": [["blue2", "blue1"], ["red2", "red1"], ["green3"]]},
+      {"type": "open", "nest": null} ]
+  ]
+}

@@ -1,8 +1,15 @@
 /// Source rules that `nesty_core/lib` must always satisfy.
 ///
-/// They turn CLAUDE.md rules 2 and 7 and spec §6.5 into checks that fail
+/// They turn CLAUDE.md rules 2 and 7, spec §6.5 and the web-safe arithmetic
+/// rules of docs/plans/m1-core-design.md §3 (Q9) into checks that fail
 /// `dart test`, instead of relying on review. Shared by the guard test (which
 /// runs them on `lib/`) and the scanner tests (which prove each one fires).
+///
+/// The VM runs `dart test` without a web platform unless CI asks for one, so
+/// a construct that only misbehaves in dart2js must be caught here: the
+/// parity suites compare against VM-computed constants and can't see it on
+/// the VM. ("Mask after `<<`" is not mechanically checkable; the parity
+/// suites on node and chrome cover it.)
 library;
 
 import 'dart_source_scanner.dart';
@@ -22,6 +29,9 @@ final List<CoreGuard> coreGuards = [
   noDartMathRandom,
   noUnseededRandom,
   noWallClock,
+  noBitwiseNot,
+  no64BitTypedLists,
+  noHashCollections,
 ];
 
 /// CLAUDE.md rule 2: core is pure Dart, so the game, the web admin and the
@@ -87,6 +97,43 @@ final noWallClock = CoreGuard(
       (line, 'reads the wall clock'),
     for (final line in codeMatches(source, RegExp(r'\bStopwatch\b')))
       (line, 'reads the clock (Stopwatch)'),
+  ],
+);
+
+/// Design §3 (Q9): `~x` is negative on the VM and a 32-bit unsigned value
+/// in dart2js, so the same expression gives different canonical keys,
+/// hashes and seeds. Use `not32` (src/util/u32.dart) or `x ^ (x & y)` for
+/// `x & ~y`. Integer division `~/` is fine.
+final noBitwiseNot = CoreGuard(
+  'never uses the bitwise NOT operator ~ (design §3, web-safe arithmetic)',
+  (source) => [
+    for (final line in codeMatches(source, RegExp(r'~(?!/)')))
+      (line, 'uses ~ (use not32 or x ^ (x & y))'),
+  ],
+);
+
+/// Design §3 (Q9): 64-bit typed lists don't exist in dart2js (the admin),
+/// which throws on them; every core value fits 32 bits.
+final no64BitTypedLists = CoreGuard(
+  'never uses 64-bit typed lists (design §3, web-safe arithmetic)',
+  (source) => [
+    for (final line in codeMatches(
+      source,
+      RegExp(r'\b(Int64List|Uint64List|Int64x2List)\b'),
+    ))
+      (line, 'uses a 64-bit typed list'),
+  ],
+);
+
+/// Design §3 (Q9): `HashMap` and `HashSet` iterate in hash order, which
+/// differs between platforms and SDKs, so any result built by iterating one
+/// could differ between the phones and the web admin. Map and set literals
+/// are insertion-ordered (`LinkedHashMap`/`LinkedHashSet`) and allowed.
+final noHashCollections = CoreGuard(
+  'never uses HashMap or HashSet (design §3: no hash-order iteration)',
+  (source) => [
+    for (final line in codeMatches(source, RegExp(r'\b(HashMap|HashSet)\b')))
+      (line, 'uses a hash-ordered collection'),
   ],
 );
 

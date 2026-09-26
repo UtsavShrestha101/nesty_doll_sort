@@ -1,0 +1,255 @@
+{
+  "format": "nesty.levels.manifest",
+  "manifestVersion": 1,
+  "levelsVersion": 0,
+  "levels": [
+    {
+      "order": 1,
+      "id": "L0001",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tutorial TUT1 (design §4, spec §7.6): one color, maxSize 3. Nest red2 into red3, then red1 into [red3, red2]; 2 moves."
+    },
+    {
+      "order": 2,
+      "id": "L0002",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tutorial TUT2 (design §4, spec §7.6): the swallow. red3 swallows [red2, red1]; blue needs two merges; 3 moves."
+    },
+    {
+      "order": 3,
+      "id": "L0003",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "3 colors at maxSize 3 on three shelves of 3, 1 empty slot, 8 nests: red and yellow come as three singles each, spread over all shelves. 5 merges."
+    },
+    {
+      "order": 4,
+      "id": "L0004",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Breather on 2 shelves: blue and orange sit in two pieces side by side, green is split across the shelves. 3 merges."
+    },
+    {
+      "order": 5,
+      "id": "L0005",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "The first 4-color board (spec §3.7 allows up to 4 before L10), 3,4,3 shelves, 1 empty slot: red as three singles, the others in two pieces. 5 merges."
+    },
+    {
+      "order": 6,
+      "id": "L0006",
+      "chapterId": "ch01",
+      "tier": "hard",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "The largest maxSize-3 board: 12 slots, 1 empty, 11 nests. Red, orange and green are all singles, purple is in two pieces. 7 merges."
+    },
+    {
+      "order": 7,
+      "id": "L0007",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "4 colors on 4,3,3 shelves, 1 empty slot: pink as three singles, every other family in two pieces on different shelves. 5 merges."
+    },
+    {
+      "order": 8,
+      "id": "L0008",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Breather: each family keeps to its own shelf, and there are 2 empty slots. 4 merges."
+    },
+    {
+      "order": 9,
+      "id": "L0009",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "4 colors on 4,4,3 shelves, 1 empty slot: brown and pink as scattered singles. 6 merges."
+    },
+    {
+      "order": 10,
+      "id": "L0010",
+      "chapterId": "ch01",
+      "tier": "superhard",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "maxSize 4 arrives (spec §3.7): 4 colors on 12 slots with 1 empty. Red is four singles; green4 and [green3, green2, green1] are one nest or swallow apart. 7 merges."
+    },
+    {
+      "order": 11,
+      "id": "L0011",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 4 breather on 2 shelves: purple and teal in two pieces each, orange in three. 4 merges."
+    },
+    {
+      "order": 12,
+      "id": "L0012",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "4 colors at maxSize 4, every family in two pieces, 2 empty slots. 4 merges."
+    },
+    {
+      "order": 13,
+      "id": "L0013",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "4 colors on 4,3,4 shelves, 1 empty slot: brown and blue in three pieces each, spread over all three shelves. 6 merges."
+    },
+    {
+      "order": 14,
+      "id": "L0014",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Short breather: 3 colors in two pieces each on a 3,4 board. 3 merges."
+    },
+    {
+      "order": 15,
+      "id": "L0015",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "tierOverride": "Open slots only: towers arrive at L16 (spec §3.7), and on a board of open slots every merge order wins, so the spec §6.4 casual bot always wins 300/300 and the simulator can only say easy. The spec §6.6 tier stands; its difficulty comes from more nests, scattered families and 1 empty slot.",
+      "notes": "The last towerless board: green as four singles in four different places, 1 empty slot. 6 merges."
+    },
+    {
+      "order": 16,
+      "id": "L0016",
+      "chapterId": "ch01",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Towers arrive (spec §3.7, intro card §7.6): 2 towers 4 deep on a 4,3 board with 1 empty slot, 4 colors (the design TOWER16 families: orange, blue, red, green). Only the top nest of a tower moves, so the puzzle is which tower to dig first: the solution lifts green1 off the top-shelf tower. Not the design's 4,3,3 TOWER16 layout: with 2 towers that layout simulates easy (it is L18), and a hard L16 (§6.6 pattern, design A24) needs this 7-slot board."
+    },
+    {
+      "order": 17,
+      "id": "L0017",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "notes": "2 towers 4 deep on a 4,4 board, 1 empty slot, 4 colors. The top-shelf tower holds the whole pink family; the solution starts by lifting [teal2, teal1] off the bottom-shelf tower."
+    },
+    {
+      "order": 18,
+      "id": "L0018",
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "notes": "The design's TOWER16 board (design/prototypes/NestyBoard.dc.html; tangerine, sky, cherry, leaf = orange, blue, red, green) with our hidden nests: [blue2, blue1] and red1 under blue3, orange1 under [green2, green1]. 2 towers, 2 empty slots. It simulates easy, so it is the easy level after the tower intro rather than L16."
+    },
+    {
+      "order": 19,
+      "id": "L0019",
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "notes": "2 towers (3 and 4 deep) on a 3,4 board, 1 empty slot, 4 colors. The bottom-shelf tower's top [purple4, purple3, purple2] has to step into the empty slot and back to swallow purple1."
+    },
+    {
+      "order": 20,
+      "id": "L0020",
+      "chapterId": "ch01",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 1 finale: 2 towers 4 deep on a 3,3 board with 1 empty slot, 4 colors, 6 hidden nests. Every lift out of a tower spends the only free slot, so the order of the digs decides the level."
+    },
+    {
+      "order": 21,
+      "id": "L0021",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 2 opener: 1 shallow tower (2 deep) hiding blue2, 3 colors, 2 empty slots on three shelves of 3."
+    },
+    {
+      "order": 22,
+      "id": "L0022",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "2 towers (3 and 2 deep) on 3,4,3 shelves, 4 colors, 2 empty slots; [orange3, orange2], red2 and navy2 start hidden."
+    },
+    {
+      "order": 23,
+      "id": "L0023",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "3 towers 3 deep on three shelves of 3, 5 colors, 1 empty slot; 6 of the 14 nests start hidden."
+    },
+    {
+      "order": 24,
+      "id": "L0024",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Roomy breather: 12 slots, 2 towers 3 deep, 5 colors, 1 empty slot."
+    },
+    {
+      "order": 25,
+      "id": "L0025",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "2 towers 3 deep on a 3,3 board, 3 colors, 1 empty slot. [brown3, brown2] is buried in the top-shelf tower under brown1, and blue4 tops the other tower over [pink4, pink3]."
+    },
+    {
+      "order": 26,
+      "id": "L0026",
+      "chapterId": "ch02",
+      "tier": "hard",
+      "version": 1,
+      "notes": "3 towers 3 deep on a 4,4 board, 4 colors, 1 empty slot. The solution starts by lifting yellow1 off the top-right tower."
+    },
+    {
+      "order": 27,
+      "id": "L0027",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "3 towers 3 deep on 4,3,3 shelves, 5 colors, 1 empty slot."
+    },
+    {
+      "order": 28,
+      "id": "L0028",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "2 towers (2 and 3 deep) on 4,3,4 shelves, 5 colors, 1 empty slot: a breather before the chapter's last stretch."
+    },
+    {
+      "order": 29,
+      "id": "L0029",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "3 towers 3 deep on a 4,4 board, 5 colors, 1 empty slot."
+    },
+    {
+      "order": 30,
+      "id": "L0030",
+      "chapterId": "ch02",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 2 finale: 3 towers 3 deep on a 3,4 board with 1 empty slot, 4 colors; 9 of the 12 nests start in towers, 6 of them hidden."
+    }
+  ]
+}

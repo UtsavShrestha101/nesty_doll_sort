@@ -1,0 +1,2513 @@
+{
+  "format": "nesty.levels",
+  "bundleVersion": 1,
+  "levelsVersion": 0,
+  "levels": [
+    {
+      "order": 1,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0001",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red2"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 2,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0002",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red2",
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 3,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0003",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "yellow2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue3",
+                "blue2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 4,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0004",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue2",
+                "blue1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green3",
+                "green2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange2",
+                "orange1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 5,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0005",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "purple3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "yellow2",
+                "yellow1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple2",
+                "purple1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue3",
+                "blue2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red2"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 6,
+      "chapterId": "ch01",
+      "tier": "hard",
+      "version": 1,
+      "rewardCoins": 25,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0006",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple2",
+                "purple1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 7,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0007",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "teal2",
+                "teal1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "pink3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue2",
+                "blue1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "yellow3",
+                "yellow2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 8,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0008",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy2",
+                "navy1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green3",
+                "green2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 9,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0009",
+        "maxSize": 3,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "pink1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "brown3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal2",
+                "teal1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "brown2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red3",
+                "red2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "brown1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 10,
+      "chapterId": "ch01",
+      "tier": "superhard",
+      "version": 1,
+      "rewardCoins": 50,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0010",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue2",
+                "blue1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow2",
+                "yellow1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "yellow4",
+                "yellow3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green3",
+                "green2",
+                "green1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 11,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0011",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "purple4",
+                "purple3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple2",
+                "purple1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange3",
+                "orange2"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal4",
+                "teal3",
+                "teal2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 12,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0012",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "pink4",
+                "pink3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink2",
+                "pink1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy4"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy3",
+                "navy2",
+                "navy1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow4",
+                "yellow3",
+                "yellow2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green4",
+                "green3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green2",
+                "green1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 13,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0013",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "brown4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange3",
+                "orange2",
+                "orange1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "brown2",
+                "brown1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue4",
+                "blue3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "purple4",
+                "purple3",
+                "purple2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "brown3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 14,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0014",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red4",
+                "red3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red2",
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "teal4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal3",
+                "teal2",
+                "teal1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow4",
+                "yellow3",
+                "yellow2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 15,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0015",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink2",
+                "pink1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink4",
+                "pink3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy3",
+                "navy2",
+                "navy1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange4",
+                "orange3",
+                "orange2"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 16,
+      "chapterId": "ch01",
+      "tier": "hard",
+      "version": 1,
+      "rewardCoins": 25,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0016",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange4",
+                "orange3"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "orange2"
+                ],
+                [
+                  "blue2",
+                  "blue1"
+                ],
+                [
+                  "red2"
+                ],
+                [
+                  "green1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue4",
+                "blue3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "green2"
+                ],
+                [
+                  "red3"
+                ],
+                [
+                  "red4"
+                ],
+                [
+                  "red1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green4",
+                "green3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 17,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0017",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy2",
+                "navy1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "pink2"
+                ],
+                [
+                  "teal3"
+                ],
+                [
+                  "pink4",
+                  "pink3"
+                ],
+                [
+                  "pink1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "yellow2"
+                ],
+                [
+                  "yellow4"
+                ],
+                [
+                  "navy3"
+                ],
+                [
+                  "teal2",
+                  "teal1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 18,
+      "chapterId": "ch01",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0018",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange4"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "blue2",
+                  "blue1"
+                ],
+                [
+                  "red1"
+                ],
+                [
+                  "blue3"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange3",
+                "orange2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red4",
+                "red3"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "orange1"
+                ],
+                [
+                  "green2",
+                  "green1"
+                ]
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green4",
+                "green3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red2"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 19,
+      "chapterId": "ch01",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0019",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "blue2"
+                ],
+                [
+                  "orange1"
+                ],
+                [
+                  "orange4"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "green3",
+                  "green2"
+                ],
+                [
+                  "orange3",
+                  "orange2"
+                ],
+                [
+                  "purple1"
+                ],
+                [
+                  "purple4",
+                  "purple3",
+                  "purple2"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue4",
+                "blue3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 20,
+      "chapterId": "ch01",
+      "tier": "superhard",
+      "version": 1,
+      "rewardCoins": 50,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0020",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "yellow2"
+                ],
+                [
+                  "yellow1"
+                ],
+                [
+                  "red2"
+                ],
+                [
+                  "purple1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow4",
+                "yellow3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "teal3",
+                  "teal2"
+                ],
+                [
+                  "purple4",
+                  "purple3",
+                  "purple2"
+                ],
+                [
+                  "red4",
+                  "red3"
+                ],
+                [
+                  "teal4"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 21,
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0021",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow3",
+                "yellow2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink4",
+                "pink3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "yellow4"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "blue2"
+                ],
+                [
+                  "blue4",
+                  "blue3"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "pink2",
+                "pink1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 22,
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0022",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "orange3",
+                  "orange2"
+                ],
+                [
+                  "red2"
+                ],
+                [
+                  "red1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange4"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy4",
+                "navy3"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "navy2"
+                ],
+                [
+                  "green4",
+                  "green3",
+                  "green2"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red4",
+                "red3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 23,
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0023",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "green2"
+                ],
+                [
+                  "teal4",
+                  "teal3"
+                ],
+                [
+                  "orange4",
+                  "orange3",
+                  "orange2"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink4"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "navy2"
+                ],
+                [
+                  "orange1"
+                ],
+                [
+                  "green4",
+                  "green3"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "navy4",
+                "navy3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "pink3"
+                ],
+                [
+                  "teal2"
+                ],
+                [
+                  "pink2",
+                  "pink1"
+                ]
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 24,
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0024",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green4"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "purple2"
+                ],
+                [
+                  "green3"
+                ],
+                [
+                  "green2"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink2",
+                "pink1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "pink3"
+                ],
+                [
+                  "orange2"
+                ],
+                [
+                  "green1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy4",
+                "navy3",
+                "navy2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "orange4",
+                "orange3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple4",
+                "purple3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "orange1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 25,
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0025",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "pink2"
+                ],
+                [
+                  "brown3",
+                  "brown2"
+                ],
+                [
+                  "brown1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "brown4"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "blue3",
+                  "blue2"
+                ],
+                [
+                  "pink4",
+                  "pink3"
+                ],
+                [
+                  "blue4"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 26,
+      "chapterId": "ch02",
+      "tier": "hard",
+      "version": 1,
+      "rewardCoins": 25,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0026",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "teal1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "red3",
+                  "red2"
+                ],
+                [
+                  "purple1"
+                ],
+                [
+                  "red4"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "yellow2"
+                ],
+                [
+                  "purple3"
+                ],
+                [
+                  "yellow1"
+                ]
+              ]
+            }
+          ],
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "teal2"
+                ],
+                [
+                  "purple2"
+                ],
+                [
+                  "yellow4",
+                  "yellow3"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple4"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal4",
+                "teal3"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 27,
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0027",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "teal2"
+                ],
+                [
+                  "yellow3"
+                ],
+                [
+                  "blue1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "teal4",
+                "teal3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "brown1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue4"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow2",
+                "yellow1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "blue3",
+                  "blue2"
+                ],
+                [
+                  "brown4",
+                  "brown3"
+                ],
+                [
+                  "red4",
+                  "red3"
+                ]
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "yellow4"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "brown2"
+                ],
+                [
+                  "red2"
+                ],
+                [
+                  "teal1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 28,
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0028",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "red1"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "yellow3",
+                  "yellow2"
+                ],
+                [
+                  "yellow4"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple4",
+                "purple3",
+                "purple2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "brown1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "blue4",
+                "blue3",
+                "blue2"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "purple1"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "brown4",
+                "brown3"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "brown2"
+                ],
+                [
+                  "red2"
+                ],
+                [
+                  "red4",
+                  "red3"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "yellow1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 29,
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "rewardCoins": 10,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0029",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "open",
+              "nest": [
+                "green4"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "green3"
+                ],
+                [
+                  "orange3",
+                  "orange2",
+                  "orange1"
+                ],
+                [
+                  "green2",
+                  "green1"
+                ]
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "navy3"
+                ],
+                [
+                  "pink4"
+                ],
+                [
+                  "yellow1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy4"
+              ]
+            }
+          ],
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "yellow2"
+                ],
+                [
+                  "orange4"
+                ],
+                [
+                  "yellow4",
+                  "yellow3"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "open",
+              "nest": [
+                "pink3",
+                "pink2",
+                "pink1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "navy2",
+                "navy1"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "order": 30,
+      "chapterId": "ch02",
+      "tier": "superhard",
+      "version": 1,
+      "rewardCoins": 50,
+      "data": {
+        "schemaVersion": 1,
+        "id": "L0030",
+        "maxSize": 4,
+        "shelves": [
+          [
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "blue3",
+                  "blue2"
+                ],
+                [
+                  "brown3",
+                  "brown2"
+                ],
+                [
+                  "green1"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "green4",
+                "green3"
+              ]
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "green2"
+                ],
+                [
+                  "blue4"
+                ],
+                [
+                  "brown4"
+                ]
+              ]
+            }
+          ],
+          [
+            {
+              "type": "open",
+              "nest": [
+                "pink1"
+              ]
+            },
+            {
+              "type": "open",
+              "nest": null
+            },
+            {
+              "type": "tower",
+              "stack": [
+                [
+                  "pink3",
+                  "pink2"
+                ],
+                [
+                  "brown1"
+                ],
+                [
+                  "pink4"
+                ]
+              ]
+            },
+            {
+              "type": "open",
+              "nest": [
+                "blue1"
+              ]
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

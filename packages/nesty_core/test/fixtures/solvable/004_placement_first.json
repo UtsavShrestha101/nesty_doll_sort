@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "004_placement_first",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "tower", "stack": [["red2"], ["blue1"]]},
+      {"type": "tower", "stack": [["blue2"], ["red1"]]},
+      {"type": "open", "nest": ["red3"]} ],
+    [ {"type": "open", "nest": ["blue3"]},
+      {"type": "open", "nest": null} ]
+  ]
+}

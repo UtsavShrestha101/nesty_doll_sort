@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "u001_lock_deadlock",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "locked", "unlockColor": "red", "nest": ["blue3", "blue2"]},
+      {"type": "locked", "unlockColor": "blue", "nest": ["red3", "red2"]},
+      {"type": "open", "nest": ["red1"]} ],
+    [ {"type": "open", "nest": ["blue1"]},
+      {"type": "open", "nest": null} ]
+  ]
+}

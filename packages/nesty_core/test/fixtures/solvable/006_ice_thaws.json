@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "006_ice_thaws",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "open", "nest": ["red3", "red2"]},
+      {"type": "open", "nest": ["red1"]},
+      {"type": "open", "nest": ["blue3"], "ice": 1} ],
+    [ {"type": "open", "nest": ["blue2", "blue1"]},
+      {"type": "open", "nest": null} ]
+  ]
+}

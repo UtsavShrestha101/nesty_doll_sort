@@ -31,8 +31,7 @@ enum DollColor {
 
   /// True only for [gold], which matches any color when merging (spec §3.5).
   ///
-  /// The merge rule that uses this flag arrives with the rules module.
-  // TODO(M1): colorsMatch(T, M) in rules uses this flag. Spec §3.5, §4.
+  /// The rules engine's `colorsMatch(T, M)` (spec §4) reads this flag.
   final bool isWild;
 
   // Built once: fromId runs for every doll of every level the codec decodes.

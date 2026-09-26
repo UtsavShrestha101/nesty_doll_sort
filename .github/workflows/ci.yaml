@@ -69,6 +69,22 @@ jobs:
         working-directory: packages/nesty_core
         run: dart test
 
+      # VM/web parity (design §5, D11). Each parity case compares with a
+      # constant computed on the VM, so the VM run above can never catch a
+      # web-only divergence (dart2js numbers, `JSON.parse` key order): the
+      # admin (web) and the phones would then disagree on canonical keys,
+      # solver node counts, simulator seeds or generated dailies (§7.5).
+      # ubuntu-latest ships Node and Google Chrome. node covers dart2js;
+      # chrome adds the browser and dart2wasm. The generator goldens also
+      # run on node, since they pin whole generated levels.
+      - name: Test nesty_core parity on the web (node, chrome, dart2wasm)
+        working-directory: packages/nesty_core
+        run: |
+          set -euo pipefail
+          dart test -p node test/parity test/generator/golden_test.dart
+          dart test -p chrome test/parity
+          dart test -p chrome -c dart2wasm test/parity
+
       - name: Test nesty_render
         working-directory: packages/nesty_render
         run: flutter test
@@ -125,6 +141,15 @@ jobs:
           dart run nesty_tools:gen_nesty_icons
           dart run nesty_tools:sync_design_assets --check
           dart run nesty_tools:todo_index --check
+
+      # The game's bundled levels (tools/levels/README.md): bundle.json is
+      # exactly what `nesty_levels bundle build` makes from tools/levels/, and
+      # every level passes validation rules 1–8 (the game's loader trusts CI
+      # for rule 8, design A6), has its declared tier by the simulator
+      # (design A32), and follows the spec §6.6 pattern, the §3.7 schedule
+      # and the M2 layout. Writes nothing; exits 1 on any error.
+      - name: Check the level bundle
+        run: dart run nesty_tools:nesty_levels bundle check
 
       # `git diff` only sees tracked files, so new untracked outputs are checked too.
       - name: Fail if regeneration changed anything

@@ -1,6 +1,12 @@
 // Mechanically enforces CLAUDE.md rules 2 and 7 and spec §6.5 on every file
 // in nesty_core/lib, so a Flutter import, dart:math Random or a wall-clock
 // read fails `dart test` instead of slipping through review.
+//
+// VM only: it reads the package's sources with dart:io, which the web test
+// platforms (chrome, node) don't have.
+@TestOn('vm')
+library;
+
 import 'dart:io';
 import 'dart:isolate';
 

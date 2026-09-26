@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "008_large_open_board",
+  "maxSize": 5,
+  "shelves": [
+    [ {"type": "open", "nest": ["red5", "red4"]},
+      {"type": "open", "nest": ["yellow1"]},
+      {"type": "open", "nest": ["green3", "green2", "green1"]},
+      {"type": "open", "nest": ["blue5"]},
+      {"type": "open", "nest": ["teal3", "teal2"]} ],
+    [ {"type": "open", "nest": ["orange2", "orange1"]},
+      {"type": "open", "nest": ["teal5", "teal4"]},
+      {"type": "open", "nest": ["red3"]},
+      {"type": "open", "nest": ["yellow5", "yellow4", "yellow3"]},
+      {"type": "open", "nest": ["green5"]} ],
+    [ {"type": "open", "nest": ["blue1"]},
+      {"type": "open", "nest": ["orange5"]},
+      {"type": "open", "nest": ["green4"]},
+      {"type": "open", "nest": ["red2", "red1"]},
+      {"type": "open", "nest": ["teal1"]} ],
+    [ {"type": "open", "nest": ["yellow2"]},
+      {"type": "open", "nest": ["blue4", "blue3", "blue2"]},
+      {"type": "open", "nest": null},
+      {"type": "open", "nest": ["orange4", "orange3"]} ]
+  ]
+}

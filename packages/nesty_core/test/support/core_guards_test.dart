@@ -132,6 +132,69 @@ final MyStopwatchLike w = MyStopwatchLike();
     });
   });
 
+  group('noBitwiseNot', () {
+    test('flags ~ in code but not integer division', () {
+      const source = '''
+final a = ~x;
+final b = x & ~y;
+final c = x ~/ 2;
+var d = 7;
+d ~/= 2;
+final e = '\${~x}';
+''';
+      expect(linesFlagged(noBitwiseNot, source), [1, 2, 6]);
+    });
+
+    test('ignores ~ in comments and strings', () {
+      const source = r'''
+// `x & ~y` is written as `x ^ (x & y)`.
+const escaped = '~0 and ~1';
+final ok = path.replaceAll('~', '~0');
+''';
+      expect(linesFlagged(noBitwiseNot, source), isEmpty);
+    });
+  });
+
+  group('no64BitTypedLists', () {
+    test('flags Int64List, Uint64List and Int64x2List', () {
+      const source = '''
+final a = Int64List(4);
+Uint64List? b;
+final c = Int64x2List(1);
+final d = Int32List(4);
+''';
+      expect(linesFlagged(no64BitTypedLists, source), [1, 2, 3]);
+    });
+
+    test('ignores mentions in comments and strings', () {
+      const source = '''
+// No Int64List here.
+const note = 'Uint64List is banned';
+''';
+      expect(linesFlagged(no64BitTypedLists, source), isEmpty);
+    });
+  });
+
+  group('noHashCollections', () {
+    test('flags HashMap and HashSet', () {
+      const source = '''
+final a = HashMap<int, int>();
+final b = HashSet<String>();
+final c = <int, int>{};
+final d = LinkedHashMap<int, int>();
+''';
+      expect(linesFlagged(noHashCollections, source), [1, 2]);
+    });
+
+    test('ignores mentions in comments and strings', () {
+      const source = '''
+// A HashSet would iterate in hash order.
+const note = 'no HashMap';
+''';
+      expect(linesFlagged(noHashCollections, source), isEmpty);
+    });
+  });
+
   group('ScannedSource', () {
     test('keeps both views aligned with the source', () {
       const source = '''

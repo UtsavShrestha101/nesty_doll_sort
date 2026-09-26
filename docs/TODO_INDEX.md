@@ -10,25 +10,23 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 
 | Tag | Scope | Open |
 |---|---|---:|
-| M1 | Core (`nesty_core`) | 3 |
-| M2 | Playable game | 29 |
-| M3 | App shell and meta | 10 |
+| M1 | Core (`nesty_core`) | 0 |
+| M2 | Playable game | 24 |
+| M3 | App shell and meta | 11 |
 | M4 | Firebase content | 11 |
 | M5 | Admin panel | 16 |
 | M6 | Monetization | 6 |
-| M7 | Art and polish | 0 |
+| M7 | Art and polish | 1 |
 | M8 | Release prep | 1 |
-| v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 0 |
-| design | Waiting on a design export or decision from the owner | 8 |
+| v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 2 |
+| design | Waiting on a design export or decision from the owner | 14 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 81 markers.
+Total: 83 markers.
 
 ## M1 — Core (`nesty_core`)
 
-- `packages/nesty_core/lib/nesty_core.dart:10` — export models, codec, validator, rules, game_session, solver, simulator, generator and prng as they land. Spec §13.1, §18.
-- `packages/nesty_core/lib/src/models/doll_color.dart:35` — colorsMatch(T, M) in rules uses this flag. Spec §3.5, §4.
-- `packages/nesty_core/test/fixtures/README.md:39` — decide how a solvable fixture records its expected optimal move count (spec §5.2 metrics.solverMoves), e.g. a map in the test that loads it, without changing the level JSON.
+_None._
 
 ## M2 — Playable game
 
@@ -56,11 +54,6 @@ Total: 81 markers.
 - `apps/game/lib/features/splash/pages/splash_page.dart:11` — wordmark and striped loading bar (frame 1.1).
 - `apps/game/test/app_flow_test.dart:58` — pause menu, frame 3.9.
 - `apps/game/test/core/dependency_injection/di_test.dart:76` (also M3, M4, M6) — flip these as real implementations land (M2: the bundled LevelRepository and the in-memory SaveService).
-- `packages/nesty_render/lib/nesty_render.dart:11` — export PlaceholderDollPainter (spec §12.5), BoardLayout (spec §10.3), SvgSkinRenderer and SkinCache (spec §12.2; pulled in, D23).
-- `packages/nesty_render/lib/src/doll_palette.dart:6` — add `ink` and `light` shades to DollSwatch, and take base/ink/light from the generated `DollColorTokens` (design/tokens.json `dollColor.<id>`).
-- `packages/nesty_render/lib/src/doll_palette.dart:64` — the gold gradient map from `DollColorTokens.gold` (ramp, gray^2 input; spec §12.3, §3.5, PROGRESS D22: rendering now, rules in v1.1).
-- `packages/nesty_render/lib/src/doll_renderer.dart:5` — PlaceholderDollPainter implements DollRenderer: the procedural doll of spec §12.5, and the fallback whenever a skin fails to load.
-- `packages/nesty_render/lib/src/doll_renderer.dart:7` — SvgSkinRenderer + SkinCache implement DollRenderer: skin layers rasterized once per needed size into cached ui.Images and tinted with BlendMode.modulate (spec §12.2, §13.5).
 
 ## M3 — App shell and meta
 
@@ -74,6 +67,7 @@ Total: 81 markers.
 - `apps/game/lib/features/home/cubit/home_cubit.dart:13` — Daily/Museum/Remove Ads tiles.
 - `apps/game/lib/features/home/pages/home_page.dart:13` — the Daily/Museum/Remove Ads tiles and the bottom nav.
 - `apps/game/test/core/dependency_injection/di_test.dart:76` (also M2, M4, M6) — flip these as real implementations land (M2: the bundled LevelRepository and the in-memory SaveService).
+- `packages/nesty_core/lib/src/generator/curve.dart:186` — replace this default table with the owner's curve (design A16); any change to it changes generated levels, so bump Generator.version.
 
 ## M4 — Firebase content
 
@@ -119,7 +113,7 @@ Total: 81 markers.
 
 ## M7 — Art and polish
 
-_None._
+- `packages/nesty_render/lib/src/theme/chapter_theme.dart:56` — chapters 7–10 have no theme art yet (BACKLOG "Owner inputs needed"); until it arrives they reuse the six themes in order.
 
 ## M8 — Release prep
 
@@ -127,7 +121,8 @@ _None._
 
 ## v1.1 — After v1 (e.g. the golden doll, spec §3.5)
 
-_None._
+- `packages/nesty_core/lib/src/rules/engine/nest_code.dart:119` — Nest view for a mixed gold nest (spec §3.5); needs a Nest model that records the golden doll's position.
+- `packages/nesty_core/lib/src/validator/level_checks.dart:199` — accept gold once the §3.5 rules ship (spec §3.5, D22).
 
 ## design — Waiting on a design export or decision from the owner
 
@@ -139,6 +134,12 @@ _None._
 - `apps/admin/lib/features/login/pages/login_page.dart:11` — design/admin/*.png has no login screen yet (DESIGN_BRIEF Prompt 14 lists Levels, Level Editor and Skin upload only).
 - `apps/admin/lib/features/not_authorized/pages/not_authorized_page.dart:10` — no admin design export covers this screen yet.
 - `apps/admin/lib/features/shell/pages/admin_shell_page.dart:17` — narrow-window layout and rail styling (design/admin/*.png).
+- `packages/nesty_render/lib/src/board/board_geometry.dart:336` — the design has no top-shelf tower whose buried nests would reach the HUD; compressing D21's 18 dp step is this layout's extension (BACKLOG "Design gaps").
+- `packages/nesty_render/lib/src/board/board_layout.dart:182` — rows of 5–6 slots are undesigned (D22, BACKLOG "Design gaps"); pips, tags, glass and ice shrink with the stand.
+- `packages/nesty_render/lib/src/board/board_layout.dart:228` — maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or on 4-slot rows (M2 levels 3–9), and rows of 5–6 slots are undesigned (D22); this clamp is how they fit.
+- `packages/nesty_render/lib/src/board/shelf_presets.dart:38` — a 1-shelf board is undesigned (D22, BACKLOG "Design gaps"). The plank sits where the 2-shelf pair is centred, with the 3-shelf doll height.
+- `packages/nesty_render/lib/src/board/shelf_presets.dart:61` — a 4-shelf board is undesigned (D22, BACKLOG "Design gaps"). Planks are spread evenly from 250 to the 3-shelf bottom plank (684), and dolls and pieces are scaled by 104/150 so the tallest doll (maxSize 6) of the top row …
+- `packages/nesty_render/lib/src/doll/placeholder_doll_painter.dart:307` — the handoff has no frame for the spec §12.5 placeholder; its proportions, face and seam (ink at 55 %, 6 units) follow the classic skin and the mask shading until the owner wants a designed fallback.
 
 ## later — Unscheduled (spec §19 "Later ideas")
 

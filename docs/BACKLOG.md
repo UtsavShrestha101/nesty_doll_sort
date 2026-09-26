@@ -6,7 +6,7 @@ This file records what is left. In-code markers are indexed separately in
 [TODO_INDEX.md](TODO_INDEX.md), which `dart run nesty_tools:todo_index` generates from
 `TODO(<tag>)` comments. Never edit it by hand.
 
-Last updated: 2026-09-26.
+Last updated: 2026-09-26 (M1 closed).
 
 ## How this file works
 
@@ -52,36 +52,38 @@ Last updated: 2026-09-26.
 - [x] Add `flutter_svg` and `xml` (render) and `flutter_soloud` (game, 4.1.7: see PROGRESS "Package reasons"), each with its rule-9 reason — CLAUDE.md rule 9, plan P1 (done 2026-09-26)
 - [x] CI drift job runs token and icon gen, the asset-sync and TODO-index checks, plus `dart test` in tools. `block-generated.sh` protects `*.gen.dart`, `docs/TODO_INDEX.md`, the synced assets and the fonts — plan P1 (done 2026-09-26; the level bundle check moved to M2, see below)
 
-## M1 — Core (`nesty_core`) — in progress
+## M1 — Core (`nesty_core`) — done (2026-09-26)
 
 Acceptance (§18): all §4 rules unit-tested, solver fixtures pass, the generator
-is deterministic, and 100 generated levels validate and solve.
+is deterministic, and 100 generated levels validate and solve. All met (see
+PROGRESS "M1"). Leftovers moved to later sections are marked there.
 
-- [ ] One allocation-free §4 kernel over a compact board, called by `Rules`, `GameSession`, the solver, the simulator and the generator — §4, CLAUDE.md rule 2, plan P2
-- [ ] Immutable models: `Doll`, `Nest`, sealed `Slot` (open, tower, locked, plus ice), `Level`, `GameState`, `Move`, and sealed `MoveResult` (applied, or rejected with a reason) — §4
-- [ ] `MoveEvent`s in §4 order, carrying what the animations need. The destination's `Revealed` comes after `Completed` — §4, plan P2
-- [ ] `legalMoves`, `isWon` and `isOutOfMoves` — §4
-- [ ] `GameSession`: move, undo (history cleared on completion), restart, counts, and `addExtraSlot()` (`x0`/`x1` on the bottom shelf, at most 2, kept through restart) — §2.4, §3.6, D22
-- [ ] Gold hooks in the codec and the kernel, with the validator rejecting gold until v1.1 — §3.5, D22
-- [ ] `LevelCodec`, with round-trip tests — §5.1
-- [ ] `Validator` rules 1–8 with issue codes and arguments (for admin ARB), plus schema tests — §5.3
-- [ ] `LevelBundleCodec` for `apps/game/assets/levels/bundle.json` (`format`, `bundleVersion`, `levelsVersion`, and levels with order, chapter, tier, version, reward and data) — §13.4, plan P2
-- [ ] Web-safe PRNG: xoshiro128** plus splitmix32, with 32-bit masked ops — §6.5, CLAUDE.md rule 7
-- [ ] Canonical key that sorts interchangeable open-slot contents, and `Hash64` as two u32 halves with no `fixnum` — §6.2, Q9
-- [ ] Solver — §6.3:
+- [x] One allocation-free §4 kernel over a compact board, called by `Rules`, `GameSession`, the solver, the simulator and the generator — §4, CLAUDE.md rule 2, plan P2 (done 2026-09-26, D30)
+- [x] Immutable models: `Doll`, `Nest`, sealed `Slot` (open, tower, locked, plus ice), `Level`, `GameState`, `Move`, and sealed `MoveResult` (applied, or rejected with a reason) — §4 (done 2026-09-26, D27)
+- [x] `MoveEvent`s in §4 order, carrying what the animations need. The destination's `Revealed` comes after `Completed` — §4, plan P2 (done 2026-09-26)
+- [x] `legalMoves`, `isWon` and `isOutOfMoves` — §4 (done 2026-09-26)
+- [x] `GameSession`: move, undo (history cleared on completion), restart, counts, and `addExtraSlot()` (`x0`/`x1` on the bottom shelf, at most 2, kept through restart) — §2.4, §3.6, D22 (done 2026-09-26)
+- [x] Gold hooks in the codec and the kernel, with the validator rejecting gold until v1.1 — §3.5, D22 (done 2026-09-26)
+- [x] `LevelCodec`, with round-trip tests — §5.1 (done 2026-09-26, D29)
+- [x] `Validator` rules 1–8 with issue codes and arguments (for admin ARB), plus schema tests — §5.3 (done 2026-09-26, D29; ice bounded by `LayoutLimits.maxIce`, review SPEC-02)
+- [x] `LevelBundleCodec` for `apps/game/assets/levels/bundle.json` (`format`, `bundleVersion`, `levelsVersion`, and levels with order, chapter, tier, version, reward and data) — §13.4, plan P2 (done 2026-09-26, D34)
+- [x] Web-safe PRNG: xoshiro128** plus splitmix32, with 32-bit masked ops — §6.5, CLAUDE.md rule 7 (done 2026-09-26, D28)
+- [x] Canonical key that sorts interchangeable open-slot contents, and `Hash64` as two u32 halves with no `fixnum` — §6.2, Q9 (done 2026-09-26, D28, D31)
+- [x] Solver — §6.3 (done 2026-09-26, D31):
   - A* with a bucket queue, `h = nests − setsRemaining` and the §6.3 pruning.
   - Budgets 500k, 30k and 20k. An exhausted budget is `unknown`, never `unsolvable`.
   - Hint plus the fallback.
   - Resumable `SolverRun.advance()`, and `SolverSnapshot` for the isolate.
-- [ ] Solver fixtures (solvable, unsolvable, unknown) in `packages/nesty_core/test/fixtures/`. Decide where expected move counts live — §18 M1, Q19
-- [ ] Simulator: casual and smart bots, 300 seeded runs, a 250-move cap, integer tier thresholds, and "expert only" when the smart win rate is below 0.5 — §6.4
-- [ ] Generator: the §6.5 params, segments, placement, locks and ice (validation rule 6), 50 sub-seed retries, the closest-tier fallback, `generatorVersion`, and golden hashes — §6.5
-- [ ] `DifficultyCurve` (`E E M E M H M E M S` per 10 levels) for bonus and daily seeds — §6.6, §7.1, §7.5
-- [ ] A unit test for every §4 rule and every rejection reason, plus session tests — §18 M1, CLAUDE.md "Testing"
-- [ ] Determinism: the same seed and params give identical output, with VM, Chrome and Node parity (`dart test -p chrome,node test/parity`) — §18 M1, D11
-- [ ] Acceptance test: 100 generated levels validate and solve (tagged `slow`) — §18 M1
-- [ ] Record benchmarks (hint ≤ 100 ms on the VM) — plan P2
-- [ ] `nesty_tools` CLI with `validate`, `solve`, `simulate`, `report`, `bundle build|check`, `generate` and `fixtures check`. It replaces the script list in tools/README.md — plan P2, tools/README.md
+- [x] Solver fixtures (solvable, unsolvable, unknown) in `packages/nesty_core/test/fixtures/`. Decide where expected move counts live — §18 M1, Q19 (done 2026-09-26: `test/solver/fixture_expectations.dart`)
+- [x] Simulator: casual and smart bots, 300 seeded runs, a 250-move cap, integer tier thresholds, and "expert only" when the smart win rate is below 0.5 — §6.4 (done 2026-09-26, D32)
+- [x] Generator: the §6.5 params, segments, placement, locks and ice (validation rule 6), 50 sub-seed retries, the closest-tier fallback, `generatorVersion`, and golden hashes — §6.5 (done 2026-09-26, D33)
+- [x] `DifficultyCurve` (`E E M E M H M E M S` per 10 levels) for bonus and daily seeds — §6.6, §7.1, §7.5 (done 2026-09-26; the default stage table is owner-confirmable, Q34)
+- [x] A unit test for every §4 rule and every rejection reason, plus session tests — §18 M1, CLAUDE.md "Testing" (done 2026-09-26)
+- [x] Determinism: the same seed and params give identical output, with VM, Chrome and Node parity (`dart test -p chrome,node test/parity`) — §18 M1, D11 (done 2026-09-26; dart2wasm too, and CI runs the web half, D39)
+- [x] Acceptance test: 100 generated levels validate and solve (tagged `slow`) — §18 M1 (done 2026-09-26)
+- [x] Record benchmarks (hint ≤ 100 ms on the VM) — plan P2 (done 2026-09-26: PROGRESS "M1 → Benchmarks"; the exhaustive-search targets are missed, Q32)
+- [x] `nesty_tools` CLI with `validate`, `solve`, `simulate`, `report`, `bundle build|check`, `generate` and `fixtures check`. It replaces the script list in tools/README.md — plan P2, tools/README.md (done 2026-09-26)
+- [x] M1 review fix pass: 18 of 19 findings fixed (RENDER-7 deferred to v1.1) — PROGRESS "M1 review and fix pass" (done 2026-09-26)
 
 ## M2 — Playable game — in progress
 
@@ -91,23 +93,23 @@ haptics were pulled in from M3 and M7 (D23).
 
 ### nesty_render
 
-- [ ] `DollPalette` from the generated `DollColorTokens` and `SkinTokens` (base, ink, light, symbol, rim, and modulate or the gold gradient map), replacing the hard-coded values and the placeholder gold. This resolves the `TODO(design)` and `TODO(M7)` markers in `doll_palette.dart` — design/README.md "Doll rendering", D19, `packages/nesty_render/lib/src/tokens/render_tokens.gen.dart`
-- [ ] Skin pipeline — §12.2, CLAUDE.md rule 8:
+- [x] `DollPalette` from the generated `DollColorTokens` and `SkinTokens` (base, ink, light, symbol, rim, and modulate or the gold gradient map), replacing the hard-coded values and the placeholder gold. This resolves the `TODO(design)` and `TODO(M7)` markers in `doll_palette.dart` — design/README.md "Doll rendering", D19, `packages/nesty_render/lib/src/tokens/render_tokens.gen.dart` (done 2026-09-26)
+- [x] Skin pipeline — §12.2, CLAUDE.md rule 8 (done 2026-09-26, D37):
   - `SkinManifest`.
   - `SkinSvgSplitter`, which copies every def into each layer.
   - `SvgColorRewriter` for the gold stops.
   - `SkinRasterizer` and `SkinCache`, with `ui.Image` layers per skin, height and DPR.
   - `SymbolAtlas` (subtle 110, large 117).
-- [ ] `DollRenderer` API: `prepare`, `isReadyFor`, and `paint` with parts, lid lift, open rim, symbols, silhouette, shine sweep and reveal wipe. No per-frame allocation — §12.6, CLAUDE.md rule 8
-- [ ] `SvgSkinRenderer`, `PlaceholderDollPainter` (the fallback), `FallbackDollRenderer`, and `DollPainter` (a CustomPainter for widgets and the admin) — §12.5
-- [ ] `BoardLayout` as pure math — §10.3, D21, D22:
+- [x] `DollRenderer` API: `prepare`, `isReadyFor`, and `paint` with parts, lid lift, open rim, symbols, silhouette, shine sweep and reveal wipe. No per-frame allocation — §12.6, CLAUDE.md rule 8 (done 2026-09-26; plus `canPaint`, `DollPart.interior/bodyFront` and `shadow`, D37)
+- [x] `SvgSkinRenderer`, `PlaceholderDollPainter` (the fallback), `FallbackDollRenderer`, and `DollPainter` (a CustomPainter for widgets and the admin) — §12.5 (done 2026-09-26)
+- [x] `BoardLayout` as pure math — §10.3, D21, D22 (done 2026-09-26, D36):
   - 3-shelf and 2-shelf presets, and row pitch `min(96, 372/n)`.
   - Geometry for stands, pips, glass, ice, tags, glow and hints.
   - Column hit rects of at least 48 dp.
   - Tower stacking at true size, and re-pitching the row for an extra slot.
-- [ ] `BoardLayout` for undesigned boards (1 or 4 shelves, 5-slot rows, maxSize 6 on 3 shelves), made by scaling the design's system and marked `TODO(design)` — D22
-- [ ] `BoardSprites` (board SVGs at the layout scale) and `ThemeBackground` (cover-fit, rasterized once at screen size, DPR ≤ 2) — plan P3, audit
-- [ ] nesty_render tests — plan "Verification":
+- [x] `BoardLayout` for undesigned boards (1 or 4 shelves, 5-slot rows, maxSize 6 on 3 shelves), made by scaling the design's system and marked `TODO(design)` — D22 (done 2026-09-26, D36)
+- [x] `BoardSprites` (board SVGs at the layout scale) and `ThemeBackground` (cover-fit, rasterized once at screen size, DPR ≤ 2) — plan P3, audit (done 2026-09-26, D38)
+- [x] nesty_render tests — plan "Verification" (done 2026-09-26: 466 tests):
   - `BoardLayout` against NestyBoard at 390×844 (±0.5).
   - Hit rects on 5 screen sizes.
   - Renderer goldens against `design/skins/classic/renders/`.
@@ -124,12 +126,15 @@ haptics were pulled in from M3 and M7 (D23).
   - Plays clacks at `2^(−2(size−3)/12)`, which offsets the +1 semitone baked into the files. `SoundTokens.clackSemitonesBySize` holds the design's target, so the rate is `2^((semitones − 1)/12)`.
   - Plays combo `complete_1..5`, obeys the settings, and fails silently.
 - [ ] Haptic patterns from tokens: pick, nest, complete, win, invalid, unlock, ice and button — §11.2
-- [ ] `IsolateSolverService` (a long-lived worker where the latest request wins), plus a fake — CLAUDE.md rule 8
+- [ ] `IsolateSolverService` (a long-lived worker where the latest request wins), plus a fake — CLAUDE.md rule 8. Use `SolverSnapshot.start(snapshot, task, budget, requestId:)` and `SolverTask.advance(2000)` with an await between chunks, then map `task.result` with `SolverSnapshot.readHint`/`readVerdict` (solver report)
 - [ ] `BundledLevelRepository`: `rootBundle` → `LevelBundleCodec` + `Validator`, skipping invalid levels with a log. Drop `AppEnv.real` from the fake — §13.4, §5.3, `apps/game/lib/core/repository/fake_level_repository.dart`
 - [ ] Split `AppExceptionKind.storage` from a content failure (bundled levels failed to load) — `apps/game/lib/core/extensions/app_exception_extension.dart`
 - [ ] In-memory `SaveService` for M2: current level, coins, a booster wallet (3 hints, 2 slots) and free undos from Remote Config. Unlimited boosters in the dev flavor — §8, §18 M2
 - [ ] `SymbolsMode.large`, which also reads the legacy `assist` value — Q4, D19
-- [ ] `SkinService` for the selected skin and the bundled skins — §7.4
+- [ ] `SkinService` for the selected skin and the bundled skins — §7.4. Wiring (r2/r3 reports): one `SkinCache`, one `SymbolAtlas.load(rootBundle)` and one `BoardSpriteLibrary.load(rootBundle)` per app; `AssetBundleSkinLoader(bundle: rootBundle).load(skin)` → `SkinRasterizer` → `FallbackDollRenderer(primary: SvgSkinRenderer(…), fallback: PlaceholderDollPainter(symbols:), onPrimaryError: log)`; a `BoardSprites(library)` per level, `prepare(geometry, devicePixelRatio:, also: {extraSlot, the ice frames present})` behind the route transition and again after an extra-slot re-pitch (renderer `prepare(newGeometry.dollHeights)` first, then swap the geometry); `ensure(glassCase1/2)` about 700 ms before an unlock clip; `release` the glass frames after the last case shatters; one `ThemeBackground(bundle: rootBundle)` shown from the gameplay page's LayoutBuilder. The fake env uses `PlaceholderDollPainter()` with no atlas
+- [ ] Nest animations draw the documented `DollPart` passes (host lid → host `interior` → guest with `shadow: false` → host `bodyFront`; swallow mirrors it) and animate scale on the destination rect, passing the resting `furnitureScale` to `BoardSprites` — D37, D38, review RENDER-1/6
+- [ ] Towers: pass the tower's starting buried count to `SlotGeometry.buriedBaseY(depth, buried:)` so the spacing stays put as it empties — D36, review RENDER-4
+- [ ] Name the game's `BoardEffect`s so they don't clash with core's exported `MoveApplied`/`MoveRejected`/`Completed`/`Won`/`Placed` (or import core with a prefix) — D27
 - [ ] `GameplayBloc` (`BaseAsyncBloc`, FIFO) owning `GameSession` — §2.2, §2.3, D22:
   - The design's tap and drag policy, and `BoardEffect`s.
   - Stale solver results are dropped.
@@ -150,10 +155,11 @@ haptics were pulled in from M3 and M7 (D23).
 - [ ] All-levels-done screen with the frame 4.9 copy. Bonus generation is M3 — §10.2 #15
 - [ ] Splash (frame 1.1: wordmark, striped loader, prepares the skin) and Home hero (frame 2.1: coin pill, wordmark, gear, idle dolls, PLAY with Level N and the tier badge) — §10.2 #1/#2
 - [ ] Dev-flavor level picker — plan P4
-- [ ] 30 authored levels in `tools/levels/authored/`, built into `apps/game/assets/levels/bundle.json` by `nesty_tools bundle build`. L1 and L2 are the tutorial boards; ch01 is levels 1–20 and ch02 is 21–30 — §18 M2, §3.7
-- [ ] Declare `assets/levels/` in `apps/game/pubspec.yaml` in the same change that adds `bundle.json`. Flutter fails the build on a declared folder that doesn't exist, so it isn't listed yet. Extend `asset_manifest_test.dart` to cover it — CLAUDE.md rule 3, `apps/game/pubspec.yaml`
-- [ ] Run `nesty_tools bundle check` in the CI drift job (moved from Design foundation: no bundle existed yet) — plan P1, `.github/workflows/ci.yaml`
-- [ ] `nesty_tools bundle check` — §3.7, §6.6:
+- [x] 30 authored levels in `tools/levels/authored/`, built into `apps/game/assets/levels/bundle.json` by `nesty_tools bundle build`. L1 and L2 are the tutorial boards; ch01 is levels 1–20 and ch02 is 21–30 — §18 M2, §3.7 (done 2026-09-26, D35)
+- [x] Declare `assets/levels/` in `apps/game/pubspec.yaml` in the same change that adds `bundle.json` — CLAUDE.md rule 3, `apps/game/pubspec.yaml` (done 2026-09-26)
+- [ ] Extend `apps/game/test/core/assets/asset_manifest_test.dart` to assert that `assets/levels/bundle.json` ships and decodes with `LevelBundleCodec` without issues — CLAUDE.md rule 3 (split from the item above)
+- [x] Run `nesty_tools bundle check` in the CI drift job (moved from Design foundation: no bundle existed yet) — plan P1, `.github/workflows/ci.yaml` (done 2026-09-26)
+- [x] `nesty_tools bundle check` — §3.7, §6.6 (done 2026-09-26; towerless levels keep their tier by `tierOverride`, D26, Q30):
   - All 30 levels are valid and solvable.
   - The simulated tier equals the declared tier.
   - The §3.7 schedule holds (maxSize 4 at L10, towers at L16), and so does the §6.6 pattern.
@@ -164,7 +170,7 @@ haptics were pulled in from M3 and M7 (D23).
   - Services: audio pitch, combo and settings gate; haptics; bundle repository; asset manifest.
   - The app flow.
 - [ ] Builds: APK dev/stg/prod, iOS dev/prod (no codesign), admin web — CLAUDE.md "Commands"
-- [ ] Run the dev flavor on the iOS simulator and an Android emulator, play L1–30, and compare with frames 2.2–2.8, 3.1, 3.4–3.6 and 3.9 — plan "Verification"
+- [ ] Run the dev flavor on the iOS simulator and an Android emulator, play L1–30, and compare with frames 2.2–2.8, 3.1, 3.4–3.6 and 3.9. Check that L16's 4,3 board reads as the tower intro and that the towerless L6 (HARD) and L10 (SUPER HARD) badges feel right (Q37, D26) — plan "Verification"
 - [ ] Acceptance: 60 fps on a real mid-range Android in a profile build. The owner runs it on their device with `/perf-profile`, following the steps in PROGRESS — §18 M2, CLAUDE.md rule 8
 
 ## M3 — App shell and meta
@@ -191,9 +197,12 @@ The daily puzzle is identical on two devices on the same date.
 - [ ] New-chapter ribbon on a chapter's first level, fading after about 2 s — frame 4.7
 - [ ] Museum progress on the win card: chapter, count, bar, "Next up" and the locked figurine (frames 1.5, 2.8) — §7.2
 - [ ] Museum detail's "Collected · Sep 12" chip needs a collected date, but the §13.3 save stores `museum` as ids only. Per D22 (the design wins), the M3 save records the date each figurine was collected. Record the §13.3 addition in PROGRESS when the save schema is built — frame 6.2, §13.3, D22, Q3
-- [ ] Bonus Endless: generate with `seed = 1_000_000 + levelNumber` on the curve, with the bonus intro (4.9) and the teal "Bonus Level N" pill (4.10) — §7.1
+- [ ] Bonus Endless: generate with `seed = 1_000_000 + levelNumber` on the curve, with the bonus intro (4.9) and the teal "Bonus Level N" pill (4.10) — §7.1. Pass the global play order to `DifficultyCurve.bonusParams` ("Bonus Level N" = order − last published order); define the deterministic retry seed on a `GeneratorFailure` (A14; none occurred for 1–300); generate in the solver isolate (CLAUDE.md rule 8); act on `simulation.expertOnly` per Q31 (review SPEC-03) — generator report
+- [ ] Replace the default difficulty stage table (A16) with the owner's (Q34; `TODO(M3)` in `packages/nesty_core/lib/src/generator/curve.dart`). Any change needs a `Generator.version` bump and new goldens and parity values — §6.6, A16
+- [ ] `SolverSnapshot` "generate" task (design §6 lists hint | softStuck | generate) with a params encoding, when on-device generation moves into the isolate — design §6, contracts report
+- [ ] `codec/game_state_codec.dart` (design §1 stretch goal): the in-progress save of `GameState` + undo history, persisting `GameSession.undosUsed` and restoring with `GameSession.restore(..., undosUsed:)` — §13.3, contracts and kernel reports
 - [ ] Museum: collection card and a walnut cabinet of 4 × 3 (6.1), detail modal (6.2), and the locked state with a bar and Play (6.3). The art comes from `design/museum/png/` (20 files: figurines and `_locked` silhouettes), because the museum SVGs use nested `<svg>` and mix-blend-mode. Extend `sync_design_assets` and the pubspec asset list to ship them — §7.2, §10.2 #10, audit
-- [ ] Daily puzzle: `seed = yyyymmdd`, a pinned `generatorVersion`, tier medium or hard. The date comes from an injected clock, never inside core — §7.5, CLAUDE.md rule 7
+- [ ] Daily puzzle: `seed = yyyymmdd`, a pinned `generatorVersion`, tier medium or hard. The date comes from an injected clock, never inside core — §7.5, CLAUDE.md rule 7. When `Generator.version` is ever bumped, keep a frozen v1 pipeline (PRNG, cuts, placement, validator, solver, simulator, daily table) for dailies so every device makes the same puzzle (Q35); decide the unlock level and the weekday rule (Q34) — generator report
 - [ ] Daily screens — §10.2 #11:
   - 5.1: streak card, 7-day strip, chest row and puzzle card.
   - 5.2: streak saved.
@@ -250,6 +259,7 @@ playable. Levels published in the admin appear on the next app resume.
 - [ ] Skin and theme download from Storage (`skins/{id}/v{n}/{group}.svg|png`), then rasterize and cache. The card shows a spinner (frame 7.5), and a failure keeps the current skin — §13.5
 - [ ] Disk raster cache (PNG) for skin layers — §12.2, plan P3 (deferred from M2)
 - [ ] PNG layer sets accepted by the game's skin loader — §12.2
+- [ ] A Storage skin loader that builds `SkinLayers` from the admin's pre-split per-group SVGs (the `SkinLayers(Map)` constructor is ready) — §13.5, §14.2, r2 report
 - [ ] Daily overrides from `dailyOverrides/{yyyymmdd}` — §7.5, §14.1
 - [ ] Chapter, theme, skin and museum metadata (names, flavor text, prices) from Firestore — §14.1
 - [ ] `connectivity_plus` to re-sync on reconnect, with its reason in PROGRESS — §13.2, §9.1
@@ -279,7 +289,12 @@ level, and upload a skin that then shows up in the game.
   - Set price and status.
 - [ ] Theme and museum-item upload with preview — §15 #7
 - [ ] Daily overrides calendar — §15 #8
-- [ ] Export bundle, plus a headless `export_level_bundle` in tools — §15 #9, tools/README.md
+- [ ] Export bundle, plus a headless `export_level_bundle` in tools — §15 #9, tools/README.md. Write through `LevelBundleCodec.encodeString` and apply `nesty_levels bundle check`'s checks; when bundling moves to a Firestore export, revisit BundlePolicy's M2 layout limits (Q36) and whether `tools/levels/` stays the source of the first levels — bundle report
+- [ ] Map every `LevelIssue` code and its args to ARB messages (the `field`/`expected` value sets are documented on `LevelCodec`, each code's args on `IssueCodes`, the generator's on `Generator.checkParams`) — §15, codec and generator reports
+- [ ] Step long core work with `await` so the admin page never blocks: `Solver.start(...).advance(n)` for rule 8 (exhaustive proofs take 2.3 s VM / 3.5 s dart2js, Q32), a stepped `Simulator` API (up to ~90 ms per 19-slot board in dart2js) and awaits between generated levels (up to ~350 ms each in dart2js); show every attempt with `Generator.buildAttempt` — §15, solver/simulator/generator reports
+- [ ] Decide Q33 and cap the admin generator's params (or scale the admin budget by board size) so a search stays under the design's 64 MB — design §5, review DETERMINISM-005
+- [ ] Admin level editor and playtest preview on `DebugBoardPainter`: an adapter from a nesty_core `Level`/`GameState` to `Map<String, DebugSlot>`, and bundle Fredoka (tag and badge text) or accept the fallback font — §15 #3, r3 report
+- [ ] A `nesty_levels tune` command (or an admin Generator feature) that hill-climbs a fixed skeleton (rows, tower positions and depths, empties, colors) toward a target tier by swapping nests and re-cutting sets; that is how L16–L30 were found — §6.5, §15, levels report
 - [ ] Publishing batch: bump `config/manifest.levelsVersion` and `publishedCount`, and renumber `order` — §15
 - [ ] Final security rules, including the Q20 gaps, with emulator-backed rules tests. The first Storage deploy must grant it Firestore access — §14.3, Q20, firebase/README.md
 - [ ] Orientation and colors in `apps/admin/web/manifest.json` — Q21
@@ -338,7 +353,7 @@ production Firebase.
 - [ ] Native splash (the Android 12 splash API and the iOS LaunchScreen) matching frame 1.1 — §18 M8
 - [ ] Store screenshot support: a clean capture mode — §18 M8
 - [ ] App size under 60 MB (`--analyze-size`), keeping an eye on the bundled art — §18 M8, D20
-- [ ] Performance profiling on a 2 GB Android — CLAUDE.md rule 8, `/perf-profile`
+- [ ] Performance profiling on a 2 GB Android — CLAUDE.md rule 8, `/perf-profile`. Include the level-load raster time of doll layers (design budget ≤ 250 ms; host flutter_tester measured 35–67 ms for 4 heights at DPR 3), board sprites and the theme background (r2/r3 reports)
 - [ ] Release configs with the ad IDs from `--dart-define`, never committed — CLAUDE.md rule 5
 - [ ] Android release signing with the upload key (`key.properties` kept out of git) — `apps/game/android/app/build.gradle.kts`
 - [ ] iOS profile and release builds, `flutter build ipa` and Xcode Archive. Run `flutter build ipa --flavor <f> -t lib/main_<f>.dart` first, or the D8 guard fails the build — D8, PROGRESS M0 "Not verified yet"
@@ -353,6 +368,9 @@ production Firebase.
   - Validator rule-4 exemption.
   - Lift the v1 rejection.
 - [ ] Gold in the solver, the simulator and the generator, the L101 intro, intro card 4.8 with its "v1.1" chip, and the admin palette — §3.5, §3.7, frame 4.8
+- [ ] A `Nest` model and view for a nest that holds the golden doll among other dolls; `NestCode.toNest` drops the gold today (`TODO(v1.1)` in `packages/nesty_core/lib/src/rules/engine/nest_code.dart`); accept gold in the validator (`TODO(v1.1)` in `lib/src/validator/level_checks.dart`) and decide how gold counts toward rule 4 — §3.5, D22, kernel and codec reports
+- [ ] Gold levels in `test/simulator/support/sim_levels.dart`, gold in `simref.py`, and new parity values (a `Generator.version` bump) — §3.5, simulator report
+- [ ] Rasterize the gold mask layers only for levels (or previews) that show gold: a gold flag through `DollRenderer.prepare` and the `SkinCache` key. Today every prepared height rasterizes them (23 % of layer bytes) — review RENDER-7
 
 ## Later (spec §19)
 
@@ -366,6 +384,9 @@ production Firebase.
 - [ ] Level-sharing code for friends — §19
 - [ ] Data-driven playable colors. It is a spec change, so `DollColor` stays a fixed enum — D19, design/README.md "Decisions to confirm" 6
 - [ ] About 20 new levels a week from the admin after launch — §7.1
+- [ ] Solver and simulator speed, only if needed (Q32, or a generator p95 over 5 s): hash only the changed key words, pack two codes per word, and a count-only kernel routine for the bots (`Kernel.collectLegalMoves` is ~23 % of an exhaustive search and most of the casual bot's cost) — design §5, solver/simulator/prng reports
+- [ ] Symbol atlas pages rasterize only the active symbols mode, if memory matters (both sizes cost ≈0.24 MB per height at DPR 3) — r2 report
+- [ ] Theme background on tablets: 768×1024 @2 is 12.6 MB; cap the raster at the art's native pixel count or lower the pixel ratio on large screens if the iPad budget matters — r3 report
 
 ## Owner inputs needed
 
@@ -397,7 +418,11 @@ system and mark them `TODO(design)`.
 - [ ] Out-of-moves Undo row once the free undos are used — frame 3.5 (M3)
 - [ ] +Slot at its limit (2 used this level) — §3.6 (M2)
 - [ ] Extra slot when the bottom shelf is full — §3.6, D22 (M2)
-- [ ] Boards with 1 shelf, 4 shelves or 5 slots per shelf — §2.1, §5.3 (M2)
+- [ ] Boards with 1 shelf, 4 shelves or 5 slots per shelf — §2.1, §5.3 (M2). Built by scaling (D36): the 1-shelf preset (plank 540, Hs 150) and the 4-shelf preset (planks 250/395/539/684, Hs 104, every slot piece × 104/150), both `TODO(design)` in `packages/nesty_render/lib/src/board/shelf_presets.dart`; 5–6-slot rows shrink stands, pips, tag, glow, glass, ice, hint arrow, tower raise and (review RENDER-3) the dolls (`TODO(design)` in `board_layout.dart`)
+- [ ] The board-wide doll clamp (`h·2/3 ≤ minPitch − 8/3`) for maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or 4-slot rows (M2 levels 3–9) and 5–6-slot rows needs a design sign-off (`TODO(design)` in `board_layout.dart` `_dollHeights`) — D22, D36 (M2)
+- [ ] A doll sealed in a glass case is taller than the case at maxSize ≥ 5 (the design's own maxSize-5 doll is 6 dp above it, NestyBoard:169) and wider at maxSize 6; on a 4-shelf board a top-row maxSize-6 doll (sealed, or on a tower) reaches ~2–6 dp above the frame — r1 report, review (M2)
+- [ ] Top-shelf towers: the D21 18 dp step per buried nest shrinks so the deepest silhouette stays under the HUD (`TODO(design)` in `board_geometry.dart` `buriedBaseY`); and a buried nest two or more sizes smaller than the top stays hidden at 18 dp per depth (Q38) — D21, review RENDER-4 (M2)
+- [ ] A designed look for the procedural fallback doll (spec §12.5; `TODO(design)` in `packages/nesty_render/lib/src/doll/placeholder_doll_painter.dart`) — r2 report (M2)
 - [ ] Looping animations for the intro cards — frames 4.1–4.3 (M3)
 - [ ] Home with a Super Hard level, in bonus mode, and with a streak of 0 — frame 2.1 (M3)
 - [ ] Win card in bonus mode — frame 2.8 (M3)
@@ -442,6 +467,7 @@ system and mark them `TODO(design)`.
 - [ ] Q27: commit the Gradle wrapper?
 - [ ] Q28: localize the app title players see?
 - [ ] Q29: tabular numbers in Fredoka: a fixed-width digit widget, Nunito for numbers, or a patched "Fredoka Tabular" build in `build_fonts.sh` (the OFL allows modified builds under a new name)? (M2)
+- [ ] Q30–Q38: the M1 and render decisions to confirm (towerless grading, expert-only generated levels, solver targets, admin memory, the curve table, the recorded defaults, bundle policy, authored levels, render defaults). Q31, Q34 and Q35 before M3 (M1/M3)
 - [ ] Update GAME_SPEC.md for this round's deviations, or keep them recorded only in PROGRESS? They are §2.2 tap policy (D22), §3.6 extra-slot placement (D22), §13.5 bundled art (D20), and the §12.3/§13.3 symbols value (Q4) — D19–D22
 
 ## Tech debt
@@ -456,7 +482,12 @@ system and mark them `TODO(design)`.
 - [ ] Revisit `flutter_gen` now that assets exist, or keep hand-written asset paths (`sync_design_assets` owns the files, not typed accessors) — D3
 - [ ] `hive_ce_generator` produces nothing. Keep it or drop it once Q3 settles the save — PROGRESS "Package reasons"
 - [x] Refresh the root README.md: it still says `design/` is not in the repo, and it doesn't list `tools/` — README.md (done 2026-09-26: status, layout, tools commands, native build prerequisites)
-- [ ] Refresh the `code-explorer` map after M1 and M2. It says only `DollColor` exists — `.claude/agents/code-explorer.md`
+- [ ] Refresh the `code-explorer` map after M1 and M2. It says only `DollColor` exists; M1 core and the nesty_render API (D27, D36–D38) are now built — `.claude/agents/code-explorer.md`
+- [ ] Make the Stop hook (`.claude/hooks/test-on-stop.sh`) run `dart test -x slow` in nesty_core now that the slow M1 acceptance test exists (owner's hook config) — design §5, contracts report
+- [ ] `.claude/hooks/block-generated.sh` doesn't yet block hand edits of `apps/game/assets/levels/bundle.json` (a `nesty_levels bundle build` output; CI's `bundle check` catches drift) — tools/README.md, D25, bundle report
+- [ ] Commit the kernel/facade and PRNG/Hash64 micro-benchmarks in `packages/nesty_core/benchmark/` (scratch numbers: kernel copy+apply 45 ns, `collectLegalMoves` 97 ns, `Rules.tryMove` 0.4 µs; `nextU32` 9 ns, `derive` 50 ns VM / 70 ns node, a 24-cell key hash 116 ns), with dart2js numbers — design §5, kernel and prng reports
+- [ ] Share one doll base constant: `DollArt.base` (256, 742) in nesty_render's doll code and `BoardLayoutConstants.dollArtBaseY`/`dollArtHeight` (742/768) in the layout — r2 report
+- [ ] `test/simulator/bots_test.dart` reuses the kernel step's `test/rules/support/boards.dart` helpers; keep them stable or copy them — simulator report
 - [ ] Upgrade `flutter_soloud` to 5.x together with the SDK and CI pin (5.x needs `meta` ^1.19; Flutter 3.41.2 pins 1.17.0) — Q23, PROGRESS "Package reasons"
 - [ ] `AppGradientTokens.gold` (115°) maps the CSS angle to `Alignment` exactly only for square boxes. If it paints non-square boxes, resolve begin/end from the box's aspect (180° gradients are exact everywhere) — `tools/lib/src/tokens/ui_tokens_codegen.dart`
 - [ ] The TODO scanner finds comments heuristically: a string literal containing `//` or `#` followed by a marker is indexed too — `tools/lib/src/todo/todo_scanner.dart`

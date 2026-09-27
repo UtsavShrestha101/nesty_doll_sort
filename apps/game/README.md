@@ -9,19 +9,21 @@ This app owns the screens, the services and the Flame board.
 mid-range Android, is the owner's device check).
 - Splash → Home → Gameplay plays the 30 bundled levels end to end on the
   design's art: the tokens' theme, the Classic skin as part rasters, the
-  board sprites, the chapter backgrounds, the 29 Lottie files, the SFX and
-  the haptic patterns.
+  board sprites, the chapter backgrounds, the 29 Lottie files (the
+  designer's v3 export since the post-M2 round), the SFX, the music and
+  jingles, and the haptic patterns.
 - The Flame board renders `nesty_core`'s state and plays every `MoveEvent`
   through the board timeline; the HUD, booster bar, soft-stuck banner, win
   overlay, out-of-moves sheet, pause dialog and All Levels Done are Flutter
   widgets around it.
 - The real environment runs the bundled levels, the isolate solver, the
-  asset skin and FX library, SoLoud audio, system haptics and Hive
-  settings. The save is in memory until M3; ads, purchases, analytics and
+  asset skin and FX library, SoLoud sound effects, jingles and music,
+  system haptics and Hive settings. The save is in memory until M3; ads, purchases, analytics and
   Remote Config are offline stand-ins until M4 and M6.
 
-See [docs/PROGRESS.md](../../docs/PROGRESS.md) (M2, D40–D58) and
-[docs/plans/m2-lottie-design.md](../../docs/plans/m2-lottie-design.md).
+See [docs/PROGRESS.md](../../docs/PROGRESS.md) (M2, D40–D58; the post-M2
+round, D59–D61), [docs/plans/m2-lottie-design.md](../../docs/plans/m2-lottie-design.md)
+and [docs/plans/audio-integration.md](../../docs/plans/audio-integration.md).
 
 ## Run
 
@@ -156,6 +158,23 @@ New features go in `features/<name>/{cubit,pages,widgets,model}`. The
 - **l10n.** `lib/l10n/app_en.arb` is the source of truth. Read strings with
   `context.localizations.key`. The `nullable-getter: false` setting means no
   `!` is needed.
+- **Audio** (`core/services/audio/`, `core/services/music/`; PROGRESS D61).
+  - One `SoLoudEngineHost` starts SoLoud for the sound effects and the music
+    and stops it last. Low-latency output is on in prod only, so dev and stg
+    screen recordings have sound (`Flavor.audioLowLatency`).
+  - `SoLoudAudioService` plays the 17 WAV sound effects and, through its
+    `JinglePlayer` side, the three OGG jingles on the SFX bus. Both follow
+    the Sound setting.
+  - `SoLoudMusicService` streams the two OGG loops (`loadMem` with
+    `LoadMode.disk`), crossfades between them, ducks under overlays (the
+    lowest duck wins), pauses in the background and for ads, and follows
+    the Music setting (`DatabaseService.musicEnabledChanges`).
+  - `MusicRouteObserver` picks the loop per screen (none on the splash,
+    `music_game` in a level, `music_home` elsewhere). `MusicDuck` wraps the
+    win overlay, the out-of-moves sheet and Pause. `JingleCues` holds the
+    chapter-complete and reward moments for their M3 and M6 callers.
+  - Timings, gains and duck factors come from tokens.json `sound`
+    (`SoundTokens`). No tone is synthesized at runtime.
 
 ## Services
 
@@ -167,7 +186,8 @@ New features go in `features/<name>/{cubit,pages,widgets,model}`. The
 | `RemoteConfigService` | `DefaultsRemoteConfigService` (the 17 spec §9.4 defaults) | `FakeRemoteConfigService` | M4 (Firebase Remote Config, same defaults) |
 | `LevelRepository` | `BundledLevelRepository` (the 30 levels of `assets/levels/bundle.json`) | `FakeLevelRepository` (levels 1–3) | Done; M4 adds the sync |
 | `SaveService` | `InMemorySaveService` (level, coins, the booster wallet; PROGRESS D13) | `FakeSaveService` | M3 (the persistent save) |
-| `AudioService` | `SoLoudAudioService` (the 17 SFX) | `FakeAudioService` | Done; M7 final audio |
+| `AudioService` (+ `JinglePlayer`) | `SoLoudAudioService` (the 17 SFX and the 3 jingles) | `FakeAudioService` | Done; M7 the final mix |
+| `MusicService` | `SoLoudMusicService` (the 2 streamed loops) | `FakeMusicService` (records calls, silent) | Done; M3 the meta screens, M6 the ad pause |
 | `HapticsService` | `SystemHapticsService` (token patterns) | `FakeHapticsService` | Done |
 | `DatabaseService` | `HiveDatabaseService` (in-memory fallback) | `FakeDatabaseService` | Done |
 | `SolverService` | `IsolateSolverService` (hints and soft stuck off the UI isolate) | `FakeSolverService` | Done |
@@ -192,22 +212,29 @@ CI fails on drift.
 flutter test
 ```
 
-- **What is covered** (88 files, 929 tests on 2026-09-27):
+- **What is covered** (96 files, 1,045 tests on 2026-09-27):
   - the base cubit and bloc, DI in both environments, the database contract
     suite, Remote Config defaults and the error-message mapper;
   - every service: bundled levels, the skin service, the isolate solver,
-    audio pitch and combos, haptic patterns, the in-memory save;
+    audio pitch and combos, the shared SoLoud engine, the music service on
+    a fake-clock backend (crossfades, ducks, pauses, the setting), the
+    route observer and ducks, haptic patterns, the in-memory save;
   - the Lottie runtime: the shipped files, their specs, the image-slot
-    compensation and travel workarounds, pools, reduced motion, hot-path
-    guards;
+    compensation and the travel remap, the clean seek on a jump, pools,
+    reduced motion, hot-path guards, and Level 9's board pieces against
+    `BoardLayout`;
   - the gameplay bloc (tap and drag policy, boosters, hints, soft stuck,
     win, out of moves, next level), the board timeline's §7 times and the
     Flame board (input, hand-offs, effects, pause, rendering);
   - the screens and widgets on several phone sizes at 1.0× and 1.3× text;
   - the app flow on fakes (`app_flow_test.dart`).
 - **On a device:** `integration_test/playthrough_test.dart` plays levels 1
-  and 2 to the win overlay and level 16 into Out of Moves with every real
-  service, and saves 18 screenshots (the root README has the command).
+  and 2 to the win overlay, shows level 9's hint and two extra slots, runs
+  level 16 into Out of Moves, pauses with Music off and on, goes home and
+  opens level 21's chapter ribbon, with every real service. It checks the
+  music's state on each screen, that every Lottie file, sound effect and
+  jingle loaded and that no audio or Lottie failure was logged, and saves
+  25 screenshots (the root README has the command).
 - **Wiring:** tests use the fake environment through
   `test/helpers/test_dependencies.dart` (`configureTestDependencies()` /
   `resetDependencies()`).
@@ -231,6 +258,9 @@ flutter test
   - The Podfile maps every configuration.
   - Deployment target iOS 14.0.
   - iPhone is portrait only; iPad allows portrait and upside-down.
+  - `AppDelegate.swift` sets the audio session to `.ambient`: the game
+    mixes with the player's own music and follows the silent switch
+    (PROGRESS Q61). flutter_soloud leaves the category alone.
 - **Firebase config:** `android/app/src/<flavor>/README.md` and
   `ios/config/<flavor>/README.md` say where each flavor's
   `google-services.json` and `GoogleService-Info.plist` go. The owner creates

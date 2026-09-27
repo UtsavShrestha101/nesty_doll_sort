@@ -6,7 +6,7 @@ This file records what is left. In-code markers are indexed separately in
 [TODO_INDEX.md](TODO_INDEX.md), which `dart run nesty_tools:todo_index` generates from
 `TODO(<tag>)` comments. Never edit it by hand.
 
-Last updated: 2026-09-27 (M1 closed; M2 code complete after the review fix pass, its acceptance waiting on the owner's 60 fps device check and the manual L1–30 pass).
+Last updated: 2026-09-27 (M1 closed; M2 code complete after the review fix pass, its acceptance waiting on the owner's 60 fps device check and the manual L1–30 pass; the post-M2 round landed Claude Design v3 and the music and jingles).
 
 ## How this file works
 
@@ -28,6 +28,11 @@ Last updated: 2026-09-27 (M1 closed; M2 code complete after the review fix pass,
   - `lottie §n` is section n of [plans/m2-lottie-design.md](plans/m2-lottie-design.md),
     the authoritative M2 phase-4 design (D40–D52). `re-export` is
     [plans/lottie-reexport-request.md](plans/lottie-reexport-request.md).
+  - `audio An` is step An of [plans/audio-integration.md](plans/audio-integration.md),
+    and `audio plan` is [plans/audio-analysis/plan.md](plans/audio-analysis/plan.md).
+  - `v3` is [plans/claude-design-v3-check.md](plans/claude-design-v3-check.md),
+    the check of Claude Design's v3 Lottie export (its points 3a–3f are in
+    [plans/claude-design-v3-changes.md](plans/claude-design-v3-changes.md)).
   - A path is a file in this repo.
 - **One place per item.** Implementation items go in the milestone that builds
   them. Anything only the owner can supply or decide goes in
@@ -261,8 +266,33 @@ marked there.
 - [x] On-device playthrough `apps/game/integration_test/playthrough_test.dart` with its `flutter drive` driver `test_driver/integration_test.dart`: the dev flavor with every real service plays L1 and L2 to the win overlay and L16 into Out of Moves, then Pause → Home, tapping slot centres laid out by `BoardLayout`, and saves 18 screenshots. Passes on the iPhone 16 simulator (iOS 18.3) and an API 35 emulator. The iOS flavor guard now accepts an `integration_test/` target in `Debug-<flavor>` only (D8 amended) — plan "Verification" (done 2026-09-26, D57)
 - [x] Review fix pass: 12 of 13 findings fixed, each with a regression test (next-level art prefetched during the win overlay; a reset ends a drag; a drop while paused puts the doll down; a queued second re-pitch; the counter's landing sparkle; the won chrome locked, not greyed; Home keeps its showcase art; Home past L30; soft stuck without undo suggests Restart; repaint boundaries per widget Lottie; a cached label origin; the percent semantics). FIDELITY-3 went to the owner (Q59) — PROGRESS "M2 review and fix pass", D58 (done 2026-09-27)
 - [x] Retag the four `TODO(M2)` markers: the unlock-symbol raster to M5, the tabular figures to M7 (Q29), the load-failure copy to `TODO(design)` — CLAUDE.md "Workflow" (done 2026-09-27; `TODO_INDEX.md` has no M2 marker)
-- [ ] Play L1–30 by hand on the dev flavor (iOS simulator and an Android emulator) and compare with frames 2.2–2.8, 3.1, 3.4–3.6 and 3.9. Check that L16's 4,3 board reads as the tower intro and that the towerless L6 (HARD) and L10 (SUPER HARD) badges feel right (Q37, D26). The automated playthrough above covers L1, L2 and L16 only — plan "Verification"
+- [ ] Play L1–30 by hand on the dev flavor (iOS simulator and an Android emulator) and compare with frames 2.2–2.8, 3.1, 3.4–3.6 and 3.9. Check that L16's 4,3 board reads as the tower intro and that the towerless L6 (HARD) and L10 (SUPER HARD) badges feel right (Q37, D26). The automated playthrough covers L1, L2, L9 (hint and two extra slots), L16 (a tower reveal) and L21 (the chapter ribbon) only — plan "Verification"
 - [ ] Acceptance: 60 fps on a real mid-range Android in a profile build. The owner runs it on their device with `/perf-profile`, following the steps in PROGRESS "M2 acceptance", and records the numbers there — §18 M2, CLAUDE.md rule 8
+
+### Post-M2 round: Claude Design v3 and audio (2026-09-27)
+
+Claude Design's audio export and v3 Lottie overlay, imported together after
+M2 was committed (PROGRESS "Post-M2 round", D59–D61).
+
+- [x] Import `design/` in overlay order (repo ← audio export ← v3), hash-identical to the checked staging; `export/` removed; the designer's notes and our analyses under `docs/plans/` (audio-integration.md, claude-design-v3-changes.md, claude-design-lottie-audio-prompt.md, claude-design-v3-check.md, audio-analysis/) — v3 import plan 1 (done 2026-09-27)
+- [x] Tools for LOTTIE.md v3: the contract table (3× board pieces, `doll_reveal` 31 f with the `drop` null, `fx_ice` 150 f with `rest_n` and `crack_hit_n`, 410-wide ribbons, the six parent nulls); the validator's `hold` and `imageTransform` checks; `fx_spec.gen.dart` regenerated — v3 import plan 2, D59 (done 2026-09-27)
+- [x] Audio A1: map the new `sound` token leaves (`jingleFiles`, `musicFiles`, `clackBakedSemitones`, `music.*` with the frames check, fades, ducks, `jingleBus`; `music.*.screens` documented) — audio A1 (done 2026-09-27)
+- [x] Audio A2: sync the 5 OGG files, skip AUDIO.md, validate the WAV and Ogg Vorbis formats and the loop lengths; the manifest test and tools/README — audio A2 (done 2026-09-27)
+- [x] Audio A3: SFX v2, the clack rate from `SoundTokens.clackBakedSemitones` (0); the placeholder `TODO(M7)` markers removed — audio A3, D61 (done 2026-09-27)
+- [x] Audio A4: one `SoLoudEngineHost` (low latency in prod only), `JinglePlayer` on the SFX bus, `MusicService` + `SoLoudMusicService` + `FakeMusicService` (lazy `loadMem` disk, protected voices, crossfade, lowest duck wins, pause reasons, `musicEnabledChanges`, lifecycle) — audio A4, audio plan §3 (done 2026-09-27)
+- [x] Audio A5: `MusicRouteObserver`, `MusicDuck` around Win (0.3), Out of moves (0.4 + `jingle_oom`) and Pause (0.5); Pause's toggles write the settings only; iOS `.ambient` (Q61) — audio A5 (done 2026-09-27)
+- [x] Audio A6: fake-clock music tests, engine-host and SFX-engine tests, observer, `MusicDuck` and `JingleCues` tests, and the music in `app_flow_test` — audio A6 (done 2026-09-27)
+- [x] `FxImageSlot` follows LOTTIE.md v3's 3× declarations (`assetWidth`/`assetHeight`, `density`) with rasters in box units; this fixes the owner's Level 9 hint arrow, glow and +1 pads (device screenshots 2026-09-27), pinned by `board_pieces_l9_test.dart` — v3 import plan 2, D60 (done 2026-09-27)
+- [x] Delete the v1 export workarounds (travel-hold fix, `padlock_ping` rest hide, 11 dp glass settle, reveal silhouette hide, hand-coded reveal drop, animated-scale callbacks) and `FxHold`, `FxTravel.holds`, `FxImageLayer.scaleAnimated` — v3 import plan 3, D60 (done 2026-09-27)
+- [x] `doll_reveal` plays 0–31 f with its `drop` null starting at the tower's step; the deeper silhouettes shift over the drop's 7 frames — LOTTIE.md v3 "Reveal drop", D60 (done 2026-09-27)
+- [x] `fx_ice`: an `IceCracked` without a stage change plays `crack_hit_n` and rests on `rest_n`; a reused drawable re-seeks cleanly on every jump (the frame-99 double draw) — v3 3b, v3 issue 1, D60 (done 2026-09-27)
+- [x] Ribbons on the 410 canvas: text boxes 312×40 / 312×32, the label scaled down to fit, screen scale `min(1, W/390)` — v3 3a, D60 (done 2026-09-27)
+- [x] Hint arc arrives on the source's side of the target, its arrowhead into the target's head (frame 3.1) — owner Level 9 report, D60 (done 2026-09-27)
+- [x] Buried tower nests and `doll_reveal`'s silhouette show the wood blank `board/doll-silhouette.svg` for every skin: `DollPartRasters.prepare(board:)`, and `AssetSkinService` passes its board library — v3 3e, D59 (done 2026-09-27)
+- [x] The reveal wipe centre from the tokens (`MotionTokens.revealWipeCenter`, art (256, 476)) — v3 3d, D59 (done 2026-09-27)
+- [x] The on-device playthrough adds Level 9's hint, two extra slots and a doll on one (frames 3.1, 3.6), Level 16's tower reveal, Pause's Music toggle and Level 21's chapter ribbon; it checks the music (home, game, the win, out-of-moves and pause ducks, off and on), that every Lottie file, SFX and jingle loaded, and that no SoLoud, music or Lottie failure was logged. Passes on the iPhone 16 simulator and the API 35 emulator with 25 screenshots each — D57, PROGRESS "Post-M2 round" (done 2026-09-27)
+- [ ] Owner device check of this round on the dev flavor: the Level 9 hint (arrow over brown3, glow on brown2's stand, arrowhead into brown2's head), +1 Slot twice (two full-size green pads, a doll standing on one), a tower reveal (L16+: the new top drops from its buried step, then the wipe), the win ribbon and the L21 chapter ribbon on a 390 dp phone — lottie lane report
+- [ ] Owner audio acceptance on a mid-range Android and an iPhone: both loops wrap with no gap or click over 3 full cycles; crossfades, ducks and fades per the tokens and audible; Music off silent within 300 ms and staying silent across routes, ads and the lifecycle; chimes, the win SFX and the jingles over ducked music without clipping (turn on SoLoud's limiter only if clipping is heard, M7); streaming adds under 3 MB resident; the app grows by about 2 MB; iOS mixes with the Music app and follows the silent switch; Android dev/stg screen recordings have sound — audio "Acceptance", Q61–Q63
 
 ## M3 — App shell and meta
 
@@ -331,7 +361,11 @@ The daily puzzle is identical on two devices on the same date.
 
 ### Audio and haptics
 
-- [ ] Music playback (`music_home`, `music_game`) with separate music and SFX volumes. It stays silent until the files exist. When they arrive, extend `sync_design_assets`, the pubspec and `asset_manifest_test.dart` — §11.3, tokens.json `sound.music`
+- [x] Music playback (`music_home`, `music_game`) with separate music and SFX volumes, and the files synced and shipped (moved into the post-M2 round: the music arrived) — §11.3, tokens.json `sound.music`, D61 (done 2026-09-27)
+- [ ] Chapter complete (4.6) calls `JingleCues.chapterComplete()`: the music fades out over 400 ms, then `jingle_chapter` only (Q62). Its Continue calls `MusicService.playGame()`, which fades `music_game` in over 2000 ms — `TODO(M3)` in `gameplay_view.dart` and `jingle_cues.dart`, audio plan §4
+- [ ] `JingleCues.reward()` (`jingle_reward` over music ducked to 0.4) at a skin unlock (7.4), a theme unlock or purchase (7.7) and the daily chest (5.6) — `TODO(M3)` in `jingle_cues.dart`, Q62
+- [ ] Music by screen: the daily puzzle's and the bonus levels' boards play `music_game`; Daily, Museum, Shop, Skin detail and Settings play `music_home` (`MusicRouteObserver.trackFor`) — `TODO(M3)` in `music_route_observer.dart`, AUDIO.md "Music rules"
+- [ ] Settings' Music and Sound toggles only write `DatabaseService` (the music follows `musicEnabledChanges`, as Pause's do); a music volume control, if one is designed, calls `MusicService.setVolume`, which applies at once (Q66 asks whether it should fade) — frame 8.1, AUDIO.md "Music rules"
 - [ ] Tune the haptic patterns, including the multi-pulse success, on real devices — §11.2, PROGRESS "Notes for later milestones"
 
 ## M4 — Firebase content
@@ -424,6 +458,8 @@ Offline ad buttons fall back to coins correctly.
 - [ ] ATT pre-prompt (8.5) and system prompt (8.6) after the first Level 3 win, with the purpose string in `Info.plist` — §9.3
 - [ ] Rate prompt (`in_app_review`) after the `rate_prompt_level` win, if the player hasn't failed in the last 3 levels (frame 8.7) — §10.2 #16
 - [ ] `adCounters` in the save: winsSinceInterstitial, lastAdAt, interstitialsShown — §13.3
+- [ ] `AdsService` calls `MusicService.pauseForAd()` before every interstitial or rewarded show and `resumeAfterAd()` in a `finally` when it closes; with the app's own trip to the background during an Android ad, the pause reasons don't double up — `TODO(M6)` in `music_service.dart`, audio A5
+- [ ] A completed purchase calls `JingleCues.reward()` — `TODO(M6)` in `jingle_cues.dart`, Q62
 
 ## M7 — Art and polish
 
@@ -432,15 +468,18 @@ screen sizes. Most of the original M7 integration moved into M2 (D23).
 
 - [ ] Fidelity pass, screen by screen, against every App Flow frame (01–08) with `ui-designer`, then owner sign-off — §18 M7
 - [ ] Overflow tests on small Android, standard phone, tall phone, small iPhone and iPad portrait, at 1.0× and 1.3× text — §18 M7, §16
-- [ ] Animation polish: tune by feel each clip's playback speed (never the JSON), the hand-coded tweens of lottie §9 (`TODO(M7)`), the wobble snap into `doll_move` (settle it before the move), an animated undo (`BoardResetEffect(undo)` cuts today), re-placing the clips in flight during a +1 Slot re-pitch, the reveal drop (120 ms) and the coin count-up (700–1300 ms) guesses, and the intro-card loops — §11.1, lottie §7, §9, timeline report
-- [ ] Swap in the designer's Lottie re-export when it arrives — re-export, lottie §18, D43:
+- [ ] Animation polish: tune by feel each clip's playback speed (never the JSON), the hand-coded tweens of lottie §9 (`TODO(M7)`), the wobble snap into `doll_move` (settle it before the move), an animated undo (`BoardResetEffect(undo)` cuts today), re-placing the clips in flight during a +1 Slot re-pitch, the coin count-up (700–1300 ms) guess, and the intro-card loops. The tower reveal's drop now comes from `doll_reveal` (D60) — §11.1, lottie §7, §9, timeline report
+- [x] Swap in the designer's Lottie re-export when it arrives (done 2026-09-27: Claude Design v3, imported in the post-M2 round, D59, D60) — re-export, lottie §18, D43:
   - re-sync (`sync_design_assets`) and regenerate `fx_spec.gen.dart` (`gen_fx_spec`). Any change to a length, a marker, the canvas or a hook fails validation until `tools/lib/src/fx/lottie_contract.dart` is updated, and its test also reads LOTTIE.md, so LOTTIE.md must agree;
   - before any lottie upgrade, rerun `fx_compensation_test`, `fx_travel_test` and `fx_workarounds_test`: they pin lottie 3.6.1's internals;
   - remove each workaround whose cause is fixed (hold fix, padlock hide, settle ramp, reveal silhouette hide, animated-scale callbacks);
   - keep the equivalence tests green.
 - [ ] Tabular figures for coins and counters. Fredoka's digits are proportional and it has no `tnum` feature, so `AppTextStyleTokens.number`'s `FontFeature.tabularFigures()` does nothing (Nunito's digits are already fixed-width). Build the approach the owner picks (Q29) in `NestyNumberText` (`TODO(M7)` there and in `app_text_styles.dart`) (moved from M2: the approach waits on the owner) — design/README.md "Typography & icons", tokens.json `fontSize.number.tabular`, tools/fonts audit
 - [ ] +1 Slot plays `button` twice: the booster's tactile feedback and the timeline's `ExtraSlotAddedEffect` cue (m2-lottie-design §7 lists the cue). Keep one — review fix pass
-- [ ] Final audio: replace the placeholder WAVs, normalize levels, re-check the clack pitch offset, and add the music loops. Then rebalance `SfxMix.gains`, set `clackBakedSemitones` to 0 and change `fileExtension` if the files become OGG (`TODO(M7)` in `apps/game/lib/core/services/audio/`) — §11.3, D19, services report
+- [x] Final audio: replace the placeholder WAVs, normalize levels, re-check the clack pitch offset, and add the music loops (done 2026-09-27: the SFX v2 WAVs baked at 0 semitones, the two OGG loops and three jingles, D61) — §11.3, D19, services report
+- [ ] Final mix by ear on a mid-range Android and an iPhone: `SfxMix.gains`, the music's 0.5 and the ducks, the jingles over ducked music. The worst realistic stack has about 0.14 dB of headroom: keep the cues staggered, and turn on SoLoud's limiter only if clipping is heard — audio plan §2 "Clipping", audio audit §5
+- [ ] Optional: keep Nesty's music off while another app plays audio (iOS `secondaryAudioShouldBeSilencedHint`) — Q61, audio plan
+- [ ] The `ui_extra_slot` loop starts at its rest pose (96 %, 75 % opacity) when the 300 ms re-pitch ends, after the static pad drew the stand at 100 %: a small pop. Start it at frame 24 (100 %) or fade it in — lottie lane report, `board_pieces_l9_test.dart`
 - [ ] Device check: the gameplay skin lands within the route transition (`prepareForLevel` starts on the board's first layout; placeholder dolls show until it lands) — screens report
 - [ ] Integrate chapter themes 7–10, per-theme shelf and stand art, and `palette` accents once supplied — §12.4
 - [ ] Translations: es, pt-BR, id, hi, de, fr, tr, ja — §16
@@ -500,20 +539,21 @@ names the milestone it blocks.
 
 ### Content and assets
 
-- [ ] Music: `music_home` and `music_game`, seamless loops of 60–90 s. The handoff has none — §11.3 (M3, M7)
-- [ ] Optional: final SFX to replace the 17 placeholder WAVs — §11.3, D19 (M7)
-- [ ] Lottie re-export from the designer. Nothing blocks on it; the workarounds ship. Each point — re-export (M7):
-  - [ ] Declare image assets at the pixel size supplied: dolls 512×768 with 512×768 placeholders; board pieces at 3× (glass 258×429, ice 288×480, glow 348×156, hint 120×150, extra slot 270×102, unlock symbol 36×36) with 33.33 % layer scales.
-  - [ ] Placeholder PNGs at exactly the declared sizes.
-  - [ ] Animated scales moved off image layers onto parent nulls: `glow_ring`, `extra_slot`, `ice_shatter`.
-  - [ ] No equal consecutive `travel` keyframes: `doll_complete` 0–42; `ui_drag_hand` 0–21.6 and 86.4–108.
-  - [ ] `fx_glass_unlock`: `padlock_ping` hidden at rest; the freed doll ends on the stand surface (y 174); shards kept inside the canvas.
-  - [ ] `doll_reveal`: a `drop` null for the true-size 18 dp tower drop; the silhouette ends at the wipe's end; confirm the wipe centre.
-  - [ ] `fx_ice`: `rest_0…3` markers, a `crack_hit` segment for counters over 3, unique `crack_flash_1/2/3` names, chunks kept inside the canvas.
-  - [ ] Ribbon bands that fit about 26 characters, or no baked text; the counter's text layers optional.
-  - [ ] The nest rim above the body, consistent with `nesty-doll.js`, or confirm the current order.
-  - [ ] LOTTIE.md: "28" → 29; viewer anchors; trim paths and polystars allowed; the `textStyle` advice and the `remapTravel` sample fixed.
-  - [ ] `doll_move`: a hold frame at the end. lottie never draws `op`, so its last drawn frame is about 1 dp high and 2 % large and the sprite takes over mid-fall; then tighten `handoff_test`'s last-frame check (board report).
+- [x] Music: `music_home` and `music_game`, seamless loops of 60–90 s — §11.3 (done 2026-09-26: Claude Design's audio export, 66.7 s and 68.6 s OGG loops, plus three jingles; D61)
+- [x] Optional: final SFX to replace the 17 placeholder WAVs — §11.3, D19 (done 2026-09-26: the SFX v2 WAVs, D61)
+- [ ] Listening check: `jingle_reward` reaches −17 RMS through up to 8.1 dB of limiting (`jingle_chapter` 4.5 dB, `jingle_oom` 2.5 dB). Compare the three in `design/prototypes/Nesty Soundtrack.dc.html` (serve `design/` over http); if `jingle_reward` sounds squashed, ask Claude Design for a gentler master — v3 issue 3 (M7)
+- [x] Lottie re-export from the designer. Nothing blocks on it; the workarounds ship. Each point (done 2026-09-27: Claude Design v3 covers every point below, D59) — re-export (M7):
+  - [x] Declare image assets at the pixel size supplied: dolls 512×768 with 512×768 placeholders; board pieces at 3× (glass 258×429, ice 288×480, glow 348×156, hint 120×150, extra slot 270×102, unlock symbol 36×36) with 33.33 % layer scales.
+  - [x] Placeholder PNGs at exactly the declared sizes.
+  - [x] Animated scales moved off image layers onto parent nulls: `glow_ring`, `extra_slot`, `ice_shatter`.
+  - [x] No equal consecutive `travel` keyframes: `doll_complete` 0–42; `ui_drag_hand` 0–21.6 and 86.4–108.
+  - [x] `fx_glass_unlock`: `padlock_ping` hidden at rest; the freed doll ends on the stand surface (y 174); shards kept inside the canvas.
+  - [x] `doll_reveal`: a `drop` null for the true-size 18 dp tower drop; the silhouette ends at the wipe's end; confirm the wipe centre.
+  - [x] `fx_ice`: `rest_0…3` markers, a `crack_hit` segment for counters over 3, unique `crack_flash_1/2/3` names, chunks kept inside the canvas.
+  - [x] Ribbon bands that fit about 26 characters, or no baked text; the counter's text layers optional.
+  - [x] The nest rim above the body, consistent with `nesty-doll.js`, or confirm the current order.
+  - [x] LOTTIE.md: "28" → 29; viewer anchors; trim paths and polystars allowed; the `textStyle` advice and the `remapTravel` sample fixed.
+- [ ] Optional, for a later export: `doll_move` with a hold frame at the end. lottie never draws `op`, so its last drawn frame is about 1 dp high and 2 % large and the sprite takes over mid-fall; then tighten `handoff_test`'s last-frame check. It wasn't in the v2 request, and v3 keeps the 16 f file — board report (M7)
 - [ ] Flavor text for 9 figurines. Only the Sailor Family has one — §7.2, frame 6.2 (M3)
 - [ ] Names for figurines 4–10 (astronaut, gardener, snow, circus, musician, royal, explorer): the design names only the Classic, Sailor and Baker Families, so `figurineName` returns '' and the win card hides "Next up" for chapters 4–10 (Q47) — UI lane report (M3)
 - [ ] The colours the App Flow frames use that tokens.json lacks (e.g. `#6E4526` icon brown), listed in `apps/game/lib/core/ui/colors/app_colors.dart` with `TODO(design)`: add them to tokens.json `color`, then move the call sites to `AppColorTokens` — UI lane report (M7)
@@ -540,7 +580,7 @@ takes the designs when they arrive.
 - [ ] +Slot at its limit (2 used this level) — §3.6 (M7)
 - [ ] Extra slot when the bottom shelf is full — §3.6, D22 (M7)
 - [ ] Boards with 1 shelf, 4 shelves or 5 slots per shelf — §2.1, §5.3 (M7). Built by scaling (D36): the 1-shelf preset (plank 540, Hs 150) and the 4-shelf preset (planks 250/395/539/684, Hs 104, every slot piece × 104/150), both `TODO(design)` in `packages/nesty_render/lib/src/board/shelf_presets.dart`; 5–6-slot rows shrink stands, pips, tag, glow, glass, ice, hint arrow, tower raise and (review RENDER-3) the dolls (`TODO(design)` in `board_layout.dart`)
-- [ ] The board-wide doll clamp (`h·2/3 ≤ minPitch − 8/3`) for maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or 4-slot rows (M2 levels 3–9) and 5–6-slot rows needs a design sign-off (`TODO(design)` in `board_layout.dart` `_dollHeights`) — D22, D36 (M7)
+- [ ] The board-wide doll clamp (`h·2/3 ≤ minPitch − 8/3`) for maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or 4-slot rows (M2 levels 3–9) and 5–6-slot rows needs a design sign-off (`TODO(design)` in `board_layout.dart` `_dollHeights`). On these boards a top-row doll of the largest size is taller than any in the frames, so the hint arrow over one in the second column reaches the family counter pill at the top of its bob and slips under it by a few dp (Level 9's hint, playthrough screenshot `09c_l9_hint`) — D22, D36, post-M2 playthrough (M7)
 - [ ] A doll sealed in a glass case is taller than the case at maxSize ≥ 5 (the design's own maxSize-5 doll is 6 dp above it, NestyBoard:169) and wider at maxSize 6; on a 4-shelf board a top-row maxSize-6 doll (sealed, or on a tower) reaches ~2–6 dp above the frame — r1 report, review (M7)
 - [ ] Top-shelf towers: the D21 18 dp step per buried nest shrinks so the deepest silhouette stays under the HUD (`TODO(design)` in `board_geometry.dart` `buriedBaseY`); and a buried nest two or more sizes smaller than the top stays hidden at 18 dp per depth (Q38) — D21, review RENDER-4 (M7)
 - [ ] A designed look for the procedural fallback doll (spec §12.5; `TODO(design)` in `packages/nesty_render/lib/src/doll/placeholder_doll_painter.dart`) — r2 report (M7)
@@ -555,9 +595,10 @@ takes the designs when they arrive.
 - [ ] Skin or theme download failed, and the Shop offline — §13.5, frame 7.5 (M4)
 - [ ] A tap on an unpickable slot (empty, locked or iced) with nothing selected: ignored today (`TODO(design)` in `tap_policy.dart`, Q39). Should it shake? — frame 2.6 (M7)
 - [ ] Highlighting the hovered column while dragging: no design (a second `fx_select_glow` is the suggestion) — contracts report (M7)
-- [ ] Text max widths: the family counter's label (52) and the win and chapter ribbons' (232, 262) are guesses (`TODO(design)`) — lottie §12 (M7)
+- [ ] Text max width: the family counter's label (52) is a guess (`TODO(design)`). The win and chapter ribbons use LOTTIE.md v3's text boxes (312×40, 312×32) since 2026-09-27 — lottie §12, v3 3a (M7)
 - [ ] Iced towers: `fx_ice` anchored on the doll at the tower surface draws the ice 5·fs above the static `iceRect` fallback (`TODO(design)` in `board_geometry.dart`, Q55). Ice comes at L51 — render report (M5)
-- [ ] The hint's dashed arc for moves other than frame 3.1's is a generalization (a quadratic 0.4 × the chord off its middle, `TODO(design)` in `hint_layer.dart`) — board report (M7)
+- [ ] The hint's dashed arc for moves other than frame 3.1's is a generalization (a quadratic 0.4 × the chord off its middle, arriving on the source's side of the target, D60; `TODO(design)` in `hint_layer.dart`), and where it starts on a tall source doll was Q64 (resolved: the design's 66) — board report, owner Level 9 report (M7)
+- [ ] Whether `ui_extra_slot` keeps pulsing under a doll placed on the extra slot (today it loops until a reset); frame 3.6 shows only the empty slot (Q65) — lottie lane report (M7)
 - [ ] `fx_twinkle` on the win overlay: LOTTIE.md puts it there but no frame places it; four sit around the plank (`TODO(design)` in `win_overlay.dart`) — screens report (M7)
 - [ ] The drift height of an invalid move onto an empty glass case or ice slot uses the mover's height (`TODO(design)` in `timeline_plans.dart`) — timeline report (M5)
 - [ ] Looks no frame shows, built in the design's system (`TODO(design)`): a disabled booster (45 % glyph and label), the danger button, the success banner, and the Home SUPER HARD badge — UI lane report (M7)
@@ -601,9 +642,13 @@ takes the designs when they arrive.
 - [ ] Q27: commit the Gradle wrapper?
 - [ ] Q28: localize the app title players see?
 - [ ] Q29: tabular numbers in Fredoka: a fixed-width digit widget, Nunito for numbers, or a patched "Fredoka Tabular" build in `build_fonts.sh` (the OFL allows modified builds under a new name)? (M7)
-- [ ] Q39–Q58: the M2 phase-4 lanes' questions (tap and drag policy details, the soft-stuck re-check, `booster_use` sources, skipped bundled levels, dev-flavor undos, background audio, starting coins, figurine names, button feedback timing, Continue in the same page, the chapter ribbon's look, disabled M3 entries, invalid-move shakes on towers, win timing and combo clock, pool sizes, iced towers, Lottie box anchors, HUD coins at Won, splash placeholder dolls). See PROGRESS "Open questions" (M2, M3)
-- [ ] Q59: the subtle belly symbol, bare ink (tokens.json, README §3, the generator and the classic renders; what ships) or on the App Flow previews' cream r 55 disc with a light-shade ring? (M7, review FIDELITY-3)
+- [ ] Q39–Q58: the M2 phase-4 lanes' questions (tap and drag policy details, the soft-stuck re-check, `booster_use` sources, skipped bundled levels, dev-flavor undos, background audio, starting coins, figurine names, button feedback timing, Continue in the same page, the chapter ribbon's look, disabled M3 entries, invalid-move shakes on towers, win timing and combo clock, pool sizes, iced towers, Lottie box anchors, HUD coins at Won, splash placeholder dolls). Q56 (answered by LOTTIE.md v3: the canvas is the component box), Q57 and Q58 are resolved. See PROGRESS "Open questions" (M2, M3)
+- [x] Q59: the subtle belly symbol, bare ink (tokens.json, README §3, the generator and the classic renders; what ships) or on the App Flow previews' cream r 55 disc with a light-shade ring? (done 2026-09-27: the owner chose bare ink, PROGRESS Q59)
 - [ ] Q60: a second +1 Slot press during the 300 ms re-pitch: queue it (today: a second slot and booster) or ignore it like the board's global lock? (M2, D58)
+- [x] Q61–Q63: the audio plan's session, chapter-jingle and low-latency questions (done 2026-09-26: iOS `.ambient`; `jingle_chapter` only at chapter complete; low latency in prod only; D61)
+- [x] Q64: should the hint arc start at the source doll's head rather than 66 below its top (the prototype's value, which lands on a tall doll's upper body)? (M7) (done 2026-09-27: the owner kept the design's value, PROGRESS Q64)
+- [ ] Q65: should the extra slot's pulse stop while a doll stands on it? (M7)
+- [ ] Q66: should a music volume slider fade (SoLoud's `setVolume` applies at once and cancels a running fade)? No M2 caller (M3)
 - [x] Q30–Q38: the M1 and render decisions to confirm (towerless grading, expert-only generated levels, solver targets, admin memory, the curve table, the recorded defaults, bundle policy, authored levels, render defaults) (done 2026-09-26: the owner confirmed the recorded defaults, D52)
 - [ ] Update GAME_SPEC.md for this round's deviations, or keep them recorded only in PROGRESS? They are §2.2 tap policy (D22), §3.6 extra-slot placement (D22), §13.5 bundled art (D20), and the §12.3/§13.3 symbols value (Q4) — D19–D22
 
@@ -631,6 +676,11 @@ takes the designs when they arrive.
 - [ ] `tools/pubspec.yaml` declares `xml` but uses it only through `svg_tools.dart`. Use it directly (level tools) or drop it after P3 — PROGRESS "Package reasons"
 - [ ] The icon font's name table still says "Material Symbols Rounded" (Flutter uses the pubspec family `NestySymbols`, so it's cosmetic). Rename it in `build_fonts.sh` if it ever shows up in a font picker or licence page — `tools/fonts/build_fonts.sh`
 - [ ] flutter_soloud's `play()` allocates a Set per call inside the plugin: per sound, not per frame, so it passes rule 8. Re-check it in the perf profile — services report
+- [ ] Never set `NO_XIPH_LIBS` in the Android or iOS build: flutter_soloud decodes the OGG music and jingles with its bundled Ogg/Vorbis libraries — D61, PROGRESS "Package reasons"
+- [ ] `SoundTokens.jingleBus` is a String checked to be 'sfx' or 'music'; a typed `SoundBus` enum needs `ui_token_types.dart` and a codegen change — import-tools report
+- [ ] Optional: strip the 5,758-byte C2PA chunk from each shipped WAV on sync (about 98 KB in all) — audio audit problem 9
+- [ ] Optional: carry `doll_reveal`'s authored `drop` start in `FxSpec` (the tools contract has `dropFrom` (0, −18); the game reads `FxTiming.revealDropUnits`) — import-tools report
+- [ ] The real `SoLoudBackend` is a thin pass-through no unit test covers (the native library isn't loaded in tests); the playthrough and the owner's device acceptance cover it — audio lane report
 - [ ] The bundled levels are validated on the UI isolate at splash (milliseconds for 30). Re-measure at 200 levels and move it to `compute` if it takes longer than a frame — services report
 - [ ] The timeline tests' `geometryOf` fixture repeats the game's `boardShapeOf`; use it, so the page, the board and the tests build geometry one way — timeline report
 - [ ] The tools contract table repeats the `FxId` file names and the `FxImageSlot` ids and sizes (tools can't import the game). `lottie_contract_test` reads the game's frozen `fx_id`/`fx_image_source`/`fx_spec` files with regexes, so a big reformat of them may need the regexes updated — tools report
@@ -650,3 +700,4 @@ Kept for traceability. Q9 and Q19 are answered by M1 items above.
 - [x] Q15: design exports delivered — D18 (done 2026-09-26)
 - [x] Q18: tower nests show their true size with the color hidden — D21 (done 2026-09-26)
 - [x] Q22: the fake-services admin launch config was added — PROGRESS Q22
+- [x] Q61–Q63: iOS `.ambient`, `jingle_chapter` only at chapter complete, low-latency audio in prod only — D61 (done 2026-09-26)

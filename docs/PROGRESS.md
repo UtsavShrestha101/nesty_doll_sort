@@ -15,7 +15,7 @@ Last updated: 2026-09-27.
 |---|---|---|
 | **M0 — Architecture skeleton** | ✅ Done 2026-09-26, no open blocker | Analyze clean, every test passes, every app builds. All met: analyze clean, tests 32/5/53/47, every flavor's APK, the iOS dev/prod builds and the admin web build succeed (see [Verification](#verification-2026-09-26-in-the-repo)) |
 | **M1 — Core (`nesty_core`)** | ✅ Done 2026-09-26 (see [M1](#m1--core-nesty_core--done-2026-09-26)); owner questions Q30–Q38 confirmed 2026-09-26 | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve. All met |
-| M2 — Playable game (placeholder art; the design art was pulled in, D23) | **Code complete 2026-09-27; acceptance waits on the owner's device check.** Built: the nesty_render foundation, the 30 authored levels and `bundle check` in CI, the phase-4 Lottie contracts (D40–D52), every Lottie lane, the services, the bloc, the UI kit, the Flame board and the screens (D53–D57), then a review fix pass (12 of 13 findings fixed, D58). Every automated gate passes, including the on-device playthrough of L1, L2 and L16. Left: the 60 fps profile on a real mid-range Android (the owner's, steps in [M2 acceptance](#m2-acceptance-spec-18)) and the manual L1–30 pass (see [M2](#m2--playable-game--code-complete-acceptance-pending)) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
+| M2 — Playable game (placeholder art; the design art was pulled in, D23) | **Code complete 2026-09-27; acceptance waits on the owner's device check.** Built: the nesty_render foundation, the 30 authored levels and `bundle check` in CI, the phase-4 Lottie contracts (D40–D52), every Lottie lane, the services, the bloc, the UI kit, the Flame board and the screens (D53–D57), then a review fix pass (12 of 13 findings fixed, D58). Every automated gate passes, including the on-device playthrough of L1, L2 and L16. Left: the 60 fps profile on a real mid-range Android (the owner's, steps in [M2 acceptance](#m2-acceptance-spec-18)) and the manual L1–30 pass (see [M2](#m2--playable-game--code-complete-acceptance-pending)). **Post-M2 round 2026-09-27:** Claude Design's v3 Lottie export and the audio delivery (music, jingles, SFX v2) imported and wired in, the owner's Level 9 hint and +1 Slot report fixed, every gate green again (see [Post-M2 round](#post-m2-round-claude-design-v3-and-audio-2026-09-27), D59–D61) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
 | M3 — App shell and meta | Not started | Kill the app mid-level and it resumes exactly where it was. The daily puzzle is identical on two devices on the same date |
 | M4 — Firebase content | Not started | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
 | M5 — Admin panel | Not started | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
@@ -719,13 +719,157 @@ the way back (13). Afterwards the simulator was shut down, and the build
 folders were removed together with `apps/game/.dart_tool/flutter_build/`.
 Nothing was committed.
 
+## Post-M2 round: Claude Design v3 and audio (2026-09-27)
+
+After M2 was committed (2351b1e, 2f17181), Claude Design delivered two
+exports: the audio export (two music loops, three jingles, the SFX v2 WAVs,
+`AUDIO.md` and new `sound` tokens; the owner's zip (3)) and the v3 overlay
+(the Lottie files and PNGs re-exported against our v2 request, LOTTIE.md v3,
+re-rendered jingles, two token wording changes; zip (5)). The check workflow
+verified both ([plans/claude-design-v3-check.md](plans/claude-design-v3-check.md)),
+the owner answered the open points, and four lanes imported and wired them
+in. The decisions are D59 (v3), D60 (the v3 Lottie runtime) and D61 (music
+and jingles); the owner's audio answers are Q61–Q63. BACKLOG "Post-M2 round"
+has the ticked items and what is left.
+
+- **Import and tools** (D59): `design/` rebuilt in overlay order (repo ←
+  audio export ← v3), hash-identical to the checked staging (381 files);
+  `export/` removed; the designer's notes and our analyses copied under
+  `docs/plans/`. The Lottie contract follows LOTTIE.md v3 (3× board pieces,
+  `doll_reveal` 31 f with its `drop` null, `fx_ice` 150 f with `rest_n` and
+  `crack_hit_n`, 410-wide ribbons, six new parent nulls), and the validator
+  now rejects what v3 promises away (`hold`, `imageTransform`).
+  `sync_design_assets` ships the 5 OGGs next to the 17 WAVs and checks both
+  formats byte by byte (WAV: 44.1 kHz mono 16-bit PCM; OGG: one Vorbis
+  stream, 44.1 kHz stereo, every page's CRC) and each loop's length against
+  its `frames` token. `gen_design_tokens` maps the new `sound` leaves
+  (`jingleFiles`, `musicFiles`, `clackBakedSemitones`, the loops, fades and
+  ducks) and the reworded `motion.reveal.type` and `layout.towerSilhouettes`.
+- **Lottie runtime** (D60): every v1 workaround is gone (the travel-hold
+  fix, the `padlock_ping` rest hide, the 11 dp glass settle, the reveal
+  silhouette hide, the hand-coded reveal drop and the animated-scale
+  callbacks). `doll_reveal` drops the new top from its own buried step;
+  an ice hit with no stage change plays `crack_hit_n`; every jump re-seeks
+  lottie cleanly (the frame-99 double draw); the ribbons use the 410-wide
+  canvases, their text boxes and `min(1, W/390)` on screen. Buried nests
+  draw the wood-grain blank for every skin (3e), and the reveal wipe grows
+  from art (256, 476) (3d).
+- **Audio** (D61): one `SoLoudEngineHost`; the SFX v2 at 0 baked
+  semitones; `JinglePlayer` on the SFX bus; `MusicService` with a real
+  SoLoud implementation (streamed loops, crossfade, ducks, pause reasons,
+  the Music setting) and a fake; `MusicRouteObserver`, `MusicDuck` and
+  `JingleCues`; the iOS `.ambient` session (Q61); low latency in prod only
+  (Q63).
+- **The owner's Level 9 report** (device screenshots, 2026-09-27): the hint
+  arrow sat up and left of its doll, the glow ring at the shelf's left end,
+  the +1 pads were slivers, and the arc's head pointed at an empty stand.
+  The first three were one bug, the raster units after the move to v3's 3×
+  image sizes (D60 "Root cause"); the arc now arrives on the source's side
+  of the target (D60 "Hint arc"). `board_pieces_l9_test` pins all of it to
+  `BoardLayout`.
+
+#### Integration
+
+- **Handoffs applied:** the skin service passes its board library to
+  `DollPartRasters` (`DollPartSource.prepare(board:)`), so decision 3e shows
+  in the running game; `app_flow_test` follows the music (home after the
+  splash, game in the level, ducked under Pause, home again);
+  `SlotGeometry.unlockedDollBaseY`'s comment says the v3 file lands the doll
+  itself; `docs/TODO_INDEX.md` regenerated (102 markers: the audio lane's
+  `TODO(M3)`/`TODO(M6)` hooks in, the SFX placeholders' `TODO(M7)`s and
+  `FxTiming.revealDropMs`'s out); the READMEs' audio, playthrough and
+  status notes.
+- **Self-review against the hard rules:** `_Drop.position` (a per-frame
+  Lottie callback) built two `Offset`s per call; it now builds the one the
+  callback must return (D42). The new hot paths (`FxPlayer.epoch`,
+  `FxDrawable.draw`'s re-seek, the hint arc, `RevealDropTween`) allocate
+  nothing per frame, and the re-seek only runs on a jump (the splash
+  loader's seeks follow load progress, not frames). Every service added
+  has a fake registered for `AppEnv.fake` (`FakeMusicService`,
+  `FakeAudioService` as the `JinglePlayer`); no user-facing string was
+  added outside ARB; every new `TODO` is tagged. No package was added
+  (Package reasons).
+- **The playthrough** now also plays Level 9 (Hint, +1 Slot twice, a doll
+  onto an extra slot: frames 3.1 and 3.6), shows Level 16's tower reveal,
+  toggles Music off and on in Pause and opens Level 21's chapter ribbon. It
+  checks the real `SoLoudMusicService`'s state on each screen (`music_home`
+  on Home, `music_game` in a level, ducked to 0.3 under the win overlay, 0.4
+  under Out of Moves, 0.5 under Pause, silent with Music off), that every
+  Lottie file, the 17 SFX and the 3 jingles loaded, that neither loop failed,
+  and that nothing was logged under `[nesty.audio]`, `[nesty.music]` or
+  `[nesty.fx]`.
+
+#### On-device playthrough results (2026-09-27)
+
+Both runs pass with every real service, and nothing was logged under
+`[nesty.audio]`, `[nesty.music]` or `[nesty.fx]`.
+
+- **iPhone 16 simulator, iOS 18.3** (393×852): 166 s with the build, 46 s
+  for the flow, 25 screenshots.
+- **Android emulator, API 35, 1080×1920 at 420 dpi** (411×731 dp): 177 s
+  with the Gradle build, 70 s for the flow, 25 screenshots. At the end
+  `flutter drive` fails to uninstall `com.futrix.nesty` (the dev flavor
+  installs `com.futrix.nesty.dev`); the test had already passed.
+
+Compared with the App Flow frames and the `Lottie FX` prototype (served
+over http and rendered headless):
+- **Level 9's hint (3.1):** the arrow at full size over brown3 (r0c1), the
+  glow ring on brown2's stand (r1c0), and the dashed arc from brown3's upper
+  body to beside brown2's head, its arrowhead heading into it, as 3.1 draws
+  its arc. The owner's device screenshots had the arrow up and left, the
+  ring at the shelf's end and the arrowhead at the empty r1c1. One
+  difference remains: Level 9's top-row doll is taller than any in the
+  frames (the board-wide clamp, BACKLOG "Design gaps"), so at the top of its
+  bob the arrow grazes the family counter pill's left edge.
+- **+1 Slot twice (3.6):** two green "+1" pads at stand size on the bottom
+  shelf, as 3.6 and the `ui_extra_slot` preview draw them; with five slots
+  on that row the dolls shrink board-wide (D36). A doll moved onto the
+  first pad stands on it with the pad drawn under it.
+- **Ribbons:** "Level Complete!" and "CHAPTER 2 · Rainy Café Corner" fit
+  their bands, which match the v3 previews; at rest the tails end 6.7 dp
+  inside each edge of the 393 dp screen. The chapter ribbon sits where
+  frame 4.7 puts its card, over the top row's heads, for its 2 s (Q50 is
+  still the look).
+- **Level 16's tower reveal:** the Android shot caught the new top as the
+  wood blank on the stand after its drop (3e), the iOS shot the colour wipe
+  with its splash drops; the deeper silhouettes are the wood blank too.
+- **Glass and ice** first appear at L31 and L51, so the playthrough can't
+  show them. `fx_workarounds_test` checks the freed doll landing at canvas
+  y 174 in the shipped file; `fx_spec_drift_test`, `board_effects_test` and
+  `board_timeline_complete_test` check the ice's `rest_n` and `crack_hit_n`
+  segments.
+
+#### Verification (2026-09-27, post-M2 round)
+
+| Command | Outcome |
+|---|---|
+| design/ hashed against the checked v3 staging | 381 files, identical, no `.DS_Store`; `export/` gone |
+| `flutter pub get --enforce-lockfile` (root) | passes: no dependency or lock change |
+| `cd apps/game && flutter gen-l10n && dart run build_runner build` | no generated file changed (hashes compared) |
+| `gen_design_tokens`, `sync_design_assets`, `gen_fx_spec`, `gen_nesty_icons` with `--check` | all exit 0 and unchanged (496 token leaves, 473 emitted; audio 22 files, Lottie 29; 29 specs; 48 glyphs) |
+| `dart run nesty_tools:todo_index`, then `--check` | 102 tagged markers, unchanged |
+| `dart run nesty_tools:nesty_levels bundle check` | 30 levels OK, 0 errors, 0 warnings |
+| `dart format --output=none --set-exit-if-changed` over every non-generated Dart file | 620 files, 0 changed |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `cd packages/nesty_core && dart test -x slow` | 1,200 pass |
+| `cd packages/nesty_render && flutter test` | 526 pass (520 before the round) |
+| `cd apps/game && flutter test` | 1,045 pass (932 before the round) |
+| `cd apps/admin && flutter test` | 47 pass |
+| `cd tools && dart test` | 299 pass (269 at the M2 close) |
+| `NESTY_SCREENSHOT_DIR=… flutter drive --flavor dev --driver test_driver/integration_test.dart --target integration_test/playthrough_test.dart` on the iPhone 16 simulator (iOS 18.3) | passes in 166 s, 25 screenshots; the dev build compiles `AppDelegate.swift`'s `.ambient` session |
+| the same on the API 35 emulator | passes in 177 s, 25 screenshots |
+
+Afterwards the iPhone 16 simulator and the emulator were shut down. Nothing
+was committed.
+
 ## Decisions log
 
-D1–D13 are dated 2026-09-25, D14–D57 2026-09-26 and D58 2026-09-27 (D26–D39
-are the M1 and render build and review decisions; D40–D52 are the M2 Lottie
-decisions, the owner's of 2026-09-26 and the contracts stage's; D53–D57 are
-the M2 phase-4 lanes' and the integration's; D58 is the M2 review fix
-pass's). D1, D8 and D12 were
+D1–D13 are dated 2026-09-25, D14–D57 2026-09-26 and D58–D61 2026-09-27
+(D26–D39 are the M1 and render build and review decisions; D40–D52 are the
+M2 Lottie decisions, the owner's of 2026-09-26 and the contracts stage's;
+D53–D57 are the M2 phase-4 lanes' and the integration's; D58 is the M2
+review fix pass's; D59–D61 are the post-M2 round's, recording the owner's
+calls and deliveries of 2026-09-26). D1, D8 and D12 were
 amended on 2026-09-26. D18–D23 are the owner's decisions for the round that
 covers the design foundation, M1 and M2, copied from its approved plan.
 
@@ -977,6 +1121,9 @@ covers the design foundation, M1 and M2, copied from its approved plan.
     - Their clacks have +1 semitone baked in.
     - So the game plays them at `2^(−2(size−3)/12)` instead of the README's
       `2^(−2(size−3.5)/12)`.
+    - **Superseded 2026-09-27 by D61:** the SFX v2 WAVs replaced the
+      placeholders, with their clacks baked at 0 semitones
+      (`SoundTokens.clackBakedSemitones`), so the rate is the README's.
   - The settings `symbols` value for large symbols is `large`, replacing
     `assist` (Q4). A stored `assist` is read as `large`.
   - Also accepted from the README's list: Level 56 (Hard) is the flow's
@@ -1319,6 +1466,12 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   - **lottie 3.6.1 quirks** also handled: construct a drawable before setting
     its delegates; never share a `ValueDelegate`; clamp marker ends; use
     inferred-type closures, since `LottieFrameInfo` isn't exported.
+  - **Amended 2026-09-27 (D59, D60):** the designer's v3 export fixed the
+    defects behind the travel-hold fix, the `padlock_ping` hide, the 11 dp
+    settle, the silhouette hide and the animated-scale callbacks, and they
+    were deleted. The image-slot compensation (now by `FxImageSlot.density`),
+    BoardFit placement, loading and the quirks stay; the validator rejects a
+    later export that brings a fixed defect back.
 - **D44. Localized text is drawn by Flutter, not by the Lottie text layers.**
   - Text layers cost 0.4–2.3 ms per frame, can't be resized with a
     `textStyle` delegate, and are LTR-only. So the counter and ribbon files
@@ -1496,6 +1649,141 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   - **Every `LottieFxView` is its own repaint boundary** (rule 8): a clip
     never repaints its neighbours, and a resting one costs nothing when they
     repaint.
+- **D59. Claude Design v3 replaces our v2 re-export (owner, 2026-09-26).**
+  The designer answered our v2 request with a v3 overlay, and the check
+  workflow recommended importing it as delivered
+  ([plans/claude-design-v3-check.md](plans/claude-design-v3-check.md)).
+  - **Import.** `design/` = the repo's `design/`, then the audio export
+    (`export/nesty-audio/design`, the owner's zip (3)), then the v3 overlay
+    (`export/nesty-v3/design`, zip (5)): 381 files, hash-identical to the
+    checked staging. This round was the only one allowed to write into
+    `design/`; `export/` was removed afterwards.
+  - **The designer's answers:**
+    - 3c: the host rim under the host body in `doll_nest`/`doll_swallow` is
+      intended. No change.
+    - 3d: the reveal wipe grows from the doll's centre at art (256, 476):
+      `MotionTokens.revealWipeCenter`, which `DollArt.revealCenter` now
+      reads.
+    - 3e: buried tower nests show the wood-grain blank
+      `board/doll-silhouette.svg` for every skin
+      (`BoardTokens.towerSilhouetteSprite`). `DollPartRasters` draws it on
+      the 512×768 artboard when the skin service passes its board library
+      (`prepare(board:)`); without it a set keeps the skin's own silhouette
+      (rule 3).
+  - **Accepted as delivered:** the ribbon tails may pass a 390 dp screen
+    edge by up to 6 dp for about 100 ms during the 106 % pop; the
+    re-rendered jingles (−17 RMS; `jingle_reward`'s limiting is an owner
+    listening check).
+  - **The tools now enforce what v3 promises,** so a later export can't
+    bring a workaround back silently: issue `hold` (equal consecutive keys
+    or `h: 1` on `travel` or `drop`), issue `imageTransform` (an animated
+    anchor, position, scale or rotation on any image layer; opacity may
+    animate), the `drop` null checked like `travel`, and the six new parent
+    nulls required. `gen_fx_spec` no longer emits holds or animated scales.
+  - **What this supersedes:** D43's list keeps only the image-slot
+    compensation (raster and doll size), BoardFit placement, loading and
+    the lottie 3.6.1 quirks. D40's hand-coded motions lose the tower
+    reveal's drop and the 11 dp settle; the deeper silhouettes' shift stays.
+- **D60. The v3 Lottie runtime (2026-09-27).**
+  - **Raster units.** `FxRaster.scale` and `origin` stay in the slot's box
+    units, which is what `LevelSkinImages` and `AssetSkinService` produce.
+    `FxImageSlot` keeps the JSON's asset sizes (`assetWidth`/`assetHeight`,
+    3× for the board pieces and the unlock symbol) and a `density` (3 for
+    those, 1 for dolls), and `declaredWidth`/`declaredHeight` return the box.
+    The compensation uses `r = raster.scale / density`: scale `k / r`, anchor
+    `(a − origin × density) × r`.
+  - **Root cause of the owner's Level 9 report (2026-09-27, device
+    screenshots).** An earlier attempt of the lane had moved `FxImageSlot`
+    to the 3× sizes but still read the raster scale as per 3× pixel, so
+    every board piece drew at a third of its size with its anchor pushed
+    three times too far: the hint arrow up and left of its doll, the glow
+    ring at the shelf's left end, the +1 pads as slivers.
+    `board_pieces_l9_test` renders Level 9 with the real skin images and
+    Lotties and pins the arrow, the glow, both pads and a doll on a pad to
+    `BoardLayout`; 4 of its tests fail with the old compensation.
+  - **Hint arc.** It arrives on the source's side of the target (the board's
+    middle when both are in one column), ending 48·s beside the target's
+    head, 6·s below the top of its top doll (for an empty target, the
+    moving nest's head). It starts 16·s toward the target and min(66·s,
+    ⅔ of the doll) below the source doll's top. The control point is 0.4 ×
+    the chord off its middle toward the arrival side, upward for a flat
+    chord. This reproduces frame 3.1 (the MAIN-board test still gives about
+    (352, 480)); on Level 9 the arrowhead now heads into brown2's head
+    instead of the empty stand beside it. Other moves stay a
+    `TODO(design)` generalization (Q64 asks about the start).
+  - **The reveal.** `doll_reveal` plays its whole 31 frames from the move,
+    and its `drop` null starts at the tower's own buried step (the
+    authored (0, −18) scaled by that step). `RevealDropTween` only shifts
+    the nests still buried, over the drop's 7 frames with easeOut. A
+    source reveal now ends at 517 ms (the drop was a separate 120 ms
+    before the 400 ms reveal). Without the file the new top shows at once
+    (rule 3).
+  - **Ice.** An `IceCracked` that advances the stage plays `crack_n`; one
+    that doesn't plays `crack_hit_n` for the stage shown. Either then rests
+    on `rest_n` (frame 16n in an export without markers).
+  - **A clean seek on every jump.** `FxPlayer.epoch` changes on start,
+    rest, seek and reset, and the next draw then seeks lottie to 0 before
+    the target frame. lottie 3.6.1 otherwise draws `ice_0` and `ice_1`
+    together when a reused drawable goes from 98.5 to 99 (verdict issue 1).
+    Continuous playback never re-seeks.
+  - **Ribbons.** 410-wide canvases with the anchors (205, 55) and (205, 50);
+    text boxes 312×40 (win, Fredoka Bold 24) and 312×32 (chapter, 20),
+    the label scaled down to fit the box's width and height. On screen the
+    canvas is centred at `min(1, W/390)` (`LottieRibbonFit`,
+    `ChapterRibbon.rectIn`), so it is 1:1 on the design's 390 dp phone and
+    only ever scales down.
+  - **Deleted:** the travel-hold fix, the `padlock_ping` rest hide, the
+    11 dp glass settle, the reveal silhouette hide (the silhouette now ends
+    at frame 19), the hand-coded reveal drop and the animated-scale
+    callbacks (the `glow_pulse`, `slot_pulse` and `shatter_burst` nulls
+    carry the pulses), together with `FxHold`, `FxTravel.holds`,
+    `FxImageLayer.scaleAnimated` and `FxTiming.revealDropMs`.
+- **D61. Music and jingles ship as OGG Vorbis in `design/audio` (owner
+  delivery 2026-09-26; [plans/audio-integration.md](plans/audio-integration.md)).**
+  - **Files.** `music_home` (Toy Shop Waltz, 66.667 s, 3/4 at 108 bpm),
+    `music_game` (Quiet Shelves, 68.571 s, 4/4 at 84 bpm), `jingle_chapter`,
+    `jingle_reward` and `jingle_oom`. The 17 SFX were replaced in place by
+    the v2 WAVs, whose clacks are baked at 0 semitones
+    (`SoundTokens.clackBakedSemitones`). That supersedes D19's +1 offset:
+    the clack rate is now `2^(semitonesBySize/12)`. `SoundTokens.allFiles`
+    stays the 17 WAVs; `jingleFiles` and `musicFiles` list the OGGs.
+  - **Loading.** The loops stream: `loadMem(..., LoadMode.disk)`, never
+    `loadAsset`, which leaves a 1.9 MB temp copy per launch. Each loads on
+    first use, and the other one loads once the first has, so a crossfade
+    never waits. The SFX and the jingles decode into memory; the jingles
+    load after the SFX and the splash doesn't wait for them.
+  - **One engine.** `SoLoudEngineHost` starts SoLoud once for whichever
+    caller comes first and stops it only in its own dispose, after both
+    services have freed their sounds. `SfxEngine.setPaused` and `dispose`
+    now touch only the SFX's own sounds, and the music voices are
+    protected, so a burst of SFX can't take their slots. An `AudioBackend`
+    interface wraps the flutter_soloud calls both engines make; the tests
+    run a fake with SoLoud's timing rules (fades and scheduled pauses only
+    advance while a voice plays).
+  - **Jingles** are a `JinglePlayer` interface implemented by the SFX
+    service: the SFX bus (`jingleBus` 'sfx'), gated by the Sound setting.
+    `AudioModule` registers the one instance under both interfaces.
+  - **`MusicService`** (`SoLoudMusicService`, `FakeMusicService`) reconciles
+    from state rather than a log of commands:
+    - an 800 ms crossfade that parks the outgoing loop; a parked loop
+      resumes where it stopped;
+    - ducks counted per reason, the lowest factor wins (win 0.3, out of
+      moves 0.4, reward 0.4, pause 0.5);
+    - pause reasons as a set {background, ad}, faded back in over 600 ms;
+    - the Music setting followed through
+      `DatabaseService.musicEnabledChanges`: off is silent within 300 ms,
+      and with Music off at launch it loads nothing;
+    - silent failure (a loop that can't load stays silent until the next
+      launch), and nothing per frame.
+  - **Wiring.** `MusicRouteObserver` picks the track (Splash none, a level
+    `music_game`, everything else `music_home`). `MusicDuck` ducks while
+    the win overlay, the out-of-moves sheet (plus `jingle_oom` after the
+    200 ms duck-in) and Pause are up. Pause's toggles only write the
+    settings. `JingleCues.reward()` and `chapterComplete()` wait for their
+    M3 and M6 callers.
+  - **The owner's answers** (Q61–Q63): the iOS session is `.ambient`;
+    chapter complete plays only `jingle_chapter`; SoLoud's low-latency
+    output only in prod.
 
 ## Package reasons (CLAUDE.md rule 9)
 
@@ -1525,6 +1813,12 @@ The M2 integration (2026-09-26, D57) added `integration_test` and
 `flutter_driver`, `fuchsia_remote_debug_protocol` and `integration_test`; no
 locked version changed.
 
+The post-M2 round (2026-09-27, D59–D61) added no package and changed no
+locked version (`flutter pub get --enforce-lockfile` passes). The music and
+jingles use `flutter_soloud`'s OGG Vorbis decoder, and the iOS audio session
+is set in `AppDelegate.swift` with AVFoundation, so no `audio_session`
+package was needed (Q61).
+
 ### Runtime dependencies
 
 | Package | Locked | Used in | Why | §13.2 |
@@ -1546,7 +1840,7 @@ locked version changed.
 | `nesty_render` (path) | 0.1.0 | game, admin, tools | Shared doll rendering and layout math. The game imports it from `lib/` since M2 (layout, part rasters, the rest renderer, sprites, backgrounds); the admin doesn't yet. `tools` imports only the Flutter-free `package:nesty_render/svg_tools.dart` (the asset sync's validator; `svg_tools_purity_test.dart` keeps it free of `dart:ui`) | — |
 | `flutter_svg` | 2.3.0 | render | Spec §12.2: turns the layered skin, board and theme SVGs into `ui.Image` rasters once per size (Phase 3 skin rasterizer, board sprites, theme background; rule 8). For now only `bundled_svg_render_test.dart` uses it: flutter_svg compiles all 39 shipped SVGs with no warnings. Added in the design foundation round (2026-09-26) | yes |
 | `xml` | 7.0.1 | render, tools | Flutter-free SVG parsing in `package:nesty_render/svg_tools.dart`: the spec §12.2 validator and metadata strip now, the skin layer splitter in Phase 3, and the admin upload check in M5. 7.0.1 is the newest that `vector_graphics_compiler` (via flutter_svg) accepts (`<=7.0.1`). `tools` declares it too (the plan listed it) but uses it only through `svg_tools.dart` so far | yes |
-| `flutter_soloud` | 4.1.7 | game | Spec §11.3: low-latency SFX with per-play playback speed, needed for the per-size clack pitch (D19) and the combo chimes. Imported by `SfxEngine` (`core/services/audio/sfx_engine.dart`) under `SoLoudAudioService` since M2 phase 4. **Why 4.x, not 5.x:** 5.x needs `native_toolchain_c` ^0.19.4, which needs `meta` ^1.19, but Flutter 3.41.2 pins `meta` 1.17.0. 4.1.7 is a classic FFI plugin (CMake on Android; podspec plus CMake on iOS), and the dev APK and iOS builds both link it. Upgrade with the SDK (Q23, BACKLOG "Later") | yes |
+| `flutter_soloud` | 4.1.7 | game | Spec §11.3: low-latency SFX with per-play playback speed, needed for the per-size clack pitch (D19) and the combo chimes. Imported by `SoLoudBackend` (`core/services/audio/soloud_backend.dart`), the one seam both `SfxEngine` (the SFX and jingles, since M2 phase 4) and `SoLoudMusicService` (since the post-M2 round) go through; `SoLoudEngineHost` starts and stops the engine. Since D61 it also decodes the OGG Vorbis music (streamed with `loadMem(..., LoadMode.disk)`) and jingles with its bundled Ogg/Vorbis libraries, so **`NO_XIPH_LIBS` must never be set** in the Android or iOS build. **Why 4.x, not 5.x:** 5.x needs `native_toolchain_c` ^0.19.4, which needs `meta` ^1.19, but Flutter 3.41.2 pins `meta` 1.17.0. 4.1.7 is a classic FFI plugin (CMake on Android; podspec plus CMake on iOS), and the dev APK and iOS builds both link it. Upgrade with the SDK (Q23, BACKLOG "Later") | yes |
 | `lottie` | 3.6.1 (pinned exactly) | game | **Owner decision (D40): every animation in the design ships as Lottie** (29 files). A pure-Dart Lottie player: board clips through our `LottieFxComponent` over `LottieDrawable`, the HUD, overlays and screens through `LottieFxView` (m2-lottie-design §2). **Why 3.6.1:** the newest release that resolves on Flutter 3.41.2 / Dart 3.11 (3.4.0–3.5.1 need Flutter 3.44; 3.6.0 is retracted). **Why the exact pin:** the export workarounds depend on its internals (image layers drawn at bitmap size, the travel-hold callback skip, the swapped progress fields for point values), and the equivalence tests pin them (D43). It brings `archive` 4.3.0 and `posix` 6.5.2 transitively. No `flame_lottie` (D41) | — |
 | `path` | 1.9.1 | tools | Repo-relative path handling in the `nesty_tools` CLIs. Already in the lock transitively | — |
 
@@ -1920,9 +2214,13 @@ reused.
   doll at the tower's surface (design §8), which puts the ice 5·fs above the
   static `iceRect` anchored on the stand. Should the ice follow the stand
   instead?
-- [ ] **Q56. Anchors of `ui_toggle` and `ui_splash_loader` (M2).** LOTTIE.md
+- [x] **Q56. Anchors of `ui_toggle` and `ui_splash_loader` (M2).** LOTTIE.md
   says only "toggle box" and "bar box"; the game takes their top-left, with
   the canvas as the widget's box. Or their centre?
+  **Resolved 2026-09-27 (the designer, LOTTIE.md v3 "Inside the canvas"):**
+  `ui_toggle`, `ui_spinner` and `ui_splash_loader` fill their canvas
+  exactly, "because the canvas is the component box". That is what the game
+  does; nothing changed.
 - [x] **Q57. The HUD coins at Won (M2, frames 2.8, 1.5).** The bloc pays the
   reward at Won, so the HUD's coin pill shows the new balance while the win
   overlay counts "+10" up at 700 ms; the frames show the HUD still at the old
@@ -1959,6 +2257,34 @@ reused.
   second press is queued: a second slot re-pitches in after the first, and a
   second booster is spent in stg/prod. Or ignore presses during the 300 ms
   re-pitch, as the board's global lock does for taps?
+- [x] **Q61. The iOS audio session (audio plan Q39).** Mix with the
+  player's own music (`.ambient`), or stop it (the default)?
+  **Resolved 2026-09-26 (owner): `.ambient`,** set in `AppDelegate.swift`
+  (no package). It follows the silent switch, as Android already mixes.
+  Keeping Nesty's music off while another app plays is an optional M7 item.
+- [x] **Q62. Chapter complete's two jingles (audio plan Q40).** At 4.6 the
+  figurine joins the Museum (AUDIO.md: `jingle_reward`) and the overlay
+  opens (`jingle_chapter`). **Resolved 2026-09-26 (owner): only
+  `jingle_chapter`;** `jingle_reward` is for skins, bought themes, the daily
+  chest and purchases (`JingleCues`, M3 and M6 callers).
+- [x] **Q63. Android screen recording (audio plan Q41).** SoLoud's
+  low-latency output can't be captured by Android screen recorders.
+  **Resolved 2026-09-26 (owner): low latency off in dev and stg, on in
+  prod** (`Flavor.audioLowLatency`), so videos recorded on dev or stg builds
+  have sound.
+- [x] **Q64. Where the hint arc starts (M7, D60).** Frame 3.1 starts it 66
+  below the source doll's top, two thirds down its 99 dp doll. The game
+  keeps the 66 (capped at two thirds for smaller dolls), which on Level 9's
+  tall brown3 lands on its upper body. Should it start at the head instead?
+  **Resolved 2026-09-27 (owner): keep the design's value**, 66 below the
+  top (capped at two thirds), as frame 3.1 draws it.
+- [ ] **Q65. The extra slot's pulse under a doll (M7).** `ui_extra_slot`
+  loops until the level resets, also while a doll stands on the slot.
+  Frame 3.6 shows only an empty extra slot. Stop the pulse while it is
+  occupied?
+- [ ] **Q66. A music volume slider (M3).** `MusicService.setVolume` applies
+  at once and cancels a running fade (a crossfade too). Fine for a slider;
+  should it fade instead? Nothing calls it in M2.
 
 ### Notes for later milestones (not questions)
 
@@ -2013,15 +2339,17 @@ section only says where to look.
    playthrough runs with `NESTY_SCREENSHOT_DIR=<dir> flutter drive --flavor
    dev --driver test_driver/integration_test.dart --target
    integration_test/playthrough_test.dart -d <device>` from `apps/game`.
-   The newer design delivery in `export/nesty-v3/` (Lottie v3, jingles,
-   docs) is imported in its own round, after M2 is committed.
-2. **The designer's Lottie re-export** ([plans/lottie-reexport-request.md](plans/lottie-reexport-request.md))
-   blocks nothing. The workarounds ship; swap it in when it arrives (BACKLOG
-   M7).
+2. **The post-M2 round** ([Post-M2 round](#post-m2-round-claude-design-v3-and-audio-2026-09-27))
+   imported Claude Design v3 (D59, D60) and the music and jingles (D61), so
+   the Lottie re-export and the music are no longer waited on. Left for the
+   owner (BACKLOG "Post-M2 round" and "Owner inputs needed"): the device check of the Level 9 hint,
+   +1 Slot, a tower reveal and the ribbons; the audio acceptance on a
+   mid-range Android and an iPhone (gapless loops over 3 cycles, audible
+   ducks, no clipping, streaming under 3 MB resident); the `jingle_reward`
+   listening check; Q64–Q66.
 3. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
    can supply or decide, with the milestone each one blocks. The first ones
-   due are Q3 and Q5 (before M3), the music files, and the 9 missing figurine
-   flavor texts.
+   due are Q3 and Q5 (before M3) and the 9 missing figurine flavor texts.
 4. Owner decisions that block nothing but are cheapest to take early: Q23
    (SDK upgrade), Q24 (deny globs), Q25 (rule 10 wording) and Q27 (Gradle
    wrapper).

@@ -25,8 +25,9 @@ nesty/
     board/  symbols/         #   board pieces (stand, plank, glass, ice, hint, glow…); 11 color symbols
     themes/                  #   ch01–ch06 chapter backgrounds, 1290×2796
     museum/  store/          #   figurines (use museum/png/) and app-icon art; their SVGs don't render in flutter_svg
-    audio/                   #   17 placeholder SFX (WAV, spec §11.3 names); no music yet
-    generator/               #   nesty-doll.js, nesty-sfx.js: reference doll-tint and SFX algorithms
+    audio/                   #   17 SFX (WAV v2, spec §11.3 names), 2 music loops + 3 jingles (OGG); AUDIO.md is the contract
+    lottie/                  #   29 Lottie animations + images/; LOTTIE.md (v3) is the contract the tools validate against
+    generator/               #   nesty-doll.js, nesty-sfx.js, nesty-music.js: reference doll-tint, SFX and music algorithms
     prototypes/              #   *.dc.html design references; open "Nesty App Flow.dc.html" in a browser
   packages/nesty_core/       # PURE DART: models, rules, solver, generator, simulator, level codec
   packages/nesty_render/     # Flutter (no Flame): doll/slot painters, skin loading, layout math
@@ -75,7 +76,7 @@ The owner runs `flutterfire configure` to create Firebase config files. Never ha
 1. **Flutter stable channel only.** Do not use `flutter_scene`, Flutter GPU or any master-channel feature.
 2. **All game rules live only in `nesty_core`** (pure Dart, no Flutter imports). The game, admin, solver, generator and simulator all call the same rule functions. Never re-implement a rule elsewhere.
 3. **Offline-first.** The game must be fully playable with no network from first launch (bundled levels + bundled default skin). Every network call (Firestore, Storage, ads, IAP, Remote Config) must fail gracefully and silently.
-4. **Services behind interfaces.** `AdsService`, `PurchaseService`, `AnalyticsService`, `RemoteConfigService`, `LevelRepository`, `SaveService`, `AudioService`, `HapticsService` each have a real implementation and a fake one. Debug builds and tests can switch to fakes.
+4. **Services behind interfaces.** `AdsService`, `PurchaseService`, `AnalyticsService`, `RemoteConfigService`, `LevelRepository`, `SaveService`, `AudioService` (SFX and jingles), `MusicService`, `HapticsService` each have a real implementation and a fake one. Debug builds and tests can switch to fakes.
 5. **Ads:** use Google's official test ad unit IDs in debug builds. Real IDs come from build-time `--dart-define` values. Never commit real IDs or any secret.
 6. **Remote Config:** every key has a hard-coded default in `RemoteConfigService` (spec §9.4).
 7. **Deterministic core.** The generator and simulator take an explicit seed and use their own PRNG (spec §6.5), never `Random()` without a seed and never `DateTime.now()` inside core.

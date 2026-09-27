@@ -19,7 +19,10 @@ is done. M2 (playable game) is code complete: levels 1–30 play end to end on
 the design's art and Lottie animations, and every automated check passes,
 including an on-device playthrough. Its acceptance, 60 fps on a mid-range
 Android device, is the owner's check on a real phone; the steps are in
-[docs/PROGRESS.md](docs/PROGRESS.md) under "M2 acceptance". Milestones,
+[docs/PROGRESS.md](docs/PROGRESS.md) under "M2 acceptance". After M2, the
+designer's v3 Lottie export and the audio delivery (two music loops, three
+jingles and the final sound effects) were imported and wired in (PROGRESS
+"Post-M2 round", D59–D61). Milestones,
 decisions and open questions are tracked there, and every remaining item in
 [docs/BACKLOG.md](docs/BACKLOG.md).
 
@@ -38,7 +41,7 @@ nesty/
     PROGRESS.md              # milestone status, decisions, package reasons, open questions
     BACKLOG.md               # every remaining item, one section per milestone, plus owner inputs
     TODO_INDEX.md            # generated index of the TODO(<tag>) markers in code
-  design/                    # design handoff (owner-managed, read-only): tokens, art, SFX, prototypes
+  design/                    # design handoff (owner-managed, read-only): tokens, art, Lottie, SFX, music, prototypes
   packages/
     nesty_core/              # pure Dart: models, rules, solver, generator, simulator, level codec
     nesty_render/            # Flutter (no Flame): doll painters, skins, layout math
@@ -69,7 +72,9 @@ Each package has its own README: [game](apps/game/README.md),
     That SDK is 3.41.2 with one local commit on top, not a newer release.
 - For Android: Android Studio or the Android SDK (compileSdk 36, minSdk 24)
   and a JDK, plus the NDK and CMake from the SDK manager (the `flutter_soloud`
-  audio plugin builds native code).
+  audio plugin builds native code). Never set `NO_XIPH_LIBS` in either
+  build: the plugin decodes the OGG music and jingles with the Ogg/Vorbis
+  libraries it bundles.
 - For iOS (macOS only): Xcode, CocoaPods and CMake (`brew install cmake`;
   `flutter_soloud`'s pod builds with it). The deployment target is iOS 14.
 - Only to rebuild the bundled fonts (`tools/fonts/build_fonts.sh`): `python3`
@@ -183,8 +188,12 @@ cd tools                 && dart test         # nesty_tools
 ```
 
 The on-device playthrough (the dev flavor with every real service: levels 1
-and 2 to the win overlay, level 16 into Out of Moves, Pause, Home) needs a
-booted simulator or emulator. It saves its screenshots through the driver,
+and 2 to the win overlay, level 9's hint and two extra slots, level 16 into
+Out of Moves, Pause with Music off and on, Home, and level 21's chapter
+ribbon) needs a booted simulator or emulator. It can't listen, so it checks
+the music through `SoLoudMusicService`'s state (the loop on each screen and
+each overlay's duck), and fails if any sound, music or Lottie file didn't
+load or a failure was logged. It saves its screenshots through the driver,
 into `$NESTY_SCREENSHOT_DIR` or `apps/game/build/integration_test/screenshots/`:
 
 ```bash
@@ -226,7 +235,7 @@ iOS isn't built in CI.
   - ARB localization;
   - dev/stg/prod flavors through `lib/main_<flavor>.dart` → `bootstrap()`.
 - **Services** (ads, purchases, analytics, Remote Config, levels, save,
-  audio, haptics) sit behind interfaces with offline fakes. Every network
+  audio, music, haptics) sit behind interfaces with offline fakes. Every network
   call fails silently, so the game is fully playable offline from first
   launch.
 - **Storage:** the game stores device settings in Hive (`hive_ce`), opened

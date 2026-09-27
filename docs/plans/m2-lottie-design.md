@@ -2,6 +2,11 @@
 
 Status: frozen by the contracts stage, 2026-09-26. Owner decisions of 2026-09-26 are PROGRESS D40–D52.
 
+**Lottie v3 (2026-09-27).** The game now runs on Claude Design's v3 export ([design/lottie/LOTTIE.md](../../design/lottie/LOTTIE.md) "v3", [claude-design-v3-changes.md](claude-design-v3-changes.md), [claude-design-v3-check.md](claude-design-v3-check.md)). Sections below carry **v3:** notes where the runtime changed; the v1 text they annotate is kept for the record. In short:
+- **Gone** (the files are fixed, and the sync rejects a file that regresses): the travel-hold fix (§6), `padlock_ping` hidden at rest (§8), the 11 dp settle (§9.2), `doll_reveal`'s silhouette hidden after the wipe (§7), the hand-coded reveal drop (§9.1) and the animated-scale compensation callbacks (§3). `FxHold`, `FxTravel.holds` and `FxImageLayer.scaleAnimated` are deleted.
+- **Kept:** raster compensation (§3) and doll-size compensation (§5). Board pieces are declared at 3× with 33.33 % layers; the game's rasters still count in the pieces' board boxes and the compensation converts by `FxImageSlot.density` (§3).
+- **New:** `doll_reveal` plays 31 frames from its own drop (§7, §9.1); `fx_ice` `crack_hit_n` and `rest_n` (§7, §8); a clean lottie seek before every jump (§14); the ribbons' 410 canvas, text boxes and screen fit (§12); the wood-grain blank for every buried nest (§4, owner decision 3e); the reveal wipe from art (256, 476) (owner decision 3d).
+
 This is the design every M2 phase-4 lane builds against. It combines four sources: [design-foundation-m2-design.md](design-foundation-m2-design.md) (the earlier M2 design), [design/lottie/LOTTIE.md](../../design/lottie/LOTTIE.md) (the owner's Lottie contract), the verified behaviour of `lottie` 3.6.1 in [lottie-analysis/](lottie-analysis/) (audit, packages, impact), and the owner decisions.
 
 **Precedence:**
@@ -46,7 +51,7 @@ Contents:
   - Board clips use our own Flame component over `LottieDrawable`.
   - The HUD, overlays and screens use our widget over `LottieDrawable`.
 - **D42: rule-8 exception.** lottie allocates inside its own draw, and our position callbacks must return a new `Offset`. Nothing else in our code allocates per frame (§14).
-- **D43: export defects are worked around in code.** A re-export request goes to the designer ([lottie-reexport-request.md](lottie-reexport-request.md), §18). The workarounds:
+- **D43: export defects are worked around in code.** A re-export request goes to the designer ([lottie-reexport-request.md](lottie-reexport-request.md), §18). **v3:** only the compensation, BoardFit, `fromBytes` and the blank remain; v3 fixed the others in the files. The workarounds:
   - image-slot compensation (§3);
   - the travel-hold fix (§6);
   - `padlock_ping` hidden at rest (§8);
@@ -120,15 +125,15 @@ Earlier decisions still in force:
 | dollMove | 16 (267) | 390×844 | B | S (100,500) → T (300,500) | F | 2 | M2 |
 | dollNest | 24 (400) | 160×260 | P | (80,230) → target base | F | 2 | M2 |
 | dollSwallow | 24 (400) | 180×380 | P | (90,350) → target base | F | 2 | M2 |
-| dollComplete | 75 (1250) | 390×844 | B | S (100,650) → T (195,144); travel holds 0–42 | F | 2 | M2 |
+| dollComplete | 75 (1250) | 390×844 | B | S (100,650) → T (195,144); travel holds 0–42 (**v3:** no hold, the first key is at 42) | F | 2 | M2 |
 | dollInvalid | 36 (600) | 390×844 | B | S (100,500) → T (300,500); `target_pos` (300,500) | F | 2 | M2 |
-| dollReveal | 24 (400) | 160×260 | P | (80,230) → tower surface | F | 2 | M2 |
+| dollReveal | 24 (400); **v3:** 31 (517): `drop` 0–7, wipe 7–19 | 160×260 | P | (80,230) → tower surface | F | 2 | M2 |
 | dollIdle | 180 (3000) loop | 160×260 | P | (80,230) → plank base | W | per doll | M2 |
 | dollWinDance | 84 (1400) loop | 160×260 | P | (80,230) | W | — | unused |
 | dollWinHop | 78 (1300) loop | 160×260 | P | (80,230) → win plank | W | per family | M2 |
 | fxSelectGlow | 113 (1883): in 0+7, pulse 7+96 loop, out 103+10 | 140×80 | S | (70,40) → (cx, surface − 2) | F | 3 | M2 |
 | fxGlassUnlock | 54 (900) | 180×240 | P | case top-left (47,40); doll base (90,163) | F | 1 per locked slot | M2 (L31+) |
-| fxIce | 81 (1350): crack_1 0+16, crack_2 16+16, crack_3 32+16, shatter 48+33 | 180×240 | S | ice top-left (42,40); doll base (90,170.8) | F | 1 per iced slot | M2 (L51+) |
+| fxIce | 81 (1350): crack_1 0+16, crack_2 16+16, crack_3 32+16, shatter 48+33; **v3:** 150 (2500), plus crack_hit_0…3 at 82/99/116/133 +16 and rest_0…3 at 0/16/32/48 | 180×240 | S | ice top-left (42,40); doll base (90,170.8) | F | 1 per iced slot | M2 (L51+) |
 | fxDustPuff | 24 (400) | 160×80 | P | (80,62) → (cx, surface) | F | 4 | M2 |
 | fxSparkle | 16 (267) | 64×64 | P | (32,32) → trail point | F | 9 | M2 |
 | fxConfetti | 102 (1700) | 390×844 | P | burst (195,190) → ribbon centre | W | 1 | M2 |
@@ -138,13 +143,13 @@ Earlier decisions still in force:
 | uiHintArrow | 54 (900) loop | 60×80 | P | (30,45) → (cx, dollTop − 33·fs) | F | 1 | M2 |
 | uiExtraSlot | 96 (1600) loop | 110×50 | P | (55,25) → stand centre | F | 2 | M2 |
 | uiBoosterGlow | 84 (1400) loop | 130×110 | P | (65,55) → Undo centre, behind it | W | 1 | M2 |
-| uiWinRibbon | 18 (300), then hold | 360×110 | P | (180,55) → ribbon centre | W | 1 | M2 |
-| uiChapterRibbon | 156 (2600) | 360×100 | P | (180,50) | W | 1 | M2 (L21) |
+| uiWinRibbon | 18 (300), then hold | 360×110; **v3:** 410×110 | P | (180,55); **v3:** (205,55) → ribbon centre | W | 1 | M2 |
+| uiChapterRibbon | 156 (2600) | 360×100; **v3:** 410×100 | P | (180,50); **v3:** (205,50) | W | 1 | M2 (L21) |
 | uiToggle | 22 (367): on 0+11, off 11+11; rest off 0, on 11 | 54×30 | S | toggle box | W | per toggle | M2 Pause, M3 Settings |
 | uiSpinner | 54 (900) loop | 16×16 | P | centre | W | — | M3 |
 | uiSplashLoader | 100, frame = progress % | 278×22 | P | bar box | W | 1 | M2 |
 | uiTapHand | 72 (1200) loop | 128×144 | P | fingertip (48,32) → target | W | — | M3 |
-| uiDragHand | 144 (2400) loop | 390×844 | B | S (100,500) → T (300,500); holds 0–21.6, 86.4–108 | W, through BoardFit | — | M3 |
+| uiDragHand | 144 (2400) loop | 390×844 | B | S (100,500) → T (300,500); holds 0–21.6, 86.4–108 (**v3:** no hold) | W, through BoardFit | — | M3 |
 
 - **Generated specs.** The per-file facts live in `fx_spec.gen.dart` (`const Map<FxId, FxSpec> fxSpecs`, plus `FxSpec fxSpecOf(FxId)`). The tools lane generates it from the JSON plus a contract table of the LOTTIE.md-only facts: anchor, S/T, kind and loop.
   - It holds frames, canvas, markers, travel S/T with holds, roles, image layers with their authored scale/anchor, text layers and colour fills.
@@ -169,8 +174,9 @@ compensated anchor = (a − raster.origin) × raster.scale
 - **Two proofs.** This reproduces the authored drawing exactly, whatever the raster size. It was verified in probes:
   - E1: 300×450 raster in `doll_pick` equals 512×768.
   - C0: `doll_reveal`'s precomp children at 0.35 % edge pixels. Without the precomp compensation, 28,497 pixels differ.
-- **Static-scale layers** get `ValueDelegate.transformScale(keyPath, callback: (_) => …)` and `ValueDelegate.transformAnchorPoint(keyPath, callback: …)`. The callbacks read the clip's current `FxRaster`; a static value would freeze one raster.
-- **Animated-scale layers** (`glow_ring`, `extra_slot`, `ice_shatter`) can't take a static replacement.
+- **v3: declared at 3×, rasters in box units.** v3 declares every board piece and the unlock symbol at 3× its box (`glow_ring` 348×156 for a 116×52 box, `unlock_symbol` 36×36 for 12×12), with the layer at 33.33 % and the anchor ×3; dolls stay 512×768 at 19.53 %. `FxImageSlot.assetWidth/Height` are the JSON's sizes (the tools contract checks them) and `declaredWidth/Height` the box. An `FxRaster` still counts in the box, as the skin service builds it (`BoardSpriteImage.pixelScale` and `cropOrigin`, the symbol at `width / 12`). The FX runtime converts with `d = FxImageSlot.density` (3 for pieces, 1 for dolls): `r = raster.scale / d`, compensated scale `k / r`, anchor `(a − origin × d) × r`. Taking the per-box scale for a per-asset-px one drew the arrow, glow and extra-slot pad at a third of their size and off their slots (the owner's L9 screenshots, 2026-09-27); `board_pieces_l9_test.dart` pins them to `BoardLayout`.
+- **Static-scale layers** get `ValueDelegate.transformScale(keyPath, callback: (_) => …)` and `ValueDelegate.transformAnchorPoint(keyPath, callback: …)`. The callbacks read the clip's current `FxRaster`; a static value would freeze one raster. **v3:** every image layer is static; the scale and anchor are recomputed only when the slot's raster changes.
+- **Animated-scale layers** (`glow_ring`, `extra_slot`, `ice_shatter`) can't take a static replacement. **v3:** none are left: the pulse and burst moved to the parent nulls `glow_pulse`, `slot_pulse` and `shatter_burst`, and the callbacks below are deleted.
   - **The chosen fix** is a scale callback that returns the authored animated value divided by `raster.scale`: `Offset.lerp(f.startValue, f.endValue, f.linearKeyframeProgress)! / raster.scale`. On 3.6.1, `linearKeyframeProgress` holds the eased progress for point values. `PointKeyframeAnimation` calls the callback on every evaluation, holds included.
   - It was verified in the C0 probe (`scratchpad/lt/test/anim_scale_comp_test.dart`): a 3× raster with the callback draws the same bounds as the 1× raster at every sampled frame, within 1 px at 3×.
   - **Fallback if a lottie upgrade breaks the equivalence test:** give those three layers the declared-size raster (1 px per dp) with no compensation. It is soft but correct, and acceptable for a glow, a 300 ms shatter and the pulsing stand. The re-export request asks for the pulse to move onto a parent null (§18).
@@ -191,6 +197,8 @@ compensated anchor = (a − raster.origin) × raster.scale
 | ui_extra_slot | `extra_slot` | extra_slot | animated | (45, 17) | **callback** |
 | ui_hint_arrow | `hint_arrow` | hint_arrow | 1 | (20, 25) | static (position animated, untouched) |
 
+**v3:** every board-piece row above is authored at 0.3333 with the anchor ×3 (`glow_ring` (174, 78), `extra_slot` (135, 51), `hint_arrow` (60, 75), `unlock_symbol` (18, 18), `ice_shatter` (144, 240), `glass_case_*` and `ice_*` (0, 0)), and all of them are static: the pulses, burst, bob and lid lifts sit on `glow_pulse`, `slot_pulse`, `shatter_burst`, `arrow_bob`, `target_lid_lift` and `mover_lid_lift`. `fx_ice` adds `ice_0_hit` … `ice_3_hit` (the `ice_*` assets). The key paths `target_lid`, `mover_lid` and `hint_arrow` still resolve.
+
 - **Precomp children** use the key path `[precompLayerName, childName]`, as verified above.
 - **Supplied rasters:**
   - doll parts: `r = artHeightPx / 768` (§4);
@@ -204,7 +212,7 @@ compensated anchor = (a − raster.origin) × raster.scale
   - **The height:** `artHeightPx = DollPartRasters.artHeightPxFor(tallestDollHeight, dpr)` = `ceil(h × dpr)` rounded up to a multiple of 3, so the width `2/3·artHeightPx` is whole and the compensation is exact on both axes. The tallest doll samples 1:1; smaller ones draw down with `FilterQuality.medium`.
   - **Lid** = `top_mask` (tinted, or gold-rewritten), `face`, `top_detail`, `shine_top`, clipped to art y < 400.
   - **Body** = `shadow`, `bottom_mask` (tinted or gold), `bottom_detail`, the belly symbol, `shine_bottom`, clipped to y ≥ 400. There is no 388–412 overlap: `doll_nest`'s rim is drawn between the parts (impact D-h).
-  - **Silhouette** = `shadow` + `SkinLayer.silhouette` (wood masks, shines at 45 %), whole.
+  - **Silhouette** = `shadow` + `SkinLayer.silhouette` (wood masks, shines at 45 %), whole. **v3 (owner decision 3e):** every skin's buried nests, and `doll_reveal`'s `doll_silhouette` slot, show the wood-grain blank `board/doll-silhouette.svg` on the 512×768 artboard with its own ground shadow (`DollPartRasters.prepare(board:)`, `BoardTokens.towerSilhouetteSprite`); the skin's own silhouette stays the rule-3 fallback without the board art. The skin service must pass its `BoardSpriteLibrary` for this to take effect.
   - **Gold** uses the ramp-rewritten masks (`SkinLayer.goldLidMask`/`goldBottomMask`), never a tint. `rim_tint` for gold is `#E9BE4E` (`DollSwatch.rimColor`).
   - **Symbols:** the body raster depends on (colour, mode). `none` has no symbol. `subtle` is ink at 94 % in the 110-unit box. `large` is the cream disc r 92 with an 8-unit ink ring and the symbol at 117. Rebuild the bodies when the setting changes.
   - **Placeholder fallback:** `DollPartRasters.preparePlaceholder` draws the same parts with `PlaceholderDollPainter`, with the same split. It is used when the skin fails to load (rule 3).
@@ -261,6 +269,7 @@ compensated anchor = (a − raster.origin) × raster.scale
 | doll_invalid | the source base | the target base − 0.5 × target height; `target_pos` = the target base (static value) |
 | ui_drag_hand (M3) | the tap point on the big doll | the target surface − 0.4 × target height |
 
+- **v3: no holds.** No `travel` (or `drop`) null has two equal consecutive keys (`doll_complete` keys only at 42 and 75), so lottie calls the position callback on every frame and the anchor fix below is deleted, with `FxHold` and `FxTravel.holds`.
 - **Holds (audit #2).** When two consecutive `travel` keyframes are equal, lottie returns the keyframe value without calling the position callback. That happens in `doll_complete` 0–42 f and `ui_drag_hand` 0–21.6 f and 86.4–108 f; `doll_move` and `doll_invalid` have no interior hold. Without a fix, the shine and hops draw at the authored (100, 650).
   - **Fix (verified, probe T10):** add `ValueDelegate.transformAnchorPoint(['travel'], callback: …)`. `getMatrix` evaluates position before anchor. So the position callback sets a flag, and the anchor callback reads and clears it.
   - When the flag is unset, the position was bypassed. The anchor callback then returns `hold.value − remap(hold.value)`, where `hold = spec.travel.nearestHold(currentFrame)`. `nearestHold` is robust to lottie's frame rounding at a boundary.
@@ -286,18 +295,18 @@ compensated anchor = (a − raster.origin) × raster.scale
 | `Placed` | glow out @0 on the source; `doll_move` src → target base 0–267 | `whoosh` @0 | src and dst 267 |
 | `NestedInto` inside | `doll_move` src → hover 0–267, then `doll_nest` at the target 267–667 | `whoosh` @0; `clack(merged.outer.size)` + `nest` @**537** (16 f + 16.2 f) | src and dst 667 |
 | `NestedInto` swallow | `doll_move` src → hover (1.06 h) 0–267, then `doll_swallow` 267–667 | same | same |
-| `Revealed` (source tower) | hand-coded D21 drop 0–120 (§9), then `doll_reveal` 120–520 | — | src 520 |
+| `Revealed` (source tower) | hand-coded D21 drop 0–120 (§9), then `doll_reveal` 120–520. **v3:** `doll_reveal` 0–516.7, its `drop` null starting on the tower's step; the buried nests shift one step down over 0–116.7 | — | src 520; **v3:** 516.7 |
 | `Completed` (t0 = end of the landing: **667**) | `doll_complete` at dst t0–t0+1250. At **t0+700** (1367): `fx_dust_puff` (400) at dst; `fx_sparkle` every 60 ms to t0+1240 (10 sparkles) on the trail. At **t0+1250** (1917): HUD `onFamilyLanded`, `ui_family_counter` bump 200 (text swaps at +100) and a 1.5× sparkle over the counter | `complete_{comboStep}` + `complete` @t0 | dst until t0+700 |
-| `Revealed` (destination tower, after `Completed`) | drop t0+700 → t0+820, then `doll_reveal` t0+820 → t0+1220 | — | dst until t0+1220 |
-| `Unlocked` (k-th slot event) | `fx_glass_unlock` on the slot's composition from t0+700 + 80k, 900 ms; the 11 dp settle is blended into its last hop (§9) | `unlockGlass` + `unlock` @start | slot to its end |
-| `IceCracked` (k-th slot event) | when `iceFrame` advances to n: `fx_ice` `crack_n` from t0+700 + 80k, 267 ms; else no clip; the badge counts down at start | `iceCrack` + `iceCrack` @start | slot to its end |
+| `Revealed` (destination tower, after `Completed`) | drop t0+700 → t0+820, then `doll_reveal` t0+820 → t0+1220. **v3:** `doll_reveal` t0+700 → t0+1216.7 | — | dst until t0+1220; **v3:** t0+1216.7 |
+| `Unlocked` (k-th slot event) | `fx_glass_unlock` on the slot's composition from t0+700 + 80k, 900 ms; the 11 dp settle is blended into its last hop (§9). **v3:** no settle: the file lands the doll on the stand at frame 53 | `unlockGlass` + `unlock` @start | slot to its end |
+| `IceCracked` (k-th slot event) | when `iceFrame` advances to n: `fx_ice` `crack_n` from t0+700 + 80k, 267 ms; else no clip; the badge counts down at start. **v3:** else `crack_hit_n` (n = the stage shown), 267 ms; either way it then rests on `rest_n` | `iceCrack` + `iceCrack` @start | slot to its end |
 | `IceShattered` (k-th slot event) | `fx_ice` `shatter` (48–81) from t0+700 + 80k, 550 ms | `iceShatter` @start, **no haptic** (D49) | slot to its end |
 | `Won` | the batch's last clip ends (counter bump t0+1450 = 2117, or the last slot event), + **250** → `onWon` → win overlay | — | global |
 | Win overlay (from its open, D47) | scrim (Flutter); `ui_win_ribbon` 0–300 then hold; `fx_confetti` 0–1700 (not under reduced motion); per completed family, `doll_win_hop` loop starting 150·i; at **700**: `fx_coin_burst` (667) and the "+N" count-up 700–1300; `fx_twinkle` ambient | `win` + `win` @0; `coins` @700 | global |
 | `OutOfMoves` | the board goes idle → `onOutOfMoves` → sheet 3.5 | — | global while the sheet is open |
 | `MoveRejectedEffect` (tap) | glow out @0; `doll_invalid` 0–600 (the mover drifts to u = 0.5 and back, the target shakes 180–420). On a locked, iced or tower target, hide the target roles and shake the slot composition or silhouettes by hand (§9) | `bonk` + `invalid` @**180** (10.8 f) | src and dst 600 |
 | `MoveRejectedEffect` (`byDrag`) | `doll_move` finger → source base 0–267, plus `doll_invalid` with `hideMover` 0–600 | `bonk` + `invalid` @180 | src and dst 600 |
-| `HintShownEffect(move)` | `ui_hint_arrow` loop over the source at (cx, dollTop − 33·fs); the dashed arc (static path); `fx_select_glow` in → pulse on the target | — | — |
+| `HintShownEffect(move)` | `ui_hint_arrow` loop over the source at (cx, dollTop − 33·fs); the dashed arc (static path); `fx_select_glow` in → pulse on the target. **2026-09-27:** the arc arrives on the source's side of the target (from the board's middle within one column) and bulges that way, so its arrowhead points into the target's head, as frame 3.1; an empty target ends beside the moving nest's head (`HintLayer`) | — | — |
 | `HintClearedEffect` | arrow removed; target glow out | — | — |
 | `softStuck` (state) | `ui_booster_glow` loop behind Undo (HUD) and banner 3.4 (Flutter) | — | — |
 | `ExtraSlotAddedEffect` | the bottom row re-pitches 0–300 (§9); `ui_extra_slot` loop at the new stand from 300 | `button` + `button` @0 | global 300 |
@@ -308,6 +317,7 @@ compensated anchor = (a − raster.origin) × raster.scale
 - **Picked.** It needs no clip: tap-tap already lifted the doll, and a drag holds it.
 - **Wobble snap.** A move started mid-wobble begins `doll_move` at rotation 0, a snap of up to 3°. Accepted for M2; M7 may settle it first (impact §E).
 - **Hover.** The hover point scales with the target through `target_size`: the nest file's mover starts at −75 units = 0.5 × 150 in target space.
+- **v3:** `doll_silhouette` ends at frame 19, when the wipe has covered the doll, so the hide below is deleted (the shadow is drawn once from frame 19).
 - **`doll_reveal`'s silhouette.** It stays drawn under the colour doll to the last frame, so the shadow (in both the silhouette and the body raster) would be doubled at the hand-off. Hide `doll_silhouette` (opacity 0 through a callback) from frame 12, the wipe's end, when the colour doll covers it. The re-export asks for `op 12`.
 
 ## 8. Locked and iced slots: paused compositions
@@ -321,6 +331,7 @@ compensated anchor = (a − raster.origin) × raster.scale
   - Ice: anchor (90,170.8) → (cx, `surfaceY`), which puts the ice at `iceRect.topLeft − (42,40)·fs`.
   - Scale `fs`, and `doll_size = h/(150·fs)`.
 - **Rest frames:**
+  - **v3:** glass rests on frame 0 as authored: `padlock_ping` starts at frame 1. Ice rests on its `rest_n` marker (0, 16, 32, 48), also after a `crack_hit_n`.
   - Glass: frame 0, with `padlock_ping` hidden (`transformOpacity` → 0 while resting). At frame 0 that layer covers the unlock symbol with an opaque copy of the padlock, so the player couldn't see which colour opens the case (audit #3). While playing it follows the authored opacity.
   - Ice: frame `16 × BoardLayout.iceFrame(remaining, initial)`, i.e. 0, 16, 32 or 48 (D51). Each segment's first frame still shows the previous stage (audit #6).
 - **Cached rest picture.** While paused, the slot records `drawable.draw` into a `ui.Picture` once and replays it each frame with `drawPicture`. That saves lottie's Dart-side traversal and allocations; the GPU still replays the padlock's small matte `saveLayer`.
@@ -328,7 +339,7 @@ compensated anchor = (a − raster.origin) × raster.scale
   - Dispose it on unlock or shatter.
   - If profiling shows the matte matters, rasterize the rest frame cropped to the case box instead (≈0.44 MB per slot at DPR 3).
 - **Stage mapping.** `iceFrame(n, n0) = min(3, ⌊3(n0 − n)/n0⌋)`, and the stage never jumps by 2.
-  - An `IceCracked` that doesn't advance the stage (n0 ≥ 4) plays no clip, but its cue fires and the badge counts down.
+  - An `IceCracked` that doesn't advance the stage (n0 ≥ 4) plays no clip, but its cue fires and the badge counts down. **v3:** it plays `crack_hit_n` on the stage shown (a shake and flash, no new crack), then rests on `rest_n`. An export without the segment falls back to no clip (rule 3). The rule-3 frame swap keeps the stage through a `crack_hit_n`.
   - `shatter` always starts at frame 48: its first frame flashes stage 3.
   - Authored ice is capped at 3 in the M5 editor (Q-default from impact §I.4).
 - **Locked and iced together** (the codec allows it; the generator never makes it): the glass composition draws the doll, and the ice composition sets `hideDoll`. After the unlock, the ice composition draws it.
@@ -339,11 +350,13 @@ compensated anchor = (a − raster.origin) × raster.scale
 
 Every one is a pure tween in the timeline lane, driven where possible by the files' own timing (`FxTiming`), and scaled by `durationScale`.
 
-1. **Tower reveal drop (D21).** The top leaves at 0 (source), or the set flies at t0+700 (destination).
+1. **Tower reveal drop (D21).** **v3:** the file does it. `doll_reveal`'s `drop` null lowers the whole doll from (0, −18) to (0, 0) over frames 0–7 (easeOut); the timeline plays the file from frame 0 and sets the drop's start to the tower's own step, `(surfaceY − buriedBaseY(1)) / s` in composition units, through `transformPosition(['drop'])` (`FxClipParams.revealDrop`). The board keeps only the deeper silhouettes' one-step shift, over the drop's 7 frames with the same easeOut (`RevealDropTween`); `FxTiming.revealDropMs` is deleted. The v1 text:
+   The top leaves at 0 (source), or the set flies at t0+700 (destination).
    - The revealed nest's silhouette drops from `buriedBaseY(1)` to the surface. Each deeper silhouette moves from `buriedBaseY(d)` to `buriedBaseY(d − 1)`, keeping its true size.
    - It takes 120 ms, easeIn (`FxTiming.revealDropMs`, `TODO(M7)` tune).
    - The "+N" tag counts down at the start. Then `doll_reveal` plays on the surface.
-2. **11 dp settle after unlock.** The freed doll ends `fx_glass_unlock` on the case floor (caseTop + 123), 11 units above the stand surface.
+2. **11 dp settle after unlock.** **v3: deleted.** The freed doll hops 42 → 47 (y 149) → 53 and lands on the stand surface (y 174 = caseTop + 134) itself. The v1 text:
+   The freed doll ends `fx_glass_unlock` on the case floor (caseTop + 123), 11 units above the stand surface.
    - A position callback on the `doll` null adds `(0, 11 · e((f − 42)/12))` over the final hop (frames 42–54, `FxTiming.unlockHop*`, `unlockSettleUnits`), with `e` = easeInOut. The file then ends on the surface, and the sprite takes over with no jump.
    - Frames 0–42 are a hold, so the callback isn't called there, which is fine: the offset is 0.
    - Fallback: a 120 ms post-clip drop of the sprite.
@@ -363,9 +376,9 @@ Every one is a pure tween in the timeline lane, driven where possible by the fil
 1. **Same-frame swap.** In the `update` where the timeline starts a clip, the doll's sprite is hidden and the clip draws its first frame. In the `update` where it ends, the sprite is shown at the new rest pose and the clip returns to its pool. The timeline's `advance(dt)` runs before any `render`.
 2. **Identical pixels.** Sprites and clips draw the same part rasters with the same transform and filter (§4), so a first or last frame equals the sprite. The known sources of a jump, and their fixes:
    - the E3 band: the hard split (D45);
-   - the 11 dp glass float: §9.2;
-   - the D21 drop: §9.1;
-   - the reveal's double shadow: §7;
+   - the 11 dp glass float: §9.2 (**v3:** fixed in the file);
+   - the D21 drop: §9.1 (**v3:** in the file, from the tower's step);
+   - the reveal's double shadow: §7 (**v3:** fixed in the file);
    - the wobble snap: accepted, M7;
    - resampling: a medium filter everywhere.
 3. **Selected doll.** While selected, the doll is drawn by its `doll_pick` clip (wobbling, or held on `lift`'s end under reduced motion). Its sprite stays hidden until `settle` ends or a move takes over.
@@ -422,13 +435,14 @@ Every one is a pure tween in the timeline lane, driven where possible by the fil
   - It follows the null's transform, captured in the same paint by callbacks that return the authored value unchanged: position with `interpolatedKeyframeProgress`, scale with `linearKeyframeProgress` (§2 rule 5).
   - Captured values reset to the rest values below before each draw, because a hold skips the callback.
   - Lottie ignores a null's opacity for its children, so the text doesn't fade either.
-- **Fit, don't wrap.** A label wider than its band's max width is laid out once more at `fontSize × maxWidth / width`. Flutter text also fixes Lottie's hard-coded LTR and its missing-glyph fallback.
+- **Fit, don't wrap.** A label wider than its band's max width is laid out once more at `fontSize × maxWidth / width`. **v3:** also taller than the box's height; the label shrinks about its visual centre.
+- **v3 ribbons** (LOTTIE.md v3 "Ribbons", "Text layers"): both canvases are 410 wide with the anchor at (205, 55) and (205, 50), bands 336 wide. The label sits in a 312 × 40 box (win, Fredoka Bold 24) or 312 × 32 (chapter, 20), centred on the anchor, its baseline 0.36 em below the null as the preview text; an all-caps German title scales down to fit. On screen the canvas is drawn at `LottieRibbonFit.scaleFor(W) = min(1, W / 390)`, centred on the screen, so on a 390 dp screen it overhangs each edge by 10 and the tails pass the edges by up to 6 dp for about 100 ms during the 106 % pop (owner-accepted). `ChapterRibbon.rectIn(screen, padding)` places the chapter ribbon in the page; the win overlay centres its canvas in the ribbon row with an `OverflowBox`. The rule-3 painters draw the v3 held look. Flutter text also fixes Lottie's hard-coded LTR and its missing-glyph fallback.
 
 | File | Null (rest) | Label (baseline centre, in null space) | Shadow | Size | Max width |
 |---|---|---|---|---|---|
 | ui_family_counter | `counter` (60,30), scale 1 → 1.22 at 6 f → 1 | (7, 4.6), cream `#FFF5E0`; old count until frame 6, then the new one | — | 13 | 52 (`TODO(design)`) |
-| ui_win_ribbon | `ribbon` (180,55), scale 0.6 → 1.06 → 1 | (0, 10.08), white | (0, 12.08), `#96400A` at 35 % | 28 | 232 (band 260 − 2·14) |
-| ui_chapter_ribbon | `ribbon` (180,50), moving to (180,42) from 138 f; scale as the win ribbon | (0, 7.2), white | (0, 9.2), `#1C4F82` at 35 % | 20 | 262 (band 290 − 2·14) |
+| ui_win_ribbon | `ribbon` (180,55), scale 0.6 → 1.06 → 1; **v3:** (205,55) | (0, 10.08), white; **v3:** (0, 8.64) | (0, 12.08), `#96400A` at 35 %; **v3:** 2 below | 28; **v3:** 24 | 232 (band 260 − 2·14); **v3:** box 312 × 40 |
+| ui_chapter_ribbon | `ribbon` (180,50), moving to (180,42) from 138 f; scale as the win ribbon; **v3:** (205,50) → (205,42) | (0, 7.2), white | (0, 9.2), `#1C4F82` at 35 % | 20 | 262 (band 290 − 2·14); **v3:** box 312 × 32 |
 
 - **Copy.** The strings come from ARB: `winTitle`, the chapter ribbon's "CHAPTER {n} · {name}", and the counter's "{done} / {total}", which uses tabular digits per Q29 when that is decided.
 
@@ -466,6 +480,7 @@ The source is `MediaQuery.disableAnimationsOf(context)`. The page passes it into
   - An exhausted pool skips the extra clip (rest pose) and logs in debug.
   - Two batches can overlap (a move while a completion flies), hence 2 per doll file.
 - **Rule-8 exception (D42), inside lottie only:** a `Paint` per fill (`fill_content.dart`), a `LottieFrameInfo` per callback evaluation, two `Rect`s per image, and trim-path metrics (the spinner). Our position and scale callbacks return a new `Offset` (the API's return type).
+- **v3: a clean seek before every jump.** `FxPlayer.epoch` is bumped by every start, rest, seek and reset; `FxDrawable.draw` then seeks lottie to 0 before the new frame. lottie 3.6.1 keeps a layer's cached in/out keyframe while it still contains the new progress, and `fx_ice`'s `ice_0_hit` (op 99) and `ice_1_hit` (ip 99) round one ulp apart, so a reused drawable that last drew 98.x drew both for a frame (the v3 check's issue 1; `fx_drawable_reset_test.dart`). Continuous playback never re-seeks.
 - **Everything else is ours and allocation-free per frame:**
   - delegates built once per pooled drawable;
   - mutable `FxImageRequest` and clip state;
@@ -552,8 +567,8 @@ The source is `MediaQuery.disableAnimationsOf(context)`. The page passes it into
   - `BoardFit.toReference` round-trips.
 - **FX runtime:**
   - **Compensation equivalence:** for every image layer in §3's table, at 2–3 frames, a compensated 3× (and 0.586×) raster draws the same pixels as the declared-size raster (≥ 99 % within 8/255). This pins lottie 3.6.1's behaviour, including the swapped progress fields.
-  - The hold fix: `doll_complete` at frames 5/30/41 draws at src.
-  - The remap overshoot; the padlock hidden at rest; the ice rest frames 0/16/32/48; the glass settle ends on the surface; reveal's last frame equals the colour sprite.
+  - The hold fix: `doll_complete` at frames 5/30/41 draws at src. **v3:** the same frames, through the position callback alone.
+  - The remap overshoot; the padlock hidden at rest; the ice rest frames 0/16/32/48; the glass settle ends on the surface; reveal's last frame equals the colour sprite. **v3:** the unlock symbol shows at frame 0 as authored; the doll lands on the surface at 53; `crack_hit_n` shows stage n; the `drop` start follows the tower's step; the reset seek at a jump; the L9 hint arrow, glow and extra-slot pad on `BoardLayout`'s rects; the ribbon labels inside their boxes.
   - `doll_size` for nest and swallow; text hidden and overlay placement; reduced-motion shake removal.
   - Pools never allocate after warm-up (the allocation test style of `hot_path_allocation_test.dart`).
   - Marker end clamp; a failed load is null; `blank` is 1×1.
@@ -579,4 +594,4 @@ When a re-export arrives:
 3. Each workaround whose cause is fixed is removed behind its test: compensation stays (it is exact for any raster), but the hold fix, the padlock hide, the settle ramp, the reveal silhouette hide and the animated-scale callbacks go if the file no longer needs them.
 4. The equivalence tests must stay green.
 
-BACKLOG tracks it as "Swap in the designer's Lottie re-export" (M7).
+BACKLOG tracks it as "Swap in the designer's Lottie re-export" (M7). **v3 (2026-09-27):** done for Claude Design's v3: every workaround step 3 names is gone, the compensation stays exact for any raster, and the equivalence tests pass on the 3× declarations (`fx_compensation_test.dart`, pieces at 2 and 2.7 px per box unit against the declared size).

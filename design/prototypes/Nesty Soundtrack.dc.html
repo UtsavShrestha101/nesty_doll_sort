@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,600,1,0&display=block" rel="stylesheet">
+<script src="./nesty-music.js"></script>
+<script src="./nesty-sfx.js"></script>
+<style>body{margin:0;background:#FBEAD0}a{color:#C4631E}a:hover{color:#9A4A12}</style>
+</helmet>
+<div style="min-height:100vh;background:#FBEAD0;color:#5B3A21;font-family:'Nunito',sans-serif;padding:32px 20px 56px;box-sizing:border-box">
+<div style="max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:34px">
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font:700 34px/1 'Fredoka',sans-serif">Music &amp; sound</div>
+<div style="font:600 15px/1.45 'Nunito',sans-serif;color:#8A5B3A;max-width:720px;text-wrap:pretty">A small wooden folk band plays Nesty: balalaika, marimba, music box, bayan, nylon guitar and spoons. Two seamless loops, three jingles and 17 sound effects, all in C or F major so the combo chimes always land in key. Files are in design/audio; the rules for the app are in design/audio/AUDIO.md.</div>
+</div>
+<button onClick="{{ stopAll }}" style="height:46px;padding:0 20px;border:0;border-radius:18px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.18);color:#6E4526;font:600 16px/1 'Fredoka',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px" style-active="transform:translateY(3px);box-shadow:inset 0 2px 0 #fff,0 2px 0 #D8B07A"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">stop</span>Stop music</button>
+</div>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+<div style="display:flex;gap:4px;padding:4px;border-radius:23px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.25)">
+<sc-for list="{{ sources }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" style="height:38px;padding:0 16px;border:0;border-radius:19px;background:{{ o.bg }};box-shadow:{{ o.sh }};color:{{ o.fg }};opacity:{{ o.op }};font:600 15px/1 'Fredoka',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px"><span style="font-family:'Material Symbols Rounded';font-size:19px;font-variation-settings:'FILL' 1,'wght' 600">{{ o.icon }}</span>{{ o.label }}</button></sc-for>
+</div>
+<div style="font:700 13px/1.45 'Nunito',sans-serif;color:#8A5B3A;max-width:560px;text-wrap:pretty">{{ sourceNote }}</div>
+</div>
+<sc-if value="{{ missing }}" hint-placeholder-val="{{ false }}">
+<div style="border-radius:20px;background:#FFE3D0;box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 4px 0 #E3AE8C;padding:12px 16px;display:flex;gap:12px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#C4631E;font-variation-settings:'FILL' 1,'wght' 600">folder_off</span><div style="display:flex;flex-direction:column;gap:3px"><div style="font:700 16px/1.2 'Fredoka',sans-serif;color:#5B3A21">The audio files aren't reachable from this page</div><div style="font:700 13px/1.4 'Nunito',sans-serif;color:#8A5B3A">Keep this page in design/prototypes/, next to design/audio/, and serve the folder over http. Live synth works anywhere.</div></div></div>
+</sc-if>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:baseline;gap:10px"><div style="font:700 22px/1 'Fredoka',sans-serif">Music loops</div><div style="font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">2 · OGG · seamless</div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:18px">
+<sc-for list="{{ music }}" as="m" hint-placeholder-count="2">
+<div style="border-radius:24px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:18px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:14px;align-items:center">
+<button onClick="{{ m.toggle }}" style="width:58px;height:58px;flex:none;border:0;border-radius:20px;background:{{ m.btnBg }};box-shadow:{{ m.btnShadow }};color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" style-active="transform:translateY(3px)"><span style="font-family:'Material Symbols Rounded';font-size:34px;font-variation-settings:'FILL' 1,'wght' 600">{{ m.icon }}</span></button>
+<div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+<div style="font:700 21px/1.1 'Fredoka',sans-serif">{{ m.title }}</div>
+<div style="font:700 12px/1.3 ui-monospace,Menlo,monospace;color:#9A6A44">{{ m.file }} · {{ m.meta }}</div>
+</div>
+</div>
+<div style="font:700 14px/1.45 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ m.where }}</div>
+<div style="position:relative;display:flex;gap:3px;height:34px">
+<sc-for list="{{ m.sections }}" as="s" hint-placeholder-count="3">
+<div style="flex:{{ s.flex }};min-width:0;border-radius:10px;background:{{ s.bg }};display:flex;align-items:center;padding:0 10px;font:700 12px/1 'Nunito',sans-serif;color:{{ s.fg }}">{{ s.name }}</div>
+</sc-for>
+<div style="position:absolute;top:-4px;bottom:-4px;left:{{ m.head }};width:3px;border-radius:2px;background:#E8573A;opacity:{{ m.headOp }};pointer-events:none"></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+<sc-if value="{{ m.showStems }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ m.stems }}" as="st" hint-placeholder-count="4"><button onClick="{{ st.toggle }}" style="height:30px;padding:0 12px;border-radius:15px;border:2px solid #6E4526;background:{{ st.bg }};color:{{ st.fg }};font:700 12px/1 'Nunito',sans-serif;cursor:pointer">{{ st.label }}</button></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ m.showNote }}" hint-placeholder-val="{{ true }}">
+<div style="font:700 12px/1.35 'Nunito',sans-serif;color:#9A6A44;max-width:250px">The shipped file is one stereo mix. Live synth can mute each part.</div>
+</sc-if>
+<div style="display:flex;gap:10px;align-items:center">
+<div style="font:700 12px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ m.status }}</div>
+<button onClick="{{ m.download }}" style="height:30px;padding:0 12px;border:0;border-radius:12px;background:#F3E3C8;color:#6E4526;font:700 12px/1 'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px"><span style="font-family:'Material Symbols Rounded';font-size:17px;font-variation-settings:'FILL' 1,'wght' 600">download</span>{{ m.dlLabel }}</button>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:baseline;gap:10px"><div style="font:700 22px/1 'Fredoka',sans-serif">Jingles</div><div style="font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">3 · OGG · one-shot, SFX bus, duck the music</div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px">
+<sc-for list="{{ jingles }}" as="j" hint-placeholder-count="3">
+<div style="border-radius:24px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:12px;align-items:center">
+<button onClick="{{ j.toggle }}" style="width:48px;height:48px;flex:none;border:0;border-radius:17px;background:{{ j.btnBg }};box-shadow:{{ j.btnShadow }};color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" style-active="transform:translateY(3px)"><span style="font-family:'Material Symbols Rounded';font-size:28px;font-variation-settings:'FILL' 1,'wght' 600">{{ j.icon }}</span></button>
+<div style="display:flex;flex-direction:column;gap:5px;min-width:0"><div style="font:700 18px/1.1 'Fredoka',sans-serif">{{ j.title }}</div><div style="font:700 12px/1.2 ui-monospace,Menlo,monospace;color:#9A6A44">{{ j.file }} · {{ j.meta }}</div></div>
+</div>
+<div style="height:6px;border-radius:3px;background:#F3E3C8;overflow:hidden"><div style="height:100%;width:{{ j.progress }};background:#F0782A;border-radius:3px"></div></div>
+<div style="font:700 13px/1.45 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ j.when }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:baseline;gap:10px"><div style="font:700 22px/1 'Fredoka',sans-serif">Sound effects</div><div style="font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">17 · WAV 44.1 kHz mono · tap to play</div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px">
+<sc-for list="{{ sfx }}" as="f" hint-placeholder-count="17">
+<button onClick="{{ f.play }}" style="text-align:left;border:0;cursor:pointer;border-radius:20px;background:{{ f.bg }};box-shadow:inset 0 2px 0 #fff,0 4px 0 #E2C9A3;padding:12px 14px;display:flex;align-items:center;gap:12px" style-active="transform:translateY(2px);box-shadow:inset 0 2px 0 #fff,0 2px 0 #E2C9A3">
+<span style="width:36px;height:36px;flex:none;border-radius:12px;background:#F3E3C8;color:#6E4526;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">volume_up</span>
+<span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+<span style="font:700 13px/1.2 ui-monospace,Menlo,monospace;color:#5B3A21">{{ f.name }}</span>
+<span style="font:700 12px/1.3 'Nunito',sans-serif;color:#8A5B3A">{{ f.event }}</span>
+</span>
+</button>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<div style="font:700 14px/1.3 'Nunito',sans-serif;color:#8A5B3A">Clack by doll size</div>
+<sc-for list="{{ sizes }}" as="z" hint-placeholder-count="6"><button onClick="{{ z.play }}" style="height:44px;min-width:60px;padding:0 10px;border:0;border-radius:14px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 4px 0 #E2C9A3;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px" style-active="transform:translateY(2px)"><span style="font:700 16px/1 'Fredoka',sans-serif;color:#6E4526">{{ z.label }}</span><span style="font:700 10px/1 ui-monospace,Menlo,monospace;color:#9A6A44">{{ z.semis }}</span></button></sc-for>
+<div style="font:700 12px/1.35 'Nunito',sans-serif;color:#9A6A44">{{ clackNote }}</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:baseline;gap:10px"><div style="font:700 22px/1 'Fredoka',sans-serif">When music plays</div><div style="font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">values in tokens.json → sound</div></div>
+<div style="border-radius:24px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 5px 0 #E2C9A3;padding:6px 18px">
+<sc-for list="{{ rules }}" as="r" hint-placeholder-count="11">
+<div style="display:grid;grid-template-columns:minmax(110px,200px) minmax(0,1fr);gap:16px;padding:12px 0;border-bottom:{{ r.line }}">
+<div style="font:600 15px/1.4 'Fredoka',sans-serif;color:#5B3A21">{{ r.k }}</div>
+<div style="font:700 14px/1.45 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ r.v }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;musicVolume&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 0.5, &quot;min&quot;: 0, &quot;max&quot;: 1, &quot;step&quot;: 0.05, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Mix&quot;}, &quot;sfxVolume&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 0.8, &quot;min&quot;: 0, &quot;max&quot;: 1, &quot;step&quot;: 0.05, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Mix&quot;}}">
+const MUSIC = [
+  { id: 'music_home', title: 'Toy Shop Waltz', bpm: 108, beats: 3, meta: 'C major · 3/4 · 108 BPM · 40 bars · 66.7 s', where: 'Splash, Home, Daily, Museum, Shop and Settings. A balalaika tune over guitar oom-pah-pah and wooden spoons. The bayan takes over in the minor middle part, then marimba and music box bring the tune home.', sections: [['A', 8], ['A′', 8], ['B', 8], ['B′', 8], ['A″', 8]] },
+  { id: 'music_game', title: 'Quiet Shelves', bpm: 84, beats: 4, meta: 'F major · 4/4 · 84 BPM · 24 bars · 68.6 s', where: 'Every level, the daily puzzle and bonus levels. A soft marimba pattern, a music box tune in the middle and nylon guitar at the end. It sits under the clacks and chimes, and every combo note fits its chords.', sections: [['A', 8], ['B', 8], ['C', 8]] },
+];
+const JINGLES = [
+  { id: 'jingle_chapter', title: 'Chapter complete', meta: '4.9 s', when: 'Chapter complete (4.6), when the figurine lands in the spotlight.' },
+  { id: 'jingle_reward', title: 'Reward', meta: '3.8 s', when: 'A figurine joins the Museum, a skin or theme unlocks, the daily chest opens, a purchase goes through.' },
+  { id: 'jingle_oom', title: 'Out of moves', meta: '4.4 s', when: 'Out of moves sheet (3.5, 3.7). Soft and hopeful, because the sheet offers a way out.' },
+];
+const SFX = [
+  ['pick', 'Nest picked up'], ['clack_1', 'Lid snaps shut'], ['clack_2', 'Lid snaps shut'], ['clack_3', 'Lid snaps shut'], ['whoosh', 'Nest moves'], ['bonk', 'Invalid drop'],
+  ['complete_1', 'Family done · combo 1'], ['complete_2', 'Combo 2'], ['complete_3', 'Combo 3'], ['complete_4', 'Combo 4'], ['complete_5', 'Combo 5'], ['win', 'Level complete'],
+  ['coins', 'Coins count up'], ['unlock_glass', 'Glass case shatters'], ['ice_crack', 'Ice counter drops'], ['ice_shatter', 'Ice breaks'], ['button', 'Any button'],
+];
+const RULES = [
+  ['App start', 'music_home fades in over 1.2 s once the splash is ready.'],
+  ['Home ↔ level', 'Crossfade over 0.8 s. The outgoing loop pauses and resumes from the same spot next time.'],
+  ['Win (2.8)', 'Music ducks to 30 % in 0.2 s while the overlay is up and comes back over 0.8 s after Continue. The win SFX plays on top.'],
+  ['Chapter complete (4.6)', 'Music fades out in 0.4 s, jingle_chapter plays, and music_game fades back in over 2 s on the next level.'],
+  ['Out of moves (3.5)', 'Music ducks to 40 % and jingle_oom plays. Full volume returns when the sheet closes.'],
+  ['Reward moments', 'Music ducks to 40 % under jingle_reward and comes back when it ends.'],
+  ['Pause (3.9)', 'Music ducks to 50 %.'],
+  ['Ads', 'Music pauses for interstitial and rewarded ads, then fades back in over 0.6 s.'],
+  ['Background', 'Everything pauses. On return, music fades in over 0.6 s.'],
+  ['Settings', 'Music off fades out in 0.3 s; on fades in over 0.6 s. Jingles follow the Sound toggle and SFX volume.'],
+  ['Levels', 'Music bus 0.5, SFX bus 0.8; jingles ride the SFX bus. Loops sit at about −20.5 dBFS RMS and jingles at −17 dBFS RMS, with true peaks at or below −1 dBTP.'],
+];
+const STEMS = [['melody', 'Melody'], ['harmony', 'Chords'], ['bass', 'Bass'], ['drums', 'Percussion']];
+const SEC = { A: ['#F3E3C8', '#6E4526'], B: ['#F8D9C6', '#8A3F16'], C: ['#DDEBD5', '#35602C'] };
+const SEMIS = ['+5 st', '+3 st', '+1 st', '−1 st', '−3 st', '−5 st'];
+// design/prototypes/ → ../audio/, a top-level prototypes/ → ../design/audio/, the design project root → design/audio/
+const BASES = ['../audio/', '../design/audio/', 'design/audio/'];
+class FilePlayer {
+  constructor() { this.ctx = null; this.cache = {}; this.cur = null; this.base = null; this.dec = null; this.vol = [0.5, 0.8]; }
+  ac() {
+    if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; this.ctx = new C(); this.mg = this.ctx.createGain(); this.sg = this.ctx.createGain(); this.mg.connect(this.ctx.destination); this.sg.connect(this.ctx.destination); this.setVol(...this.vol); }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  }
+  async find() { for (const b of BASES) { try { const r = await fetch(b + 'button.wav', { cache: 'no-store' }); if (r.ok) { this.base = b; return b; } } catch (e) {} } return null; }
+  load(name) {
+    if (!this.cache[name]) {
+      if (!this.dec) this.dec = new OfflineAudioContext(2, 1, 44100);
+      const p = fetch(this.base + name).then(r => { if (!r.ok) throw new Error(name); return r.arrayBuffer(); }).then(ab => new Promise((res, rej) => this.dec.decodeAudioData(ab, res, rej)));
+      p.catch(() => { if (this.cache[name] === p) delete this.cache[name]; });
+      this.cache[name] = p;
+    }
+    return this.cache[name];
+  }
+  setVol(m, s) { this.vol = [m, s]; if (this.ctx) { this.mg.gain.value = m; this.sg.gain.value = s; } }
+  async play(id, file, bus, loop) {
+    const b = await this.load(file), c = this.ac();
+    this.stop(0.08);
+    const src = c.createBufferSource(), g = c.createGain(); src.buffer = b; src.loop = loop; src.connect(g); g.connect(bus === 'music' ? this.mg : this.sg);
+    const t0 = c.currentTime + 0.03; src.start(t0);
+    const run = { id, src, g, t0, dur: b.duration, loop }; this.cur = run;
+    src.onended = () => { if (this.cur === run) this.cur = null; };
+  }
+  stop(fade = 0.12) {
+    const r = this.cur; if (!r) return; this.cur = null;
+    const now = this.ctx.currentTime; r.g.gain.cancelScheduledValues(now); r.g.gain.setValueAtTime(r.g.gain.value, now); r.g.gain.linearRampToValueAtTime(0, now + fade);
+    try { r.src.stop(now + fade + 0.02); } catch (e) {}
+  }
+  elapsed() { const r = this.cur; if (!r) return null; const e = Math.max(0, this.ctx.currentTime - r.t0); return { id: r.id, t: r.loop ? e % r.dur : Math.min(e, r.dur), dur: r.dur }; }
+  async shot(file, rate = 1) { const b = await this.load(file), c = this.ac(), s = c.createBufferSource(); s.buffer = b; s.playbackRate.value = rate; s.connect(this.sg); s.start(); }
+}
+class Component extends DCLogic {
+  state = { src: 'files', base: null, probing: true, pos: null, muted: {}, busy: '', flash: '', loading: '' };
+  componentDidMount() {
+    this.fp = new FilePlayer();
+    this.vols();
+    this.fp.find().then(base => {
+      this.setState(s => ({ base, probing: false, src: base ? s.src : 'synth' }));
+      if (base) [...SFX.map(x => x[0] + '.wav'), ...JINGLES.map(j => j.id + '.ogg')].forEach(f => this.fp.load(f).catch(() => {}));
+    });
+    this.iv = setInterval(() => this.tick(), 90);
+  }
+  componentDidUpdate(prev) { if (prev.musicVolume !== this.props.musicVolume || prev.sfxVolume !== this.props.sfxVolume) this.vols(); }
+  componentWillUnmount() { clearInterval(this.iv); clearTimeout(this.ft); if (this.fp) { this.fp.stop(0.05); if (this.fp.ctx) this.fp.ctx.close(); } if (window.NestyMusic) window.NestyMusic.stop(0.1); }
+  vols(jingleNext) {
+    const mv = this.props.musicVolume ?? 0.5, sv = this.props.sfxVolume ?? 0.8, M = window.NestyMusic, X = window.NestySfx;
+    if (this.fp) this.fp.setVol(mv, sv);
+    if (X) X.setVolume(sv);
+    if (M) { const j = jingleNext !== undefined ? jingleNext : String(M.playing() || '').startsWith('jingle'); M.setVolume(j ? sv : mv); }
+  }
+  posOf(id, t, dur) {
+    const m = MUSIC.find(x => x.id === id);
+    if (!m) return { name: id, p: t / dur };
+    const bar = Math.floor(t / (60 / m.bpm * m.beats));
+    let section = '', acc = 0; m.sections.some(([n, k]) => { acc += k; if (bar < acc) { section = n; return true; } return false; });
+    return { name: id, bar: bar + 1, section, p: t / dur };
+  }
+  tick() {
+    let pos = null;
+    if (this.state.src === 'files') { const e = this.fp && this.fp.elapsed(); if (e) pos = this.posOf(e.id, e.t, e.dur); }
+    else if (window.NestyMusic) pos = window.NestyMusic.position();
+    if (pos || this.state.pos) this.setState({ pos });
+  }
+  stopAll() { if (this.fp) this.fp.stop(); if (window.NestyMusic) window.NestyMusic.stop(); this.setState({ pos: null, loading: '' }); }
+  pickSource(src) { if (src === this.state.src || (src === 'files' && !this.state.base)) return; this.stopAll(); this.setState({ src }); }
+  async toggle(id) {
+    const jingle = id.startsWith('jingle');
+    if (this.state.src === 'files') {
+      const e = this.fp.elapsed();
+      if (e && e.id === id) { this.fp.stop(); this.setState({ pos: null }); return; }
+      this.fp.ac(); this.vols();
+      this.setState({ loading: id });
+      try { await this.fp.play(id, id + '.ogg', jingle ? 'sfx' : 'music', !jingle); } catch (err) { console.warn('Nesty Soundtrack: could not load ' + id + '.ogg'); }
+      this.setState({ loading: '' });
+    } else {
+      const M = window.NestyMusic; if (!M) return;
+      if (M.playing() === id) { M.stop(); this.setState({ pos: null }); return; }
+      this.vols(jingle); M.play(id); this.setState({ pos: M.position() });
+    }
+  }
+  sfx(file, params) {
+    if (this.state.src === 'files') {
+      this.fp.ac(); this.vols();
+      const p = file === 'clack' ? this.fp.shot('clack_' + params.variant + '.wav', Math.pow(2, -2 * (params.size - 3.5) / 12)) : this.fp.shot(file + '.wav');
+      p.catch(() => {});
+    } else { const X = window.NestySfx; if (!X) return; this.vols(); X.play(file, params || {}); }
+    this.setState({ flash: file }); clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: '' }), 260);
+  }
+  stem(k) { const muted = { ...this.state.muted, [k]: !this.state.muted[k] }; if (window.NestyMusic) window.NestyMusic.setStem(k, !muted[k]); this.setState({ muted }); }
+  async download(id) {
+    if (this.state.src === 'files') { const a = document.createElement('a'); a.href = this.fp.base + id + '.ogg'; a.download = id + '.ogg'; a.click(); return; }
+    const M = window.NestyMusic; if (!M || this.state.busy) return;
+    this.setState({ busy: id });
+    try { const url = URL.createObjectURL(M.wav(await M.render(id))), a = document.createElement('a'); a.href = url; a.download = id + '.wav'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 5000); }
+    finally { this.setState({ busy: '' }); }
+  }
+  renderVals() {
+    const { pos, muted, busy, flash, loading, src, base, probing } = this.state, now = pos && pos.name, files = src === 'files';
+    const btn = (on, id) => ({ icon: loading === id ? 'hourglass_top' : on ? 'stop' : 'play_arrow', btnBg: on ? '#6E4526' : 'linear-gradient(180deg,#FFA95A,#F0782A)', btnShadow: on ? 'inset 0 2px 0 rgba(255,255,255,.18),0 5px 0 #3E2412' : 'inset 0 2px 0 rgba(255,255,255,.45),0 5px 0 #B9531A' });
+    const stems = STEMS.map(([k, label]) => ({ label, toggle: () => this.stem(k), bg: muted[k] ? 'transparent' : '#6E4526', fg: muted[k] ? '#6E4526' : '#FFF6E6' }));
+    const music = MUSIC.map(m => {
+      const on = now === m.id, bars = m.sections.reduce((a, s) => a + s[1], 0);
+      return {
+        ...m, ...btn(on, m.id), file: m.id + '.ogg', stems, showStems: !files, showNote: files, toggle: () => this.toggle(m.id), download: () => this.download(m.id),
+        dlLabel: files ? 'OGG file' : busy === m.id ? 'Rendering…' : 'Render WAV',
+        sections: m.sections.map(([name, k]) => { const c = SEC[name[0]], act = on && pos.section === name; return { name, flex: String(k), bg: act ? c[1] : c[0], fg: act ? '#FFF6E6' : c[1] }; }),
+        head: on ? (pos.p * 100).toFixed(2) + '%' : '0%', headOp: on ? '1' : '0',
+        status: on ? 'bar ' + pos.bar + ' / ' + bars + ' · ' + pos.section : loading === m.id ? 'loading…' : 'loops seamlessly',
+      };
+    });
+    const jingles = JINGLES.map(j => { const on = now === j.id; return { ...j, ...btn(on, j.id), file: j.id + '.ogg', toggle: () => this.toggle(j.id), progress: on ? (pos.p * 100).toFixed(1) + '%' : '0%' }; });
+    const sfx = SFX.map(([file, event]) => ({ name: file + '.wav', event, play: () => this.sfx(file), bg: flash === file ? '#FFE7C7' : '#FFF9EE' }));
+    const sizes = SEMIS.map((semis, i) => ({ label: 'Size ' + (i + 1), semis, play: () => this.sfx('clack', { size: i + 1, variant: 1 + (i % 3) }) }));
+    const rules = RULES.map(([k, v], i) => ({ k, v, line: i === RULES.length - 1 ? '0' : '1px solid #F0E0C6' }));
+    const seg = (id, label, icon) => { const act = src === id, off = id === 'files' && !base; return { label, icon, pick: () => this.pickSource(id), bg: act ? 'linear-gradient(180deg,#FFF9EE,#FCEBD0)' : 'transparent', sh: act ? 'inset 0 2px 0 #fff,0 3px 0 #D8B07A' : 'none', fg: act ? '#6E4526' : '#8A5B3A', op: off ? '0.45' : '1' }; };
+    return {
+      music, jingles, sfx, sizes, rules, stopAll: () => this.stopAll(),
+      sources: [seg('files', 'Shipped files', 'audio_file'), seg('synth', 'Live synth', 'piano')],
+      sourceNote: files ? 'Plays ' + (base || 'design/audio/') + ' exactly as it ships: the same OGG and WAV files the game loads, at music bus ' + (this.props.musicVolume ?? 0.5) + ' and SFX bus ' + (this.props.sfxVolume ?? 0.8) + '.' : probing ? 'Looking for design/audio…' : 'Synthesizes the same score live from nesty-music.js and nesty-sfx.js, so you can mute each part of a loop. Only the files are mastered, so levels differ a little.',
+      missing: !probing && !base,
+      clackNote: files ? 'clack_1…3 played at rate 2^(−2·(size − 3.5)/12), as in the game' : 'synthesized at each size',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -5,6 +5,11 @@ Nesty is a cozy sorting puzzle. The player nests wooden matryoshka dolls, each i
 
 The source of truth for rules is `docs/GAME_SPEC.md` in the repo. This bundle is the source of truth for **look, layout, motion, sound and copy**. The section numbers used here (§x.y) refer to GAME_SPEC.md.
 
+## Latest changes (2026-09-26)
+- Lottie v3: Claude Code's v2 is the baseline, plus wider ribbons (336 band, 410 canvas), `fx_ice` `crack_hit_0…3`, the glass landing on frame 53, no animated image transforms, and every file inside its canvas. Details in `design/lottie/LOTTIE.md` → Changes.
+- Jingles re-rendered to −17 dBFS RMS with true peaks at or below −1.3 dBTP. Levels in `design/audio/AUDIO.md`.
+- `Nesty Soundtrack.dc.html` plays the shipped files and defaults the music volume to 0.5.
+
 ## About the design files
 The `.dc.html` files are **design references built in HTML**. They are prototypes that show the intended look and behavior. They are not production code. Recreate them in the repo's stack: **Flutter + Flame**, `auto_route`, Cubits, `nesty_render` for dolls and board painting (see the repo's CLAUDE.md). Don't port the HTML or CSS directly. Use the numbers, colors, copy and timings documented here and in `design/tokens.json`.
 
@@ -20,19 +25,29 @@ design/                         → copy to the repo's design/ folder (owner-man
   symbols/{heart…crown}.svg     11 color symbols, 128×128, single path, fill="currentColor"
   skins/{id}/{id}.svg           7 layered skins (classic, ocean, space, sweets, forest, forest-bear, winter), 512×768, 8 group ids
   skins/{id}/skin.json          splitY 400, lidLiftPx 120, symbolAnchor [256,590], symbolSize 110
-  skins/classic/renders/*.svg   baked references per DollColor id: closed, _open (lid 1.0), _large_symbol, silhouette
-  board/*.svg                   stand, tower base, shelf plank, glass case ×3, ice ×5, extra slot, hint arrow, glow ring, silhouette
+  skins/classic/renders/*.svg   baked references per DollColor id: closed, _open (lid 1.0), _large_symbol, silhouette (reference only)
+  board/*.svg                   stand, tower base, shelf plank, glass case ×3, ice ×5, extra slot, hint arrow, glow ring, doll-silhouette (wood blank for buried nests)
   themes/ch01…ch06_*.svg        chapter backgrounds, 1290×2796, safe area 1080×1920 centered
   museum/{01..10}_{name}.svg    chapter figurines + _locked silhouettes (PNG copies in museum/png/)
   store/                        app icon 1024 / 180 / 48 + SVG, open-doll art
-  audio/*.wav                   17 placeholder SFX with the §11.3 file names
+  audio/*.wav                   17 SFX with the §11.3 file names (v2 wooden-toy set; clacks baked at size 3.5)
+  audio/*.ogg                   music_home, music_game (seamless loops) + jingle_chapter, jingle_reward, jingle_oom
+  audio/AUDIO.md                when each track plays, fades, ducking, volumes, flutter_soloud notes
+  lottie/*.json                 29 Lottie files, one per animation in the design (doll motion, board effects, HUD, UI)
+  lottie/images/*.png           placeholder images for the Lottie image slots (the game supplies its own rasters)
+  lottie/LOTTIE.md              how to play them: anchors, segments, image slots, travel remap, events, sound and haptics
   generator/nesty-doll.js       reference implementation of the doll tint/symbol/lid algorithm
-  generator/nesty-sfx.js        reference synth for the placeholder sounds
-prototypes/                     the HTML design references (open in a browser; keep the folder structure)
+  generator/nesty-sfx.js        reference synth for the SFX
+  generator/nesty-music.js      reference synth and score for the music and jingles
+prototypes/                     the HTML design references (open in a browser over http; keep the folder structure)
+  support.js                    the runtime every .dc.html page loads; keep it in the same folder as the pages
+  nesty-doll.js, nesty-music.js, nesty-sfx.js   copies of the generators that the pages load
   Nesty App Flow.dc.html        all 62 frames, flow arrows, spec coverage
   NestyBoard / NestyOverlay / NestyMenus / NestyShop .dc.html   the screen components the flow page imports
   Doll Studio.dc.html           parametric doll editor (any color, any symbol SVG, any skin)
   Nesty Motion & Sound.dc.html  every §11 animation looping live with sound, timing tables
+  Lottie FX.dc.html             all 29 Lottie files playing, with anchors, segment chips and a doll-color tint picker
+  Nesty Soundtrack.dc.html      plays the shipped audio files (or the live synth, which can mute each part of a loop): loops, jingles, every SFX, and the music rules
   Nesty Design System.dc.html   component sheet
 ```
 
@@ -76,7 +91,7 @@ prototypes/                     the HTML design references (open in a browser; k
 - Doll height = slotMaxDollHeight × fraction[size]: fractions 0.42, 0.54, 0.66, 0.78, 0.89, 1.00; slotMaxDollHeight is 150 for 3 shelves and 140 for 2. When maxSize = 3, divide by 0.66 so size 3 = 1.00. Doll width = height × 2/3; the base is at 742/768 of the art height.
 - **Pips:** maxSize dots, 6px, pitch 7.8, centered on the stand face (y = standTop + 21; tower + 28.9). The left pip is the biggest size. Filled pips use the doll base color with a 1px cream ring; empty pips are `#2C170A` inset.
 - **Selected:** lift 14, glow ring (`board/glow-ring.svg` 116×52 at surface −28), pulse 1.6 s.
-- **Tower:** buried nests are `doll-silhouette.svg` drawn behind the top, height = topHeight + 18 × depth, plus a walnut "+N" tag at the stand's right (cx + 21, standTop + 16).
+- **Tower:** buried nests are the unpainted wood blank `board/doll-silhouette.svg` (the same for every skin), drawn behind the top, height = topHeight + 18 × depth, plus a walnut "+N" tag at the stand's right (cx + 21, standTop + 16).
 - **Glass case:** 86×143 at top = surface − 134; the doll inside sits at caseTop + 123. The unlock color's symbol (12px, ink) sits on the padlock at caseTop + 116. Frames 0 intact / 1 cracked / 2 shattered.
 - **Ice:** 96×160 overlay at top = plankTop + 9 − 152.5, frames ice-0…3 then ice-shatter. Blue 28px counter badge at the top-right.
 - **Extra slot:** `extra-slot.svg` appended to the bottom shelf, pulsing, no pips.
@@ -87,7 +102,7 @@ Every skin is one layered SVG (512×768) with the group ids `shadow, bottom_mask
 2. **Paint:** detail, face and shine layers draw untinted on top.
 3. **Symbol:** any single-color SVG is scaled to fit a 110px box centered on (256, 590) and filled with `ink` at 94% opacity. **Large / assist mode:** a cream `#FFF8EC` disc, r 92, with an 8px ink ring, and the symbol at 117px.
 4. **Lid:** `top_mask, face, top_detail, shine_top` translate up by `lidLiftPx × t` (120 at t = 1). While open, draw the interior rim before the lid: ellipse (256, 398, 148×21) in base × `#D6D6D6`, then (256, 401, 134×15) `#2A1608` at 88%. The game draws lid and body as two layers so they animate independently.
-5. **Silhouette** (buried tower nests): tint the masks with wood `#E6C08C`, drop detail and face, and set shine to 45%.
+5. **Buried tower nests** don't use the skin. Draw the wood-grain blank `board/doll-silhouette.svg` (owner decision, 2026-09-26): a skin-tinted silhouette keeps the face disc and the details, so it reads as a painted doll. `skins/classic/renders/silhouette.svg` and the generator's silhouette mode are references only.
 6. **Shades for new colors:** OKLCH, ink = (L − 0.17, C × 0.85), light = (L + 0.17, C × 0.6), with chroma reduced until the color fits sRGB.
 
 `design/generator/nesty-doll.js` is a working reference of exactly this algorithm. `Doll Studio.dc.html` shows it with a color picker, 11 symbols, custom SVG upload and all 7 skins. **Note:** the art pipeline supports unlimited colors, but `DollColor` in `nesty_core` is a fixed enum that the level codec uses. Making the playable color set open-ended is a spec change for the owner to approve. New skins, symbols and cosmetic variants need no code change.
@@ -104,7 +119,7 @@ Every skin is one layered SVG (512×768) with the group ids `shadow, bottom_mask
 - **2.1 Home:** background = current chapter theme. Top row: coin pill (+), wordmark 30px, gear. Plank at 372 with 5 idle dolls (bob 2.4–3.6 s, ±2°). Play button (left/right 36, top 446, 96 tall, radius 32, edge 8) with a cream play disc, "PLAY" 14/700 +0.14em and "Level 56" 36/700; the HARD badge is rotated 8° at the top-right. 3 tiles at y 584: Daily Puzzle (flame badge with the streak), Museum (next figurine silhouette plus bar "15/20"), Remove Ads (hidden once purchased; the other two widen). Bottom nav.
 - **2.2 Gameplay:** HUD, board, booster bar as specified above.
 - **2.3 Pick up / 2.4 Nest / 2.5 Complete / 2.6 Invalid / 2.7 Glass & ice break:** see Motion. Play the events in `MoveEvent` order (§4): Picked, Placed, NestedInto, Revealed, Completed, Unlocked, IceCracked, IceShattered, Won.
-- **2.8 Win:** dim, confetti, "Level Complete!" ribbon (top 118, orange with folded tails), plank at 350 with the families hopping (1.3 s, 150 ms stagger), coin pill "+25" at 404 (Fredoka 30), progress card at 484 (chapter · count · bar · "Next up: …" · 62px locked figurine), then "×3 coins" (ad) and "Continue" at 630.
+- **2.8 Win:** dim, confetti, "Level Complete!" ribbon (top 118, orange with folded tails; in the game it is `ui_win_ribbon`, band 336 dp), plank at 350 with the families hopping (1.3 s, 150 ms stagger), coin pill "+25" at 404 (Fredoka 30), progress card at 484 (chapter · count · bar · "Next up: …" · 62px locked figurine), then "×3 coins" (ad) and "Continue" at 630.
 - **2.9 Reward claimed:** the pill reads "+75" with a "×3" chip; the ad button becomes "Reward added" (`#E9DDF9`, check icon).
 - **2.10 Interstitial:** only on Win → Continue, following the §9.1 pacing. Ad placeholder with a close button after 5 s.
 - **2.11 Next level.**
@@ -140,10 +155,12 @@ Suggested routes: `SplashRoute → HomeRoute`; `GameRoute(levelId | daily | bonu
 Win → Continue → [interstitial if the pacing allows] → [Remove Ads offer after the 3rd interstitial] → [ChapterComplete if the chapter ended] → next GameRoute. The state fields shown come from the save model in §13.3: coins, currentLevel, inventory, adsRemoved, ownedSkins/selectedSkin, ownedThemes/selectedTheme (null = match chapter), museum, daily {streak, freezes, done}, settings {sound, music, haptics, symbols}.
 
 ## Motion (full table in tokens.json → motion; see it live in `Nesty Motion & Sound.dc.html`)
-Pick 120 ms (lift 14, scale 1.05, wobble ±3° loop) · Move 260 ms easeOutBack `cubic-bezier(.34,1.56,.64,1)`, 42px arc · Nest: lid lift 80 (30% of height), drop-in 120 (scale 0.92), lid snap 70 `cubic-bezier(.55,0,1,.45)`, squash 1.08/0.92 settle 120 · Swallow: the moving doll's lid opens mid-air, then its body drops over the target · Complete: shine 300, hops 22/14 over 400, fly 550 to the family counter (end scale 0.2, 24°), counter bump 1.22, dust puff · Invalid: 3 × 80 ms ±6 shake, nest drifts back · Tower reveal 200 ms circular paint wipe plus splash · Glass: padlock pop 200, cracked at 200, shattered at 400, shards 500 · Ice: 3 crack stages then shatter 300 · Win: ribbon 300, confetti 1700, dance loop 1400 with 120 stagger · Combo: sets within 4 s step up the chime (max 5) · Reduced motion: durations × 0.5, no shake, no confetti, no wobble.
+**Every animation ships as Lottie** in `design/lottie/` (owner decision). Follow `design/lottie/LOTTIE.md` for anchors, segments, image slots, the travel remap and the event map. Widget transitions (button press, sheets, modals, tabs, banners) stay Flutter animations using `tokens.motion.ui`.
+
+Pick 120 ms (lift 14, scale 1.05, wobble ±3° loop) · Move 260 ms easeOutBack `cubic-bezier(.34,1.56,.64,1)`, 42px arc · Nest: lid lift 80 (30% of height), drop-in 120 (scale 0.92), lid snap 70 `cubic-bezier(.55,0,1,.45)`, squash 1.08/0.92 settle 120 · Swallow: the moving doll's lid opens mid-air, then its body drops over the target · Complete: shine 300, hops 22/14 over 400, fly 550 to the family counter (end scale 0.2, 24°), counter bump 1.22, dust puff · Invalid: 3 × 80 ms ±6 shake, nest drifts back · Tower reveal 200 ms circular paint wipe from the doll's centre (art 256, 476) plus splash · Glass: padlock pop 200, cracked at 200, shattered at 400, shards 500 · Ice: 3 crack stages then shatter 300 · Win: ribbon 300, confetti 1700, dance loop 1400 with 120 stagger · Combo: sets within 4 s step up the chime (max 5) · Reduced motion: durations × 0.5, no shake, no confetti, no wobble.
 
 ## Sound & haptics
-Files in `design/audio` (placeholder WAV, 44.1 kHz mono): pick, clack_1…3, whoosh, bonk, complete_1…5, win, coins, unlock_glass, ice_crack, ice_shatter, button. Clack pitch: `playbackRate = 2^(−2·(size − 3.5)/12)`, which is +5 semitones for size 1 and −5 for size 6; pick clack_1–3 at random. Combo notes C6 D6 E6 G6 A6. Music (`music_home`, `music_game`, 60–90 s seamless) is still to be sourced, with separate volumes for music and SFX. Haptics: pick light, nest medium, complete/win success (medium, then light after 80 ms), invalid soft error (two light ticks 60 ms apart), buttons selection. All haptics follow the Haptics setting.
+Full rules in `design/audio/AUDIO.md`; hear the shipped files in `Nesty Soundtrack.dc.html`. **SFX** (WAV, 44.1 kHz mono): pick, clack_1…3, whoosh, bonk, complete_1…5, win, coins, unlock_glass, ice_crack, ice_shatter, button. Clack pitch: `playbackRate = 2^(−2·(size − 3.5)/12)`, which is +5 semitones for size 1 and −5 for size 6; the clack files are baked at size 3.5 (0 semitones); pick clack_1–3 at random. Combo notes C6 D6 E6 G6 A6. **Music** (OGG, seamless, no loop points): `music_home` (66.7 s, Splash, Home and the meta screens) and `music_game` (68.6 s, every level), in C and F major so the combo notes always fit. **Jingles**: `jingle_chapter` (4.6), `jingle_reward` (figurine, unlock, daily chest, purchase) and `jingle_oom` (3.5). Music bus 0.5, SFX bus 0.8; jingles use the SFX bus and duck the music (tokens.json → `sound.musicDuck`, `sound.musicFadeMs`). Haptics: pick light, nest medium, complete/win success (medium, then light after 80 ms), invalid soft error (two light ticks 60 ms apart), buttons selection. All haptics follow the Haptics setting.
 
 ## Decisions to confirm with the owner
 1. The flow uses **Level 56 (Hard)** as the main example instead of the brief's "Level 24", so the tier pattern (§6.6) and the mechanic schedule (glass at 31, ice at 51) stay true.
@@ -155,4 +172,4 @@ Files in `design/audio` (placeholder WAV, 44.1 kHz mono): pick, clack_1…3, who
 7. Frames 1.2, 8.6 and 8.7 show system UI for placement only.
 
 ## Files
-Design references: `prototypes/*.dc.html` (open `Nesty App Flow.dc.html`). Assets and tokens: `design/`. Reference algorithms: `design/generator/nesty-doll.js`, `design/generator/nesty-sfx.js`.
+Design references: `prototypes/*.dc.html` (open `Nesty App Flow.dc.html`). Assets and tokens: `design/`. Reference algorithms: `design/generator/nesty-doll.js`, `design/generator/nesty-sfx.js`, `design/generator/nesty-music.js`. Audio: `design/audio/` with `design/audio/AUDIO.md`. Animations: `design/lottie/` with `design/lottie/LOTTIE.md`.

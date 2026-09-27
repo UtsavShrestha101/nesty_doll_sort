@@ -1,6 +1,7 @@
 // DollPartRasters (docs/plans/m2-lottie-design.md §4, §17 "Render"): the
 // whole-artboard lid/body/silhouette rasters the Lottie image slots and the
 // rest sprites share, split hard at art y 400 (PROGRESS D45).
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -635,6 +636,152 @@ void main() {
       expect(diff.withinFraction, 1, reason: '$diff');
       final alpha = await _rowAlpha(set.silhouette);
       expect(alpha[(760 * _r).round()], greaterThan(0));
+    });
+  });
+
+  group('the board silhouette (owner decision 3e, 2026-09-26)', () {
+    late BoardSpriteLibrary board;
+    late SkinRasterizer classic;
+    late DollPartRasters parts;
+
+    setUpAll(() async {
+      board = await BoardSpriteLibrary.load(FileAssetBundle());
+      classic = SkinRasterizer(await loadClassic());
+      parts = DollPartRasters();
+    });
+
+    tearDownAll(() {
+      parts.dispose();
+      classic.dispose();
+      board.dispose();
+    });
+
+    /// `board/doll-silhouette.svg` as the synced asset draws it at [_r].
+    Future<Uint8List> blank() async {
+      final image = await rasterizeSvg(
+        File('$gameAssetsDir/board/doll-silhouette.svg').readAsStringSync(),
+        scale: _r,
+      );
+      final bytes = await rgbaOf(image);
+      image.dispose();
+      return bytes;
+    }
+
+    test('is the board sprite the tokens name', () {
+      expect(BoardTokens.towerSilhouetteSprite, 'doll-silhouette');
+      expect(DollPartRasters.silhouetteSprite, BoardSprite.dollSilhouette);
+      expect(
+        board.artSize(BoardSprite.dollSilhouette),
+        const ui.Size(512, 768),
+      );
+    });
+
+    test('every skin and the placeholder show the same wood blank', () async {
+      final skin = await parts.prepare(
+        skin: classic,
+        colors: const [DollColor.red],
+        symbols: DollSymbols.subtle,
+        artHeightPx: _px,
+        board: board,
+      );
+      addTearDown(skin.dispose);
+      final placeholder = await parts.preparePlaceholder(
+        colors: const [DollColor.blue],
+        symbols: DollSymbols.subtle,
+        artHeightPx: _px,
+        board: board,
+      );
+      addTearDown(placeholder.dispose);
+      final want = await blank();
+      for (final set in [skin, placeholder]) {
+        expect(set.silhouette.width, _width);
+        expect(set.silhouette.height, _px);
+        final diff = ImageDiff(want, await rgbaOf(set.silhouette));
+        expect(diff.withinFraction, 1, reason: '${set.skinKey} $diff');
+        expect(diff.meanDiff, lessThan(0.05), reason: '${set.skinKey} $diff');
+      }
+      // One raster in the cache, shared: 1 + 2 skin parts + 2 placeholder.
+      expect(parts.length, 5);
+    });
+
+    test('its own ground shadow stands under the base', () async {
+      final set = await parts.prepare(
+        skin: classic,
+        colors: const [DollColor.red],
+        symbols: DollSymbols.none,
+        artHeightPx: _px,
+        board: board,
+      );
+      addTearDown(set.dispose);
+      final alpha = await _rowAlpha(set.silhouette);
+      // The blank's shadow ellipse: cy 744, ry 24.
+      expect(alpha[(756 * _r).round()], greaterThan(0));
+      expect(alpha[(4 * _r).round()], 0, reason: 'nothing above the head');
+    });
+
+    test('without the board (rule 3) a set keeps the skin\'s own', () async {
+      final own = await parts.prepare(
+        skin: classic,
+        colors: const [DollColor.red],
+        symbols: DollSymbols.none,
+        artHeightPx: _px,
+      );
+      addTearDown(own.dispose);
+      final missing = await BoardSpriteLibrary.fromSvgs(const {});
+      addTearDown(missing.dispose);
+      final fallback = await parts.prepare(
+        skin: classic,
+        colors: const [DollColor.red],
+        symbols: DollSymbols.none,
+        artHeightPx: _px,
+        board: missing,
+      );
+      addTearDown(fallback.dispose);
+      final want = await blank();
+      for (final set in [own, fallback]) {
+        final got = await rgbaOf(set.silhouette);
+        expect(ImageDiff(want, got).meanDiff, greaterThan(2));
+      }
+      expect(
+        ImageDiff(
+          await rgbaOf(own.silhouette),
+          await rgbaOf(fallback.silhouette),
+          tolerance: 0,
+        ).withinFraction,
+        1,
+      );
+    });
+
+    test('rasterizeArtboard fits the whole art, centred', () async {
+      final image = await board.rasterizeArtboard(
+        BoardSprite.dollSilhouette,
+        widthPx: 200,
+        heightPx: 300,
+      );
+      addTearDown(image.dispose);
+      expect((image.width, image.height), (200, 300));
+      final wide = await board.rasterizeArtboard(
+        BoardSprite.dollSilhouette,
+        widthPx: 300,
+        heightPx: 300,
+      );
+      addTearDown(wide.dispose);
+      // A wider box letterboxes the 2:3 art: 50 px clear on each side.
+      final rgba = await rgbaOf(wide);
+      int column(int x) => [
+        for (var y = 0; y < 300; y++) rgba[(y * 300 + x) * 4 + 3],
+      ].fold(0, (a, b) => a + b);
+      expect(column(40), 0);
+      expect(column(259), 0);
+      expect(column(150), greaterThan(0));
+      expect(
+        () => board.rasterizeArtboard(
+          BoardSprite.dollSilhouette,
+          widthPx: 0,
+          heightPx: 10,
+        ),
+        throwsArgumentError,
+      );
     });
   });
 

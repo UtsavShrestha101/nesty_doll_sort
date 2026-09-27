@@ -167,8 +167,8 @@ void main() {
     expect(h.board.slots['r1c2']!.nest.isDrawn, isTrue);
   });
 
-  test('tweens: a shake moves the whole slot, a reveal hides its top, '
-      'EndTween undoes both', () {
+  test('tweens: a shake moves the whole slot, a reveal shifts its buried '
+      'nests (the clip hides its top), EndTween undoes both', () {
     final shake = ShakeTween(
       slotId: 'r1c3',
       amplitudeScale: g.scale,
@@ -184,15 +184,13 @@ void main() {
 
     final reveal = RevealDropTween(
       slot: g.slot('r1c0'),
-      revealedSize: 1,
-      revealedColor: DollColor.green,
       buried: 1,
-      durationMs: 120,
+      durationMs: 116.7,
     );
     run(StartTween(0, reveal));
     final tower = h.board.scene.slot('r1c0')!;
     expect(tower.reveal, same(reveal));
-    expect(tower.spriteHidden, isTrue);
+    expect(tower.spriteHidden, isFalse, reason: 'doll_reveal hides it');
     run(EndTween(0, reveal));
     expect(tower.reveal, isNull);
     expect(tower.spriteHidden, isFalse);

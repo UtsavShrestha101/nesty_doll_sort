@@ -8,6 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesty_core/nesty_core.dart' show GameState;
 import 'package:nesty_game/core/base/base_async_state.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
+import 'package:nesty_game/core/services/audio/jingle_player.dart';
+import 'package:nesty_game/core/services/music/music_duck.dart';
+import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/widgets/retry_view.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
@@ -279,6 +282,11 @@ class _GameplayViewState extends State<GameplayView> {
   void _openWin(GameplayState state) {
     final chapter =
         _chapter ?? ChapterProgress.of(state.entry, widget.services.levels);
+    // TODO(M3): a win that completes its chapter (chapter.isComplete) goes
+    // on to Chapter complete (4.6), which calls JingleCues.chapterComplete:
+    // the music fades out, then jingle_chapter only (audio plan Q40). Its
+    // Continue calls widget.services.music.playGame() for the next level,
+    // which fades music_game back in over chapterIn (2000 ms).
     _board.overlayOpen = true;
     setState(() {
       _setsShown = state.totalSets;
@@ -452,15 +460,12 @@ class _GameplayViewState extends State<GameplayView> {
   List<Widget> _chrome(BuildContext context, GameplayState state) {
     final services = widget.services;
     final padding = MediaQuery.paddingOf(context);
-    final width = MediaQuery.sizeOf(context).width;
+    final screen = MediaQuery.sizeOf(context);
     final overlay = _overlay;
     final skin = _skins.current;
     final chapter = _chapter;
     final symbols = services.database.symbolsMode.dollSymbols;
     final bloc = _bloc;
-    final ribbonWidth = math.min(ChapterRibbon.canvas.width, width - 16);
-    final ribbonHeight =
-        ribbonWidth * ChapterRibbon.canvas.height / ChapterRibbon.canvas.width;
     // Won: input is locked for the winning batch (~2.4 s) and the win
     // overlay, but the chrome keeps its look (frame 2.5 draws it at full
     // strength while the set flies) and only swallows touches, instead of
@@ -527,11 +532,13 @@ class _GameplayViewState extends State<GameplayView> {
         ),
       ),
       if (_showRibbon && chapter != null)
-        Positioned(
-          left: (width - ribbonWidth) / 2,
-          top: padding.top + ChapterRibbon.centerTop - ribbonHeight / 2,
-          width: ribbonWidth,
-          height: ribbonHeight,
+        // The 410-wide canvas 1:1 on the design's 390 dp screen and scaled
+        // down on narrower ones, never up (LOTTIE.md v3 "Ribbons"): at rest
+        // the ribbon is 380 wide, and during its 106 % pop the tails may
+        // pass a 390 dp edge by up to 6 dp for about 100 ms (owner-accepted).
+        Positioned.fromRect(
+          key: const ValueKey('chapterRibbon'),
+          rect: ChapterRibbon.rectIn(screen, padding),
           child: ChapterRibbon(
             key: ValueKey(state.levelNumber),
             number: chapter.number,
@@ -540,69 +547,96 @@ class _GameplayViewState extends State<GameplayView> {
             onDone: () => setState(() => _showRibbon = false),
           ),
         ),
+      // Each overlay ducks the music while it is up (AUDIO.md "Music
+      // rules"); the sheet also plays jingle_oom once the duck is in. The
+      // keys keep each overlay's state (and its jingle) where it is when the
+      // ribbon above it leaves the stack.
       if (overlay == GameplayOverlay.outOfMoves)
         Positioned.fill(
-          child: OutOfMovesSheet(
-            freeUndosLeft: state.freeUndosLeft,
-            showFreeUndos: !state.unlimitedBoosters,
-            onUndo: state.canUndo
-                ? () {
-                    _closeOverlay();
-                    bloc.add(const UndoPressed());
-                  }
-                : null,
-            onExtraSlot: state.canAddSlot
-                ? () {
-                    _closeOverlay();
-                    bloc.add(const ExtraSlotPressed());
-                  }
-                : null,
-            onRestart: () {
-              _closeOverlay();
-              bloc.add(const RestartPressed());
-            },
-            onDismiss: _closeOverlay,
+          key: const ValueKey(GameplayOverlay.outOfMoves),
+          child: MusicDuck(
+            music: services.music,
+            reason: DuckReason.outOfMoves,
+            jingles: services.jingles,
+            jingle: Jingle.outOfMoves,
+            child: OutOfMovesSheet(
+              freeUndosLeft: state.freeUndosLeft,
+              showFreeUndos: !state.unlimitedBoosters,
+              onUndo: state.canUndo
+                  ? () {
+                      _closeOverlay();
+                      bloc.add(const UndoPressed());
+                    }
+                  : null,
+              onExtraSlot: state.canAddSlot
+                  ? () {
+                      _closeOverlay();
+                      bloc.add(const ExtraSlotPressed());
+                    }
+                  : null,
+              onRestart: () {
+                _closeOverlay();
+                bloc.add(const RestartPressed());
+              },
+              onDismiss: _closeOverlay,
+            ),
           ),
         ),
       if (overlay == GameplayOverlay.win && _win != null)
         Positioned.fill(
-          child: WinOverlay(
-            key: ValueKey(state.levelNumber),
-            summary: _win!,
-            images: skin?.images,
-            renderer: skin?.restRenderer,
-            symbols: symbols,
-            feedback: services.feedback,
-            library: services.fx,
-            onContinue: _continuing ? () {} : _continue,
+          key: const ValueKey(GameplayOverlay.win),
+          // Down to 0.3 while it is up; back over 800 ms once Continue has
+          // opened the next level.
+          child: MusicDuck(
+            music: services.music,
+            reason: DuckReason.win,
+            child: WinOverlay(
+              key: ValueKey(state.levelNumber),
+              summary: _win!,
+              images: skin?.images,
+              renderer: skin?.restRenderer,
+              symbols: symbols,
+              feedback: services.feedback,
+              library: services.fx,
+              onContinue: _continuing ? () {} : _continue,
+            ),
           ),
         ),
       if (overlay == GameplayOverlay.pause && _settings != null)
         Positioned.fill(
-          child: PauseDialog(
-            level: state.levelNumber,
-            tier: state.entry.tier,
-            settings: _settings!,
-            library: services.fx,
-            onSoundChanged: (on) => _setSetting(
-              _settings!.copyWith(sound: on),
-              () => services.database.setSoundEnabled(on),
+          key: const ValueKey(GameplayOverlay.pause),
+          child: MusicDuck(
+            music: services.music,
+            reason: DuckReason.pause,
+            // The toggles only write the settings: the Music one reaches
+            // the music service through DatabaseService.musicEnabledChanges,
+            // and the Sound one gates every SFX and jingle as it plays.
+            child: PauseDialog(
+              level: state.levelNumber,
+              tier: state.entry.tier,
+              settings: _settings!,
+              library: services.fx,
+              onSoundChanged: (on) => _setSetting(
+                _settings!.copyWith(sound: on),
+                () => services.database.setSoundEnabled(on),
+              ),
+              onMusicChanged: (on) => _setSetting(
+                _settings!.copyWith(music: on),
+                () => services.database.setMusicEnabled(on),
+              ),
+              onHapticsChanged: (on) => _setSetting(
+                _settings!.copyWith(haptics: on),
+                () => services.database.setHapticsEnabled(on),
+              ),
+              onResume: _resume,
+              onRestart: _restartFromPause,
+              onHome: widget.onHome,
             ),
-            onMusicChanged: (on) => _setSetting(
-              _settings!.copyWith(music: on),
-              () => services.database.setMusicEnabled(on),
-            ),
-            onHapticsChanged: (on) => _setSetting(
-              _settings!.copyWith(haptics: on),
-              () => services.database.setHapticsEnabled(on),
-            ),
-            onResume: _resume,
-            onRestart: _restartFromPause,
-            onHome: widget.onHome,
           ),
         ),
       if (overlay == GameplayOverlay.allLevelsDone)
         Positioned.fill(
+          key: const ValueKey(GameplayOverlay.allLevelsDone),
           child: AllLevelsDone(
             families: WinSummary.familiesOf(state.entry.level, state.board),
             images: skin?.images,

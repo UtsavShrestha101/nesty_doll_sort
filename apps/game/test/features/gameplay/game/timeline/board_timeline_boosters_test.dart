@@ -240,8 +240,9 @@ void main() {
       h.select('r0c0');
       final batch = h.move('r0c0', 'r0c3'); // blue1 off the tower: stuck
       final oom = only<BoardOutOfMoves>(batch);
-      // The source reveal is the last thing playing.
-      expect(oom.atMs, at(520));
+      // The source reveal is the last thing playing: doll_reveal, 31
+      // frames from the lift-off, its drop included (LOTTIE.md v3).
+      expect(oom.atMs, at(framesMs(31)));
       expect(batch.commands.last, same(oom));
       expect(batch.locksInput, isFalse);
       expect(h.timeline.inputLocked, isFalse);

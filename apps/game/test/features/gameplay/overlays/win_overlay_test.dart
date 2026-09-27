@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/core/ui/lottie/lottie_text_overlay.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
@@ -116,6 +117,39 @@ void main() {
     expect(find.text('Chapter complete! Your prize is next.'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
+
+  for (final size in screenSizes) {
+    testWidgets('the ribbon: its 410 × 110 canvas at min(1, W / 390), '
+        'centred, the anchor (205, 55) on the screen\'s centre line, '
+        '${size.width.toInt()} wide (LOTTIE.md v3)', (tester) async {
+      await pumpScreen(tester, _overlay(), size: size);
+      await tester.pump(const Duration(milliseconds: 300));
+      final row = tester.getRect(find.byKey(WinOverlay.ribbonKey));
+      // The card scales down as a whole on a short screen (FittedBox).
+      final fit = row.height / 110;
+      expect(fit, lessThanOrEqualTo(1));
+      final canvas = tester.getRect(
+        find.descendant(
+          of: find.byKey(WinOverlay.ribbonKey),
+          matching: find.byType(LottieTextOverlay),
+        ),
+      );
+      final scale = size.width >= 390 ? 1.0 : size.width / 390;
+      expect(canvas.width, closeTo(410 * scale * fit, 0.01));
+      expect(canvas.height, closeTo(110 * scale * fit, 0.01));
+      expect(canvas.center.dx, closeTo(size.width / 2, 0.01));
+      expect(row.center.dx, closeTo(size.width / 2, 0.01));
+      expect(canvas.center.dy, closeTo(row.center.dy, 0.01));
+      // At full size on 390 the canvas overhangs both edges by 10: the
+      // tails stay 5 inside at rest (380 wide).
+      if (size.width == 390 && fit == 1) {
+        expect(canvas.left, closeTo(-10, 0.01));
+        expect(canvas.right, closeTo(400, 0.01));
+      }
+      expectNoLayoutErrors(tester);
+      await tester.pump(const Duration(seconds: 2));
+    });
+  }
 
   for (final size in screenSizes) {
     for (final scale in textScales) {

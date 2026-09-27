@@ -3,6 +3,7 @@ import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/flavor/flavor_config.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/router/music_route_observer.dart';
 import 'package:nesty_game/core/ui/theme/app_theme.dart';
 
 /// Root widget: app-level cubits + `MaterialApp.router`.
@@ -17,8 +18,11 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   // Built once so a locale rebuild of MaterialApp keeps the same router
-  // delegate and navigation stack.
-  late final RouterConfig<UrlState> _routerConfig = widget.router.config();
+  // delegate and navigation stack. The music follows the page on top
+  // (AUDIO.md "Music loops").
+  late final RouterConfig<UrlState> _routerConfig = widget.router.config(
+    navigatorObservers: () => [get<MusicRouteObserver>()],
+  );
 
   @override
   Widget build(BuildContext context) {

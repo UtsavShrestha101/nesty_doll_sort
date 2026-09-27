@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/services/audio/jingle_player.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
@@ -16,6 +18,8 @@ final class GameplayServices {
     required this.database,
     required this.fx,
     required this.feedback,
+    required this.music,
+    required this.jingles,
   });
 
   /// The level's art and the chapter background (lottie §4).
@@ -32,4 +36,11 @@ final class GameplayServices {
 
   /// The win overlay's `win` and `coins` cues.
   final FeedbackSink feedback;
+
+  /// Ducked under the win overlay, the out-of-moves sheet and the pause
+  /// dialog (AUDIO.md "Music rules"); the route observer picks the loop.
+  final MusicService music;
+
+  /// `jingle_oom` when the out-of-moves sheet opens.
+  final JinglePlayer jingles;
 }

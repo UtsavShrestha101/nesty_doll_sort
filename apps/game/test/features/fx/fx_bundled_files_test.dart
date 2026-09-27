@@ -156,7 +156,8 @@ void main() {
     });
   }
 
-  test('text files: the counter and ribbon nulls are captured', () async {
+  test('text files: the counter and ribbon nulls are captured (the ribbons '
+      'on their v3 410-wide canvas)', () async {
     final counter = FxDrawable.of(library, FxId.uiFamilyCounter)!;
     await snapshotDrawable(counter, 6);
     expect(counter.params.textNullPosition, const Offset(60, 30));
@@ -167,11 +168,11 @@ void main() {
     expect(win.params.textNullScale, closeTo(0.6, 0.005));
     await snapshotDrawable(win, 18);
     expect(win.params.textNullScale, closeTo(1, 0.005));
-    expect(win.params.textNullPosition, const Offset(180, 55));
+    expect(win.params.textNullPosition, const Offset(205, 55));
 
     final chapter = FxDrawable.of(library, FxId.uiChapterRibbon)!;
     await snapshotDrawable(chapter, 100);
-    expect(chapter.params.textNullPosition, const Offset(180, 50));
+    expect(chapter.params.textNullPosition, const Offset(205, 50));
     await snapshotDrawable(chapter, 156);
     expect(chapter.params.textNullPosition.dy, closeTo(42, 0.5));
   });

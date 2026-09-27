@@ -19,9 +19,12 @@ abstract final class DollArt {
   /// ink at 94% opacity" (the JS `opacity="0.94"`).
   static const subtleSymbolOpacity = 0.94;
 
-  /// Centre of the tower reveal wipe: `circle(… at 50% 62%)` of the doll
-  /// box in the motion prototype (`mo-r-paint`).
-  static const revealCenter = Offset(width / 2, height * 0.62);
+  /// Centre of the tower reveal wipe: the doll's centre, art (256, 476),
+  /// 62 % down the artboard (tokens `motion.reveal.type`; the motion
+  /// prototype's `circle(… at 50% 62%)`, `mo-r-paint`). Owner decision 3d
+  /// (2026-09-26): the wipe grows from here, as in `doll_reveal`, not from
+  /// the belly, so the paint reaches the head and the base together.
+  static const revealCenter = MotionTokens.revealWipeCenter;
 
   /// The wipe's final radius, the prototype's `circle(75%)`: CSS resolves
   /// a percentage radius against the box diagonal / √2.

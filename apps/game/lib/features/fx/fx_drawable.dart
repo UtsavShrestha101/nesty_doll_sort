@@ -40,7 +40,6 @@ final class FxDrawable {
         spec,
         params: this.params,
         images: this.images,
-        player: this.player,
       );
     lottie.setProgress(this.player.progress);
   }
@@ -73,6 +72,9 @@ final class FxDrawable {
 
   final Rect _rect;
 
+  /// The [FxPlayer.epoch] the last [draw] showed.
+  int _drawnEpoch = -1;
+
   FxId get id => spec.id;
 
   /// Back to idle, frame 0, authored params, no request (a clip returned to
@@ -91,7 +93,21 @@ final class FxDrawable {
   bool advance(double dtMs) => player.advance(dtMs);
 
   /// Draws the current frame.
+  ///
+  /// The first draw after the player jumped (a new segment, a rest, a seek,
+  /// a pooled clip reused) seeks lottie from frame 0 first: lottie 3.6.1
+  /// keeps a layer's cached in/out keyframe while it still "contains" the
+  /// new progress, and a layer's rounded end can pass the next layer's
+  /// start by one ulp, so a drawable that last drew 98.x and then starts
+  /// `fx_ice`'s `crack_hit_1` on 99 would draw `ice_0` and `ice_1`
+  /// together for a frame. A seek from 0 always searches (the v3 check's
+  /// issue 1). Continuous playback never needs it.
   void draw(Canvas canvas) {
+    final epoch = player.epoch;
+    if (epoch != _drawnEpoch) {
+      _drawnEpoch = epoch;
+      lottie.setProgress(0);
+    }
     lottie.setProgress(player.progress);
     final hook = textHook;
     if (hook != null) {

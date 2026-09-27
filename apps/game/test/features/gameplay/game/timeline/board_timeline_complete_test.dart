@@ -305,12 +305,18 @@ void main() {
       for (final c in batch.commandsOf<PlaySlotFx>()) c.segment,
     ];
 
-    test('ice 4: 4 → 3 stays on stage 0, so no clip but the cue', () {
+    test('ice 4: 4 → 3 stays on stage 0, so crack_hit_0 shakes and flashes '
+        'it, then it rests on rest_0 (LOTTIE.md v3)', () {
       final h = TimelineHarness(icedTutorial(4))..start();
       final batch = completeWith(h, const [
         IceCracked(slotId: 'r0c2', remaining: 3),
       ]);
-      expect(slotSegments(batch), isEmpty);
+      // crack_hit_0 is 82–98; rest_0 is frame 0.
+      expect(slotSegments(batch), const [FxSegment(82, 98), FxSegment.hold(0)]);
+      final plays = batch.commandsOf<PlaySlotFx>().toList();
+      expect(plays.first.fx, FxId.fxIce);
+      expect(plays.last.atMs - plays.first.atMs, at(framesMs(16)));
+      expect(batch.reservations['r0c2'], at(plays.last.atMs));
       expect(
         batch.cues.where((c) => c.sound == SoundEffect.iceCrack),
         hasLength(1),
@@ -318,6 +324,39 @@ void main() {
       expect(
         batch.commandsOf<SyncSlot>().map((c) => c.slotId),
         contains('r0c2'),
+      );
+    });
+
+    test('ice 6: 4 → 3 stays on stage 1 (crack_hit_1, rest_1); 2 → 1 on '
+        'stage 2 (crack_hit_2, rest_2)', () {
+      final h = TimelineHarness(icedTutorial(6))..start();
+      expect(
+        slotSegments(
+          completeWith(h, const [IceCracked(slotId: 'r0c2', remaining: 3)]),
+        ),
+        const [FxSegment(99, 115), FxSegment.hold(16)],
+      );
+      expect(
+        slotSegments(
+          completeWith(h, const [IceCracked(slotId: 'r0c2', remaining: 1)]),
+        ),
+        const [FxSegment(116, 132), FxSegment.hold(32)],
+      );
+    });
+
+    test('reduced motion plays a crack_hit at 2× with the shake held', () {
+      final h = TimelineHarness(icedTutorial(4), motion: MotionSpec.reduced)
+        ..start();
+      final batch = completeWith(h, const [
+        IceCracked(slotId: 'r0c2', remaining: 3),
+      ]);
+      final hit = batch.commandsOf<PlaySlotFx>().first;
+      expect(hit.segment.from, 82);
+      expect(hit.segment.speed, 2);
+      expect(hit.shake, isFalse);
+      expect(
+        batch.commandsOf<PlaySlotFx>().last.atMs - hit.atMs,
+        at(framesMs(16) / 2),
       );
     });
 

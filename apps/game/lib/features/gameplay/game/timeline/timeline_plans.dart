@@ -435,10 +435,12 @@ extension _Plans on BoardTimeline {
     return end;
   }
 
-  /// §9.1 then `doll_reveal`: the new top drops from its buried step onto
-  /// the stand (the deeper silhouettes shift one step with it), then its
-  /// colour wipes in. Returns the reveal's end. The caller syncs the slot
-  /// at [at] (the "+N" tag counts down there).
+  /// `doll_reveal` from its first frame at [at] (LOTTIE.md v3): its `drop`
+  /// null lowers the new top from its buried step onto the stand (frames
+  /// 0–7, the step set for this tower), then the wipe paints it (7–19) and
+  /// the splash drops fade (to 31). The nests still buried shift one step
+  /// down with the drop (§9.1, D21). Returns the reveal's end. The caller
+  /// syncs the slot at [at] (the "+N" tag counts down there).
   double _planReveal(
     _Batch b,
     Revealed reveal,
@@ -447,14 +449,7 @@ extension _Plans on BoardTimeline {
   }) {
     final slot = _geometry.slotOrNull(reveal.slotId);
     if (slot == null) return at;
-    final drop = RevealDropTween(
-      slot: slot,
-      revealedSize: reveal.nest.outerSize,
-      revealedColor: reveal.nest.color,
-      buried: _buriedAtStart(board, reveal.slotId),
-      durationMs: b.at(FxTiming.revealDropMs),
-    );
-    final dropEnd = at + drop.durationMs;
+    final buried = _buriedAtStart(board, reveal.slotId);
     final segment = FxSegment.whole(
       _spec(FxId.dollReveal),
       speed: motion.oneShotSpeed,
@@ -468,16 +463,23 @@ extension _Plans on BoardTimeline {
         doll: reveal.nest.color,
         dollScale: LottieGeometry.roleScale(_height(reveal.nest.outerSize), _s),
         tint: reveal.nest.color,
+        // The new top was buried at depth 1: the file picks it up there.
+        revealDrop: (slot.surfaceY - slot.buriedBaseY(1, buried: buried)) / _s,
       ),
       slotId: reveal.slotId,
       anchor: FxAnchor.dollBase,
       hides: [reveal.slotId],
     );
-    final end = dropEnd + segment.durationMs;
+    final shift = RevealDropTween(
+      slot: slot,
+      buried: buried,
+      durationMs: b.at(FxSpec.msOf(FxTiming.revealDropEndFrame)),
+    );
+    final end = at + segment.durationMs;
     b
-      ..command(StartTween(at, drop))
-      ..command(EndTween(dropEnd, drop))
-      ..command(StartClip(dropEnd, clip.clip, segment), track: clip)
+      ..command(StartClip(at, clip.clip, segment), track: clip)
+      ..command(StartTween(at, shift))
+      ..command(EndTween(at + shift.durationMs, shift))
       ..command(StopClip(end, clip.clip), track: clip);
     return end;
   }
@@ -662,15 +664,22 @@ extension _Plans on BoardTimeline {
           initial: initial,
         );
         final to = BoardLayout.iceFrame(remaining: remaining, initial: initial);
-        if (to <= from) {
-          // D51: the stage didn't advance, so no clip; the cue and the badge
-          // still count.
+        final spec = _spec(FxId.fxIce);
+        // A new stage cracks to it; a hit that cracks nothing new (a counter
+        // with more hits than stages) shakes and flashes the stage shown
+        // (LOTTIE.md v3). Either way the ice then rests on `rest_n`.
+        final marker = spec.marker(
+          to > from ? FxIceSegments.crack(to) : FxIceSegments.crackHit(to),
+        );
+        if (marker == null) {
+          // An export without the segment (rule 3): no clip, as D51 did;
+          // the cue and the badge still count.
           b.reserve(slotId, at);
           return;
         }
-        final segment = FxSegment.marker(
-          _spec(FxId.fxIce),
-          'crack_$to',
+        final segment = FxSegment(
+          marker.start,
+          marker.end,
           speed: motion.oneShotSpeed,
         );
         final end = at + segment.durationMs;
@@ -683,14 +692,14 @@ extension _Plans on BoardTimeline {
               end,
               slotId,
               FxId.fxIce,
-              FxSegment.hold(FxTiming.iceStageFrames * to),
+              FxSegment.hold(FxIceSegments.restFrame(spec, to)),
             ),
           )
           ..reserve(slotId, end);
       case IceShattered(:final slotId):
         final segment = FxSegment.marker(
           _spec(FxId.fxIce),
-          'shatter',
+          FxIceSegments.shatter,
           speed: motion.oneShotSpeed,
         );
         final end = at + segment.durationMs;

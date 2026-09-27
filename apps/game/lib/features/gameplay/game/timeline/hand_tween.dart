@@ -1,4 +1,3 @@
-import 'package:nesty_core/nesty_core.dart' show DollColor;
 import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -65,29 +64,24 @@ sealed class HandTween {
   // ── End of hot path. ──
 }
 
-/// §9.1: a tower's new top drops onto the stand before `doll_reveal`
-/// paints it, and the nests still buried shift one step down, each keeping
-/// its true size (D21).
+/// §9.1: while `doll_reveal`'s `drop` null lowers a tower's new top from
+/// its buried step onto the stand (frames 0–7, `FxTiming.revealDropEndFrame`),
+/// the nests still buried shift one step down with it, each keeping its
+/// true size (D21).
 ///
-/// While it runs the board hides the slot's top sprite (the revealed nest,
-/// in colour in the new state) and draws it as a wood silhouette at
-/// [revealedBaseY]; the buried silhouettes at depth `d` (new depths, 1 =
-/// right under the top) draw at [buriedBaseY]. At progress 0 both match the
-/// rest pose before the reveal, at 1 the rest pose after it.
+/// The file draws the new top, silhouette then colour, from its own frame
+/// 0 (the clip hides the slot's top sprite); the board draws the buried
+/// silhouettes at depth `d` (new depths, 1 = right under the top) at
+/// [buriedBaseY]. At progress 0 they match the rest pose before the
+/// reveal, at 1 the rest pose after it.
 final class RevealDropTween extends HandTween {
   RevealDropTween({
     required this.slot,
-    required this.revealedSize,
-    required this.revealedColor,
     required this.buried,
     required super.durationMs,
-  }) : super(slotId: slot.id, hides: [slot.id]);
+  }) : super(slotId: slot.id);
 
   final SlotGeometry slot;
-
-  /// The revealed nest's outer size and colour.
-  final int revealedSize;
-  final DollColor revealedColor;
 
   /// The nests the tower buried at the start of the level, for
   /// `SlotGeometry.buriedBaseY`'s spacing.
@@ -95,20 +89,15 @@ final class RevealDropTween extends HandTween {
 
   double _progress = 0;
 
-  /// easeIn (tokens `motion.easing.easeIn`).
+  /// easeOut, the `drop` null's own curve (tokens `motion.easing.easeOut`),
+  /// so the silhouettes behind move with the top.
   @override
   double get progress => _progress;
 
   // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──
 
   @override
-  void _changed() => _progress = MotionTokens.curveEaseIn.transform(t);
-
-  /// The revealed nest's base: from depth 1 to the stand surface.
-  double get revealedBaseY {
-    final from = slot.buriedBaseY(1, buried: buried);
-    return from + (slot.surfaceY - from) * _progress;
-  }
+  void _changed() => _progress = MotionTokens.curveEaseOut.transform(t);
 
   /// The base of the buried nest at new [depth] (≥ 1): from its old depth
   /// `depth + 1` to [depth].

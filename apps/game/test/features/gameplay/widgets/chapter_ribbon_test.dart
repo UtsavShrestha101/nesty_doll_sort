@@ -44,4 +44,26 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1350));
     expect(done, 1);
   });
+
+  group('ChapterRibbon.rectIn (LOTTIE.md v3, for gameplay_view)', () {
+    const padding = EdgeInsets.only(top: 59, bottom: 34);
+
+    test('on 390: the 410 × 100 canvas 1:1, centred, the anchor (205, 50) '
+        'on the centre line, centerTop below the safe area', () {
+      final rect = ChapterRibbon.rectIn(const Size(390, 844), padding);
+      expect(rect, const Rect.fromLTWH(-10, 59 + 120 - 50, 410, 100));
+      expect(rect.left + 205, 195);
+    });
+
+    test('never scaled up; scaled down on a narrower screen', () {
+      final wide = ChapterRibbon.rectIn(const Size(430, 932), padding);
+      expect(wide.size, ChapterRibbon.canvas);
+      expect(wide.center.dx, closeTo(215, 1e-9));
+      final narrow = ChapterRibbon.rectIn(const Size(360, 640), padding);
+      expect(narrow.width, closeTo(410 * 360 / 390, 1e-9));
+      expect(narrow.height, closeTo(100 * 360 / 390, 1e-9));
+      expect(narrow.center.dx, closeTo(180, 1e-9));
+      expect(narrow.center.dy, closeTo(59 + 120, 1e-9));
+    });
+  });
 }

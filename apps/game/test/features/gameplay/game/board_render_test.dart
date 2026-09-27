@@ -147,30 +147,34 @@ void main() {
     expect(r0c0.first.baseY, lessThan(r0c0.last.baseY));
   });
 
-  test('a reveal drops the new top\'s silhouette and shifts the rest '
-      '(§9.1)', () async {
+  test('a reveal: doll_reveal drops the new top itself while the board '
+      'shifts the nests still buried one step down (§9.1)', () async {
     final (h, painted) = await mount(tl.towerLevel, files: boardFiles);
     final tower = h.game.geometry!.slot('r0c0');
     await h.move('r0c0', 'r0c2');
     await h.run(60);
     painted.painted.clear();
     await h.render();
-    final drop = h.board.scene.slot('r0c0')!.reveal!;
+    final shift = h.board.scene.slot('r0c0')!.reveal!;
     final at = painted.painted
         .where((p) => p.silhouette && p.baseX == tower.centerX)
         .toList();
-    // The one still buried (green1, new depth 1) and the dropping top
-    // (green2), drawn last.
-    expect(at.map((p) => p.height), [
-      h.game.geometry!.dollHeight(1),
-      h.game.geometry!.dollHeight(2),
-    ]);
-    expect(at.first.baseY, closeTo(drop.buriedBaseY(1), 1e-9));
-    expect(at.last.baseY, closeTo(drop.revealedBaseY, 1e-9));
+    // Only the one still buried (green1, new depth 1): the clip draws the
+    // dropping top (green2), silhouette then colour, and hides its sprite.
+    expect(at.map((p) => p.height), [h.game.geometry!.dollHeight(1)]);
+    expect(at.single.baseY, closeTo(shift.buriedBaseY(1), 1e-9));
     expect(
-      at.last.baseY,
-      inExclusiveRange(tower.buriedBaseY(1, buried: 2), tower.surfaceY),
+      at.single.baseY,
+      inExclusiveRange(
+        tower.buriedBaseY(2, buried: 2),
+        tower.buriedBaseY(1, buried: 2),
+      ),
     );
+    final reveal = h.board.fx.liveClips.singleWhere(
+      (c) => c.fx == FxId.dollReveal,
+    );
+    expect(reveal.hides, ['r0c0']);
+    expect(h.board.scene.slot('r0c0')!.spriteHidden, isTrue);
   });
 
   test(

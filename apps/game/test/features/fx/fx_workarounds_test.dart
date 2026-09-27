@@ -1,9 +1,12 @@
-// The export workarounds and paused rest frames of
-// docs/plans/m2-lottie-design.md §5, §7, §8, §9.2 and §13, on the shipped
-// files through the real delegates.
+// The paused rest frames, sizes and reduced-motion holds of
+// docs/plans/m2-lottie-design.md §5, §7, §8 and §13 on the shipped files
+// through the real delegates, and the v1 export defects LOTTIE.md v3 fixed
+// in the files themselves (the padlock at rest, the glass landing, the
+// reveal's silhouette), so no workaround is needed for them.
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_drawable.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
@@ -50,8 +53,8 @@ void main() {
     Future<Snapshot> at(FxDrawable clip) =>
         snapshot(clip.spec.width, clip.spec.height, clip.draw, pixelRatio: 2);
 
-    test('at rest the unlock symbol shows: padlock_ping is hidden (§8, '
-        'audit #3)', () async {
+    test('at rest (frame 0) the unlock symbol shows: v3\'s padlock_ping '
+        'starts at frame 1 (§8, audit #3)', () async {
       final clip = await glass();
       clip.player.rest(0);
       final resting = await at(clip);
@@ -59,25 +62,34 @@ void main() {
       final (r, g, b, a) = resting.at(180, 312);
       expect(_isBlue(r, g, b, a), isTrue, reason: '($r,$g,$b,$a)');
 
-      // As authored (not resting), the padlock copy covers it.
+      // The same frame seeked (not resting) looks the same: no delegate
+      // treats rest specially any more.
       clip.player.seek(0);
       final (r2, g2, b2, a2) = (await at(clip)).at(180, 312);
-      expect(_isBlue(r2, g2, b2, a2), isFalse, reason: '($r2,$g2,$b2,$a2)');
+      expect((r2, g2, b2, a2), (r, g, b, a));
     });
 
-    test('while playing, padlock_ping follows its authored fade', () async {
+    test('while playing, padlock_ping covers the symbol, then fades', () async {
       final clip = await glass();
+      clip.player.seek(1.5);
+      final (r, g, b, a) = (await at(clip)).at(180, 312);
+      expect(_isBlue(r, g, b, a), isFalse, reason: 'frame 1.5 ($r,$g,$b,$a)');
       clip.player.seek(11.9);
-      final late = await at(clip);
-      final (r, g, b, a) = late.at(180, 312);
+      final (r2, g2, b2, a2) = (await at(clip)).at(180, 312);
       // Almost faded out by frame 12: the symbol shows through again.
-      expect(_isBlue(r, g, b, a), isTrue, reason: '($r,$g,$b,$a)');
+      expect(_isBlue(r2, g2, b2, a2), isTrue, reason: '($r2,$g2,$b2,$a2)');
     });
 
-    test('the freed doll settles 11 units onto the stand (§9.2)', () async {
-      Future<double> bottom(double frame, {required bool settle}) async {
-        final clip = await glass();
-        clip.params.unlockSettle = settle;
+    test('the freed doll lands on the stand surface (canvas 174) at frame '
+        '53 and stays there: no hand-coded settle', () async {
+      final clip = await glass();
+      FxLayout.applyDollHeights(
+        clip.params,
+        clip.spec,
+        compositionScale: 1,
+        doll: 117,
+      );
+      Future<double> bottom(double frame) async {
         clip.player.seek(frame);
         final snap = await at(clip);
         return snap.boundsWhere((x, y) {
@@ -86,59 +98,48 @@ void main() {
         })!.bottom;
       }
 
-      // (Frames 0–12 hide the doll behind the opaque test case; the flash
-      // whitens it around frame 30.)
-      for (final frame in const [12.0, 24.0, 42.0]) {
-        expect(
-          await bottom(frame, settle: true),
-          await bottom(frame, settle: false),
-          reason: 'frame $frame: no settle before the last hop',
-        );
-      }
-      final mid =
-          await bottom(48, settle: true) - await bottom(48, settle: false);
-      expect(mid / 2, closeTo(5.5, 1));
-      final end =
-          await bottom(54, settle: true) - await bottom(54, settle: false);
-      expect(end / 2, closeTo(11, 1));
-    });
-
-    test('the file ends with the doll base on the stand surface (canvas '
-        '163 + 11)', () async {
-      final clip = await glass();
-      FxLayout.applyDollHeights(
-        clip.params,
-        clip.spec,
-        compositionScale: 1,
-        doll: 117,
-      );
-      clip.player.seek(54);
-      final snap = await at(clip);
-      final box = snap.boundsWhere((x, y) {
-        final (r, g, b, a) = snap.at(x, y);
-        return _isRed(r, g, b, a);
-      })!;
       // The solid art reaches 26 of 768 units below the base.
       const below = 117 * 26 / 768;
-      expect(box.bottom / 2, closeTo(174 + below, 1));
+      // (Frames 0–12 hide the doll behind the opaque test case.)
+      expect(await bottom(24) / 2, closeTo(163 + below, 1), reason: 'caged');
+      for (final frame in const [53.0, 53.5, 54.0]) {
+        expect(
+          await bottom(frame) / 2,
+          closeTo(174 + below, 1),
+          reason: 'frame $frame',
+        );
+      }
     });
   });
 
-  group('fx_ice rest frames: stage n rests on frame 16n (D51)', () {
+  group('fx_ice rest frames: stage n rests on rest_n = 16n (D51)', () {
     for (final (stage, slot) in [
       (0, FxImageSlot.ice0),
       (1, FxImageSlot.ice1),
       (2, FxImageSlot.ice2),
       (3, FxImageSlot.ice3),
     ]) {
-      test('stage $stage shows ${slot.assetId}', () async {
+      test('stage $stage shows ${slot.assetId}, at rest and through its '
+          'crack_hit_$stage', () async {
         final art = BlobArt(1);
         final clip = await shippedDrawable(FxId.fxIce, source: art);
         clip.images.request.doll = DollColor.red;
-        clip.player.rest(16.0 * stage);
+        final spec = fxSpecOf(FxId.fxIce);
+        clip.player.rest(FxIceSegments.restFrame(spec, stage));
         await snapshot(180, 240, clip.draw);
-        final shown = art.requested.where((s) => s.piece != null).toSet();
-        expect(shown, {slot});
+        expect(art.requested.where((s) => s.piece != null).toSet(), {slot});
+
+        final hit = spec.marker(FxIceSegments.crackHit(stage))!;
+        for (final frame in [hit.start, hit.start + 8, hit.end - 0.5]) {
+          art.requested.clear();
+          clip.player.seek(frame);
+          await snapshot(180, 240, clip.draw);
+          expect(
+            art.requested.where((s) => s.piece != null).toSet(),
+            {slot},
+            reason: 'crack_hit_$stage at $frame',
+          );
+        }
       });
     }
   });
@@ -160,7 +161,8 @@ void main() {
       return clip;
     }
 
-    test('the silhouette is hidden from the wipe\'s end (frame 12)', () async {
+    test('the silhouette ends with the wipe (frame 19, v3): its shadow is '
+        'never drawn under the colour doll\'s after that', () async {
       final clip = await reveal();
       int greens(Snapshot s) {
         var n = 0;
@@ -173,9 +175,31 @@ void main() {
         return n;
       }
 
+      // Dropping (0–7), then partly wiped (7–19).
       expect(greens(await snapshotDrawable(clip, 2)), greaterThan(100));
-      expect(greens(await snapshotDrawable(clip, 12)), 0);
-      expect(greens(await snapshotDrawable(clip, 20)), 0);
+      expect(greens(await snapshotDrawable(clip, 12)), greaterThan(0));
+      expect(greens(await snapshotDrawable(clip, 19)), 0);
+      expect(greens(await snapshotDrawable(clip, 25)), 0);
+    });
+
+    test('the drop null lowers the whole doll from its step: 18 authored, '
+        'the tower\'s own step when set, easeOut over frames 0–7', () async {
+      Future<double> bottom(double frame, {double? step}) async {
+        final clip = await reveal();
+        clip.params.revealDropUnits = step;
+        final snap = await snapshotDrawable(clip, frame, pixelRatio: 2);
+        return snap.alphaBounds()!.bottom / 2;
+      }
+
+      final landed = await bottom(7);
+      expect(await bottom(20), closeTo(landed, 0.5));
+      expect(await bottom(0) - landed, closeTo(-18, 0.75));
+      expect(await bottom(0, step: 12) - landed, closeTo(-12, 0.75));
+      expect(await bottom(0, step: 0) - landed, closeTo(0, 0.5));
+      // easeOut: most of the way down by the middle of the drop.
+      final mid = await bottom(3.5, step: 12) - landed;
+      expect(mid, inExclusiveRange(-6, 0));
+      expect(await bottom(7, step: 12), closeTo(landed, 0.5));
     });
 
     test('its last frame equals the rest sprite (§10.2)', () async {
@@ -230,7 +254,7 @@ void main() {
         compositionScale: s,
         doll: h,
       );
-      clip.player.seek(24);
+      clip.player.seek(clip.spec.frames.toDouble());
       final topLeft = FxLayout.topLeft(clip.spec, base.dx, base.dy, s);
       final actual = await snapshot(240, 360, (canvas) {
         canvas

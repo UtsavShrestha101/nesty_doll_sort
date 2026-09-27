@@ -1,12 +1,14 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_drawable.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
 import 'package:nesty_game/features/fx/fx_layout.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_player.dart';
+import 'package:nesty_game/features/fx/fx_spec.dart';
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 import 'package:nesty_game/features/fx/lottie_fx_component.dart';
 import 'package:nesty_game/features/gameplay/game/components/board_scene.dart';
@@ -24,8 +26,9 @@ import 'package:nesty_render/nesty_render.dart';
 ///   are the rest look, the doll inside included, so [nest] draws nothing
 ///   for them. While paused each replays a recorded `Picture`
 ///   (`LottieFxComponent.cacheRest`), re-recorded when its frame, params or
-///   rasters change. Glass rests on frame 0 (with `padlock_ping` hidden),
-///   ice on `16 × BoardLayout.iceFrame` (D51).
+///   rasters change. Glass rests on frame 0 (the unlock symbol shows: v3's
+///   `padlock_ping` starts at frame 1), ice on the `rest_n` marker of stage
+///   `BoardLayout.iceFrame` (D51), also after a `crack_hit_n`.
 /// - Locked and iced together: glass draws the doll and ice hides it, until
 ///   the unlock releases the glass.
 /// - Rule 3 (§8, §10.7): when a file failed to load, the slot draws the
@@ -140,7 +143,10 @@ class SlotComponent extends PositionComponent {
     }
     if (view.frozen) {
       _iceSwap = null;
-      final frame = FxTimingFrames.iceRest(view.ice, view.iceInitial);
+      final frame = FxIceSegments.restFrame(
+        fxSpecOf(FxId.fxIce),
+        BoardLayout.iceFrame(remaining: view.ice, initial: view.iceInitial),
+      );
       final ice = _ice ?? _compose(library, FxId.fxIce, reducedMotion);
       if (ice == null) {
         _iceSwap = FxPlayer.forSpec(fxSpecOf(FxId.fxIce))..rest(frame);
@@ -347,11 +353,37 @@ class SlotComponent extends PositionComponent {
   }
 }
 
-/// The frames `fx_ice` rests on (m2-lottie-design §8, D51).
-abstract final class FxTimingFrames {
-  /// `16 × BoardLayout.iceFrame(remaining, initial)`: 0, 16, 32 or 48.
-  static double iceRest(int remaining, int initial) =>
-      16.0 * BoardLayout.iceFrame(remaining: remaining, initial: initial);
+/// Which ice sprite the rule-3 stand-in of a missing `fx_ice` shows at a
+/// frame of its frame swap (§10.7): the stage of a `crack_hit_n` segment,
+/// 4 (the burst) through the shatter's frames after its first, else the
+/// stage `frame ~/ 16` (a `crack_n` segment shows the stage it leaves
+/// until its end). The segments are read from the spec once.
+abstract final class IceStandIn {
+  static final FxSpec _ice = fxSpecOf(FxId.fxIce);
+
+  static final List<FxMarker?> _hits = List.unmodifiable([
+    for (var n = 0; n < 4; n++) _ice.marker(FxIceSegments.crackHit(n)),
+  ]);
+
+  static final FxMarker? _shatter = _ice.marker(FxIceSegments.shatter);
+
+  // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──
+
+  /// The stage shown at [frame]: 0–3, or 4 for the shatter's burst.
+  static int stageAt(double frame) {
+    for (var n = 0; n < _hits.length; n++) {
+      final hit = _hits[n];
+      if (hit != null && frame >= hit.start && frame <= hit.end) return n;
+    }
+    final shatter = _shatter;
+    if (shatter != null && frame > shatter.start && frame <= shatter.end) {
+      return 4;
+    }
+    final stage = frame ~/ FxTiming.iceStageFrames;
+    return stage < 0 ? 0 : (stage > 3 ? 3 : stage);
+  }
+
+  // ── End of hot path. ──
 }
 
 /// Above the slot's compositions: the rule-3 stand-ins of a missing glass or
@@ -405,12 +437,9 @@ class _SlotOverlay extends Component {
       if (owner._glassFrame < 2) _padlock(canvas, g, dx);
     }
     if (owner.drawsIceFallback) {
-      final frame = owner._iceFrame;
-      // Stage n rests on 16n; the shatter's first frame (48) flashes
-      // stage 3, then the burst.
-      var stage = frame > 48 ? 4 : frame ~/ 16;
-      if (stage < 0) stage = 0;
-      if (stage > 4) stage = 4;
+      // Stage n rests on 16n and a crack_hit_n keeps it; the shatter's
+      // first frame (48) flashes stage 3, then the burst.
+      final stage = IceStandIn.stageAt(owner._iceFrame);
       final sprite = sprites?.forSlot(
         stage == 4 ? BoardSprite.iceShatter : BoardSprite.ice(stage),
         g,
@@ -466,9 +495,11 @@ class _SlotOverlay extends Component {
         ..translate(side / 2, side / 2)
         ..drawCircle(Offset.zero, side * 0.3, _inkDot);
     } else {
-      const declared = 12.0;
+      // The raster's scale and origin count in the symbol's 12-unit box,
+      // whatever its own pixel size.
+      final box = FxImageSlot.unlockSymbol.declaredWidth;
       canvas
-        ..scale(side / declared)
+        ..scale(side / box)
         ..translate(raster.origin.dx, raster.origin.dy)
         ..scale(1 / raster.scale)
         ..drawImage(raster.image, Offset.zero, _symbolPaint);

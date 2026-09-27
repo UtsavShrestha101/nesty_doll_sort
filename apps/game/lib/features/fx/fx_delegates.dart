@@ -1,24 +1,30 @@
 import 'dart:ui' show Color, Offset;
 
-import 'package:flutter/animation.dart' show Curves;
 import 'package:lottie/lottie.dart';
 import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_drawable_params.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
 import 'package:nesty_game/features/fx/fx_images.dart';
-import 'package:nesty_game/features/fx/fx_player.dart';
 import 'package:nesty_game/features/fx/fx_spec.dart';
 import 'package:nesty_game/features/fx/fx_text_overlay.dart';
 
 /// Builds the `LottieDelegates` of one drawable from its file's [FxSpec]
-/// (m2-lottie-design §2–§13): every workaround for lottie 3.6.1 and the
-/// export lives here, driven by mutable per-clip state.
+/// (m2-lottie-design §2–§13): everything the game overrides in the export
+/// lives here, driven by mutable per-clip state.
+///
+/// Since LOTTIE.md v3 the export needs no workaround: no `travel` or `drop`
+/// null holds, no image layer animates its transform, `padlock_ping` starts
+/// at frame 1, the freed doll lands on the stand at frame 53 and
+/// `doll_silhouette` ends when the wipe covers it (the sync rejects a file
+/// that breaks any of these). What stays is what the game supplies: raster
+/// compensation, doll sizes, colours, the remapped `travel`, the `drop`
+/// start, the reduced-motion shake holds and the hidden text.
 ///
 /// Rules this follows (verified in docs/plans/lottie-analysis/):
 /// - Built once per drawable, after `LottieDrawable(composition)` exists
 ///   (§2 rule 1), never swapped (rule 2): the closures read the clip's
-///   [FxDrawableParams], [FxImages] and [FxPlayer], which change per use.
+///   [FxDrawableParams] and [FxImages], which change per use.
 /// - Never shared: every call makes new `ValueDelegate`s (rule 3).
 /// - `LottieFrameInfo` isn't exported, so every callback is a closure with
 ///   an inferred parameter that forwards plain values to a typed hook
@@ -30,11 +36,6 @@ import 'package:nesty_game/features/fx/fx_text_overlay.dart';
 /// - A callback that must return a new `Offset` allocates it (PROGRESS
 ///   D42); everything static is cached and returned as the same object.
 abstract final class FxDelegates {
-  /// `doll_reveal`: the colour doll covers the silhouette from the wipe's
-  /// end (12 f, 200 ms); the silhouette is hidden from here so the ground
-  /// shadow isn't drawn twice at the hand-off (m2-lottie-design §7).
-  static const revealWipeEndFrame = 12.0;
-
   /// `doll_invalid`'s `target` null at rest (reduced motion holds it).
   static const invalidTargetRest = Offset.zero;
 
@@ -42,21 +43,18 @@ abstract final class FxDelegates {
   static const iceRest = Offset(42, 40);
 
   /// The delegates of one drawable of [spec]:
-  /// - image slots from [images], each image layer's scale and anchor
-  ///   compensated for the raster it gets (§3);
+  /// - image slots from [images], each image layer's static scale and
+  ///   anchor compensated for the raster it gets (§3);
   /// - `<role>_size`, `rim_tint` and `tint` from [params] (§5);
-  /// - the `travel` remap with the hold fix, and the sparkle trail (§6);
+  /// - the `travel` remap and the sparkle trail (§6);
   /// - `doll_invalid`'s `target_pos`; the reduced-motion shake hold on
   ///   `target` and `ice` (§13);
-  /// - `fx_glass_unlock`'s `padlock_ping` hidden at rest (§8) and the
-  ///   11-unit settle (§9.2); `doll_reveal`'s silhouette hidden after the
-  ///   wipe (§7);
+  /// - `doll_reveal`'s `drop` start for the tower's step (§9.1);
   /// - text layers hidden, and the text null's transform captured (§12).
   static LottieDelegates build(
     FxSpec spec, {
     required FxDrawableParams params,
     required FxImages images,
-    required FxPlayer player,
   }) {
     final values = <ValueDelegate<Object?>>[];
 
@@ -66,8 +64,7 @@ abstract final class FxDelegates {
         ..add(
           ValueDelegate.transformScale(
             layer.keyPath,
-            callback: (f) =>
-                hook.scale(f.startValue, f.endValue, f.linearKeyframeProgress),
+            callback: (_) => hook.scale(),
           ),
         )
         ..add(
@@ -100,23 +97,17 @@ abstract final class FxDelegates {
 
     final travel = spec.travel;
     if (travel != null) {
-      final hook = _Travel(travel, params, player);
-      values
-        ..add(
-          ValueDelegate.transformPosition(
-            const ['travel'],
-            callback: (f) => hook.position(
-              f.startValue,
-              f.endValue,
-              f.interpolatedKeyframeProgress,
-            ),
+      final hook = _Travel(travel, params);
+      values.add(
+        ValueDelegate.transformPosition(
+          const ['travel'],
+          callback: (f) => hook.position(
+            f.startValue,
+            f.endValue,
+            f.interpolatedKeyframeProgress,
           ),
-        )
-        ..add(
-          ValueDelegate.transformAnchorPoint(const [
-            'travel',
-          ], callback: (_) => hook.anchor()),
-        );
+        ),
+      );
     }
 
     switch (spec.id) {
@@ -151,38 +142,16 @@ abstract final class FxDelegates {
             ),
           ),
         );
-      case FxId.fxGlassUnlock:
-        final settle = _Settle(params, player);
-        values
-          ..add(
-            ValueDelegate.transformOpacity(
-              const ['padlock_ping'],
-              callback: (f) => player.isResting
-                  ? 0
-                  : _lerpInt(
-                      f.startValue,
-                      f.endValue,
-                      f.linearKeyframeProgress,
-                    ),
-            ),
-          )
-          ..add(
-            ValueDelegate.transformPosition(
-              const ['doll'],
-              callback: (f) => settle.position(
-                f.startValue,
-                f.endValue,
-                f.interpolatedKeyframeProgress,
-              ),
-            ),
-          );
       case FxId.dollReveal:
+        final drop = _Drop(params);
         values.add(
-          ValueDelegate.transformOpacity(
-            const ['doll_silhouette'],
-            callback: (f) => player.frame >= revealWipeEndFrame
-                ? 0
-                : _lerpInt(f.startValue, f.endValue, f.linearKeyframeProgress),
+          ValueDelegate.transformPosition(
+            const ['drop'],
+            callback: (f) => drop.position(
+              f.startValue,
+              f.endValue,
+              f.interpolatedKeyframeProgress,
+            ),
           ),
         );
       default:
@@ -233,35 +202,30 @@ const _white = Color(0xFFFFFFFF);
 // (PROGRESS D42). ──
 
 /// Scale and anchor compensation of one image layer for the raster it
-/// draws (m2-lottie-design §3): scale `k / raster.scale`, anchor
-/// `(a − raster.origin) × raster.scale`.
+/// draws (m2-lottie-design §3). The raster counts in box units and the
+/// layer in asset px, [FxImageSlot.density] of them per box unit (3 for the
+/// board pieces since LOTTIE.md v3). With `r = raster.scale / density` (raster
+/// px per asset px): scale `k / r`, anchor `(a − origin × density) × r`.
+/// The layer's own transform is static (LOTTIE.md v3), so both are
+/// recomputed only when the slot's raster changes.
 final class _Compensation {
   _Compensation(this.layer, this.images)
-    : _scale = layer.scale,
+    : _density = layer.slot.density,
+      _scale = layer.scale,
       _anchor = layer.anchor;
 
   final FxImageLayer layer;
   final FxImages images;
+  final double _density;
 
   FxRaster? _raster;
   bool _synced = false;
   Offset _scale;
   Offset _anchor;
 
-  Offset scale(Offset? start, Offset? end, double eased) {
-    final raster = images.rasterFor(layer.slot);
-    if (!layer.scaleAnimated) {
-      _sync(raster);
-      return _scale;
-    }
-    // The authored animated scale, divided by the raster's (C0 probe).
-    final r = raster == null ? 1.0 : raster.scale;
-    final s = start ?? layer.scale;
-    final e = end ?? s;
-    return Offset(
-      (s.dx + (e.dx - s.dx) * eased) / r,
-      (s.dy + (e.dy - s.dy) * eased) / r,
-    );
+  Offset scale() {
+    _sync(images.rasterFor(layer.slot));
+    return _scale;
   }
 
   Offset anchor() {
@@ -278,13 +242,17 @@ final class _Compensation {
 
   void _recompute(FxRaster? raster) {
     // ── End of hot path. ── (only when the slot's raster changes)
-    final r = raster == null ? 1.0 : raster.scale;
-    final origin = raster == null ? Offset.zero : raster.origin;
+    if (raster == null) {
+      // The 1×1 blank draws nothing wherever it goes.
+      _scale = layer.scale;
+      _anchor = layer.anchor;
+      return;
+    }
+    final r = raster.scale / _density;
+    final ox = raster.origin.dx * _density;
+    final oy = raster.origin.dy * _density;
     _scale = Offset(layer.scale.dx / r, layer.scale.dy / r);
-    _anchor = Offset(
-      (layer.anchor.dx - origin.dx) * r,
-      (layer.anchor.dy - origin.dy) * r,
-    );
+    _anchor = Offset((layer.anchor.dx - ox) * r, (layer.anchor.dy - oy) * r);
     // ── Hot path: resumed. ──
   }
 }
@@ -318,11 +286,12 @@ final class _Fill {
 }
 
 /// The `travel` null of a board-space file (m2-lottie-design §6): the
-/// position callback projects the authored point on S→T and maps it onto
-/// src→dst, keeping the easing and overshoot; where lottie skips it (a
-/// hold), the anchor callback moves the null onto the remapped hold point.
+/// authored point projected on S→T and mapped onto src→dst, keeping the
+/// easing and overshoot. The null never holds (LOTTIE.md v3), so lottie
+/// calls this on every frame and the remapped point is also the sparkle
+/// trail's.
 final class _Travel {
-  _Travel(this.travel, this.params, this.player)
+  _Travel(this.travel, this.params)
     : _dx = travel.t.dx - travel.s.dx,
       _dy = travel.t.dy - travel.s.dy,
       _invLength2 =
@@ -332,24 +301,11 @@ final class _Travel {
 
   final FxTravel travel;
   final FxDrawableParams params;
-  final FxPlayer player;
   final double _dx;
   final double _dy;
   final double _invLength2;
 
-  /// Set by [position], read and cleared by [anchor]: `getMatrix` reads a
-  /// layer's position before its anchor, so an unset flag means lottie
-  /// returned a held keyframe without calling [position] (probe T10).
-  bool _ran = false;
-
-  FxHold? _hold;
-  Offset? _holdSrc;
-  Offset? _holdDst;
-  Offset _holdAnchor = Offset.zero;
-  Offset _holdPoint = Offset.zero;
-
   Offset position(Offset? start, Offset? end, double eased) {
-    _ran = true;
     final s = start ?? travel.s;
     final e = end ?? s;
     final vx = s.dx + (e.dx - s.dx) * eased;
@@ -364,36 +320,6 @@ final class _Travel {
     );
     params.trailPoint = point;
     return point;
-  }
-
-  Offset anchor() {
-    if (_ran) {
-      _ran = false;
-      return Offset.zero;
-    }
-    final hold = travel.nearestHold(player.frame);
-    if (hold == null) return Offset.zero;
-    final src = params.travelSrc ?? travel.s;
-    final dst = params.travelDst ?? travel.t;
-    if (!identical(hold, _hold) ||
-        !identical(src, _holdSrc) ||
-        !identical(dst, _holdDst)) {
-      _syncHold(hold, src, dst);
-    }
-    params.trailPoint = _holdPoint;
-    return _holdAnchor;
-  }
-
-  void _syncHold(FxHold hold, Offset src, Offset dst) {
-    // ── End of hot path. ── (once per hold and travel change)
-    _hold = hold;
-    _holdSrc = src;
-    _holdDst = dst;
-    _holdPoint = travel.remap(hold.value, src, dst);
-    // The null stays at the held keyframe `v`, so translating by −a with
-    // a = v − remap(v) puts it on remap(v).
-    _holdAnchor = hold.value - _holdPoint;
-    // ── Hot path: resumed. ──
   }
 }
 
@@ -422,29 +348,29 @@ final class _Shake {
   }
 }
 
-/// `fx_glass_unlock`'s `doll` null: the authored hop plus the 11-unit
-/// settle, eased in over the last hop (m2-lottie-design §9.2), so the file
-/// ends with the doll on the stand surface where its sprite rests. Frames
-/// 0–42 are a hold (no callback), where the settle is 0 anyway.
-final class _Settle {
-  _Settle(this.params, this.player);
+/// `doll_reveal`'s `drop` null (LOTTIE.md v3 "Reveal drop"): the authored
+/// (0, −18) → (0, 0) over frames 0–7, stretched to the tower's own step
+/// (`FxDrawableParams.revealDropUnits`), so the new top starts exactly where
+/// its buried silhouette stood and keeps the authored easing.
+final class _Drop {
+  _Drop(this.params);
 
   final FxDrawableParams params;
-  final FxPlayer player;
 
-  static const _start = FxTiming.unlockHopStartFrame;
-  static const _span =
-      FxTiming.unlockHopEndFrame - FxTiming.unlockHopStartFrame;
+  static const _authored = FxTiming.revealDropUnits;
 
   Offset position(Offset? start, Offset? end, double eased) {
-    final s = start ?? Offset.zero;
-    final e = end ?? s;
-    final x = s.dx + (e.dx - s.dx) * eased;
-    final y = s.dy + (e.dy - s.dy) * eased;
-    final t = (player.frame - _start) / _span;
-    if (!params.unlockSettle || t <= 0) return Offset(x, y);
-    final k = Curves.easeInOut.transform(t >= 1 ? 1 : t);
-    return Offset(x, y + FxTiming.unlockSettleUnits * k);
+    final units = params.revealDropUnits;
+    if (units == null) return _lerp(start, end, eased, Offset.zero);
+    if (start == null) return Offset.zero;
+    // One Offset per call (the callback's type, D42): the lerp and the
+    // stretch in one step.
+    final k = units / _authored;
+    final to = end ?? start;
+    return Offset(
+      (start.dx + (to.dx - start.dx) * eased) * k,
+      (start.dy + (to.dy - start.dy) * eased) * k,
+    );
   }
 }
 
@@ -477,12 +403,6 @@ Offset _lerp(Offset? start, Offset? end, double eased, Offset fallback) {
     start.dx + (end.dx - start.dx) * eased,
     start.dy + (end.dy - start.dy) * eased,
   );
-}
-
-int _lerpInt(int? start, int? end, double eased) {
-  if (start == null) return 100;
-  if (end == null || end == start) return start;
-  return (start + (end - start) * eased).round();
 }
 
 // ── End of hot path. ──

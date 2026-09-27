@@ -87,7 +87,20 @@ final class FxDrawableParams {
 
   Offset? _targetPos;
 
-  // ── Workarounds and motion. ──
+  /// `doll_reveal`'s `drop` null: how far above the stand the new top
+  /// starts, in composition units — the tower's own step for a nest buried
+  /// at depth 1, `(surfaceY − buriedBaseY(1)) / s` (LOTTIE.md v3 "Reveal
+  /// drop"). Null: the authored 18 (`FxTiming.revealDropUnits`).
+  double? get revealDropUnits => _revealDropUnits;
+  set revealDropUnits(double? value) {
+    if (value == _revealDropUnits) return;
+    _revealDropUnits = value;
+    _revision++;
+  }
+
+  double? _revealDropUnits;
+
+  // ── Motion. ──
 
   /// Reduced motion (D48): `doll_invalid`'s `target` and `fx_ice`'s `ice`
   /// shakes are held at rest.
@@ -100,18 +113,6 @@ final class FxDrawableParams {
 
   bool _reducedMotion = false;
 
-  /// `fx_glass_unlock`: blends the 11-unit settle onto the stand into the
-  /// freed doll's last hop (m2-lottie-design §9.2). On by default; the
-  /// fallback (a post-clip drop) turns it off.
-  bool get unlockSettle => _unlockSettle;
-  set unlockSettle(bool value) {
-    if (value == _unlockSettle) return;
-    _unlockSettle = value;
-    _revision++;
-  }
-
-  bool _unlockSettle = true;
-
   // ── Captured while drawing (outputs, no revision). ──
 
   /// The remapped `travel` point of the last draw, in reference units (the
@@ -122,7 +123,8 @@ final class FxDrawableParams {
 
   /// The text null's position and uniform scale in the last draw
   /// (`counter`, `ribbon`), reset to its rest values before each draw
-  /// because a hold skips the position callback (m2-lottie-design §12).
+  /// because a hold skips the position callback (m2-lottie-design §12):
+  /// `ui_chapter_ribbon`'s `ribbon` null holds from 0 to 138.
   Offset textNullPosition = Offset.zero;
   double textNullScale = 1;
 
@@ -136,7 +138,7 @@ final class FxDrawableParams {
     _travelSrc = null;
     _travelDst = null;
     _targetPos = null;
-    _unlockSettle = true;
+    _revealDropUnits = null;
     trailPoint = null;
     textNullPosition = Offset.zero;
     textNullScale = 1;

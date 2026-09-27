@@ -349,13 +349,16 @@ final class SlotGeometry {
       shape.kind == SlotShapeKind.locked ? lockedDollBaseY : surfaceY;
 
   /// Where a locked slot's doll rests once its case has shattered: the stand
-  /// surface, [unlockSettle] below the case floor. `fx_glass_unlock` ends on
-  /// it through the hand-coded settle (m2-lottie-design §9.2). For other
-  /// slots it is [restingBaseY].
+  /// surface, [unlockSettle] below the case floor. Since the v3 export
+  /// `fx_glass_unlock` lands the doll there itself (its last hop ends at
+  /// canvas y 174 = 163 + 11, frame 53); v1 needed a hand-coded settle
+  /// (m2-lottie-design §9.2). For other slots it is [restingBaseY].
   double get unlockedDollBaseY => surfaceY;
 
   /// How far the freed doll drops from the case floor to the stand: 11 dp
-  /// at furniture scale 1 (the case floor is `surface − 134 + 123`).
+  /// at furniture scale 1 (the case floor is `surface − 134 + 123`). The
+  /// game no longer adds it by hand (v3's file includes the drop); it stays
+  /// as the geometry `fx_glass_unlock`'s landing is checked against.
   double get unlockSettle => surfaceY - lockedDollBaseY;
 
   /// Centre y of [standRect]: where `ui_extra_slot` pulses (anchor (55, 25)

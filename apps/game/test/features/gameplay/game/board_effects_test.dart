@@ -7,6 +7,7 @@ import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_player.dart';
+import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_component.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/timeline.dart';
@@ -186,6 +187,44 @@ void main() {
       await h.render();
       await h.render();
       expect(ice.restRecordings, 1);
+    });
+
+    test('a hit that cracks nothing new plays crack_hit_n on the paused '
+        'ice, then rests on rest_n (LOTTIE.md v3)', () async {
+      // comboLevel with ice 4 on r0c3: 4 → 3 stays on stage 0.
+      final level = levelFrom('''
+{
+  "schemaVersion": 1,
+  "id": "T1003",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "open", "nest": ["red3"]},
+      {"type": "open", "nest": ["red2", "red1"]},
+      {"type": "open", "nest": null},
+      {"type": "open", "nest": ["blue2"], "ice": 4} ],
+    [ {"type": "open", "nest": ["blue1"]},
+      {"type": "open", "nest": ["blue3"]},
+      {"type": "open", "nest": ["green2", "green1"]},
+      {"type": "open", "nest": ["green3"]} ]
+  ]
+}
+''');
+      final h = await loaded(level);
+      final iced = h.board.slots['r0c3']!;
+      final ice = iced.ice!;
+      expect(ice.drawable.player.frame, 0);
+      expect(iced.slot.decor.badgeLabel, '4');
+
+      await h.move('r0c0', 'r0c1');
+      // The hit starts at t0 + 700 (1366.7).
+      await h.run(1380);
+      expect(iced.slot.decor.badgeLabel, '3');
+      expect(ice.drawable.player.isPlaying, isTrue);
+      final hit = fxSpecOf(FxId.fxIce).marker('crack_hit_0')!;
+      expect(ice.drawable.player.frame, inInclusiveRange(hit.start, hit.end));
+      await h.run(400);
+      expect(ice.drawable.player.state, FxPlayState.resting);
+      expect(ice.drawable.player.frame, 0, reason: 'rest_0: still stage 0');
     });
 
     test('an invalid move on a locked target shakes the whole slot by '

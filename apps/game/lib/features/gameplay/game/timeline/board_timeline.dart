@@ -100,11 +100,13 @@ final class BoardTimeline {
   static const _epsilon = 1e-6;
 
   /// The rest frame of a paused `fx_ice` composition whose counter started
-  /// at [initial] and is now [remaining]: `16 × BoardLayout.iceFrame`
-  /// (0, 16, 32 or 48; §8, D51).
+  /// at [initial] and is now [remaining]: the `rest_n` marker of stage
+  /// `BoardLayout.iceFrame` (0, 16, 32 or 48; §8, D51).
   static double iceRestFrame({required int remaining, required int initial}) =>
-      FxTiming.iceStageFrames *
-      BoardLayout.iceFrame(remaining: remaining, initial: initial);
+      FxIceSegments.restFrame(
+        fxSpecOf(FxId.fxIce),
+        BoardLayout.iceFrame(remaining: remaining, initial: initial),
+      );
 
   /// The rest frame of a paused `fx_glass_unlock` composition (§8).
   static const glassRestFrame = 0.0;

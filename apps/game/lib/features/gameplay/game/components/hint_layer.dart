@@ -13,11 +13,22 @@ import 'package:nesty_render/nesty_render.dart';
 /// `HintShownEffect`). The arrow over the source and the target's glow are
 /// Lottie clips in the `FxLayer`; this is the static path between them.
 ///
-/// The arc is a quadratic from beside the source doll's middle to beside the
-/// target's head, bulging away from the board's middle (the design's hint
-/// frame: `curve([s.cx − 16, s.dt + 66], [352, 480], [t.cx + 48, t.dt + 6])`,
-/// generalized: the control point sits 0.4 × the chord off its middle). Its
-/// dashes (`2 10`, round caps, a cream underlay under `#F2893B`) and the
+/// The design's hint frame draws `curve([s.cx − 16, s.dt + 66], [352, 480],
+/// [t.cx + 48, t.dt + 6])`: from over the source doll's upper body, 66
+/// below its top (two thirds of that 99 dp doll; never lower than two
+/// thirds of a smaller one), to beside the target doll's head on the side
+/// the arc comes from,
+/// the quadratic's control point 0.4 × the chord off its middle toward that
+/// side, so the arrowhead (NestyBoard:185 `head`, along the last tangent)
+/// points into the target's head. Generalized here:
+/// - the arc arrives on the source's side of the target (from its right
+///   when the source is right of it); for a move within one column, from
+///   the board's middle, where there is room;
+/// - an empty target ends beside the head of the doll that will stand
+///   there (the moving nest), not the tallest size's;
+/// - a mostly horizontal chord bulges up, over the dolls.
+///
+/// Its dashes (`2 10`, round caps, a cream underlay under `#F2893B`) and the
 /// arrowhead are built into paths once per hint ([show]); every frame only
 /// draws them (CLAUDE.md rule 8).
 ///
@@ -38,11 +49,22 @@ class HintLayer extends Component {
   static const gap = 10.0;
 
   /// How far the control point sits off the chord's middle, per chord
-  /// length (the design's hint frame: 138 of 341).
+  /// length (the design's hint frame: 135 of 341).
   // TODO(design): frame 3.1 shows one arc (r0c3 → r2c0); the curve for
-  // other moves (same shelf, neighbours, the extra slots) is generalized
-  // from it here and needs a design check (BACKLOG "Design gaps").
+  // other moves (same shelf, one column, upward, the extra slots) is
+  // generalized from it here and needs a design check (BACKLOG "Design
+  // gaps").
   static const bulge = 0.4;
+
+  /// The design's offsets, in reference units at board scale 1: the start
+  /// sits 16 toward the target from the source's centre and 66 below its
+  /// doll's top, but no deeper than two thirds of the doll (a small doll);
+  /// the end 48 beside the target's centre and 6 below its doll's top.
+  static const startInset = 16.0;
+  static const startBelowTop = 66.0;
+  static const startDepth = 2 / 3;
+  static const endBeside = 48.0;
+  static const endBelowTop = 6.0;
 
   Move? _move;
   Path? _dashes;
@@ -95,34 +117,39 @@ class HintLayer extends Component {
     final target = geometry.slotOrNull(move.to);
     if (source == null || target == null) return;
     final s = geometry.scale;
-    final sourceSize = _sizeOn(move.from, geometry);
-    final targetSize = _sizeOn(move.to, geometry);
-    final towardTarget = target.centerX < source.centerX ? -1.0 : 1.0;
-    final sourceTop = source.dollTopY(sourceSize);
-    final targetTop = target.dollTopY(targetSize);
-    final sourceHeight = source.dollHeight(sourceSize);
-    // Beside the source doll's middle (66 of the design's 99 dp doll), and
-    // beside the target's head, on the side the arc comes from.
-    final a = Offset(
-      source.centerX + 16 * s * towardTarget,
-      sourceTop + sourceHeight * 2 / 3,
+    final moverSize = _sizeOn(move.from, geometry);
+    // An empty target: the head of the nest that will stand there.
+    final targetSize = _sizeOn(move.to, geometry, empty: moverSize);
+    // +1: the arc arrives from the target's right (NestyBoard:208, the
+    // source is right of the target), −1 from its left.
+    final side = arrivalSide(
+      sourceX: source.centerX,
+      targetX: target.centerX,
+      middleX: geometry.fit.x(BoardLayoutConstants.centerX),
     );
-    final e = Offset(target.centerX - 48 * s * towardTarget, targetTop + 6 * s);
+    final a = Offset(
+      source.centerX - startInset * s * side,
+      source.dollTopY(moverSize) +
+          math.min(
+            startBelowTop * s,
+            source.dollHeight(moverSize) * startDepth,
+          ),
+    );
+    final e = Offset(
+      target.centerX + endBeside * s * side,
+      target.dollTopY(targetSize) + endBelowTop * s,
+    );
     final chord = e - a;
     final length = chord.distance;
     if (length <= 0) return;
-    // The normal that bulges away from the board's middle (a mostly
-    // horizontal chord bulges up).
+    // The normal toward the arrival side (a mostly horizontal chord bulges
+    // up), so the last tangent heads into the target's head.
     var normal = Offset(chord.dy, -chord.dx) / length;
-    final middle = (a + e) / 2;
-    final outward = middle.dx >= geometry.fit.x(BoardLayoutConstants.centerX)
-        ? 1.0
-        : -1.0;
-    final preference = Offset(outward * chord.dy.abs(), -chord.dx.abs());
+    final preference = Offset(side * chord.dy.abs(), -chord.dx.abs());
     if (normal.dx * preference.dx + normal.dy * preference.dy < 0) {
       normal = -normal;
     }
-    final c = middle + normal * (bulge * length);
+    final c = (a + e) / 2 + normal * (bulge * length);
     start = a;
     control = c;
     end = e;
@@ -158,13 +185,27 @@ class HintLayer extends Component {
     _builds++;
   }
 
-  /// The outer size of [slotId]'s top nest (the tallest size for an empty
-  /// slot).
-  int _sizeOn(String slotId, BoardGeometry geometry) {
+  /// Which side of the target the arc arrives on: +1 from its right, −1
+  /// from its left. From the source's side; within one column, from the
+  /// board's middle ([middleX]).
+  static double arrivalSide({
+    required double sourceX,
+    required double targetX,
+    required double middleX,
+  }) {
+    const epsilon = 0.5;
+    if (sourceX > targetX + epsilon) return 1;
+    if (sourceX < targetX - epsilon) return -1;
+    return targetX <= middleX ? 1 : -1;
+  }
+
+  /// The outer size of [slotId]'s top nest, or [empty] (the tallest size by
+  /// default) for an empty slot.
+  int _sizeOn(String slotId, BoardGeometry geometry, {int? empty}) {
     final view = scene.slot(slotId)?.view;
     return view != null && view.hasNest
         ? view.outerSize
-        : geometry.shape.maxSize;
+        : (empty ?? geometry.shape.maxSize);
   }
 
   // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──

@@ -90,6 +90,29 @@ void main() {
     await database.close();
   });
 
+  test('deleting the stored Music setting emits the default', () async {
+    final database = await HiveDatabaseService.open(directory: directory.path);
+    await database.setMusicEnabled(false);
+
+    final next = database.musicEnabledChanges.first;
+    await Hive.box<Object>(HiveBoxes.settings).delete(SettingsKeys.music);
+
+    expect(await next, SettingsDefaults.music);
+    expect(database.musicEnabled, SettingsDefaults.music);
+    await database.close();
+  });
+
+  test('a Music setting of the wrong type emits the default', () async {
+    final database = await HiveDatabaseService.open(directory: directory.path);
+
+    final next = database.musicEnabledChanges.first;
+    await Hive.box<Object>(HiveBoxes.settings).put(SettingsKeys.music, 'on');
+
+    expect(await next, SettingsDefaults.music);
+    expect(database.musicEnabled, SettingsDefaults.music);
+    await database.close();
+  });
+
   test(
     'a first write that fails and rolls back ends on the stored value',
     () async {

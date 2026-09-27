@@ -17,6 +17,12 @@ abstract interface class DatabaseService {
   bool get musicEnabled;
   Future<void> setMusicEnabled(bool enabled);
 
+  /// Emits the Music setting every time the stored value changes, including
+  /// a rollback or deletion back to the default. Each emission equals what
+  /// [musicEnabled] reads at that point. The music service follows it, so
+  /// the Pause and Settings toggles only write the setting.
+  Stream<bool> get musicEnabledChanges;
+
   bool get hapticsEnabled;
   Future<void> setHapticsEnabled(bool enabled);
 

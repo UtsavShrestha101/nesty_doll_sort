@@ -11,14 +11,16 @@ import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 /// Frame 4.7's new-chapter ribbon, "CHAPTER {n} · {name}", on
 /// `ui_chapter_ribbon` (2.6 s: it pops in, holds and fades; LOTTIE.md "New
 /// chapter (4.7)"; m2-lottie-design §12). The localized label follows the
-/// file's `ribbon` null.
+/// file's `ribbon` null, fitted to a 312 × 32 box on it (LOTTIE.md v3).
 ///
 /// It plays once when it appears and calls [onDone] when it has finished
 /// (half as long under reduced motion). Without the file (rule 3, R10) a
 /// flat blue band carries the label for as long and then fades.
 ///
-/// The widget is the file's 360×100 canvas (scaled down on narrower
-/// screens); it takes no touches.
+/// The widget is the file's 410×100 canvas: place it with [rectIn], which
+/// scales it by `LottieRibbonFit.scaleFor` (full size on a 390 dp screen,
+/// where the canvas overhangs both edges and the tails pass them by up to
+/// 6 dp during the pop, as the owner accepted). It takes no touches.
 class ChapterRibbon extends StatefulWidget {
   const ChapterRibbon({
     required this.number,
@@ -35,12 +37,24 @@ class ChapterRibbon extends StatefulWidget {
   final VoidCallback onDone;
   final FxLibrary? library;
 
-  static const Size canvas = Size(360, 100);
+  /// The file's canvas (`LottieLabelStyles.chapterRibbon.canvas`).
+  static const Size canvas = Size(410, 100);
 
   /// The ribbon's centre below the safe-area top: over the top shelf,
   /// where frame 4.7 names Chapter 4 (NestyBoard: top 150 on a 59 safe
   /// area, about 58 tall).
   static const double centerTop = 120;
+
+  /// Where the ribbon goes on a [screen] with safe-area [padding]: the
+  /// canvas at `LottieRibbonFit.scaleFor(screen.width)`, centred across the
+  /// screen (so it may start left of 0), its centre [centerTop] below the
+  /// safe area. For a `Positioned.fromRect` in the page's stack.
+  static Rect rectIn(Size screen, EdgeInsets padding) =>
+      LottieRibbonFit.rectFor(
+        canvas,
+        screenWidth: screen.width,
+        centerY: padding.top + centerTop,
+      );
 
   @override
   State<ChapterRibbon> createState() => _ChapterRibbonState();
@@ -115,7 +129,7 @@ class _ChapterRibbonState extends State<ChapterRibbon> {
           fallback: AnimatedOpacity(
             opacity: _fading ? 0 : 1,
             duration: context.uiDuration(UiMotionTokens.modalInMs),
-            child: const CustomPaint(painter: _RibbonBandPainter()),
+            child: const CustomPaint(painter: ChapterRibbonPainter()),
           ),
         ),
       ),
@@ -123,22 +137,30 @@ class _ChapterRibbonState extends State<ChapterRibbon> {
   }
 }
 
-/// The ribbon's rest look without its file: frame 4.7's blue band
-/// (`#6FA8DC → #3E7FC0`, a 5 px `#2B5E93` edge, radius 14) with folded
-/// tails, 290 wide on the 360×100 canvas.
-final class _RibbonBandPainter extends CustomPainter {
-  const _RibbonBandPainter();
+/// The ribbon's rest look without its file (rule 3, R10): what
+/// `ui_chapter_ribbon` shows while it holds (frames 18–138), on the 410×100
+/// canvas around the anchor (205, 50). The 336×48 band (radius 16,
+/// `#3D8FDE`) over its `#2B6BB0` edge 6 below, a 30 % white highlight, and
+/// the `#2E7AC7` tails 22 past the band with a 12 notch and a `#1C4F82`
+/// fold under it.
+final class ChapterRibbonPainter extends CustomPainter {
+  const ChapterRibbonPainter();
 
-  static final Paint _tail = Paint()..color = const Color(0xFF2B5E93);
-  static final Paint _edge = Paint()..color = const Color(0xFF2B5E93);
-  static final Paint _face = Paint();
-  static final Paint _highlight = Paint()..color = const Color(0x66FFFFFF);
+  static const _anchor = Offset(205, 50);
 
-  static const _band = Rect.fromLTWH(35, 28, 290, 40);
-  static const _gradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [Color(0xFF6FA8DC), Color(0xFF3E7FC0)],
+  static final Paint _tail = Paint()..color = const Color(0xFF2E7AC7);
+  static final Paint _fold = Paint()..color = const Color(0xFF1C4F82);
+  static final Paint _edge = Paint()..color = const Color(0xFF2B6BB0);
+  static final Paint _face = Paint()..color = const Color(0xFF3D8FDE);
+  static final Paint _highlight = Paint()..color = const Color(0x4DFFFFFF);
+
+  static final RRect _band = RRect.fromRectAndRadius(
+    Rect.fromCenter(center: Offset.zero, width: 336, height: 48),
+    const Radius.circular(16),
+  );
+  static final RRect _shine = RRect.fromRectAndRadius(
+    Rect.fromCenter(center: const Offset(0, -19), width: 320, height: 5),
+    const Radius.circular(2.5),
   );
 
   @override
@@ -148,38 +170,34 @@ final class _RibbonBandPainter extends CustomPainter {
       ..scale(
         size.width / ChapterRibbon.canvas.width,
         size.height / ChapterRibbon.canvas.height,
-      );
-    final left = Path()
-      ..moveTo(_band.left - 14, _band.top + 12)
-      ..lineTo(_band.left + 20, _band.top + 12)
-      ..lineTo(_band.left + 20, _band.bottom + 10)
-      ..lineTo(_band.left - 14, _band.bottom + 10)
-      ..lineTo(_band.left - 2, _band.top + 12 + (_band.height - 2) / 2)
-      ..close();
-    final right = Path()
-      ..moveTo(_band.right + 14, _band.top + 12)
-      ..lineTo(_band.right - 20, _band.top + 12)
-      ..lineTo(_band.right - 20, _band.bottom + 10)
-      ..lineTo(_band.right + 14, _band.bottom + 10)
-      ..lineTo(_band.right + 2, _band.top + 12 + (_band.height - 2) / 2)
-      ..close();
-    final face = RRect.fromRectAndRadius(_band, const Radius.circular(14));
-    _face.shader = _gradient.createShader(_band);
-    canvas
-      ..drawPath(left, _tail)
-      ..drawPath(right, _tail)
-      ..drawRRect(face.shift(const Offset(0, 5)), _edge)
-      ..drawRRect(face, _face)
-      ..save()
-      ..clipRRect(face)
-      ..drawRect(
-        Rect.fromLTWH(_band.left, _band.top, _band.width, 2),
-        _highlight,
       )
-      ..restore()
+      ..translate(_anchor.dx, _anchor.dy);
+    for (final side in const [-1.0, 1.0]) {
+      canvas
+        ..drawPath(_tailPath(side), _tail)
+        ..drawPath(_foldPath(side), _fold);
+    }
+    canvas
+      ..drawRRect(_band.shift(const Offset(0, 6)), _edge)
+      ..drawRRect(_band, _face)
+      ..drawRRect(_shine, _highlight)
       ..restore();
   }
 
+  static Path _tailPath(double side) => Path()
+    ..moveTo(154 * side, -10)
+    ..lineTo(190 * side, -10)
+    ..lineTo(178 * side, 8)
+    ..lineTo(190 * side, 34)
+    ..lineTo(154 * side, 34)
+    ..close();
+
+  static Path _foldPath(double side) => Path()
+    ..moveTo(154 * side, 24)
+    ..lineTo(168 * side, 24)
+    ..lineTo(168 * side, 34)
+    ..close();
+
   @override
-  bool shouldRepaint(_RibbonBandPainter oldDelegate) => false;
+  bool shouldRepaint(ChapterRibbonPainter oldDelegate) => false;
 }

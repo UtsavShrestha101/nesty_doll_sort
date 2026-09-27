@@ -190,6 +190,7 @@ final class FxClipParams {
     this.targetPos,
     this.rim,
     this.tint,
+    this.revealDrop,
     this.shake = true,
   });
 
@@ -232,6 +233,12 @@ final class FxClipParams {
   /// Colour whose `DollSwatch.base` fills `tint` (`doll_reveal`'s drops).
   final DollColor? tint;
 
+  /// `doll_reveal`: how far above the stand its `drop` null starts the new
+  /// top, in composition units: the tower's step of depth 1, so the file
+  /// picks the nest up where its silhouette stood (LOTTIE.md v3 "Reveal
+  /// drop"). Null: the authored 18.
+  final double? revealDrop;
+
   /// False under reduced motion: `doll_invalid`'s `target` null and
   /// `fx_ice`'s `ice` null get static values (§13).
   final bool shake;
@@ -252,6 +259,7 @@ final class FxClipParams {
       other.targetPos == targetPos &&
       other.rim == rim &&
       other.tint == tint &&
+      other.revealDrop == revealDrop &&
       other.shake == shake;
 
   @override
@@ -269,6 +277,7 @@ final class FxClipParams {
     targetPos,
     rim,
     tint,
+    revealDrop,
     shake,
   );
 

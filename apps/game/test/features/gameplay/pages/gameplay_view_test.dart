@@ -1,9 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
+import 'package:nesty_game/core/services/audio/fake_audio_service.dart';
+import 'package:nesty_game/core/services/audio/jingle_player.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
+import 'package:nesty_game/core/services/music/fake_music_service.dart';
+import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
@@ -26,15 +32,28 @@ import '../../support/screen_harness.dart';
 import '../bloc/support/bloc_fixtures.dart';
 import '../bloc/support/scripted_solver_service.dart';
 
+/// Half the chapter ribbon's width at rest on its canvas: 380 dp (LOTTIE.md
+/// v3 "Ribbons": 336 band + 22 dp tails each side).
+const double _ribbonRestHalfWidth = 190;
+
 /// The page on a real bloc over fakes, with a recording board in place of
 /// Flame: the test plays the board's side (its layouts and reports).
 final class _Screen {
-  _Screen._(this.bloc, this.factory, this.database, this.homes);
+  _Screen._(
+    this.bloc,
+    this.factory,
+    this.database,
+    this.homes,
+    this.music,
+    this.jingles,
+  );
 
   final GameplayBloc bloc;
   final FakeBoardFactory factory;
   final FakeDatabaseService database;
   final List<int> homes;
+  final FakeMusicService music;
+  final FakeAudioService jingles;
 
   FakeGameplayBoard get board => factory.board!;
   GameplayState get state => bloc.state.data!;
@@ -71,6 +90,8 @@ Future<_Screen> _pump(
   final factory = FakeBoardFactory(drivesOutcomes: drivesOutcomes);
   final database = FakeDatabaseService();
   final homes = <int>[];
+  final music = FakeMusicService();
+  final jingles = FakeAudioService();
   await pumpScreen(
     tester,
     BlocProvider.value(
@@ -83,6 +104,8 @@ Future<_Screen> _pump(
           database: database,
           fx: FakeFxLibrary(),
           feedback: RecordingCues(),
+          music: music,
+          jingles: jingles,
         ),
         onHome: () => homes.add(1),
         boardFactory: factory.call,
@@ -93,7 +116,7 @@ Future<_Screen> _pump(
     reduceMotion: reduceMotion,
   );
   await tester.pump();
-  return _Screen._(bloc, factory, database, homes);
+  return _Screen._(bloc, factory, database, homes, music, jingles);
 }
 
 /// The tutorial won: red2 into red3, then red1 into both (the board's
@@ -445,6 +468,151 @@ void main() {
     expect(screen.homes, hasLength(1));
   });
 
+  group('music (AUDIO.md "Music rules")', () {
+    testWidgets('the page never picks a track itself (the route observer '
+        'does), and nothing ducks without an overlay', (tester) async {
+      final screen = await _pump(tester);
+      await screen.move(tester, red2, red3);
+      await _settle(tester);
+      expect(screen.music.calls, isEmpty);
+      expect(screen.jingles.jingles, isEmpty);
+    });
+
+    testWidgets('the win overlay ducks the music to 0.3 while it is up; '
+        'Continue brings it back', (tester) async {
+      final second = levelFrom(tutorialLevelJson);
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(tutorialLevel), entryFor(second, order: 2)],
+      );
+      await _win(tester, screen);
+      expect(screen.music.ducking, isEmpty, reason: 'the set still flies');
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      expect(screen.music.calls, [const MusicCall.duck(DuckReason.win)]);
+      expect(DuckReason.win.factor, SoundTokens.musicDuckWin);
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(screen.state.levelNumber, 2);
+      expect(screen.music.ducking, isEmpty);
+      expect(screen.music.calls, [
+        const MusicCall.duck(DuckReason.win),
+        const MusicCall.unduck(DuckReason.win),
+      ]);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('out of moves: the sheet ducks the music to 0.4 and plays '
+        'jingle_oom once the duck is in; closing it lifts the duck', (
+      tester,
+    ) async {
+      final screen = await _pump(tester, entries: [entryFor(outOfMovesLevel)]);
+      await screen.move(tester, 'r0c0', 'r0c3');
+      screen.board.callbacks.onOutOfMoves();
+      await tester.pump();
+      expect(screen.music.ducking, {DuckReason.outOfMoves});
+      expect(screen.jingles.jingles, isEmpty);
+      await tester.pump(
+        const Duration(milliseconds: SoundTokens.musicFadeDuckInMs),
+      );
+      expect(screen.jingles.jingles, [Jingle.outOfMoves]);
+
+      await tester.tap(find.text('Take back your last move'));
+      await _settle(tester);
+      expect(find.text('No moves left!'), findsNothing);
+      expect(screen.music.ducking, isEmpty);
+      expect(screen.jingles.jingles, [Jingle.outOfMoves], reason: 'once');
+    });
+
+    testWidgets('a sheet open when the chapter ribbon leaves keeps its duck '
+        'and plays jingle_oom once', (tester) async {
+      final screen = await _pump(
+        tester,
+        entries: [
+          entryFor(tutorialLevel),
+          entryFor(outOfMovesLevel, order: 2, chapterId: 'ch02'),
+        ],
+        level: 2,
+      );
+      expect(find.byType(ChapterRibbon), findsOneWidget);
+      await screen.move(tester, 'r0c0', 'r0c3');
+      screen.board.callbacks.onOutOfMoves();
+      await tester.pump();
+      expect(find.text('No moves left!'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.byType(ChapterRibbon), findsNothing);
+      expect(find.text('No moves left!'), findsOneWidget);
+      expect(screen.music.calls, [const MusicCall.duck(DuckReason.outOfMoves)]);
+      expect(screen.jingles.jingles, [Jingle.outOfMoves]);
+    });
+
+    testWidgets('a sheet dismissed before the duck is in plays no jingle', (
+      tester,
+    ) async {
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        drivesOutcomes: false,
+      );
+      await screen.move(tester, 'r0c0', 'r0c3');
+      await tester.pump();
+      expect(screen.music.ducking, {DuckReason.outOfMoves});
+      await tester.tapAt(const Offset(195, 100));
+      await _settle(tester);
+      expect(screen.music.ducking, isEmpty);
+      expect(screen.jingles.jingles, isEmpty);
+    });
+
+    testWidgets('Pause ducks the music to 0.5; Resume lifts it', (
+      tester,
+    ) async {
+      final screen = await _pump(tester);
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+      expect(screen.music.ducking, {DuckReason.pause});
+      await tester.tap(find.text('Resume'));
+      await _settle(tester);
+      expect(screen.music.ducking, isEmpty);
+      expect(screen.music.calls, [
+        const MusicCall.duck(DuckReason.pause),
+        const MusicCall.unduck(DuckReason.pause),
+      ]);
+    });
+
+    testWidgets("Pause's Music toggle writes the setting, which the music "
+        'service follows; Sound gates the SFX and jingles as they play', (
+      tester,
+    ) async {
+      final screen = await _pump(tester);
+      final changes = <bool>[];
+      final subscription = screen.database.musicEnabledChanges.listen(
+        changes.add,
+      );
+      addTearDown(subscription.cancel);
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      await tester.tap(find.bySemanticsLabel('Music'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(screen.database.musicEnabled, isFalse);
+      expect(changes, [false]);
+      await tester.tap(find.bySemanticsLabel('Music'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(changes, [false, true]);
+
+      await tester.tap(find.bySemanticsLabel('Sound'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(screen.database.soundEnabled, isFalse);
+      // The page never calls setEnabled itself: one path, the setting.
+      expect(
+        screen.music.calls.map((c) => c.command),
+        isNot(contains(MusicCommand.setEnabled)),
+      );
+    });
+  });
+
   testWidgets('the back button and leaving the app open the pause dialog', (
     tester,
   ) async {
@@ -602,8 +770,24 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         expectNoLayoutErrors(tester);
         final ribbon = tester.getRect(find.byType(ChapterRibbon));
-        expect(ribbon.left, greaterThanOrEqualTo(0));
-        expect(ribbon.right, lessThanOrEqualTo(size.width));
+        // The canvas 1:1 on the design's 390 dp screen, scaled down on
+        // narrower ones and never up (LOTTIE.md v3 "Ribbons").
+        final ribbonScale = math.min(1.0, size.width / 390);
+        expect(
+          ribbon.size,
+          within(distance: 1e-9, from: ChapterRibbon.canvas * ribbonScale),
+        );
+        expect(ribbon.center.dx, closeTo(size.width / 2, 1e-9));
+        // The ribbon at rest is 380 dp of the canvas' width: on screen.
+        // Only its 106 % pop may pass a 390 dp edge, by up to 6 dp.
+        expect(
+          ribbon.center.dx - _ribbonRestHalfWidth * ribbonScale,
+          greaterThanOrEqualTo(-1e-9),
+        );
+        expect(
+          ribbon.center.dx + _ribbonRestHalfWidth * ribbonScale,
+          lessThanOrEqualTo(size.width + 1e-9),
+        );
         // Over the top shelf, clear of the HUD's family counter.
         expect(
           ribbon.center.dy,

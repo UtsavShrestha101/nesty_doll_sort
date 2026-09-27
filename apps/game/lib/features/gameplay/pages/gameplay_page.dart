@@ -5,8 +5,10 @@ import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
+import 'package:nesty_game/core/services/audio/jingle_player.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
@@ -37,6 +39,8 @@ class GameplayPage extends StatelessWidget implements AutoRouteWrapper {
         audio: get<AudioService>(),
         haptics: get<HapticsService>(),
       ),
+      music: get<MusicService>(),
+      jingles: get<JinglePlayer>(),
     ),
     child: BlocProvider(
       create: (_) => get<GameplayBloc>()..add(GameplayStarted(levelNumber)),

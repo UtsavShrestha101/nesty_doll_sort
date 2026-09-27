@@ -1,12 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
+import 'package:nesty_render/nesty_render.dart';
 
 import 'support/design_lottie.dart';
 
 void main() {
   test('FxImageSlot covers every image asset of every file, at its declared '
-      'size', () {
+      'asset size', () {
     final declared = <String, (double, double)>{};
     for (final name in designLottieNames()) {
       for (final asset in readDesignLottie(name)['assets']! as List<Object?>) {
@@ -24,13 +25,71 @@ void main() {
     );
     for (final slot in FxImageSlot.values) {
       expect(
-        (slot.declaredWidth, slot.declaredHeight),
+        (slot.assetWidth, slot.assetHeight),
         declared[slot.assetId],
         reason: slot.assetId,
       );
       expect(FxImageSlot.fromAssetId(slot.assetId), slot);
     }
     expect(FxImageSlot.fromAssetId('doll_matte'), isNull);
+  });
+
+  test('board pieces and the unlock symbol are declared at 3× their box '
+      '(LOTTIE.md v3); rasters count in the box, which the skin service '
+      'knows', () {
+    expect(FxImageSlot.pieceDensity, 3);
+    for (final slot in FxImageSlot.values) {
+      final piece = slot.piece;
+      expect(slot.assetWidth, slot.declaredWidth * slot.density);
+      expect(slot.assetHeight, slot.declaredHeight * slot.density);
+      if (slot.isDoll) {
+        expect(slot.density, 1);
+        expect((slot.declaredWidth, slot.declaredHeight), (512.0, 768.0));
+      } else if (piece != null) {
+        expect(slot.density, 3);
+        // The sprite's reference-board box (glow ring 116×52).
+        expect(
+          (slot.declaredWidth, slot.declaredHeight),
+          (piece.designSize.width, piece.designSize.height),
+          reason: slot.assetId,
+        );
+      } else {
+        expect(slot, FxImageSlot.unlockSymbol);
+        expect(slot.density, 3);
+        expect((slot.declaredWidth, slot.declaredHeight), (12.0, 12.0));
+      }
+    }
+    expect(
+      (FxImageSlot.glowRing.assetWidth, FxImageSlot.glowRing.declaredWidth),
+      (348, 116),
+    );
+  });
+
+  test('a board sprite fills its piece slot as it comes: pixelScale per box '
+      'unit, its crop in box units', () async {
+    final library = await BoardSpriteLibrary.fromSvgs({
+      BoardSprite.glowRing:
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 116 52" '
+          'width="116" height="52"><ellipse cx="58" cy="26" rx="40" ry="14" '
+          'fill="#FFD27A"/></svg>',
+    });
+    addTearDown(library.dispose);
+    final sprite = await library.rasterize(BoardSprite.glowRing, 2.4);
+    addTearDown(sprite.image.dispose);
+    // What LevelSkinImages serves (m2-lottie-design §3).
+    final raster = FxRaster(
+      sprite.image,
+      scale: sprite.pixelScale,
+      origin: sprite.cropOrigin,
+    );
+    expect(raster.origin.dx, greaterThan(0), reason: 'the ellipse is cropped');
+    // The compensation: 2.4 raster px per box unit are 0.8 per asset px, so
+    // the layer's 33.33 % becomes 1/2.4 and a raster px lands on
+    // 1/2.4 box units, whatever the export's density.
+    const k = 1 / 3;
+    final r = raster.scale / FxImageSlot.glowRing.density;
+    expect(r, closeTo(0.8, 1e-12));
+    expect(k / r, closeTo(1 / 2.4, 1e-12));
   });
 
   test('doll slots name their role and part; board pieces their sprite', () {

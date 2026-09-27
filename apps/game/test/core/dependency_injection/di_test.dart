@@ -6,17 +6,24 @@ import 'package:nesty_game/core/repository/bundled_level_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/router/music_route_observer.dart';
 import 'package:nesty_game/core/services/ads/ads_service.dart';
 import 'package:nesty_game/core/services/ads/fake_ads_service.dart';
 import 'package:nesty_game/core/services/analytics/analytics_service.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/audio/fake_audio_service.dart';
+import 'package:nesty_game/core/services/audio/jingle_player.dart';
 import 'package:nesty_game/core/services/audio/soloud_audio_service.dart';
+import 'package:nesty_game/core/services/audio/soloud_engine_host.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/haptics/fake_haptics_service.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
 import 'package:nesty_game/core/services/haptics/system_haptics_service.dart';
+import 'package:nesty_game/core/services/music/fake_music_service.dart';
+import 'package:nesty_game/core/services/music/jingle_cues.dart';
+import 'package:nesty_game/core/services/music/music_service.dart';
+import 'package:nesty_game/core/services/music/soloud_music_service.dart';
 import 'package:nesty_game/core/services/purchase/purchase_service.dart';
 import 'package:nesty_game/core/services/remote_config/defaults_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
@@ -49,6 +56,10 @@ void _expectEverythingResolves() {
   expect(get<RemoteConfigService>(), isNotNull);
   expect(get<SaveService>(), isNotNull);
   expect(get<AudioService>(), isNotNull);
+  // One service plays the SFX and the jingles (AudioModule).
+  expect(get<JinglePlayer>(), same(get<AudioService>()));
+  expect(get<MusicService>(), same(get<MusicService>()));
+  expect(get<JingleCues>(), same(get<JingleCues>()));
   expect(get<HapticsService>(), isNotNull);
   expect(get<LevelRepository>(), isNotNull);
   expect(get<SolverService>(), isNotNull);
@@ -56,6 +67,8 @@ void _expectEverythingResolves() {
   expect(get<FxLibrary>(), same(get<FxLibrary>()));
   expect(get<AppRouter>(), same(get<AppRouter>()));
   expect(get<LanguageCubit>(), same(get<LanguageCubit>()));
+  // A navigator takes its own observer.
+  expect(get<MusicRouteObserver>(), isNot(same(get<MusicRouteObserver>())));
   // Feature cubits are factories: a fresh one per route.
   final splash = get<SplashCubit>();
   final home = get<HomeCubit>();
@@ -79,6 +92,7 @@ void main() {
     expect(get<RemoteConfigService>(), isA<FakeRemoteConfigService>());
     expect(get<HapticsService>(), isA<FakeHapticsService>());
     expect(get<AudioService>(), isA<FakeAudioService>());
+    expect(get<MusicService>(), isA<FakeMusicService>());
     expect(get<SaveService>(), isA<FakeSaveService>());
     expect(get<SolverService>(), isA<FakeSolverService>());
     expect(get<SkinService>(), isA<FakeSkinService>());
@@ -103,6 +117,9 @@ void main() {
     expect(get<RemoteConfigService>(), isA<DefaultsRemoteConfigService>());
     // M2's real implementations (docs/plans/m2-lottie-design.md §16).
     expect(get<AudioService>(), isA<SoLoudAudioService>());
+    // The SFX and the music share one engine host (post-M2 audio).
+    expect(get<MusicService>(), isA<SoLoudMusicService>());
+    expect(get<SoLoudEngineHost>(), same(get<SoLoudEngineHost>()));
     expect(get<HapticsService>(), isA<SystemHapticsService>());
     expect(get<SolverService>(), isA<IsolateSolverService>());
     expect(get<LevelRepository>(), isA<BundledLevelRepository>());

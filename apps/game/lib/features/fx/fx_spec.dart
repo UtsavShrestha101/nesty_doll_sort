@@ -55,49 +55,20 @@ final class FxMarker {
   String toString() => 'FxMarker($name, $start+$duration)';
 }
 
-/// A stretch where the `travel` null does not move: two consecutive
-/// keyframes with the same value. lottie 3.6.1 returns the keyframe value
-/// without calling the position callback there, so the remap needs the
-/// anchor-delegate workaround (m2-lottie-design §6).
-final class FxHold {
-  const FxHold(this.start, this.end, this.value) : assert(end >= start);
-
-  /// Frames, inclusive of [start], exclusive of [end].
-  final double start;
-  final double end;
-
-  /// The held position, in canvas units.
-  final Offset value;
-
-  bool covers(double frame) => frame >= start && frame < end;
-
-  @override
-  bool operator ==(Object other) =>
-      other is FxHold &&
-      other.start == start &&
-      other.end == end &&
-      other.value == value;
-
-  @override
-  int get hashCode => Object.hash(start, end, value);
-
-  @override
-  String toString() => 'FxHold($start–$end at $value)';
-}
-
 /// A board-space file's `travel` null: authored from [s] toward [t]
 /// (LOTTIE.md "Travel remap").
+///
+/// It never holds: since LOTTIE.md v3 no two consecutive `travel` keyframes
+/// are equal (the sync rejects a hold), so lottie 3.6.1 calls the position
+/// callback on every frame and the remap needs no workaround.
 final class FxTravel {
-  const FxTravel({required this.s, required this.t, this.holds = const []});
+  const FxTravel({required this.s, required this.t});
 
   /// The authored start point, in canvas units.
   final Offset s;
 
   /// The authored end point, in canvas units.
   final Offset t;
-
-  /// Every hold of the null, in frame order.
-  final List<FxHold> holds;
 
   /// How far along S→T the authored point [v] is: its projection on the
   /// segment, 0 at [s] and 1 at [t], below 0 or above 1 where the authored
@@ -120,44 +91,22 @@ final class FxTravel {
       src.dy + (dst.dy - src.dy) * u,
     );
   }
-
-  /// The hold that covers [frame], or null while the null moves.
-  FxHold? holdAt(double frame) {
-    for (final hold in holds) {
-      if (hold.covers(frame)) return hold;
-    }
-    return null;
-  }
-
-  /// The hold whose stretch is nearest [frame]: the one to compensate when
-  /// the position callback was skipped, whatever lottie's frame rounding
-  /// did at a boundary. Null only when there are no holds.
-  FxHold? nearestHold(double frame) {
-    FxHold? best;
-    var bestDistance = double.infinity;
-    for (final hold in holds) {
-      final distance = hold.covers(frame)
-          ? 0.0
-          : (frame < hold.start ? hold.start - frame : frame - hold.end);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        best = hold;
-      }
-    }
-    return best;
-  }
 }
 
 /// One image layer, with the transform it was authored with, so the FX
 /// runtime can compensate for the raster the game supplies
 /// (m2-lottie-design §3).
+///
+/// Its transform is static: since LOTTIE.md v3 no image layer animates its
+/// anchor, position, scale or rotation (a lift, bob, pulse or burst is on a
+/// parent null such as `glow_pulse`; the sync rejects anything else), so a
+/// static compensated scale and anchor are exact on every frame.
 final class FxImageLayer {
   const FxImageLayer({
     required this.keyPath,
     required this.slot,
     required this.scale,
     required this.anchor,
-    this.scaleAnimated = false,
   });
 
   /// The lottie `KeyPath` of the layer: its name, prefixed by its precomp
@@ -167,17 +116,13 @@ final class FxImageLayer {
   /// The image asset it draws.
   final FxImageSlot slot;
 
-  /// The authored scale (1 = 100 %). For [scaleAnimated] layers, the first
-  /// keyframe's value; the runtime scales the animated value instead.
+  /// The authored scale (1 = 100 %): 0.1953 for a doll part on the 512×768
+  /// artboard, 0.3333 for a board piece declared at 3×.
   final Offset scale;
 
-  /// The authored anchor point, in declared asset px.
+  /// The authored anchor point, in asset px (`FxImageSlot.assetWidth`
+  /// units: 3 per box unit for a board piece since LOTTIE.md v3).
   final Offset anchor;
-
-  /// True when the scale is keyframed (`glow_ring`, `extra_slot`,
-  /// `ice_shatter`): it can't be replaced by a static value, so the runtime
-  /// divides the animated value by the raster scale in a callback.
-  final bool scaleAnimated;
 }
 
 /// Everything the game reads from one file without loading it: timing,
@@ -228,7 +173,9 @@ final class FxSpec {
 
   final FxKind kind;
 
-  /// Named segments, in frame order ([FxKind.segmented] files).
+  /// Named segments ([FxKind.segmented] files), in the file's own order,
+  /// which isn't frame order (`fx_ice` lists its `rest_*` markers after
+  /// `shatter`): look them up by name with [marker].
   final List<FxMarker> markers;
 
   /// The `travel` null ([FxKind.boardSpace] files).

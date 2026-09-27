@@ -95,26 +95,32 @@ abstract final class FxTiming {
   static const invalidShakeKeyframes = [0.0, -6.0, 6.0, -6.0, 6.0, -6.0, 0.0];
 
   /// `doll_complete`: the set leaves its slot and flies (700 ms). Dust,
-  /// sparkles, unlocks, ice and a destination reveal start here.
+  /// sparkles, unlocks, ice and a destination reveal start here. The
+  /// `travel` null's first key is here too (v3: no hold before it).
   static const completeFlyFrame = 42.0;
-
-  /// `doll_complete`'s `travel` null holds at S until [completeFlyFrame].
-  static const completeHoldEndFrame = 42.0;
 
   /// `ui_family_counter`: the old and new counts swap at the bump's peak.
   static const counterSwapFrame = 6.0;
 
-  /// `fx_glass_unlock`: the freed doll's hop, over which the hand-coded
-  /// 11 dp settle onto the stand surface is blended (frames 42–54).
-  static const unlockHopStartFrame = 42.0;
-  static const unlockHopEndFrame = 54.0;
+  /// `doll_reveal`: its `drop` null lowers the new top from its buried step
+  /// onto the stand over frames 0 to this one (easeOut,
+  /// `MotionTokens.curveEaseOut`); the wipe starts here. The nests still
+  /// buried shift one step down over the same frames (m2-lottie-design
+  /// §9.1).
+  static const revealDropEndFrame = 7.0;
 
-  /// The 11 dp between the case floor (`caseTop + 123`) and the stand
-  /// surface (`caseTop + 134`), in composition units.
-  static const unlockSettleUnits = 11.0;
+  /// `doll_reveal`'s `drop` null is authored from (0, −18) to (0, 0): the
+  /// 18-unit step of a nest buried at depth 1 on the reference board
+  /// (D21). The game scales it to the tower's own step.
+  static const revealDropUnits = 18.0;
+
+  /// `doll_reveal`: the wipe has covered the doll and `doll_silhouette`
+  /// ends, so the silhouette's shadow is never drawn twice under the
+  /// colour doll's.
+  static const revealWipeEndFrame = 19.0;
 
   /// `fx_ice`: one crack segment; stage n rests on frame
-  /// `iceStageFrames × n` (0 intact, 16, 32, 48).
+  /// `iceStageFrames × n` (0 intact, 16, 32, 48): its `rest_n` marker.
   static const iceStageFrames = 16.0;
 
   /// A sparkle is spawned on the flying set this often, from
@@ -134,9 +140,29 @@ abstract final class FxTiming {
 
   /// Win overlay: families start hopping this far apart (App Flow 2.8).
   static const winFamilyStaggerMs = 150.0;
+}
 
-  /// Hand-coded (no file): the revealed nest's D21 drop onto the stand and
-  /// the deeper silhouettes' one-step shift, before `doll_reveal` plays.
-  // TODO(M7): tune by feel (BACKLOG "Animation polish").
-  static const revealDropMs = 120.0;
+/// `fx_ice`'s segments by ice stage (LOTTIE.md v3 "When each one plays",
+/// m2-lottie-design §8): `crack_n` cracks to stage n, `crack_hit_n` is a
+/// hit that shakes and flashes stage n without a new crack (a counter with
+/// more hits than stages), and a paused composition rests on `rest_n`.
+/// Stage n is `BoardLayout.iceFrame(remaining:, initial:)`, 0–3.
+///
+/// Per event, never per frame: the names are built strings.
+abstract final class FxIceSegments {
+  /// The segment that cracks the ice to [stage] (1–3).
+  static String crack(int stage) => 'crack_$stage';
+
+  /// The hit that cracks nothing new on [stage] (0–3).
+  static String crackHit(int stage) => 'crack_hit_$stage';
+
+  /// The marker [stage] (0–3) rests on.
+  static String rest(int stage) => 'rest_$stage';
+
+  static const shatter = 'shatter';
+
+  /// The frame a paused `fx_ice` of [spec] shows [stage] on: its `rest_n`
+  /// marker, or `16 n` (D51) in a file without one.
+  static double restFrame(FxSpec spec, int stage) =>
+      spec.marker(rest(stage))?.start ?? FxTiming.iceStageFrames * stage;
 }

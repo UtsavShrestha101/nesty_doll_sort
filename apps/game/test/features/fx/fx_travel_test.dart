@@ -1,6 +1,7 @@
-// The board-space `travel` remap and the hold workaround
-// (docs/plans/m2-lottie-design.md §6, LOTTIE.md "Travel remap"), through
-// the real delegates on the shipped files.
+// The board-space `travel` remap (docs/plans/m2-lottie-design.md §6,
+// LOTTIE.md "Travel remap"), through the real delegates on the shipped
+// files. Since v3 no `travel` null holds, so lottie calls the remap on every
+// frame and no anchor workaround is left.
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
@@ -95,11 +96,11 @@ void main() {
     });
   });
 
-  group('holds are remapped too (probe T10)', () {
+  group('no hold: the position callback alone remaps every frame (v3)', () {
     const src = Offset(250, 700);
     const dst = Offset(250, 300);
 
-    test('doll_complete draws at src through its 0–42 hold', () async {
+    test('doll_complete draws at src until it flies at frame 42', () async {
       final clip = await _clip(FxId.dollComplete, src: src, dst: dst);
       for (final frame in const [0.0, 5.0, 30.0, 41.0, 41.99]) {
         expect(
@@ -111,7 +112,7 @@ void main() {
       }
     });
 
-    test('and leaves the hold on the remapped path', () async {
+    test('and leaves it on the remapped path', () async {
       final clip = await _clip(FxId.dollComplete, src: src, dst: dst);
       for (final frame in const [42.0, 43.0, 60.0]) {
         await snapshotDrawable(clip, frame);
@@ -122,8 +123,8 @@ void main() {
       expect(_u(clip, src, dst), closeTo(1, 1e-3));
     });
 
-    test('without the anchor fix lottie would draw the authored S', () async {
-      // The bare remap callback: lottie never calls it inside a hold.
+    test('lottie calls the travel callback on every frame, before the first '
+        'key too', () async {
       final composition = await shippedOnce(FxId.dollComplete);
       final travel = fxSpecOf(FxId.dollComplete).travel!;
       var calls = 0;
@@ -145,21 +146,30 @@ void main() {
             ),
           ],
         );
-      drawable.setProgress(30 / composition.durationFrames);
-      final snap = await snapshot(
-        390,
-        844,
-        (canvas) => drawable.draw(
-          canvas,
-          const Rect.fromLTWH(0, 0, 390, 844),
-          fit: BoxFit.fill,
-        ),
-      );
-      expect(calls, 0);
-      expect(snap.alphaBounds()!.center.dx, closeTo(travel.s.dx, 1.5));
+      for (final frame in const [0.0, 10.0, 30.0, 41.5, 42.0, 50.0, 74.0]) {
+        calls = 0;
+        drawable.setProgress(frame / composition.durationFrames);
+        final snap = await snapshot(
+          390,
+          844,
+          (canvas) => drawable.draw(
+            canvas,
+            const Rect.fromLTWH(0, 0, 390, 844),
+            fit: BoxFit.fill,
+          ),
+        );
+        expect(calls, greaterThan(0), reason: 'frame $frame');
+        if (frame < 42) {
+          expect(
+            snap.alphaBounds()!.center.dx,
+            closeTo(src.dx, 1.5),
+            reason: 'frame $frame',
+          );
+        }
+      }
     });
 
-    test('ui_drag_hand: its S and T holds follow src and dst', () async {
+    test('ui_drag_hand: S and T follow src and dst', () async {
       const handSrc = Offset(140, 460);
       const handDst = Offset(320, 380);
       final spec = fxSpecOf(FxId.uiDragHand);
@@ -173,13 +183,6 @@ void main() {
         final b = (await snapshotDrawable(moved, frame)).alphaBounds()!;
         expect(b.left - a.left, closeTo(shift.dx, 1.5), reason: 'f$frame');
         expect(b.top - a.top, closeTo(shift.dy, 1.5), reason: 'f$frame');
-      }
-    });
-
-    test('nearestHold survives lottie rounding at the boundary', () {
-      final travel = fxSpecOf(FxId.dollComplete).travel!;
-      for (final frame in const [-0.01, 0.0, 20.0, 41.999, 42.0, 42.01]) {
-        expect(travel.nearestHold(frame), travel.holds.single);
       }
     });
   });

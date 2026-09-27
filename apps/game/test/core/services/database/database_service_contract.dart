@@ -46,5 +46,29 @@ void runDatabaseServiceContract(
       await database.setLanguage('fr');
       await emitted;
     });
+
+    test('musicEnabledChanges emits each stored Music setting, as '
+        'musicEnabled then reads it (the music service follows it)', () async {
+      final seen = <(bool, bool)>[];
+      final subscription = database.musicEnabledChanges.listen(
+        (value) => seen.add((value, database.musicEnabled)),
+      );
+      addTearDown(subscription.cancel);
+      await database.setMusicEnabled(false);
+      await database.setMusicEnabled(true);
+      await pumpEventQueue();
+      expect(seen, [(false, false), (true, true)]);
+    });
+
+    test('the other settings leave musicEnabledChanges quiet', () async {
+      final seen = <bool>[];
+      final subscription = database.musicEnabledChanges.listen(seen.add);
+      addTearDown(subscription.cancel);
+      await database.setSoundEnabled(false);
+      await database.setHapticsEnabled(false);
+      await database.setLanguage('fr');
+      await pumpEventQueue();
+      expect(seen, isEmpty);
+    });
   });
 }

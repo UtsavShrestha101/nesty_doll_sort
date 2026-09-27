@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/app/app.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/music/fake_music_service.dart';
+import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
@@ -19,7 +21,9 @@ import 'helpers/test_dependencies.dart';
 
 /// The main flow on the whole app over the fake DI graph (spec §10.1;
 /// m2-lottie-design §17 "Screens and UI"): Splash → Home → PLAY → the board
-/// laid out with its HUD and boosters, taking a tap → Pause → Home.
+/// laid out with its HUD and boosters, taking a tap → Pause → Home, with
+/// the music following it (AUDIO.md "Music rules"): home after the splash,
+/// game in the level, ducked under Pause, home again.
 ///
 /// The same path runs on a simulator with the real services in
 /// `integration_test/playthrough_test.dart`.
@@ -43,16 +47,19 @@ void main() {
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    final music = get<MusicService>() as FakeMusicService;
 
     await tester.pumpWidget(App(router: get<AppRouter>()));
     // The router parses the initial route asynchronously.
     await tester.pump();
     expect(find.byType(SplashPage), findsOneWidget);
     expect(find.text('Dusting the shelves…'), findsOneWidget);
+    expect(music.calls, isEmpty, reason: 'the splash is silent');
 
     await pumpFor(tester, const Duration(seconds: 1));
     expect(find.byType(SplashPage), findsNothing);
     expect(find.byType(HomePage), findsOneWidget);
+    expect(music.calls, [const MusicCall.playHome()]);
     final play = find.bySemanticsLabel('Play level 1');
     expect(play, findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -61,6 +68,7 @@ void main() {
     await pumpFor(tester, const Duration(seconds: 1));
     expect(find.byType(GameplayPage), findsOneWidget);
     expect(find.text('Level 1'), findsOneWidget);
+    expect(music.calls.last, const MusicCall.playGame());
     for (final label in ['Undo', 'Hint', '+Slot', 'Restart']) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
@@ -99,6 +107,7 @@ void main() {
     await pumpFor(tester, const Duration(milliseconds: 400));
     expect(find.byType(PauseDialog), findsOneWidget);
     expect(find.text('Paused'), findsOneWidget);
+    expect(music.ducking, {DuckReason.pause});
 
     await tester.tap(
       find.descendant(
@@ -112,6 +121,15 @@ void main() {
     // Nothing was won: Home still offers level 1.
     expect(get<SaveService>().currentLevel, 1);
     expect(find.bySemanticsLabel('Play level 1'), findsOneWidget);
+    expect(music.track, MusicTrack.home);
+    expect(music.ducking, isEmpty, reason: 'the dialog went with the level');
+    expect(music.calls, [
+      const MusicCall.playHome(),
+      const MusicCall.playGame(),
+      const MusicCall.duck(DuckReason.pause),
+      const MusicCall.playHome(),
+      const MusicCall.unduck(DuckReason.pause),
+    ]);
     expect(tester.takeException(), isNull);
   });
 }

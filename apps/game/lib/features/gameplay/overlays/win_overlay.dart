@@ -99,6 +99,17 @@ class WinOverlay extends StatefulWidget {
   /// 59 safe area); the confetti bursts from here.
   static const double ribbonCenter = 91;
 
+  /// `ui_win_ribbon`'s canvas (`LottieLabelStyles.winRibbon.canvas`): the
+  /// ribbon row is this tall, and the canvas is drawn in it at
+  /// `LottieRibbonFit.scaleFor` of the screen width, centred on the row, so
+  /// at full size on a 390 dp screen it overhangs both edges (LOTTIE.md v3;
+  /// the tails pass them by up to 6 dp during the pop, owner-accepted).
+  static const Size ribbonCanvas = Size(410, 110);
+
+  /// The ribbon's row, for tests.
+  @visibleForTesting
+  static const Key ribbonKey = Key('win-ribbon');
+
   @override
   State<WinOverlay> createState() => _WinOverlayState();
 }
@@ -216,24 +227,39 @@ class _WinOverlayState extends State<WinOverlay>
     final l10n = context.localizations;
     final summary = widget.summary;
     final title = l10n.winTitle;
+    const canvas = WinOverlay.ribbonCanvas;
+    final ribbonScale = LottieRibbonFit.scaleFor(
+      MediaQuery.sizeOf(context).width,
+    );
     return Padding(
       // The ribbon canvas' top (150 − 55 on a 59 safe area).
-      padding: const EdgeInsets.only(top: WinOverlay.ribbonCenter - 55),
+      padding: EdgeInsets.only(
+        top: WinOverlay.ribbonCenter - canvas.height / 2,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 360,
-            height: 110,
-            child: LottieTextOverlay(
-              label: title,
-              style: LottieLabelStyles.winRibbon,
-              lottie: LottieFxView(
-                id: FxId.uiWinRibbon,
-                controller: _ribbon,
-                library: widget.library,
+            key: WinOverlay.ribbonKey,
+            width: double.infinity,
+            height: canvas.height,
+            // The canvas may be wider than the screen: it overflows the row
+            // on both sides, centred on the anchor (205, 55).
+            child: OverflowBox(
+              minWidth: canvas.width * ribbonScale,
+              maxWidth: canvas.width * ribbonScale,
+              minHeight: canvas.height * ribbonScale,
+              maxHeight: canvas.height * ribbonScale,
+              child: LottieTextOverlay(
                 label: title,
-                fallback: const CustomPaint(painter: _WinRibbonPainter()),
+                style: LottieLabelStyles.winRibbon,
+                lottie: LottieFxView(
+                  id: FxId.uiWinRibbon,
+                  controller: _ribbon,
+                  library: widget.library,
+                  label: title,
+                  fallback: const CustomPaint(painter: WinRibbonPainter()),
+                ),
               ),
             ),
           ),
@@ -440,61 +466,67 @@ class _CoinPill extends StatelessWidget {
   }
 }
 
-/// The ribbon's rest look without its file (NestyOverlay 2.8): the orange
-/// band (`#F9A964 → #F2893B`, a 6 px `#B8561A` edge, radius 14) over two
-/// notched `#C4631E` tails, centred on the 360×110 canvas.
-final class _WinRibbonPainter extends CustomPainter {
-  const _WinRibbonPainter();
+/// The ribbon's rest look without its file (rule 3, R10): what
+/// `ui_win_ribbon` holds on after its pop (frame 18), on the 410×110 canvas
+/// around the anchor (205, 55). The 336×56 band (radius 16, `#F28A3B`)
+/// over its `#C4631F` edge 6 below, a 30 % white highlight, and the
+/// `#E07A2E` tails 22 past the band with a 12 notch and a `#9E4A14` fold
+/// under it (LOTTIE.md v3, as the Win screen mock).
+final class WinRibbonPainter extends CustomPainter {
+  const WinRibbonPainter();
 
-  static final Paint _tail = Paint()..color = const Color(0xFFC4631E);
-  static final Paint _edge = Paint()..color = const Color(0xFFB8561A);
-  static final Paint _face = Paint();
-  static final Paint _highlight = Paint()..color = const Color(0x66FFFFFF);
+  static const _anchor = Offset(205, 55);
 
-  static const _band = Rect.fromLTWH(35, 23, 290, 56);
-  static const _gradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [Color(0xFFF9A964), Color(0xFFF2893B)],
+  static final Paint _tail = Paint()..color = const Color(0xFFE07A2E);
+  static final Paint _fold = Paint()..color = const Color(0xFF9E4A14);
+  static final Paint _edge = Paint()..color = const Color(0xFFC4631F);
+  static final Paint _face = Paint()..color = const Color(0xFFF28A3B);
+  static final Paint _highlight = Paint()..color = const Color(0x4DFFFFFF);
+
+  static final RRect _band = RRect.fromRectAndRadius(
+    Rect.fromCenter(center: Offset.zero, width: 336, height: 56),
+    const Radius.circular(16),
+  );
+  static final RRect _shine = RRect.fromRectAndRadius(
+    Rect.fromCenter(center: const Offset(0, -23), width: 320, height: 5),
+    const Radius.circular(2.5),
   );
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas
       ..save()
-      ..scale(size.width / 360, size.height / 110);
-    // Tails: 48×44 from 16 below the box top, notched 14 deep.
-    final left = Path()
-      ..moveTo(13, 39)
-      ..lineTo(61, 39)
-      ..lineTo(61, 83)
-      ..lineTo(13, 83)
-      ..lineTo(27, 61)
-      ..close();
-    final right = Path()
-      ..moveTo(347, 39)
-      ..lineTo(299, 39)
-      ..lineTo(299, 83)
-      ..lineTo(347, 83)
-      ..lineTo(333, 61)
-      ..close();
-    final face = RRect.fromRectAndRadius(_band, const Radius.circular(14));
-    _face.shader = _gradient.createShader(_band);
-    canvas
-      ..drawPath(left, _tail)
-      ..drawPath(right, _tail)
-      ..drawRRect(face.shift(const Offset(0, 6)), _edge)
-      ..drawRRect(face, _face)
-      ..save()
-      ..clipRRect(face)
-      ..drawRect(
-        Rect.fromLTWH(_band.left, _band.top, _band.width, 2),
-        _highlight,
+      ..scale(
+        size.width / WinOverlay.ribbonCanvas.width,
+        size.height / WinOverlay.ribbonCanvas.height,
       )
-      ..restore()
+      ..translate(_anchor.dx, _anchor.dy);
+    for (final side in const [-1.0, 1.0]) {
+      canvas
+        ..drawPath(_tailPath(side), _tail)
+        ..drawPath(_foldPath(side), _fold);
+    }
+    canvas
+      ..drawRRect(_band.shift(const Offset(0, 6)), _edge)
+      ..drawRRect(_band, _face)
+      ..drawRRect(_shine, _highlight)
       ..restore();
   }
 
+  static Path _tailPath(double side) => Path()
+    ..moveTo(154 * side, -14)
+    ..lineTo(190 * side, -14)
+    ..lineTo(178 * side, 8)
+    ..lineTo(190 * side, 38)
+    ..lineTo(154 * side, 38)
+    ..close();
+
+  static Path _foldPath(double side) => Path()
+    ..moveTo(154 * side, 28)
+    ..lineTo(168 * side, 28)
+    ..lineTo(168 * side, 38)
+    ..close();
+
   @override
-  bool shouldRepaint(_WinRibbonPainter oldDelegate) => false;
+  bool shouldRepaint(WinRibbonPainter oldDelegate) => false;
 }

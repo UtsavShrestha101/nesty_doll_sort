@@ -107,7 +107,7 @@ void main() {
     bumped();
     params.reducedMotion = true;
     bumped();
-    params.unlockSettle = false;
+    params.revealDropUnits = 12;
     bumped();
     params.markChanged();
     bumped();
@@ -117,7 +117,7 @@ void main() {
     expect(params.rimColor, isNull);
     expect(params.travelSrc, isNull);
     expect(params.targetPos, isNull);
-    expect(params.unlockSettle, isTrue);
+    expect(params.revealDropUnits, isNull);
     // Reduced motion is the board's, not the clip's: it survives reset.
     expect(params.reducedMotion, isTrue);
   });

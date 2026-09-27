@@ -82,7 +82,6 @@ void main() {
     final tweens = hot('$_dir/hand_tween.dart');
     for (final signature in [
       'void update(double nowMs)',
-      'double get revealedBaseY',
       'double buriedBaseY(int depth)',
       'double lerp(double a, double b)',
     ]) {

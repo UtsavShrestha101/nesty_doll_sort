@@ -2,8 +2,9 @@
 // board sprite, theme, level, animation and font the code references must
 // be in the bundle. These checks load through the real asset bundle, so a
 // folder missing from pubspec.yaml fails here, not on a device. Later
-// features extend the lists (museum PNGs, music).
+// features extend the lists (museum PNGs).
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -61,8 +62,59 @@ void main() {
     expect(missing, isEmpty, reason: 'Not in the asset bundle');
   }
 
-  test('every sound event file ships', () {
-    expectAssets(SoundTokens.allFiles.map((f) => 'assets/audio/$f.wav'));
+  group('audio (design/audio/AUDIO.md)', () {
+    test('every sound event file and music loop ships in its format', () {
+      // SFX are WAV; the jingles and the streamed loops are Ogg Vorbis.
+      expectAssets(SoundTokens.allFiles.map((f) => 'assets/audio/$f.wav'));
+      expectAssets(SoundTokens.jingleFiles.map((f) => 'assets/audio/$f.ogg'));
+      expectAssets(SoundTokens.musicFiles.map((f) => 'assets/audio/$f.ogg'));
+      expect(SoundTokens.musicFiles, [
+        SoundTokens.musicGame,
+        SoundTokens.musicHome,
+      ]);
+    });
+
+    test('nothing else ships in assets/audio/ (never AUDIO.md)', () {
+      expect(assets.where((a) => a.startsWith('assets/audio/')).toSet(), {
+        for (final f in SoundTokens.allFiles) 'assets/audio/$f.wav',
+        for (final f in SoundTokens.jingleFiles) 'assets/audio/$f.ogg',
+        for (final f in SoundTokens.musicFiles) 'assets/audio/$f.ogg',
+      });
+    });
+
+    test(
+      'the loops start with an Ogg page and are their token length',
+      () async {
+        for (final (file, frames) in [
+          (SoundTokens.musicHome, SoundTokens.musicHomeFrames),
+          (SoundTokens.musicGame, SoundTokens.musicGameFrames),
+        ]) {
+          final data = await rootBundle.load('assets/audio/$file.ogg');
+          final bytes = data.buffer.asUint8List(
+            data.offsetInBytes,
+            data.lengthInBytes,
+          );
+          expect(String.fromCharCodes(bytes, 0, 4), 'OggS', reason: file);
+          // Walk the pages: the last one's granule position is the stream's
+          // length in frames (sync_design_assets checks every page and its
+          // CRC; this pins the bundled copy).
+          final view = ByteData.sublistView(bytes);
+          var offset = 0;
+          var granule = -1;
+          while (offset + 27 <= bytes.length) {
+            granule = view.getInt64(offset + 6, Endian.little);
+            final segments = bytes[offset + 26];
+            var body = 0;
+            for (var i = 0; i < segments; i++) {
+              body += bytes[offset + 27 + i];
+            }
+            offset += 27 + segments + body;
+          }
+          expect(offset, bytes.length, reason: file);
+          expect(granule, frames, reason: file);
+        }
+      },
+    );
   });
 
   test('every doll color has its belly symbol', () {

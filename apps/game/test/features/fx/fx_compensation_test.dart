@@ -56,7 +56,8 @@ Future<Snapshot> _snapAuthored(
 
 /// The frames at which each file's image layers are on screen, covering
 /// every layer of §3's table (glass: padlock + symbol + case 0, case 1,
-/// case 2, the hop; ice: every stage and the shatter).
+/// case 2, the hop and the landing; ice: every stage, the shatter and every
+/// crack_hit; reveal: the drop, the wipe and the colour doll).
 const _frames = <FxId, List<double>>{
   FxId.dollPick: [3, 20, 36],
   FxId.dollMove: [4, 12],
@@ -64,14 +65,13 @@ const _frames = <FxId, List<double>>{
   FxId.dollSwallow: [2, 10, 20],
   FxId.dollComplete: [5, 12, 50, 58],
   FxId.dollInvalid: [8, 18, 30],
-  // The silhouette is hidden from frame 12 on purpose (§7).
-  FxId.dollReveal: [3, 8, 11],
+  FxId.dollReveal: [3, 10, 15, 25],
   FxId.dollIdle: [30, 90],
   FxId.dollWinDance: [20, 60],
   FxId.dollWinHop: [20, 50],
   FxId.fxSelectGlow: [3, 50, 108],
-  FxId.fxGlassUnlock: [6, 18, 30, 50],
-  FxId.fxIce: [0, 10, 25, 40, 55, 60, 66],
+  FxId.fxGlassUnlock: [6, 18, 30, 50, 53.5],
+  FxId.fxIce: [0, 10, 25, 40, 55, 60, 66, 85, 104, 120, 140],
   FxId.uiHintArrow: [10, 30],
   FxId.uiExtraSlot: [0, 20, 48, 70],
 };
@@ -139,28 +139,34 @@ void main() {
   // §17: for every image layer, a compensated raster at another
   // resolution draws the same pixels as the declared-size one (≥ 99 %
   // within 8/255 over the pixels the images touch), with the same bounds.
-  // Doll parts at 0.586× (the 300×450 of a 150 dp doll at DPR 3) with
-  // board pieces at 3× (a piece at DPR 3), then both at 1.5×. The game
-  // never supplies a board piece below its declared size (furniture scale
-  // × DPR > 1), where upsampling a coarser raster blurs it differently.
-  const factors = [(300 / 512, 3.0), (1.5, 1.5)];
+  // The reference is lottie drawing the declared asset sizes, as authored:
+  // 512×768 doll parts and, since LOTTIE.md v3, board pieces at 3× their
+  // box. Ours: doll parts at 0.586× (the 300×450 of a 150 dp doll at DPR
+  // 3) with board pieces at 2.7 px per box unit (furniture scale 0.9 on DPR
+  // 3), then dolls at 1.5× with pieces at 2 px per unit (DPR 2). Rasters
+  // count in box units, as the skin service serves them.
+  const factors = [(300 / 512, 2.7), (1.5, 2.0)];
   for (final MapEntry(key: id, value: frames) in _frames.entries) {
     for (final (dollFactor, pieceFactor) in factors) {
       test('${id.fileName}: doll parts at ${dollFactor.toStringAsFixed(3)}×, '
-          'pieces at $pieceFactor× draw like the declared size', () async {
+          'pieces at ${pieceFactor.toStringAsFixed(1)} px per unit draw like '
+          'the declared size', () async {
         final composition = await shippedOnce(id);
         final spec = fxSpecOf(id);
         final pixelRatio = spec.width > 200 ? 1.0 : 2.0;
         final request = FxImageRequest();
         _request(request);
-        final reference = _authored(composition, BlobArt(1), request);
+        final reference = _authored(
+          composition,
+          BlobArt(1, pieceFactor: FxImageSlot.pieceDensity),
+          request,
+        );
         final empty = _authored(composition, null, request);
         final clip = await shippedDrawable(
           id,
           source: BlobArt(dollFactor, pieceFactor: pieceFactor),
         );
         _request(clip.images.request);
-        clip.params.unlockSettle = false;
 
         for (final frame in frames) {
           final ref = await _snapAuthored(reference, frame, pixelRatio);
@@ -207,36 +213,48 @@ void main() {
     }
   }
 
-  test('a board piece cropped out of its declared box is placed by its '
-      'origin', () async {
-    // glass_case_0 rasterized 3× but cropped: the raster starts 4×8
-    // declared px into the box (`BoardSpriteImage.cropOrigin`).
-    final full = blobArt(
-      86,
-      143,
-      3,
-      primary: const Color(0xFF00BCD4),
-      secondary: const Color(0xFF3F51B5),
-    );
-    final recorder = ui.PictureRecorder();
-    ui.Canvas(recorder).drawImage(full, const Offset(-12, -24), Paint());
-    final cropped = recorder.endRecording().toImageSync(
-      full.width - 12,
-      full.height - 24,
-    );
-    Future<Snapshot> draw(FxRaster raster) async {
-      final clip = await shippedDrawable(
-        FxId.fxGlassUnlock,
-        source: FixedArt({FxImageSlot.glassCase0: raster}),
+  test(
+    'a board piece cropped out of its box is placed by its origin',
+    () async {
+      // glass_case_0 at 3 px per box unit but cropped: the raster starts 4×8
+      // box units into its 86×143 box (`BoardSpriteImage.cropOrigin`).
+      final full = blobArt(
+        86,
+        143,
+        3,
+        primary: const Color(0xFF00BCD4),
+        secondary: const Color(0xFF3F51B5),
       );
-      return snapshotDrawable(clip, 6, pixelRatio: 2);
-    }
+      final recorder = ui.PictureRecorder();
+      ui.Canvas(recorder).drawImage(full, const Offset(-12, -24), Paint());
+      final cropped = recorder.endRecording().toImageSync(
+        full.width - 12,
+        full.height - 24,
+      );
+      Future<Snapshot> draw(FxRaster raster) async {
+        final clip = await shippedDrawable(
+          FxId.fxGlassUnlock,
+          source: FixedArt({FxImageSlot.glassCase0: raster}),
+        );
+        return snapshotDrawable(clip, 6, pixelRatio: 2);
+      }
 
-    final a = await draw(FxRaster(full, scale: 3));
-    final b = await draw(
-      FxRaster(cropped, scale: 3, origin: const Offset(4, 8)),
-    );
-    // Same pixels wherever the crop kept the art.
-    expect(b.differingPixels(a), lessThan(a.width * a.height ~/ 100));
-  });
+      final a = await draw(FxRaster(full, scale: 3));
+      final b = await draw(
+        FxRaster(cropped, scale: 3, origin: const Offset(4, 8)),
+      );
+      // Same pixels wherever the crop kept the art.
+      expect(b.differingPixels(a), lessThan(a.width * a.height ~/ 100));
+      // And a solid case lands where the box says: its top-left at (47, 40)
+      // of the canvas (LOTTIE.md "fx_glass_unlock"), 86×143.
+      final solid = await draw(
+        FxRaster(insetBox(258, 429, const Color(0xFF00BCD4)), scale: 3),
+      );
+      final box = solid.alphaBounds()!;
+      expect(box.left / 2, closeTo(47, 0.5));
+      expect(box.top / 2, closeTo(40, 0.5));
+      expect(box.width / 2, closeTo(86, 1));
+      expect(box.height / 2, closeTo(143, 1));
+    },
+  );
 }

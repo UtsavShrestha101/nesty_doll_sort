@@ -38,7 +38,8 @@ final class SlotState {
   /// §9.3: the hand-coded shake of a locked, iced or tower target.
   ShakeTween? shake;
 
-  /// §9.1: the tower's new top dropping onto the stand.
+  /// §9.1: the buried nests shifting one step down while `doll_reveal`
+  /// drops the tower's new top onto the stand.
   RevealDropTween? reveal;
 
   /// Whether a clip or tween draws this slot's top doll now (§10.1).

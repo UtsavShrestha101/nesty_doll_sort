@@ -15,6 +15,7 @@ import 'package:nesty_game/core/services/database/settings_schema.dart';
 @Singleton(as: DatabaseService, env: [AppEnv.fake])
 class FakeDatabaseService implements DatabaseService {
   final _languageController = StreamController<String>.broadcast();
+  final _musicController = StreamController<bool>.broadcast();
 
   bool _sound = SettingsDefaults.sound;
   bool _music = SettingsDefaults.music;
@@ -32,7 +33,13 @@ class FakeDatabaseService implements DatabaseService {
   bool get musicEnabled => _music;
 
   @override
-  Future<void> setMusicEnabled(bool enabled) async => _music = enabled;
+  Future<void> setMusicEnabled(bool enabled) async {
+    _music = enabled;
+    if (!_musicController.isClosed) _musicController.add(enabled);
+  }
+
+  @override
+  Stream<bool> get musicEnabledChanges => _musicController.stream;
 
   @override
   bool get hapticsEnabled => _haptics;
@@ -60,5 +67,8 @@ class FakeDatabaseService implements DatabaseService {
 
   @override
   @disposeMethod
-  Future<void> close() => _languageController.close();
+  Future<void> close() async {
+    await _languageController.close();
+    await _musicController.close();
+  }
 }

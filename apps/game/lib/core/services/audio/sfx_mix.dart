@@ -1,26 +1,22 @@
 import 'dart:math' as math;
 
 import 'package:nesty_game/core/services/audio/audio_service.dart';
+import 'package:nesty_game/core/services/audio/jingle_player.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
-/// Which file a [SoundEffect] plays, how loud and how fast (spec §11.3,
-/// tokens.json `sound`, PROGRESS D19). Pure, so the rules are unit-tested
-/// without an audio engine.
+/// Which file a [SoundEffect] or [Jingle] plays, how loud and how fast (spec
+/// §11.3, tokens.json `sound`, `design/audio/AUDIO.md`). Pure, so the rules
+/// are unit-tested without an audio engine.
 abstract final class SfxMix {
-  /// Where `sync_design_assets` puts the SFX (`apps/game/assets/audio/`).
+  /// Where `sync_design_assets` puts the audio (`apps/game/assets/audio/`).
   static const assetDirectory = 'assets/audio';
 
-  /// The placeholder WAVs' extension. Final files may be OGG with the same
-  /// base names (tokens.json `sound.format`).
-  // TODO(M7): switch when the final audio arrives (BACKLOG "Final audio").
+  /// The SFX are WAV (44.1 kHz mono 16-bit, AUDIO.md "Files").
   static const fileExtension = 'wav';
 
-  /// Semitones already baked into the placeholder clacks (D19): they are
-  /// +1 semitone, so the design's `2^(−2(size − 3.5)/12)` becomes
-  /// `2^(−2(size − 3)/12)` here.
-  // TODO(M7): 0 once the final clacks arrive (BACKLOG "Final audio").
-  static const clackBakedSemitones = 1;
+  /// The jingles are OGG Vorbis, like the music loops.
+  static const jingleExtension = 'ogg';
 
   /// The clack size [AudioService.play] assumes when none is given.
   static const defaultClackSize = 3;
@@ -28,12 +24,11 @@ abstract final class SfxMix {
   /// The combo step [AudioService.play] assumes when none is given.
   static const defaultComboStep = 1;
 
-  /// Per-file gain on top of [SoundTokens.sfxVolumeDefault]. The
-  /// placeholders are peak-normalized to the same level by
-  /// `design/generator/nesty-sfx.js`, so every gain is 1 for now.
-  // TODO(M7): balance the final files by ear (BACKLOG "Final audio").
-  /// A file missing here plays at gain 1; `sfx_mix_test` checks that it
-  /// covers every file of `SoundTokens.allFiles`.
+  /// Per-file gain on top of the bus volume. Every gain is 1: AUDIO.md says
+  /// the SFX's relative levels are intentional (don't normalize them), and
+  /// the jingles are mastered to −17 dBFS RMS. A file missing here plays at
+  /// gain 1; `sfx_mix_test` checks that it covers every file of
+  /// `SoundTokens.allFiles` and `SoundTokens.jingleFiles`.
   static const Map<String, double> gains = {
     'bonk': 1,
     'button': 1,
@@ -48,15 +43,28 @@ abstract final class SfxMix {
     'complete_5': 1,
     'ice_crack': 1,
     'ice_shatter': 1,
+    'jingle_chapter': 1,
+    'jingle_oom': 1,
+    'jingle_reward': 1,
     'pick': 1,
     'unlock_glass': 1,
     'whoosh': 1,
     'win': 1,
   };
 
+  /// The jingles' bus (tokens.json `sound.mix.jingleBus`): `sfx`, so they
+  /// play at the SFX volume and follow the Sound toggle (AUDIO.md
+  /// "Jingles"). `sfx_mix_test` pins it: a `music` bus would have the
+  /// music service own them.
+  static const jingleBus = SoundTokens.jingleBus;
+
   /// `assets/audio/<file>.wav`.
   static String assetPath(String file) =>
       '$assetDirectory/$file.$fileExtension';
+
+  /// `assets/audio/<file>.ogg`.
+  static String jingleAssetPath(String file) =>
+      '$assetDirectory/$file.$jingleExtension';
 
   /// The token cue behind [effect] (tokens.json `sound.events`).
   static SoundCue cueOf(SoundEffect effect) => switch (effect) {
@@ -72,6 +80,17 @@ abstract final class SfxMix {
     SoundEffect.iceShatter => SoundTokens.iceShatter,
     SoundEffect.button => SoundTokens.button,
   };
+
+  /// The token cue behind [jingle] (tokens.json `sound.events`).
+  static SoundCue jingleCueOf(Jingle jingle) => switch (jingle) {
+    Jingle.chapter => SoundTokens.chapterComplete,
+    Jingle.reward => SoundTokens.reward,
+    Jingle.outOfMoves => SoundTokens.outOfMoves,
+  };
+
+  /// The file [jingle] plays (`jingle_chapter`, `jingle_reward`,
+  /// `jingle_oom`).
+  static String jingleFileOf(Jingle jingle) => jingleCueOf(jingle).files.first;
 
   /// The file [effect] plays. [randomIndex] picks a variant for a random
   /// cue (the clacks): it gets the variant count and returns 0 to count − 1.
@@ -92,18 +111,26 @@ abstract final class SfxMix {
     };
   }
 
-  /// The playback rate of [effect]: the clack's per-size pitch
-  /// (`2^((semitones − clackBakedSemitones)/12)` with the tokens'
-  /// `clackSemitonesBySize`; bigger dolls are lower), 1 for everything
-  /// else. A missing or out-of-range [dollSize] is clamped to 1–6.
+  /// The playback rate of [effect]: the clack's per-size pitch, 1 for
+  /// everything else. The clack files are recorded at
+  /// `SoundTokens.clackBakedSemitones` (0: the v2 files are baked at size
+  /// 3.5), so the rate is `2^((clackSemitonesBySize[size] − baked)/12)`,
+  /// which is `2^(−2(size − 3.5)/12)`: size 1 is +5 semitones, size 6 −5;
+  /// bigger dolls are lower. A missing or out-of-range [dollSize] is
+  /// clamped to 1–6.
   static double speedFor(SoundEffect effect, {int? dollSize}) {
     if (effect != SoundEffect.clack) return 1;
     return _clackRates[(dollSize ?? defaultClackSize).clamp(1, 6) - 1];
   }
 
-  /// The play volume of [file]: the SFX mix default (0.8) × its gain.
+  /// The play volume of the SFX [file]: the SFX bus default (0.8) × its
+  /// gain.
   static double volumeOf(String file) =>
       SoundTokens.sfxVolumeDefault * (gains[file] ?? 1);
+
+  /// The play volume of the jingle [file]: on the SFX bus, like the SFX
+  /// ([jingleBus]).
+  static double jingleVolumeOf(String file) => volumeOf(file);
 
   // Built once: play() runs on every move, so no pow() per call.
   static final List<double> _clackRates = List.unmodifiable([
@@ -111,7 +138,8 @@ abstract final class SfxMix {
       math
           .pow(
             2,
-            (SoundTokens.clackSemitonesBySize[size]! - clackBakedSemitones) /
+            (SoundTokens.clackSemitonesBySize[size]! -
+                    SoundTokens.clackBakedSemitones) /
                 12,
           )
           .toDouble(),

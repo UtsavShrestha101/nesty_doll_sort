@@ -17,14 +17,17 @@ enum SoundEffect {
   button,
 }
 
-/// Audio (spec §11.3). Implementations respect the sound/music settings and
-/// never throw: a missing or failing file is silence, not a crash.
+/// The sound effects (spec §11.3). Implementations respect the Sound
+/// setting and never throw: a missing or failing file is silence, not a
+/// crash.
 ///
 /// The real implementation is `SoLoudAudioService` (flutter_soloud; the
 /// mix rules are `SfxMix`); tests and the fake env use `FakeAudioService`.
-/// TODO(M3): separate SFX/music volumes and the two music loops.
+/// The same services play the jingles (`JinglePlayer`); the music loops
+/// are `MusicService`, on their own volume and the Music setting.
 abstract interface class AudioService {
-  /// Loads SFX into memory so the first play has no latency.
+  /// Loads the SFX (and the jingles) into memory so the first play has no
+  /// latency.
   Future<void> preload();
 
   /// Plays a one-shot effect. Deliberately synchronous: gameplay fires these
@@ -37,6 +40,6 @@ abstract interface class AudioService {
   /// missing one plays size 3 / step 1.
   void play(SoundEffect effect, {int? dollSize, int? comboStep});
 
-  /// Stops the engine and frees the sounds (DI reset); unusable afterwards.
+  /// Frees the sounds (DI reset); unusable afterwards.
   Future<void> dispose();
 }

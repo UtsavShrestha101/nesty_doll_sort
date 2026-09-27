@@ -251,6 +251,8 @@ class FxLayer extends Component {
       ..targetPos = p.targetPos
       ..rimColor = rim == null ? null : DollPalette.of(rim).rimColor
       ..tintColor = tint == null ? null : DollPalette.of(tint).base
+      // doll_reveal's drop starts on the tower's own step (§9.1).
+      ..revealDropUnits = p.revealDrop
       // Reduced motion holds doll_invalid's target shake (§13).
       ..reducedMotion = !p.shake;
   }

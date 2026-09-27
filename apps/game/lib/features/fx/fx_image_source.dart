@@ -25,11 +25,23 @@ enum FxDollPart { lid, body, silhouette }
 /// fills each one with its own raster; the placeholder PNGs in
 /// `design/lottie/images/` are never shipped or decoded (PROGRESS D50).
 ///
-/// [declaredWidth] × [declaredHeight] is the asset's `w`/`h` in the JSON,
-/// the box the export was authored for. lottie 3.6.1 ignores it and draws a
-/// layer's image at its own pixel size, so every raster the game supplies
-/// comes with its [FxRaster.scale] and the FX runtime compensates each image
-/// layer's scale and anchor (m2-lottie-design §3).
+/// Two sizes describe a slot:
+/// - [assetWidth] × [assetHeight] is the asset's `w`/`h` in the JSON. Since
+///   LOTTIE.md v3 the board pieces and the unlock symbol are declared at
+///   [density] = 3× their box, with their layers at 33.33 % and anchors ×3,
+///   so 3× art stays sharp and nothing moves on screen: `glow_ring` is
+///   348×156 for a 116×52 box. Doll slots are the 512×768 artboard at 1×.
+/// - [declaredWidth] × [declaredHeight] is the box the art is made for, the
+///   unit every [FxRaster] counts in: the reference-board box of a board
+///   piece (`BoardSprite.designSize`, `× furnitureScale × DPR` is its px size
+///   on screen), 12×12 for the unlock symbol, the artboard for a doll part.
+///   It was the JSON's own size until v3.
+///
+/// lottie 3.6.1 ignores the declared size and draws a layer's image at its
+/// own pixel size, so every raster the game supplies comes with its
+/// [FxRaster.scale] and the FX runtime compensates each image layer's scale
+/// and anchor for it, converting the box to asset px by [density]
+/// (m2-lottie-design §3). The skin service never sees the export's density.
 enum FxImageSlot {
   dollLid('doll_lid', 512, 768, role: FxRole.doll, part: FxDollPart.lid),
   dollBody('doll_body', 512, 768, role: FxRole.doll, part: FxDollPart.body),
@@ -44,7 +56,8 @@ enum FxImageSlot {
     part: FxDollPart.body,
   ),
 
-  /// `doll_reveal`'s buried-nest silhouette, shadow included.
+  /// `doll_reveal`'s buried-nest silhouette, shadow included: the wood-grain
+  /// blank `board/doll-silhouette.svg` for every skin (owner decision 3e).
   dollSilhouette(
     'doll_silhouette',
     512,
@@ -52,36 +65,52 @@ enum FxImageSlot {
     role: FxRole.doll,
     part: FxDollPart.silhouette,
   ),
-  glowRing('glow_ring', 116, 52, piece: BoardSprite.glowRing),
-  hintArrow('hint_arrow', 40, 50, piece: BoardSprite.hintArrow),
-  extraSlot('extra_slot', 90, 34, piece: BoardSprite.extraSlot),
-  glassCase0('glass_case_0', 86, 143, piece: BoardSprite.glassCase0),
-  glassCase1('glass_case_1', 86, 143, piece: BoardSprite.glassCase1),
-  glassCase2('glass_case_2', 86, 143, piece: BoardSprite.glassCase2),
+  glowRing('glow_ring', 348, 156, piece: BoardSprite.glowRing),
+  hintArrow('hint_arrow', 120, 150, piece: BoardSprite.hintArrow),
+  extraSlot('extra_slot', 270, 102, piece: BoardSprite.extraSlot),
+  glassCase0('glass_case_0', 258, 429, piece: BoardSprite.glassCase0),
+  glassCase1('glass_case_1', 258, 429, piece: BoardSprite.glassCase1),
+  glassCase2('glass_case_2', 258, 429, piece: BoardSprite.glassCase2),
 
   /// The unlock colour's symbol in its ink, on the padlock (not a board
-  /// SVG: the skin service rasterizes it from `assets/symbols/`).
-  unlockSymbol('unlock_symbol', 12, 12),
-  ice0('ice_0', 96, 160, piece: BoardSprite.ice0),
-  ice1('ice_1', 96, 160, piece: BoardSprite.ice1),
-  ice2('ice_2', 96, 160, piece: BoardSprite.ice2),
-  ice3('ice_3', 96, 160, piece: BoardSprite.ice3),
-  iceShatter('ice_shatter', 96, 160, piece: BoardSprite.iceShatter);
+  /// SVG: the skin service rasterizes it from `assets/symbols/`), in a
+  /// 12×12 box.
+  unlockSymbol('unlock_symbol', 36, 36),
+  ice0('ice_0', 288, 480, piece: BoardSprite.ice0),
+  ice1('ice_1', 288, 480, piece: BoardSprite.ice1),
+  ice2('ice_2', 288, 480, piece: BoardSprite.ice2),
+  ice3('ice_3', 288, 480, piece: BoardSprite.ice3),
+  iceShatter('ice_shatter', 288, 480, piece: BoardSprite.iceShatter);
 
   const FxImageSlot(
     this.assetId,
-    this.declaredWidth,
-    this.declaredHeight, {
+    this.assetWidth,
+    this.assetHeight, {
     this.role,
     this.part,
     this.piece,
   });
 
+  /// Asset px per box unit of the board pieces and the unlock symbol
+  /// (LOTTIE.md v3 "Image slots": declared at 3×, layers at 33.33 %).
+  static const double pieceDensity = 3;
+
   /// The `assets[].id` in the JSON (`LottieImageAsset.id`).
   final String assetId;
 
-  final double declaredWidth;
-  final double declaredHeight;
+  /// The asset's `w` and `h` in the JSON, in asset px: [density] × the box.
+  final double assetWidth;
+  final double assetHeight;
+
+  /// Asset px per box unit: [pieceDensity] for the board pieces and the
+  /// unlock symbol, 1 for the doll slots.
+  double get density => isDoll ? 1 : pieceDensity;
+
+  /// The box the slot's art fills, in the units of [FxRaster.scale] and
+  /// [FxRaster.origin]: 116×52 for `glow_ring`, 12×12 for the unlock
+  /// symbol, 512×768 for a doll part.
+  double get declaredWidth => assetWidth / density;
+  double get declaredHeight => assetHeight / density;
 
   /// Set for doll slots.
   final FxRole? role;
@@ -103,9 +132,10 @@ enum FxImageSlot {
   static FxImageSlot? fromAssetId(String id) => _byAssetId[id];
 }
 
-/// A raster for an image slot, and how it relates to the slot's declared
-/// box. Built once when a level's art is prepared and returned as the same
-/// object on every draw (CLAUDE.md rule 8: no allocation per frame).
+/// A raster for an image slot, and how it relates to the slot's box
+/// ([FxImageSlot.declaredWidth] × [FxImageSlot.declaredHeight]). Built once
+/// when a level's art is prepared and returned as the same object on every
+/// draw (CLAUDE.md rule 8: no allocation per frame).
 final class FxRaster {
   const FxRaster(
     this.image, {
@@ -115,18 +145,20 @@ final class FxRaster {
 
   final ui.Image image;
 
-  /// Raster px per declared asset px: `artHeightPx / 768` for doll parts
-  /// (`DollPartSet.artScale`), `BoardSpriteImage.pixelScale`
-  /// (furniture scale × DPR) for board pieces.
+  /// Raster px per box unit: `artHeightPx / 768` for doll parts
+  /// (`DollPartSet.artScale`), `BoardSpriteImage.pixelScale` (furniture
+  /// scale × DPR) for board pieces, the image width ÷ 12 for the unlock
+  /// symbol.
   final double scale;
 
-  /// Where the raster's top-left pixel sits inside the declared box, in
-  /// declared px: a cropped board sprite's crop offset
-  /// (`BoardSpriteImage.offset / pixelScale`), zero for full-frame rasters.
+  /// Where the raster's top-left pixel sits inside the box, in box units: a
+  /// cropped board sprite's `BoardSpriteImage.cropOrigin`, zero for
+  /// full-frame rasters.
   ///
-  /// The compensated layer anchor is `(authoredAnchor − origin) × scale`
-  /// and the compensated layer scale `authoredScale / scale`
-  /// (m2-lottie-design §3).
+  /// With `d` = [FxImageSlot.density], the compensated layer scale is
+  /// `authoredScale × d / scale` and the compensated anchor
+  /// `(authoredAnchor − origin × d) × scale / d`: the authored values are
+  /// in asset px (m2-lottie-design §3).
   final ui.Offset origin;
 }
 

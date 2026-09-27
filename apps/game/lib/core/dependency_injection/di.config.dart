@@ -13,6 +13,7 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:nesty_game/app/localization_cubit/language_cubit.dart' as _i571;
+import 'package:nesty_game/core/dependency_injection/audio_module.dart' as _i54;
 import 'package:nesty_game/core/dependency_injection/database_module.dart'
     as _i832;
 import 'package:nesty_game/core/repository/bundled_level_repository.dart'
@@ -20,6 +21,7 @@ import 'package:nesty_game/core/repository/bundled_level_repository.dart'
 import 'package:nesty_game/core/repository/fake_level_repository.dart' as _i3;
 import 'package:nesty_game/core/repository/level_repository.dart' as _i789;
 import 'package:nesty_game/core/router/app_router.dart' as _i655;
+import 'package:nesty_game/core/router/music_route_observer.dart' as _i760;
 import 'package:nesty_game/core/services/ads/ads_service.dart' as _i746;
 import 'package:nesty_game/core/services/ads/fake_ads_service.dart' as _i403;
 import 'package:nesty_game/core/services/analytics/analytics_service.dart'
@@ -29,8 +31,11 @@ import 'package:nesty_game/core/services/analytics/fake_analytics_service.dart'
 import 'package:nesty_game/core/services/audio/audio_service.dart' as _i890;
 import 'package:nesty_game/core/services/audio/fake_audio_service.dart'
     as _i989;
+import 'package:nesty_game/core/services/audio/jingle_player.dart' as _i249;
 import 'package:nesty_game/core/services/audio/soloud_audio_service.dart'
     as _i456;
+import 'package:nesty_game/core/services/audio/soloud_engine_host.dart'
+    as _i927;
 import 'package:nesty_game/core/services/database/database_service.dart'
     as _i980;
 import 'package:nesty_game/core/services/database/fake_database_service.dart'
@@ -40,6 +45,12 @@ import 'package:nesty_game/core/services/haptics/fake_haptics_service.dart'
 import 'package:nesty_game/core/services/haptics/haptics_service.dart' as _i165;
 import 'package:nesty_game/core/services/haptics/system_haptics_service.dart'
     as _i684;
+import 'package:nesty_game/core/services/music/fake_music_service.dart'
+    as _i514;
+import 'package:nesty_game/core/services/music/jingle_cues.dart' as _i489;
+import 'package:nesty_game/core/services/music/music_service.dart' as _i777;
+import 'package:nesty_game/core/services/music/soloud_music_service.dart'
+    as _i869;
 import 'package:nesty_game/core/services/purchase/fake_purchase_service.dart'
     as _i607;
 import 'package:nesty_game/core/services/purchase/purchase_service.dart'
@@ -82,6 +93,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) async {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final databaseModule = _$DatabaseModule();
+    final audioModule = _$AudioModule();
     gh.lazySingleton<_i528.PurchaseService>(
       () => _i607.FakePurchaseService(),
       registerFor: {_fake, _real},
@@ -100,6 +112,11 @@ extension GetItInjectableX on _i174.GetIt {
       registerFor: {_real},
       dispose: (i) => i.dispose(),
     );
+    gh.lazySingleton<_i927.SoLoudEngineHost>(
+      () => _i927.SoLoudEngineHost(),
+      registerFor: {_real},
+      dispose: (i) => i.dispose(),
+    );
     await gh.singletonAsync<_i980.DatabaseService>(
       () => databaseModule.database,
       registerFor: {_real},
@@ -113,11 +130,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i746.AdsService>(
       () => _i403.FakeAdsService(),
       registerFor: {_fake, _real},
-    );
-    gh.lazySingleton<_i890.AudioService>(
-      () => _i456.SoLoudAudioService(gh<_i980.DatabaseService>()),
-      registerFor: {_real},
-      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i921.AnalyticsService>(
       () => _i974.FakeAnalyticsService(),
@@ -149,6 +161,10 @@ extension GetItInjectableX on _i174.GetIt {
       registerFor: {_fake},
       dispose: (i) => i.close(),
     );
+    gh.lazySingleton<_i989.FakeAudioService>(
+      () => _i989.FakeAudioService(),
+      registerFor: {_fake},
+    );
     gh.lazySingleton<_i184.FxLibrary>(
       () => _i65.FakeFxLibrary(),
       registerFor: {_fake},
@@ -157,13 +173,29 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i553.FakeRemoteConfigService(),
       registerFor: {_fake},
     );
+    gh.lazySingleton<_i777.MusicService>(
+      () => _i514.FakeMusicService(),
+      registerFor: {_fake},
+    );
     gh.lazySingleton<_i276.SaveService>(
       () => _i31.FakeSaveService(),
       registerFor: {_fake},
     );
     gh.lazySingleton<_i890.AudioService>(
-      () => _i989.FakeAudioService(),
+      () => audioModule.fakeAudio(gh<_i989.FakeAudioService>()),
       registerFor: {_fake},
+    );
+    gh.lazySingleton<_i249.JinglePlayer>(
+      () => audioModule.fakeJingles(gh<_i989.FakeAudioService>()),
+      registerFor: {_fake},
+    );
+    gh.lazySingleton<_i777.MusicService>(
+      () => _i869.SoLoudMusicService(
+        gh<_i980.DatabaseService>(),
+        gh<_i927.SoLoudEngineHost>(),
+      ),
+      registerFor: {_real},
+      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i165.HapticsService>(
       () => _i435.FakeHapticsService(),
@@ -176,6 +208,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i571.LanguageCubit>(
       () => _i571.LanguageCubit(gh<_i980.DatabaseService>()),
       dispose: (i) => i.close(),
+    );
+    gh.lazySingleton<_i456.SoLoudAudioService>(
+      () => _i456.SoLoudAudioService(
+        gh<_i980.DatabaseService>(),
+        gh<_i927.SoLoudEngineHost>(),
+      ),
+      registerFor: {_real},
+      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i1053.ShowcaseDolls>(
       () => _i1053.ShowcaseDolls(
@@ -200,6 +240,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i921.AnalyticsService>(),
       ),
     );
+    gh.lazySingleton<_i890.AudioService>(
+      () => audioModule.realAudio(gh<_i456.SoLoudAudioService>()),
+      registerFor: {_real},
+    );
+    gh.lazySingleton<_i249.JinglePlayer>(
+      () => audioModule.realJingles(gh<_i456.SoLoudAudioService>()),
+      registerFor: {_real},
+    );
     gh.factory<_i724.SplashCubit>(
       () => _i724.SplashCubit(
         gh<_i276.SaveService>(),
@@ -210,11 +258,21 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1053.ShowcaseDolls>(),
       ),
     );
+    gh.factory<_i760.MusicRouteObserver>(
+      () => _i760.MusicRouteObserver(gh<_i777.MusicService>()),
+    );
     gh.lazySingleton<_i655.AppRouter>(
       () => _i655.AppRouter(gh<_i655.ContentReadyGuard>()),
+    );
+    gh.lazySingleton<_i489.JingleCues>(
+      () =>
+          _i489.JingleCues(gh<_i777.MusicService>(), gh<_i249.JinglePlayer>()),
+      dispose: (i) => i.dispose(),
     );
     return this;
   }
 }
 
 class _$DatabaseModule extends _i832.DatabaseModule {}
+
+class _$AudioModule extends _i54.AudioModule {}

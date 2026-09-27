@@ -90,6 +90,16 @@ class HiveDatabaseService implements DatabaseService {
       _settings.put(SettingsKeys.music, enabled);
 
   @override
+  Stream<bool> get musicEnabledChanges =>
+      _settings.watch(key: SettingsKeys.music).map((event) {
+        // As languageStream: a delete (or a rolled-back first write) reads
+        // back as the default.
+        if (event.deleted) return SettingsDefaults.music;
+        final value = event.value;
+        return value is bool ? value : SettingsDefaults.music;
+      });
+
+  @override
   bool get hapticsEnabled =>
       _readBool(SettingsKeys.haptics, SettingsDefaults.haptics);
 

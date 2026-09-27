@@ -26,6 +26,9 @@ import 'package:nesty_render/nesty_render.dart' show BoardFit;
 /// - With [cacheRest] (the paused glass and ice compositions, §8) a still
 ///   frame is recorded into a `Picture` once and replayed until the frame,
 ///   the params, or any raster it drew changes.
+/// - Every segment, rest or seek starts from a clean lottie seek
+///   (`FxDrawable.draw`), so a pooled or reused component never draws two
+///   layers across a boundary it jumped to.
 class LottieFxComponent extends PositionComponent {
   LottieFxComponent(this.drawable, {super.priority, this.cacheRest = false})
     : super(
@@ -106,8 +109,8 @@ class LottieFxComponent extends PositionComponent {
     _active = true;
   }
 
-  /// Rests on [frame] and activates (a paused composition's rest look:
-  /// `padlock_ping` is hidden while resting, §8).
+  /// Rests on [frame] and activates (a paused composition's rest look, §8:
+  /// glass on frame 0, ice on its stage's `rest_n`).
   void rest(double frame) {
     drawable.player.rest(frame);
     _active = true;

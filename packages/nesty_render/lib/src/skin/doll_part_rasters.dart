@@ -2,6 +2,7 @@ import 'dart:async' show Completer, unawaited;
 import 'dart:ui' as ui;
 
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_render/src/board/board_sprites.dart';
 import 'package:nesty_render/src/doll/doll_art.dart';
 import 'package:nesty_render/src/doll/doll_paint_params.dart';
 import 'package:nesty_render/src/doll/placeholder_doll_painter.dart';
@@ -33,8 +34,12 @@ import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 ///   half a pixel of `splitY · r`), so lid and body never share a pixel.
 ///   Outside the band, lid over body equals `SvgSkinRenderer` and the
 ///   design renders.
-/// - **silhouette** = `shadow` + `SkinLayer.silhouette` (wood masks, shines
-///   at 45 %), whole, not split (spec §3.2, D21).
+/// - **silhouette** = the wood-grain blank `board/doll-silhouette.svg` with
+///   its own ground shadow, the same for every skin (tokens
+///   `layout.towerSilhouettes`, owner decision 3e, 2026-09-26), whole, not
+///   split (spec §3.2, D21). Without the board art (rule 3) it is the
+///   skin's own: `shadow` + `SkinLayer.silhouette` (wood masks, shines at
+///   45 %), or the placeholder painter's.
 ///
 /// Handles follow `ui.Image.clone` semantics like `SkinImageSet`: [clone]
 /// gives independent handles to the same pixels, and the memory is freed
@@ -145,7 +150,9 @@ final class DollPartSet {
 /// - a lid per (skin@version, colour, artHeightPx);
 /// - a body per (skin@version, colour, symbols mode, artHeightPx), plus
 ///   whether a symbol atlas drew its symbol;
-/// - the silhouette per (skin@version, artHeightPx).
+/// - the silhouette per artHeightPx: the board's wood blank, shared by
+///   every skin and the placeholder ([boardSilhouetteKey]), or per
+///   (skin@version, artHeightPx) when a set is prepared without the board.
 ///
 /// A symbols-mode change therefore re-rasterizes only the bodies, and the
 /// next level at the same doll height reuses every colour it shares.
@@ -165,6 +172,22 @@ final class DollPartRasters {
 
   /// [DollPartSet.skinKey] of [preparePlaceholder]'s sets.
   static const placeholderKey = 'placeholder';
+
+  /// The board sprite every buried nest shows, for every skin (tokens
+  /// `layout.towerSilhouettes`: `BoardTokens.towerSilhouetteSprite`), or
+  /// null when no [BoardSprite] carries that name (a renamed file): sets
+  /// then keep the skin's own silhouette.
+  static final BoardSprite? silhouetteSprite = () {
+    for (final sprite in BoardSprite.values) {
+      if (sprite.assetName == BoardTokens.towerSilhouetteSprite) return sprite;
+    }
+    return null;
+  }();
+
+  /// The cache key of the board silhouette: one raster per artHeightPx,
+  /// shared by every skin and the placeholder.
+  static const boardSilhouetteKey =
+      'board:${BoardTokens.towerSilhouetteSprite}';
 
   // Insertion-ordered (a LinkedHashMap): the first key is the least
   // recently used.
@@ -218,6 +241,11 @@ final class DollPartRasters {
   /// Called off the hot path, behind the route transition, and again when
   /// the symbols setting changes (bodies depend on it).
   ///
+  /// [board] (the game's `BoardSpriteLibrary`) draws the silhouette: every
+  /// skin's buried nests are the wood-grain blank [silhouetteSprite] (owner
+  /// decision 3e). Without it, or when that sprite didn't load (rule 3),
+  /// the silhouette is the skin's own.
+  ///
   /// Throws when the skin can't be rasterized (the caller falls back to
   /// [preparePlaceholder], CLAUDE.md rule 3) and [StateError] after
   /// [dispose].
@@ -227,6 +255,7 @@ final class DollPartRasters {
     required DollSymbols symbols,
     required int artHeightPx,
     SymbolAtlas? symbolAtlas,
+    BoardSpriteLibrary? board,
   }) {
     if (skin.manifest.artboard != SkinTokens.artboard) {
       return Future.error(
@@ -242,6 +271,7 @@ final class DollPartRasters {
       colors,
       symbols,
       artHeightPx,
+      board,
     );
   }
 
@@ -250,13 +280,21 @@ final class DollPartRasters {
   /// load. Its [DollPartSet.skinKey] is [placeholderKey].
   ///
   /// The placeholder's full closed doll is cut on the split row, so its
-  /// lid seam is shared by the two parts.
+  /// lid seam is shared by the two parts. [board] draws the silhouette as
+  /// in [prepare]: the wood blank doesn't depend on the skin.
   Future<DollPartSet> preparePlaceholder({
     required Iterable<DollColor> colors,
     required DollSymbols symbols,
     required int artHeightPx,
     SymbolAtlas? symbolAtlas,
-  }) => _prepare(_PlaceholderArtist(symbolAtlas), colors, symbols, artHeightPx);
+    BoardSpriteLibrary? board,
+  }) => _prepare(
+    _PlaceholderArtist(symbolAtlas),
+    colors,
+    symbols,
+    artHeightPx,
+    board,
+  );
 
   /// Bytes held by the cache's own handles (RGBA8).
   int get byteSize => _bytes;
@@ -288,6 +326,7 @@ final class DollPartRasters {
     Iterable<DollColor> colors,
     DollSymbols symbols,
     int artHeightPx,
+    BoardSpriteLibrary? board,
   ) async {
     if (_disposed) throw StateError('DollPartRasters used after dispose');
     if (artHeightPx < 1) {
@@ -300,7 +339,17 @@ final class DollPartRasters {
     ];
     final skin = artist.skinKey;
     final symbolArt = artist.drawsSymbols && symbols != DollSymbols.none;
-    final silhouette = _PartKey.silhouette(skin, artHeightPx);
+    // Every skin's buried nests are the board's wood blank (3e); the
+    // skin's own silhouette only when that art is missing (rule 3).
+    final blank = silhouetteSprite;
+    final boardArtist =
+        board != null && blank != null && board.isAvailable(blank)
+        ? _BoardSilhouetteArtist(board, blank)
+        : null;
+    final silhouette = _PartKey.silhouette(
+      boardArtist?.skinKey ?? skin,
+      artHeightPx,
+    );
     final lids = [
       for (final color in ordered) _PartKey.lid(skin, color, artHeightPx),
     ];
@@ -320,6 +369,10 @@ final class DollPartRasters {
           for (final key in keys)
             if (!_images.containsKey(key) && !_pending.containsKey(key)) key,
         ];
+        // The board's blank is its own batch: it needs no skin session.
+        if (boardArtist != null && missing.remove(silhouette)) {
+          _start(boardArtist, [silhouette], artHeightPx);
+        }
         if (missing.isNotEmpty) _start(artist, missing, artHeightPx);
         await Future.wait({for (final key in keys) ?_pending[key]});
         if (_disposed) {
@@ -716,4 +769,35 @@ final class _PlaceholderSession implements _Session {
 
   @override
   void close() => painter.dispose();
+}
+
+/// The board's wood-grain blank (`board/doll-silhouette.svg`) on the whole
+/// artboard: every skin's buried-nest silhouette (owner decision 3e). It is
+/// drawn as authored, its own ground shadow included, so a buried nest and
+/// `doll_reveal`'s `doll_silhouette` slot show the same wood for any skin.
+final class _BoardSilhouetteArtist implements _Artist, _Session {
+  _BoardSilhouetteArtist(this.board, this.sprite);
+
+  final BoardSpriteLibrary board;
+  final BoardSprite sprite;
+
+  @override
+  String get skinKey => DollPartRasters.boardSilhouetteKey;
+
+  @override
+  bool get drawsSymbols => false;
+
+  @override
+  Future<_Session> open(int artHeightPx, {required bool symbols}) async => this;
+
+  @override
+  Future<ui.Image> rasterize(_PartKey key) => board.rasterizeArtboard(
+    sprite,
+    widthPx: (DollArt.width * key.artHeightPx / DollArt.height).round(),
+    heightPx: key.artHeightPx,
+  );
+
+  /// Nothing to release: the library owns its pictures.
+  @override
+  void close() {}
 }

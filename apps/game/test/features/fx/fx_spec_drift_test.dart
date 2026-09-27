@@ -32,25 +32,18 @@ Offset _offset(Object? value) {
 Offset _firstValue(Map<String, Object?> prop) =>
     prop['a'] == 1 ? _offset(_maps(prop['k']).first['s']) : _offset(prop['k']);
 
-/// The image layers as `FxImageLayer` fields: key path, slot, scale,
-/// anchor, animated.
-List<(String, FxImageSlot?, Offset, Offset, bool)> _imageLayers(
+/// Every image layer of [json], root first, with its key path (a precomp
+/// child is prefixed by its precomp layer's name).
+List<(String, Map<String, Object?>)> _imageLayerMaps(
   Map<String, Object?> json,
 ) {
   final assets = {for (final a in _maps(json['assets'])) a['id']: a};
-  final out = <(String, FxImageSlot?, Offset, Offset, bool)>[];
+  final out = <(String, Map<String, Object?>)>[];
   void visit(List<Map<String, Object?>> layers, List<String> prefix) {
     for (final layer in layers) {
       final path = [...prefix, layer['nm']! as String];
       if (layer['ty'] == 2) {
-        final scale = _prop(layer, 's')!;
-        out.add((
-          path.join(' › '),
-          FxImageSlot.fromAssetId(layer['refId']! as String),
-          _firstValue(scale) / 100,
-          _firstValue(_prop(layer, 'a')!),
-          scale['a'] == 1,
-        ));
+        out.add((path.join(' › '), layer));
       } else if (layer['ty'] == 0) {
         visit(_maps(assets[layer['refId']]!['layers']), path);
       }
@@ -60,6 +53,27 @@ List<(String, FxImageSlot?, Offset, Offset, bool)> _imageLayers(
   visit(_maps(json['layers']), const []);
   return out;
 }
+
+/// The image layers as `FxImageLayer` fields: key path, slot, scale,
+/// anchor.
+List<(String, FxImageSlot?, Offset, Offset)> _imageLayers(
+  Map<String, Object?> json,
+) => [
+  for (final (path, layer) in _imageLayerMaps(json))
+    (
+      path,
+      FxImageSlot.fromAssetId(layer['refId']! as String),
+      _firstValue(_prop(layer, 's')!) / 100,
+      _firstValue(_prop(layer, 'a')!),
+    ),
+];
+
+/// The root layer called [name] of [json].
+Map<String, Object?> _root(Map<String, Object?> json, String name) =>
+    _maps(json['layers']).firstWhere((l) => l['nm'] == name);
+
+bool _animated(Map<String, Object?> layer, String key) =>
+    _prop(layer, key)?['a'] == 1;
 
 Set<String> _fillNames(Map<String, Object?> json) {
   final names = <String>{};
@@ -123,15 +137,15 @@ void main() {
           _prop(rootLayers.firstWhere((l) => l['nm'] == 'travel'), 'p')!['k'],
         );
         expect(spec.travel!.s, _offset(keyframes.first['s']));
-        expect(spec.travel!.holds, [
-          for (var i = 0; i + 1 < keyframes.length; i++)
-            if (_offset(keyframes[i]['s']) == _offset(keyframes[i + 1]['s']))
-              FxHold(
-                (keyframes[i]['t']! as num).toDouble(),
-                (keyframes[i + 1]['t']! as num).toDouble(),
-                _offset(keyframes[i]['s']),
-              ),
-        ]);
+        // No hold (LOTTIE.md v3): lottie calls the remap on every frame.
+        for (var i = 0; i + 1 < keyframes.length; i++) {
+          expect(
+            _offset(keyframes[i]['s']),
+            isNot(_offset(keyframes[i + 1]['s'])),
+            reason: 'travel key $i',
+          );
+          expect(keyframes[i]['h'], isNot(1), reason: 'travel key $i');
+        }
       } else {
         expect(
           spec.anchor.dx >= 0 &&
@@ -149,8 +163,15 @@ void main() {
       ]);
       expect([
         for (final l in spec.imageLayers)
-          (l.keyPath.join(' › '), l.slot, l.scale, l.anchor, l.scaleAnimated),
+          (l.keyPath.join(' › '), l.slot, l.scale, l.anchor),
       ], _imageLayers(json));
+      // Static image transforms (LOTTIE.md v3): the compensation is a
+      // static scale and anchor, exact on every frame.
+      for (final (path, layer) in _imageLayerMaps(json)) {
+        for (final key in const ['a', 'p', 's', 'r']) {
+          expect(_animated(layer, key), isFalse, reason: '$path $key');
+        }
+      }
       expect(spec.textLayers, [
         for (final l in [
           ...rootLayers,
@@ -178,14 +199,18 @@ void main() {
       );
     });
 
-    test('doll_complete holds travel at S until the fly', () {
-      final hold = fxSpecOf(FxId.dollComplete).travel!.holds.single;
-      expect(hold.start, 0);
-      expect(hold.end, FxTiming.completeHoldEndFrame);
-      expect(hold.value, fxSpecOf(FxId.dollComplete).travel!.s);
+    test('doll_complete: travel leaves S on the fly frame', () {
+      final json = _shipped(FxId.dollComplete);
+      final keyframes = _maps(_prop(_root(json, 'travel'), 'p')!['k']);
+      expect(keyframes.first['t'], FxTiming.completeFlyFrame);
+      expect(
+        _offset(keyframes.first['s']),
+        fxSpecOf(FxId.dollComplete).travel!.s,
+      );
     });
 
-    test('fx_ice stage n rests on frame 16n; shatter starts at stage 3', () {
+    test('fx_ice: stage n rests on rest_n = 16n, the shatter starts at '
+        'stage 3, and each crack_hit_n follows it', () {
       final ice = fxSpecOf(FxId.fxIce);
       for (var n = 1; n <= 3; n++) {
         expect(
@@ -193,19 +218,42 @@ void main() {
           FxTiming.iceStageFrames * (n - 1),
         );
       }
-      expect(ice.marker('shatter')!.start, FxTiming.iceStageFrames * 3);
-      expect(ice.marker('shatter')!.end, ice.frames);
+      for (var n = 0; n <= 3; n++) {
+        expect(ice.marker('rest_$n')!.start, FxTiming.iceStageFrames * n);
+        expect(ice.marker('rest_$n')!.duration, 0);
+      }
+      final shatter = ice.marker('shatter')!;
+      expect(shatter.start, FxTiming.iceStageFrames * 3);
+      // One empty frame, then the four hits, to the end of the file.
+      expect(ice.marker('crack_hit_0')!.start, shatter.end + 1);
+      for (var n = 1; n <= 3; n++) {
+        expect(
+          ice.marker('crack_hit_$n')!.start,
+          ice.marker('crack_hit_${n - 1}')!.end + 1,
+        );
+      }
+      expect(ice.marker('crack_hit_3')!.end, ice.frames - 1);
     });
 
-    test('the pulsing layers are the three animated-scale image layers', () {
-      expect(
-        {
-          for (final spec in fxSpecs.values)
-            for (final l in spec.imageLayers)
-              if (l.scaleAnimated) l.slot,
-        },
-        {FxImageSlot.glowRing, FxImageSlot.extraSlot, FxImageSlot.iceShatter},
-      );
+    test('the pulses, bursts, lifts and bobs live on parent nulls', () {
+      for (final (id, image, parent) in const [
+        (FxId.fxSelectGlow, 'glow_ring', 'glow_pulse'),
+        (FxId.uiExtraSlot, 'extra_slot', 'slot_pulse'),
+        (FxId.fxIce, 'ice_shatter', 'shatter_burst'),
+        (FxId.dollNest, 'target_lid', 'target_lid_lift'),
+        (FxId.dollSwallow, 'mover_lid', 'mover_lid_lift'),
+        (FxId.uiHintArrow, 'hint_arrow', 'arrow_bob'),
+      ]) {
+        final json = _shipped(id);
+        final nullLayer = _root(json, parent);
+        expect(nullLayer['ty'], 3, reason: parent);
+        expect(_root(json, image)['parent'], nullLayer['ind'], reason: image);
+        expect(
+          ['p', 's'].any((key) => _animated(nullLayer, key)),
+          isTrue,
+          reason: '$parent moves',
+        );
+      }
     });
 
     test('lengths the §7 table times cues on', () {

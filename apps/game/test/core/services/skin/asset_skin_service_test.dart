@@ -47,6 +47,9 @@ final class _FakeParts implements DollPartSource {
   List<DollColor>? colors;
   DollSymbols? symbols;
   int? artHeightPx;
+
+  /// The board library each call was given, for the wood-blank silhouette.
+  final List<BoardSpriteLibrary?> boards = [];
   bool disposed = false;
 
   @override
@@ -56,8 +59,10 @@ final class _FakeParts implements DollPartSource {
     required DollSymbols symbols,
     required int artHeightPx,
     SymbolAtlas? symbolAtlas,
+    BoardSpriteLibrary? board,
   }) async {
     calls.add('skin');
+    boards.add(board);
     if (failSkin) throw StateError('skin raster failed');
     return _set(skin.cacheKey, colors, symbols, artHeightPx);
   }
@@ -68,8 +73,10 @@ final class _FakeParts implements DollPartSource {
     required DollSymbols symbols,
     required int artHeightPx,
     SymbolAtlas? symbolAtlas,
+    BoardSpriteLibrary? board,
   }) async {
     calls.add('placeholder');
+    boards.add(board);
     if (failPlaceholder) throw StateError('placeholder raster failed');
     return _set('placeholder', colors, symbols, artHeightPx);
   }
@@ -345,6 +352,33 @@ void main() {
       expect(skin.restRenderer, isA<PartRasterDollRenderer>());
     },
   );
+
+  test('the part rasters get the board library, so every skin\'s buried '
+      'nests show the wood blank (owner decision 3e)', () async {
+    final parts = _FakeParts(failSkin: true);
+    final (service, _) = await prepare(tutorial, parts: parts);
+
+    expect(service.hasBoardArt, isTrue);
+    expect(parts.calls, ['skin', 'placeholder']);
+    // The skin path and the rule-3 placeholder path both draw the blank.
+    expect(parts.boards, hasLength(2));
+    expect(parts.boards, everyElement(isA<BoardSpriteLibrary>()));
+    expect(parts.boards.first, same(parts.boards.last));
+  });
+
+  test('a missing wood blank reaches the part rasters as unavailable, so '
+      'they keep the skin\'s own silhouette (rule 3)', () async {
+    final parts = _FakeParts();
+    await prepare(
+      tutorial,
+      parts: parts,
+      bundle: _Bundle((key) => key == 'assets/board/doll-silhouette.svg'),
+    );
+
+    final board = parts.boards.single!;
+    expect(board.isAvailable(BoardSprite.dollSilhouette), isFalse);
+    expect(board.isAvailable(BoardSprite.slotStand), isTrue);
+  });
 
   test('when no parts can be made at all, the placeholder painter draws the '
       'rest dolls and doll slots stay empty', () async {

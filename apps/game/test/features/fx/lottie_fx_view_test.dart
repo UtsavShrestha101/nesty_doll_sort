@@ -87,21 +87,59 @@ void main() {
         params
           ..textNullPosition = position
           ..textNullScale = scale;
-        final snap = await snapshot(360, 110, (canvas) {
+        final snap = await snapshot(410, 110, (canvas) {
           overlay.paint(canvas, params, frame: 18, playing: false);
         });
         return snap.alphaBounds()!;
       }
 
-      final rest = await drawn(const Offset(180, 55), 1);
-      final moved = await drawn(const Offset(160, 45), 1);
+      final rest = await drawn(const Offset(205, 55), 1);
+      final moved = await drawn(const Offset(185, 45), 1);
       expect(moved.left - rest.left, closeTo(-20, 1));
       expect(moved.top - rest.top, closeTo(-10, 1));
-      expect(rest.center.dx, closeTo(180, 2));
-      final small = await drawn(const Offset(180, 55), 0.6);
+      expect(rest.center.dx, closeTo(205, 2));
+      final small = await drawn(const Offset(205, 55), 0.6);
       expect(small.width, closeTo(rest.width * 0.6, 3));
       overlay.dispose();
     });
+
+    for (final (id, box, label) in const [
+      (
+        FxId.uiWinRibbon,
+        Rect.fromLTWH(205 - 156, 55 - 20, 312, 40),
+        'STUFE ABGESCHLOSSEN – HERVORRAGEND GEMACHT!',
+      ),
+      (
+        FxId.uiChapterRibbon,
+        Rect.fromLTWH(205 - 156, 50 - 16, 312, 32),
+        'KAPITEL 10 · VERSCHNEITE BERGHÜTTE AM WALDRAND',
+      ),
+    ]) {
+      test('${id.fileName}: a long all-caps label is drawn inside its v3 '
+          'text box on the anchor, scaled down to fit', () async {
+        TestWidgetsFlutterBinding.ensureInitialized();
+        final hook = FxTextHook.of(id)!;
+        final overlay = FxTextOverlay(hook)..label = label;
+        final params = FxDrawableParams()
+          ..textNullPosition = hook.style.restNull
+          ..textNullScale = 1;
+        final snap = await snapshot(
+          hook.style.canvas.width,
+          hook.style.canvas.height,
+          (canvas) => overlay.paint(canvas, params, frame: 18, playing: false),
+        );
+        // One antialiased pixel of slack at each edge.
+        final drawn = snap.alphaBounds()!;
+        expect(drawn.left, greaterThanOrEqualTo(box.left - 1));
+        expect(drawn.right, lessThanOrEqualTo(box.right + 1));
+        expect(drawn.top, greaterThanOrEqualTo(box.top - 1));
+        // The hard shadow sits 2 below the letters.
+        expect(drawn.bottom, lessThanOrEqualTo(box.bottom + 3));
+        expect(drawn.width, greaterThan(300), reason: 'fitted, not tiny');
+        expect(drawn.center.dx, closeTo(hook.style.restNull.dx, 1));
+        overlay.dispose();
+      });
+    }
 
     test('the counter shows the old count until the swap frame while it '
         'plays', () async {

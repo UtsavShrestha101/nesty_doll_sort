@@ -180,12 +180,15 @@ class ShelfLayer extends Component {
   }
 
   /// D21: each buried nest at its true size, raised a step per depth,
-  /// deepest first so the nearer one covers it. During a reveal drop (§9.1)
-  /// the new top falls from depth 1 and the rest shift one step down.
+  /// deepest first so the nearer one covers it. Every skin's buried nests
+  /// are the same wood-grain blank (owner decision 3e): the level's part
+  /// rasters draw `board/doll-silhouette.svg` for them. During a reveal
+  /// (§9.1) `doll_reveal` drops the new top itself and the rest shift one
+  /// step down with it.
   void _silhouettes(Canvas canvas, SlotState slot, RepitchTween? r) {
     final buried = slot.view.buried;
+    if (buried.isEmpty) return;
     final reveal = slot.reveal;
-    if (buried.isEmpty && reveal == null) return;
     final renderer = scene.renderer;
     final x = slot.centerX(r) + slot.shakeX;
     for (var depth = buried.length; depth >= 1; depth--) {
@@ -195,15 +198,6 @@ class ShelfLayer extends Component {
           ? slot.buriedBaseY(depth, r)
           : reveal.buriedBaseY(depth);
       _silhouette(canvas, renderer, x, baseY, slot.dollHeight(size, r));
-    }
-    if (reveal != null) {
-      _silhouette(
-        canvas,
-        renderer,
-        x,
-        reveal.revealedBaseY,
-        slot.dollHeight(reveal.revealedSize, r),
-      );
     }
   }
 

@@ -7,8 +7,10 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'support/ui_harness.dart';
 
 /// Lottie design §12 (PROGRESS D44): the text layers are hidden and a
-/// localized Flutter label follows the null; a label wider than its band is
-/// laid out once more at `fontSize × maxWidth / width`.
+/// localized Flutter label follows the null; a label wider (or taller) than
+/// its box is laid out once more at `fontSize × maxWidth / width`. Since
+/// LOTTIE.md v3 the ribbons' boxes are 312 × 40 (win, Fredoka Bold 24) and
+/// 312 × 32 (chapter, 20), centred on the ribbon anchor.
 void main() {
   setUpAll(loadBundledFonts);
 
@@ -16,15 +18,15 @@ void main() {
     test('a short label keeps its size', () {
       final painter = LottieLabelPainter(LottieLabelStyles.winRibbon)
         ..text = 'Level Complete!';
-      expect(painter.fontSize, 28);
-      expect(painter.size.width, lessThanOrEqualTo(232));
+      expect(painter.fontSize, 24);
+      expect(painter.size.width, lessThanOrEqualTo(312));
       painter.dispose();
     });
 
     test('a long label shrinks to the band', () {
       final painter = LottieLabelPainter(LottieLabelStyles.winRibbon)
         ..text = 'Niveau terminé avec brio, bravo à toi !';
-      expect(painter.fontSize, lessThan(28));
+      expect(painter.fontSize, lessThan(24));
       expect(
         painter.size.width,
         lessThanOrEqualTo(LottieLabelStyles.winRibbon.maxWidth + 1),
@@ -56,15 +58,115 @@ void main() {
       painter.dispose();
     });
 
-    test('the table of §12', () {
+    test('the table of §12 (LOTTIE.md v3 ribbons)', () {
       expect(LottieLabelStyles.familyCounter.restNull, const Offset(60, 30));
-      expect(LottieLabelStyles.winRibbon.baseline, const Offset(0, 10.08));
-      expect(LottieLabelStyles.winRibbon.shadowOffset, const Offset(0, 2));
-      expect(LottieLabelStyles.chapterRibbon.maxWidth, 262);
-      expect(
-        LottieLabelStyles.chapterRibbon.textStyle().fontFamily,
-        AppFontTokens.displayFamily,
+      const win = LottieLabelStyles.winRibbon;
+      expect(win.fontSize, 24);
+      expect((win.maxWidth, win.maxHeight), (312, 40));
+      expect(win.restNull, const Offset(205, 55));
+      expect(win.canvas, const Size(410, 110));
+      // 0.36 em below the null, as the file's preview text (28 at 10.08).
+      expect(win.baseline.dy, closeTo(0.36 * 24, 1e-9));
+      expect(win.shadowOffset, const Offset(0, 2));
+      const chapter = LottieLabelStyles.chapterRibbon;
+      expect(chapter.fontSize, 20);
+      expect((chapter.maxWidth, chapter.maxHeight), (312, 32));
+      expect(chapter.restNull, const Offset(205, 50));
+      expect(chapter.canvas, const Size(410, 100));
+      expect(chapter.baseline, const Offset(0, 7.2));
+      expect(chapter.textStyle().fontFamily, AppFontTokens.displayFamily);
+      expect(chapter.textStyle().fontWeight, FontWeight.w700);
+    });
+
+    // The box is centred on the ribbon anchor, i.e. on the null.
+    Rect box(LottieLabelStyle style) => Rect.fromCenter(
+      center: Offset.zero,
+      width: style.maxWidth,
+      height: style.maxHeight,
+    );
+
+    for (final (style, name, label) in const [
+      (LottieLabelStyles.winRibbon, 'win', 'Level Complete!'),
+      (LottieLabelStyles.chapterRibbon, 'chapter', 'CHAPTER 4 · Snowy Cabin'),
+    ]) {
+      test('$name: the English label keeps its size, inside its box', () {
+        final painter = LottieLabelPainter(style)..text = label;
+        expect(painter.fontSize, style.fontSize);
+        expect(
+          box(style).inflate(0.5).contains(painter.bounds.topLeft),
+          isTrue,
+        );
+        expect(
+          box(style).inflate(0.5).contains(painter.bounds.bottomRight),
+          isTrue,
+          reason: '${painter.bounds}',
+        );
+        painter.dispose();
+      });
+    }
+
+    for (final (style, name, label) in const [
+      (
+        LottieLabelStyles.winRibbon,
+        'win',
+        'STUFE ABGESCHLOSSEN – HERVORRAGEND GEMACHT!',
+      ),
+      (
+        LottieLabelStyles.chapterRibbon,
+        'chapter',
+        'KAPITEL 10 · VERSCHNEITE BERGHÜTTE AM WALDRAND',
+      ),
+    ]) {
+      test('$name: an all-caps German label scales down to fit the '
+          '${style.maxWidth.toInt()} × ${style.maxHeight.toInt()} box, '
+          'centred on the anchor', () {
+        final painter = LottieLabelPainter(style)..text = label;
+        expect(painter.fontSize, lessThan(style.fontSize));
+        final bounds = painter.bounds;
+        expect(bounds.width, lessThanOrEqualTo(style.maxWidth + 0.5));
+        expect(bounds.center.dx, closeTo(0, 0.5));
+        expect(box(style).inflate(0.5).contains(bounds.topLeft), isTrue);
+        expect(
+          box(style).inflate(0.5).contains(bounds.bottomRight),
+          isTrue,
+          reason: '$bounds',
+        );
+        // Shrunk about its visual centre: the baseline moves in with it.
+        final fitted = painter.fontSize / style.fontSize;
+        final full = LottieLabelPainter(style)..text = 'LEVEL';
+        expect(bounds.center.dy, closeTo(full.bounds.center.dy * fitted, 1));
+        full.dispose();
+        painter.dispose();
+      });
+    }
+  });
+
+  group('LottieRibbonFit (LOTTIE.md v3 ribbons)', () {
+    test('full size on a 390 dp screen and wider, shrunk on narrower', () {
+      expect(LottieRibbonFit.scaleFor(390), 1);
+      expect(LottieRibbonFit.scaleFor(430), 1);
+      expect(LottieRibbonFit.scaleFor(360), closeTo(360 / 390, 1e-12));
+      expect(LottieRibbonFit.scaleFor(0), 0);
+    });
+
+    test('the canvas centred on the screen, its anchor on the centre line: '
+        'on 390 it overhangs each edge by 10', () {
+      final rect = LottieRibbonFit.rectFor(
+        const Size(410, 110),
+        screenWidth: 390,
+        centerY: 91,
       );
+      expect(rect, const Rect.fromLTWH(-10, 36, 410, 110));
+      // The anchor (205, 55) lands on the screen's centre.
+      expect(rect.left + 205, 195);
+      final narrow = LottieRibbonFit.rectFor(
+        const Size(410, 100),
+        screenWidth: 320,
+        centerY: 179,
+      );
+      expect(narrow.width, closeTo(410 * 320 / 390, 1e-9));
+      expect(narrow.center.dx, closeTo(160, 1e-9));
+      expect(narrow.center.dy, closeTo(179, 1e-9));
     });
   });
 
@@ -87,7 +189,10 @@ void main() {
           ),
         ),
       );
-      expect(tester.getSize(find.byKey(key)), const Size(360, 110));
+      // The composition's 410 × 110 aspect.
+      final size = tester.getSize(find.byKey(key));
+      expect(size.width, 360);
+      expect(size.height, closeTo(360 * 110 / 410, 1e-6));
       expect(find.bySemanticsLabel('Level Complete!'), findsOneWidget);
       handle.dispose();
     });
@@ -100,7 +205,7 @@ void main() {
         tester,
         const Center(
           child: SizedBox(
-            width: 180,
+            width: 205,
             child: LottieTextOverlay(
               label: 'CHAPTER 2 · Rainy Café Corner',
               style: LottieLabelStyles.chapterRibbon,
@@ -110,7 +215,9 @@ void main() {
         ),
       );
       // Half the canvas width: the composition scales to the box.
-      expect(tester.getSize(find.byKey(key)), const Size(180, 50));
+      final size = tester.getSize(find.byKey(key));
+      expect(size.width, 205);
+      expect(size.height, closeTo(50, 1e-6));
       expect(tester.takeException(), isNull);
     });
   });

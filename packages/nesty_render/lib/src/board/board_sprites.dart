@@ -73,8 +73,13 @@ enum BoardSprite {
 
   /// The family counter's 12×18 doll icon, an alpha mask the HUD tints
   /// `#FFE3B8` (NestyBoard:31). The HUD is not board-scaled, so request it
-  /// at furniture scale 1. Buried tower nests are not drawn with it: the
-  /// doll renderer draws those silhouettes (D21).
+  /// at furniture scale 1.
+  ///
+  /// The same art is the wood-grain blank every buried tower nest shows,
+  /// for every skin (tokens `layout.towerSilhouettes`, owner decision 3e,
+  /// 2026-09-26): `DollPartRasters` draws it on the whole 512×768 artboard
+  /// through [BoardSpriteLibrary.rasterizeArtboard], and the doll renderer
+  /// draws that raster at each nest's true size (D21).
   dollSilhouette('doll-silhouette', Size(12, 18));
 
   const BoardSprite(this.assetName, this.designSize);
@@ -348,6 +353,38 @@ final class BoardSpriteLibrary {
       offset: Offset(left.toDouble(), top.toDouble()),
       fullWidth: fullWidth,
       fullHeight: fullHeight,
+    );
+  }
+
+  /// Rasterizes the whole art of [sprite] into a [widthPx] × [heightPx]
+  /// image, uncropped and outside any design box: fitted like
+  /// [rasterize] (one scale, centred). The caller owns the result.
+  ///
+  /// For art drawn on an artboard of its own rather than in a board box:
+  /// `board/doll-silhouette.svg` is the 512×768 skin artboard, so at
+  /// `512·r × 768·r` it lands exactly where a skin's layers do and
+  /// `DollPartRasters` uses it as every skin's buried-nest silhouette
+  /// (owner decision 3e).
+  ///
+  /// Throws [StateError] when the sprite is unavailable (see [failures]).
+  Future<ui.Image> rasterizeArtboard(
+    BoardSprite sprite, {
+    required int widthPx,
+    required int heightPx,
+  }) async {
+    if (widthPx < 1 || heightPx < 1) {
+      throw ArgumentError('the artboard raster must be at least 1×1 px');
+    }
+    final info = _available(sprite);
+    final art = info.size;
+    final scale = math.min(widthPx / art.width, heightPx / art.height);
+    return rasterizePictures(
+      [SvgRasterPart(info.picture)],
+      width: widthPx,
+      height: heightPx,
+      scale: scale,
+      left: (art.width * scale - widthPx) / 2,
+      top: (art.height * scale - heightPx) / 2,
     );
   }
 

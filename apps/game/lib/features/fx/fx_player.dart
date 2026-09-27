@@ -216,7 +216,7 @@ enum FxPlayState {
 
   /// Paused on a rest frame ([FxPlayer.rest]): the paused glass and ice
   /// compositions, the toggle's on/off look, an ambient loop under reduced
-  /// motion. `padlock_ping` is hidden in this state (m2-lottie-design §8).
+  /// motion.
   resting,
 
   /// Showing an arbitrary frame set from outside ([FxPlayer.seek]): the
@@ -254,6 +254,7 @@ final class FxPlayer {
   FxPlayState _state = FxPlayState.idle;
   double _frame = 0;
   double _elapsedMs = 0;
+  int _epoch = 0;
 
   // The current plan, unpacked so advancing reads fields only.
   FxRange _once = const FxRange(0, 0);
@@ -263,6 +264,14 @@ final class FxPlayer {
   bool _loop = false;
 
   FxPlayState get state => _state;
+
+  /// Bumped by every jump to a frame playback didn't lead to: a new plan
+  /// ([start]), a rest, a seek, a reset. `FxDrawable` re-seeks lottie from
+  /// a clean frame on the next draw, because lottie 3.6.1's keyframe cache
+  /// can keep a layer that ends on the new frame (`fx_ice`'s `ice_0_hit`
+  /// at 99, where `ice_1_hit` starts) when the last draw was inside it
+  /// (the v3 check's issue 1).
+  int get epoch => _epoch;
 
   /// The composition frame shown now.
   double get frame => _frame;
@@ -294,12 +303,14 @@ final class FxPlayer {
     _state = FxPlayState.resting;
     _frame = frame;
     _elapsedMs = 0;
+    _epoch++;
   }
 
   /// Shows [frame] without playing (the splash loader, scrubbing).
   void seek(double frame) {
     _state = FxPlayState.seeking;
     _frame = frame;
+    _epoch++;
   }
 
   /// Starts [plan], [startMs] into it (a random phase for idle dolls, or a
@@ -318,6 +329,7 @@ final class FxPlayer {
     _state = FxPlayState.playing;
     _elapsedMs = startMs < 0 ? 0 : startMs;
     _frame = frameAt(_elapsedMs);
+    _epoch++;
     if (_isDoneAt(_elapsedMs)) _state = FxPlayState.finished;
   }
 
@@ -331,6 +343,7 @@ final class FxPlayer {
     _then = null;
     _thenSpeed = 1;
     _loop = false;
+    _epoch++;
   }
 
   // ── Hot path: advanced every tick of every live clip. No allocation. ──

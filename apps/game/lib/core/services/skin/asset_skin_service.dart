@@ -24,7 +24,8 @@ import 'package:nesty_render/nesty_render.dart';
 /// - the level's `DollPartSet` (every colour on the board, at
 ///   `DollPartRasters.artHeightPxFor(geometry.maxDollHeight, dpr)`, in the
 ///   player's symbols mode), from the skin or, if that fails, from the
-///   placeholder painter with the same split;
+///   placeholder painter with the same split. Its silhouette is the board's
+///   wood-grain blank for every skin (owner decision 3e);
 /// - `BoardSprites` at every furniture scale on the board, plus the
 ///   family counter's icon, the extra-slot stand while +Slot can still add
 ///   one, and every ice frame at each iced slot's scale;
@@ -206,6 +207,7 @@ class AssetSkinService implements SkinService {
           symbols: symbols,
           artHeightPx: artHeightPx,
           symbolAtlas: _atlas,
+          board: _board,
         );
       } on Object catch (error, stack) {
         _log('the skin parts failed; using the placeholder', error, stack);
@@ -217,6 +219,7 @@ class AssetSkinService implements SkinService {
         symbols: symbols,
         artHeightPx: artHeightPx,
         symbolAtlas: _atlas,
+        board: _board,
       );
     } on Object catch (error, stack) {
       _log(

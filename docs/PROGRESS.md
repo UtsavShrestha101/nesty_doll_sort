@@ -634,7 +634,7 @@ is the owner's call (Q59). The behaviour decisions are D58.
 | CORRECTNESS-4: +1 Slot twice within the 300 ms re-pitch makes the bottom row jump | minor | **Fixed.** A second re-pitch waits for the running one and starts from its end layout, where the row really is; a queued re-pitch that a resize overtook is skipped (timeline and board tests; the step went from 29 px to at most 4.4 px per frame) |
 | FIDELITY-1: the 1.5× `fx_sparkle` over the counter when a family lands is never drawn | minor | **Fixed.** `onFamilyLanded` carries the scale to the HUD, and `FamilyCounter` bursts a 96 × 96 `fx_sparkle` on the counter's centre with the bump, drawn only while it plays |
 | FIDELITY-2: the winning batch greys the pause button and the boosters for about 2.4 s | minor | **Fixed.** At Won the HUD and the booster bar keep their look and only swallow touches (`locked`), as frame 2.5 draws them |
-| FIDELITY-3: the subtle belly symbol lacks the cream disc the App Flow boards draw | minor | **Not changed: owner question Q59.** The prototype preview art has the disc; tokens.json, README §3, the generator and `skins/classic/renders` don't |
+| FIDELITY-3: the subtle belly symbol lacks the cream disc the App Flow boards draw | minor | **Not changed: owner decision Q59 (2026-09-27), bare ink.** The prototype preview art has the disc; tokens.json, README §3, the generator and `skins/classic/renders` don't |
 | FIDELITY-4: every return to Home flashes placeholder dolls | minor | **Fixed.** Home keeps the showcase rasters while a level covers it (D58: the part-raster cache holds them anyway) |
 | FIDELITY-5: after L30, Home's PLAY reads "Level 31" | minor | **Fixed.** It reads "PLAY · All done!" (screen reader: "You've finished all levels!") and opens All Levels Done. `TODO(design)` until M3's Bonus Endless |
 | FIDELITY-6: soft stuck suggests Undo when Undo is impossible | minor | **Fixed.** With nothing to undo the banner suggests Restart ("Try Restart? You can keep playing too.") and Undo doesn't glow. What it suggests holds while it slides out. `TODO(design)` |
@@ -1941,7 +1941,7 @@ reused.
   (rule 3); a showcase that fails leaves them hidden on the splash, and Home
   draws its placeholder dolls (`SplashView`, `Wordmark.dollShown`,
   `splash_page_test`).
-- [ ] **Q59. The subtle belly symbol: bare ink, or on a cream disc (M7,
+- [x] **Q59. The subtle belly symbol: bare ink, or on a cream disc (M7,
   review FIDELITY-3)?** Every App Flow board frame (2.1–2.6, 1.3, 1.6) draws
   its dolls from `design/prototypes/skins/classic/preview/doll-*.svg`, which
   put the symbol on an r 55 `#FFF8EC` disc with a 5-unit ring in the colour's
@@ -1952,6 +1952,9 @@ reused.
   both, and the tokens define only the large mode's disc. Which is canonical
   for `subtle`? If it is the disc, the subtle body raster (skin and
   placeholder) gains it, and the goldens change.
+  **Resolved 2026-09-27 (owner): bare ink.** The subtle symbol stays as
+  tokens.json, README §3, the generator and the renders draw it; the App Flow
+  preview art's disc is not adopted. No code change.
 - [ ] **Q60. +1 Slot pressed again during the re-pitch (M2, D58).** The
   second press is queued: a second slot re-pitches in after the first, and a
   second booster is spent in stg/prod. Or ignore presses during the 300 ms

@@ -1,11 +1,16 @@
 // Copies the design handoff's runtime assets into apps/game/assets:
 //   skins/<id>/skin.svg + skin.json, symbols/*.svg, board/*.svg (not the
-//   baked-pip stands), themes/chNN/background.svg, audio/*.wav,
-//   lottie/*.json (never design/lottie/images/ or LOTTIE.md)
+//   baked-pip stands), themes/chNN/background.svg, audio/*.wav (SFX) and
+//   audio/*.ogg (music loops, jingles; never AUDIO.md), lottie/*.json
+//   (never design/lottie/images/ or LOTTIE.md)
 // SVGs lose their C2PA <metadata> and are validated against spec §12.2
-// (package:nesty_render/svg_tools.dart); the Lottie exports ship byte for
-// byte after validation against the LOTTIE.md contract (lib/src/fx/). Only
-// changed files are written; files the design no longer has are removed.
+// (package:nesty_render/svg_tools.dart). Audio ships byte for byte after a
+// format check (WAV 44.1 kHz mono 16-bit PCM; Ogg Vorbis 44.1 kHz stereo,
+// every page's CRC) and a check against tokens.json `sound` (every named
+// file ships in its format, each loop its `frames` long, nothing else). The
+// Lottie exports ship byte for byte after validation against the LOTTIE.md
+// contract (lib/src/fx/). Only changed files are written; files the design
+// no longer has are removed.
 //
 // Usage: dart run nesty_tools:sync_design_assets [--check]
 //   --check  write nothing; exit 1 on any drift (CI).

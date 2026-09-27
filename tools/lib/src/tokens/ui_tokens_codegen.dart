@@ -1,5 +1,6 @@
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
+import 'package:nesty_tools/src/tokens/sound_files.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
 
 /// Emits `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart`: app colors,
@@ -494,49 +495,63 @@ ConstClass _sound(TokenReader t) {
   const name = 'SoundTokens';
   final c = ConstClass(
     name,
-    'Sound events and mix (tokens.json `sound`, spec §11.3). '
+    'Sound events, music and mix (tokens.json `sound`, spec §11.3, '
+    'design/audio/AUDIO.md). '
     '${t.documented('sound.format', reason: 'prose, in the class doc')}',
   );
   final maxSteps = t.integer(
     'motion.combo.maxSteps',
     symbol: '$name.comboMaxSteps',
   );
-  final files = <String>{};
-  final single = RegExp(r'^([a-z0-9_]+)$');
-  final random = RegExp(r'^([a-z0-9_]+(?:\|[a-z0-9_]+)+) \(random\)$');
-  final combo = RegExp(r'^([a-z0-9_]+)_\{comboStep\}$');
+  final sfx = <String>{};
+  final jingles = <String>{};
   for (final key in t.keys('sound.events')) {
+    final path = 'sound.events.$key';
     final member = memberName(key);
-    final value = t.string('sound.events.$key', symbol: '$name.$member');
-    final String literal;
-    if (single.firstMatch(value) case final m?) {
-      files.add(m[1]!);
-      literal = 'SoundCue([${stringLiteral(m[1]!)}])';
-    } else if (random.firstMatch(value) case final m?) {
-      final names = m[1]!.split('|');
-      files.addAll(names);
-      literal =
-          'SoundCue([${names.map(stringLiteral).join(', ')}], '
-          'pick: SoundPick.random)';
-    } else if (combo.firstMatch(value) case final m?) {
-      final names = [for (var i = 1; i <= maxSteps; i++) '${m[1]}_$i'];
-      files.addAll(names);
-      literal =
-          'SoundCue([${names.map(stringLiteral).join(', ')}], '
-          'pick: SoundPick.comboStep)';
-    } else {
-      throw TokenFormatException('sound.events.$key', 'unexpected "$value"');
+    final value = t.string(path, symbol: '$name.$member');
+    final event = parseSoundEvent(value, maxSteps: maxSteps);
+    if (event == null) throw TokenFormatException(path, 'unexpected "$value"');
+    final jingle = event.files.any(isJingleFile);
+    if (jingle && event.pick != SoundEventPick.single) {
+      throw TokenFormatException(
+        path,
+        'a jingle ($jingleFilePrefix*) plays alone, never in a random or '
+        'combo cue',
+      );
     }
-    c.add(member, literal, doc: '`$value`.');
+    (jingle ? jingles : sfx).addAll(event.files);
+    final files = '[${event.files.map(stringLiteral).join(', ')}]';
+    c.add(
+      member,
+      switch (event.pick) {
+        SoundEventPick.single => 'SoundCue($files)',
+        SoundEventPick.random => 'SoundCue($files, pick: SoundPick.random)',
+        SoundEventPick.comboStep =>
+          'SoundCue($files, pick: SoundPick.comboStep)',
+      },
+      doc: jingle
+          ? '`$value`: a jingle (OGG, in [jingleFiles]; the bus is '
+                '[jingleBus]).'
+          : '`$value`.',
+    );
   }
-  final sorted = files.toList()..sort();
   c.add(
     'allFiles',
-    '[${sorted.map(stringLiteral).join(', ')}]',
+    '[${(sfx.toList()..sort()).map(stringLiteral).join(', ')}]',
     type: 'List<String>',
     doc:
         'Every SFX file base name the events use, sorted (for preloading '
-        'and the asset manifest test).',
+        'and the asset manifest test): `assets/audio/<name>.wav`. The '
+        'jingles are [jingleFiles] and the music loops [musicFiles].',
+  );
+  c.add(
+    'jingleFiles',
+    '[${(jingles.toList()..sort()).map(stringLiteral).join(', ')}]',
+    type: 'List<String>',
+    doc:
+        'Every jingle the events use (the `$jingleFilePrefix*` files), '
+        'sorted: one-shots at `assets/audio/<name>.ogg`, loaded into memory '
+        'like the SFX (AUDIO.md "Jingles").',
   );
   final rule = t.documented(
     'sound.clackPitch.rule',
@@ -561,6 +576,14 @@ ConstClass _sound(TokenReader t) {
     type: 'Map<int, int>',
     doc: 'Clack pitch per doll size: $rule.',
   );
+  c.add(
+    'clackBakedSemitones',
+    '${t.integer('sound.clackPitch.bakedSemitones', symbol: '$name.clackBakedSemitones')}',
+    doc:
+        'The pitch the clack files are recorded at, in semitones from the '
+        'size-3.5 clack (tokens.json `sound.clackPitch.bakedSemitones`): the '
+        'playback rate is 2^((clackSemitonesBySize[size] − this) / 12).',
+  );
   final notes = t.strings('sound.comboNotes', symbol: '$name.comboNotes');
   if (notes.length != maxSteps) {
     throw TokenFormatException('sound.comboNotes', 'needs $maxSteps notes');
@@ -576,17 +599,7 @@ ConstClass _sound(TokenReader t) {
     doc: 'Sets completed within this window step up the chime.',
   );
   c.add('comboMaxSteps', '$maxSteps');
-  for (final key in t.keys('sound.music')) {
-    final member = 'music${key[0].toUpperCase()}${key.substring(1)}';
-    final value = t.string('sound.music.$key', symbol: '$name.$member');
-    final m = RegExp(r'^([a-z0-9_]+) \(').firstMatch(value);
-    if (m == null) throw TokenFormatException('sound.music.$key', 'unexpected');
-    c.add(
-      member,
-      stringLiteral(m[1]!),
-      doc: '"$value" — not in the bundle yet.',
-    );
-  }
+  _music(t, c);
   c.add(
     'sfxVolumeDefault',
     doubleLiteral(
@@ -603,8 +616,135 @@ ConstClass _sound(TokenReader t) {
     'separateVolumes',
     '${t.boolean('sound.mix.separateVolumes', symbol: '$name.separateVolumes')}',
   );
+  final bus = t.string('sound.mix.jingleBus', symbol: '$name.jingleBus');
+  if (bus != 'sfx' && bus != 'music') {
+    throw TokenFormatException('sound.mix.jingleBus', 'expected sfx or music');
+  }
+  c.add(
+    'jingleBus',
+    stringLiteral(bus),
+    doc:
+        'The bus the jingles play on (tokens.json `sound.mix.jingleBus`): '
+        '`sfx` follows the Sound toggle and the SFX volume, `music` the '
+        'Music ones. The codegen accepts only these two.',
+  );
   return c;
 }
+
+/// `sound.music`, `sound.musicFadeMs` and `sound.musicDuck` (AUDIO.md
+/// "Music loops", "Music rules").
+void _music(TokenReader t, ConstClass c) {
+  const name = 'SoundTokens';
+  const fields = {
+    'file',
+    'seconds',
+    'frames',
+    'bpm',
+    'meter',
+    'key',
+    'screens',
+  };
+  final files = <String>[];
+  for (final key in t.keys('sound.music')) {
+    final base = 'sound.music.$key';
+    final prefix = 'music${_capitalized(memberName(key))}';
+    for (final field in t.keys(base)) {
+      if (!fields.contains(field)) {
+        throw TokenFormatException('$base.$field', 'unknown music field');
+      }
+    }
+    final file = t.string('$base.file', symbol: '$name.$prefix');
+    if (!RegExp(r'^[a-z0-9_]+$').hasMatch(file)) {
+      throw TokenFormatException('$base.file', 'expected a file base name');
+    }
+    files.add(file);
+    final screens = t.documented(
+      '$base.screens',
+      reason: 'prose: the screens that play it (AUDIO.md "Music rules")',
+    );
+    c.add(
+      prefix,
+      stringLiteral(file),
+      doc:
+          'The $key loop, `assets/audio/$file.ogg` (streamed; the whole file '
+          'loops). Plays on: $screens.',
+    );
+    final seconds = t.number('$base.seconds', symbol: '$name.${prefix}Seconds');
+    final frames = t.integer('$base.frames', symbol: '$name.${prefix}Frames');
+    if (frames <= 0 || (frames / soundSampleRate - seconds).abs() > 0.001) {
+      throw TokenFormatException(
+        '$base.frames',
+        '$frames frames is not $seconds s at $soundSampleRate Hz',
+      );
+    }
+    c.add(
+      '${prefix}Seconds',
+      doubleLiteral(seconds),
+      doc: 'The loop length in seconds, rounded (the frames are exact).',
+    );
+    c.add(
+      '${prefix}Frames',
+      '$frames',
+      doc: 'The loop length in frames at $soundSampleRate Hz.',
+    );
+    c.add(
+      '${prefix}Bpm',
+      doubleLiteral(t.number('$base.bpm', symbol: '$name.${prefix}Bpm')),
+      doc: 'Tempo; with the meter and key, AUDIO.md "Music loops".',
+    );
+    final meter = t.string('$base.meter', symbol: '$name.${prefix}Meter');
+    if (!RegExp(r'^\d+/\d+$').hasMatch(meter)) {
+      throw TokenFormatException('$base.meter', 'expected "N/M"');
+    }
+    c.add('${prefix}Meter', stringLiteral(meter));
+    final musicKey = t.string('$base.key', symbol: '$name.${prefix}Key');
+    if (!RegExp(r'^[A-G][#b]? (major|minor)$').hasMatch(musicKey)) {
+      throw TokenFormatException('$base.key', 'expected "<note> major|minor"');
+    }
+    c.add('${prefix}Key', stringLiteral(musicKey));
+  }
+  c.add(
+    'musicFiles',
+    '[${(files.toList()..sort()).map(stringLiteral).join(', ')}]',
+    type: 'List<String>',
+    doc: 'Every music loop, sorted: `assets/audio/<name>.ogg`.',
+  );
+  for (final key in t.keys('sound.musicFadeMs')) {
+    final member = 'musicFade${_capitalized(memberName(key))}Ms';
+    final ms = t.integer('sound.musicFadeMs.$key', symbol: '$name.$member');
+    if (ms < 0) {
+      throw TokenFormatException('sound.musicFadeMs.$key', 'negative');
+    }
+    c.add(member, '$ms', doc: 'tokens.json `sound.musicFadeMs.$key`.');
+  }
+  final ducks = <String>[];
+  for (final key in t.keys('sound.musicDuck')) {
+    final path = 'sound.musicDuck.$key';
+    final member = 'musicDuck${_capitalized(memberName(key))}';
+    final factor = t.number(path, symbol: '$name.$member');
+    t.number(path, symbol: '$name.musicDuckFactors');
+    if (factor <= 0 || factor > 1) {
+      throw TokenFormatException(path, 'a duck factor is in (0, 1]');
+    }
+    c.add(
+      member,
+      doubleLiteral(factor),
+      doc: 'Music volume × this while ducked for $key (tokens.json `$path`).',
+    );
+    ducks.add('${stringLiteral(key)}: ${doubleLiteral(factor)}');
+  }
+  c.add(
+    'musicDuckFactors',
+    '{${ducks.join(', ')}}',
+    type: 'Map<String, double>',
+    doc:
+        'Every duck factor by reason (the `sound.musicDuck` keys). Ducks '
+        "don't stack: the lowest active factor wins (AUDIO.md).",
+  );
+}
+
+String _capitalized(String member) =>
+    '${member[0].toUpperCase()}${member.substring(1)}';
 
 double _round(double v) {
   final r = (v * 10000).round() / 10000;

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:nesty_tools/src/assets/design_asset_sync.dart';
@@ -32,6 +33,34 @@ String _skinJson(String id) =>
     '{"skinId":"$id","splitY":400,"lidLiftPx":120,'
     '"symbolAnchor":[256,590],"symbolSize":110,"version":1}';
 
+/// A 44.1 kHz WAV of two 16-bit frames, mono unless [channels] says.
+List<int> _wav({int channels = 1}) {
+  List<int> u16(int v) => [v & 0xFF, v >> 8];
+  List<int> u32(int v) => [for (var i = 0; i < 4; i++) v >> (8 * i) & 0xFF];
+  final data = List.filled(2 * channels * 2, 0);
+  return [
+    ...'RIFF'.codeUnits,
+    ...u32(4 + 24 + 8 + data.length),
+    ...'WAVE'.codeUnits,
+    ...'fmt '.codeUnits,
+    ...u32(16),
+    ...u16(1),
+    ...u16(channels),
+    ...u32(44100),
+    ...u32(44100 * channels * 2),
+    ...u16(channels * 2),
+    ...u16(16),
+    ...'data'.codeUnits,
+    ...u32(data.length),
+    ...data,
+  ];
+}
+
+/// The owner's `jingle_oom.ogg`: a real Ogg Vorbis stream for scratch repos.
+List<int> _realOgg() => File(
+  p.join(findRepoRoot().path, 'design/audio/jingle_oom.ogg'),
+).readAsBytesSync();
+
 /// The scratch repo's one Lottie export: the owner's `fx_sparkle`, checked
 /// against its real contract entry.
 final _fakeLottieTable = [lottieContractOf('fx_sparkle')!];
@@ -60,12 +89,9 @@ Directory _fakeRepo() {
     'design/themes/ch07_toy_attic.svg',
     _svg('<rect width="1" height="1"/>'),
   );
-  write('design/audio/pick.wav', [
-    ...'RIFF'.codeUnits,
-    0, 0, 0, 0, //
-    ...'WAVE'.codeUnits,
-    1, 2, 3,
-  ]);
+  write('design/audio/pick.wav', _wav());
+  write('design/audio/jingle_oom.ogg', _realOgg());
+  write('design/audio/AUDIO.md', '# Audio');
   write(
     'design/lottie/fx_sparkle.json',
     File(
@@ -102,13 +128,14 @@ void main() {
         counts[a.category] = (counts[a.category] ?? 0) + 1;
       }
       // 7 skins × (svg + json), 11 symbols, 17 board − 2 baked-pip stands,
-      // 6 chapter themes, 17 placeholder SFX, 29 Lottie files.
+      // 6 chapter themes, 17 SFX (WAV) + 2 music loops and 3 jingles (OGG),
+      // 29 Lottie files.
       expect(counts, {
         'skins': 14,
         'symbols': 11,
         'board': 15,
         'themes': 6,
-        'audio': 17,
+        'audio': 22,
         'lottie': 29,
       });
       final destinations = plan.assets.map((a) => a.destination);
@@ -118,14 +145,28 @@ void main() {
       expect(destinations, isNot(contains('board/tower-base.svg')));
       expect(destinations, contains('lottie/doll_pick.json'));
       expect(
+        destinations.where((d) => d.startsWith('audio/')),
+        containsAll([
+          'audio/clack_1.wav',
+          'audio/music_home.ogg',
+          'audio/music_game.ogg',
+          'audio/jingle_chapter.ogg',
+          'audio/jingle_reward.ogg',
+          'audio/jingle_oom.ogg',
+        ]),
+      );
+      expect(destinations, isNot(contains('audio/AUDIO.md')));
+      expect(
         destinations.where((d) => d.startsWith('lottie/')),
         everyElement(endsWith('.json')),
         reason: 'no placeholder PNG and no LOTTIE.md ships (D50)',
       );
     });
 
-    test('ships the Lottie exports byte for byte', () {
-      for (final a in plan.assets.where((a) => a.category == 'lottie')) {
+    test('ships the Lottie exports and the audio byte for byte', () {
+      for (final a in plan.assets.where(
+        (a) => a.category == 'lottie' || a.category == 'audio',
+      )) {
         expect(
           a.bytes,
           File(p.join(root.path, a.source)).readAsBytesSync(),
@@ -324,6 +365,76 @@ void main() {
         reason: 'the default table wants all 29 files',
       );
     });
+
+    test('ships OGG next to WAV, never AUDIO.md', () {
+      final root = _fakeRepo();
+      applyAssetSyncPlan(_plan(root), root);
+      final audio = Directory(p.join(root.path, gameAssetsDir, 'audio'));
+      expect(audio.listSync().map((e) => p.basename(e.path)).toList()..sort(), [
+        'jingle_oom.ogg',
+        'pick.wav',
+      ]);
+    });
+
+    test('checks the audio formats (tokens.json `sound.format`)', () {
+      final root = _fakeRepo();
+      File(
+        p.join(root.path, 'design/audio/pick.wav'),
+      ).writeAsBytesSync(_wav(channels: 2));
+      File(
+        p.join(root.path, 'design/audio/jingle_oom.ogg'),
+      ).writeAsBytesSync(_wav());
+      expect(_plan(root).issues, [
+        'design/audio/jingle_oom.ogg: not an Ogg file (no OggS capture '
+            'pattern)',
+        'design/audio/pick.wav: 2 channels, expected 1 (mono)',
+      ]);
+    });
+
+    test(
+      'every tokens.json sound file ships in its format, and only those',
+      () {
+        final root = _fakeRepo();
+        File(p.join(root.path, 'design/tokens.json')).writeAsStringSync(
+          jsonEncode({
+            'dollColor': {
+              'red': {'symbol': 'heart'},
+            },
+            'motion': {
+              'combo': {'maxSteps': 5},
+            },
+            'sound': {
+              'events': {
+                'pick': 'pick',
+                'outOfMoves': 'jingle_oom',
+                'reward': 'jingle_reward',
+              },
+              'music': {
+                'home': {'file': 'music_home', 'frames': 193145},
+                'game': {'file': 'music_game', 'frames': 3024000},
+              },
+            },
+          }),
+        );
+        void write(String name, List<int> bytes) => File(
+          p.join(root.path, 'design/audio', name),
+        ).writeAsBytesSync(bytes);
+        write('jingle_reward.wav', _wav()); // a jingle as WAV
+        write('music_home.ogg', _realOgg()); // 193,145 frames: as tokens say
+        write('music_game.ogg', _realOgg()); // not 3,024,000
+        write('bonk.wav', _wav()); // no event plays it
+        expect(_plan(root).issues, [
+          'design/audio: missing jingle_reward.ogg (tokens.json `sound` names '
+              'it)',
+          'design/audio/bonk.wav: no tokens.json `sound` event or music track '
+              'uses it',
+          'design/audio/jingle_reward.wav: no tokens.json `sound` event or '
+              'music track uses it',
+          'design/audio/music_game.ogg: the stream is 193145 frames long, '
+              'tokens.json `sound.music` says 3024000',
+        ]);
+      },
+    );
 
     test('rejects badly named theme and audio files', () {
       final root = _fakeRepo();

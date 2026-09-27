@@ -344,9 +344,14 @@ abstract final class BoardTokens {
     2: 140.0,
   };
 
-  /// Towers: "each buried nest drawn behind the top as a silhouette of height
-  /// (topHeight + 18 × depth), with a +N walnut tag at the stand's right".
+  /// Towers: "each buried nest drawn behind the top as the wood-grain blank
+  /// board/doll-silhouette.svg (same for every skin), height (topHeight + 18 ×
+  /// depth), with a +N walnut tag at the stand's right".
   static const towerDepthRaise = 18.0;
+
+  /// The board sprite (`board/<name>.svg`) every buried tower nest draws, the
+  /// same for every skin.
+  static const towerSilhouetteSprite = 'doll-silhouette';
 
   /// tokens.json `layout.hud.top`.
   static const hudTop = 62.0;
@@ -514,8 +519,13 @@ abstract final class MotionTokens {
   /// tokens.json `motion.reveal.duration`.
   static const revealMs = 200;
 
-  /// Reveal: "circular paint wipe from the belly + 5 splash drops".
+  /// Reveal: "circular paint wipe from the doll's centre (art 256, 476, 62 %
+  /// down the artboard) + 5 splash drops".
   static const revealSplashDrops = 5;
+
+  /// The centre the reveal wipe grows from, in 512×768 skin artboard units
+  /// (tokens.json `motion.reveal.type`).
+  static const revealWipeCenter = Offset(256.0, 476.0);
 
   /// tokens.json `motion.unlock.padlockPop`.
   static const unlockPadlockPopMs = 200;

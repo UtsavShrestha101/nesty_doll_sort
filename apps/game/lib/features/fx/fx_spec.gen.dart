@@ -2,8 +2,9 @@
 //
 // Source: design/lottie/*.json (validated by sync_design_assets, shipped
 // to apps/game/assets/lottie/) and, for what the JSON does not carry
-// (anchor, kind, loop, travel S/T), the LOTTIE.md contract table in
-// tools/lib/src/fx/lottie_contract.dart.
+// (anchor, kind, loop, travel S/T), the LOTTIE.md v3 contract table in
+// tools/lib/src/fx/lottie_contract.dart. Validation guarantees that
+// no travel null holds and no image layer animates its transform.
 
 import 'dart:ui' show Offset;
 
@@ -150,11 +151,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     height: 844,
     anchor: Offset.zero,
     kind: FxKind.boardSpace,
-    travel: FxTravel(
-      s: Offset(100, 650),
-      t: Offset(195, 144),
-      holds: [FxHold(0, 42, Offset(100, 650))],
-    ),
+    travel: FxTravel(s: Offset(100, 650), t: Offset(195, 144)),
     roles: [FxRole.doll],
     imageLayers: [
       FxImageLayer(
@@ -220,10 +217,10 @@ const Map<FxId, FxSpec> fxSpecs = {
       ),
     ],
   ),
-  // doll_reveal: 24 f (400 ms), 160×260.
+  // doll_reveal: 31 f (517 ms), 160×260.
   FxId.dollReveal: FxSpec(
     id: FxId.dollReveal,
-    frames: 24,
+    frames: 31,
     width: 160,
     height: 260,
     anchor: Offset(80, 230),
@@ -343,9 +340,8 @@ const Map<FxId, FxSpec> fxSpecs = {
       FxImageLayer(
         keyPath: ['glow_ring'],
         slot: FxImageSlot.glowRing,
-        scale: Offset(0.9, 0.9),
-        anchor: Offset(58, 26),
-        scaleAnimated: true,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(174, 78),
       ),
     ],
   ),
@@ -362,31 +358,31 @@ const Map<FxId, FxSpec> fxSpecs = {
       FxImageLayer(
         keyPath: ['padlock_ping', 'lock'],
         slot: FxImageSlot.glassCase0,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
         keyPath: ['unlock_symbol'],
         slot: FxImageSlot.unlockSymbol,
-        scale: Offset(1, 1),
-        anchor: Offset(6, 6),
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(18, 18),
       ),
       FxImageLayer(
         keyPath: ['glass_case_0'],
         slot: FxImageSlot.glassCase0,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
         keyPath: ['glass_case_1'],
         slot: FxImageSlot.glassCase1,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
         keyPath: ['glass_case_2'],
         slot: FxImageSlot.glassCase2,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
@@ -403,10 +399,10 @@ const Map<FxId, FxSpec> fxSpecs = {
       ),
     ],
   ),
-  // fx_ice: 81 f (1350 ms), 180×240.
+  // fx_ice: 150 f (2500 ms), 180×240.
   FxId.fxIce: FxSpec(
     id: FxId.fxIce,
-    frames: 81,
+    frames: 150,
     width: 180,
     height: 240,
     anchor: Offset(90, 170.8),
@@ -416,38 +412,69 @@ const Map<FxId, FxSpec> fxSpecs = {
       FxMarker('crack_2', 16, 16),
       FxMarker('crack_3', 32, 16),
       FxMarker('shatter', 48, 33),
+      FxMarker('rest_0', 0, 0),
+      FxMarker('rest_1', 16, 0),
+      FxMarker('rest_2', 32, 0),
+      FxMarker('rest_3', 48, 0),
+      FxMarker('crack_hit_0', 82, 16),
+      FxMarker('crack_hit_1', 99, 16),
+      FxMarker('crack_hit_2', 116, 16),
+      FxMarker('crack_hit_3', 133, 16),
     ],
     roles: [FxRole.doll],
     imageLayers: [
       FxImageLayer(
         keyPath: ['ice_shatter'],
         slot: FxImageSlot.iceShatter,
-        scale: Offset(1, 1),
-        anchor: Offset(48, 80),
-        scaleAnimated: true,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(144, 240),
       ),
       FxImageLayer(
         keyPath: ['ice_3'],
         slot: FxImageSlot.ice3,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
         keyPath: ['ice_2'],
         slot: FxImageSlot.ice2,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
         keyPath: ['ice_1'],
         slot: FxImageSlot.ice1,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
         keyPath: ['ice_0'],
         slot: FxImageSlot.ice0,
-        scale: Offset(1, 1),
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['ice_0_hit'],
+        slot: FxImageSlot.ice0,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['ice_1_hit'],
+        slot: FxImageSlot.ice1,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['ice_2_hit'],
+        slot: FxImageSlot.ice2,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['ice_3_hit'],
+        slot: FxImageSlot.ice3,
+        scale: Offset(0.3333, 0.3333),
         anchor: Offset.zero,
       ),
       FxImageLayer(
@@ -534,8 +561,8 @@ const Map<FxId, FxSpec> fxSpecs = {
       FxImageLayer(
         keyPath: ['hint_arrow'],
         slot: FxImageSlot.hintArrow,
-        scale: Offset(1, 1),
-        anchor: Offset(20, 25),
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(60, 75),
       ),
     ],
     loops: true,
@@ -552,9 +579,8 @@ const Map<FxId, FxSpec> fxSpecs = {
       FxImageLayer(
         keyPath: ['extra_slot'],
         slot: FxImageSlot.extraSlot,
-        scale: Offset(0.96, 0.96),
-        anchor: Offset(45, 17),
-        scaleAnimated: true,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(135, 51),
       ),
     ],
     loops: true,
@@ -569,23 +595,23 @@ const Map<FxId, FxSpec> fxSpecs = {
     kind: FxKind.inPlace,
     loops: true,
   ),
-  // ui_win_ribbon: 18 f (300 ms), 360×110.
+  // ui_win_ribbon: 18 f (300 ms), 410×110.
   FxId.uiWinRibbon: FxSpec(
     id: FxId.uiWinRibbon,
     frames: 18,
-    width: 360,
+    width: 410,
     height: 110,
-    anchor: Offset(180, 55),
+    anchor: Offset(205, 55),
     kind: FxKind.inPlace,
     textLayers: ['label', 'label_shadow'],
   ),
-  // ui_chapter_ribbon: 156 f (2600 ms), 360×100.
+  // ui_chapter_ribbon: 156 f (2600 ms), 410×100.
   FxId.uiChapterRibbon: FxSpec(
     id: FxId.uiChapterRibbon,
     frames: 156,
-    width: 360,
+    width: 410,
     height: 100,
-    anchor: Offset(180, 50),
+    anchor: Offset(205, 50),
     kind: FxKind.inPlace,
     textLayers: ['label', 'label_shadow'],
   ),
@@ -636,14 +662,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     height: 844,
     anchor: Offset.zero,
     kind: FxKind.boardSpace,
-    travel: FxTravel(
-      s: Offset(100, 500),
-      t: Offset(300, 500),
-      holds: [
-        FxHold(0, 21.6, Offset(100, 500)),
-        FxHold(86.4, 108, Offset(300, 500)),
-      ],
-    ),
+    travel: FxTravel(s: Offset(100, 500), t: Offset(300, 500)),
     loops: true,
   ),
 };

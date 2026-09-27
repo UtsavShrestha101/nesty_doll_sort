@@ -42,81 +42,14 @@ void main() {
     }
   });
 
-  group('travel holds (m2-lottie-design §6)', () {
-    test('doll_complete holds at S until the fly; ui_drag_hand at S and T', () {
-      expect(of('doll_complete').holds, const [
-        TravelHold(0, 42, LottiePoint(100, 650)),
-      ]);
-      expect(of('ui_drag_hand').holds, const [
-        TravelHold(0, 21.6, LottiePoint(100, 500)),
-        TravelHold(86.4, 108, LottiePoint(300, 500)),
-      ]);
-    });
-
-    test('doll_move and doll_invalid never hold', () {
-      expect(of('doll_move').holds, isEmpty);
-      expect(of('doll_invalid').holds, isEmpty);
-    });
-
-    Map<String, Object?> travel(List<Map<String, Object?>> keyframes) => {
-      'nm': 'travel',
-      'ks': {
-        'p': {'a': 1, 'k': keyframes},
-      },
-    };
-
-    test('a hold keyframe (h: 1) holds, and adjacent holds merge', () {
-      expect(
-        travelHolds(
-          travel([
-            {
-              't': 0,
-              's': [1, 2, 0],
-              'h': 1,
-            },
-            {
-              't': 5,
-              's': [1, 2, 0],
-            },
-            {
-              't': 9,
-              's': [1, 2, 0],
-            },
-            {
-              't': 12,
-              's': [4, 2, 0],
-            },
-            {
-              't': 20,
-              's': [6, 2, 0],
-            },
-          ]),
-        ),
-        // 0–5 (h: 1) and 5–9 (equal values) merge; 9 → 12 moves.
-        const [TravelHold(0, 9, LottiePoint(1, 2))],
-      );
-    });
-
-    test('an old-style end value (e) decides, and the tail never holds', () {
-      expect(
-        travelHolds(
-          travel([
-            {
-              't': 0,
-              's': [1, 2, 0],
-              'e': [1, 2, 0],
-            },
-            {
-              't': 5,
-              's': [9, 2, 0],
-              'e': [3, 2, 0],
-            },
-            {'t': 9},
-          ]),
-        ),
-        const [TravelHold(0, 5, LottiePoint(1, 2))],
-      );
-    });
+  test('board-space files carry S/T and never a hold (LOTTIE.md v3)', () {
+    final source = fxSpecSource(facts);
+    expect(
+      source,
+      contains('travel: FxTravel(s: Offset(100, 650), t: Offset(195, 144)),'),
+    );
+    expect(source, isNot(contains('FxHold(')));
+    expect(source, isNot(contains('holds:')));
   });
 
   group('image layers (m2-lottie-design §3)', () {
@@ -141,19 +74,54 @@ void main() {
       );
     });
 
-    test('exactly glow_ring, extra_slot and ice_shatter scale over time', () {
+    test(
+      'board pieces are 3× rasters at 33.33 %, dolls 512×768 at 19.53 %',
+      () {
+        final glow = of('fx_select_glow').imageLayers.single;
+        expect(glow.scale, const LottiePoint(0.3333, 0.3333));
+        expect(glow.anchor, const LottiePoint(174, 78));
+        final symbol = of(
+          'fx_glass_unlock',
+        ).imageLayers.firstWhere((l) => l.assetId == 'unlock_symbol');
+        expect(symbol.anchor, const LottiePoint(18, 18));
+        for (final f in facts) {
+          for (final l in f.imageLayers) {
+            final doll =
+                l.assetId.startsWith('doll_') ||
+                l.assetId.startsWith('mover_') ||
+                l.assetId.startsWith('target_');
+            expect(
+              l.scale,
+              anyOf(
+                const LottiePoint(1, 1), // a precomp child at the artboard
+                doll
+                    ? const LottiePoint(0.1953, 0.1953)
+                    : const LottiePoint(0.3333, 0.3333),
+              ),
+              reason: '${f.contract.name} ${l.keyPath.join(' › ')}',
+            );
+          }
+        }
+      },
+    );
+
+    test('fx_ice: one layer per crack stage, plus one per stage-less hit', () {
       expect(
+        of('fx_ice').imageLayers.map((l) => '${l.keyPath.single}=${l.assetId}'),
         [
-          for (final f in facts)
-            for (final l in f.imageLayers)
-              if (l.scaleAnimated) l.assetId,
+          'ice_shatter=ice_shatter',
+          'ice_3=ice_3',
+          'ice_2=ice_2',
+          'ice_1=ice_1',
+          'ice_0=ice_0',
+          'ice_0_hit=ice_0',
+          'ice_1_hit=ice_1',
+          'ice_2_hit=ice_2',
+          'ice_3_hit=ice_3',
+          'doll_lid=doll_lid',
+          'doll_body=doll_body',
         ],
-        ['glow_ring', 'ice_shatter', 'extra_slot'],
       );
-      // The first keyframe's value stands in for the animated scale.
-      final glow = of('fx_select_glow').imageLayers.single;
-      expect(glow.scale, const LottiePoint(0.9, 0.9));
-      expect(glow.anchor, const LottiePoint(58, 26));
     });
 
     test('every image layer uses one of the file\'s assets', () {
@@ -176,14 +144,34 @@ void main() {
     expect(of('doll_swallow').colorFills, ['rim_tint']);
     expect(of('fx_twinkle').colorFills, ['tint']);
     expect(of('ui_toggle').markers.map((m) => m.name), ['on', 'off']);
+    // fx_ice in the JSON's order: cracks and shatter, rests (dr 0), hits.
+    expect(of('fx_ice').markers.map((m) => m.toString()), [
+      'crack_1 0.0+16.0',
+      'crack_2 16.0+16.0',
+      'crack_3 32.0+16.0',
+      'shatter 48.0+33.0',
+      'rest_0 0.0+0.0',
+      'rest_1 16.0+0.0',
+      'rest_2 32.0+0.0',
+      'rest_3 48.0+0.0',
+      'crack_hit_0 82.0+16.0',
+      'crack_hit_1 99.0+16.0',
+      'crack_hit_2 116.0+16.0',
+      'crack_hit_3 133.0+16.0',
+    ]);
+    expect(of('fx_ice').frames, 150);
+    expect(of('doll_reveal').frames, 31);
   });
 
   test('emits short literals: no float noise, Offset.zero for (0, 0)', () {
     final source = fxSpecSource(facts);
     expect(source, contains('scale: Offset(0.1953, 0.1953)'));
+    expect(source, contains('scale: Offset(0.3333, 0.3333)'));
     expect(source, contains('anchor: Offset(90, 170.8)'));
-    expect(source, contains('FxHold(0, 21.6, Offset(100, 500))'));
+    expect(source, contains('anchor: Offset(205, 55)'));
+    expect(source, contains("FxMarker('rest_0', 0, 0)"));
     expect(source, contains('anchor: Offset.zero,'));
+    expect(source, isNot(contains('scaleAnimated')));
     expect(source, isNot(contains('0000000')));
     expect(source, isNot(contains('.0,')));
   });

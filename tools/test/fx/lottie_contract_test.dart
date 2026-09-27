@@ -22,19 +22,21 @@ final class _Row {
   final String segments;
 }
 
-/// The rows of the markdown table under `## [heading]`.
-List<List<String>> _table(String markdown, String heading) {
+/// The text under `## [heading]`, up to the next `## `.
+String _section(String markdown, String heading) {
   final start = markdown.indexOf('## $heading\n');
   if (start == -1) throw StateError('LOTTIE.md has no "## $heading"');
   final rest = markdown.substring(start + heading.length + 4);
   final end = rest.indexOf('\n## ');
-  final section = end == -1 ? rest : rest.substring(0, end);
-  return [
-    for (final line in section.split('\n'))
-      if (line.startsWith('| `'))
-        [for (final cell in line.split('|').skip(1)) cell.trim()]..removeLast(),
-  ];
+  return end == -1 ? rest : rest.substring(0, end);
 }
+
+/// The rows of the markdown table under `## [heading]`.
+List<List<String>> _table(String markdown, String heading) => [
+  for (final line in _section(markdown, heading).split('\n'))
+    if (line.startsWith('| `'))
+      [for (final cell in line.split('|').skip(1)) cell.trim()]..removeLast(),
+];
 
 List<_Row> _filesTable() => [
   for (final cells in _table(
@@ -48,6 +50,9 @@ final _pair = RegExp(r'\(([\d.]+), ([\d.]+)\)');
 
 LottiePoint _pointOf(RegExpMatch m) =>
     LottiePoint(double.parse(m[1]!), double.parse(m[2]!));
+
+/// A number as LOTTIE.md writes it, with a typographic minus (`−18`).
+double _num(String text) => double.parse(text.replaceAll('−', '-'));
 
 void main() {
   final rows = _filesTable();
@@ -79,26 +84,21 @@ void main() {
         expect(c.frames, int.parse(frames![1]!));
         expect(c.loops, row.length.contains('loop'));
 
-        // Segments: "`lift` 0–7", or "`crack_2` 16" (ends where the next
-        // one starts, or at the end of the file).
-        final found = RegExp(
-          r'`(\w+)` (\d+)(?:–(\d+))?',
-        ).allMatches(row.segments).toList();
+        // Segments: "`lift` 0–7", or a rest marker with no end, "`rest_0`
+        // 0" (dr 0). LOTTIE.md lists `fx_ice`'s rest markers last; the
+        // contract keeps the JSON's order, which the validator checks.
         final markers = [
-          for (final (j, m) in found.indexed)
+          for (final m in RegExp(
+            r'`(\w+)` (\d+)(?:–(\d+))?',
+          ).allMatches(row.segments))
             LottieMarker(
               m[1]!,
               double.parse(m[2]!),
-              double.parse(
-                    m[3] ??
-                        (j + 1 < found.length
-                            ? found[j + 1][2]!
-                            : '${c.frames}'),
-                  ) -
-                  double.parse(m[2]!),
+              m[3] == null ? 0 : double.parse(m[3]!) - double.parse(m[2]!),
             ),
         ];
-        expect(c.markers, markers);
+        expect(c.markers.toSet(), markers.toSet());
+        expect(c.markers, hasLength(markers.length));
 
         // Kind: board space, segmented (markers) or in place.
         expect(
@@ -149,6 +149,18 @@ void main() {
           }
           expect(c.anchor, anchor);
         }
+
+        // doll_reveal's drop: "the `drop` null lowers the doll from
+        // (0, −18) to (0, 0)".
+        final drop = RegExp(
+          r'`drop` null lowers the doll from \(([−\d.]+), ([−\d.]+)\) to '
+          r'\(0, 0\)',
+        ).firstMatch(row.anchor);
+        expect(
+          c.dropFrom,
+          drop == null ? isNull : LottiePoint(_num(drop[1]!), _num(drop[2]!)),
+        );
+        expect(c.hookLayers.contains('drop'), drop != null);
       });
     }
   });
@@ -187,6 +199,62 @@ void main() {
     expect(lottieImageSlots.map((s) => s.id).toSet(), ids.toSet());
     expect(ids.toSet(), hasLength(ids.length));
     expect({for (final c in lottieContracts) ...c.imageAssets}, ids.toSet());
+  });
+
+  test(
+    'declared sizes are LOTTIE.md "Image slots" pixel sizes (3× boards)',
+    () {
+      // "… at 3×: 348×156, 120×150 and 270×102 px (116×52, 40×50 and 90×34
+      // dp)": each backticked id group of the first cell takes the next px
+      // size of the second (dp sizes in parentheses are skipped), or all of
+      // them take the only one.
+      final sizes = <String, (double, double)>{};
+      for (final [ids, supplies, ...] in _table(
+        _read('$designLottieDir/$lottieContractDoc'),
+        'Image slots',
+      )) {
+        final pixels = [
+          for (final m in RegExp(
+            r'(\d+)×(\d+)',
+          ).allMatches(supplies.replaceAll(RegExp(r'\([^)]*dp\)'), '')))
+            (double.parse(m[1]!), double.parse(m[2]!)),
+        ];
+        final groups = RegExp(r'`([a-z0-9_/]+)`').allMatches(ids).toList();
+        expect(pixels, isNotEmpty, reason: ids);
+        for (final (i, group) in groups.indexed) {
+          final size = pixels.length == 1 ? pixels.single : pixels[i];
+          final id = group[1]!;
+          if (id.contains('/')) {
+            final [first, ...more] = id.split('/');
+            final base = first.substring(0, first.lastIndexOf('_') + 1);
+            for (final n in [first, ...more.map((m) => '$base$m')]) {
+              sizes[n] = size;
+            }
+          } else {
+            sizes[id] = size;
+          }
+        }
+      }
+      for (final slot in lottieImageSlots) {
+        // `ice_1`, `ice_2` sit inside the `ice_0` … `ice_3` range.
+        final size = sizes[slot.id] ?? sizes['ice_0'];
+        expect((slot.width, slot.height), size, reason: slot.id);
+      }
+    },
+  );
+
+  test('every parent null LOTTIE.md "Format" names is required', () {
+    final format = _section(
+      _read('$designLottieDir/$lottieContractDoc'),
+      'Format',
+    );
+    final list = RegExp(r'on a parent null \(([^)]*)\)').firstMatch(format);
+    final nulls = [
+      for (final m in RegExp(r'`(\w+)`').allMatches(list![1]!)) m[1]!,
+    ];
+    expect(nulls, containsAll(['glow_pulse', 'shatter_burst', 'arrow_bob']));
+    final required = {for (final c in lottieContracts) ...c.requiredLayers};
+    expect(required, containsAll(nulls));
   });
 
   test('the text files are the three LOTTIE.md "Text layers" names', () {

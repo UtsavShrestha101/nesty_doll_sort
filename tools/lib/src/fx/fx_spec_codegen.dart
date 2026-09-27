@@ -5,56 +5,35 @@ import 'package:nesty_tools/src/fx/lottie_sources.dart';
 /// Repo-relative output of `gen_fx_spec`.
 const fxSpecGenPath = 'apps/game/lib/features/fx/fx_spec.gen.dart';
 
-/// A stretch where `travel` holds still (m2-lottie-design §6): the game's
-/// `FxHold`.
-final class TravelHold {
-  const TravelHold(this.start, this.end, this.value);
-
-  final double start;
-  final double end;
-  final LottiePoint value;
-
-  @override
-  bool operator ==(Object other) =>
-      other is TravelHold &&
-      other.start == start &&
-      other.end == end &&
-      other.value == value;
-
-  @override
-  int get hashCode => Object.hash(start, end, value);
-
-  @override
-  String toString() => 'TravelHold($start–$end at $value)';
-}
-
 /// One image layer with its authored transform: the game's `FxImageLayer`.
+/// The transform is static: validation rejects an animated one (LOTTIE.md v3
+/// "Format"), so the game's `FxImageLayer.scaleAnimated` is never set.
 final class ImageLayerFacts {
   const ImageLayerFacts({
     required this.keyPath,
     required this.assetId,
     required this.scale,
     required this.anchor,
-    required this.scaleAnimated,
   });
 
   /// The layer's name, prefixed by each enclosing precomp layer's name.
   final List<String> keyPath;
   final String assetId;
 
-  /// `ks.s / 100`; the first keyframe's value when [scaleAnimated].
+  /// `ks.s / 100`.
   final LottiePoint scale;
 
   /// `ks.a`, in declared asset px.
   final LottiePoint anchor;
-  final bool scaleAnimated;
 
   @override
   String toString() => 'ImageLayerFacts(${keyPath.join(' › ')} = $assetId)';
 }
 
 /// Everything `fx_spec.gen.dart` says about one file: the JSON's facts plus
-/// the contract's anchor, kind, loop and travel S/T.
+/// the contract's anchor, kind, loop and travel S/T. `travel` never holds:
+/// validation rejects a hold (LOTTIE.md v3), so the game's `FxTravel.holds`
+/// stays empty.
 final class FxSpecFacts {
   const FxSpecFacts({
     required this.contract,
@@ -62,7 +41,6 @@ final class FxSpecFacts {
     required this.width,
     required this.height,
     required this.markers,
-    required this.holds,
     required this.roles,
     required this.imageLayers,
     required this.textLayers,
@@ -73,10 +51,9 @@ final class FxSpecFacts {
   final int frames;
   final double width;
   final double height;
-  final List<LottieMarker> markers;
 
-  /// The `travel` holds, in frame order (board-space files).
-  final List<TravelHold> holds;
+  /// In the JSON's order.
+  final List<LottieMarker> markers;
 
   /// In `LottieRole` order.
   final List<LottieRole> roles;
@@ -115,11 +92,8 @@ FxSpecFacts extractFxSpecFacts(LottieSource source) {
       switch (layer['ty']) {
         case LottieLayerType.image:
           final scale = lottieTransform(layer, 's');
-          final animated = lottieIsAnimated(scale);
           final scaleValue = scale == null
               ? const LottiePoint(100, 100)
-              : animated
-              ? lottiePoint(lottieMaps(scale['k']).first['s'])!
               : lottiePoint(scale['k'])!;
           imageLayers.add(
             ImageLayerFacts(
@@ -129,7 +103,6 @@ FxSpecFacts extractFxSpecFacts(LottieSource source) {
               anchor:
                   lottiePoint(lottieTransform(layer, 'a')?['k']) ??
                   LottiePoint.zero,
-              scaleAnimated: animated,
             ),
           );
         case LottieLayerType.precomp:
@@ -175,9 +148,6 @@ FxSpecFacts extractFxSpecFacts(LottieSource source) {
           (m['dr']! as num).toDouble(),
         ),
     ],
-    holds: contract.kind == LottieKind.boardSpace
-        ? travelHolds(layers.firstWhere((l) => l['nm'] == 'travel'))
-        : const [],
     roles: [
       for (final role in LottieRole.values)
         if (names.contains(role.sizeNull)) role,
@@ -192,34 +162,6 @@ FxSpecFacts extractFxSpecFacts(LottieSource source) {
         if (fills.contains(f)) f,
     ],
   );
-}
-
-/// The holds of a `travel` null: each keyframe whose end value equals its
-/// start (two equal consecutive keyframes, or a hold keyframe `h: 1`) holds
-/// from its time to the next keyframe's. lottie 3.6.1 skips the position
-/// callback there (audit #2). Adjacent holds at one value merge. Nothing
-/// holds after the last keyframe: the callback still runs there (probe
-/// `tail_hold_test`).
-List<TravelHold> travelHolds(Map<String, Object?> travel) {
-  final keyframes = lottieMaps(lottieTransform(travel, 'p')!['k']);
-  final holds = <TravelHold>[];
-  for (var i = 0; i + 1 < keyframes.length; i++) {
-    final kf = keyframes[i];
-    final next = keyframes[i + 1];
-    final start = lottiePoint(kf['s'])!;
-    final end = lottiePoint(kf['e']) ?? lottiePoint(next['s']) ?? start;
-    if (kf['h'] != 1 && start != end) continue;
-    final from = (kf['t']! as num).toDouble();
-    final to = (next['t']! as num).toDouble();
-    if (holds.isNotEmpty &&
-        holds.last.end == from &&
-        holds.last.value == start) {
-      holds[holds.length - 1] = TravelHold(holds.last.start, to, start);
-    } else {
-      holds.add(TravelHold(from, to, start));
-    }
-  }
-  return holds;
 }
 
 /// `fx_spec.gen.dart` (unformatted) for [facts], in contract order.
@@ -238,9 +180,14 @@ String fxSpecSource(List<FxSpecFacts> facts) {
       'not carry',
     )
     ..writeln(
-      '// (anchor, kind, loop, travel S/T), the LOTTIE.md contract table in',
+      '// (anchor, kind, loop, travel S/T), the LOTTIE.md v3 contract table in',
     )
-    ..writeln('// tools/lib/src/fx/lottie_contract.dart.')
+    ..writeln(
+      '// tools/lib/src/fx/lottie_contract.dart. Validation guarantees that',
+    )
+    ..writeln(
+      '// no travel null holds and no image layer animates its transform.',
+    )
     ..writeln()
     ..writeln("import 'dart:ui' show Offset;")
     ..writeln()
@@ -276,18 +223,10 @@ String fxSpecSource(List<FxSpecFacts> facts) {
       b.writeln('    ],');
     }
     if (c.kind == LottieKind.boardSpace) {
-      b.write(
+      b.writeln(
         '    travel: FxTravel(s: ${_offset(c.travelS!)}, '
-        't: ${_offset(c.travelT!)}',
+        't: ${_offset(c.travelT!)}),',
       );
-      if (f.holds.isNotEmpty) {
-        b.write(', holds: [');
-        for (final h in f.holds) {
-          b.write('FxHold(${_n(h.start)}, ${_n(h.end)}, ${_offset(h.value)}),');
-        }
-        b.write(']');
-      }
-      b.writeln('),');
     }
     if (f.roles.isNotEmpty) {
       b.writeln(
@@ -304,9 +243,8 @@ String fxSpecSource(List<FxSpecFacts> facts) {
           )
           ..writeln('        slot: FxImageSlot.${lottieMemberName(l.assetId)},')
           ..writeln('        scale: ${_offset(l.scale)},')
-          ..writeln('        anchor: ${_offset(l.anchor)},');
-        if (l.scaleAnimated) b.writeln('        scaleAnimated: true,');
-        b.writeln('      ),');
+          ..writeln('        anchor: ${_offset(l.anchor)},')
+          ..writeln('      ),');
       }
       b.writeln('    ],');
     }

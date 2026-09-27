@@ -71,6 +71,8 @@ void main() {
         'motion.swallow',
         'sound.format',
         'sound.clackPitch.rule',
+        'sound.music.home.screens',
+        'sound.music.game.screens',
         'haptics.pick',
         'haptics.nest',
         'haptics.complete',
@@ -100,6 +102,61 @@ void main() {
       expect(ui, contains('TokenStop.px(14.0)'));
       expect(ui, contains('fontFeatures: [FontFeature.tabularFigures()]'));
       expect(ui, contains('letterSpacing: 0.66'));
+    });
+
+    test('spot-checks the audio tokens (design/audio/AUDIO.md)', () {
+      final ui = output.files[uiTokensPath]!;
+      expect(
+        ui,
+        contains(
+          "static const chapterComplete = SoundCue(['jingle_chapter']);",
+        ),
+      );
+      expect(ui, contains('static const clackBakedSemitones = 0;'));
+      expect(ui, contains('static const musicHome = \'music_home\';'));
+      expect(ui, contains('static const musicHomeFrames = 2940000;'));
+      expect(ui, contains('static const musicGameSeconds = 68.571;'));
+      expect(ui, contains('static const musicFadeCrossfadeMs = 800;'));
+      expect(ui, contains('static const musicDuckWin = 0.3;'));
+      expect(ui, contains("'outOfMoves': 0.4,"));
+      expect(ui, contains("static const jingleBus = 'sfx';"));
+
+      // allFiles stays WAV-only: the jingles and loops are OGG lists.
+      String listOf(String member) {
+        final start = ui.indexOf('static const List<String> $member = [');
+        return ui.substring(start, ui.indexOf('];', start));
+      }
+
+      expect(listOf('allFiles'), isNot(contains('jingle_')));
+      expect(listOf('allFiles'), isNot(contains('music_')));
+      expect(
+        listOf('jingleFiles'),
+        allOf(
+          contains("'jingle_chapter'"),
+          contains("'jingle_oom'"),
+          contains("'jingle_reward'"),
+        ),
+      );
+      expect(
+        ui,
+        contains(
+          "static const List<String> musicFiles = ['music_game', 'music_home'];",
+        ),
+      );
+    });
+
+    test('spot-checks the owner decisions 3d and 3e', () {
+      final render = output.files[renderTokensPath]!;
+      expect(
+        render,
+        contains('static const revealWipeCenter = Offset(256.0, 476.0);'),
+      );
+      expect(render, contains('static const revealSplashDrops = 5;'));
+      expect(
+        render,
+        contains("static const towerSilhouetteSprite = 'doll-silhouette';"),
+      );
+      expect(render, contains('static const towerDepthRaise = 18.0;'));
     });
 
     test('is deterministic', () {
@@ -197,6 +254,104 @@ void main() {
           mutate((j) => at(j, 'layout.board')['hitArea'] = 'min 48'),
         ),
         throwsA(isA<TokenFormatException>()),
+      );
+      // The v1 wordings, before the owner decisions 3d and 3e.
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'motion.reveal')['type'] =
+                'circular paint wipe from the belly + 5 splash drops',
+          ),
+        ),
+        throwsA(isA<TokenFormatException>()),
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'layout')['towerSilhouettes'] =
+                'each buried nest drawn behind the top as a silhouette of '
+                'height (topHeight + 18 × depth), with a +N walnut tag at the '
+                "stand's right",
+          ),
+        ),
+        throwsA(isA<TokenFormatException>()),
+      );
+      // A wipe centre that isn't where the percentage says.
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'motion.reveal')['type'] =
+                "circular paint wipe from the doll's centre (art 256, 590, 62 "
+                '% down the artboard) + 5 splash drops',
+          ),
+        ),
+        throwsA(isA<TokenFormatException>()),
+      );
+    });
+
+    test('on audio tokens of the wrong shape', () {
+      String sound(void Function(Map<String, Object?> sound) change) =>
+          mutate((j) => change(at(j, 'sound')));
+      Matcher throwsAt(String path) => throwsA(
+        isA<TokenFormatException>().having((e) => e.path, 'path', path),
+      );
+
+      expect(
+        () => generateDesignTokens(
+          sound(
+            (s) => (s['events']! as Map<String, Object?>)['reward'] =
+                'jingle_reward|jingle_chapter (random)',
+          ),
+        ),
+        throwsAt('sound.events.reward'),
+        reason: 'a jingle plays alone',
+      );
+      expect(
+        () => generateDesignTokens(
+          sound(
+            (s) => (s['mix']! as Map<String, Object?>)['jingleBus'] = 'voice',
+          ),
+        ),
+        throwsAt('sound.mix.jingleBus'),
+      );
+      expect(
+        () => generateDesignTokens(
+          sound(
+            (s) =>
+                ((s['music']! as Map<String, Object?>)['home']!
+                        as Map<String, Object?>)['frames'] =
+                    2940000 + 441,
+          ),
+        ),
+        throwsAt('sound.music.home.frames'),
+        reason: '10 ms longer than its seconds',
+      );
+      expect(
+        () => generateDesignTokens(
+          sound(
+            (s) =>
+                ((s['music']! as Map<String, Object?>)['game']!
+                        as Map<String, Object?>)['loopStart'] =
+                    0,
+          ),
+        ),
+        throwsAt('sound.music.game.loopStart'),
+      );
+      expect(
+        () => generateDesignTokens(
+          sound((s) => (s['musicDuck']! as Map<String, Object?>)['win'] = 1.5),
+        ),
+        throwsAt('sound.musicDuck.win'),
+      );
+      expect(
+        () => generateDesignTokens(
+          sound(
+            (s) =>
+                (s['clackPitch']! as Map<String, Object?>)['bakedSemitones'] =
+                    0.5,
+          ),
+        ),
+        throwsAt('sound.clackPitch.bakedSemitones'),
       );
     });
 

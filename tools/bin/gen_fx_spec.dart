@@ -1,7 +1,7 @@
 // Generates apps/game/lib/features/fx/fx_spec.gen.dart (a const FxSpec per
-// FxId: frames, canvas, markers, anchor, kind, travel S/T and holds, size
-// roles, image layers with their authored scale/anchor, text layers, colour
-// fills, loop) from design/lottie/*.json and the LOTTIE.md contract table
+// FxId: frames, canvas, markers, anchor, kind, travel S/T, size roles, image
+// layers with their authored static scale/anchor, text layers, colour fills,
+// loop) from design/lottie/*.json and the LOTTIE.md v3 contract table
 // (lib/src/fx/lottie_contract.dart). The exports are validated first, the
 // same way sync_design_assets validates them; nothing is written on an issue.
 //

@@ -1,13 +1,15 @@
 /// The Lottie contract: what every file of `design/lottie/` must be, taken
-/// from the owner's `design/lottie/LOTTIE.md` ("Files", "Image slots",
-/// "Doll size, rim and tint", "Text layers") and the placement decisions of
-/// `docs/plans/m2-lottie-design.md` (§2 table, §5, §8).
+/// from the owner's `design/lottie/LOTTIE.md` v3 ("Format", "Files", "Image
+/// slots", "Doll size, rim and tint", "Travel remap", "Text layers") and the
+/// placement decisions of `docs/plans/m2-lottie-design.md` (§2 table, §5,
+/// §8).
 ///
 /// `sync_design_assets` validates each export against its entry, and
 /// `gen_fx_spec` takes from here the facts the JSON can't carry: the anchor,
-/// the kind, whether the file loops, and the travel null's S/T. A test keeps
-/// this table equal to LOTTIE.md's, so a changed LOTTIE.md fails CI until
-/// the table (and the game) follow.
+/// the kind, whether the file loops, and the travel null's S/T (the `drop`
+/// null's start is validated only; `FxSpec` has no field for it). A test
+/// keeps this table equal to LOTTIE.md's, so a changed LOTTIE.md fails CI
+/// until the table (and the game) follow.
 ///
 /// Pure Dart: `tools/` can't import `apps/game` (Flutter), so the file ids
 /// and image slot ids are repeated here; a test compares them with the
@@ -85,17 +87,21 @@ enum LottieRole {
   String get sizeNull => '${name}_size';
 }
 
-/// The LOTTIE.md hook layers other than the size nulls: a file has one of
-/// these exactly when its contract lists it, so a stray hook (the runtime
-/// would never drive it) is an issue too.
-const lottieHookLayers = {'travel', 'target_pos'};
+/// The LOTTIE.md hook layers other than the size nulls: the nulls whose
+/// position the runtime overrides (`travel`, remapped S→T; `target_pos`, set
+/// to the target base; `drop`, `doll_reveal`'s per-tower start). A file has
+/// one of these exactly when its contract lists it, so a stray hook (the
+/// runtime would never drive it) is an issue too.
+const lottieHookLayers = {'travel', 'target_pos', 'drop'};
 
 /// The fills the game recolours (LOTTIE.md "Rim" and "Tint"), in the order
 /// `FxSpec.colorFills` lists them.
 const lottieHookFills = ['rim_tint', 'tint'];
 
 /// An image slot (LOTTIE.md "Image slots"): the asset id and its declared
-/// `w`/`h`. Mirrors the game's `FxImageSlot`, in its declaration order.
+/// `w`/`h`, which LOTTIE.md v2+ makes the pixel size of the raster that fills
+/// it (lottie 3.6.1 draws an image at its own pixel size). Mirrors the
+/// game's `FxImageSlot`, in its declaration order.
 final class LottieImageSlot {
   const LottieImageSlot(this.id, this.width, this.height);
 
@@ -104,7 +110,11 @@ final class LottieImageSlot {
   final double height;
 }
 
-/// Every image asset id any file may use, with its declared size.
+/// Every image asset id any file may use, with its declared size. Doll parts
+/// are the whole 512×768 skin artboard (layers at 19.53 %); board pieces are
+/// declared at 3× their dp size (layers at 33.33 %, anchor ×3): glow ring
+/// 116×52 dp, hint arrow 40×50, extra slot 90×34, glass case 86×143, unlock
+/// symbol 12×12, ice 96×160.
 const lottieImageSlots = [
   LottieImageSlot('doll_lid', 512, 768),
   LottieImageSlot('doll_body', 512, 768),
@@ -113,18 +123,18 @@ const lottieImageSlots = [
   LottieImageSlot('target_lid', 512, 768),
   LottieImageSlot('target_body', 512, 768),
   LottieImageSlot('doll_silhouette', 512, 768),
-  LottieImageSlot('glow_ring', 116, 52),
-  LottieImageSlot('hint_arrow', 40, 50),
-  LottieImageSlot('extra_slot', 90, 34),
-  LottieImageSlot('glass_case_0', 86, 143),
-  LottieImageSlot('glass_case_1', 86, 143),
-  LottieImageSlot('glass_case_2', 86, 143),
-  LottieImageSlot('unlock_symbol', 12, 12),
-  LottieImageSlot('ice_0', 96, 160),
-  LottieImageSlot('ice_1', 96, 160),
-  LottieImageSlot('ice_2', 96, 160),
-  LottieImageSlot('ice_3', 96, 160),
-  LottieImageSlot('ice_shatter', 96, 160),
+  LottieImageSlot('glow_ring', 348, 156),
+  LottieImageSlot('hint_arrow', 120, 150),
+  LottieImageSlot('extra_slot', 270, 102),
+  LottieImageSlot('glass_case_0', 258, 429),
+  LottieImageSlot('glass_case_1', 258, 429),
+  LottieImageSlot('glass_case_2', 258, 429),
+  LottieImageSlot('unlock_symbol', 36, 36),
+  LottieImageSlot('ice_0', 288, 480),
+  LottieImageSlot('ice_1', 288, 480),
+  LottieImageSlot('ice_2', 288, 480),
+  LottieImageSlot('ice_3', 288, 480),
+  LottieImageSlot('ice_shatter', 288, 480),
 ];
 
 /// The slot for [id], or null.
@@ -148,6 +158,7 @@ final class LottieFileContract {
     this.loops = false,
     this.travelS,
     this.travelT,
+    this.dropFrom,
     this.imageAssets = const {},
     this.roles = const {},
     this.hookLayers = const {},
@@ -184,6 +195,11 @@ final class LottieFileContract {
   final LottiePoint? travelS;
   final LottiePoint? travelT;
 
+  /// The `drop` null's authored start (`doll_reveal` only): it lowers the
+  /// whole doll from here to (0, 0), and the runtime overrides the start per
+  /// tower depth (LOTTIE.md "Doll size, rim and tint" → "Reveal drop").
+  final LottiePoint? dropFrom;
+
   /// Exactly the image asset ids the file declares.
   final Set<String> imageAssets;
 
@@ -193,8 +209,10 @@ final class LottieFileContract {
   /// Exactly the [lottieHookLayers] the file has.
   final Set<String> hookLayers;
 
-  /// Other root layers the FX runtime keys on (m2-lottie-design §6–§13):
-  /// they must exist, once.
+  /// Other root layers LOTTIE.md names and the FX runtime keys on or relies
+  /// on (m2-lottie-design §6–§13; the parent nulls that carry every lift,
+  /// bob, pulse, burst and shake, LOTTIE.md v3 "Format"): they must exist,
+  /// once.
   final Set<String> requiredLayers;
 
   /// Exactly the [lottieHookFills] the file has.
@@ -253,6 +271,8 @@ const lottieContracts = [
     anchor: _dollBase,
     imageAssets: _moverTargetParts,
     roles: {LottieRole.mover, LottieRole.target},
+    // The target's lid lift, off the image layer since v3.
+    requiredLayers: {'target_lid_lift'},
     fills: {'rim_tint'},
   ),
   LottieFileContract(
@@ -264,6 +284,8 @@ const lottieContracts = [
     anchor: LottiePoint(90, 350),
     imageAssets: _moverTargetParts,
     roles: {LottieRole.mover, LottieRole.target},
+    // The mover's lid lift, off the image layer since v3.
+    requiredLayers: {'mover_lid_lift'},
     fills: {'rim_tint'},
   ),
   LottieFileContract(
@@ -296,13 +318,16 @@ const lottieContracts = [
     'doll_reveal',
     width: 160,
     height: 260,
-    frames: 24,
+    frames: 31,
     kind: LottieKind.inPlace,
     anchor: _dollBase,
+    // `drop` lowers the doll 0–7, then the wipe runs 7–19.
+    dropFrom: LottiePoint(0, -18),
     imageAssets: {'doll_silhouette', 'doll_lid', 'doll_body'},
     roles: {LottieRole.doll},
-    // The silhouette is hidden from the wipe's end (§7); the colour doll is
-    // the precomp its lid and body are compensated through (§3).
+    hookLayers: {'drop'},
+    // The silhouette ends with the wipe (frame 19); the colour doll is the
+    // precomp its lid and body are compensated through (§3).
     requiredLayers: {'doll_silhouette', 'color_doll'},
     fills: {'tint'},
   ),
@@ -352,6 +377,8 @@ const lottieContracts = [
       LottieMarker('out', 103, 10),
     ],
     imageAssets: {'glow_ring'},
+    // The ring's pulse, off the image layer since v2.
+    requiredLayers: {'glow_pulse'},
   ),
   LottieFileContract(
     'fx_glass_unlock',
@@ -371,23 +398,34 @@ const lottieContracts = [
       'doll_body',
     },
     roles: {LottieRole.doll},
-    // `doll` carries the 11 dp settle (§9.2); `padlock_ping` is hidden at
-    // rest (§8).
+    // `doll` carries the freed doll's hop, which lands on the stand surface
+    // (90, 174) at frame 53; `padlock_ping` starts at frame 1, so the rest
+    // frame 0 shows the unlock symbol (LOTTIE.md v2, v3).
     requiredLayers: {'doll', 'padlock_ping'},
   ),
   LottieFileContract(
     'fx_ice',
     width: 180,
     height: 240,
-    frames: 81,
+    frames: 150,
     kind: LottieKind.segmented,
     // The doll base → (cx, surfaceY); the ice's top-left (42, 40) follows.
     anchor: LottiePoint(90, 170.8),
+    // In the JSON's order: the cracks and the shatter, the rest markers
+    // (dr 0; stage n rests on `rest_n`), then the stage-less hits (v3).
     markers: [
       LottieMarker('crack_1', 0, 16),
       LottieMarker('crack_2', 16, 16),
       LottieMarker('crack_3', 32, 16),
       LottieMarker('shatter', 48, 33),
+      LottieMarker('rest_0', 0, 0),
+      LottieMarker('rest_1', 16, 0),
+      LottieMarker('rest_2', 32, 0),
+      LottieMarker('rest_3', 48, 0),
+      LottieMarker('crack_hit_0', 82, 16),
+      LottieMarker('crack_hit_1', 99, 16),
+      LottieMarker('crack_hit_2', 116, 16),
+      LottieMarker('crack_hit_3', 133, 16),
     ],
     imageAssets: {
       'ice_0',
@@ -399,8 +437,9 @@ const lottieContracts = [
       'doll_body',
     },
     roles: {LottieRole.doll},
-    // The shake null: static (42, 40) under reduced motion (§13).
-    requiredLayers: {'ice'},
+    // `ice`: the shake null, static (42, 40) under reduced motion (§13).
+    // `shatter_burst`: the shatter's burst, off the image layer since v2.
+    requiredLayers: {'ice', 'shatter_burst'},
   ),
   LottieFileContract(
     'fx_dust_puff',
@@ -466,6 +505,8 @@ const lottieContracts = [
     anchor: LottiePoint(30, 45),
     loops: true,
     imageAssets: {'hint_arrow'},
+    // The arrow's bob, off the image layer since v3.
+    requiredLayers: {'arrow_bob'},
   ),
   LottieFileContract(
     'ui_extra_slot',
@@ -476,6 +517,8 @@ const lottieContracts = [
     anchor: LottiePoint(55, 25),
     loops: true,
     imageAssets: {'extra_slot'},
+    // The stand's pulse, off the image layer since v2.
+    requiredLayers: {'slot_pulse'},
   ),
   LottieFileContract(
     'ui_booster_glow',
@@ -486,23 +529,25 @@ const lottieContracts = [
     anchor: LottiePoint(65, 55),
     loops: true,
   ),
+  // The ribbons: 410 wide since v3 (band 336, tails 22 past it); the game's
+  // own text fits a 312×40 (win) or 312×32 (chapter) box on the anchor.
   LottieFileContract(
     'ui_win_ribbon',
-    width: 360,
+    width: 410,
     height: 110,
     frames: 18,
     kind: LottieKind.inPlace,
-    anchor: LottiePoint(180, 55),
+    anchor: LottiePoint(205, 55),
     requiredLayers: {'ribbon'},
     textLayers: ['label', 'label_shadow'],
   ),
   LottieFileContract(
     'ui_chapter_ribbon',
-    width: 360,
+    width: 410,
     height: 100,
     frames: 156,
     kind: LottieKind.inPlace,
-    anchor: LottiePoint(180, 50),
+    anchor: LottiePoint(205, 50),
     requiredLayers: {'ribbon'},
     textLayers: ['label', 'label_shadow'],
   ),

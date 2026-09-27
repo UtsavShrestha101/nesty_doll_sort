@@ -45,7 +45,15 @@ abstract final class LottieIssueCodes {
   static const fills = 'fills';
   static const text = 'text';
   static const travel = 'travel';
-  static const imageAnchor = 'imageAnchor';
+  static const drop = 'drop';
+
+  /// A remapped null (`travel`, `drop`) holds still between two keyframes:
+  /// lottie 3.6.1 skips the position callback there (LOTTIE.md v3).
+  static const hold = 'hold';
+
+  /// An image layer animates its anchor, position, scale or rotation, which
+  /// the image-slot compensation can't follow (LOTTIE.md v3 "Format").
+  static const imageTransform = 'imageTransform';
 
   // Features lottie 3.6.1 can't draw, or the game must not depend on
   // (LOTTIE.md "Format"; m2-lottie-design §16 tools lane). Blocked one by
@@ -118,6 +126,7 @@ final class _Validator {
     _checkFills();
     _checkText();
     if (contract.kind == LottieKind.boardSpace) _checkTravel();
+    if (contract.dropFrom != null) _checkDrop();
     _checkImageLayers();
   }
 
@@ -429,43 +438,85 @@ final class _Validator {
   }
 
   void _checkTravel() {
-    final s = contract.travelS!;
-    final t = contract.travelT!;
     final travel = rootLayers.where((l) => l['nm'] == 'travel').firstOrNull;
     if (travel == null) return; // Reported by _checkHooks.
-    void bad(String why) => add(LottieIssueCodes.travel, '"travel" $why');
+    _checkRemappedNull(
+      travel,
+      code: LottieIssueCodes.travel,
+      from: contract.travelS!,
+      to: contract.travelT!,
+      fromName: 'S',
+      doc: 'LOTTIE.md "Files"',
+    );
+  }
 
-    if (travel['ty'] != _null) bad('is not a null layer');
-    if (travel['parent'] != null) {
+  // `doll_reveal`'s `drop` lowers the doll from `dropFrom` to (0, 0); the
+  // runtime moves its start per tower depth.
+  void _checkDrop() {
+    final drop = rootLayers.where((l) => l['nm'] == 'drop').firstOrNull;
+    if (drop == null) return; // Reported by _checkHooks.
+    final keyframes = _checkRemappedNull(
+      drop,
+      code: LottieIssueCodes.drop,
+      from: contract.dropFrom!,
+      to: LottiePoint.zero,
+      fromName: 'the drop start',
+      doc: 'LOTTIE.md "Reveal drop"',
+    );
+    if (keyframes.isEmpty) return;
+    final last = lottiePoint(keyframes.last['s']);
+    if (last != null && last != LottiePoint.zero) {
+      add(LottieIssueCodes.drop, '"drop" ends at $last, expected (0, 0)');
+    }
+  }
+
+  /// Checks a null whose position the runtime remaps along [from] → [to]
+  /// by projection (`travel`, `drop`), and returns its keyframes. The
+  /// projection is exact only for an unparented null with a static zero
+  /// anchor on a straight path, and lottie skips the position callback
+  /// during a hold, so none is allowed.
+  List<Map<String, Object?>> _checkRemappedNull(
+    Map<String, Object?> layer, {
+    required String code,
+    required LottiePoint from,
+    required LottiePoint to,
+    required String fromName,
+    required String doc,
+  }) {
+    final name = layer['nm'];
+    void bad(String why) => add(code, '"$name" $why');
+
+    if (layer['ty'] != _null) bad('is not a null layer');
+    if (layer['parent'] != null) {
       bad('has a parent; the remap works in canvas units');
     }
-    final anchor = lottieTransform(travel, 'a');
+    final anchor = lottieTransform(layer, 'a');
     if (lottieIsAnimated(anchor) || !_isZeroPoint(anchor)) {
-      bad('anchor is not a static (0, 0); the hold fix drives it (§6)');
+      bad('anchor is not a static (0, 0)');
     }
-    final position = lottieTransform(travel, 'p');
+    final position = lottieTransform(layer, 'p');
     if (position == null || position['s'] == true) {
       bad('position is missing or split into x/y');
-      return;
+      return const [];
     }
     if (!lottieIsAnimated(position)) {
       bad('position is not keyframed');
-      return;
+      return const [];
     }
     final keyframes = lottieMaps(position['k']);
     if (keyframes.isEmpty) {
       bad('has no keyframes');
-      return;
+      return const [];
     }
-    final dx = t.x - s.x;
-    final dy = t.y - s.y;
+    final dx = to.x - from.x;
+    final dy = to.y - from.y;
     final length = math.sqrt(dx * dx + dy * dy);
     for (final (i, kf) in keyframes.indexed) {
       for (final key in const ['ti', 'to']) {
         if (!_isZeroList(kf[key])) {
           bad(
-            'keyframe $i has a spatial tangent ($key); the S→T projection '
-            'is only exact on a straight path',
+            'keyframe $i has a spatial tangent ($key); the projection is '
+            'only exact on a straight path',
           );
         }
       }
@@ -476,28 +527,54 @@ final class _Validator {
         if (!timeOnlyEnd) bad('keyframe $i has no point value');
         continue;
       }
-      if (i == 0 && (value.x != s.x || value.y != s.y)) {
-        bad('starts at $value, expected S $s (LOTTIE.md "Files")');
+      if (i == 0 && value != from) {
+        bad('starts at $value, expected $fromName $from ($doc)');
       }
-      final cross = (value.x - s.x) * dy - (value.y - s.y) * dx;
+      final cross = (value.x - from.x) * dy - (value.y - from.y) * dx;
       if ((cross / length).abs() > 1e-6) {
-        bad('keyframe $i at $value is off the S→T line $s→$t');
+        bad('keyframe $i at $value is off the line $from→$to');
       }
     }
+    for (final hold in lottieHolds(position)) {
+      add(
+        LottieIssueCodes.hold,
+        '"$name" holds still at ${hold.value} from frame ${_n(hold.start)} '
+        'to ${_n(hold.end)}; lottie skips the position callback there, so '
+        'the remap would not apply. Start the keyframes where the motion '
+        'starts (LOTTIE.md "Travel remap")',
+      );
+    }
+    return keyframes;
   }
 
-  // Image layers are compensated through their scale and anchor (§3); the
-  // anchor must be a single static value for that.
+  // Image layers are compensated through a static scale and anchor (§3):
+  // LOTTIE.md v3 "Format" says an image layer never animates its transform;
+  // a lift, bob, pulse, burst or shake goes on a parent null. Opacity may
+  // stay animated (it isn't inherited through parenting).
   void _checkImageLayers() {
     void visit(List<Map<String, Object?>> layers, String where) {
       for (final (i, layer) in layers.indexed) {
         if (layer['ty'] != _image) continue;
-        if (lottieIsAnimated(lottieTransform(layer, 'a'))) {
-          add(
-            LottieIssueCodes.imageAnchor,
-            '$where[$i] "${layer['nm']}" has an animated anchor, which the '
-            'image-slot compensation cannot follow',
-          );
+        for (final (key, what) in const [
+          ('a', 'anchor'),
+          ('p', 'position'),
+          ('s', 'scale'),
+          ('r', 'rotation'),
+        ]) {
+          final prop = lottieTransform(layer, key);
+          final animated =
+              lottieIsAnimated(prop) ||
+              (prop?['s'] == true &&
+                  (lottieIsAnimated(_map(prop?['x'])) ||
+                      lottieIsAnimated(_map(prop?['y']))));
+          if (animated) {
+            add(
+              LottieIssueCodes.imageTransform,
+              '$where[$i] "${layer['nm']}" animates its $what; the image-slot '
+              'compensation needs a static transform, so animate a parent '
+              'null instead (LOTTIE.md "Format")',
+            );
+          }
         }
       }
     }
@@ -515,6 +592,9 @@ final class _Validator {
     return null;
   }
 }
+
+Map<String, Object?>? _map(Object? value) =>
+    value is Map<String, Object?> ? value : null;
 
 bool _isZeroPoint(Map<String, Object?>? prop) =>
     prop == null || _isZeroList(prop['k']);

@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:nesty_render/svg_tools.dart';
+import 'package:nesty_tools/src/assets/audio_formats.dart';
 import 'package:nesty_tools/src/file_writes.dart';
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/fx/lottie_sources.dart';
+import 'package:nesty_tools/src/tokens/sound_files.dart';
 import 'package:path/path.dart' as p;
 
 /// Repo-relative asset root of the game.
@@ -26,8 +28,12 @@ const syncedAssetRoots = [
 /// while the game draws pips itself on the `-blank` variants (spec §10.3).
 const excludedBoardFiles = {'slot-stand.svg', 'tower-base.svg'};
 
+/// The owner's audio contract in `design/audio/`: read by people, never
+/// shipped.
+const audioContractDoc = 'AUDIO.md';
+
 final _themeName = RegExp(r'^ch(\d{2})_[a-z0-9_]+\.svg$');
-final _wavName = RegExp(r'^[a-z0-9_]+\.wav$');
+final _audioName = RegExp(r'^([a-z0-9_]+)\.(wav|ogg)$');
 final _svgName = RegExp(r'^[a-z0-9-]+\.svg$');
 
 /// One file the sync will write, relative to [gameAssetsDir].
@@ -194,15 +200,31 @@ AssetSyncPlan planDesignAssetSync(
     addSvg('themes', file, 'themes/ch${match[1]}/background.svg', validateSvg);
   }
 
+  // Audio: the SFX (WAV) and the music loops and jingles (Ogg Vorbis), byte
+  // for byte after a format check (tokens.json `sound.format`, AUDIO.md).
+  // Never AUDIO.md.
+  final audio = <String>{}; // file names
+  final oggFrames = <String, int>{}; // base name → frames
   for (final file in filesIn('audio')) {
     final name = p.basename(file.path);
-    if (!_wavName.hasMatch(name)) {
+    if (name == audioContractDoc) continue;
+    final match = _audioName.firstMatch(name);
+    if (match == null) {
       issues.add('${rel(file)}: unexpected file in design/audio');
       continue;
     }
     final bytes = file.readAsBytesSync();
-    if (!_isWav(bytes)) {
-      issues.add('${rel(file)}: not a RIFF/WAVE file');
+    audio.add(name);
+    if (match[2] == 'wav') {
+      for (final issue in validateSfxWav(bytes)) {
+        issues.add('${rel(file)}: $issue');
+      }
+    } else {
+      final ogg = readOggVorbis(bytes);
+      for (final issue in ogg.issues) {
+        issues.add('${rel(file)}: $issue');
+      }
+      if (ogg.info case final info?) oggFrames[match[1]!] = info.lastGranule;
     }
     assets.add(
       PlannedAsset(
@@ -233,6 +255,7 @@ AssetSyncPlan planDesignAssetSync(
   }
 
   _checkSymbolsCoverTokens(repoRoot, assets, issues);
+  _checkAudioCoversTokens(repoRoot, audio, oggFrames, issues);
 
   final seen = <String>{};
   for (final a in assets) {
@@ -269,10 +292,52 @@ void _checkSymbolsCoverTokens(
   }
 }
 
-bool _isWav(List<int> bytes) =>
-    bytes.length > 12 &&
-    String.fromCharCodes(bytes.sublist(0, 4)) == 'RIFF' &&
-    String.fromCharCodes(bytes.sublist(8, 12)) == 'WAVE';
+// Every file tokens.json's `sound` section names must ship in its format
+// (SFX as WAV, jingles and music as Ogg), each loop exactly its `frames`
+// long, and every shipped file must be one of them: the game preloads
+// `SoundTokens.allFiles` and `jingleFiles` and streams `musicFiles`.
+void _checkAudioCoversTokens(
+  Directory repoRoot,
+  Set<String> audio,
+  Map<String, int> oggFrames,
+  List<String> issues,
+) {
+  final tokens = File(p.join(repoRoot.path, 'design', 'tokens.json'));
+  if (!tokens.existsSync()) return;
+  final json = jsonDecode(tokens.readAsStringSync());
+  if (json is! Map<String, Object?>) return;
+  final SoundFiles? files;
+  try {
+    files = soundFilesOf(json);
+  } on FormatException catch (e) {
+    issues.add('design/tokens.json: ${e.message}');
+    return;
+  }
+  if (files == null) return;
+  final wanted = {
+    for (final name in files.sfx) '$name.wav',
+    for (final name in files.jingles) '$name.ogg',
+    for (final name in files.musicFrames.keys) '$name.ogg',
+  };
+  for (final name in wanted.difference(audio)) {
+    issues.add('design/audio: missing $name (tokens.json `sound` names it)');
+  }
+  for (final name in audio.difference(wanted)) {
+    issues.add(
+      'design/audio/$name: no tokens.json `sound` event or music track uses '
+      'it',
+    );
+  }
+  for (final MapEntry(key: name, value: frames) in files.musicFrames.entries) {
+    final granule = oggFrames[name];
+    if (granule != null && granule != frames) {
+      issues.add(
+        'design/audio/$name.ogg: the stream is $granule frames long, '
+        'tokens.json `sound.music` says $frames',
+      );
+    }
+  }
+}
 
 /// What [applyAssetSyncPlan] did (or, dry-run, would do).
 final class AssetSyncResult {

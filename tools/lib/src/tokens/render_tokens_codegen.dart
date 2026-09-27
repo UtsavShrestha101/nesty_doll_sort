@@ -447,18 +447,33 @@ ConstClass _board(TokenReader t) {
     '{${maxHeights.join(', ')}}',
     type: 'Map<int, double>',
   );
+  // Owner decision 3e (2026-09-26): every skin draws its buried nests as
+  // the one wood-grain blank board sprite.
   final tower = t.string(
     'layout.towerSilhouettes',
     symbol: '$b.towerDepthRaise',
   );
-  final tm = RegExp(r'\(topHeight \+ (\d+) × depth\)').firstMatch(tower);
+  t.string('layout.towerSilhouettes', symbol: '$b.towerSilhouetteSprite');
+  final tm = RegExp(
+    r'^each buried nest drawn behind the top as the wood-grain blank '
+    r'board/([a-z0-9-]+)\.svg \(same for every skin\), height '
+    r'\(topHeight \+ (\d+) × depth\), with a \+N walnut tag at the '
+    r"stand's right$",
+  ).firstMatch(tower);
   if (tm == null) {
-    throw TokenFormatException('layout.towerSilhouettes', 'unexpected');
+    throw TokenFormatException('layout.towerSilhouettes', 'unexpected wording');
   }
   c.add(
     'towerDepthRaise',
-    doubleLiteral(num.parse(tm[1]!)),
+    doubleLiteral(num.parse(tm[2]!)),
     doc: 'Towers: "$tower".',
+  );
+  c.add(
+    'towerSilhouetteSprite',
+    stringLiteral(tm[1]!),
+    doc:
+        'The board sprite (`board/<name>.svg`) every buried tower nest draws, '
+        'the same for every skin.',
   );
 
   const lh = 'layout.hud';
@@ -595,14 +610,47 @@ ConstClass _motion(TokenReader t) {
   ms('invalid.returnDuration', 'invalidReturnMs');
 
   ms('reveal.duration', 'revealMs');
+  // Owner decision 3d (2026-09-26): the wipe grows from the doll's centre,
+  // not the belly.
   final reveal = t.string('motion.reveal.type', symbol: '$m.revealSplashDrops');
+  t.string('motion.reveal.type', symbol: '$m.revealWipeCenter');
   final rm = RegExp(
-    r'^circular paint wipe from the belly \+ (\d+) splash drops$',
+    r"^circular paint wipe from the doll's centre \(art (\d+(?:\.\d+)?), "
+    r'(\d+(?:\.\d+)?), (\d+(?:\.\d+)?) % down the artboard\) \+ (\d+) '
+    r'splash drops$',
   ).firstMatch(reveal);
   if (rm == null) {
-    throw TokenFormatException('motion.reveal.type', 'unexpected');
+    throw TokenFormatException('motion.reveal.type', 'unexpected wording');
   }
-  c.add('revealSplashDrops', rm[1]!, doc: 'Reveal: "$reveal".');
+  final cx = num.parse(rm[1]!);
+  final cy = num.parse(rm[2]!);
+  // Peek (no ledger entry): skin.artboard is accounted for by _skin.
+  final artboard = t.peek('skin.artboard');
+  if (artboard is! List<Object?> ||
+      artboard.length != 2 ||
+      artboard[0] is! num ||
+      artboard[1] is! num) {
+    throw TokenFormatException('skin.artboard', 'expected [width, height]');
+  }
+  final artWidth = artboard[0]! as num;
+  final artHeight = artboard[1]! as num;
+  if (cx < 0 ||
+      cx > artWidth ||
+      (cy / artHeight * 100 - num.parse(rm[3]!)).abs() > 0.5) {
+    throw TokenFormatException(
+      'motion.reveal.type',
+      'the wipe centre ($cx, $cy) is not ${rm[3]} % down the '
+          '$artWidth × $artHeight artboard',
+    );
+  }
+  c.add('revealSplashDrops', rm[4]!, doc: 'Reveal: "$reveal".');
+  c.add(
+    'revealWipeCenter',
+    offsetLiteral(cx, cy),
+    doc:
+        'The centre the reveal wipe grows from, in 512×768 skin artboard '
+        'units (tokens.json `motion.reveal.type`).',
+  );
 
   ms('unlock.padlockPop', 'unlockPadlockPopMs');
   ms('unlock.crackedAt', 'unlockCrackedAtMs');

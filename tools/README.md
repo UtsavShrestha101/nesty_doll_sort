@@ -63,6 +63,22 @@ Turns `design/tokens.json` into `static const` Dart:
   `inset`), `HudTokens`, `BoosterBarTokens`, `BottomNavTokens`,
   `UiMotionTokens`, `SoundTokens`.
 
+`SoundTokens` (tokens.json `sound`, `design/audio/AUDIO.md`) has a
+`SoundCue` per event, including the three jingles (`chapterComplete`,
+`reward`, `outOfMoves`); `allFiles` (the SFX, WAV only), `jingleFiles` and
+`musicFiles` (OGG); the clack table and `clackBakedSemitones`; per loop
+`musicHome`/`musicGame` (the file) plus `…Seconds`, `…Frames` (checked
+against the seconds at 44.1 kHz), `…Bpm`, `…Meter` and `…Key`; the
+`musicFade…Ms` timings; the `musicDuck…` factors and `musicDuckFactors` by
+reason; the mix defaults and `jingleBus` (`sfx` or `music`). A jingle
+(`jingle_*`) may only be a single-file event. `sound.format` and
+`sound.music.*.screens` are prose (documented). Two prose leaves are parsed
+strictly: `motion.reveal.type` gives `MotionTokens.revealWipeCenter` (the
+wipe grows from the doll's centre, art (256, 476), owner decision 3d) and
+`layout.towerSilhouettes` gives `BoardTokens.towerDepthRaise` and
+`towerSilhouetteSprite` (every skin's buried nests draw the wood-grain blank
+`board/doll-silhouette.svg`, owner decision 3e).
+
 The value types are hand-written next to the output
 (`render_token_types.dart`, `ui_token_types.dart`). Every tokens.json leaf
 must be emitted or explicitly documented (prose such as `motion.swallow`;
@@ -74,67 +90,99 @@ or a text style weight that isn't bundled all stop the codegen. The test
 ### `sync_design_assets`
 
 Copies the runtime art and sound from the owner-managed `design/` into the
-game: `skins/<id>/skin.svg` + `skin.json` (all 7), `symbols/*.svg` (11),
-`board/*.svg` (15: not `slot-stand.svg` / `tower-base.svg`, whose pips are
-baked in), `themes/chNN/background.svg` (6), `audio/*.wav` (17 placeholders).
+game:
+
+| Folder | Files |
+|---|---|
+| `skins/<id>/skin.svg` + `skin.json` | 7 skins |
+| `symbols/*.svg` | 11 |
+| `board/*.svg` | 15 (not `slot-stand.svg` / `tower-base.svg`, whose pips are baked in) |
+| `themes/chNN/background.svg` | 6 |
+| `audio/` | 22: 17 SFX `*.wav` + 5 `*.ogg` (2 music loops, 3 jingles) |
+| `lottie/*.json` | 29 (see "Lottie" below) |
+
 SVGs lose their C2PA `<metadata>` block (about 7.7 KB each) and must pass the
 spec §12.2 rules in `package:nesty_render/svg_tools.dart` (no filters, masks,
 text, images, `style`, nested `<svg>` or blend modes; skins need the eight
-groups in paint order and a valid `skin.json`). Nothing is written if any
-file fails. Files the design no longer has are removed, and `--check` also
-fails when `apps/game/pubspec.yaml` doesn't list a synced folder.
+groups in paint order and a valid `skin.json`).
 
-It also ships the 29 Lottie exports, `design/lottie/*.json` →
-`lottie/<name>.json`, byte for byte; see "Lottie" below.
+Audio ships byte for byte (`lib/src/assets/audio_formats.dart`, tokens.json
+`sound.format`): a WAV must be 44.1 kHz mono 16-bit PCM with its chunks
+inside the file (other chunks, such as the C2PA one, are fine); an OGG must be
+one logical Ogg Vorbis stream, 44.1 kHz stereo, every page with the `OggS`
+capture pattern and a valid CRC, begun on the first page and ended on the
+last. Against tokens.json `sound`: every event file ships (SFX as `.wav`,
+`jingle_*` as `.ogg`), every `sound.music.*.file` ships as `.ogg` and ends at
+exactly its `frames`, and no other audio ships. `design/audio/AUDIO.md` is
+never copied.
+
+Nothing is written if any file fails. Files the design no longer has are
+removed, and `--check` also fails when `apps/game/pubspec.yaml` doesn't list
+a synced folder.
+
+The 29 Lottie exports ship byte for byte too, `design/lottie/*.json` →
+`lottie/<name>.json`; see "Lottie" below.
 
 Not synced on purpose: `design/skins/classic/renders/` (golden references for
 the renderer tests), `museum/` and `store/` (nested `<svg>` and
 `mix-blend-mode`, which flutter_svg can't draw; museum PNGs come in M3 and
-store icons in M8), `generator/` and `prototypes/`, and `design/lottie/`'s
-`LOTTIE.md` and `images/` (the placeholder PNGs are never shipped or decoded,
-PROGRESS D50; a PNG found in `assets/lottie/` is removed like any stale file).
+store icons in M8), `generator/` and `prototypes/`, `design/audio/AUDIO.md`,
+and `design/lottie/`'s `LOTTIE.md` and `images/` (the placeholder PNGs are
+never shipped or decoded, PROGRESS D50; a PNG found in `assets/lottie/` is
+removed like any stale file).
 
 ### Lottie (`lib/src/fx/`, `gen_fx_spec`)
 
 Every animation ships as Lottie (PROGRESS D40–D52,
 [docs/plans/m2-lottie-design.md](../docs/plans/m2-lottie-design.md)).
 
-- **The contract** (`lottie_contract.dart`) is LOTTIE.md's "Files" table as
-  Dart, in `FxId` order: canvas, length, markers, loop, and the anchor, kind
-  and travel S/T the JSON can't carry. It also lists the image slots
-  (`FxImageSlot` ids and declared sizes) and, per file, the hooks the runtime
-  keys on: the `<role>_size` nulls, `travel`, `target_pos`, the `rim_tint` and
-  `tint` fills, the text layers, and the nulls of §6–§13 (`target`, `ice`,
-  `doll`, `padlock_ping`, `doll_silhouette`, `color_doll`, `counter`,
-  `ribbon`). `test/fx/lottie_contract_test.dart` parses LOTTIE.md and the
-  game's `FxId`/`FxImageSlot` sources, so the table can't drift from either.
+- **The contract** (`lottie_contract.dart`) is LOTTIE.md v3's "Files" table
+  as Dart, in `FxId` order: canvas, length, markers (in the JSON's order;
+  `fx_ice` has `rest_0` … `rest_3` at dr 0 and `crack_hit_0` … `crack_hit_3`),
+  loop, and the anchor, kind, travel S/T and `drop` start the JSON can't
+  carry. It also lists the image slots (`FxImageSlot` ids and declared sizes:
+  dolls 512×768, board pieces at 3× their dp size) and, per file, the hooks
+  the runtime keys on: the `<role>_size` nulls, `travel`, `target_pos`,
+  `drop`, the `rim_tint` and `tint` fills, the text layers, the nulls of
+  §6–§13 (`target`, `ice`, `doll`, `padlock_ping`, `doll_silhouette`,
+  `color_doll`, `counter`, `ribbon`) and the parent nulls that carry every
+  lift, bob, pulse and burst (`target_lid_lift`, `mover_lid_lift`,
+  `arrow_bob`, `glow_pulse`, `slot_pulse`, `shatter_burst`).
+  `test/fx/lottie_contract_test.dart` parses LOTTIE.md (the Files and Image
+  slots tables, the Format list of parent nulls) and the game's
+  `FxId`/`FxImageSlot` sources, so the table can't drift from either.
 - **Validation** (`lottie_validation.dart`, run by both scripts; nothing is
   written on an issue): it parses; `v` 5.7.x, `fr` 60, `ip` 0; `w`/`h`/`op`
   and the markers equal the contract; the image asset ids are exactly the
   contract's, each an image slot at its declared size, none embedded, every
-  `refId` resolves; the hooks are present, unique, and nowhere else; each
-  image layer's anchor is static (the compensation of §3 needs it); `travel`
-  is an unparented null at S with a static zero anchor, on the S→T line, with
-  no spatial tangents (the remap is a projection). Features are **blocked,
+  `refId` resolves; the hooks are present, unique, and nowhere else; no image
+  layer animates its anchor, position, scale or rotation (the compensation of
+  §3 needs a static transform; opacity may animate); `travel` is an
+  unparented null at S with a static zero anchor, on the S→T line, with no
+  spatial tangents (the remap is a projection); `drop` likewise runs from its
+  start to (0, 0); neither ever holds (two equal consecutive keys or `h: 1`:
+  lottie skips the position callback there). Features are **blocked,
   not allow-listed**, so trim paths and polystars stay fine: expressions,
   effects (`ef`), layer styles (`sy`), merge paths (`mm`), luma mattes
   (`tt` 3/4), matte parents (`tp`), 3D (`ddd`), time remap (`tm`), layer
   types above 5, shape types lottie 3.6.1 drops, and text outside
   `ui_family_counter`, `ui_win_ribbon` and `ui_chapter_ribbon`.
 - **`gen_fx_spec`** writes `const Map<FxId, FxSpec> fxSpecs` and
-  `fxSpecOf(id)`: frames, canvas, anchor, kind, markers, travel S/T with its
-  holds (equal consecutive keyframes or `h: 1`: lottie skips the position
-  callback there, §6), size roles, image layers with their key paths
-  (precomp children as `[precomp, child]`), authored scale and anchor and
-  whether the scale is animated, text layers, colour fills, loop. The board
-  timeline reads it and stays pure Dart. `test/fx/fx_spec_codegen_test.dart`
-  checks the committed file; the game's `fx_spec_drift_test.dart` re-reads
-  the shipped JSON independently.
+  `fxSpecOf(id)`: frames, canvas, anchor, kind, markers, travel S/T, size
+  roles, image layers with their key paths (precomp children as
+  `[precomp, child]`) and their static authored scale and anchor, text
+  layers, colour fills, loop. Validation rules out holds and animated image
+  scales, so it never emits `FxHold`s or `scaleAnimated`. The board timeline
+  reads it and stays pure Dart. `test/fx/fx_spec_codegen_test.dart` checks
+  the committed file; the game's `fx_spec_drift_test.dart` re-reads the
+  shipped JSON independently.
 
-When the designer's re-export arrives (m2-lottie-design §18): the owner drops
-it into `design/lottie/`, then run `sync_design_assets` and `gen_fx_spec`. A
-changed length, marker, canvas or hook fails validation until the contract
-table (and LOTTIE.md, which the contract test reads) agree.
+The contract follows Claude Design's v3 export (2026-09-26,
+[docs/plans/claude-design-v3-changes.md](../docs/plans/claude-design-v3-changes.md)).
+When another export arrives: it goes into `design/lottie/`, then run
+`sync_design_assets` and `gen_fx_spec`. A changed length, marker, canvas,
+image size or hook fails validation until the contract table (and LOTTIE.md,
+which the contract test reads) agree.
 
 ### Fonts and icons (`tools/fonts/`)
 

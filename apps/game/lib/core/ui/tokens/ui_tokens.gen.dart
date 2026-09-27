@@ -772,9 +772,10 @@ abstract final class UiMotionTokens {
   static const reducedMotionDurationScale = 0.5;
 }
 
-/// Sound events and mix (tokens.json `sound`, spec §11.3). Placeholders are
-/// 44.1 kHz mono 16-bit WAV in design/audio. Final files may be OGG with the
-/// same base names.
+/// Sound events, music and mix (tokens.json `sound`, spec §11.3,
+/// design/audio/AUDIO.md). SFX: 44.1 kHz mono 16-bit WAV. Music and jingles:
+/// 44.1 kHz stereo OGG Vorbis q4. All in design/audio; rules in
+/// design/audio/AUDIO.md.
 abstract final class SoundTokens {
   /// `pick`.
   static const pick = SoundCue(['pick']);
@@ -826,8 +827,19 @@ abstract final class SoundTokens {
   /// `button`.
   static const button = SoundCue(['button']);
 
+  /// `jingle_chapter`: a jingle (OGG, in [jingleFiles]; the bus is
+  /// [jingleBus]).
+  static const chapterComplete = SoundCue(['jingle_chapter']);
+
+  /// `jingle_reward`: a jingle (OGG, in [jingleFiles]; the bus is [jingleBus]).
+  static const reward = SoundCue(['jingle_reward']);
+
+  /// `jingle_oom`: a jingle (OGG, in [jingleFiles]; the bus is [jingleBus]).
+  static const outOfMoves = SoundCue(['jingle_oom']);
+
   /// Every SFX file base name the events use, sorted (for preloading and the
-  /// asset manifest test).
+  /// asset manifest test): `assets/audio/<name>.wav`. The jingles are
+  /// [jingleFiles] and the music loops [musicFiles].
   static const List<String> allFiles = [
     'bonk',
     'button',
@@ -848,6 +860,15 @@ abstract final class SoundTokens {
     'win',
   ];
 
+  /// Every jingle the events use (the `jingle_*` files), sorted: one-shots at
+  /// `assets/audio/<name>.ogg`, loaded into memory like the SFX (AUDIO.md
+  /// "Jingles").
+  static const List<String> jingleFiles = [
+    'jingle_chapter',
+    'jingle_oom',
+    'jingle_reward',
+  ];
+
   /// Clack pitch per doll size: playbackRate = 2^(-2 × (size − 3.5) / 12).
   static const Map<int, int> clackSemitonesBySize = {
     1: 5,
@@ -858,6 +879,11 @@ abstract final class SoundTokens {
     6: -5,
   };
 
+  /// The pitch the clack files are recorded at, in semitones from the size-3.5
+  /// clack (tokens.json `sound.clackPitch.bakedSemitones`): the playback rate
+  /// is 2^((clackSemitonesBySize[size] − this) / 12).
+  static const clackBakedSemitones = 0;
+
   static const List<String> comboNotes = ['C6', 'D6', 'E6', 'G6', 'A6'];
 
   /// Sets completed within this window step up the chime.
@@ -865,15 +891,104 @@ abstract final class SoundTokens {
 
   static const comboMaxSteps = 5;
 
-  /// "music_home (to source, 60–90 s seamless)" — not in the bundle yet.
+  /// The home loop, `assets/audio/music_home.ogg` (streamed; the whole file
+  /// loops). Plays on: Splash, Home, Daily, Museum, Shop, Skin detail,
+  /// Settings.
   static const musicHome = 'music_home';
 
-  /// "music_game (to source, 60–90 s seamless)" — not in the bundle yet.
+  /// The loop length in seconds, rounded (the frames are exact).
+  static const musicHomeSeconds = 66.667;
+
+  /// The loop length in frames at 44100 Hz.
+  static const musicHomeFrames = 2940000;
+
+  /// Tempo; with the meter and key, AUDIO.md "Music loops".
+  static const musicHomeBpm = 108.0;
+
+  static const musicHomeMeter = '3/4';
+
+  static const musicHomeKey = 'C major';
+
+  /// The game loop, `assets/audio/music_game.ogg` (streamed; the whole file
+  /// loops). Plays on: Levels, daily puzzle, bonus levels.
   static const musicGame = 'music_game';
+
+  /// The loop length in seconds, rounded (the frames are exact).
+  static const musicGameSeconds = 68.571;
+
+  /// The loop length in frames at 44100 Hz.
+  static const musicGameFrames = 3024000;
+
+  /// Tempo; with the meter and key, AUDIO.md "Music loops".
+  static const musicGameBpm = 84.0;
+
+  static const musicGameMeter = '4/4';
+
+  static const musicGameKey = 'F major';
+
+  /// Every music loop, sorted: `assets/audio/<name>.ogg`.
+  static const List<String> musicFiles = ['music_game', 'music_home'];
+
+  /// tokens.json `sound.musicFadeMs.start`.
+  static const musicFadeStartMs = 1200;
+
+  /// tokens.json `sound.musicFadeMs.crossfade`.
+  static const musicFadeCrossfadeMs = 800;
+
+  /// tokens.json `sound.musicFadeMs.resume`.
+  static const musicFadeResumeMs = 600;
+
+  /// tokens.json `sound.musicFadeMs.toggleOff`.
+  static const musicFadeToggleOffMs = 300;
+
+  /// tokens.json `sound.musicFadeMs.toggleOn`.
+  static const musicFadeToggleOnMs = 600;
+
+  /// tokens.json `sound.musicFadeMs.duckIn`.
+  static const musicFadeDuckInMs = 200;
+
+  /// tokens.json `sound.musicFadeMs.duckOut`.
+  static const musicFadeDuckOutMs = 800;
+
+  /// tokens.json `sound.musicFadeMs.chapterOut`.
+  static const musicFadeChapterOutMs = 400;
+
+  /// tokens.json `sound.musicFadeMs.chapterIn`.
+  static const musicFadeChapterInMs = 2000;
+
+  /// Music volume × this while ducked for win (tokens.json
+  /// `sound.musicDuck.win`).
+  static const musicDuckWin = 0.3;
+
+  /// Music volume × this while ducked for outOfMoves (tokens.json
+  /// `sound.musicDuck.outOfMoves`).
+  static const musicDuckOutOfMoves = 0.4;
+
+  /// Music volume × this while ducked for reward (tokens.json
+  /// `sound.musicDuck.reward`).
+  static const musicDuckReward = 0.4;
+
+  /// Music volume × this while ducked for pause (tokens.json
+  /// `sound.musicDuck.pause`).
+  static const musicDuckPause = 0.5;
+
+  /// Every duck factor by reason (the `sound.musicDuck` keys). Ducks don't
+  /// stack: the lowest active factor wins (AUDIO.md).
+  static const Map<String, double> musicDuckFactors = {
+    'win': 0.3,
+    'outOfMoves': 0.4,
+    'reward': 0.4,
+    'pause': 0.5,
+  };
 
   static const sfxVolumeDefault = 0.8;
 
   static const musicVolumeDefault = 0.5;
 
   static const separateVolumes = true;
+
+  /// The bus the jingles play on (tokens.json `sound.mix.jingleBus`): `sfx`
+  /// follows the Sound toggle and the SFX volume, `music` the Music ones. The
+  /// codegen accepts only these two.
+  static const jingleBus = 'sfx';
 }

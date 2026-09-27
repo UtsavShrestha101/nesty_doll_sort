@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
+import 'package:nesty_tools/src/fx/lottie_json.dart';
 import 'package:nesty_tools/src/fx/lottie_sources.dart';
 import 'package:nesty_tools/src/fx/lottie_validation.dart';
 import 'package:nesty_tools/src/repo_root.dart';
@@ -150,22 +151,53 @@ void main() {
       expect(_codes(dangling, 'doll_pick'), [LottieIssueCodes.missingRef]);
     });
 
-    test('an image layer\'s anchor must be static (compensation)', () {
-      final json = _real('doll_pick');
-      (_layer(json, 'doll_lid')['ks']! as Map<String, Object?>)['a'] = {
+    test('an image layer\'s transform must be static (compensation, v3)', () {
+      Map<String, Object?> animated(List<num> from, List<num> to) => {
         'a': 1,
         'k': [
-          {
-            't': 0,
-            's': [256, 742, 0],
-          },
-          {
-            't': 10,
-            's': [250, 742, 0],
-          },
+          {'t': 0, 's': from},
+          {'t': 10, 's': to},
         ],
       };
-      expect(_codes(json, 'doll_pick'), [LottieIssueCodes.imageAnchor]);
+      for (final (key, value) in [
+        ('a', animated([256, 742, 0], [250, 742, 0])),
+        ('p', animated([0, 0, 0], [0, -45, 0])),
+        ('s', animated([19.53, 19.53, 100], [21, 21, 100])),
+        ('r', animated([0], [8])),
+        (
+          'p',
+          {
+            's': true,
+            'x': {'a': 0, 'k': 0},
+            'y': animated([0], [-45]),
+          },
+        ),
+      ]) {
+        final json = _real('doll_pick');
+        (_layer(json, 'doll_lid')['ks']! as Map<String, Object?>)[key] = value;
+        expect(_codes(json, 'doll_pick'), [
+          LottieIssueCodes.imageTransform,
+        ], reason: key);
+      }
+
+      // Inside a precomp too; an animated opacity is fine (it isn't
+      // inherited through parenting, so it stays on the image layer).
+      final precomp = _real('doll_reveal');
+      final lid = (_asset(precomp, 'color_doll')['layers']! as List<Object?>)
+          .cast<Map<String, Object?>>()
+          .firstWhere((l) => l['nm'] == 'lid');
+      (lid['ks']! as Map<String, Object?>)['s'] = animated(
+        [100, 100, 100],
+        [90, 90, 100],
+      );
+      expect(_codes(precomp, 'doll_reveal'), [LottieIssueCodes.imageTransform]);
+      final fading = _real('fx_select_glow');
+      expect(
+        lottieIsAnimated(_ks(_layer(fading, 'glow_ring'), 'o')),
+        isTrue,
+        reason: 'the glow ring fades by opacity',
+      );
+      expect(_codes(fading, 'fx_select_glow'), isEmpty);
     });
   });
 
@@ -325,6 +357,21 @@ void main() {
       expect(_codes(counter, 'ui_family_counter'), [LottieIssueCodes.hooks]);
     });
 
+    test('so must the parent nulls that carry every pulse, bob and lift', () {
+      for (final (file, name) in const [
+        ('doll_nest', 'target_lid_lift'),
+        ('doll_swallow', 'mover_lid_lift'),
+        ('fx_select_glow', 'glow_pulse'),
+        ('fx_ice', 'shatter_burst'),
+        ('ui_hint_arrow', 'arrow_bob'),
+        ('ui_extra_slot', 'slot_pulse'),
+      ]) {
+        final json = _real(file);
+        _layer(json, name)['nm'] = '${name}_old';
+        expect(_codes(json, file), [LottieIssueCodes.hooks], reason: name);
+      }
+    });
+
     test('rim_tint and tint fills are exactly the contract\'s', () {
       final missing = _real('doll_nest');
       final rim = _layer(missing, 'target_rim');
@@ -361,6 +408,81 @@ void main() {
       final json = _real('ui_win_ribbon');
       _layer(json, 'label_shadow')['nm'] = 'shadow';
       expect(_codes(json, 'ui_win_ribbon'), [LottieIssueCodes.text]);
+    });
+  });
+
+  group('remapped nulls never hold (LOTTIE.md v3 "Travel remap")', () {
+    test('two equal consecutive travel keys are a hold', () {
+      final json = _real('doll_complete');
+      final keyframes =
+          (_ks(_layer(json, 'travel'), 'p')['k']! as List<Object?>)..insert(0, {
+            't': 0,
+            's': [100, 650, 0],
+          });
+      expect(keyframes, hasLength(3));
+      expect(_codes(json, 'doll_complete'), [LottieIssueCodes.hold]);
+    });
+
+    test('a hold keyframe (h: 1) is a hold', () {
+      final json = _real('doll_move');
+      _keyframes(_ks(_layer(json, 'travel'), 'p')).first['h'] = 1;
+      expect(_codes(json, 'doll_move'), [LottieIssueCodes.hold]);
+    });
+
+    test('the drop null too', () {
+      final json = _real('doll_reveal');
+      (_ks(_layer(json, 'drop'), 'p')['k']! as List<Object?>).insert(1, {
+        't': 3,
+        's': [0, -18, 0],
+      });
+      expect(_codes(json, 'doll_reveal'), [LottieIssueCodes.hold]);
+    });
+  });
+
+  group('the drop null (LOTTIE.md "Reveal drop")', () {
+    test('lowers the doll from the contract\'s start to (0, 0)', () {
+      final start = _real('doll_reveal');
+      _keyframes(_ks(_layer(start, 'drop'), 'p')).first['s'] = [0, -20, 0];
+      expect(_codes(start, 'doll_reveal'), [LottieIssueCodes.drop]);
+
+      final end = _real('doll_reveal');
+      _keyframes(_ks(_layer(end, 'drop'), 'p')).last['s'] = [0, 2, 0];
+      expect(_codes(end, 'doll_reveal'), [LottieIssueCodes.drop]);
+
+      final sideways = _real('doll_reveal');
+      _keyframes(_ks(_layer(sideways, 'drop'), 'p')).last['s'] = [3, 0, 0];
+      expect(_codes(sideways, 'doll_reveal'), [
+        LottieIssueCodes.drop, // off the line
+        LottieIssueCodes.drop, // does not end at (0, 0)
+      ]);
+    });
+
+    test('is an unparented, keyframed null', () {
+      final parented = _real('doll_reveal');
+      _layer(parented, 'drop')['parent'] = 1;
+      expect(_codes(parented, 'doll_reveal'), [LottieIssueCodes.drop]);
+
+      final still = _real('doll_reveal');
+      (_layer(still, 'drop')['ks']! as Map<String, Object?>)['p'] = {
+        'a': 0,
+        'k': [0, 0, 0],
+      };
+      expect(_codes(still, 'doll_reveal'), [LottieIssueCodes.drop]);
+    });
+
+    test('is a hook: only doll_reveal has one, and it must', () {
+      final renamed = _real('doll_reveal');
+      _layer(renamed, 'drop')['nm'] = 'lower';
+      expect(_codes(renamed, 'doll_reveal'), [LottieIssueCodes.hooks]);
+
+      final stray = _real('doll_pick');
+      (stray['layers']! as List<Object?>).add({
+        'ty': 3,
+        'nm': 'drop',
+        'ind': 99,
+        'ks': <String, Object?>{},
+      });
+      expect(_codes(stray, 'doll_pick'), [LottieIssueCodes.hooks]);
     });
   });
 

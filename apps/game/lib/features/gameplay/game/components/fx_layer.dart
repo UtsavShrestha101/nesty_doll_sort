@@ -324,7 +324,7 @@ class FxLayer extends Component {
       if (from == null || to == null) continue;
       final size = clip.anchorSize;
       live.component.placeAt(
-        repitch.lerp(anchor.xIn(from), anchor.xIn(to)),
+        repitch.lerp(anchor.xIn(from, size: size), anchor.xIn(to, size: size)),
         repitch.lerp(anchor.yIn(from, size: size), anchor.yIn(to, size: size)),
         repitch.lerp(
           anchor.scaleIn(repitch.from, from),

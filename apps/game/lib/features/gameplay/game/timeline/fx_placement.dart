@@ -66,8 +66,11 @@ enum FxAnchor {
 
   // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──
 
-  /// Where the anchor sits horizontally. Allocation-free.
-  double xIn(SlotGeometry slot) => slot.centerX;
+  /// Where the anchor sits horizontally, for a doll of [size] (only
+  /// [hintArrow] reads it: the arrow moves off the HUD's counter pill).
+  /// Allocation-free.
+  double xIn(SlotGeometry slot, {int size = 1}) =>
+      this == FxAnchor.hintArrow ? slot.hintArrowCenterX(size) : slot.centerX;
 
   /// Where the anchor sits vertically, for a doll of [size] (only
   /// [hintArrow] reads it). Allocation-free.
@@ -134,7 +137,7 @@ final class FxPlacement {
     SlotGeometry slot, {
     int size = 1,
   }) => FxPlacement.inPlace(
-    x: anchor.xIn(slot),
+    x: anchor.xIn(slot, size: size),
     y: anchor.yIn(slot, size: size),
     scale: anchor.scaleIn(board, slot),
   );

@@ -135,6 +135,8 @@ void main() {
       expect(_K.glassCaseHeight, BoardTokens.glassCaseSize.height);
       expect(_K.iceWidth, BoardTokens.iceOverlaySize.width);
       expect(_K.iceHeight, BoardTokens.iceOverlaySize.height);
+      expect(_K.hudPauseButtonHeight, BoardTokens.hudPauseButtonSize.height);
+      expect(_K.hudRowBottomInset, 51);
       expect(
         _K.barTopInset,
         BoardTokens.referenceScreen.height -

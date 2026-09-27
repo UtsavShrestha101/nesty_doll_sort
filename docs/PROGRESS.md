@@ -820,7 +820,8 @@ over http and rendered headless):
   ring at the shelf's end and the arrowhead at the empty r1c1. One
   difference remains: Level 9's top-row doll is taller than any in the
   frames (the board-wide clamp, BACKLOG "Design gaps"), so at the top of its
-  bob the arrow grazes the family counter pill's left edge.
+  bob the arrow grazed the family counter pill's left edge. Fixed after the
+  round by D62: it now steps off the pill and under the pause row.
 - **+1 Slot twice (3.6):** two green "+1" pads at stand size on the bottom
   shelf, as 3.6 and the `ui_extra_slot` preview draw them; with five slots
   on that row the dolls shrink board-wide (D36). A doll moved onto the
@@ -1784,6 +1785,27 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   - **The owner's answers** (Q61–Q63): the iOS session is `.ambient`;
     chapter complete plays only `jingle_chapter`; SoLoud's low-latency
     output only in prod.
+- **D62. The hint arrow keeps clear of the HUD (owner, 2026-09-27).** On
+  boards whose top-row dolls are taller than any in the frames (the
+  board-wide clamp: maxSize 3 on 3 shelves, L3 and L5–L9), the designed arrow
+  (`cx, dollTop − 33·fs`) reached the HUD at the top of its 10·fs bob: the
+  pause row (it ends 51 below the safe top) and, over a 4-slot row's inner
+  columns, the family counter's 70 × 26 pill (it ends at 83). The owner
+  chose "nudge + small push" over a full clamp, which would cover the
+  doll's face on 6 levels. `SlotGeometry.hintArrowCenterX/Y` (from a
+  `HudClearance` per layout, in screen dp because the HUD isn't scaled):
+  - over the pill, the arrow steps sideways off it by at most a quarter of
+    the pitch (Level 9's inner columns: about 10 dp);
+  - then it moves down to stay 4 dp under whatever HUD piece is still above
+    it, by at most 16·fs, so its tip reaches 8·fs into the doll's top at
+    most (Level 9: about 13 dp on 390 × 844);
+  - an arrow that clears the HUD keeps the design's place, frame 3.1's
+    included.
+  The middle column of an odd row can't step off the pill, so on L3, L5,
+  L8 and L21–L23 its arrow drops the 16·fs and still tucks under the pill
+  by 10–33 dp on a 393 × 852 screen (BACKLOG "Design gaps", a question for
+  Claude Design). The
+  Lottie arrow and the static fallback sprite share the rule.
 
 ## Package reasons (CLAUDE.md rule 9)
 

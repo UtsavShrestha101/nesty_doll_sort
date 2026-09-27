@@ -70,6 +70,41 @@ final class BoardFit {
 /// arithmetic on them. Methods that return a [Rect] allocate it, so per-frame
 /// code (NestComponent, the timeline) should use the `…Y`/`…X` accessors,
 /// which don't.
+/// Where the gameplay HUD sits over the board, in logical px: the button
+/// row across the top (pause, level pill, coins) and the family counter's
+/// pill centred under it. The HUD isn't scaled with the board, so the hint
+/// arrow clears it in screen units ([SlotGeometry.hintArrowCenterY]). One
+/// per layout, shared by every slot.
+final class HudClearance {
+  const HudClearance({
+    required this.rowBottom,
+    required this.counterLeft,
+    required this.counterRight,
+    required this.counterBottom,
+  });
+
+  /// The HUD laid out from a safe-area top of [safeTop] on a screen
+  /// [width] wide (GameplayHud): the row ends 51 below the safe top and the
+  /// 70-wide pill, centred, 83 below it.
+  factory HudClearance.of({required double width, required double safeTop}) {
+    final center = width / 2;
+    return HudClearance(
+      rowBottom: safeTop + _K.hudRowBottomInset,
+      counterLeft: center - _K.familyCounterPillWidth / 2,
+      counterRight: center + _K.familyCounterPillWidth / 2,
+      counterBottom: safeTop + _K.hudBottomInset,
+    );
+  }
+
+  /// Bottom of the pause button, the lowest piece of the top row.
+  final double rowBottom;
+
+  /// The family counter pill's sides and bottom.
+  final double counterLeft;
+  final double counterRight;
+  final double counterBottom;
+}
+
 final class SlotGeometry {
   /// Derives the slot's geometry from its reference-frame position. Called by
   /// `BoardLayout.compute`; every constant is cited in
@@ -87,6 +122,7 @@ final class SlotGeometry {
     required double hitBottom,
     required BoardFit fit,
     required List<double> dollHeights,
+    required HudClearance hud,
   }) {
     final q = pieceScale;
     final tower = shape.kind == SlotShapeKind.tower;
@@ -197,6 +233,7 @@ final class SlotGeometry {
           dollHeights.last * _K.dollArtBaseY / _K.dollArtHeight -
           fit.y(_K.frameTop),
       dollHeights: dollHeights,
+      hud: hud,
     );
   }
 
@@ -229,9 +266,11 @@ final class SlotGeometry {
     required double towerRaise,
     required double buriedHeadroom,
     required List<double> dollHeights,
+    required HudClearance hud,
   }) : _towerRaise = towerRaise,
        _buriedHeadroom = buriedHeadroom,
-       _dollHeights = dollHeights;
+       _dollHeights = dollHeights,
+       _hud = hud;
 
   final SlotShape shape;
 
@@ -343,6 +382,8 @@ final class SlotGeometry {
 
   final List<double> _dollHeights;
 
+  final HudClearance _hud;
+
   /// Where this slot's resting doll stands: on the case floor for a locked
   /// slot, else on the stand surface.
   double get restingBaseY =>
@@ -369,12 +410,56 @@ final class SlotGeometry {
   /// anchor (70, 40) goes, at [centerX].
   double get glowCenterY => glowRingRect.top + glowRingRect.height / 2;
 
+  /// Centre x of [hintArrowRect] for a resting doll of [size]: [centerX],
+  /// moved sideways off the family counter's pill when the arrow would
+  /// reach it at the top of its bob (a 4-slot row's inner columns under a
+  /// tall doll). A column the pill sits right over (the middle of an odd
+  /// row) can't move that far and keeps [centerX]. Allocation-free.
+  double hintArrowCenterX(int size) {
+    final dx = _counterClearance(size);
+    return dx.abs() <= _K.hintArrowMaxNudge * pitch ? centerX + dx : centerX;
+  }
+
   /// Centre y of [hintArrowRect] for a resting doll of [size],
-  /// `dollTop − 33·fs`: where `ui_hint_arrow`'s anchor (30, 45) goes, at
-  /// [centerX]. Allocation-free.
-  double hintArrowCenterY(int size) =>
-      dollTopY(size) +
-      (_K.hintArrowOffsetY + _K.hintArrowHeight / 2) * furnitureScale;
+  /// `dollTop − 33·fs`: where `ui_hint_arrow`'s anchor (30, 45) goes. Where
+  /// the top of the arrow's bob would reach the HUD (a tall top-row doll)
+  /// it moves down to clear it, by at most `16·fs`, so it never covers the
+  /// doll's face. Under the counter's pill that can leave it tucked under
+  /// the pill (BACKLOG "Design gaps"). Allocation-free.
+  double hintArrowCenterY(int size) {
+    final rest =
+        dollTopY(size) +
+        (_K.hintArrowOffsetY + _K.hintArrowHeight / 2) * furnitureScale;
+    final underCounter =
+        _counterClearance(size).abs() > _K.hintArrowMaxNudge * pitch;
+    final ceiling =
+        (underCounter ? _hud.counterBottom : _hud.rowBottom) +
+        _K.hintArrowHudGap;
+    final drop = ceiling - _arrowPeak(size);
+    if (drop <= 0) return rest;
+    final maxDrop = _K.hintArrowMaxDrop * furnitureScale;
+    return rest + (drop < maxDrop ? drop : maxDrop);
+  }
+
+  /// The top of the arrow at the top of its bob, before it clears the HUD.
+  double _arrowPeak(int size) =>
+      dollTopY(size) + (_K.hintArrowOffsetY - _K.hintArrowBob) * furnitureScale;
+
+  /// How far the arrow must move sideways to clear the counter's pill at
+  /// the top of its bob: toward the side of the pill its column is on, or
+  /// 0 when it doesn't reach the pill.
+  double _counterClearance(int size) {
+    final hud = _hud;
+    const gap = _K.hintArrowHudGap;
+    if (_arrowPeak(size) >= hud.counterBottom + gap) return 0;
+    final half = _K.hintArrowWidth / 2 * furnitureScale;
+    final left = hud.counterLeft - gap;
+    final right = hud.counterRight + gap;
+    if (centerX + half <= left || centerX - half >= right) return 0;
+    return centerX < (left + right) / 2
+        ? left - (centerX + half)
+        : right - (centerX - half);
+  }
 
   /// Centre x of pip [position], 0 = leftmost = the biggest size
   /// (tokens.json `layout.pip.order`, NestyBoard:164).
@@ -442,13 +527,18 @@ final class SlotGeometry {
     int buried = _K.maxBuriedNests,
   }) => dollRect(size, buriedBaseY(depth, buried: buried));
 
-  /// The hint arrow above this slot's resting doll of [size].
-  Rect hintArrowRect(int size) => Rect.fromLTWH(
-    centerX + _K.hintArrowOffsetX * furnitureScale,
-    dollTopY(size) + _K.hintArrowOffsetY * furnitureScale,
-    _K.hintArrowWidth * furnitureScale,
-    _K.hintArrowHeight * furnitureScale,
-  );
+  /// The hint arrow above this slot's resting doll of [size], at rest, on
+  /// ([hintArrowCenterX], [hintArrowCenterY]).
+  Rect hintArrowRect(int size) {
+    final width = _K.hintArrowWidth * furnitureScale;
+    final height = _K.hintArrowHeight * furnitureScale;
+    return Rect.fromLTWH(
+      hintArrowCenterX(size) - width / 2,
+      hintArrowCenterY(size) - height / 2,
+      width,
+      height,
+    );
+  }
 
   @override
   String toString() => 'SlotGeometry($id, row $row, col $column)';

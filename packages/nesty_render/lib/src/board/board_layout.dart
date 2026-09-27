@@ -81,6 +81,11 @@ abstract final class BoardLayout {
       for (final h in heights.heights) fit.length(h),
     ]);
 
+    final hud = HudClearance.of(
+      width: viewport.size.width,
+      safeTop: viewport.padding.top,
+    );
+
     final shelves = <ShelfGeometry>[];
     var index = 0;
     for (var r = 0; r < shape.rows.length; r++) {
@@ -120,6 +125,7 @@ abstract final class BoardLayout {
             hitBottom: hitBottom,
             fit: fit,
             dollHeights: dollHeights,
+            hud: hud,
           ),
       ];
       index += n;

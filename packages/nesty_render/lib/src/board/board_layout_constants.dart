@@ -195,6 +195,37 @@ abstract final class BoardLayoutConstants {
   static const hintArrowWidth = 40.0;
   static const hintArrowHeight = 50.0;
 
+  /// How far the arrow rises at the top of its bob: `ui_hint_arrow`'s
+  /// `arrow_bob` null goes from y 45 to 35 (LOTTIE.md v3), in `fs` units.
+  static const hintArrowBob = 10.0;
+
+  // ── Hint arrow vs the HUD (owner, 2026-09-27; BACKLOG "Design gaps") ──
+  // The HUD isn't scaled with the board, so these are screen dp below the
+  // safe-area top (GameplayHud), not reference units.
+
+  /// The HUD's button row ends under the pause button: 62 − 59 + 48 = 51
+  /// (the level pill ends at 49, the coin pill at 47). The pause button's
+  /// height is pinned to [BoardTokens.hudPauseButtonSize] by a test.
+  static const hudRowBottomInset =
+      BoardTokens.hudTop - BoardTokens.referenceSafeTop + hudPauseButtonHeight;
+  static const hudPauseButtonHeight = 48.0;
+
+  /// `ui_family_counter`'s own walnut pill, 70 × 26, centred on the
+  /// counter (LOTTIE.md v3); it ends at [hudBottomInset].
+  static const familyCounterPillWidth = 70.0;
+
+  /// Space the arrow keeps from a HUD piece, in dp.
+  static const hintArrowHudGap = 4.0;
+
+  /// The arrow moves sideways off the counter pill by at most this share
+  /// of the column pitch, so it stays over its doll's head (a 4-slot row's
+  /// inner columns need about 10 dp of their 94).
+  static const hintArrowMaxNudge = 0.25;
+
+  /// The arrow moves down, under the HUD, by at most this (× `fs`): at
+  /// rest its tip then reaches 8 below the doll's top, not its face.
+  static const hintArrowMaxDrop = 16.0;
+
   // ── Hit testing (spec §10.3) ──────────────────────────────────────────
 
   /// "Tap targets are at least 48 dp. The whole slot column is the hit area."

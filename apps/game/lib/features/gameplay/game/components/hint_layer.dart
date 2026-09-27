@@ -239,13 +239,16 @@ class HintLayer extends Component {
     if (sprite == null) return;
     final size = slot.view.hasNest ? slot.view.outerSize : g.pipCount;
     final fs = g.furnitureScale;
+    final width = BoardLayoutConstants.hintArrowWidth * fs;
+    final height = BoardLayoutConstants.hintArrowHeight * fs;
+    // The same place as the Lottie's, clear of the HUD (hintArrowCenterY).
     SpriteDraw.box(
       canvas,
       sprite,
-      g.centerX + BoardLayoutConstants.hintArrowOffsetX * fs,
-      g.dollTopY(size) + BoardLayoutConstants.hintArrowOffsetY * fs,
-      BoardLayoutConstants.hintArrowWidth * fs,
-      BoardLayoutConstants.hintArrowHeight * fs,
+      g.hintArrowCenterX(size) - width / 2,
+      g.hintArrowCenterY(size) - height / 2,
+      width,
+      height,
     );
   }
 

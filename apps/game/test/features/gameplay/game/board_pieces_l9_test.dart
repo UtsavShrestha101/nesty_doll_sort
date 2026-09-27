@@ -225,13 +225,13 @@ void main() {
       await h.apply(const HintShownEffect(Move('r0c1', 'r1c0')));
     });
 
-    test('ui_hint_arrow: the 40×50 arrow centred at (source cx, doll top − '
-        '33), bobbing 10 up at frame 27', () async {
+    test('ui_hint_arrow: the 40×50 arrow over the source, bobbing 10 up at '
+        'frame 27, clear of the HUD', () async {
       final fs = source.furnitureScale;
       _seek(h, FxId.uiHintArrow, 'r0c1', 0);
       final rest = _bounds(await h.render(pixelRatio: _dpr), _isMagenta);
       final box = source.hintArrowRect(3);
-      expect(box.center.dx, source.centerX);
+      expect(box.center.dx, source.hintArrowCenterX(3));
       expect(box.center.dy, closeTo(source.hintArrowCenterY(3), 1e-9));
       expect(box.width, closeTo(40 * fs, 1e-9));
       _expectRect(rest, _expected(box, _arrowInset, fs), 'arrow');
@@ -242,6 +242,23 @@ void main() {
         bob,
         _expected(box, _arrowInset, fs).translate(0, -10 * fs),
         'arrow at the top of its bob',
+      );
+
+      // brown3 is taller than any top-row doll in the frames: at the top of
+      // its bob the designed arrow (source cx, doll top − 33) would reach
+      // the pause row and the counter pill (the owner's report). It steps
+      // left off the pill, within a quarter pitch, and down under the row.
+      const safeTop = 59.0;
+      final top = box.top - 10 * fs;
+      expect(top, greaterThanOrEqualTo(safeTop + 51 + 4 - 1e-9));
+      expect(box.right, lessThanOrEqualTo(390 / 2 - 35 - 4 + 1e-9));
+      expect(
+        source.centerX - box.center.dx,
+        inInclusiveRange(1, source.pitch / 4),
+      );
+      expect(
+        box.center.dy - (source.dollTopY(3) - 33 * fs),
+        inInclusiveRange(1, 16 * fs),
       );
     });
 

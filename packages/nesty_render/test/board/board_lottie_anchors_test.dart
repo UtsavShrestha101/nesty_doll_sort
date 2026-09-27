@@ -9,6 +9,8 @@ import 'package:nesty_render/nesty_render.dart';
 
 import 'board_fixtures.dart';
 
+typedef _K = BoardLayoutConstants;
+
 void main() {
   const tol = designTolerance;
 
@@ -143,14 +145,114 @@ void main() {
           expect(slot.glowCenterY, closeTo(slot.glowRingRect.center.dy, 1e-9));
           expect(slot.standCenterY, closeTo(slot.standRect.center.dy, 1e-9));
           for (var size = 1; size <= 4; size++) {
+            // `dollTop − 33·fs`, or at most 16·fs lower under the HUD.
+            final designed = slot.dollTopY(size) - 33 * fs;
             expect(
               slot.hintArrowCenterY(size),
-              closeTo(slot.dollTopY(size) - 33 * fs, 1e-9),
+              inInclusiveRange(designed - 1e-9, designed + 16 * fs + 1e-9),
             );
-            expect(
-              slot.hintArrowCenterY(size),
-              closeTo(slot.hintArrowRect(size).center.dy, 1e-9),
-            );
+            final rect = slot.hintArrowRect(size);
+            expect(rect.center.dx, closeTo(slot.hintArrowCenterX(size), 1e-9));
+            expect(rect.center.dy, closeTo(slot.hintArrowCenterY(size), 1e-9));
+            expect(rect.width, closeTo(40 * fs, 1e-9));
+            expect(rect.height, closeTo(50 * fs, 1e-9));
+          }
+        }
+      }
+    });
+
+    test("frame 3.1's arrow keeps the design's place", () {
+      // MAIN's hint source r0c3 on 390×844 clears the HUD: NestyBoard:208.
+      final slot = BoardLayout.compute(
+        mainBoard,
+        BoardViewport.reference,
+      ).slot('r0c3');
+      expect(slot.hintArrowCenterX(3), slot.centerX);
+      expect(slot.hintArrowCenterY(3), closeTo(slot.dollTopY(3) - 33, 1e-9));
+    });
+  });
+
+  group('the hint arrow clears the HUD', () {
+    const iPhone16 = BoardViewport(
+      size: Size(393, 852),
+      padding: EdgeInsets.only(top: 59, bottom: 34),
+    );
+    // Level 9: maxSize 3 on three shelves, so its top-row dolls are taller
+    // than any in the frames (the owner's report).
+    final level9 = board(['oooo', 'oooo', 'ooo'], maxSize: 3);
+
+    /// The arrow's box at the top of its bob.
+    Rect peakOf(SlotGeometry slot, int size) => slot
+        .hintArrowRect(size)
+        .translate(0, -_K.hintArrowBob * slot.furnitureScale);
+
+    test('Level 9: inner columns step off the counter pill, all clear '
+        'the button row', () {
+      final g = BoardLayout.compute(level9, iPhone16);
+      const safeTop = 59.0;
+      final counterLeft = 393 / 2 - 35;
+      final counterRight = 393 / 2 + 35;
+      for (final slot in g.shelves.first.slots) {
+        final fs = slot.furnitureScale;
+        final peak = peakOf(slot, 3);
+        // Below the pause button, the lowest piece of the row (51), by 4.
+        expect(peak.top, closeTo(safeTop + 51 + 4, 1e-9), reason: slot.id);
+        expect(
+          slot.hintArrowCenterY(3) - (slot.dollTopY(3) - 33 * fs),
+          lessThanOrEqualTo(16 * fs),
+          reason: slot.id,
+        );
+        final clearsCounter =
+            peak.right <= counterLeft - 4 + 1e-9 ||
+            peak.left >= counterRight + 4 - 1e-9;
+        expect(clearsCounter, isTrue, reason: slot.id);
+      }
+      final inner = g.slot('r0c1');
+      expect(inner.hintArrowCenterX(3), lessThan(inner.centerX));
+      expect(
+        inner.centerX - inner.hintArrowCenterX(3),
+        lessThanOrEqualTo(inner.pitch / 4),
+      );
+      expect(g.slot('r0c0').hintArrowCenterX(3), g.slot('r0c0').centerX);
+      expect(
+        g.slot('r0c2').hintArrowCenterX(3),
+        greaterThan(g.slot('r0c2').centerX),
+      );
+    });
+
+    test('the middle of an odd row stays centred and drops at most 16·fs', () {
+      final g = BoardLayout.compute(
+        board(['ooo', 'ooo', 'ooo'], maxSize: 3),
+        iPhone16,
+      );
+      final middle = g.slot('r0c1');
+      final fs = middle.furnitureScale;
+      expect(middle.hintArrowCenterX(3), middle.centerX);
+      expect(
+        middle.hintArrowCenterY(3),
+        closeTo(middle.dollTopY(3) - 33 * fs + 16 * fs, 1e-9),
+      );
+      // Still under the pill: the design gap in BACKLOG.
+      expect(peakOf(middle, 3).top, lessThan(59 + 83));
+    });
+
+    test('an arrow that clears the HUD is left where the design puts it', () {
+      for (final viewport in screens.values) {
+        for (final shape in [mainBoard, level9]) {
+          final g = BoardLayout.compute(shape, viewport);
+          final safeTop = viewport.padding.top;
+          for (final slot in g.slots) {
+            for (var size = 1; size <= shape.maxSize; size++) {
+              final fs = slot.furnitureScale;
+              final designedTop =
+                  slot.dollTopY(size) + (-58 - _K.hintArrowBob) * fs;
+              if (designedTop < safeTop + 83 + 4) continue;
+              expect(slot.hintArrowCenterX(size), slot.centerX);
+              expect(
+                slot.hintArrowCenterY(size),
+                closeTo(slot.dollTopY(size) - 33 * fs, 1e-9),
+              );
+            }
           }
         }
       }

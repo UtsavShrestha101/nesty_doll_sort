@@ -149,14 +149,14 @@ _None._
 - `apps/game/lib/features/gameplay/game/timeline/timeline_plans.dart:773` — an empty case or ice has no target doll; the drift uses the mover's height.
 - `apps/game/lib/features/gameplay/overlays/win_overlay.dart:331` — LOTTIE.md puts fx_twinkle on the win overlay but no frame places it; these sit around the plank.
 - `apps/game/lib/features/gameplay/widgets/soft_stuck_banner.dart:20` — no frame shows soft stuck without an undo.
-- `packages/nesty_render/lib/src/board/board_geometry.dart:335` — an iced tower has no frame. Its stand is 5·q taller, so the composition, anchored on the doll, draws its ice 5·fs above the static `iceRect` fallback, which stays on the stand's bottom.
-- `packages/nesty_render/lib/src/board/board_geometry.dart:424` — the design has no top-shelf tower whose buried nests would reach the HUD; compressing D21's 18 dp step is this layout's extension (BACKLOG "Design gaps").
-- `packages/nesty_render/lib/src/board/board_layout.dart:182` — rows of 5–6 slots are undesigned (D22, BACKLOG "Design gaps"); pips, tags, glass and ice shrink with the stand.
-- `packages/nesty_render/lib/src/board/board_layout.dart:228` — maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or on 4-slot rows (M2 levels 3–9), and rows of 5–6 slots are undesigned (D22); this clamp is how they fit.
+- `packages/nesty_render/lib/src/board/board_geometry.dart:374` — an iced tower has no frame. Its stand is 5·q taller, so the composition, anchored on the doll, draws its ice 5·fs above the static `iceRect` fallback, which stays on the stand's bottom.
+- `packages/nesty_render/lib/src/board/board_geometry.dart:509` — the design has no top-shelf tower whose buried nests would reach the HUD; compressing D21's 18 dp step is this layout's extension (BACKLOG "Design gaps").
+- `packages/nesty_render/lib/src/board/board_layout.dart:188` — rows of 5–6 slots are undesigned (D22, BACKLOG "Design gaps"); pips, tags, glass and ice shrink with the stand.
+- `packages/nesty_render/lib/src/board/board_layout.dart:234` — maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or on 4-slot rows (M2 levels 3–9), and rows of 5–6 slots are undesigned (D22); this clamp is how they fit.
 - `packages/nesty_render/lib/src/board/shelf_presets.dart:38` — a 1-shelf board is undesigned (D22, BACKLOG "Design gaps"). The plank sits where the 2-shelf pair is centred, with the 3-shelf doll height.
 - `packages/nesty_render/lib/src/board/shelf_presets.dart:61` — a 4-shelf board is undesigned (D22, BACKLOG "Design gaps"). Planks are spread evenly from 250 to the 3-shelf bottom plank (684), and dolls and pieces are scaled by 104/150 so the tallest doll (maxSize 6) of the top row …
 - `packages/nesty_render/lib/src/doll/placeholder_doll_painter.dart:312` — the handoff has no frame for the spec §12.5 placeholder; its proportions, face and seam (ink at 55 %, 6 units) follow the classic skin and the mask shading until the owner wants a designed fallback.
-- `packages/nesty_render/test/board/board_lottie_anchors_test.dart:109` — in SlotGeometry.
+- `packages/nesty_render/test/board/board_lottie_anchors_test.dart:111` — in SlotGeometry.
 
 ## later — Unscheduled (spec §19 "Later ideas")
 

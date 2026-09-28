@@ -1,0 +1,358 @@
+#!/usr/bin/env bash
+# nesty-test: a full test run of the game on a simulator or emulator, from a
+# fresh install (README "Testing").
+#
+#   1. host checks: flutter analyze and every test suite (skip: --device-only)
+#   2. boots the device and shows it (the Simulator app, or the emulator window)
+#   3. the playthrough, with its screenshots (integration_test/playthrough_test.dart)
+#   4. kill mid-level and resume: phase A, a real kill, phase B, compared (M3)
+#   5. the daily puzzle's fingerprint, compared with nesty_core's own level (M3)
+#
+# Every run writes its logs, screenshots and summary to
+# apps/game/build/nesty-test/<timestamp>/ (or $NESTY_TEST_OUT), and exits 1
+# when any step fails. The dev flavor with real services; the app id is
+# com.futrix.nesty.dev, uninstalled before each fresh step.
+
+set -uo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: nesty-test [options]
+
+  --ios                 run on an iOS simulator (the default)
+  --android             run on an Android emulator
+  --device <name|id>    iOS: a simulator name or UDID (default "iPhone 16 Pro")
+                        Android: an AVD name (default flutter_emulator) or a
+                        running serial such as emulator-5554
+  --device-only         skip the host checks (analyze and the test suites)
+  --only <steps>        comma-separated subset of: gates,playthrough,resume,daily
+  --date <yyyymmdd>     the daily's date (default 20260926, the core golden)
+  --headless            Android: start the emulator without a window
+  --shutdown            shut the device down at the end if this run booted it
+  -h, --help            this help
+
+Examples:
+  nesty-test                          everything on the iPhone 16 Pro simulator
+  nesty-test --device-only            skip the host checks
+  nesty-test --android --only playthrough
+USAGE
+}
+
+# ── Options ────────────────────────────────────────────────────────────────
+PLATFORM=ios
+DEVICE=""
+DEVICE_ONLY=0
+ONLY=""
+DAILY_DATE="${NESTY_TEST_DATE:-20260926}"
+HEADLESS=0
+SHUTDOWN=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --ios) PLATFORM=ios ;;
+    --android) PLATFORM=android ;;
+    --device) DEVICE="${2:?--device needs a value}"; shift ;;
+    --device-only) DEVICE_ONLY=1 ;;
+    --only) ONLY="${2:?--only needs a value}"; shift ;;
+    --date) DAILY_DATE="${2:?--date needs a value}"; shift ;;
+    --headless) HEADLESS=1 ;;
+    --shutdown) SHUTDOWN=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "nesty-test: unknown option $1" >&2; usage >&2; exit 64 ;;
+  esac
+  shift
+done
+
+SKIP_DEVICE=0
+wants() {
+  [ "$SKIP_DEVICE" = 1 ] && [ "$1" != gates ] && return 1
+  if [ -n "$ONLY" ]; then
+    case ",$ONLY," in *",$1,"*) return 0 ;; *) return 1 ;; esac
+  fi
+  [ "$1" = gates ] && [ "$DEVICE_ONLY" = 1 ] && return 1
+  return 0
+}
+
+# ── Paths ──────────────────────────────────────────────────────────────────
+SCRIPT="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT" ]; do
+  LINK="$(readlink "$SCRIPT")"
+  case "$LINK" in /*) SCRIPT="$LINK" ;; *) SCRIPT="$(dirname "$SCRIPT")/$LINK" ;; esac
+done
+ROOT="$(cd "$(dirname "$SCRIPT")/../.." && pwd)"
+GAME="$ROOT/apps/game"
+APP_ID=com.futrix.nesty.dev
+STAMP="$(date +%Y%m%d-%H%M%S)"
+OUT="${NESTY_TEST_OUT:-$GAME/build/nesty-test/$STAMP}"
+mkdir -p "$OUT/logs" "$OUT/screenshots"
+ln -sfn "$OUT" "$GAME/build/nesty-test/latest" 2>/dev/null || true
+
+# ── Output helpers ─────────────────────────────────────────────────────────
+if [ -t 1 ]; then
+  BOLD=$'\033[1m'; GREEN=$'\033[32m'; RED=$'\033[31m'; DIM=$'\033[2m'; RESET=$'\033[0m'
+else
+  BOLD=""; GREEN=""; RED=""; DIM=""; RESET=""
+fi
+NAMES=(); RESULTS=(); NOTES=()
+FAILED=0
+
+record() { # name result note
+  NAMES+=("$1"); RESULTS+=("$2"); NOTES+=("$3")
+  if [ "$2" = PASS ]; then
+    echo "  ${GREEN}PASS${RESET} $1 ${DIM}$3${RESET}"
+  else
+    FAILED=1
+    echo "  ${RED}FAIL${RESET} $1 ${DIM}$3${RESET}"
+  fi
+}
+
+section() { echo; echo "${BOLD}== $1${RESET}"; }
+
+# Runs a command with its output in logs/<name>.log; records PASS or FAIL.
+run_step() { # name log-name command...
+  local name="$1" log="$OUT/logs/$2.log"; shift 2
+  local start=$SECONDS
+  echo "  … $name ${DIM}(log: logs/$(basename "$log"))${RESET}"
+  if "$@" >"$log" 2>&1; then
+    record "$name" PASS "$((SECONDS - start)) s"
+    return 0
+  fi
+  record "$name" FAIL "$((SECONDS - start)) s, see logs/$(basename "$log")"
+  tail -n 15 "$log" | sed 's/^/      /'
+  return 1
+}
+
+die() { echo "${RED}nesty-test: $*${RESET}" >&2; exit 2; }
+
+command -v flutter >/dev/null || die "flutter is not on PATH"
+command -v python3 >/dev/null || die "python3 is not on PATH"
+
+echo "${BOLD}nesty-test${RESET} — $PLATFORM, output in $OUT"
+cd "$ROOT" || die "can't enter $ROOT"
+flutter pub get >"$OUT/logs/pub_get.log" 2>&1 || die "flutter pub get failed (logs/pub_get.log)"
+
+# ── 1. Host checks ─────────────────────────────────────────────────────────
+if wants gates; then
+  section "Host checks"
+  run_step "flutter analyze --fatal-infos --fatal-warnings" analyze \
+    flutter analyze --fatal-infos --fatal-warnings
+  run_step "nesty_core: dart test" core bash -c "cd '$ROOT/packages/nesty_core' && dart test"
+  run_step "nesty_render: flutter test" render bash -c "cd '$ROOT/packages/nesty_render' && flutter test"
+  run_step "game: flutter test" game_tests bash -c "cd '$GAME' && flutter test --timeout 90s"
+  run_step "admin: flutter test" admin_tests bash -c "cd '$ROOT/apps/admin' && flutter test"
+  run_step "tools: dart test" tools_tests bash -c "cd '$ROOT/tools' && dart test"
+fi
+
+if ! wants playthrough && ! wants resume && ! wants daily; then
+  DEVICE_STEPS=0
+else
+  DEVICE_STEPS=1
+fi
+
+# ── 2. The device ──────────────────────────────────────────────────────────
+DEVICE_ID=""
+BOOTED_HERE=0
+EMULATOR_PID=""
+
+boot_ios() {
+  command -v xcrun >/dev/null || { echo "  xcrun not found (Xcode)"; return 1; }
+  local want="${DEVICE:-iPhone 16 Pro}"
+  DEVICE_ID="$(xcrun simctl list devices available -j | python3 -c '
+import json, re, sys
+want = sys.argv[1]
+devices = json.load(sys.stdin)["devices"]
+def version(runtime):
+    return [int(n) for n in re.findall(r"\d+", runtime.split(".")[-1])]
+found = []
+for runtime, entries in devices.items():
+    if "iOS" not in runtime:
+        continue
+    for d in entries:
+        if d["udid"] == want or d["name"] == want:
+            found.append((d["state"] == "Booted", version(runtime), d["udid"]))
+found.sort(reverse=True)
+if found:
+    booted, _, udid = found[0]
+    print(udid, "Booted" if booted else "Shutdown")
+' "$want")"
+  [ -n "$DEVICE_ID" ] || { echo "  no available iOS simulator named or with UDID \"$want\" (xcrun simctl list devices available)"; return 1; }
+  local state="${DEVICE_ID#* }"
+  DEVICE_ID="${DEVICE_ID%% *}"
+  if [ "$state" != Booted ]; then
+    echo "  booting $want ($DEVICE_ID)"
+    xcrun simctl boot "$DEVICE_ID" >/dev/null 2>&1 || true
+    BOOTED_HERE=1
+  fi
+  xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || { echo "  the simulator didn't boot"; return 1; }
+  open -a Simulator --args -CurrentDeviceUDID "$DEVICE_ID" >/dev/null 2>&1 || true
+  echo "  ${GREEN}ready${RESET} $want ($DEVICE_ID)"
+}
+
+boot_android() {
+  command -v adb >/dev/null || { echo "  adb not found (Android SDK platform-tools)"; return 1; }
+  if [ -n "$DEVICE" ] && adb devices | grep -q "^$DEVICE[[:space:]]*device"; then
+    DEVICE_ID="$DEVICE"
+  else
+    local avd="${DEVICE:-flutter_emulator}"
+    local emulator="${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator"
+    [ -x "$emulator" ] || emulator="$(command -v emulator || true)"
+    [ -n "$emulator" ] || { echo "  the Android emulator binary wasn't found"; return 1; }
+    local before
+    before="$(adb devices | awk 'NR>1 && $1 ~ /^emulator-/ {print $1}')"
+    local window=""
+    [ "$HEADLESS" = 1 ] && window=-no-window
+    echo "  starting the $avd emulator"
+    # shellcheck disable=SC2086 # $window is one flag or nothing
+    "$emulator" -avd "$avd" $window -no-audio -no-snapshot-save -no-boot-anim \
+      >"$OUT/logs/emulator.log" 2>&1 &
+    EMULATOR_PID=$!
+    BOOTED_HERE=1
+    local i serial=""
+    for i in $(seq 1 120); do
+      serial="$(adb devices | awk 'NR>1 && $1 ~ /^emulator-/ {print $1}' | grep -vxF "$before" | head -1)"
+      [ -n "$serial" ] && break
+      sleep 2
+    done
+    [ -n "$serial" ] || { echo "  the emulator didn't come up (logs/emulator.log)"; return 1; }
+    DEVICE_ID="$serial"
+  fi
+  local i
+  for i in $(seq 1 120); do
+    [ "$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && break
+    sleep 2
+  done
+  echo "  ${GREEN}ready${RESET} $DEVICE_ID (API $(adb -s "$DEVICE_ID" shell getprop ro.build.version.sdk | tr -d '\r'))"
+}
+
+uninstall_app() {
+  if [ "$PLATFORM" = ios ]; then
+    xcrun simctl terminate "$DEVICE_ID" "$APP_ID" >/dev/null 2>&1 || true
+    xcrun simctl uninstall "$DEVICE_ID" "$APP_ID" >/dev/null 2>&1 || true
+  else
+    adb -s "$DEVICE_ID" uninstall "$APP_ID" >/dev/null 2>&1 || true
+  fi
+}
+
+kill_app() {
+  if [ "$PLATFORM" = ios ]; then
+    xcrun simctl terminate "$DEVICE_ID" "$APP_ID"
+  else
+    adb -s "$DEVICE_ID" shell am force-stop "$APP_ID"
+  fi
+}
+
+# flutter drive of one integration test on the device (the dev flavor).
+drive() { # target extra-args...
+  local target="$1"; shift
+  (cd "$GAME" && flutter drive --flavor dev \
+    --driver test_driver/integration_test.dart \
+    --target "integration_test/$target" -d "$DEVICE_ID" "$@")
+}
+
+response_to() { # file
+  cp "$GAME/build/integration_response_data.json" "$1" 2>/dev/null
+}
+
+if [ "$DEVICE_STEPS" = 1 ]; then
+  section "Device"
+  if [ "$PLATFORM" = ios ]; then boot_ios; else boot_android; fi
+  if [ $? -ne 0 ] || [ -z "$DEVICE_ID" ]; then
+    record "boot the $PLATFORM device" FAIL "the device steps were skipped"
+    SKIP_DEVICE=1
+  fi
+fi
+
+# ── 3. The playthrough ─────────────────────────────────────────────────────
+if wants playthrough; then
+  section "Playthrough (fresh install)"
+  uninstall_app
+  # The driver saves each screenshot there (test_driver/integration_test.dart).
+  export NESTY_SCREENSHOT_DIR="$OUT/screenshots"
+  if run_step "playthrough_test (screenshots)" playthrough \
+    drive playthrough_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" --timeout 900; then
+    echo "      $(ls "$OUT/screenshots" | wc -l | tr -d ' ') screenshots in screenshots/"
+  fi
+fi
+
+# ── 4. Kill mid-level and resume ───────────────────────────────────────────
+if wants resume; then
+  section "Kill mid-level and resume (fresh install)"
+  uninstall_app
+  if run_step "phase A: play level 3, keep the app running" resume_phase_a \
+    drive resume_phase_a_test.dart --keep-app-running --timeout 600; then
+    response_to "$OUT/resume_a.json"
+    if run_step "kill the app" kill kill_app &&
+      run_step "phase B: relaunch, PLAY, the same board" resume_phase_b \
+        drive resume_phase_b_test.dart --timeout 600; then
+      response_to "$OUT/resume_b.json"
+      if note="$(python3 - "$OUT/resume_a.json" "$OUT/resume_b.json" <<'PY'
+import json, sys
+a = json.load(open(sys.argv[1]))["resumePhaseA"]
+b = json.load(open(sys.argv[2]))["resumePhaseB"]
+keys = ("level", "freeUndosLeft", "extraSlotCount", "fingerprint")
+bad = [k for k in keys if a[k] != b[k]]
+print(f"level {b['level']}, {b['freeUndosLeft']} free undo(s), "
+      f"{b['extraSlotCount']} extra slot(s)" if not bad else "differ: " + ", ".join(bad))
+sys.exit(1 if bad else 0)
+PY
+)"; then
+        record "phase A = phase B" PASS "$note"
+      else
+        record "phase A = phase B" FAIL "$note"
+      fi
+    fi
+  fi
+fi
+
+# ── 5. The daily puzzle ────────────────────────────────────────────────────
+if wants daily; then
+  section "Daily puzzle ($DAILY_DATE)"
+  if run_step "daily_fingerprint_test" daily \
+    drive daily_fingerprint_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" --timeout 600; then
+    response_to "$OUT/daily.json"
+    run_step "the core's level for $DAILY_DATE" core_daily \
+      dart run nesty_tools:nesty_levels generate --daily "$DAILY_DATE" --out "$OUT/core_daily"
+    if note="$(python3 - "$OUT/daily.json" "$OUT/core_daily/daily-$DAILY_DATE.json" <<'PY'
+import json, sys
+device = json.loads(json.load(open(sys.argv[1]))["dailyFingerprint"]["fingerprint"])
+core = json.load(open(sys.argv[2]))
+same = device == core
+print(f"{device['id']}, seed {device['seed']}" + ("" if same else ": differs from the core's"))
+sys.exit(0 if same else 1)
+PY
+)"; then
+      record "device daily = nesty_core daily" PASS "$note"
+    else
+      record "device daily = nesty_core daily" FAIL "$note"
+    fi
+  fi
+fi
+
+# ── Summary ────────────────────────────────────────────────────────────────
+if [ "$SHUTDOWN" = 1 ] && [ "$BOOTED_HERE" = 1 ]; then
+  if [ "$PLATFORM" = ios ]; then
+    xcrun simctl shutdown "$DEVICE_ID" >/dev/null 2>&1 || true
+  else
+    adb -s "$DEVICE_ID" emu kill >/dev/null 2>&1 || true
+  fi
+fi
+
+{
+  echo "nesty-test $STAMP ($PLATFORM${DEVICE_ID:+, $DEVICE_ID})"
+  for i in "${!NAMES[@]}"; do
+    printf '%-5s %s  %s\n' "${RESULTS[$i]}" "${NAMES[$i]}" "${NOTES[$i]}"
+  done
+} >"$OUT/summary.txt"
+
+section "Summary"
+for i in "${!NAMES[@]}"; do
+  if [ "${RESULTS[$i]}" = PASS ]; then mark="${GREEN}PASS${RESET}"; else mark="${RED}FAIL${RESET}"; fi
+  printf '  %s  %s %s\n' "$mark" "${NAMES[$i]}" "${DIM}${NOTES[$i]}${RESET}"
+done
+echo
+echo "  logs, screenshots and summary.txt: $OUT"
+if [ "$FAILED" = 0 ]; then
+  echo "  ${GREEN}${BOLD}All steps passed.${RESET}"
+  exit 0
+fi
+echo "  ${RED}${BOLD}Some steps failed.${RESET}"
+exit 1

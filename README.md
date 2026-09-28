@@ -192,6 +192,23 @@ cd apps/admin            && flutter test
 cd tools                 && dart test         # nesty_tools
 ```
 
+**One command for everything:** `tools/scripts/nesty-test` (the owner's
+shell has it as the `nesty-test` alias) runs the host checks (analyze and
+every test suite), then boots an iPhone 16 Pro simulator and shows it,
+installs the app fresh and runs the three on-device checks below: the
+playthrough with its screenshots, the kill-and-resume, and the daily
+fingerprint against nesty_core's own level. It prints a PASS/FAIL summary
+and exits 1 if any step failed; logs, screenshots and `summary.txt` go to
+`apps/game/build/nesty-test/<timestamp>/` (`latest` links the newest run):
+
+```bash
+tools/scripts/nesty-test                    # everything, on the iPhone 16 Pro simulator
+tools/scripts/nesty-test --device-only      # skip the host checks
+tools/scripts/nesty-test --android          # the flutter_emulator AVD, with its window
+tools/scripts/nesty-test --device "iPhone 15 Pro Max" --only playthrough
+tools/scripts/nesty-test --help             # every option
+```
+
 The on-device checks run the dev flavor with every real service (Hive, the
 isolate solver and generator, SoLoud, the Lottie files) on a booted
 simulator or emulator, through `flutter drive`. Start the playthrough and

@@ -127,6 +127,25 @@ void main() {
       );
     });
 
+    // docs/plans/m3-design.md §4: "New issue codes (append to `IssueCodes`
+    // and `all`): session.unsupportedFormat (args found),
+    // session.levelMismatch (expected, found), session.badBoard (board:
+    // state or history/i), session.badHistory (index)."
+    test('includes the session codes of the M3 design (§4)', () {
+      expect(IssueCodes.sessionUnsupportedFormat, 'session.unsupportedFormat');
+      expect(IssueCodes.sessionLevelMismatch, 'session.levelMismatch');
+      expect(IssueCodes.sessionBadBoard, 'session.badBoard');
+      expect(IssueCodes.sessionBadHistory, 'session.badHistory');
+      // Appended: the codes before them keep their places.
+      expect(IssueCodes.all.sublist(IssueCodes.all.length - 4), const [
+        'session.unsupportedFormat',
+        'session.levelMismatch',
+        'session.badBoard',
+        'session.badHistory',
+      ]);
+      expect(IssueCodes.all.indexOf('gen.noSolvableLevel'), 38);
+    });
+
     test('codes are unique "group.name" identifiers', () {
       expect(IssueCodes.all.toSet(), hasLength(IssueCodes.all.length));
       for (final code in IssueCodes.all) {

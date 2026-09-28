@@ -22,7 +22,7 @@ void main() {
       // Codec, bundle and issues.
       LevelCodec, LevelDecodeResult, LevelBundleCodec, LevelBundle,
       LevelBundleEntry, LevelBundleDecodeResult, LevelIssue, IssueSeverity,
-      IssueCodes,
+      IssueCodes, GameSessionCodec, GameSessionDecodeResult,
       // Validator.
       Validator, ValidationOptions, ValidationReport, LayoutLimits,
       // Rules and session.
@@ -75,6 +75,10 @@ void main() {
       expect(Generator.maxAttempts, 50);
       expect(Generator.maxSetsPerColor, 40);
       expect(Generator.defaultId(7), 'gen-7');
+      // m3-design §5: deterministic retries on a GeneratorFailure.
+      expect(Generator.maxRetries, 3);
+      expect(Generator.retryStream, 0x52455452);
+      expect(GameSessionCodec.format, 1);
       expect(DifficultyCurve.maxLevelNumber, 1 << 30);
     });
 

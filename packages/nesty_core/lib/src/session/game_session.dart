@@ -102,7 +102,7 @@ final class GameSession {
   UndoResult? undo() {
     if (_history.isEmpty) return null;
     final entry = _history.removeLast();
-    _state = _withExtraSlots(entry.before, _state.extraSlotCount);
+    _state = GameStateBoard.withExtraSlots(entry.before, _state.extraSlotCount);
     _undosUsed++;
     return UndoResult(revertedMove: entry.move, restoredState: _state);
   }
@@ -128,7 +128,10 @@ final class GameSession {
   /// (spec §2.4, D22).
   void restart() {
     final extraSlots = _state.extraSlotCount;
-    _state = _withExtraSlots(GameState.initial(level), extraSlots);
+    _state = GameStateBoard.withExtraSlots(
+      GameState.initial(level),
+      extraSlots,
+    );
     _history.clear();
   }
 
@@ -146,13 +149,4 @@ final class GameSession {
 
   /// `Rules.legalMoves` of the current board.
   List<Move> legalMoves() => Rules.legalMoves(_state);
-
-  /// [state] with [extraSlots] extra slots in play. Extra slots only ever
-  /// grow, and one added after [state] was taken is empty in it, so raising
-  /// the count restores exactly "that board, plus the current stands".
-  static GameState _withExtraSlots(GameState state, int extraSlots) {
-    if (state.extraSlotCount == extraSlots) return state;
-    final board = GameStateBoard.thaw(state)..extraCount = extraSlots;
-    return GameStateBoard.adopt(board);
-  }
 }

@@ -3,8 +3,8 @@
 enum Tier {
   easy('easy', defaultRewardCoins: 10),
 
-  /// Pays like easy: spec §7.3 pays "easy/medium" 10, and §9.4 has no
-  /// `reward_medium` key (PROGRESS Q5).
+  /// Pays like easy by default: spec §7.3 pays "easy/medium" 10. The game
+  /// reads its own Remote Config key, `reward_medium` (default 10, D64).
   medium('medium', defaultRewardCoins: 10),
 
   hard('hard', defaultRewardCoins: 25),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:nesty_core/src/codec/json_values.dart';
 import 'package:nesty_core/src/codec/level_issue.dart';
 import 'package:nesty_core/src/models/doll.dart';
 import 'package:nesty_core/src/models/doll_color.dart';
@@ -185,18 +186,6 @@ abstract final class _Expected {
   static const string = 'string';
   static const integer = 'integer';
 }
-
-// 2^53 − 1: the largest integer every platform reads exactly from JSON (the
-// web's numbers are doubles).
-const int _maxJsonInteger = 0x1FFFFFFFFFFFFF;
-
-// Design A21. Color ids are lowercase letters only (DollColor.id), so the
-// size is everything after the letters.
-final RegExp _tokenPattern = RegExp(r'^([a-z]+)([1-6])$');
-
-final Map<String, DollColor> _colorsById = {
-  for (final color in DollColor.values) color.id: color,
-};
 
 /// One decode: collects issues while it walks the document in order.
 final class _LevelDecoder {
@@ -418,7 +407,7 @@ final class _LevelDecoder {
       slotId: slotId,
     );
     if (id == null) return null;
-    final color = _colorsById[id];
+    final color = JsonValues.colorsById[id];
     if (color == null) {
       _add(
         IssueCodes.unknownDollColor,
@@ -527,7 +516,7 @@ final class _LevelDecoder {
   Doll? _doll(Object? value, List<Object> path, String slotId) {
     final token = _asString(value, path, 'doll', slotId: slotId);
     if (token == null) return null;
-    final match = _tokenPattern.firstMatch(token);
+    final match = JsonValues.dollToken.firstMatch(token);
     if (match == null) {
       _add(
         IssueCodes.badDollToken,
@@ -540,7 +529,7 @@ final class _LevelDecoder {
       return null;
     }
     final colorId = match.group(1)!;
-    final color = _colorsById[colorId];
+    final color = JsonValues.colorsById[colorId];
     if (color == null) {
       _add(
         IssueCodes.unknownDollColor,
@@ -648,16 +637,11 @@ final class _LevelDecoder {
   /// An integral JSON number within ±(2^53 − 1), else `schema.wrongType`.
   /// The field name is the last path segment.
   int? _asInt(Object? value, List<Object> path, {String? slotId}) {
-    // On the web `3.0 is int` is true and every number is also a double, so
-    // test the value, not the Dart type, to agree across platforms.
-    if (value is num &&
-        value.isFinite &&
-        value == value.truncateToDouble() &&
-        value.abs() <= _maxJsonInteger) {
-      return value.toInt();
+    final number = JsonValues.integer(value);
+    if (number == null) {
+      _wrongType(path, '${path.last}', _Expected.integer, slotId);
     }
-    _wrongType(path, '${path.last}', _Expected.integer, slotId);
-    return null;
+    return number;
   }
 
   void _wrongType(

@@ -10,8 +10,9 @@ enum IssueSeverity {
   warning,
 }
 
-/// One problem found in a level (or in generator params, or a bundle) by the
-/// codec, the validator, the bundle codec or the generator (spec §5.3).
+/// One problem found in a level (or in generator params, a bundle or a saved
+/// session) by the codec, the validator, the bundle codec, the generator or
+/// the session codec (spec §5.3, §13.3).
 ///
 /// Issues are collected, not thrown, so the admin can show every problem at
 /// once. [code] and [args] are stable and meant for localized messages in
@@ -82,7 +83,8 @@ final class LevelIssue {
   }
 }
 
-/// Every [LevelIssue.code], grouped as in docs/plans/m1-core-design.md §3.
+/// Every [LevelIssue.code], grouped as in docs/plans/m1-core-design.md §3,
+/// then the session codes of docs/plans/m3-design.md §4.
 ///
 /// Codes are stable identifiers: never rename one, because the admin's ARB
 /// keys and stored reports refer to them. The list is append-only; a step
@@ -248,6 +250,31 @@ abstract final class IssueCodes {
   /// No attempt produced a solvable level (design A14). Args: `attempts`.
   static const genNoSolvableLevel = 'gen.noSolvableLevel';
 
+  // --- The in-progress session (spec §13.3, docs/plans/m3-design.md §4) ---
+  //
+  // `GameSessionCodec.decode` also reports `schema.missingField`,
+  // `schema.unknownField`, `schema.wrongType`, `doll.badToken`,
+  // `gold.notSupported` and, for a negative `undosUsed`,
+  // `schema.valueOutOfRange`.
+
+  /// The session's `format` is not one this package reads; nothing else is
+  /// read. Args: `found`.
+  static const sessionUnsupportedFormat = 'session.unsupportedFormat';
+
+  /// The session was saved for another level. Args: `expected` (the level's
+  /// id), `found` (the saved `levelId`).
+  static const sessionLevelMismatch = 'session.levelMismatch';
+
+  /// A saved board is not one the level can be in: wrong slot ids, invalid
+  /// nests, counters out of range, or dolls and states play can't reach.
+  /// Args: `board` (`state` or `history/<i>`); `slotId` when the problem is
+  /// one slot.
+  static const sessionBadBoard = 'session.badBoard';
+
+  /// A history entry's move doesn't replay through the rules to the next
+  /// saved board. Args: `index`.
+  static const sessionBadHistory = 'session.badHistory';
+
   /// Every code above, for exhaustive tests and the admin's ARB coverage.
   static const List<String> all = [
     invalidJson,
@@ -289,5 +316,9 @@ abstract final class IssueCodes {
     genSlotsInfeasible,
     genSegmentsInfeasible,
     genNoSolvableLevel,
+    sessionUnsupportedFormat,
+    sessionLevelMismatch,
+    sessionBadBoard,
+    sessionBadHistory,
   ];
 }

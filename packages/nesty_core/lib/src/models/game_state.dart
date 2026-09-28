@@ -163,4 +163,17 @@ abstract final class GameStateBoard {
   /// shape, without allocating.
   static void load(GameState state, Board target) =>
       target.copyFrom(state._board);
+
+  /// [state] with [extraSlots] (at least its own) extra slots in play.
+  ///
+  /// Extra slots only ever grow, and one added after [state] was taken is
+  /// empty in it, so raising the count gives exactly "that board, plus the
+  /// stands added since" (spec §3.6, D22). `GameSession.undo` and
+  /// `restart` keep the current extra slots this way, and
+  /// `GameSessionCodec.decode` replays a saved history with it.
+  static GameState withExtraSlots(GameState state, int extraSlots) {
+    if (state._board.extraCount == extraSlots) return state;
+    final board = Board.copyOf(state._board)..extraCount = extraSlots;
+    return GameState._(board);
+  }
 }

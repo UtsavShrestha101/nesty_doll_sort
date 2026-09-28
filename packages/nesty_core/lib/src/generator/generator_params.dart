@@ -70,6 +70,24 @@ final class GeneratorParams {
   /// board.
   final String? id;
 
+  /// These params with [seed] instead, for `Generator.generateWithRetries`
+  /// (docs/plans/m3-design.md §5): everything else, [id] included, stays.
+  GeneratorParams withSeed(int seed) => GeneratorParams(
+    colors: colors,
+    setsPerColor: setsPerColor,
+    maxSize: maxSize,
+    shelves: shelves,
+    slotsPerShelf: slotsPerShelf,
+    towers: towers,
+    towerDepth: towerDepth,
+    emptySlots: emptySlots,
+    locked: locked,
+    iceSlots: iceSlots,
+    targetTier: targetTier,
+    seed: seed,
+    id: id,
+  );
+
   @override
   bool operator ==(Object other) =>
       other is GeneratorParams &&

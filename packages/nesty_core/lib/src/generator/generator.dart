@@ -137,6 +137,46 @@ abstract final class Generator {
   /// The level id used when `GeneratorParams.id` is null: `gen-<seed>`.
   static String defaultId(int seed) => 'gen-$seed';
 
+  /// Seeds [generateWithRetries] tries after the params' own seed fails
+  /// (docs/plans/m3-design.md §5).
+  static const int maxRetries = 3;
+
+  /// The stream label of the retry seeds: `'RETR'` as a big-endian u32.
+  static const int retryStream = 0x52455452;
+
+  /// The seed of retry [retry] (0..[maxRetries]) of [seed]: [seed] itself
+  /// for retry 0, then `Prng.derive(seed, retryStream, retry)`, a u32. Pure
+  /// integer arithmetic through the core PRNG, so every device derives the
+  /// same retry seeds (spec §7.5, CLAUDE.md rule 7). Throws a [RangeError]
+  /// for a seed outside [0, `Prng.maxSeed`] or a retry outside
+  /// 0..[maxRetries].
+  static int retrySeed(int seed, int retry) {
+    RangeError.checkValueInInterval(seed, 0, Prng.maxSeed, 'seed');
+    RangeError.checkValueInInterval(retry, 0, maxRetries, 'retry');
+    return retry == 0 ? seed : Prng.derive(seed, retryStream, retry);
+  }
+
+  /// [generate], retried with [retrySeed] 1..[maxRetries] while it returns
+  /// a [GeneratorFailure] (design A14: "the app's policy is to retry with
+  /// the next seed"; docs/plans/m3-design.md §5). The first
+  /// [GeneratorSuccess] wins; its level records the seed that produced it
+  /// and keeps `params.id`. When every seed fails, the last failure is
+  /// returned; params that fail [checkParams] fail at once, since another
+  /// seed can't fix them.
+  ///
+  /// A seed that succeeds on its first try gives exactly [generate]'s
+  /// output, so the bonus and daily goldens are unchanged by the wrapper.
+  static GeneratorOutcome generateWithRetries(GeneratorParams params) {
+    var outcome = generate(params);
+    if (outcome is GeneratorSuccess) return outcome;
+    if ((outcome as GeneratorFailure).attempts == 0) return outcome;
+    for (var retry = 1; retry <= maxRetries; retry++) {
+      outcome = generate(params.withSeed(retrySeed(params.seed, retry)));
+      if (outcome is GeneratorSuccess) return outcome;
+    }
+    return outcome;
+  }
+
   /// Generates a level from [params].
   static GeneratorOutcome generate(GeneratorParams params) {
     final issues = checkParams(params);

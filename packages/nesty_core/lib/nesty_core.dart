@@ -7,7 +7,9 @@
 /// deliberately not exported (docs/plans/m1-core-design.md §1).
 library;
 
-// Level codec, bundle codec and issues (spec §5.1, §5.3, §13.4).
+// Level codec, bundle codec, session codec and issues (spec §5.1, §5.3,
+// §13.3, §13.4).
+export 'package:nesty_core/src/codec/game_session_codec.dart';
 export 'package:nesty_core/src/codec/level_bundle.dart';
 export 'package:nesty_core/src/codec/level_codec.dart';
 export 'package:nesty_core/src/codec/level_issue.dart';

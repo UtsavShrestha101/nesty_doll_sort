@@ -1115,9 +1115,14 @@ void main() {
       IssueCodes.unproven: (() => doc(), const ValidationOptions(solver: null)),
     };
 
-    test('covers every code except the bundle and generator ones', () {
+    // The session codes come from GameSessionCodec.decode, and
+    // test/codec/game_session_codec_test.dart produces each of them.
+    test('covers every code except the bundle, generator and session ones', () {
       final levelCodes = IssueCodes.all.where(
-        (code) => !code.startsWith('bundle.') && !code.startsWith('gen.'),
+        (code) =>
+            !code.startsWith('bundle.') &&
+            !code.startsWith('gen.') &&
+            !code.startsWith('session.'),
       );
       expect(producers.keys.toSet(), levelCodes.toSet());
     });

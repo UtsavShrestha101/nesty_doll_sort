@@ -10,7 +10,7 @@ import 'package:nesty_core/src/simulator/tier.dart';
 /// [blockPattern]; the board a tier gets depends on the stage the level is
 /// in (below).
 ///
-/// ## Stage table (design A16: the default until the owner's table, M3)
+/// ## Stage table (design A16; confirmed by the owner on 2026-09-26, Q34)
 ///
 /// Stages follow the introduction schedule of spec §3.7; §6.6 has chapters
 /// raise the baseline with more colors, larger sizes, more towers and fewer
@@ -182,10 +182,10 @@ abstract final class DifficultyCurve {
     return _stages.first;
   }
 
-  // The stage table documented on the class, in level order.
-  // TODO(M3): replace this default table with the owner's curve (design
-  // A16); any change to it changes generated levels, so bump
-  // Generator.version.
+  // The stage table documented on the class, in level order: the owner's
+  // curve (design A16, confirmed 2026-09-26, Q34). Any change to it changes
+  // generated levels, so it bumps Generator.version and needs new goldens
+  // and parity values (test/generator/, test/parity/).
   static const _stages = [
     _Stage.all(
       1,

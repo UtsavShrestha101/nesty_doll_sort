@@ -7,7 +7,7 @@ import 'package:nesty_core/src/models/move.dart';
 import 'package:nesty_core/src/models/nest.dart';
 import 'package:nesty_core/src/models/slot.dart';
 import 'package:nesty_core/src/rules/engine/board.dart';
-import 'package:nesty_core/src/rules/engine/board_layout.dart';
+import 'package:nesty_core/src/rules/engine/board_check.dart';
 import 'package:nesty_core/src/rules/engine/nest_code.dart';
 import 'package:nesty_core/src/solver/hint.dart';
 import 'package:nesty_core/src/solver/solver.dart';
@@ -388,115 +388,9 @@ final class _Reader {
       ..openedMask = opened
       ..extraCount = extra
       ..moveCount = moves;
-    _checkSlots(board);
-    _checkSets(board);
-  }
-
-  /// Only full sets ever leave the board (spec §4), so compared with the
-  /// level's start every color has lost the same number `d` of dolls of
-  /// each size 1..maxSize and none larger, and the `d`s add up to
-  /// `completedSets`. A snapshot whose cells contradict its `completedSets`
-  /// is malformed: the search would get a negative heuristic (`h = nests −
-  /// setsRemaining`). A golden doll counts toward whatever set it joins
-  /// (spec §3.5, v1.1), so a board with gold is only held to `h ≥ 0`.
-  void _checkSets(Board board) {
-    final layout = board.layout;
-    final remaining = layout.totalSets - board.completedSets;
-    var nests = 0;
-    for (final code in board.cells) {
-      if (code != NestCode.empty) nests++;
-    }
-    if (nests < remaining) {
-      _fail('$nests nests cannot hold the $remaining sets left', null);
-    }
-    final lost = Int32List(DollColor.values.length * _sizes);
-    final gold =
-        _countDolls(layout.initialCells, lost, 1) ||
-        _countDolls(board.cells, lost, -1);
-    if (gold) return;
-    final maxSize = layout.maxSize;
-    var sets = 0;
-    for (var color = 0; color < DollColor.values.length; color++) {
-      final row = color * _sizes;
-      final sets0 = lost[row + 1];
-      for (var size = 1; size < _sizes; size++) {
-        final expected = size <= maxSize ? sets0 : 0;
-        if (lost[row + size] != expected || sets0 < 0) {
-          _fail('Color $color lost dolls that are not whole sets', null);
-        }
-      }
-      sets += sets0;
-    }
-    if (sets != board.completedSets) {
-      _fail(
-        'The cells lost $sets sets, but completedSets is '
-        '${board.completedSets}',
-        null,
-      );
-    }
-  }
-
-  // Doll sizes 1..6, indexed directly.
-  static const int _sizes = 7;
-
-  /// Adds [sign] per doll of [cells] to [counts] (color × size). Returns
-  /// true when a cell holds a golden doll or the wild color.
-  static bool _countDolls(List<int> cells, Int32List counts, int sign) {
-    var gold = false;
-    for (final code in cells) {
-      if (code == NestCode.empty) continue;
-      final color = NestCode.color(code);
-      if (NestCode.gold(code) != 0 || NestCode.isWildColor(color)) {
-        gold = true;
-        continue;
-      }
-      final row = color * _sizes;
-      for (
-        var size = NestCode.inner(code);
-        size <= NestCode.outer(code);
-        size++
-      ) {
-        counts[row + size] += sign;
-      }
-    }
-    return gold;
-  }
-
-  /// The kernel's invariants (design §2): only towers and cases open; a
-  /// tower still in play holds a gapless stack; everything else uses its
-  /// first cell only; extra slots not added yet are empty.
-  void _checkSlots(Board board) {
-    final layout = board.layout;
-    final opened = board.openedMask;
-    for (var slot = 0; slot < layout.slotCount; slot++) {
-      final isOpened = ((opened >> slot) & 1) == 1;
-      final kind = layout.kind[slot];
-      final start = layout.cellOffset[slot];
-      final end = start + layout.capacity[slot];
-      if (isOpened && kind == BoardLayout.kindOpen) {
-        _fail('Opened mask marks open slot $slot', null);
-      }
-      var used = start + 1;
-      if (kind == BoardLayout.kindTower && !isOpened) {
-        used = start;
-        while (used < end && board.cells[used] != NestCode.empty) {
-          used++;
-        }
-        if (used == start) _fail('Tower $slot is empty but not opened', null);
-      }
-      for (var cell = used; cell < end; cell++) {
-        if (board.cells[cell] != NestCode.empty) {
-          _fail('Slot $slot has a nest in an unused cell', null);
-        }
-      }
-      if (slot >= board.activeSlotCount &&
-          board.cells[start] != NestCode.empty) {
-        _fail('Extra slot $slot is not in play but holds a nest', null);
-      }
-    }
-    if (opened >= (1 << layout.slotCount)) {
-      _fail('Opened mask has bits past the last slot', null);
-    }
+    // The kernel's invariants, shared with GameSessionCodec.decode.
+    final problem = BoardCheck.kernel(board);
+    if (problem != null) _fail(problem.message, null);
   }
 
   int _nextCode(List<DollColor> colors, {required bool allowGold}) {

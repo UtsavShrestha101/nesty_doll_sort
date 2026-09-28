@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:nesty_render/svg_tools.dart';
 import 'package:nesty_tools/src/assets/audio_formats.dart';
+import 'package:nesty_tools/src/assets/png_formats.dart';
 import 'package:nesty_tools/src/file_writes.dart';
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/fx/lottie_sources.dart';
@@ -22,6 +23,23 @@ const syncedAssetRoots = [
   'themes',
   'audio',
   gameLottieDir,
+  'museum',
+];
+
+/// The ten bundled museum figurine ids, in chapter order (m3-design §9.1,
+/// §9.5). Must match `BundledCatalogRepository.figurineIds`; `tools/` does
+/// not depend on `apps/game`, so this is the sync's own copy.
+const defaultMuseumFigurineIds = [
+  'classic',
+  'sailor',
+  'baker',
+  'astronaut',
+  'gardener',
+  'snow',
+  'circus',
+  'musician',
+  'royal',
+  'explorer',
 ];
 
 /// Board SVGs that are not copied: their pips are baked in for maxSize 6,
@@ -84,10 +102,12 @@ final class AssetSyncPlan {
 /// Builds the sync plan from `design/` under [repoRoot].
 ///
 /// [lottieTable] is the contract the Lottie exports are validated against
-/// (tests pass a smaller one for a scratch repo).
+/// (tests pass a smaller one for a scratch repo). [museumFigurineIds] is the
+/// expected `design/museum/png/` set, in the same way.
 AssetSyncPlan planDesignAssetSync(
   Directory repoRoot, {
   List<LottieFileContract> lottieTable = lottieContracts,
+  List<String> museumFigurineIds = defaultMuseumFigurineIds,
 }) {
   final design = Directory(p.join(repoRoot.path, 'design'));
   final assets = <PlannedAsset>[];
@@ -252,6 +272,54 @@ AssetSyncPlan planDesignAssetSync(
         sourceSize: source.bytes.length,
       ),
     );
+  }
+
+  // Museum figurine art: design/museum/png/NN-<id>.png (+ its -locked
+  // silhouette), byte for byte after validating the PNG signature and
+  // 600×600 size (m3-design §9.5). The nested-<svg>/mix-blend-mode SVGs
+  // beside it never ship (flutter_svg can't draw them, D18).
+  final museumDir = Directory(p.join(design.path, 'museum', 'png'));
+  if (!museumDir.existsSync()) {
+    issues.add('design/museum/png: missing');
+  } else {
+    final expected = <String>{
+      for (var i = 0; i < museumFigurineIds.length; i++) ...[
+        '${(i + 1).toString().padLeft(2, '0')}-${museumFigurineIds[i]}.png',
+        '${(i + 1).toString().padLeft(2, '0')}-${museumFigurineIds[i]}'
+            '-locked.png',
+      ],
+    };
+    final found = <String>{};
+    for (final file
+        in museumDir
+            .listSync()
+            .whereType<File>()
+            .where((f) => !p.basename(f.path).startsWith('.'))
+            .toList()
+          ..sort((a, b) => a.path.compareTo(b.path))) {
+      final name = p.basename(file.path);
+      if (!expected.contains(name)) {
+        issues.add('${rel(file)}: not one of the expected museum figurines');
+        continue;
+      }
+      found.add(name);
+      final bytes = file.readAsBytesSync();
+      for (final issue in validateMuseumPng(bytes)) {
+        issues.add('${rel(file)}: $issue');
+      }
+      assets.add(
+        PlannedAsset(
+          category: 'museum',
+          source: rel(file),
+          destination: 'museum/$name',
+          bytes: bytes,
+          sourceSize: bytes.length,
+        ),
+      );
+    }
+    for (final missing in expected.difference(found).toList()..sort()) {
+      issues.add('design/museum/png/$missing: missing');
+    }
   }
 
   _checkSymbolsCoverTokens(repoRoot, assets, issues);

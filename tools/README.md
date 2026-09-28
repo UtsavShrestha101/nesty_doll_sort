@@ -33,7 +33,7 @@ drift; CI runs the checks in the "Generated code is committed and fresh" job.
 | Command | Reads | Writes |
 |---|---|---|
 | `dart run nesty_tools:gen_design_tokens [--check]` | `design/tokens.json` | `packages/nesty_render/lib/src/tokens/render_tokens.gen.dart`, `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart` |
-| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie}/` |
+| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie,museum/png}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie,museum}/` |
 | `dart run nesty_tools:gen_fx_spec [--check]` | `design/lottie/*.json`, the contract table `lib/src/fx/lottie_contract.dart` | `apps/game/lib/features/fx/fx_spec.gen.dart` |
 | `dart run nesty_tools:gen_nesty_icons [--check]` | `tools/fonts/nesty_symbols.txt`, `apps/game/assets/fonts/NestySymbolsRounded.codepoints` | `apps/game/lib/core/ui/icons/nesty_icons.gen.dart` |
 | `dart run nesty_tools:todo_index [--check]` | every first-party source file | `docs/TODO_INDEX.md` |
@@ -100,6 +100,7 @@ game:
 | `themes/chNN/background.svg` | 6 |
 | `audio/` | 22: 17 SFX `*.wav` + 5 `*.ogg` (2 music loops, 3 jingles) |
 | `lottie/*.json` | 29 (see "Lottie" below) |
+| `museum/NN-<id>[-locked].png` | 20 figurine PNGs (see below) |
 
 SVGs lose their C2PA `<metadata>` block (about 7.7 KB each) and must pass the
 spec §12.2 rules in `package:nesty_render/svg_tools.dart` (no filters, masks,
@@ -123,11 +124,19 @@ a synced folder.
 The 29 Lottie exports ship byte for byte too, `design/lottie/*.json` →
 `lottie/<name>.json`; see "Lottie" below.
 
+The 20 museum figurine PNGs (`design/museum/png/NN-<id>.png` and its
+`-locked` silhouette, one pair per bundled chapter figurine, m3-design §9.5)
+ship byte for byte too, after checking the PNG signature and that each is
+600×600 (`lib/src/assets/png_formats.dart`) and that the file set is exactly
+the ten ids `BundledCatalogRepository.figurineIds` lists (the sync keeps its
+own copy, since `tools/` does not depend on `apps/game`). An unexpected file
+or a missing figurine blocks the whole sync, like every other family here.
+
 Not synced on purpose: `design/skins/classic/renders/` (golden references for
-the renderer tests), `museum/` and `store/` (nested `<svg>` and
-`mix-blend-mode`, which flutter_svg can't draw; museum PNGs come in M3 and
-store icons in M8), `generator/` and `prototypes/`, `design/audio/AUDIO.md`,
-and `design/lottie/`'s `LOTTIE.md` and `images/` (the placeholder PNGs are
+the renderer tests), `design/museum/*.svg` and `store/` (nested `<svg>` and
+`mix-blend-mode`, which flutter_svg can't draw; store icons come in M8),
+`generator/` and `prototypes/`, `design/audio/AUDIO.md`, and
+`design/lottie/`'s `LOTTIE.md` and `images/` (the placeholder PNGs are
 never shipped or decoded, PROGRESS D50; a PNG found in `assets/lottie/` is
 removed like any stale file).
 

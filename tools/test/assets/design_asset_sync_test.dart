@@ -61,13 +61,38 @@ List<int> _realOgg() => File(
   p.join(findRepoRoot().path, 'design/audio/jingle_oom.ogg'),
 ).readAsBytesSync();
 
+/// A minimal PNG at [width]×[height]: just enough of the signature and the
+/// IHDR chunk for `validateMuseumPng` to read, since the sync ships bytes
+/// unchanged and never decodes the image.
+List<int> _png({int width = 600, int height = 600}) {
+  List<int> u32(int v) => [
+    (v >> 24) & 0xFF,
+    (v >> 16) & 0xFF,
+    (v >> 8) & 0xFF,
+    v & 0xFF,
+  ];
+  return [
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // signature
+    ...u32(13), ...'IHDR'.codeUnits, // length, type
+    ...u32(width), ...u32(height), // IHDR data
+    8, 6, 0, 0, 0, // bit depth 8, color type 6 (RGBA), the rest 0
+    ...u32(0), // CRC (unchecked)
+  ];
+}
+
 /// The scratch repo's one Lottie export: the owner's `fx_sparkle`, checked
 /// against its real contract entry.
 final _fakeLottieTable = [lottieContractOf('fx_sparkle')!];
 
+/// The scratch repo's one museum figurine.
+const _fakeMuseumIds = ['classic'];
+
 /// [planDesignAssetSync] for a [_fakeRepo].
-AssetSyncPlan _plan(Directory root) =>
-    planDesignAssetSync(root, lottieTable: _fakeLottieTable);
+AssetSyncPlan _plan(Directory root) => planDesignAssetSync(
+  root,
+  lottieTable: _fakeLottieTable,
+  museumFigurineIds: _fakeMuseumIds,
+);
 
 /// A minimal repo with one of everything the sync copies.
 Directory _fakeRepo() {
@@ -100,12 +125,14 @@ Directory _fakeRepo() {
   );
   write('design/lottie/LOTTIE.md', '# Lottie');
   write('design/lottie/images/glow_ring.png', [0x89, 0x50, 0x4e, 0x47]);
+  write('design/museum/png/01-classic.png', _png());
+  write('design/museum/png/01-classic-locked.png', _png());
   write('design/tokens.json', '{"dollColor":{"red":{"symbol":"heart"}}}');
   write(
     'apps/game/pubspec.yaml',
     'flutter:\n  assets:\n'
         '    - assets/audio/\n    - assets/board/\n'
-        '    - assets/lottie/\n'
+        '    - assets/lottie/\n    - assets/museum/\n'
         '    - assets/skins/classic/\n    - assets/symbols/\n'
         '    - assets/themes/ch07/\n',
   );
@@ -129,7 +156,7 @@ void main() {
       }
       // 7 skins × (svg + json), 11 symbols, 17 board − 2 baked-pip stands,
       // 6 chapter themes, 17 SFX (WAV) + 2 music loops and 3 jingles (OGG),
-      // 29 Lottie files.
+      // 29 Lottie files, 10 figurines × (earned + locked) museum PNGs.
       expect(counts, {
         'skins': 14,
         'symbols': 11,
@@ -137,6 +164,7 @@ void main() {
         'themes': 6,
         'audio': 22,
         'lottie': 29,
+        'museum': 20,
       });
       final destinations = plan.assets.map((a) => a.destination);
       expect(destinations, contains('skins/forest-bear/skin.svg'));
@@ -161,11 +189,29 @@ void main() {
         everyElement(endsWith('.json')),
         reason: 'no placeholder PNG and no LOTTIE.md ships (D50)',
       );
+      expect(
+        destinations.where((d) => d.startsWith('museum/')),
+        containsAll([
+          'museum/01-classic.png',
+          'museum/01-classic-locked.png',
+          'museum/10-explorer.png',
+          'museum/10-explorer-locked.png',
+        ]),
+      );
+      expect(
+        destinations.where((d) => d.startsWith('museum/')),
+        everyElement(endsWith('.png')),
+        reason: 'the museum SVGs never ship (D18)',
+      );
     });
 
-    test('ships the Lottie exports and the audio byte for byte', () {
+    test('ships the Lottie exports, the audio and the museum art byte for '
+        'byte', () {
       for (final a in plan.assets.where(
-        (a) => a.category == 'lottie' || a.category == 'audio',
+        (a) =>
+            a.category == 'lottie' ||
+            a.category == 'audio' ||
+            a.category == 'museum',
       )) {
         expect(
           a.bytes,
@@ -209,6 +255,7 @@ void main() {
         'assets/audio/',
         'assets/board/',
         'assets/lottie/',
+        'assets/museum/',
         'assets/skins/classic/',
         'assets/symbols/',
         'assets/themes/ch07/',
@@ -267,6 +314,7 @@ void main() {
       expect(result.missingPubspecDirs, [
         'assets/board/',
         'assets/lottie/',
+        'assets/museum/',
         'assets/skins/classic/',
         'assets/symbols/',
         'assets/themes/ch07/',
@@ -443,6 +491,64 @@ void main() {
       ).writeAsStringSync(_svg(''));
       File(p.join(root.path, 'design/audio/Pick.mp3')).writeAsStringSync('x');
       expect(_plan(root).issues, hasLength(2));
+    });
+
+    test('ships the museum figurine PNGs byte for byte', () {
+      final root = _fakeRepo();
+      applyAssetSyncPlan(_plan(root), root);
+      final earned = File(
+        p.join(root.path, gameAssetsDir, 'museum', '01-classic.png'),
+      ).readAsBytesSync();
+      expect(
+        earned,
+        File(
+          p.join(root.path, 'design/museum/png/01-classic.png'),
+        ).readAsBytesSync(),
+      );
+    });
+
+    test('flags a museum PNG of the wrong size', () {
+      final root = _fakeRepo();
+      File(
+        p.join(root.path, 'design/museum/png/01-classic.png'),
+      ).writeAsBytesSync(_png(width: 300, height: 600));
+      expect(_plan(root).issues, [
+        'design/museum/png/01-classic.png: 300×600, expected 600×600',
+      ]);
+    });
+
+    test('flags a museum file with a bad PNG signature', () {
+      final root = _fakeRepo();
+      File(
+        p.join(root.path, 'design/museum/png/01-classic.png'),
+      ).writeAsBytesSync(utf8.encode('not a png'));
+      expect(_plan(root).issues, [
+        'design/museum/png/01-classic.png: not a PNG file (bad signature)',
+      ]);
+    });
+
+    test(
+      'flags an unexpected file and a missing figurine in design/museum',
+      () {
+        final root = _fakeRepo();
+        File(
+          p.join(root.path, 'design/museum/png/01-classic.png'),
+        ).deleteSync();
+        File(
+          p.join(root.path, 'design/museum/png/99-mystery.png'),
+        ).writeAsBytesSync(_png());
+        expect(_plan(root).issues, [
+          'design/museum/png/99-mystery.png: not one of the expected museum '
+              'figurines',
+          'design/museum/png/01-classic.png: missing',
+        ]);
+      },
+    );
+
+    test('flags a missing design/museum/png folder', () {
+      final root = _fakeRepo();
+      Directory(p.join(root.path, 'design/museum')).deleteSync(recursive: true);
+      expect(_plan(root).issues, contains('design/museum/png: missing'));
     });
   });
 }

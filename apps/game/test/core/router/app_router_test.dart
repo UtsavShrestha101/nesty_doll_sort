@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fixture_levels.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
@@ -80,7 +81,12 @@ void main() {
   testWidgets('Home before the levels have loaded goes through the splash', (
     tester,
   ) async {
-    await pumpApp(tester, deepLink: const [HomeRoute()]);
+    await pumpApp(
+      tester,
+      deepLink: const [
+        MainShellRoute(children: [HomeRoute()]),
+      ],
+    );
     expect(find.byType(HomePage), findsNothing);
     expect(find.byType(SplashPage), findsOneWidget);
     await pumpFor(tester, const Duration(seconds: 1));
@@ -97,14 +103,21 @@ void main() {
 
     for (final missing in [0, 99]) {
       // A push the guard rejects completes at once, with null.
-      expect(await router.push(GameplayRoute(levelNumber: missing)), isNull);
+      expect(
+        await router.push(
+          GameplayRoute(request: PlayRequest.campaign(missing)),
+        ),
+        isNull,
+      );
       await pumpFor(tester, const Duration(milliseconds: 500));
       expect(find.byType(GameplayPage), findsNothing, reason: '$missing');
       expect(find.byType(HomePage), findsOneWidget);
     }
 
     // An accepted push completes only when its route pops: not awaited.
-    unawaited(router.push(GameplayRoute(levelNumber: 2)));
+    unawaited(
+      router.push(GameplayRoute(request: const PlayRequest.campaign(2))),
+    );
     await pumpFor(tester, const Duration(milliseconds: 800));
     expect(find.byType(GameplayPage), findsOneWidget);
     expect(find.byType(GameWidget<NestyGame>), findsOneWidget);

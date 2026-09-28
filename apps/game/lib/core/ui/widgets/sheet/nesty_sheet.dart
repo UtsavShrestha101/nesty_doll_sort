@@ -17,11 +17,16 @@ export 'package:nesty_game/core/ui/widgets/sheet/sheet_row.dart';
 /// (`motion.ui.sheetIn`, 280 ms). Its bottom padding clears the home
 /// indicator. On a short screen at 1.3× text the rows scroll instead of
 /// overflowing.
+///
+/// With a [titleAction] the title row is frame 8.2's instead (NestyMenus
+/// language sheet): the title left-aligned at 26/700 with the action on
+/// its right, 16 px under the grabber and 12 px above the rows.
 class NestySheet extends StatelessWidget {
   const NestySheet({
     required this.title,
     required this.children,
     this.subtitle,
+    this.titleAction,
     this.showGrabber = true,
     this.gap = 12,
     super.key,
@@ -29,6 +34,9 @@ class NestySheet extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+
+  /// A trailing action on the title's row (frame 8.2's "Done").
+  final Widget? titleAction;
 
   /// Usually [SheetRow]s.
   final List<Widget> children;
@@ -44,6 +52,7 @@ class NestySheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
+    final titleAction = this.titleAction;
     // The frame's 40 px bottom includes the 34 px home indicator.
     final safeBottom = MediaQuery.maybeViewPaddingOf(context)?.bottom ?? 0;
     final bottom = math.max(22, safeBottom + 6).toDouble();
@@ -66,15 +75,31 @@ class NestySheet extends StatelessWidget {
                 ),
               ),
             ),
-          const SizedBox(height: 20),
-          Semantics(
-            header: true,
-            child: Text(
-              title,
-              style: AppTextStyles.sheetTitle,
-              textAlign: TextAlign.center,
+          if (titleAction == null) ...[
+            const SizedBox(height: 20),
+            Semantics(
+              header: true,
+              child: Text(
+                title,
+                style: AppTextStyles.sheetTitle,
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
+          ] else ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(title, style: AppTextStyleTokens.screenTitle),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                titleAction,
+              ],
+            ),
+          ],
           if (subtitle != null) ...[
             const SizedBox(height: 6),
             Text(
@@ -87,7 +112,7 @@ class NestySheet extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
-          const SizedBox(height: 20),
+          SizedBox(height: titleAction == null ? 20 : 12),
           Flexible(
             child: SingleChildScrollView(
               // Room for the rows' 5 px edges and the highlighted ring.

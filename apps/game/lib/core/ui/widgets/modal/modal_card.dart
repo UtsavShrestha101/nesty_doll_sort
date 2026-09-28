@@ -17,18 +17,27 @@ export 'package:nesty_game/core/ui/widgets/modal/ribbon_title.dart';
 /// [title] the padding is the frames' `40 22 22` so content clears the
 /// ribbon; without, `22 20 22` (intro cards). The ribbon overhangs the top
 /// by [RibbonTitle.overhang]: leave that much room above the card.
+///
+/// [title] draws the default orange [RibbonTitle]; [ribbon] replaces it
+/// with another style of ribbon, such as the day-7 chest's
+/// [RibbonTitle.streak] (NestyMenus 5.6). Give one or the other.
 class ModalCard extends StatelessWidget {
   const ModalCard({
     required this.child,
     this.title,
+    this.ribbon,
     this.onClose,
     this.closeSemanticLabel,
     this.padding,
     super.key,
-  });
+  }) : assert(title == null || ribbon == null, 'a title or a ribbon');
 
   final Widget child;
   final String? title;
+
+  /// A ribbon other than the default `RibbonTitle(title)`; the padding is
+  /// the titled one.
+  final RibbonTitle? ribbon;
 
   /// Shows the close button when set.
   final VoidCallback? onClose;
@@ -43,26 +52,27 @@ class ModalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = this.title;
+    final ribbon = this.ribbon ?? (title == null ? null : RibbonTitle(title));
     final onClose = this.onClose;
     final card = NestySurface(
       style: SurfaceStyles.card,
       radius: const BorderRadius.all(Radius.circular(AppRadii.card)),
       width: double.infinity,
-      padding: padding ?? (title == null ? plainPadding : titledPadding),
+      padding: padding ?? (ribbon == null ? plainPadding : titledPadding),
       child: child,
     );
-    if (title == null && onClose == null) return card;
+    if (ribbon == null && onClose == null) return card;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         card,
-        if (title != null)
+        if (ribbon != null)
           Positioned(
             top: -RibbonTitle.overhang,
             // The ribbon keeps clear of the close button on both sides.
             left: 56,
             right: 56,
-            child: Center(child: RibbonTitle(title)),
+            child: Center(child: ribbon),
           ),
         if (onClose != null)
           PositionedDirectional(

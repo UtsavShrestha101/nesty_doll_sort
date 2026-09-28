@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/repository/fake_level_resolver.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
@@ -22,10 +23,15 @@ GameplayState _state({
   bool canHint = true,
   bool canAddSlot = true,
   bool unlimited = false,
+  int undoPrice = 0,
+  int hintPrice = 0,
+  int slotPrice = 0,
 }) {
   final level = levelFrom(tutorialLevelJson);
+  final entry = entryFor(level);
   return GameplayState(
-    entry: entryFor(level),
+    play: FakeLevelResolver.campaignEntry(entry, entry.rewardCoins),
+    entry: entry,
     board: GameState.initial(level),
     status: status,
     paused: paused,
@@ -38,6 +44,9 @@ GameplayState _state({
     canHint: canHint,
     canAddSlot: canAddSlot,
     unlimitedBoosters: unlimited,
+    undoPrice: undoPrice,
+    hintPrice: hintPrice,
+    slotPrice: slotPrice,
   );
 }
 
@@ -55,18 +64,33 @@ void main() {
       expect(model.undoGlow, isFalse);
     });
 
-    test('shows no count at 0 or in the dev flavor', () {
-      final empty = BoosterBarModel.of(
-        _state(freeUndosLeft: 0, hintsLeft: 0, extraSlotsLeft: 0),
+    test('shows the coin price once free/held counts hit 0 (m3-design '
+        '§7.3), none in the dev flavor', () {
+      final priced = BoosterBarModel.of(
+        _state(
+          freeUndosLeft: 0,
+          hintsLeft: 0,
+          extraSlotsLeft: 0,
+          undoPrice: 20,
+          hintPrice: 60,
+          slotPrice: 150,
+        ),
       );
-      expect(empty.undoBadge, isNull);
-      expect(empty.hintBadge, isNull);
-      expect(empty.slotBadge, isNull);
+      expect(priced.undoBadge, const BoosterBadge.coin(20));
+      expect(priced.hintBadge, const BoosterBadge.coin(60));
+      expect(priced.slotBadge, const BoosterBadge.coin(150));
 
       final dev = BoosterBarModel.of(_state(unlimited: true));
       expect(dev.undoBadge, isNull);
       expect(dev.hintBadge, isNull);
       expect(dev.slotBadge, isNull);
+
+      // The level's own +1 Slot limit (2 per level, `canAddSlot` false)
+      // disables the button entirely: no coin badge to press either.
+      final capped = BoosterBarModel.of(
+        _state(extraSlotsLeft: 0, canAddSlot: false, slotPrice: 150),
+      );
+      expect(capped.slotBadge, isNull);
     });
 
     test('follows the bloc: nothing works while paused or once all levels '

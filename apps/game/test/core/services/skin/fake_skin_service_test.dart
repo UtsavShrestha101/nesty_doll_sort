@@ -44,4 +44,25 @@ void main() {
       ..dispose()
       ..dispose();
   });
+
+  test('selectSkin always succeeds and prepareShowcase always returns a '
+      'placeholder board (m3-design §9.2)', () async {
+    final service = FakeSkinService();
+    expect(service.selectedSkinId, 'classic');
+
+    expect(await service.selectSkin('ocean'), isTrue);
+    expect(service.selectedSkinId, 'ocean');
+
+    final showcase = await service.prepareShowcase(
+      colors: [DollColor.red],
+      devicePixelRatio: 1,
+      symbols: DollSymbols.subtle,
+      skinId: 'winter',
+    );
+    expect(showcase, isNotNull);
+    expect(showcase!.restRenderer, isA<PlaceholderDollPainter>());
+    // The showcase's skinId never disturbs the selected one.
+    expect(service.selectedSkinId, 'ocean');
+    showcase.dispose();
+  });
 }

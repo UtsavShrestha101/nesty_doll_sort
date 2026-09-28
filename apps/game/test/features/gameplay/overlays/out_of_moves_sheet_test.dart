@@ -16,6 +16,10 @@ void main() {
     VoidCallback? onExtraSlot,
     VoidCallback? onRestart,
     VoidCallback? onDismiss,
+    int undoPrice = 20,
+    int slotPrice = 150,
+    int extraSlotsLeft = 0,
+    bool unlimitedBoosters = false,
   }) => OutOfMovesSheet(
     freeUndosLeft: freeUndosLeft,
     showFreeUndos: showFreeUndos,
@@ -23,6 +27,10 @@ void main() {
     onExtraSlot: onExtraSlot,
     onRestart: onRestart ?? () {},
     onDismiss: onDismiss ?? () {},
+    undoPrice: undoPrice,
+    slotPrice: slotPrice,
+    extraSlotsLeft: extraSlotsLeft,
+    unlimitedBoosters: unlimitedBoosters,
   );
 
   testWidgets('frame 3.5: title, Undo (free · 1 left), +1 Slot, Restart', (
@@ -76,6 +84,63 @@ void main() {
     await tester.tapAt(const Offset(195, 80));
     await tester.pump(const Duration(milliseconds: 200));
     expect(calls, ['undo', 'slot', 'restart', 'dismiss']);
+  });
+
+  group('coin prices (m3-design §7.3, §10.8)', () {
+    testWidgets('the Undo row shows its price once the free ones are used', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        sheet(freeUndosLeft: 0, onUndo: () {}, undoPrice: 20),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Free · 1 left'), findsNothing);
+      expect(find.text('20'), findsOneWidget);
+    });
+
+    testWidgets('+1 Slot shows its price once none are held', (tester) async {
+      await pumpScreen(
+        tester,
+        sheet(onUndo: () {}, onExtraSlot: () {}, slotPrice: 150),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('150'), findsOneWidget);
+    });
+
+    testWidgets('+1 Slot keeps its chevron while some are still held', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        sheet(
+          onUndo: () {},
+          onExtraSlot: () {},
+          slotPrice: 150,
+          extraSlotsLeft: 1,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('150'), findsNothing);
+    });
+
+    testWidgets('the dev flavor never shows a coin price', (tester) async {
+      await pumpScreen(
+        tester,
+        sheet(
+          freeUndosLeft: 0,
+          onUndo: () {},
+          onExtraSlot: () {},
+          unlimitedBoosters: true,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('20'), findsNothing);
+      expect(find.text('150'), findsNothing);
+      // Restart's chevron and the unlimited +1 Slot row's are the same
+      // const widget.
+      expect(find.byWidget(SheetRow.chevron), findsNWidgets(2));
+    });
   });
 
   for (final size in screenSizes) {

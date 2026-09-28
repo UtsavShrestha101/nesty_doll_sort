@@ -1,0 +1,428 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/models/booster.dart';
+import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_migrations.dart';
+
+/// Why a stored document was read the way it was (docs/plans/m3-design.md
+/// §3.3). Anything but [current] and [absent] means `SaveService` backs the
+/// raw text up before its first write.
+enum SaveReadKind {
+  /// Nothing was stored: a fresh install.
+  absent,
+
+  /// A document of the current schema.
+  current,
+
+  /// An older schema, migrated forward.
+  migrated,
+
+  /// A newer schema (a downgrade): read what is readable.
+  newer,
+
+  /// Not JSON, or not a JSON object: the defaults.
+  invalid,
+}
+
+/// What [SaveDocumentCodec.read] made of the stored text.
+@immutable
+final class SaveReadResult {
+  const SaveReadResult({
+    required this.document,
+    required this.kind,
+    required this.storedSchema,
+  });
+
+  /// The document to play with. Never null: an unusable input gives the
+  /// fresh-install defaults.
+  final SaveDocument document;
+
+  final SaveReadKind kind;
+
+  /// The stored `schema`: [SaveMigrations.noDocument] when absent, and for
+  /// an invalid document or one without a readable `schema`, the schema it
+  /// was read as.
+  final int storedSchema;
+
+  /// The raw text must be kept under `SaveBoxKeys.backup` before the first
+  /// overwrite (m3-design §3.2).
+  bool get needsBackup =>
+      kind == SaveReadKind.migrated ||
+      kind == SaveReadKind.newer ||
+      kind == SaveReadKind.invalid;
+
+  @override
+  String toString() => 'SaveReadResult(${kind.name}, schema $storedSchema)';
+}
+
+/// The save document to JSON and back, by hand (no json_serializable;
+/// docs/plans/m3-design.md §3.3).
+///
+/// Reads are lenient and never throw: a value of the wrong type or out of
+/// range falls back to its default, list entries that can't be read are
+/// skipped, and top-level keys this schema doesn't know are kept in
+/// [SaveDocument.unknown] and written back by [encode]. Unknown keys inside
+/// nested objects are dropped (a later schema that nests new fields
+/// migrates them).
+abstract final class SaveDocumentCodec {
+  /// Parses, migrates and decodes the stored [text] (null: nothing
+  /// stored).
+  static SaveReadResult read(String? text) {
+    if (text == null) {
+      final migrated = SaveMigrations.migrate(
+        const {},
+        SaveMigrations.noDocument,
+      );
+      return SaveReadResult(
+        document: decode(migrated),
+        kind: SaveReadKind.absent,
+        storedSchema: SaveMigrations.noDocument,
+      );
+    }
+    Object? json;
+    try {
+      json = jsonDecode(text);
+    } on FormatException {
+      json = null;
+    }
+    if (json is! Map) {
+      return const SaveReadResult(
+        document: SaveDocument(),
+        kind: SaveReadKind.invalid,
+        storedSchema: SaveDocument.currentSchema,
+      );
+    }
+    final raw = _stringKeyed(json);
+    // A document without a readable schema is read as the current one.
+    final stored = _intOrNull(raw['schema']) ?? SaveDocument.currentSchema;
+    if (stored < SaveDocument.currentSchema) {
+      return SaveReadResult(
+        document: decode(SaveMigrations.migrate(raw, stored < 0 ? 0 : stored)),
+        kind: SaveReadKind.migrated,
+        storedSchema: stored,
+      );
+    }
+    return SaveReadResult(
+      document: decode(raw),
+      kind: stored > SaveDocument.currentSchema
+          ? SaveReadKind.newer
+          : SaveReadKind.current,
+      storedSchema: stored,
+    );
+  }
+
+  /// [doc] as the stored text: [encode], then `jsonEncode`.
+  static String write(SaveDocument doc) => jsonEncode(encode(doc));
+
+  /// The JSON object of [doc]: the known keys in the order of
+  /// m3-design §3.1, then [SaveDocument.unknown]'s keys sorted by code
+  /// unit, so the text is stable. `schema` is always
+  /// [SaveDocument.currentSchema].
+  static Map<String, Object?> encode(SaveDocument doc) {
+    final unknown = doc.unknown.keys.where((k) => !_known.contains(k)).toList()
+      ..sort();
+    return {
+      'schema': SaveDocument.currentSchema,
+      'currentLevel': doc.currentLevel,
+      'highestLevel': doc.highestLevel,
+      'coins': doc.coins,
+      'inventory': {'hint': doc.inventory.hint, 'slot': doc.inventory.slot},
+      'adsRemoved': doc.adsRemoved,
+      'ownedSkins': doc.ownedSkins,
+      'selectedSkin': doc.selectedSkin,
+      'ownedThemes': doc.ownedThemes,
+      'selectedTheme': doc.selectedTheme,
+      'museum': doc.museum,
+      'museumCollected': {
+        for (final MapEntry(:key, :value) in doc.museumCollected.entries)
+          key: value.toIso(),
+      },
+      'daily': _encodeDaily(doc.daily),
+      'inProgress': _encodeInProgress(doc.inProgress),
+      'adCounters': {
+        'winsSinceInterstitial': doc.adCounters.winsSinceInterstitial,
+        'lastAdAt': doc.adCounters.lastAdAt,
+        'interstitialsShown': doc.adCounters.interstitialsShown,
+      },
+      'stats': {
+        'wins': doc.stats.wins,
+        'moves': doc.stats.moves,
+        'boostersUsed': doc.stats.boostersUsed,
+      },
+      'seenIntros': doc.seenIntros,
+      'tutorialDone': doc.tutorialDone,
+      'bonus': {'next': doc.bonus.next},
+      'playerId': doc.playerId,
+      for (final key in unknown) key: doc.unknown[key],
+    };
+  }
+
+  /// A document from [raw], leniently (see the class doc). [raw] is taken
+  /// as already migrated: its `schema` is not checked.
+  static SaveDocument decode(Map<String, Object?> raw) {
+    const defaults = SaveDocument();
+    final currentLevel = _int(raw['currentLevel'], defaults.currentLevel, 1);
+    final ownedSkins = _ids(raw['ownedSkins'], SaveDocument.defaultSkin);
+    final selectedSkin = _string(raw['selectedSkin']);
+    final ownedThemes = _ids(raw['ownedThemes'], SaveDocument.defaultTheme);
+    final museum = _ids(raw['museum'], null);
+    return SaveDocument(
+      currentLevel: currentLevel,
+      highestLevel: _int(raw['highestLevel'], currentLevel, currentLevel),
+      coins: _int(raw['coins'], defaults.coins, 0),
+      inventory: _decodeInventory(raw['inventory']),
+      adsRemoved: _bool(raw['adsRemoved'], defaults.adsRemoved),
+      ownedSkins: ownedSkins,
+      selectedSkin: selectedSkin != null && ownedSkins.contains(selectedSkin)
+          ? selectedSkin
+          : SaveDocument.defaultSkin,
+      ownedThemes: ownedThemes,
+      selectedTheme: _string(raw['selectedTheme']),
+      museum: museum,
+      museumCollected: _decodeDates(raw['museumCollected'], museum),
+      daily: _decodeDaily(raw['daily']),
+      inProgress: _decodeInProgress(raw['inProgress'], daily: false),
+      adCounters: _decodeAdCounters(raw['adCounters']),
+      stats: _decodeStats(raw['stats']),
+      seenIntros: _ids(raw['seenIntros'], null),
+      tutorialDone: _bool(raw['tutorialDone'], defaults.tutorialDone),
+      bonus: BonusProgress(next: _int(_map(raw['bonus'])?['next'], 1, 1)),
+      playerId: _playerId(raw['playerId']),
+      unknown: {
+        for (final MapEntry(:key, :value) in raw.entries)
+          if (!_known.contains(key)) key: value,
+      },
+    );
+  }
+
+  /// A player id as the Settings footer shows it: 8 hex digits in two
+  /// groups, `7F3A-21C9` (frame 8.1).
+  static final RegExp playerIdPattern = RegExp(r'^[0-9A-F]{4}-[0-9A-F]{4}$');
+
+  static const Set<String> _known = {
+    'schema',
+    'currentLevel',
+    'highestLevel',
+    'coins',
+    'inventory',
+    'adsRemoved',
+    'ownedSkins',
+    'selectedSkin',
+    'ownedThemes',
+    'selectedTheme',
+    'museum',
+    'museumCollected',
+    'daily',
+    'inProgress',
+    'adCounters',
+    'stats',
+    'seenIntros',
+    'tutorialDone',
+    'bonus',
+    'playerId',
+    // Spec §13.3 lists `settings`, but they live in the settings box
+    // (m3-design §3.1): a stray one is dropped, never written back.
+    'settings',
+  };
+
+  // --- Nested objects --------------------------------------------------
+
+  static BoosterInventory _decodeInventory(Object? value) {
+    final map = _map(value);
+    // A missing inventory is a fresh install's; a bad count inside a real
+    // one is 0, so a damaged save never hands boosters out again.
+    if (map == null) return const BoosterInventory();
+    return BoosterInventory(
+      hint: _int(map[BoosterKind.hint.storageKey], 0, 0),
+      slot: _int(map[BoosterKind.extraSlot.storageKey], 0, 0),
+    );
+  }
+
+  static Map<String, Object?> _encodeDaily(DailyProgress daily) => {
+    'streak': daily.streak,
+    'lastDate': daily.lastDate?.toIso(),
+    'freezes': daily.freezes,
+    'freezeWeek': daily.freezeWeek,
+    'done': [for (final date in daily.done) date.toIso()],
+    'frozen': [for (final date in daily.frozen) date.toIso()],
+    'noticeDate': daily.noticeDate?.toIso(),
+    'chestPending': daily.chestPending,
+    'inProgress': _encodeInProgress(daily.inProgress),
+  };
+
+  static DailyProgress _decodeDaily(Object? value) {
+    final map = _map(value);
+    if (map == null) return const DailyProgress();
+    final freezes = _int(map['freezes'], 0, 0);
+    return DailyProgress(
+      streak: _int(map['streak'], 0, 0),
+      lastDate: LocalDate.tryParse(map['lastDate']),
+      freezes: freezes > DailyProgress.maxFreezes
+          ? DailyProgress.maxFreezes
+          : freezes,
+      freezeWeek: _intOrNull(map['freezeWeek']),
+      done: _dateList(map['done']),
+      frozen: _dateList(map['frozen']),
+      noticeDate: LocalDate.tryParse(map['noticeDate']),
+      chestPending: _bool(map['chestPending'], false),
+      inProgress: _decodeInProgress(map['inProgress'], daily: true),
+    );
+  }
+
+  static Map<String, Object?>? _encodeInProgress(InProgressLevel? level) {
+    if (level == null) return null;
+    return {
+      'kind': level.request.kind.id,
+      'number': level.request.number,
+      'levelId': level.levelId,
+      'levelVersion': level.levelVersion,
+      'tier': level.tier?.id,
+      'level': level.level,
+      'session': level.session,
+    };
+  }
+
+  /// An in-progress board, or null when anything it needs is unreadable
+  /// (the level then just starts over, spec §13.3). [daily] says which
+  /// slot it came from: a daily board only in `daily`, the others only at
+  /// the top level.
+  static InProgressLevel? _decodeInProgress(
+    Object? value, {
+    required bool daily,
+  }) {
+    final map = _map(value);
+    if (map == null) return null;
+    final kind = PlayKind.tryFromId(map['kind']);
+    final number = _intOrNull(map['number']);
+    final levelId = _string(map['levelId']);
+    final levelVersion = _intOrNull(map['levelVersion']);
+    final session = _map(map['session']);
+    if (kind == null ||
+        (kind == PlayKind.daily) != daily ||
+        number == null ||
+        levelId == null ||
+        levelVersion == null ||
+        session == null) {
+      return null;
+    }
+    final request = PlayRequest.tryCreate(kind, number);
+    if (request == null) return null;
+    final level = _map(map['level']);
+    // A generated board can't resume without its level.
+    if (request.isGenerated && level == null) return null;
+    final tierId = _string(map['tier']);
+    return InProgressLevel(
+      request: request,
+      levelId: levelId,
+      levelVersion: levelVersion,
+      session: session,
+      level: request.isGenerated ? level : null,
+      tier: tierId == null ? null : Tier.tryFromId(tierId),
+    );
+  }
+
+  static AdCounters _decodeAdCounters(Object? value) {
+    final map = _map(value);
+    if (map == null) return const AdCounters();
+    return AdCounters(
+      winsSinceInterstitial: _int(map['winsSinceInterstitial'], 0, 0),
+      lastAdAt: _int(map['lastAdAt'], 0, 0),
+      interstitialsShown: _int(map['interstitialsShown'], 0, 0),
+    );
+  }
+
+  static SaveStats _decodeStats(Object? value) {
+    final map = _map(value);
+    if (map == null) return const SaveStats();
+    final used = <String, int>{};
+    for (final MapEntry(:key, :value)
+        in (_map(map['boostersUsed']) ?? const {}).entries) {
+      final count = _intOrNull(value);
+      if (count != null && count >= 0) used[key] = count;
+    }
+    return SaveStats(
+      wins: _int(map['wins'], 0, 0),
+      moves: _int(map['moves'], 0, 0),
+      boostersUsed: used,
+    );
+  }
+
+  static Map<String, LocalDate> _decodeDates(
+    Object? value,
+    List<String> museum,
+  ) {
+    final map = _map(value);
+    if (map == null) return const {};
+    return {
+      for (final MapEntry(:key, :value) in map.entries)
+        if (museum.contains(key)) key: ?LocalDate.tryParse(value),
+    };
+  }
+
+  // --- Primitives --------------------------------------------------------
+
+  static Map<String, Object?> _stringKeyed(Map<Object?, Object?> map) => {
+    for (final MapEntry(:key, :value) in map.entries)
+      if (key is String) key: value,
+  };
+
+  static Map<String, Object?>? _map(Object? value) =>
+      value is Map ? _stringKeyed(value) : null;
+
+  /// An integral JSON number within ±(2^53 − 1), read by value like the
+  /// level codec (D29): `3.0` is 3.
+  static int? _intOrNull(Object? value) {
+    if (value is int) return value;
+    if (value is double &&
+        value.isFinite &&
+        value == value.truncateToDouble() &&
+        value.abs() <= 9007199254740991) {
+      return value.toInt();
+    }
+    return null;
+  }
+
+  /// [value] as an int of at least [min], else [fallback].
+  static int _int(Object? value, int fallback, int min) {
+    final read = _intOrNull(value);
+    return read == null || read < min ? fallback : read;
+  }
+
+  static bool _bool(Object? value, bool fallback) =>
+      value is bool ? value : fallback;
+
+  static String? _string(Object? value) =>
+      value is String && value.isNotEmpty ? value : null;
+
+  /// A list of distinct non-empty strings, first occurrence kept, with
+  /// [always] first when given (it is always owned).
+  static List<String> _ids(Object? value, String? always) {
+    final ids = <String>[?always];
+    if (value is List) {
+      for (final item in value) {
+        if (item is String && item.isNotEmpty && !ids.contains(item)) {
+          ids.add(item);
+        }
+      }
+    }
+    return ids;
+  }
+
+  /// Distinct dates, sorted, the last [DailyProgress.maxDates] kept.
+  static List<LocalDate> _dateList(Object? value) {
+    if (value is! List) return const [];
+    final dates = <LocalDate>{
+      for (final item in value) ?LocalDate.tryParse(item),
+    }.toList()..sort();
+    return dates.length <= DailyProgress.maxDates
+        ? dates
+        : dates.sublist(dates.length - DailyProgress.maxDates);
+  }
+
+  static String? _playerId(Object? value) =>
+      value is String && playerIdPattern.hasMatch(value) ? value : null;
+}

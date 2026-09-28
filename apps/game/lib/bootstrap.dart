@@ -8,6 +8,7 @@ import 'package:nesty_game/app/app.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/save/save_lifecycle_flusher.dart';
 
 /// Debug builds can opt into all-fake services with
 /// `--dart-define=NESTY_FAKE_SERVICES=true` (CLAUDE.md rule 4). Ignored in
@@ -44,6 +45,11 @@ void bootstrap() {
       await configureDependencies(
         environment: kDebugMode && _useFakeServices ? AppEnv.fake : AppEnv.real,
       );
+
+      // Flushes the save on `paused`/`detached` (m3-design §3.2). Started
+      // here, not resolved lazily on first use, so it is listening before
+      // the app can ever go to the background.
+      get<SaveLifecycleFlusher>().start();
 
       runApp(App(router: get<AppRouter>()));
     },

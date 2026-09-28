@@ -67,11 +67,91 @@ abstract final class AppColors {
   /// The green icon tile of the +1 Slot row.
   static const iconTileGreen = Color(0xFFCDEFD6);
 
+  // ── Daily 7-day strip (NestyMenus "days", frames 5.1/5.5/5.6) ──
+
+  /// The raised "Today" cell's gradient top (bottom is `AppColorTokens
+  /// .primary`).
+  static const dayTodayTop = Color(0xFFF9A964);
+
+  /// A done day's face and ring.
+  static const dayDoneFace = Color(0xFFE3F4E6);
+  static const dayDoneRing = Color(0xFFA6DDB3);
+
+  /// A locked day: `rgba(255,249,236,.7)` face, dashed-tone ring and dot.
+  static const dayLockedFace = Color(0xB3FFF9EC);
+  static const dayLockedRing = Color(0xFFE2C9A3);
+  static const dayLockedDot = Color(0xFFEAD3B0);
+  static const dayLockedIcon = Color(0xFFB98A60);
+
+  /// Day 7 before it opens: a chest waiting on the streak.
+  static const dayChestPendingFace = Color(0xFFFFF1C9);
+  static const dayChestPendingRing = Color(0xFFE8C35C);
+  static const dayChestPendingDot = Color(0xFFF5C518);
+  static const dayChestPendingIcon = Color(0xFF8C5E12);
+
+  /// Day 7 once its chest opened (`AppGradientTokens.daily` is its face).
+  static const dayChestOpenEdge = Color(0xFFC9960A);
+  static const dayChestOpenDot = Color(0xFFFFF8DC);
+
+  // ── Daily chest icon (NestyMenus "chest", frames 5.1/5.6) ──
+
+  static const chestBodyTop = Color(0xFFC98A4E);
+  static const chestBodyBottom = Color(0xFF8A5429);
+  static const chestLidTop = Color(0xFFD99A5A);
+  static const chestLidBottom = Color(0xFFA56A34);
+  static const chestRing = Color(0xFFE8B94A);
+  static const chestLock = Color(0xFFF5C518);
+  static const chestLockRing = Color(0xFF8C5E12);
+
+  /// The open chest's (5.6) gold glow behind the lid: `radial-gradient(
+  /// closest-side, rgba(255,220,110,.9), rgba(255,220,110,0))`.
+  static const chestGlow = Color(0xE6FFDC6E);
+  static const chestGlowClear = Color(0x00FFDC6E);
+
+  /// The open chest body's drop shadow, `0 8px 14px rgba(90,45,15,.3)`.
+  static const chestShadow = Color(0x4D5A2D0F);
+
+  /// The freeze chip's label (NestyMenus "freeze", frame 5.1).
+  static const freezeChipText = Color(0xFF326497);
+
+  // ── Settings "Color symbols" cards (NestyMenus isSettings, frame 8.1) ──
+
+  /// The selected card's face (its ring is `AppColorTokens.primary`).
+  static const symbolsCardSelectedFace = Color(0xFFFFF1E4);
+
+  /// The unselected card's 2 px inset ring.
+  static const symbolsCardRing = Color(0xFFE2C9A3);
+
+  // ── Museum walnut cabinet (NestyShop "museum", frame 6.1) ──
+
+  static const walnutTop = Color(0xFFB77B44);
+  static const walnutBottom = Color(0xFF9A6232);
+  static const walnutEdge = Color(0xFF6E4222);
+  static const walnutHighlight = Color(0x80FFDCAA);
+  static const shelfFaceTop = Color(0xFFF7E4C4);
+  static const shelfFaceBottom = Color(0xFFEDD1A6);
+
+  /// The figurine detail modal's warm spotlight (frame 6.2; a duller one
+  /// for the locked modal, frame 6.3).
+  static const spotlightEarnedTop = Color(0xFFFFF6DC);
+  static const spotlightEarnedMid = Color(0xFFF2D29E);
+  static const spotlightEarnedEdge = Color(0xFFE2B478);
+  static const spotlightLockedTop = Color(0xFFF7EBD6);
+  static const spotlightLockedMid = Color(0xFFE8D3B0);
+  static const spotlightLockedEdge = Color(0xFFD9BE93);
+
   // ── Banners (design/README.md "Banners / toasts") ──
 
   static const warningHighlight = Color(0xFFFFF4EA);
   static const dangerHighlight = Color(0xFFFFF2F2);
   static const successBannerFace = Color(0xFFEAF7EC);
+
+  /// The "Purchases restored" toast's title (frame 8.3).
+  static const successToastTitle = Color(0xFF1F5A2B);
+
+  /// The "Purchases restored" toast's body (frame 8.3).
+  static const successToastMessage = Color(0xFF3F7A4B);
+
   static const infoFace = Color(0xFFE8F3FF);
   static const infoEdge = Color(0xFF9CC4EA);
   static const infoTitle = Color(0xFF23456E);

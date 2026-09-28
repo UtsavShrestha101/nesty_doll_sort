@@ -38,12 +38,18 @@ final class BoosterBarModel {
     final won = state.status == GameplayStatus.won;
     final input = state.acceptsInput || (won && !state.paused);
     final unlimited = state.unlimitedBoosters;
-    BoosterBadge? count(int n) =>
-        unlimited || n <= 0 ? null : BoosterBadge.count(n);
+    // A count while some are held (free undos, the inventory); the coin
+    // price once they run out (frames 3.2, 3.3; m3-design §7.3); nothing
+    // in the dev flavor, where boosters never run out.
+    BoosterBadge? badgeFor(int n, int price) {
+      if (unlimited) return null;
+      if (n > 0) return BoosterBadge.count(n);
+      return BoosterBadge.coin(price);
+    }
+
     return BoosterBarModel(
       undoEnabled: input && state.canUndo,
-      // TODO(M3): the 20-coin tag once the free undos are used (frame 3.3).
-      undoBadge: count(state.freeUndosLeft),
+      undoBadge: badgeFor(state.freeUndosLeft, state.undoPrice),
       // Frames 3.1 and 3.4 keep Hint live while a hint shows and while the
       // level is soft stuck; a press then gives no move and charges nothing
       // (the bloc ignores it, D22).
@@ -51,11 +57,15 @@ final class BoosterBarModel {
           (state.status == GameplayStatus.playing || won) &&
           !state.paused &&
           state.canHint,
-      // TODO(M3): the coin price at 0 (frame 3.2).
       // TODO(M6): the ▶ badge at 0 while an ad is ready (frame 2.2).
-      hintBadge: count(state.hintsLeft),
+      hintBadge: badgeFor(state.hintsLeft, state.hintPrice),
       slotEnabled: input && state.canAddSlot,
-      slotBadge: count(state.extraSlotsLeft),
+      // The level's own limit of 2 (`canAddSlot` false) disables the
+      // button entirely, with no badge to press: a coin offer only shows
+      // while another slot is actually possible.
+      slotBadge: state.canAddSlot
+          ? badgeFor(state.extraSlotsLeft, state.slotPrice)
+          : null,
       restartEnabled: input,
       // Only an Undo that works is suggested: with nothing to undo (spec
       // §2.4 clears the history on a completion) the banner offers Restart

@@ -28,12 +28,17 @@ class MusicRouteObserver extends AutoRouterObserver {
   Route<dynamic>? _top;
 
   /// The loop under the page [routeName], or null for none (the splash).
+  ///
+  /// m3-design §10.1: every [GameplayRoute] plays `music_game`, whatever
+  /// its `PlayRequest.kind` (campaign, bonus or daily) — the route itself
+  /// carries no kind here, so one case covers all three. Every other page
+  /// (the shell and its Shop/Home/Museum tabs, Settings, Daily, Skin
+  /// detail) falls through to `music_home`, so opening Settings from Pause
+  /// plays it and the level's loop resumes on return (AUDIO.md "Music
+  /// rules").
   static MusicTrack? trackFor(String? routeName) => switch (routeName) {
     // The splash loads; the music starts as it hands over to Home.
     SplashRoute.name => null,
-    // TODO(M3): the daily puzzle's and the bonus levels' boards play
-    // music_game too (AUDIO.md); Daily, Museum, Shop, Skin detail and
-    // Settings fall through to music_home.
     GameplayRoute.name => MusicTrack.game,
     _ => MusicTrack.home,
   };

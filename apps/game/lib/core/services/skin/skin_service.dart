@@ -65,6 +65,30 @@ abstract interface class SkinService {
     required DollSymbols symbols,
   });
 
+  /// The skin every later [prepareForLevel] board uses: the save's
+  /// `selectedSkin` once [load] has read it (spec §7.4, m3-design §9.2).
+  /// The bundled default before that.
+  String get selectedSkinId;
+
+  /// Switches every later [prepareForLevel] board to [skinId]'s layers:
+  /// loads them if they aren't already cached, then equips them. A skin
+  /// that fails to load keeps the current one (spec §13.5) and this
+  /// returns false; never throws.
+  Future<bool> selectSkin(String skinId);
+
+  /// A one-tower showcase board of [colors] (Home shelf, Shop cards, skin
+  /// detail; `ShowcaseBoard`), in [skinId]'s art (default:
+  /// [selectedSkinId]). At most two non-selected skins' layers stay cached
+  /// (LRU), so switching between a few Shop cards doesn't reload every
+  /// time. Null when that skin's art can't be prepared at all; never
+  /// throws.
+  Future<LevelSkin?> prepareShowcase({
+    required List<DollColor> colors,
+    required double devicePixelRatio,
+    required DollSymbols symbols,
+    String? skinId,
+  });
+
   /// Releases what [load] holds and the [background] (DI reset). Boards
   /// already prepared keep their own handles. Idempotent.
   void dispose();

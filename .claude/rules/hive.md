@@ -9,7 +9,7 @@ paths:
   - "apps/game/test/core/services/database/**"
 ---
 
-# Hive rules (hive_ce 2.20 + hive_ce_flutter 2.3 + hive_ce_generator 1.11)
+# Hive rules (hive_ce 2.20 + hive_ce_flutter 2.3)
 
 `hive_ce` is the maintained fork of Hive 2 with the same API. Import
 `package:hive_ce/hive_ce.dart` or `package:hive_ce_flutter/hive_ce_flutter.dart`,
@@ -37,9 +37,11 @@ Flutter Web and keeps its data in Firestore, so it has no local database.
 - The registry is `HiveTypeIds` (`core/services/database/hive_type_ids.dart`).
   Never reuse a typeId, even after the type is deleted: move it to "Retired".
   Ids 200 and 201 are reserved by hive_ce_flutter (`Color`, `TimeOfDay`).
-- Prefer hive_ce's `@GenerateAdapters([AdapterSpec<Foo>()], reservedTypeIds: HiveTypeIds.reserved)`
-  in `core/services/database/hive_adapters.dart` (create it with the first
-  stored type; today settings are primitives, so neither file exists yet) over
+- No type is stored through an adapter: settings are primitives and the
+  save is one JSON string (below), so `hive_ce_generator` was removed (D80).
+  If a type ever needs one, add `hive_ce_generator` back with a rule-9
+  reason and prefer hive_ce's `@GenerateAdapters([AdapterSpec<Foo>()], reservedTypeIds: HiveTypeIds.reserved)`
+  in `core/services/database/hive_adapters.dart` over
   per-field `@HiveType`/`@HiveField` annotations. build_runner then writes
   `hive_adapters.g.yaml`, the schema that
   pins every typeId and field index. **Commit it.** It is the one generated
@@ -56,15 +58,35 @@ Flutter Web and keeps its data in Firestore, so it has no local database.
 - Register adapters in `HiveDatabaseService.open` with `Hive.registerAdapters()`
   (the generated `HiveRegistrar` extension), before any box opens.
 
-## The save document (spec §13.3) is an open M3 decision
+## The save document (spec §13.3; decided: D63, D67, D68)
 
-Spec §13.3 describes the save as an atomic JSON file (write to a temp file,
-then rename) with a schema version and migrations. Today the Hive box holds
-only device **settings**. Whether the M3 save document lives in a Hive box or
-in the spec's JSON file is an open question for the owner, so don't decide it
-silently. Either way the spec's contract holds: a `schema` version, forward
-migrations, a save on every move and on app pause, and restore-on-resume only
-when `levelVersion` still matches.
+The owner chose a Hive box (Q3, D63). The design is
+`docs/plans/m3-design.md` §3:
+
+- **One JSON text** under the key `doc` (`SaveBoxKeys.document`) of the box
+  `save` (`HiveBoxes.save`), opened with the settings box in
+  `HiveDatabaseService.open`. Only `SaveService` reads and writes it, through
+  `DatabaseService.readSaveDocument`/`writeSaveDocument`; features never see
+  the box. One `put` of one key is one CRC-checked frame, and a torn frame is
+  dropped on reopen, so the previous document survives: that is §13.3's
+  atomic write.
+- **Schema and migrations:** the document carries `"schema": 1`
+  (`SaveDocument.currentSchema`). `SaveMigrations.steps` maps schema `v` to
+  the step to `v + 1`; schema 0 means "no document". Migrations run in
+  `SaveService.load`, before any read. A migrated, newer or unreadable
+  document is first backed up under `doc_backup_v<schema>` or
+  `doc_backup_invalid` (never overwriting an earlier backup).
+- **Lenient reads:** `SaveDocumentCodec` never throws; a wrong type or range
+  is that field's default, unknown top-level keys are kept and written back.
+  Raising the schema needs a migration step and a test that migrates a real
+  document of the old schema.
+- **Writes:** one serial queue that coalesces changes; flushed on
+  `AppLifecycleState.paused`/`detached`. The in-progress board is saved after
+  every applied move, undo, restart and +1 Slot, and restored only when its
+  request, level id and `levelVersion` match.
+- **Settings stay in the `settings` box** (a recorded §13.3 deviation, D67).
+- If Hive can't open, the save runs on the in-memory `FakeDatabaseService`
+  fallback and the game stays playable.
 
 ## Sensitive data
 
@@ -81,4 +103,5 @@ needs a new package, so add a `/plan` and a `docs/PROGRESS.md` reason first
 - Every `DatabaseService` implementation must pass the shared contract in
   `test/core/services/database/database_service_contract.dart`. Extend the
   contract whenever the interface grows.
-- After changing an adapter, run `cd apps/game && dart run build_runner build`.
+- The save's own tests use the same temp-directory Hive: round trip,
+  migration, a corrupt or newer document, a torn write (m3-design §14).

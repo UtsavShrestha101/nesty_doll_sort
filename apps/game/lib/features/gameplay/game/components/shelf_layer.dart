@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:nesty_core/nesty_core.dart' show DollColor;
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/gameplay/game/components/board_scene.dart';
+import 'package:nesty_game/features/gameplay/game/components/board_stand_ins.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/hand_tween.dart';
 import 'package:nesty_render/nesty_render.dart';
@@ -30,7 +31,7 @@ class ShelfLayer extends Component {
   static final Paint _plankFallback = Paint()..color = const Color(0xFFDCA15D);
 
   /// A flat stand when the board art is unavailable (rule 3).
-  static final Paint _standFallback = Paint()..color = const Color(0xFFB9793F);
+  static final Paint _standFallback = Paint()..color = BoardStandIns.stand;
   static final RRect _standUnit = RRect.fromRectAndRadius(
     const Rect.fromLTWH(0, 0, 1, 1),
     const Radius.circular(0.12),

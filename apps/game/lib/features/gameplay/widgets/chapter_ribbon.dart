@@ -7,6 +7,7 @@ import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
+import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
 
 /// Frame 4.7's new-chapter ribbon, "CHAPTER {n} · {name}", on
 /// `ui_chapter_ribbon` (2.6 s: it pops in, holds and fades; LOTTIE.md "New
@@ -115,7 +116,7 @@ class _ChapterRibbonState extends State<ChapterRibbon> {
     final l10n = context.localizations;
     final label = l10n.chapterRibbon(
       widget.number,
-      l10n.chapterName(widget.chapterId),
+      ChapterProgress.nameOf(l10n, widget.chapterId, widget.number),
     );
     return IgnorePointer(
       child: LottieTextOverlay(

@@ -29,6 +29,7 @@ void main() {
     onResume: () => calls?.add('resume'),
     onRestart: () => calls?.add('restart'),
     onHome: () => calls?.add('home'),
+    onSettings: () => calls?.add('settings'),
   );
 
   testWidgets('frame 3.9: "Paused", the level, three toggles, the actions', (
@@ -52,9 +53,8 @@ void main() {
     );
   });
 
-  testWidgets('toggles and actions call back; Settings waits for M3', (
-    tester,
-  ) async {
+  testWidgets('toggles and actions call back, including Settings '
+      '(m3-design §10.1)', (tester) async {
     final calls = <String>[];
     await pumpScreen(tester, dialog(calls: calls));
     await tester.pump(const Duration(milliseconds: 300));
@@ -73,6 +73,7 @@ void main() {
       'resume',
       'restart',
       'home',
+      'settings',
     ]);
   });
 

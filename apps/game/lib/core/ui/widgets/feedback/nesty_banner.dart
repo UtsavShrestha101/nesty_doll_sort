@@ -34,8 +34,7 @@ enum NestyBannerTone {
     message: AppColorTokens.textSecondary,
   ),
 
-  /// TODO(design): only the README names these colours; no frame shows a
-  /// success banner.
+  /// Frame 8.3's "Purchases restored" toast pins the exact colours.
   success(
     surface: SurfaceStyle(
       color: AppColors.successBannerFace,
@@ -45,8 +44,8 @@ enum NestyBannerTone {
       ],
     ),
     iconFace: AppColorTokens.success,
-    title: AppColorTokens.textPrimary,
-    message: AppColorTokens.textSecondary,
+    title: AppColors.successToastTitle,
+    message: AppColors.successToastMessage,
   ),
   info(
     surface: SurfaceStyle(
@@ -95,6 +94,7 @@ class NestyBanner extends StatelessWidget {
     required this.title,
     this.message,
     this.action,
+    this.iconSize = 30,
     super.key,
   });
 
@@ -105,6 +105,10 @@ class NestyBanner extends StatelessWidget {
   final String title;
   final String? message;
   final Widget? action;
+
+  /// The icon disc's diameter: 30 inline (the default), 40 for a
+  /// [NestyToast] (frames 5.2, 8.3).
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +146,7 @@ class NestyBanner extends StatelessWidget {
           : const EdgeInsetsDirectional.fromSTEB(12, 9, 9, 9),
       child: Row(
         children: [
-          _IconDisc(icon: icon, tone: tone),
+          _IconDisc(icon: icon, tone: tone, dimension: iconSize),
           const SizedBox(width: 10),
           Expanded(child: text),
           if (action != null) ...[const SizedBox(width: 10), action],
@@ -153,21 +157,30 @@ class NestyBanner extends StatelessWidget {
 }
 
 class _IconDisc extends StatelessWidget {
-  const _IconDisc({required this.icon, required this.tone});
+  const _IconDisc({
+    required this.icon,
+    required this.tone,
+    this.dimension = 30,
+  });
 
   final IconData icon;
   final NestyBannerTone tone;
+  final double dimension;
 
   @override
   Widget build(BuildContext context) => SizedBox.square(
-    dimension: 30,
+    dimension: dimension,
     child: DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: tone.iconFace,
         gradient: tone.iconGradient,
       ),
-      child: Icon(icon, size: 20, color: const Color(0xFFFFFFFF)),
+      child: Icon(
+        icon,
+        size: dimension * 2 / 3,
+        color: const Color(0xFFFFFFFF),
+      ),
     ),
   );
 }

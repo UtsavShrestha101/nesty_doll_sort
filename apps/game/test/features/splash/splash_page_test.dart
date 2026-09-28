@@ -109,7 +109,7 @@ void main() {
       isNull,
     );
     final prepared = showcase.prepare(devicePixelRatio: 1);
-    final skin = skins.complete(0);
+    final skin = skins.completeShowcase(0);
     await tester.runAsync(() => prepared);
     await tester.pump();
     for (final doll in tester.widgetList<LottieDoll>(find.byType(LottieDoll))) {
@@ -138,7 +138,7 @@ void main() {
     expect(tester.widget<Wordmark>(find.byType(Wordmark)).dollShown, isFalse);
 
     final prepared = showcase.prepare(devicePixelRatio: 1);
-    skins.complete(0);
+    skins.completeShowcase(0);
     await tester.runAsync(() => prepared);
     await tester.pump();
     expect(shelfOpacities(tester), [1, 1, 1]);

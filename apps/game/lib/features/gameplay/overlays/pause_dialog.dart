@@ -43,7 +43,8 @@ final class PauseSettings {
 /// Frame 3.9, Pause (spec §10.2 #14): the "Paused" card over the scrim,
 /// "Level 56 · Hard", the Sound, Music and Haptics toggles (so players don't
 /// leave the level to change them), Resume, then Restart, Home and
-/// Settings. Settings is disabled until its screen exists (M3).
+/// Settings (pushes `SettingsRoute` over the level, which stays paused
+/// underneath, m3-design §10.1).
 ///
 /// The toggles are `ui_toggle` (`on` 0–11, `off` 11–22; LOTTIE.md "Settings
 /// / Pause toggle"), with the static toggle when the file is missing.
@@ -58,6 +59,7 @@ class PauseDialog extends StatelessWidget {
     required this.onResume,
     required this.onRestart,
     required this.onHome,
+    required this.onSettings,
     this.library,
     super.key,
   });
@@ -71,6 +73,10 @@ class PauseDialog extends StatelessWidget {
   final VoidCallback onResume;
   final VoidCallback onRestart;
   final VoidCallback onHome;
+
+  /// Pushes `SettingsRoute` over the level, which stays paused underneath
+  /// (m3-design §10.1).
+  final VoidCallback onSettings;
 
   /// The loaded compositions: `ui_toggle` plays when it has it, else the
   /// toggles draw their static look (rule 3).
@@ -167,8 +173,7 @@ class PauseDialog extends StatelessWidget {
                   child: _PauseTile(
                     icon: NestyIcons.settings,
                     label: l10n.settings,
-                    // TODO(M3): open Settings (frame 8.1).
-                    onPressed: null,
+                    onPressed: onSettings,
                   ),
                 ),
               ],

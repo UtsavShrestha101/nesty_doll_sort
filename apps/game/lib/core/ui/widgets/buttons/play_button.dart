@@ -29,6 +29,7 @@ class PlayButton extends StatelessWidget {
     required this.tier,
     required this.onPressed,
     this.allLevelsDone = false,
+    this.title,
     super.key,
   });
 
@@ -38,6 +39,12 @@ class PlayButton extends StatelessWidget {
 
   /// Every level is won: no level to name.
   final bool allLevelsDone;
+
+  /// Overrides the big line under "PLAY" (`l10n.levelTitle(level)` by
+  /// default): Bonus Endless names its board "Bonus Level N" instead
+  /// (m3-design §10.3, frame 4.10) while [level] keeps naming it for
+  /// semantics.
+  final String? title;
 
   static const double height = 96;
 
@@ -80,7 +87,10 @@ class PlayButton extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              allLevelsDone ? l10n.homeAllLevelsDone : l10n.levelTitle(level),
+              title ??
+                  (allLevelsDone
+                      ? l10n.homeAllLevelsDone
+                      : l10n.levelTitle(level)),
               style: AppTextStyleTokens.display.copyWith(
                 fontSize: 36,
                 color: const Color(0xFFFFFFFF),

@@ -129,6 +129,7 @@ void main() {
           onResume: () {},
           onRestart: () {},
           onHome: () {},
+          onSettings: () {},
         ),
       ),
     );

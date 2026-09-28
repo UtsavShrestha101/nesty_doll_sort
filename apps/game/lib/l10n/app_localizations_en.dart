@@ -361,6 +361,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'classic': 'The Classic Family',
       'sailor': 'The Sailor Family',
       'baker': 'The Baker Family',
+      'astronaut': 'The Astronaut Family',
+      'gardener': 'The Gardener Family',
+      'snow': 'The Snow Family',
+      'circus': 'The Circus Family',
+      'musician': 'The Musician Family',
+      'royal': 'The Royal Family',
+      'explorer': 'The Explorer Family',
       'other': '',
     });
     return '$_temp0';
@@ -430,5 +437,704 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allLevelsBackHome => 'Back to Home';
 
   @override
+  String get nextLevelFailedHome => 'Back to Home';
+
+  @override
   String get devLevelPickerTitle => 'Jump to a level';
+
+  @override
+  String get navShop => 'Shop';
+
+  @override
+  String get navMuseum => 'Museum';
+
+  @override
+  String get homeDailyTile => 'Daily Puzzle';
+
+  @override
+  String get homeMuseumTile => 'Museum';
+
+  @override
+  String get homeRemoveAdsTile => 'Remove Ads';
+
+  @override
+  String homeMuseumProgress(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString/$totalString';
+  }
+
+  @override
+  String get homeDailyLocked => 'After Level 2';
+
+  @override
+  String streakBadgeSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString-day streak',
+      one: '1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingColorSymbols => 'Color symbols';
+
+  @override
+  String get symbolsSubtle => 'Subtle';
+
+  @override
+  String get symbolsLarge => 'Large';
+
+  @override
+  String get settingLanguage => 'Language';
+
+  @override
+  String get settingRestorePurchases => 'Restore Purchases';
+
+  @override
+  String get settingPrivacyChoices => 'Privacy choices';
+
+  @override
+  String get settingPrivacyPolicy => 'Privacy Policy';
+
+  @override
+  String get settingSupport => 'Support';
+
+  @override
+  String get settingSupportValue => 'Email us';
+
+  @override
+  String settingsFooter(String version, String build, String playerId) {
+    return 'Nesty: Doll Sort · v$version (build $build) · Player ID $playerId';
+  }
+
+  @override
+  String get languageSheetTitle => 'Language';
+
+  @override
+  String get languageSheetDone => 'Done';
+
+  @override
+  String languageName(String language) {
+    String _temp0 = intl.Intl.selectLogic(language, {
+      'es': 'Spanish',
+      'pt_BR': 'Portuguese',
+      'id': 'Indonesian',
+      'hi': 'Hindi',
+      'de': 'German',
+      'fr': 'French',
+      'tr': 'Turkish',
+      'ja': 'Japanese',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get languageComingSoon => 'Coming soon';
+
+  @override
+  String languageRowSemantics(String autonym, String detail) {
+    return '$autonym, $detail';
+  }
+
+  @override
+  String dailyStreakDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyStreakKeep => 'Play today to keep your streak';
+
+  @override
+  String get dailyStreakStart => 'Play today to start a streak';
+
+  @override
+  String get dailyStreakDone => 'Done for today. See you tomorrow!';
+
+  @override
+  String get dailyStreakWeek => 'A full week!';
+
+  @override
+  String dailyFreezes(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString freezes',
+      one: '1 freeze',
+      zero: '0 left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyDay => 'Day';
+
+  @override
+  String get dailyToday => 'Today';
+
+  @override
+  String get dailyTomorrow => 'Tmrw';
+
+  @override
+  String dailyDaySemantics(String state, int day) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'done': 'Day $day, done',
+      'today': 'Today, day $day',
+      'tomorrow': 'Tomorrow, day $day',
+      'chest': 'Day $day, chest',
+      'other': 'Day $day',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dailyPlaySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Play, $countString coins',
+      one: 'Play, 1 coin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dailyChestRow(int coins) {
+    final intl.NumberFormat coinsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String coinsString = coinsNumberFormat.format(coins);
+
+    return 'Day 7 chest · $coinsString coins';
+  }
+
+  @override
+  String dailyChestToGo(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString days to go',
+      one: '1 day to go',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dailyChestToGoToday(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString days to go, counting today',
+      one: '1 day to go, counting today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyChestOpenedToday => 'Opened today';
+
+  @override
+  String dailyPuzzleTitle(String weekday) {
+    return '$weekday’s puzzle';
+  }
+
+  @override
+  String dailyPuzzleInfo(int colors, String tier) {
+    final intl.NumberFormat colorsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String colorsString = colorsNumberFormat.format(colors);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      colors,
+      locale: localeName,
+      other: '$colorsString colors',
+      one: '1 color',
+    );
+    return '$_temp0 · $tier';
+  }
+
+  @override
+  String get dailyPlay => 'Play';
+
+  @override
+  String dailySolvedChip(int coins) {
+    final intl.NumberFormat coinsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String coinsString = coinsNumberFormat.format(coins);
+
+    return 'Solved · +$coinsString';
+  }
+
+  @override
+  String dailyNextPuzzle(String time) {
+    return 'Next puzzle in $time';
+  }
+
+  @override
+  String dailyCountdown(int hours, int minutes) {
+    final intl.NumberFormat hoursNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String hoursString = hoursNumberFormat.format(hours);
+    final intl.NumberFormat minutesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String minutesString = minutesNumberFormat.format(minutes);
+
+    return '${hoursString}h ${minutesString}m';
+  }
+
+  @override
+  String playLevel(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Play Level $levelString';
+  }
+
+  @override
+  String get dailySavedTitle => 'Streak saved!';
+
+  @override
+  String dailySavedBody(String weekday) {
+    return 'A freeze covered $weekday. You\'ll earn a new one next week.';
+  }
+
+  @override
+  String get dailyChestTitle => '7-day streak!';
+
+  @override
+  String get dailyChestBody => 'A full week of puzzles. Your chest is open.';
+
+  @override
+  String get dailyChestDouble => 'Double it';
+
+  @override
+  String get dailyChestCollect => 'Collect';
+
+  @override
+  String get dailyWinTitle => 'Daily solved!';
+
+  @override
+  String dailyWinStreak(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString-day streak';
+  }
+
+  @override
+  String dailyWinChestHint(String count) {
+    String _temp0 = intl.Intl.selectLogic(count, {
+      '0': 'Your Day 7 chest is ready!',
+      '1': 'One more day to the Day 7 chest',
+      '2': 'Two more days to the Day 7 chest',
+      '3': 'Three more days to the Day 7 chest',
+      '4': 'Four more days to the Day 7 chest',
+      '5': 'Five more days to the Day 7 chest',
+      '6': 'Six more days to the Day 7 chest',
+      'other': '$count more days to the Day 7 chest',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyBackToDaily => 'Back to Daily';
+
+  @override
+  String get museumTitle => 'Museum';
+
+  @override
+  String get museumCollection => 'Collection';
+
+  @override
+  String museumCount(int done, int total) {
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$doneString / $totalString';
+  }
+
+  @override
+  String museumNextLine(int number, int done, int total, String name) {
+    final intl.NumberFormat numberNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String numberString = numberNumberFormat.format(number);
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Chapter $numberString: $doneString of $totalString levels to $name';
+  }
+
+  @override
+  String get museumAllHome => 'Every family is home.';
+
+  @override
+  String museumFamilyLabel(String name) {
+    return '$name Family';
+  }
+
+  @override
+  String museumSoonLabel(String name) {
+    return '$name · soon';
+  }
+
+  @override
+  String figurineShortName(String figurine) {
+    String _temp0 = intl.Intl.selectLogic(figurine, {
+      'classic': 'Classic',
+      'sailor': 'Sailor',
+      'baker': 'Baker',
+      'astronaut': 'Astronaut',
+      'gardener': 'Gardener',
+      'snow': 'Snow',
+      'circus': 'Circus',
+      'musician': 'Musician',
+      'royal': 'Royal',
+      'explorer': 'Explorer',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String figurineFlavor(String figurine) {
+    String _temp0 = intl.Intl.selectLogic(figurine, {
+      'sailor': '“They keep a seashell in the smallest doll, just in case.”',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String museumChapterChip(int number, String name) {
+    final intl.NumberFormat numberNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String numberString = numberNumberFormat.format(number);
+
+    return 'Chapter $numberString · $name';
+  }
+
+  @override
+  String museumCollectedOn(String date) {
+    return 'Collected · $date';
+  }
+
+  @override
+  String get museumCollected => 'Collected';
+
+  @override
+  String museumLockedText(int number) {
+    final intl.NumberFormat numberNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String numberString = numberNumberFormat.format(number);
+
+    return 'Finish Chapter $numberString to bring this family home.';
+  }
+
+  @override
+  String get shopTitle => 'Shop';
+
+  @override
+  String get shopTabCoins => 'Coins';
+
+  @override
+  String get shopTabSkins => 'Skins';
+
+  @override
+  String get shopTabThemes => 'Themes';
+
+  @override
+  String get shopTabNoAds => 'No Ads';
+
+  @override
+  String get shopEquipped => 'Equipped';
+
+  @override
+  String get shopEquip => 'Equip';
+
+  @override
+  String skinName(String skin) {
+    String _temp0 = intl.Intl.selectLogic(skin, {
+      'classic': 'Classic',
+      'space': 'Space',
+      'ocean': 'Ocean',
+      'sweets': 'Sweets',
+      'forest': 'Forest Friends',
+      'winter': 'Winter',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String skinDescription(String skin) {
+    String _temp0 = intl.Intl.selectLogic(skin, {
+      'ocean': 'Sailor collars, tiny anchors and wave trims.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get skinDetailTitle => 'Skin';
+
+  @override
+  String get skinDetailColors => 'All 11 colors · symbols kept';
+
+  @override
+  String get skinDetailSizes =>
+      'Every size nests the same way. Only the paint changes.';
+
+  @override
+  String get shopBuy => 'Buy';
+
+  @override
+  String shopBuySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Buy, $countString coins',
+      one: 'Buy, 1 coin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String balanceLine(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You have $countString coins',
+      one: 'You have 1 coin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shopDownloading(int percent) {
+    final intl.NumberFormat percentNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String percentString = percentNumberFormat.format(percent);
+
+    return 'Downloading $percentString%';
+  }
+
+  @override
+  String get themesMatchTitle => 'Match each chapter';
+
+  @override
+  String get themesMatchSubtitle => 'Uses the theme of the chapter you\'re in';
+
+  @override
+  String get themeInUse => 'In use';
+
+  @override
+  String get themeUse => 'Use';
+
+  @override
+  String themeChapterLock(int number) {
+    final intl.NumberFormat numberNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String numberString = numberNumberFormat.format(number);
+
+    return 'Ch $numberString';
+  }
+
+  @override
+  String get shopClosedTitle => 'The store is closed for now';
+
+  @override
+  String get shopClosedBody =>
+      'Coin packs and Remove Ads come in a later update.';
+
+  @override
+  String buyUndoText(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Your $countString free undos are used. Take back one more move.',
+      one: 'Your 1 free undo is used. Take back one more move.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get buyHintText => 'Shows your next best move.';
+
+  @override
+  String get buySlotText => 'Adds one empty stand for this level.';
+
+  @override
+  String get tutorialStep1Chip => 'STEP 1 OF 2';
+
+  @override
+  String get tutorialStep1Title => 'Tap the small doll';
+
+  @override
+  String get tutorialStep1Text =>
+      'Dolls nest into the same color, one size bigger.';
+
+  @override
+  String get tutorialStep2Chip => 'STEP 2 OF 2';
+
+  @override
+  String get tutorialStep2Title => 'Now tap the big one';
+
+  @override
+  String get tutorialStep2Text => 'The small doll drops inside with a clack.';
+
+  @override
+  String get tutorialStep3Title => 'Finish the family';
+
+  @override
+  String get tutorialStep3Text => 'Tap the smallest doll, then the family.';
+
+  @override
+  String get tutorialSwallowChip => 'NEW MOVE';
+
+  @override
+  String get tutorialSwallowTitle => 'Big can swallow small';
+
+  @override
+  String get tutorialSwallowText =>
+      'Drop a big doll onto the next size down and it closes right over it.';
+
+  @override
+  String get introNew => 'NEW';
+
+  @override
+  String get introTowersTitle => 'Towers!';
+
+  @override
+  String get introTowersText =>
+      'Only the top nest can move. Clear it to reveal the doll hiding underneath.';
+
+  @override
+  String get introGlassTitle => 'Glass Cases';
+
+  @override
+  String get introGlassText =>
+      'A locked doll is freed when the family on its padlock is complete.';
+
+  @override
+  String get introIceTitle => 'Ice';
+
+  @override
+  String get introIceText =>
+      'Every family you finish cracks the ice. At zero, the doll is free.';
+
+  @override
+  String introTowersBuriedTag(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '+$countString';
+  }
+
+  @override
+  String introIceCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString';
+  }
+
+  @override
+  String get introGotIt => 'Got it';
+
+  @override
+  String chapterCompleteTitle(int number) {
+    final intl.NumberFormat numberNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String numberString = numberNumberFormat.format(number);
+
+    return 'CHAPTER $numberString COMPLETE';
+  }
+
+  @override
+  String get chapterCompleteAdded => 'Added to your Museum!';
+
+  @override
+  String chapterCompleteCoins(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '+$countString coins';
+  }
+
+  @override
+  String chapterCompleteNext(int number, String name) {
+    final intl.NumberFormat numberNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String numberString = numberNumberFormat.format(number);
+
+    return 'Next: Chapter $numberString · $name';
+  }
+
+  @override
+  String get gameplayGenerating => 'Setting up the shelves…';
 }

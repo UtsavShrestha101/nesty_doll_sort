@@ -61,8 +61,17 @@ abstract final class RemoteConfigKeys {
 
   // Win rewards in coins — spec §7.3.
   static const rewardEasy = RemoteConfigKey<int>._('reward_easy', 10);
+
+  /// Not in spec §9.4's list: the owner added it (Q5, D64) so a medium win
+  /// no longer reads `reward_easy`. §7.3 pays easy and medium 10 each.
+  static const rewardMedium = RemoteConfigKey<int>._('reward_medium', 10);
   static const rewardHard = RemoteConfigKey<int>._('reward_hard', 25);
   static const rewardSuperhard = RemoteConfigKey<int>._('reward_superhard', 50);
+
+  /// Chapter complete (spec §7.3 "150", frame 4.6 "+150 coins"). Not in
+  /// §9.4's list: added like `reward_medium` (docs/plans/m3-design.md §7.1;
+  /// a default the owner may override, see PROGRESS).
+  static const rewardChapter = RemoteConfigKey<int>._('reward_chapter', 150);
 
   // Daily puzzle rewards — spec §7.5.
   static const dailyReward = RemoteConfigKey<int>._('daily_reward', 50);
@@ -93,8 +102,10 @@ abstract final class RemoteConfigKeys {
     priceHint,
     priceSlot,
     rewardEasy,
+    rewardMedium,
     rewardHard,
     rewardSuperhard,
+    rewardChapter,
     dailyReward,
     streak7Reward,
     removeAdsOfferAfterInterstitials,

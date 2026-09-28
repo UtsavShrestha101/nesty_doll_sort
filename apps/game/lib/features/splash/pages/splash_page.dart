@@ -55,8 +55,12 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
     return BlocConsumer<SplashCubit, AsyncValue<SplashState>>(
       listenWhen: (previous, current) => !previous.hasData && current.hasData,
       // replaceAll: Splash must not stay underneath Home on the back stack.
-      listener: (context, _) =>
-          unawaited(context.router.replaceAll([const HomeRoute()])),
+      // Home is the shell's middle tab (m3-design §10.1).
+      listener: (context, _) => unawaited(
+        context.router.replaceAll([
+          const MainShellRoute(children: [HomeRoute()]),
+        ]),
+      ),
       builder: (context, state) => SplashView(
         progress: state.data?.progress ?? 0,
         error: state.exceptionOrNull,

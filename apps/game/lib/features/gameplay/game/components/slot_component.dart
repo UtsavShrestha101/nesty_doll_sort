@@ -12,6 +12,7 @@ import 'package:nesty_game/features/fx/fx_spec.dart';
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 import 'package:nesty_game/features/fx/lottie_fx_component.dart';
 import 'package:nesty_game/features/gameplay/game/components/board_scene.dart';
+import 'package:nesty_game/features/gameplay/game/components/board_stand_ins.dart';
 import 'package:nesty_game/features/gameplay/game/components/nest_component.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/fx_segment.dart';
@@ -398,8 +399,8 @@ class _SlotOverlay extends Component {
   static final Paint _inkDot = Paint();
 
   /// Flat stand-ins when even the board art is missing (the fake env).
-  static final Paint _glassFallback = Paint()..color = const Color(0x66CFE9F7);
-  static final Paint _iceFallback = Paint()..color = const Color(0x809ED3F2);
+  static final Paint _glassFallback = Paint()..color = BoardStandIns.glass;
+  static final Paint _iceFallback = Paint()..color = BoardStandIns.ice;
   static final RRect _unit = RRect.fromRectAndRadius(
     const Rect.fromLTWH(0, 0, 1, 1),
     const Radius.circular(0.1),

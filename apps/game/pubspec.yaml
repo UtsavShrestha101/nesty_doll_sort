@@ -30,6 +30,8 @@ dependencies:
     path: ../../packages/nesty_core
   nesty_render:
     path: ../../packages/nesty_render
+  package_info_plus: ^10.2.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -48,7 +50,6 @@ dev_dependencies:
   auto_route_generator: ^10.5.0
   mocktail: ^1.0.5
   bloc_test: ^10.0.0
-  hive_ce_generator: ^1.11.1
 
 flutter:
   uses-material-design: true
@@ -56,13 +57,16 @@ flutter:
   generate: true
 
   # Offline-first (CLAUDE.md rule 3): all art, sound and fonts ship in the app.
-  # skins/ symbols/ board/ themes/ audio/ are written by
+  # skins/ symbols/ board/ themes/ audio/ museum/ are written by
   # `dart run nesty_tools:sync_design_assets` from design/ (never by hand);
   # its --check fails if a synced folder is missing here. Flutter asset
   # folders are not recursive, so every subfolder is listed.
   assets:
     - assets/audio/
     - assets/board/
+    # The ten bundled museum figurines (m3-design §9.5), each earned and
+    # locked PNG copied byte for byte from design/museum/png/.
+    - assets/museum/
     - assets/skins/classic/
     - assets/skins/forest-bear/
     - assets/skins/forest/

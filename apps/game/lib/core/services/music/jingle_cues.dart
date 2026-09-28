@@ -19,13 +19,12 @@ class JingleCues {
   final JinglePlayer _jingles;
   final Set<Timer> _timers = {};
 
-  /// A reward: a skin or a bought theme unlocks, the daily chest opens, a
-  /// purchase completes; not the chapter's figurine (audio plan Q40).
+  /// A reward: a skin or a bought theme unlocks (ShopCubit,
+  /// SkinDetailCubit), the daily chest opens (DailyPage), a purchase
+  /// completes; not the chapter's figurine (audio plan Q40).
   /// `jingle_reward` plays and the music ducks to 0.4 under it, then comes
   /// back over 800 ms when it ends (3.8 s). A jingle that doesn't play
   /// (Sound off) leaves the music alone, so it never dips for nothing.
-  // TODO(M3): call from the skin unlock (7.4), the theme unlock or purchase
-  // (7.7) and the daily chest (5.6).
   // TODO(M6): call when an in-app purchase completes.
   void reward() {
     final length = _jingles.playJingle(Jingle.reward);
@@ -34,12 +33,10 @@ class JingleCues {
     _after(length, () => _music.unduck(DuckReason.reward));
   }
 
-  /// The Chapter complete overlay (4.6) opens: the music fades out over
-  /// 400 ms and pauses, then `jingle_chapter`, the only jingle there (audio
-  /// plan Q40). The next level's `MusicService.playGame` fades `music_game`
-  /// back in over 2000 ms.
-  // TODO(M3): call when Chapter complete (4.6) opens; its Continue then
-  // calls MusicService.playGame for the next level.
+  /// The Chapter complete overlay (4.6) opens (GameplayView): the music
+  /// fades out over 400 ms and pauses, then `jingle_chapter`, the only
+  /// jingle there (audio plan Q40). The next level's
+  /// `MusicService.playGame` fades `music_game` back in over 2000 ms.
   void chapterComplete() {
     _music.stopForChapter();
     _after(MusicMix.chapterOut, () => _jingles.playJingle(Jingle.chapter));

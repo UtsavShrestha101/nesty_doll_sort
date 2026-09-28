@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/skin/asset_skin_service.dart';
 import 'package:nesty_game/core/services/skin/doll_part_source.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
@@ -50,6 +52,10 @@ final class _FakeParts implements DollPartSource {
 
   /// The board library each call was given, for the wood-blank silhouette.
   final List<BoardSpriteLibrary?> boards = [];
+
+  /// Every `skin.cacheKey` a `prepare` call was given (`skinId@version`), so
+  /// tests can tell which skin's art a board or showcase actually used.
+  final List<String> keys = [];
   bool disposed = false;
 
   @override
@@ -63,6 +69,7 @@ final class _FakeParts implements DollPartSource {
   }) async {
     calls.add('skin');
     boards.add(board);
+    keys.add(skin.cacheKey);
     if (failSkin) throw StateError('skin raster failed');
     return _set(skin.cacheKey, colors, symbols, artHeightPx);
   }
@@ -105,10 +112,100 @@ final class _FakeParts implements DollPartSource {
   void dispose() => disposed = true;
 }
 
+/// Like the real `DollPartRasters`: draws from the rasterizer it is given
+/// (so a rasterizer disposed mid-prepare throws `StateError`, and the
+/// service falls back to the placeholder), but only once [gate] opens, so
+/// a test can hold several prepares in flight at once (CORRECTNESS-2).
+final class _GatedParts implements DollPartSource {
+  final Completer<void> gate = Completer<void>();
+  final List<String> calls = [];
+
+  /// Every rasterizer a `prepare` call was given, in call order.
+  final List<SkinRasterizer> skins = [];
+
+  @override
+  Future<DollPartSet> prepare({
+    required SkinRasterizer skin,
+    required Iterable<DollColor> colors,
+    required DollSymbols symbols,
+    required int artHeightPx,
+    SymbolAtlas? symbolAtlas,
+    BoardSpriteLibrary? board,
+  }) async {
+    skins.add(skin);
+    await gate.future;
+    // Throws once the rasterizer is disposed, as DollPartRasters does.
+    final image = await skin.rasterizeArtboard(4, paint: (_, _) {});
+    calls.add(skin.cacheKey);
+    return DollPartSet(
+      skinKey: skin.cacheKey,
+      symbols: symbols,
+      artHeightPx: 4,
+      lids: {for (final c in colors) c: image.clone()},
+      bodies: {for (final c in colors) c: image.clone()},
+      silhouette: image,
+    );
+  }
+
+  @override
+  Future<DollPartSet> preparePlaceholder({
+    required Iterable<DollColor> colors,
+    required DollSymbols symbols,
+    required int artHeightPx,
+    SymbolAtlas? symbolAtlas,
+    BoardSpriteLibrary? board,
+  }) async {
+    calls.add('placeholder');
+    final image = await _image((DollArt.width * 4 / DollArt.height).round(), 4);
+    return DollPartSet(
+      skinKey: 'placeholder',
+      symbols: symbols,
+      artHeightPx: 4,
+      lids: {for (final c in colors) c: image.clone()},
+      bodies: {for (final c in colors) c: image.clone()},
+      silhouette: image,
+    );
+  }
+
+  @override
+  void dispose() {}
+}
+
+/// Whether [skin] was disposed: a disposed rasterizer refuses to draw.
+Future<bool> _isDisposed(SkinRasterizer skin) async {
+  try {
+    (await skin.rasterizeArtboard(1, paint: (_, _) {})).dispose();
+    return false;
+  } on StateError {
+    return true;
+  }
+}
+
 final class _FailingLoader implements SkinLoader {
   @override
   Future<SkinSource> load(String skinId) async =>
       throw SkinLoadException(skinId, StateError('missing'));
+}
+
+/// Loads real bundled skins through [_inner] (normally
+/// `AssetBundleSkinLoader(bundle: rootBundle)`), recording every id asked
+/// for and failing the ids in [failIds] (m3-design §9.2 growth: `selectSkin`
+/// and `prepareShowcase` tests need to tell whether a skin was reloaded).
+final class _CountingLoader implements SkinLoader {
+  _CountingLoader(this._inner, {this.failIds = const {}});
+
+  final SkinLoader _inner;
+  final Set<String> failIds;
+  final List<String> calls = [];
+
+  @override
+  Future<SkinSource> load(String skinId) async {
+    calls.add(skinId);
+    if (failIds.contains(skinId)) {
+      throw SkinLoadException(skinId, StateError('blocked for test'));
+    }
+    return _inner.load(skinId);
+  }
 }
 
 /// rootBundle, except for the keys [blocked] refuses.
@@ -161,6 +258,7 @@ void main() {
     DollSymbols symbols = DollSymbols.subtle,
   }) async {
     final service = AssetSkinService(
+      FakeSaveService(),
       parts: parts ?? _FakeParts(),
       skinLoader: skinLoader,
       bundle: bundle,
@@ -419,7 +517,7 @@ void main() {
 
   test('load runs once, and every board shares it', () async {
     final parts = _FakeParts();
-    final service = AssetSkinService(parts: parts);
+    final service = AssetSkinService(FakeSaveService(), parts: parts);
     addTearDown(service.dispose);
 
     expect(identical(service.load(), service.load()), isTrue);
@@ -439,7 +537,7 @@ void main() {
   });
 
   test('the theme background is one per app, and dispose releases it', () {
-    final service = AssetSkinService(parts: _FakeParts());
+    final service = AssetSkinService(FakeSaveService(), parts: _FakeParts());
 
     final background = service.background;
     expect(background, isNotNull);
@@ -473,5 +571,227 @@ void main() {
       expect(raster.image.height % 3, 0);
       expect(raster.scale, raster.image.height / DollArt.height);
     }
+  });
+
+  group('selectSkin, prepareShowcase and the LRU cache (m3-design §9.2)', () {
+    final realLoader = AssetBundleSkinLoader(bundle: rootBundle);
+
+    Future<LevelSkin?> showcase(
+      AssetSkinService service, {
+      String? skinId,
+      List<DollColor> colors = const [DollColor.red],
+    }) => service.prepareShowcase(
+      colors: colors,
+      devicePixelRatio: 1,
+      symbols: DollSymbols.subtle,
+      skinId: skinId,
+    );
+
+    test('switches every later board to a different bundled skin, and keeps '
+        'the one it replaced ready in the cache', () async {
+      final parts = _FakeParts();
+      final loader = _CountingLoader(realLoader);
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: parts,
+        skinLoader: loader,
+      );
+      addTearDown(service.dispose);
+      await service.load();
+      expect(service.selectedSkinId, AssetSkinService.defaultSkinId);
+      expect(loader.calls, ['classic']);
+
+      final ok = await service.selectSkin('ocean');
+      expect(ok, isTrue);
+      expect(service.selectedSkinId, 'ocean');
+      expect(service.hasSkin, isTrue);
+      expect(loader.calls, ['classic', 'ocean']);
+
+      final skin = await service.prepareForLevel(
+        tutorial,
+        geometry: _geometryOf(tutorial),
+        devicePixelRatio: 1,
+        symbols: DollSymbols.subtle,
+      );
+      addTearDown(skin.dispose);
+      expect(parts.keys.last, startsWith('ocean@'));
+
+      // classic was cached as the replaced skin: a showcase for it does not
+      // reload.
+      loader.calls.clear();
+      final classicShowcase = await showcase(service, skinId: 'classic');
+      addTearDown(classicShowcase!.dispose);
+      expect(loader.calls, isEmpty);
+      expect(parts.keys.last, startsWith('classic@'));
+    });
+
+    test('selecting the already-equipped skin is a no-op: no reload, no '
+        'change', () async {
+      final loader = _CountingLoader(realLoader);
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: _FakeParts(),
+        skinLoader: loader,
+      );
+      addTearDown(service.dispose);
+      await service.load();
+      loader.calls.clear();
+
+      final ok = await service.selectSkin('classic');
+      expect(ok, isTrue);
+      expect(service.selectedSkinId, 'classic');
+      expect(loader.calls, isEmpty);
+    });
+
+    test('a skin that fails to load on selectSkin keeps the current skin '
+        'equipped and reports failure (spec §13.5)', () async {
+      final loader = _CountingLoader(realLoader, failIds: {'winter'});
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: _FakeParts(),
+        skinLoader: loader,
+      );
+      addTearDown(service.dispose);
+      await service.load();
+
+      final ok = await service.selectSkin('winter');
+      expect(ok, isFalse);
+      expect(service.selectedSkinId, 'classic');
+      expect(service.hasSkin, isTrue);
+    });
+
+    test('renders a requested skin for the showcase without disturbing the '
+        'selected one', () async {
+      final parts = _FakeParts();
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: parts,
+        skinLoader: _CountingLoader(realLoader),
+      );
+      addTearDown(service.dispose);
+      await service.load();
+
+      final skin = await showcase(
+        service,
+        skinId: 'space',
+        colors: [DollColor.red, DollColor.blue],
+      );
+      addTearDown(skin!.dispose);
+
+      expect(parts.keys.last, startsWith('space@'));
+      expect(service.selectedSkinId, 'classic');
+      expect(service.hasSkin, isTrue);
+    });
+
+    test('defaults to the selected skin when no skinId is given', () async {
+      final parts = _FakeParts();
+      final service = AssetSkinService(FakeSaveService(), parts: parts);
+      addTearDown(service.dispose);
+      await service.load();
+
+      final skin = await showcase(service);
+      addTearDown(skin!.dispose);
+      expect(parts.keys.last, startsWith('classic@'));
+    });
+
+    test('a showcase skin that fails to load falls back to the currently '
+        'equipped skin\'s art rather than nothing (rule 3)', () async {
+      final parts = _FakeParts();
+      final loader = _CountingLoader(realLoader, failIds: {'winter'});
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: parts,
+        skinLoader: loader,
+      );
+      addTearDown(service.dispose);
+      await service.load();
+
+      final skin = await showcase(service, skinId: 'winter');
+      addTearDown(() => skin?.dispose());
+      expect(skin, isNotNull);
+      expect(parts.keys.last, startsWith('classic@'));
+    });
+
+    test('at most two non-selected skins stay ready (LRU); a third evicts '
+        'the least recently touched one', () async {
+      final loader = _CountingLoader(realLoader);
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: _FakeParts(),
+        skinLoader: loader,
+      );
+      addTearDown(service.dispose);
+      await service.load(); // classic selected; not part of this cache.
+      loader.calls.clear();
+
+      Future<void> touch(String id) async {
+        (await showcase(service, skinId: id))?.dispose();
+      }
+
+      await touch('ocean');
+      await touch('space');
+      expect(loader.calls, ['ocean', 'space']);
+      loader.calls.clear();
+
+      // Both stay ready; touching 'ocean' again marks it the newer one.
+      await touch('ocean');
+      expect(loader.calls, isEmpty);
+      loader.calls.clear();
+
+      // A third distinct skin evicts 'space' (untouched since it was
+      // loaded), not 'ocean' (just touched).
+      await touch('sweets');
+      expect(loader.calls, ['sweets']);
+      loader.calls.clear();
+
+      // 'ocean' and 'sweets' both survive.
+      await touch('ocean');
+      await touch('sweets');
+      expect(loader.calls, isEmpty);
+      loader.calls.clear();
+
+      // 'space' was evicted, so it reloads.
+      await touch('space');
+      expect(loader.calls, ['space']);
+    });
+
+    test('concurrent showcases of more skins than the cache holds all get '
+        'their own art: an evicted rasterizer is only disposed once its last '
+        'prepare finishes, and the cache still ends bounded '
+        '(CORRECTNESS-2)', () async {
+      final parts = _GatedParts();
+      final service = AssetSkinService(
+        FakeSaveService(),
+        parts: parts,
+        skinLoader: _CountingLoader(realLoader),
+      );
+      addTearDown(service.dispose);
+      await service.load(); // classic selected.
+
+      // The Shop grid: one card per sold, non-selected skin, all at once.
+      const ids = ['space', 'ocean', 'sweets', 'forest', 'winter'];
+      final pending = [for (final id in ids) showcase(service, skinId: id)];
+      // Hold every prepare until all five skins are loaded (and the LRU
+      // has already evicted three of them).
+      while (parts.skins.length < ids.length) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      parts.gate.complete();
+      final skins = await Future.wait(pending);
+      for (final skin in skins) {
+        addTearDown(() => skin?.dispose());
+      }
+
+      expect(parts.calls, isNot(contains('placeholder')));
+      expect(skins, everyElement(isNotNull));
+      expect(
+        [for (final key in parts.calls) key.split('@').first]..sort(),
+        [...ids]..sort(),
+      );
+      // Bounded: two stay cached, the three evicted ones were freed.
+      final disposed = [for (final s in parts.skins) await _isDisposed(s)];
+      expect(disposed.where((d) => d), hasLength(3));
+      expect(disposed.where((d) => !d), hasLength(2));
+    });
   });
 }

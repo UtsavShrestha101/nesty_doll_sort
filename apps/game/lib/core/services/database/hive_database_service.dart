@@ -14,9 +14,10 @@ import 'package:nesty_game/core/services/database/settings_schema.dart';
 /// and open every box exactly once. DI calls [openOrFallback] from bootstrap
 /// (`DatabaseModule`, `@preResolve`), so features only ever see opened boxes.
 class HiveDatabaseService implements DatabaseService {
-  HiveDatabaseService._(this._settings);
+  HiveDatabaseService._(this._settings, this._save);
 
   final Box<Object> _settings;
+  final Box<Object> _save;
 
   /// Initialises Hive and opens all boxes. Throws if storage is unavailable.
   ///
@@ -32,7 +33,8 @@ class HiveDatabaseService implements DatabaseService {
     // Generated adapters get registered here once a type needs one — see
     // hive_type_ids.dart. Settings are primitives, so there are none yet.
     final settings = await Hive.openBox<Object>(HiveBoxes.settings);
-    return HiveDatabaseService._(settings);
+    final save = await Hive.openBox<Object>(HiveBoxes.save);
+    return HiveDatabaseService._(settings, save);
   }
 
   /// [open], but never throws.
@@ -133,6 +135,25 @@ class HiveDatabaseService implements DatabaseService {
         final value = event.value;
         return value is String ? value : SettingsDefaults.locale;
       });
+
+  @override
+  String? readSaveDocument() => readSaveBackup(SaveBoxKeys.document);
+
+  @override
+  Future<void> writeSaveDocument(String json) =>
+      _save.put(SaveBoxKeys.document, json);
+
+  @override
+  String? readSaveBackup(String key) {
+    final value = _save.get(key);
+    return value is String ? value : null;
+  }
+
+  @override
+  Future<void> writeSaveBackup(String key, String json) => _save.put(key, json);
+
+  @override
+  Future<void> flushSave() => _save.flush();
 
   @override
   Future<void> close() => Hive.close();

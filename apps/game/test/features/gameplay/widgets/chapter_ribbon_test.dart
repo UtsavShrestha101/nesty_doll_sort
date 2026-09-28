@@ -27,6 +27,26 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('ch07+ falls back to "Chapter N" (m3-design §9.1: named '
+      'ch01–ch06 only)', (tester) async {
+    await pumpUi(
+      tester,
+      Center(
+        child: SizedBox.fromSize(
+          size: ChapterRibbon.canvas,
+          child: ChapterRibbon(
+            number: 7,
+            chapterId: 'ch07',
+            library: FakeFxLibrary(),
+            onDone: () {},
+          ),
+        ),
+      ),
+    );
+    expect(find.bySemanticsLabel('CHAPTER 7 · Chapter 7'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets('ends after the file (2.6 s) even without it', (tester) async {
     var done = 0;
     await pumpUi(tester, _ribbon(() => done++));

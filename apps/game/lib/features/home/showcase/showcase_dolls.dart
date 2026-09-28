@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/skin/showcase_board.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -12,7 +13,7 @@ import 'package:nesty_render/nesty_render.dart';
 /// 2.1: `doll_idle` needs the selected skin's lid and body rasters, LOTTIE.md
 /// "Image slots").
 ///
-/// They come from [SkinService.prepareForLevel], the one door to the
+/// They come from [SkinService.prepareShowcase], the one door to the
 /// skin's part rasters and their cache (m2-lottie-design §4), fed a
 /// showcase board: a single tower holding one doll of each [colors]. One
 /// slot keeps the layout's tallest doll at [artHeight] (140 dp on the
@@ -26,8 +27,10 @@ import 'package:nesty_render/nesty_render.dart';
 /// D58). Never throws: without art the shelves draw the placeholder doll
 /// (rule 3).
 ///
-/// TODO(M3): a `SkinService` method for showcase dolls (Home, Shop skin
-/// cards, Museum) instead of the showcase board.
+/// Renders through [SkinService.prepareShowcase] (m3-design §9.2), which
+/// moved the board itself to `ShowcaseBoard`; [level], [geometry] and
+/// [artHeight] stay here, delegating to it, so this class's public API is
+/// unchanged for its callers (the splash and Home).
 @lazySingleton
 class ShowcaseDolls {
   ShowcaseDolls(this._skins, this._database);
@@ -46,31 +49,13 @@ class ShowcaseDolls {
   ];
 
   /// The showcase board: one tower, one doll of each colour.
-  static final Level level = Level(
-    id: 'showcase',
-    maxSize: 6,
-    shelves: [
-      [
-        TowerSlot([
-          for (final color in colors) Nest.run(color, outer: 1, length: 1),
-        ]),
-      ],
-    ],
-  );
+  static final Level level = ShowcaseBoard.levelFor(colors);
 
   /// The showcase board laid out on the reference screen.
-  static final BoardGeometry geometry = BoardLayout.compute(
-    BoardShape(
-      rows: const [
-        [SlotShape('r0c0', SlotShapeKind.tower)],
-      ],
-      maxSize: 6,
-    ),
-    BoardViewport.reference,
-  );
+  static final BoardGeometry geometry = ShowcaseBoard.geometry;
 
   /// The height the rasters are made for.
-  static double get artHeight => geometry.maxDollHeight;
+  static double get artHeight => ShowcaseBoard.artHeight;
 
   final ValueNotifier<LevelSkin?> _current = ValueNotifier(null);
   Future<void>? _preparing;
@@ -101,9 +86,8 @@ class ShowcaseDolls {
   Future<void> _prepare(double devicePixelRatio, int generation) async {
     LevelSkin? skin;
     try {
-      skin = await _skins.prepareForLevel(
-        level,
-        geometry: geometry,
+      skin = await _skins.prepareShowcase(
+        colors: colors,
         devicePixelRatio: devicePixelRatio,
         symbols: _database.symbolsMode.dollSymbols,
       );

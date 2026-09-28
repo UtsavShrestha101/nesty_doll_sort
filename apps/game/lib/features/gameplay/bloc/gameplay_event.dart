@@ -7,11 +7,14 @@ sealed class GameplayEvent {
   const GameplayEvent();
 }
 
-/// Load level [levelNumber] (1-based global play order, spec §7.1).
+/// Load what [request] asks for (docs/plans/m3-design.md §6): resolved by
+/// `LevelResolver`, restored from the in-progress save when it matches.
+/// Also "Play Bonus Level N" on All Levels Done (frame 4.9), in the same
+/// page.
 final class GameplayStarted extends GameplayEvent {
-  const GameplayStarted(this.levelNumber);
+  const GameplayStarted(this.request);
 
-  final int levelNumber;
+  final PlayRequest request;
 }
 
 /// A tap on slot [slotId]'s column (hit test: `BoardGeometry.slotAt`). The
@@ -64,6 +67,27 @@ final class ExtraSlotPressed extends GameplayEvent {
 /// order, or show All Levels Done (frame 4.9) past the last one.
 final class NextLevelPressed extends GameplayEvent {
   const NextLevelPressed();
+}
+
+/// The purchase popup's coin button (frames 3.2, 3.3; an out-of-moves row
+/// (3.5) opens the popup first): spend the offer's price and use the
+/// booster (m3-design §7.3). It only buys the [type] of the offer that is
+/// up (review CORRECTNESS-7).
+final class BoosterPurchaseConfirmed extends GameplayEvent {
+  const BoosterPurchaseConfirmed(this.type);
+
+  final BoosterType type;
+}
+
+/// The purchase popup was closed without buying.
+final class BoosterPurchaseDismissed extends GameplayEvent {
+  const BoosterPurchaseDismissed();
+}
+
+/// "Got it" on the intro card (frames 4.1–4.3): it is marked seen, and the
+/// next unseen mechanic of the board (if any) shows.
+final class IntroDismissed extends GameplayEvent {
+  const IntroDismissed();
 }
 
 /// The pause dialog opened or closed; input is locked while [paused].

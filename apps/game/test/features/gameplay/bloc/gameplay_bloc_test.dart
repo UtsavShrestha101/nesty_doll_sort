@@ -4,25 +4,43 @@ import 'package:mocktail/mocktail.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/base/base_async_state.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
+import 'package:nesty_game/core/models/intro_mechanic.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/analytics/analytics_service.dart';
+import 'package:nesty_game/core/services/clock/fake_clock.dart';
+import 'package:nesty_game/core/services/daily/fake_daily_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 
 import '../../../helpers/level_fixtures.dart';
 import 'support/bloc_fixtures.dart';
+import 'support/scripted_level_resolver.dart';
 import 'support/scripted_solver_service.dart';
 
 class _MockAnalytics extends Mock implements AnalyticsService {}
+
+/// A [FakeSaveService] that keeps every in-progress board it was asked to
+/// save, oldest first (review CORRECTNESS-1).
+class _RecordingSaveService extends FakeSaveService {
+  final List<InProgressLevel> saved = [];
+
+  @override
+  void saveInProgress(InProgressLevel level) {
+    saved.add(level);
+    super.saveInProgress(level);
+  }
+}
 
 typedef _State = AsyncValue<GameplayState>;
 
 /// Adds [GameplayStarted] for level 1, then [events] in order.
 void _startThen(GameplayBloc bloc, [List<GameplayEvent> events = const []]) {
-  bloc.add(const GameplayStarted(1));
+  bloc.add(const GameplayStarted(PlayRequest.campaign(1)));
   events.forEach(bloc.add);
 }
 
@@ -33,8 +51,8 @@ List<GameplayEvent> _tapMove(String from, String to) => [
 ];
 
 void main() {
-  final start = GameState.initial(tutorialLevel);
-  final entry = entryFor(tutorialLevel);
+  final start = GameState.initial(defaultLevel);
+  final entry = entryFor(defaultLevel);
 
   group('Started', () {
     blocTest<GameplayBloc, _State>(
@@ -72,6 +90,24 @@ void main() {
               .having((d) => d.unlimitedBoosters, 'unlimited', isFalse)
               .having((d) => d.moveSeq, 'moveSeq', 0)
               .having((d) => d.effectSeq, 'effectSeq', 1)
+              .having((d) => d.restored, 'restored', isFalse)
+              .having((d) => d.tutorial, 'tutorial', isNull)
+              .having((d) => d.intro, 'intro', isNull)
+              .having(
+                (d) => d.undoPrice,
+                'undoPrice',
+                RemoteConfigKeys.priceUndo.defaultValue,
+              )
+              .having(
+                (d) => d.hintPrice,
+                'hintPrice',
+                RemoteConfigKeys.priceHint.defaultValue,
+              )
+              .having(
+                (d) => d.slotPrice,
+                'slotPrice',
+                RemoteConfigKeys.priceSlot.defaultValue,
+              )
               .having(
                 (d) => d.effect,
                 'effect',
@@ -82,13 +118,13 @@ void main() {
               ),
         ),
       ],
-      verify: (bloc) => expect(bloc.session?.level, tutorialLevel),
+      verify: (bloc) => expect(bloc.session?.level, defaultLevel),
     );
 
     blocTest<GameplayBloc, _State>(
       'a level past the bundle is missing content',
       build: buildBloc,
-      act: (bloc) => bloc.add(const GameplayStarted(2)),
+      act: (bloc) => bloc.add(const GameplayStarted(PlayRequest.campaign(2))),
       expect: () => [
         isA<AsyncValueError<GameplayState>>().having(
           (s) => s.exception.kind,
@@ -117,6 +153,290 @@ void main() {
       ),
       act: _startThen,
       verify: (bloc) => expect(dataOf(bloc).freeUndosLeft, 5),
+    );
+  });
+
+  group('generated start (m3-design §6.4)', () {
+    blocTest<GameplayBloc, _State>(
+      'a generated request shows loading, then the resolved board',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.bonus(1): playEntryFor(
+              const PlayRequest.bonus(1),
+              outOfMovesLevel,
+              rewardCoins: 25,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) => bloc.add(const GameplayStarted(PlayRequest.bonus(1))),
+      expect: () => [
+        isA<AsyncValueLoading<GameplayState>>().having(
+          (s) => s.data,
+          'data',
+          isNull,
+        ),
+        dataWhere(
+          isA<GameplayState>()
+              .having(
+                (d) => d.play.request,
+                'request',
+                const PlayRequest.bonus(1),
+              )
+              .having(
+                (d) => d.board,
+                'board',
+                GameState.initial(outOfMovesLevel),
+              ),
+        ),
+      ],
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a bundled (campaign) request never shows loading first',
+      build: buildBloc,
+      act: _startThen,
+      expect: () => [isA<AsyncValueData<GameplayState>>()],
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'null (nothing to play) still shows loading first for a generated '
+      'request, then the content error',
+      build: () => buildBloc(resolver: ScriptedLevelResolver()),
+      act: (bloc) => bloc.add(const GameplayStarted(PlayRequest.bonus(1))),
+      expect: () => [
+        isA<AsyncValueLoading<GameplayState>>(),
+        isA<AsyncValueError<GameplayState>>().having(
+          (s) => s.exception.kind,
+          'kind',
+          AppExceptionKind.content,
+        ),
+      ],
+    );
+  });
+
+  group('restore (m3-design §3.4)', () {
+    InProgressLevel savedProgress(
+      GameSession session, {
+      PlayRequest request = const PlayRequest.campaign(1),
+      String? levelId,
+      int levelVersion = 1,
+    }) => InProgressLevel(
+      request: request,
+      levelId: levelId ?? defaultLevel.id,
+      levelVersion: levelVersion,
+      session: GameSessionCodec.encode(session),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'resumes a saved board that matches the request, level id and version',
+      build: () {
+        final save = FakeSaveService();
+        final progressed = GameSession(defaultLevel)..move(red1, emptyTop);
+        save.saveInProgress(savedProgress(progressed));
+        return buildBloc(save: save);
+      },
+      act: _startThen,
+      expect: () => [
+        dataWhere(
+          isA<GameplayState>()
+              .having((d) => d.restored, 'restored', isTrue)
+              .having((d) => d.board.moveCount, 'moveCount', 1)
+              .having((d) => d.board.slot(emptyTop).isEmpty, 'moved', isFalse)
+              .having(
+                (d) => d.effect,
+                'effect',
+                isA<BoardResetEffect>().having(
+                  (e) => e.reason,
+                  'reason',
+                  BoardResetReason.start,
+                ),
+              ),
+        ),
+      ],
+      verify: (bloc) {
+        expect(bloc.session!.undosUsed, 0);
+        expect(saveOf(bloc).inProgressFor(PlayKind.campaign), isNotNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "starts fresh and clears the slot when the level id doesn't match",
+      build: () {
+        final save = FakeSaveService();
+        final progressed = GameSession(defaultLevel)..move(red1, emptyTop);
+        save.saveInProgress(savedProgress(progressed, levelId: 'T9999'));
+        return buildBloc(save: save);
+      },
+      act: _startThen,
+      verify: (bloc) {
+        expect(dataOf(bloc).restored, isFalse);
+        expect(dataOf(bloc).board, start);
+        expect(saveOf(bloc).inProgressFor(PlayKind.campaign), isNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'starts fresh when the saved session fails to decode',
+      build: () {
+        final save = FakeSaveService();
+        save.saveInProgress(
+          InProgressLevel(
+            request: const PlayRequest.campaign(1),
+            levelId: defaultLevel.id,
+            levelVersion: 1,
+            session: const {'bad': true},
+          ),
+        );
+        return buildBloc(save: save);
+      },
+      act: _startThen,
+      verify: (bloc) {
+        expect(dataOf(bloc).restored, isFalse);
+        expect(dataOf(bloc).board, start);
+        expect(saveOf(bloc).inProgressFor(PlayKind.campaign), isNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "starts fresh when the level version doesn't match",
+      build: () {
+        final save = FakeSaveService();
+        save.saveInProgress(
+          savedProgress(GameSession(defaultLevel), levelVersion: 2),
+        );
+        return buildBloc(save: save);
+      },
+      act: _startThen,
+      verify: (bloc) => expect(dataOf(bloc).restored, isFalse),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'saves after every applied move, undo, restart and +1 Slot, never for '
+      'a rejected move',
+      build: () => buildBloc(save: CountingSaveService()),
+      act: (bloc) => _startThen(bloc, [
+        ..._tapMove(red3, red1), // rejected: size mismatch
+        ..._tapMove(red1, red2), // applied: 1 save
+        const UndoPressed(), // applied: 1 save
+        const RestartPressed(), // applied: 1 save
+        const ExtraSlotPressed(), // applied: 1 save
+      ]),
+      verify: (bloc) =>
+          expect((saveOf(bloc) as CountingSaveService).saveInProgressCalls, 4),
+    );
+
+    // Review CORRECTNESS-1: the status is core's, at restore as after a
+    // move, so a board saved out of moves (the sheet was up when the app
+    // was killed) comes back out of moves, and its sheet can open again.
+    blocTest<GameplayBloc, _State>(
+      'a restored out-of-moves board comes back out of moves, with the '
+      "sheet's undo working",
+      build: () {
+        final save = saveWithIntrosSeen();
+        final stuck = GameSession(outOfMovesLevel)..move('r0c0', 'r0c3');
+        expect(stuck.isOutOfMoves, isTrue);
+        save.saveInProgress(savedProgress(stuck, levelId: outOfMovesLevel.id));
+        return buildBloc(
+          entries: [entryFor(outOfMovesLevel)],
+          solver: ScriptedSolverService(),
+          save: save,
+        );
+      },
+      act: (bloc) async {
+        _startThen(bloc);
+        await settle(const Duration(milliseconds: 30));
+        expect(dataOf(bloc).status, GameplayStatus.outOfMoves);
+        expect(dataOf(bloc).restored, isTrue);
+        expect(dataOf(bloc).canUndo, isTrue);
+        // Out of moves asks the solver nothing (as after the move itself).
+        expect(scriptedSolverOf(bloc).softStuckRequests, isEmpty);
+        bloc.add(const UndoPressed());
+      },
+      verify: (bloc) {
+        expect(dataOf(bloc).status, GameplayStatus.playing);
+        expect(dataOf(bloc).board, GameState.initial(outOfMovesLevel));
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a restored won board (killed before its win was recorded) records '
+      'the win and pays once',
+      build: () {
+        final save = FakeSaveService();
+        final won = GameSession(defaultLevel)
+          ..move(red1, red2)
+          ..move(red2, red3);
+        expect(won.isWon, isTrue);
+        save.saveInProgress(savedProgress(won));
+        return buildBloc(
+          entries: [entry, entryFor(outOfMovesLevel, order: 2)],
+          save: save,
+        );
+      },
+      act: _startThen,
+      expect: () => [
+        dataWhere(
+          isA<GameplayState>()
+              .having((d) => d.status, 'status', GameplayStatus.won)
+              .having((d) => d.restored, 'restored', isTrue)
+              .having(
+                (d) => d.winReward,
+                'winReward',
+                RemoteConfigKeys.rewardEasy.defaultValue,
+              )
+              .having(
+                (d) => d.nextRequest,
+                'nextRequest',
+                const PlayRequest.campaign(2),
+              )
+              .having((d) => d.intro, 'intro', isNull),
+        ),
+      ],
+      verify: (bloc) {
+        final save = saveOf(bloc);
+        expect(save.coins, RemoteConfigKeys.rewardEasy.defaultValue);
+        expect(save.currentLevel, 2);
+        expect(save.inProgressFor(PlayKind.campaign), isNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a restored board still in play gets its soft-stuck check',
+      build: () {
+        final save = FakeSaveService();
+        final progressed = GameSession(defaultLevel)..move(red1, emptyTop);
+        save.saveInProgress(savedProgress(progressed));
+        return buildBloc(
+          save: save,
+          solver: ScriptedSolverService(
+            onSoftStuck: (_) => SolveVerdict.unsolvable,
+          ),
+        );
+      },
+      act: _startThen,
+      wait: const Duration(milliseconds: 40),
+      verify: (bloc) {
+        expect(scriptedSolverOf(bloc).softStuckRequests, [dataOf(bloc).board]);
+        expect(dataOf(bloc).softStuck, isTrue);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'the winning move is never saved as the in-progress board',
+      build: () => buildBloc(save: _RecordingSaveService()),
+      act: (bloc) =>
+          _startThen(bloc, [..._tapMove(red1, red2), ..._tapMove(red2, red3)]),
+      verify: (bloc) {
+        expect(dataOf(bloc).status, GameplayStatus.won);
+        final saved = (saveOf(bloc) as _RecordingSaveService).saved;
+        expect(saved, hasLength(1), reason: 'only the first move');
+        for (final level in saved) {
+          final decoded = GameSessionCodec.decode(level.session, defaultLevel);
+          expect(decoded.session!.isWon, isFalse);
+        }
+      },
     );
   });
 
@@ -169,7 +489,8 @@ void main() {
 
     blocTest<GameplayBloc, _State>(
       'with nothing selected, a tap on an iced nest is ignored',
-      build: () => buildBloc(entries: [entryFor(icedLevel)]),
+      build: () =>
+          buildBloc(entries: [entryFor(icedLevel)], save: saveWithIntrosSeen()),
       act: (bloc) => _startThen(bloc, [const SlotTapped(red2)]),
       skip: 1,
       expect: () => const <_State>[],
@@ -243,8 +564,9 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'a tap on an iced target is invalid with core\'s reason',
-      build: () => buildBloc(entries: [entryFor(icedLevel)]),
+      "a tap on an iced target is invalid with core's reason",
+      build: () =>
+          buildBloc(entries: [entryFor(icedLevel)], save: saveWithIntrosSeen()),
       act: (bloc) => _startThen(bloc, _tapMove(red1, red2)),
       skip: 2,
       expect: () => [
@@ -356,7 +678,8 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'a drag from an unpickable slot does nothing, and neither does its drop',
+      'a drag from an unpickable slot does nothing, and neither does its '
+      'drop',
       build: buildBloc,
       act: (bloc) => _startThen(bloc, [
         const SlotDragStarted(emptyTop),
@@ -532,26 +855,6 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'stops when the free undos run out (the coin path is M3)',
-      build: buildBloc,
-      act: (bloc) => _startThen(bloc, [
-        for (var i = 0; i < 3; i++) ...[
-          ..._tapMove(red1, emptyTop),
-          const UndoPressed(),
-        ],
-      ]),
-      verify: (bloc) {
-        final data = dataOf(bloc);
-        expect(data.freeUndosLeft, 0);
-        expect(data.canUndo, isFalse);
-        // The third undo was refused: the third move is still on the board.
-        expect(bloc.session!.undosUsed, 2);
-        expect(bloc.session!.canUndo, isTrue);
-        expect(data.board.slot(emptyTop).isEmpty, isFalse);
-      },
-    );
-
-    blocTest<GameplayBloc, _State>(
       'unlimited boosters (dev flavor) never run out of undos',
       build: () => buildBloc(save: FakeSaveService(unlimitedBoosters: true)),
       act: (bloc) => _startThen(bloc, [
@@ -617,7 +920,10 @@ void main() {
 
     blocTest<GameplayBloc, _State>(
       'works from the Out-of-Moves sheet',
-      build: () => buildBloc(entries: [entryFor(outOfMovesLevel)]),
+      build: () => buildBloc(
+        entries: [entryFor(outOfMovesLevel)],
+        save: saveWithIntrosSeen(),
+      ),
       act: (bloc) => _startThen(bloc, [
         ..._tapMove('r0c0', 'r0c3'),
         const RestartPressed(),
@@ -674,15 +980,6 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'with an empty inventory does nothing',
-      build: () => buildBloc(save: saveWith(extraSlots: 0)),
-      act: (bloc) => _startThen(bloc, [const ExtraSlotPressed()]),
-      skip: 1,
-      expect: () => const <_State>[],
-      verify: (bloc) => expect(dataOf(bloc).canAddSlot, isFalse),
-    );
-
-    blocTest<GameplayBloc, _State>(
       'is free in debug builds: the inventory is untouched, the limit holds',
       build: () =>
           buildBloc(save: saveWith(extraSlots: 0), freeExtraSlots: true),
@@ -700,7 +997,10 @@ void main() {
 
     blocTest<GameplayBloc, _State>(
       'rescues an out-of-moves board',
-      build: () => buildBloc(entries: [entryFor(outOfMovesLevel)]),
+      build: () => buildBloc(
+        entries: [entryFor(outOfMovesLevel)],
+        save: saveWithIntrosSeen(),
+      ),
       act: (bloc) => _startThen(bloc, [
         ..._tapMove('r0c0', 'r0c3'),
         const ExtraSlotPressed(),
@@ -741,7 +1041,7 @@ void main() {
     final solverHint = Solver.hint(start).move!;
 
     blocTest<GameplayBloc, _State>(
-      'shows the solver\'s move and uses one hint',
+      "shows the solver's move and uses one hint",
       build: buildBloc,
       act: (bloc) => _startThen(bloc, [const HintPressed()]),
       wait: const Duration(milliseconds: 20),
@@ -852,27 +1152,13 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'a failed search falls back to core\'s fallback hint',
+      "a failed search falls back to core's fallback hint",
       build: () =>
           buildBloc(solver: ScriptedSolverService(onHint: (_) => null)),
       act: (bloc) => _startThen(bloc, [const HintPressed()]),
       wait: const Duration(milliseconds: 20),
       skip: 1,
       expect: () => [effectIs(HintShownEffect(Solver.fallbackHint(start)!))],
-    );
-
-    blocTest<GameplayBloc, _State>(
-      'with no hints left does nothing and asks nothing',
-      build: () =>
-          buildBloc(solver: ScriptedSolverService(), save: saveWith(hints: 0)),
-      act: (bloc) => _startThen(bloc, [const HintPressed()]),
-      wait: const Duration(milliseconds: 20),
-      skip: 1,
-      expect: () => const <_State>[],
-      verify: (bloc) {
-        expect(dataOf(bloc).canHint, isFalse);
-        expect(scriptedSolverOf(bloc).hintRequests, isEmpty);
-      },
     );
 
     blocTest<GameplayBloc, _State>(
@@ -890,6 +1176,299 @@ void main() {
         expect(dataOf(bloc).canHint, isTrue);
       },
     );
+  });
+
+  group('coin boosters (m3-design §7.3)', () {
+    group('undo', () {
+      List<GameplayEvent> exhaustFreeUndos() => [
+        for (var i = 0; i < 2; i++) ...[
+          ..._tapMove(red1, emptyTop),
+          const UndoPressed(),
+        ],
+        ..._tapMove(red1, emptyTop),
+      ];
+
+      blocTest<GameplayBloc, _State>(
+        'shows the coin offer once the free undos run out',
+        build: buildBloc,
+        act: (bloc) =>
+            _startThen(bloc, [...exhaustFreeUndos(), const UndoPressed()]),
+        verify: (bloc) {
+          final data = dataOf(bloc);
+          expect(data.freeUndosLeft, 0);
+          expect(data.canUndo, isTrue);
+          expect(
+            data.offer,
+            const BoosterOffer(
+              type: BoosterType.undo,
+              price: 20, // RemoteConfigKeys.priceUndo's default
+            ),
+          );
+          expect(data.board.slot(emptyTop).isEmpty, isFalse);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'confirming spends the coins and undoes',
+        build: () {
+          final save = FakeSaveService()..addCoins(100);
+          return buildBloc(save: save);
+        },
+        act: (bloc) => _startThen(bloc, [
+          ...exhaustFreeUndos(),
+          const UndoPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.undo),
+        ]),
+        verify: (bloc) {
+          final data = dataOf(bloc);
+          expect(data.offer, isNull);
+          expect(data.board, start);
+          expect(saveOf(bloc).coins, 80);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'unaffordable: confirming changes nothing',
+        build: buildBloc,
+        act: (bloc) => _startThen(bloc, [
+          ...exhaustFreeUndos(),
+          const UndoPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.undo),
+        ]),
+        verify: (bloc) {
+          final data = dataOf(bloc);
+          expect(data.offer, isNotNull);
+          expect(data.board.slot(emptyTop).isEmpty, isFalse);
+          expect(saveOf(bloc).coins, 0);
+        },
+      );
+
+      // Review CORRECTNESS-7: a second confirm (a double-fired Buy, a
+      // repeated accessibility action) reaches the bloc after the first
+      // closed the offer. It must charge nothing, and the HUD's balance
+      // must match the save.
+      blocTest<GameplayBloc, _State>(
+        'a second confirm after the offer closed charges nothing',
+        build: () {
+          final config = FakeRemoteConfigService()
+            ..setOverride(RemoteConfigKeys.freeUndosPerLevel, 0);
+          return buildBloc(
+            config: config,
+            save: FakeSaveService(
+              remoteConfig: config,
+              initial: const SaveDocument(coins: 1000),
+            ),
+          );
+        },
+        act: (bloc) => _startThen(bloc, [
+          ..._tapMove(red1, emptyTop),
+          const UndoPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.undo),
+          const BoosterPurchaseConfirmed(BoosterType.undo),
+        ]),
+        verify: (bloc) {
+          final price = RemoteConfigKeys.priceUndo.defaultValue;
+          expect(dataOf(bloc).board, start);
+          expect(saveOf(bloc).coins, 1000 - price);
+          expect(dataOf(bloc).coins, saveOf(bloc).coins);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'a confirm with no offer up, or for another booster, does nothing',
+        build: () => buildBloc(
+          save: FakeSaveService(initial: const SaveDocument(coins: 1000)),
+        ),
+        act: (bloc) => _startThen(bloc, [
+          ..._tapMove(red1, emptyTop),
+          const BoosterPurchaseConfirmed(BoosterType.undo),
+          const BoosterPurchaseConfirmed(BoosterType.slot),
+        ]),
+        verify: (bloc) {
+          expect(dataOf(bloc).board.moveCount, 1);
+          expect(dataOf(bloc).board.extraSlotCount, 0);
+          expect(saveOf(bloc).coins, 1000);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'a confirm for another type than the offer does nothing',
+        build: () {
+          final config = FakeRemoteConfigService()
+            ..setOverride(RemoteConfigKeys.freeUndosPerLevel, 0);
+          return buildBloc(
+            config: config,
+            save: FakeSaveService(
+              remoteConfig: config,
+              initial: const SaveDocument(coins: 1000),
+            ),
+          );
+        },
+        act: (bloc) => _startThen(bloc, [
+          ..._tapMove(red1, emptyTop),
+          const UndoPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.slot),
+        ]),
+        verify: (bloc) {
+          expect(dataOf(bloc).offer?.type, BoosterType.undo);
+          expect(dataOf(bloc).board.extraSlotCount, 0);
+          expect(saveOf(bloc).coins, 1000);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'dismissing clears the offer',
+        build: buildBloc,
+        act: (bloc) => _startThen(bloc, [
+          ...exhaustFreeUndos(),
+          const UndoPressed(),
+          const BoosterPurchaseDismissed(),
+        ]),
+        verify: (bloc) => expect(dataOf(bloc).offer, isNull),
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'board input and the other boosters are ignored while it is up',
+        build: buildBloc,
+        act: (bloc) => _startThen(bloc, [
+          ...exhaustFreeUndos(),
+          const UndoPressed(),
+          const SlotTapped(red2),
+          const HintPressed(),
+          const ExtraSlotPressed(),
+        ]),
+        verify: (bloc) {
+          expect(dataOf(bloc).selectedSlotId, isNull);
+          expect(dataOf(bloc).hint, isNull);
+          expect(dataOf(bloc).board.extraSlotCount, 0);
+        },
+      );
+    });
+
+    group('extra slot', () {
+      blocTest<GameplayBloc, _State>(
+        'shows the coin offer once the inventory runs out',
+        build: () => buildBloc(save: saveWith(extraSlots: 0)),
+        act: (bloc) => _startThen(bloc, [const ExtraSlotPressed()]),
+        verify: (bloc) {
+          expect(
+            dataOf(bloc).offer,
+            const BoosterOffer(type: BoosterType.slot, price: 150),
+          );
+          expect(dataOf(bloc).board.extraSlotCount, 0);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'confirming spends the coins and adds the slot',
+        build: () {
+          final save = saveWith(extraSlots: 0)..addCoins(200);
+          return buildBloc(save: save);
+        },
+        act: (bloc) => _startThen(bloc, [
+          const ExtraSlotPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.slot),
+        ]),
+        verify: (bloc) {
+          expect(dataOf(bloc).offer, isNull);
+          expect(dataOf(bloc).board.extraSlotCount, 1);
+          expect(saveOf(bloc).coins, 50);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'unaffordable: confirming changes nothing',
+        build: () => buildBloc(save: saveWith(extraSlots: 0)),
+        act: (bloc) => _startThen(bloc, [
+          const ExtraSlotPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.slot),
+        ]),
+        verify: (bloc) {
+          expect(dataOf(bloc).offer, isNotNull);
+          expect(dataOf(bloc).board.extraSlotCount, 0);
+        },
+      );
+    });
+
+    group('hint', () {
+      blocTest<GameplayBloc, _State>(
+        'shows the coin offer once the inventory runs out, asking nothing',
+        build: () => buildBloc(
+          save: saveWith(hints: 0),
+          solver: ScriptedSolverService(),
+        ),
+        act: (bloc) => _startThen(bloc, [const HintPressed()]),
+        verify: (bloc) {
+          expect(
+            dataOf(bloc).offer,
+            const BoosterOffer(type: BoosterType.hint, price: 60),
+          );
+          expect(scriptedSolverOf(bloc).hintRequests, isEmpty);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'confirming closes the offer and asks the solver, charging on '
+        'arrival',
+        build: () {
+          final save = saveWith(hints: 0)..addCoins(200);
+          return buildBloc(save: save);
+        },
+        act: (bloc) => _startThen(bloc, [
+          const HintPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.hint),
+        ]),
+        wait: const Duration(milliseconds: 20),
+        verify: (bloc) {
+          expect(dataOf(bloc).offer, isNull);
+          expect(dataOf(bloc).hint, isNotNull);
+          expect(saveOf(bloc).coins, 140);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'a proven dead end charges nothing (D22)',
+        build: () {
+          final save = saveWith(hints: 0)..addCoins(200);
+          return buildBloc(
+            save: save,
+            solver: ScriptedSolverService(
+              onHint: (_) => const HintResult(
+                source: HintSource.none,
+                verdict: SolveVerdict.unsolvable,
+                nodes: 12,
+              ),
+            ),
+          );
+        },
+        act: (bloc) => _startThen(bloc, [
+          const HintPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.hint),
+        ]),
+        wait: const Duration(milliseconds: 20),
+        verify: (bloc) {
+          expect(dataOf(bloc).softStuck, isTrue);
+          expect(dataOf(bloc).hint, isNull);
+          expect(saveOf(bloc).coins, 200);
+        },
+      );
+
+      blocTest<GameplayBloc, _State>(
+        'unaffordable: confirming changes nothing and asks nothing',
+        build: () => buildBloc(
+          save: saveWith(hints: 0),
+          solver: ScriptedSolverService(),
+        ),
+        act: (bloc) => _startThen(bloc, [
+          const HintPressed(),
+          const BoosterPurchaseConfirmed(BoosterType.hint),
+        ]),
+        verify: (bloc) {
+          expect(dataOf(bloc).offer, isNotNull);
+          expect(scriptedSolverOf(bloc).hintRequests, isEmpty);
+        },
+      );
+    });
   });
 
   group('soft stuck (spec §2.3)', () {
@@ -1014,9 +1593,9 @@ void main() {
     final winning = [..._tapMove(red1, red2), ..._tapMove(red2, red3)];
 
     blocTest<GameplayBloc, _State>(
-      'pays the tier\'s Remote Config reward and advances progress',
+      "pays the tier's Remote Config reward and advances progress",
       build: () => buildBloc(
-        entries: [entryFor(tutorialLevel, tier: Tier.hard)],
+        entries: [entryFor(defaultLevel, tier: Tier.hard)],
         config: FakeRemoteConfigService()
           ..setOverride(RemoteConfigKeys.rewardHard, 40),
       ),
@@ -1044,11 +1623,12 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'medium pays reward_easy',
+      'medium pays reward_medium (Q5, D64)',
       build: () => buildBloc(
-        entries: [entryFor(tutorialLevel, tier: Tier.medium)],
+        entries: [entryFor(defaultLevel, tier: Tier.medium)],
         config: FakeRemoteConfigService()
-          ..setOverride(RemoteConfigKeys.rewardEasy, 12),
+          ..setOverride(RemoteConfigKeys.rewardEasy, 7)
+          ..setOverride(RemoteConfigKeys.rewardMedium, 12),
       ),
       act: (bloc) => _startThen(bloc, winning),
       verify: (bloc) => expect(dataOf(bloc).winReward, 12),
@@ -1084,6 +1664,145 @@ void main() {
         expect(solver.cancelCount, greaterThanOrEqualTo(2));
       },
     );
+
+    blocTest<GameplayBloc, _State>(
+      'a win clears the in-progress board in the same update (m3-design §3.5)',
+      build: buildBloc,
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) =>
+          expect(saveOf(bloc).inProgressFor(PlayKind.campaign), isNull),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a campaign win that completes its chapter pays the chapter reward '
+      'once and adds the museum date (m3-design §9.3)',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.campaign(1): playEntryFor(
+              const PlayRequest.campaign(1),
+              defaultLevel,
+              chapterId: 'ch01',
+              completesChapter: true,
+              rewardCoins: 10,
+            ),
+          },
+          nextOf: (_) => const PlayRequest.campaign(2),
+        ),
+      ),
+      act: (bloc) => _startThen(bloc, winning),
+      skip: 4,
+      expect: () => [
+        dataWhere(
+          isA<GameplayState>()
+              .having((d) => d.status, 'status', GameplayStatus.won)
+              .having((d) => d.completedChapterId, 'completedChapterId', 'ch01')
+              .having((d) => d.chapterReward, 'chapterReward', 150)
+              .having(
+                (d) => d.nextRequest,
+                'nextRequest',
+                const PlayRequest.campaign(2),
+              ),
+        ),
+      ],
+      verify: (bloc) {
+        final save = saveOf(bloc);
+        expect(save.coins, 10 + 150);
+        expect(save.document.museum, ['ch01']);
+        expect(save.document.museumCollected['ch01'], isNotNull);
+        expect(save.inProgressFor(PlayKind.campaign), isNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a chapter already in the museum is not paid again',
+      build: () => buildBloc(
+        save: FakeSaveService(initial: const SaveDocument(museum: ['ch01'])),
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.campaign(1): playEntryFor(
+              const PlayRequest.campaign(1),
+              defaultLevel,
+              chapterId: 'ch01',
+              completesChapter: true,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) {
+        expect(dataOf(bloc).completedChapterId, isNull);
+        expect(dataOf(bloc).chapterReward, 0);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a bonus win prefetches the next bonus level (m3-design §7.4)',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.bonus(1): playEntryFor(
+              const PlayRequest.bonus(1),
+              defaultLevel,
+            ),
+          },
+          nextOf: (_) => const PlayRequest.bonus(2),
+        ),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.bonus(1)));
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) {
+        final resolver = resolverOf(bloc) as ScriptedLevelResolver;
+        expect(resolver.prefetched, [const PlayRequest.bonus(2)]);
+        expect(dataOf(bloc).nextRequest, const PlayRequest.bonus(2));
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a daily win pays daily_reward with no ×3 and carries the new streak',
+      build: () {
+        final clock = FakeClock();
+        return buildBloc(
+          resolver: ScriptedLevelResolver(
+            entries: {
+              const PlayRequest.daily(20260926): playEntryFor(
+                const PlayRequest.daily(20260926),
+                defaultLevel,
+                rewardCoins: 50,
+              ),
+            },
+          ),
+          daily: FakeDailyService(clock),
+          clock: clock,
+        );
+      },
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.daily(20260926)));
+        winning.forEach(bloc.add);
+      },
+      // One more than the campaign `winning` tests: a daily request is
+      // generated, so `_dispatchStart` emits `AsyncValue.loading` first
+      // (m3-design §6.4 item 1) before the resolved board.
+      skip: 5,
+      expect: () => [
+        dataWhere(
+          isA<GameplayState>()
+              .having((d) => d.status, 'status', GameplayStatus.won)
+              .having((d) => d.winReward, 'winReward', 50)
+              .having((d) => d.dailyStreak, 'dailyStreak', 1)
+              .having((d) => d.nextRequest, 'nextRequest', isNull),
+        ),
+      ],
+      verify: (bloc) {
+        final save = saveOf(bloc);
+        expect(save.coins, 50);
+        expect(save.document.daily.streak, 1);
+        expect(save.document.daily.inProgress, isNull);
+      },
+    );
   });
 
   group('out of moves', () {
@@ -1092,6 +1811,7 @@ void main() {
       build: () => buildBloc(
         entries: [entryFor(outOfMovesLevel)],
         solver: ScriptedSolverService(),
+        save: saveWithIntrosSeen(),
       ),
       act: (bloc) => _startThen(bloc, _tapMove('r0c0', 'r0c3')),
       wait: const Duration(milliseconds: 30),
@@ -1114,7 +1834,10 @@ void main() {
 
     blocTest<GameplayBloc, _State>(
       'undo from the sheet goes back to playing',
-      build: () => buildBloc(entries: [entryFor(outOfMovesLevel)]),
+      build: () => buildBloc(
+        entries: [entryFor(outOfMovesLevel)],
+        save: saveWithIntrosSeen(),
+      ),
       act: (bloc) =>
           _startThen(bloc, [..._tapMove('r0c0', 'r0c3'), const UndoPressed()]),
       verify: (bloc) {
@@ -1128,6 +1851,7 @@ void main() {
       build: () => buildBloc(
         entries: [entryFor(outOfMovesLevel)],
         solver: ScriptedSolverService(),
+        save: saveWithIntrosSeen(),
       ),
       act: (bloc) =>
           _startThen(bloc, [..._tapMove('r0c0', 'r0c3'), const HintPressed()]),
@@ -1189,6 +1913,39 @@ void main() {
       skip: 1,
       expect: () => const <_State>[],
     );
+
+    blocTest<GameplayBloc, _State>(
+      '"Play Bonus Level N" starts it in the same page (m3-design §6.4 '
+      'item 1)',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.campaign(1): playEntryFor(
+              const PlayRequest.campaign(1),
+              defaultLevel,
+              bundleEntry: entry,
+            ),
+            const PlayRequest.bonus(1): playEntryFor(
+              const PlayRequest.bonus(1),
+              outOfMovesLevel,
+            ),
+          },
+          nextOf: (_) => const PlayRequest.bonus(1),
+        ),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.campaign(1)));
+        winning.forEach(bloc.add);
+        bloc
+          ..add(const NextLevelPressed())
+          ..add(const GameplayStarted(PlayRequest.bonus(1)));
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) {
+        expect(dataOf(bloc).play.request, const PlayRequest.bonus(1));
+        expect(dataOf(bloc).status, GameplayStatus.playing);
+      },
+    );
   });
 
   group('pause', () {
@@ -1216,6 +1973,311 @@ void main() {
         ),
         effectIs(const SelectionChangedEffect(selected: red1)),
       ],
+    );
+  });
+
+  group('tutorial (m3-design §10.4)', () {
+    late _MockAnalytics analytics;
+
+    setUpAll(() => registerFallbackValue(<String, Object>{}));
+
+    setUp(() {
+      analytics = _MockAnalytics();
+      when(
+        () => analytics.logEvent(any(), parameters: any(named: 'parameters')),
+      ).thenAnswer((_) async {});
+    });
+
+    // tutorialLevel (real id L0001, `test/helpers/level_fixtures.dart`):
+    // red3@r0c0, red2@r0c2, red1@r1c1 — exactly m3-design §10.4's script
+    // (step 1/2: r0c2 → r0c0; step 3: r1c1 → r0c0).
+    final l1Entry = entryFor(tutorialLevel);
+
+    const level2Json = '''
+    {
+      "schemaVersion": 1,
+      "id": "L0002",
+      "maxSize": 3,
+      "shelves": [
+        [ {"type": "open", "nest": ["red3"]} ],
+        [ {"type": "open", "nest": ["red2"]} ]
+      ]
+    }
+    ''';
+    final level2 = levelFrom(level2Json);
+    final l2Entry = entryFor(level2);
+
+    blocTest<GameplayBloc, _State>(
+      'step 1: only a tap on r0c2 is accepted; everything else is ignored',
+      build: () => buildBloc(entries: [l1Entry]),
+      act: (bloc) => _startThen(bloc, [
+        const SlotTapped(red1),
+        const SlotDragStarted(red2),
+        const UndoPressed(),
+        const RestartPressed(),
+      ]),
+      skip: 1,
+      expect: () => const <_State>[],
+      verify: (bloc) => expect(
+        dataOf(bloc).tutorial,
+        const TutorialCue(
+          step: 1,
+          kind: TutorialCueKind.tapSource,
+          from: red2,
+          to: red3,
+        ),
+      ),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'step 1 to 2: tapping r0c2 selects it and logs tutorial_step 1',
+      build: () => buildBloc(entries: [l1Entry], analytics: analytics),
+      act: (bloc) => _startThen(bloc, [const SlotTapped(red2)]),
+      verify: (bloc) {
+        expect(dataOf(bloc).selectedSlotId, red2);
+        expect(
+          dataOf(bloc).tutorial,
+          const TutorialCue(
+            step: 2,
+            kind: TutorialCueKind.tapTarget,
+            from: red2,
+            to: red3,
+          ),
+        );
+        verify(
+          () => analytics.logEvent('tutorial_step', parameters: {'step': 1}),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'step 2: a tap anywhere but r0c0 is ignored',
+      build: () => buildBloc(entries: [l1Entry]),
+      act: (bloc) =>
+          _startThen(bloc, [const SlotTapped(red2), const SlotTapped(red1)]),
+      verify: (bloc) => expect(dataOf(bloc).selectedSlotId, red2),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'step 2 completes: the move applies and logs tutorial_step 2',
+      build: () => buildBloc(entries: [l1Entry], analytics: analytics),
+      act: (bloc) =>
+          _startThen(bloc, [const SlotTapped(red2), const SlotTapped(red3)]),
+      verify: (bloc) {
+        expect(dataOf(bloc).board.moveCount, 1);
+        expect(
+          dataOf(bloc).tutorial,
+          const TutorialCue(
+            step: 3,
+            kind: TutorialCueKind.tapSource,
+            from: red1,
+            to: red3,
+          ),
+        );
+        verify(
+          () => analytics.logEvent('tutorial_step', parameters: {'step': 2}),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'step 3 completes the family, wins L1 and logs tutorial_step 3',
+      build: () => buildBloc(entries: [l1Entry], analytics: analytics),
+      act: (bloc) => _startThen(bloc, [
+        const SlotTapped(red2),
+        const SlotTapped(red3),
+        const SlotTapped(red1),
+        const SlotTapped(red3),
+      ]),
+      verify: (bloc) {
+        expect(dataOf(bloc).status, GameplayStatus.won);
+        expect(dataOf(bloc).tutorial, isNull);
+        verify(
+          () => analytics.logEvent('tutorial_step', parameters: {'step': 3}),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'restore mid-tutorial resumes the right step',
+      build: () {
+        final save = FakeSaveService();
+        final progressed = GameSession(tutorialLevel)..move(red2, red3);
+        save.saveInProgress(
+          InProgressLevel(
+            request: const PlayRequest.campaign(1),
+            levelId: tutorialLevel.id,
+            levelVersion: 1,
+            session: GameSessionCodec.encode(progressed),
+          ),
+        );
+        return buildBloc(entries: [l1Entry], save: save);
+      },
+      act: _startThen,
+      verify: (bloc) {
+        expect(dataOf(bloc).restored, isTrue);
+        expect(
+          dataOf(bloc).tutorial,
+          const TutorialCue(
+            step: 3,
+            kind: TutorialCueKind.tapSource,
+            from: red1,
+            to: red3,
+          ),
+        );
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'L2 step 4: only the drag from r0c0 to r1c0 is accepted, and it '
+      'swallows',
+      build: () => buildBloc(entries: [l2Entry], analytics: analytics),
+      act: (bloc) => _startThen(bloc, [
+        const SlotTapped('r0c0'),
+        const SlotDragStarted('r1c0'),
+        const SlotDragStarted('r0c0'),
+        const SlotDragDropped('r1c0'),
+      ]),
+      verify: (bloc) {
+        expect(dataOf(bloc).board.slot('r1c0').isEmpty, isFalse);
+        expect(dataOf(bloc).board.moveCount, 1);
+        verify(
+          () => analytics.logEvent('tutorial_step', parameters: {'step': 4}),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "L2's swallow marks the tutorial done",
+      build: () => buildBloc(entries: [l2Entry]),
+      act: (bloc) => _startThen(bloc, [
+        const SlotDragStarted('r0c0'),
+        const SlotDragDropped('r1c0'),
+      ]),
+      verify: (bloc) => expect(saveOf(bloc).document.tutorialDone, isTrue),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a drag dropped elsewhere cancels back to the first cue',
+      build: () => buildBloc(entries: [l2Entry]),
+      act: (bloc) => _startThen(bloc, [
+        const SlotDragStarted('r0c0'),
+        const SlotDragDropped(null),
+      ]),
+      verify: (bloc) {
+        expect(dataOf(bloc).selectedSlotId, isNull);
+        expect(dataOf(bloc).board.moveCount, 0);
+        expect(
+          dataOf(bloc).tutorial,
+          const TutorialCue(
+            step: 4,
+            kind: TutorialCueKind.drag,
+            from: 'r0c0',
+            to: 'r1c0',
+          ),
+        );
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'once already done, there is no cue at all',
+      build: () => buildBloc(
+        entries: [l1Entry],
+        save: FakeSaveService()..markTutorialDone(),
+      ),
+      act: _startThen,
+      verify: (bloc) => expect(dataOf(bloc).tutorial, isNull),
+    );
+  });
+
+  group('intro cards (m3-design §10.4)', () {
+    const multiMechanicJson = '''
+    {
+      "schemaVersion": 1,
+      "id": "T0005",
+      "maxSize": 3,
+      "shelves": [
+        [ {"type": "tower", "stack": [["red2"], ["red1"]]},
+          {"type": "locked", "unlockColor": "blue", "nest": ["blue2"]},
+          {"type": "open", "nest": ["blue3"]},
+          {"type": "open", "nest": null} ]
+      ]
+    }
+    ''';
+    final multiMechanicLevel = levelFrom(multiMechanicJson);
+
+    blocTest<GameplayBloc, _State>(
+      'the first unseen mechanic on the board shows at start, locking input',
+      build: () => buildBloc(entries: [entryFor(outOfMovesLevel)]),
+      act: _startThen,
+      verify: (bloc) {
+        expect(dataOf(bloc).intro, IntroMechanic.towers);
+        expect(dataOf(bloc).acceptsInput, isFalse);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a board with no mechanic shows no intro',
+      build: buildBloc,
+      act: _startThen,
+      verify: (bloc) => expect(dataOf(bloc).intro, isNull),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a mechanic already seen shows no intro',
+      build: () => buildBloc(
+        entries: [entryFor(outOfMovesLevel)],
+        save: FakeSaveService()..markIntroSeen(IntroMechanic.towers),
+      ),
+      act: _startThen,
+      verify: (bloc) => expect(dataOf(bloc).intro, isNull),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'board input is ignored while the card is up',
+      build: () => buildBloc(entries: [entryFor(outOfMovesLevel)]),
+      act: (bloc) => _startThen(bloc, [const SlotTapped('r0c2')]),
+      skip: 1,
+      expect: () => const <_State>[],
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'Got it marks it seen and shows the next unseen mechanic',
+      build: () => buildBloc(entries: [entryFor(multiMechanicLevel)]),
+      act: (bloc) => _startThen(bloc, [const IntroDismissed()]),
+      verify: (bloc) {
+        expect(dataOf(bloc).intro, IntroMechanic.glass);
+        expect(saveOf(bloc).document.seenIntros, [IntroMechanic.towers.id]);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'dismissing the last mechanic unlocks play',
+      build: () => buildBloc(entries: [entryFor(outOfMovesLevel)]),
+      act: (bloc) => _startThen(bloc, [const IntroDismissed()]),
+      verify: (bloc) {
+        expect(dataOf(bloc).intro, isNull);
+        expect(dataOf(bloc).acceptsInput, isTrue);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'restore shows the intro again if still unseen',
+      build: () {
+        final save = FakeSaveService();
+        final progressed = GameSession(outOfMovesLevel);
+        save.saveInProgress(
+          InProgressLevel(
+            request: const PlayRequest.campaign(1),
+            levelId: outOfMovesLevel.id,
+            levelVersion: 1,
+            session: GameSessionCodec.encode(progressed),
+          ),
+        );
+        return buildBloc(entries: [entryFor(outOfMovesLevel)], save: save);
+      },
+      act: _startThen,
+      verify: (bloc) => expect(dataOf(bloc).intro, IntroMechanic.towers),
     );
   });
 
@@ -1288,6 +2350,7 @@ void main() {
         solver: ScriptedSolverService(
           onSoftStuck: (_) => SolveVerdict.unsolvable,
         ),
+        save: saveWithIntrosSeen(),
       ),
       act: (bloc) async {
         _startThen(bloc, [..._tapMove('r0c1', 'r0c3')]);
@@ -1308,6 +2371,80 @@ void main() {
             'level_out_of_moves',
             parameters: {'level': 1},
           ),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "logs bonus_level_start at a bonus level's start, but not its restart",
+      build: () => buildBloc(
+        analytics: analytics,
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.bonus(1): playEntryFor(
+              const PlayRequest.bonus(1),
+              defaultLevel,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) => bloc
+        ..add(const GameplayStarted(PlayRequest.bonus(1)))
+        ..add(const RestartPressed()),
+      verify: (_) {
+        verify(
+          () => analytics.logEvent('bonus_level_start', parameters: {'n': 1}),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'logs chapter_complete when a campaign win completes its chapter',
+      build: () => buildBloc(
+        analytics: analytics,
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.campaign(1): playEntryFor(
+              const PlayRequest.campaign(1),
+              defaultLevel,
+              chapterId: 'ch03',
+              completesChapter: true,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) =>
+          _startThen(bloc, [..._tapMove(red1, red2), ..._tapMove(red2, red3)]),
+      verify: (_) {
+        verify(
+          () => analytics.logEvent(
+            'chapter_complete',
+            parameters: {'chapter': 3},
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'logs daily_complete with the streak after a daily win',
+      build: () => buildBloc(
+        analytics: analytics,
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.daily(20260926): playEntryFor(
+              const PlayRequest.daily(20260926),
+              defaultLevel,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.daily(20260926)));
+        [..._tapMove(red1, red2), ..._tapMove(red2, red3)].forEach(bloc.add);
+      },
+      verify: (_) {
+        verify(
+          () => analytics.logEvent('daily_complete', parameters: {'streak': 1}),
         ).called(1);
       },
     );

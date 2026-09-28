@@ -13,17 +13,34 @@ import 'package:nesty_game/core/services/audio/soloud_audio_service.dart';
 import 'package:nesty_game/core/services/music/music_mix.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/music/soloud_music_service.dart';
+import 'package:nesty_game/core/services/save/in_memory_save_service.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
+import 'package:nesty_game/core/ui/widgets/nav/nesty_bottom_nav.dart';
+import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_game/features/fx/fx_spinner.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/game/board_shape_of.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
+import 'package:nesty_game/features/gameplay/overlays/all_levels_done.dart';
+import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
+import 'package:nesty_game/features/gameplay/overlays/chapter_complete_overlay.dart';
+import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
+import 'package:nesty_game/features/gameplay/overlays/tutorial_overlay.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
+import 'package:nesty_game/features/museum/pages/museum_page.dart';
+import 'package:nesty_game/features/museum/widgets/figurine_modal.dart';
+import 'package:nesty_game/features/settings/pages/settings_page.dart';
+import 'package:nesty_game/features/settings/widgets/language_sheet.dart';
+import 'package:nesty_game/features/shop/pages/shop_page.dart';
+import 'package:nesty_game/features/shop/pages/skin_detail_page.dart';
+import 'package:nesty_game/features/shop/widgets/skin_grid_card.dart';
 import 'package:nesty_game/features/splash/pages/splash_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 import 'package:nesty_render/nesty_render.dart';
@@ -35,7 +52,11 @@ import 'package:nesty_render/nesty_render.dart';
 /// doll on one (the owner's frames 3.1 and 3.6) → level 16's tower reveal
 /// into Out of Moves → Pause, with Music off and on → Home → level 21's
 /// chapter ribbon (BACKLOG M2 "On-device playthrough", PROGRESS D57; spec
-/// §10.1).
+/// §10.1). M3 adds the shell tabs, the Museum and its modals, the Shop,
+/// Settings and its language sheet, the Daily (5.1, 5.3–5.5), the
+/// tutorial and intro cards, the priced Out-of-Moves row and booster
+/// popup, Pause → Settings, chapter complete, All Levels Done and the
+/// bonus pill.
 ///
 /// The music can't be heard here, so it is checked through
 /// `SoLoudMusicService`'s state: the loop that plays on each screen and the
@@ -53,8 +74,13 @@ import 'package:nesty_render/nesty_render.dart';
 /// cd apps/game
 /// NESTY_SCREENSHOT_DIR=/some/dir flutter drive --flavor dev \
 ///   --driver test_driver/integration_test.dart \
-///   --target integration_test/playthrough_test.dart -d <device>
+///   --target integration_test/playthrough_test.dart \
+///   --dart-define=NESTY_FAKE_DATE=20260926 -d <device>
 /// ```
+///
+/// The fixed date makes the daily (whose board, and so its intro cards,
+/// comes from the date) the same on every run and device. Start from a
+/// fresh install (uninstall first): the file expects a fresh save.
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   // The game runs as it does for a player: Flame's loop and every Lottie
@@ -145,6 +171,97 @@ Future<void> _playthrough(
   // Home's loop faded in over `start` (1200 ms) from the splash's end.
   await music.expectPlaying(MusicTrack.home);
 
+  // ── M3 shell tabs, the Shop and Settings (frames 2.1 nav, 7.3/7.4/7.7,
+  // 8.1/8.2): a side trip from Home, back to Home, before Level 1. ──
+  await tester.tap(_nav('Museum'));
+  await tester.pumpUntil(
+    () => find.byType(MuseumPage).evaluate().isNotEmpty,
+    reason: 'the Museum tab',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await shots.take('01b_museum');
+  // The next figurine's modal (chapter 1's, still to earn), then a locked
+  // one further along (frame 6.3).
+  await _openFigurine(tester, 'Classic · soon');
+  await shots.take('01b2_museum_next_modal');
+  await _closeFigurine(tester);
+  await _openFigurine(tester, 'Chapter 3');
+  await shots.take('01b3_museum_locked_modal');
+  await _closeFigurine(tester);
+
+  await tester.tap(_nav('Shop'));
+  await tester.pumpUntil(
+    () => find.byType(ShopPage).evaluate().isNotEmpty,
+    reason: 'the Shop tab',
+  );
+  await tester.pumpUntil(
+    () => find.byType(SkinGridCard).evaluate().isNotEmpty,
+    reason: 'the Skins tab loaded',
+  );
+  await _artReady(tester, 'the Skins cards');
+  await shots.take('01c_shop_skins');
+
+  // Ocean (frame 7.4): all 11 colors, the size lineup, Buy · price.
+  await tester.tap(find.text('Ocean'));
+  await tester.pumpUntil(
+    () => find.byType(SkinDetailPage).evaluate().isNotEmpty,
+    reason: "Ocean's detail",
+  );
+  // The route transition, then the art (it may already be cached).
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  await _artReady(tester, "Ocean's detail");
+  await shots.take('01d_shop_skin_detail');
+  // The detail's own header back arrow (frame 7.4), not the Shop's under it.
+  await tester.tap(
+    find.descendant(
+      of: find.byType(SkinDetailPage),
+      matching: find.bySemanticsLabel('Back'),
+    ),
+  );
+  await tester.pumpUntil(
+    () => find.byType(SkinDetailPage).evaluate().isEmpty,
+    reason: 'back to the Shop',
+  );
+
+  // Themes (frame 7.7): "Match each chapter", In use / Use / locked.
+  await tester.tap(find.text('Themes'));
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  await shots.take('01e_shop_themes');
+
+  await tester.tap(_nav('Home'));
+  await tester.pumpUntil(
+    () => find.byType(HomePage).evaluate().isNotEmpty,
+    reason: 'back Home',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+
+  // Settings (frames 8.1, 8.2), opened from Home's gear.
+  await tester.tap(find.bySemanticsLabel('Settings'));
+  await tester.pumpUntil(
+    () => find.byType(SettingsPage).evaluate().isNotEmpty,
+    reason: 'Settings',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await shots.take('01f_settings');
+  await tester.tap(find.text('Language'));
+  await tester.pumpUntil(
+    () => find.byType(LanguageSheet).evaluate().isNotEmpty,
+    reason: 'the language sheet',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await shots.take('01g_settings_language');
+  await tester.tap(find.text('Done'));
+  await tester.pumpUntil(
+    () => find.byType(LanguageSheet).evaluate().isEmpty,
+    reason: 'the sheet closed',
+  );
+  await tester.tap(find.bySemanticsLabel('Close'));
+  await tester.pumpUntil(
+    () => find.byType(SettingsPage).evaluate().isEmpty,
+    reason: 'back Home',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+
   // ── Level 1: red3 · red2 · red1 (maxSize 3, one family) ──
   await tester.tap(find.bySemanticsLabel('Play level 1'));
   await board.waitForLevel(1);
@@ -155,6 +272,16 @@ Future<void> _playthrough(
   await shots.take('02_l1_board');
   // A level crossfades to its loop (800 ms); Home's loop pauses.
   await music.expectPlaying(MusicTrack.game);
+
+  // The scripted tutorial (frame 1.3, step 1; m3-design §10.4) shows on a
+  // fresh save's first board: the scrim, the hole, the arc and the hand,
+  // gating input to red2 (the only move it accepts).
+  await tester.pumpUntil(
+    () => find.byType(TutorialOverlay).evaluate().isNotEmpty,
+    reason: 'the L1 tutorial cue',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await shots.take('02c_l1_tutorial');
 
   // Tap-tap (spec §2.2): red2 lifts (doll_pick lift, then the wobble
   // loop and the select glow; frame 2.3)…
@@ -202,11 +329,23 @@ Future<void> _playthrough(
   // Continue stays on the page: the same loop, unducked.
   await music.expectPlaying(MusicTrack.game);
 
-  // ── Level 2: red2+red1 into red3, then the swallow (spec §2.2 #3,
-  // frame 1.6): blue3 dropped on blue2 closes over it. ──
-  await board.move('r1c0', 'r0c0');
+  // ── Level 2 (spec §2.2 #3, frame 1.6): the scripted tutorial's step 4
+  // (m3-design §10.4) opens on the swallow, a drag of red3 over red2+red1
+  // and the only move it accepts; then blue3 swallows blue2 by tap-tap and
+  // blue1 finishes. ──
+  await tester.pumpUntil(
+    () => find.byType(TutorialOverlay).evaluate().isNotEmpty,
+    reason: 'the L2 swallow tutorial cue (step 4)',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await shots.take('08a_l2_tutorial_swallow');
+  await board.dragMove('r0c0', 'r1c0');
   await board.waitIdle();
   expect(board.state.setsCompleted, 1);
+  await tester.pumpUntil(
+    () => find.byType(TutorialOverlay).evaluate().isEmpty,
+    reason: 'the tutorial ends with step 4',
+  );
   // doll_move to the hover point (1.06 × blue2's height) 0–267 ms,
   // then doll_swallow 267–667 ms: the lid opens mid-air and the body
   // drops over blue2.
@@ -231,6 +370,79 @@ Future<void> _playthrough(
   await board.openPause();
   await board.pauseToHome(level: 3);
   await music.expectPlaying(MusicTrack.home);
+
+  // ── Daily (frame 5.1; m3-design §10.5): Level 2's win just unlocked it
+  // (m3-design §8.3), still unsolved today (streak 0). ──
+  await tester.tap(find.text('Daily Puzzle'));
+  await tester.pumpUntil(
+    () => find.byType(DailyPage).evaluate().isNotEmpty,
+    reason: 'the Daily screen',
+  );
+  await _artReady(tester, 'the Daily preview');
+  await shots.take('09a_daily_unlocked');
+
+  // ── Daily win (frames 5.3–5.5; m3-design §8.4, §8.5): Play opens the
+  // same gameplay page with the date pill (5.3). No move is scripted —
+  // the puzzle is generated from today's real date, so it differs run to
+  // run — the solver's own hints finish it instead (spec §6.3), the same
+  // path level 9's Hint already exercises below.
+  await tester.tap(find.text('Play'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isNotEmpty &&
+        board.game.geometry != null &&
+        board.game.skin != null,
+    timeout: const Duration(seconds: 30),
+    reason: "today's daily with its skin",
+  );
+  // The fixed date's daily (README "Testing": NESTY_FAKE_DATE=20260926)
+  // brings towers and glass in, so it opens on their intro cards (frames
+  // 4.1, 4.2; m3-design §10.4), one after the other.
+  for (var card = 1; card <= 3; card++) {
+    await tester.pumpFor(const Duration(milliseconds: 600));
+    final shown = board.state.intro;
+    if (shown == null) break;
+    await shots.take('09a1_daily_intro_${card}_${shown.name}');
+    await tester.tap(find.text('Got it'));
+    // The next card (if any) replaces this one at once.
+    await tester.pumpUntil(
+      () => board.state.intro != shown,
+      reason: 'the ${shown.name} intro card dismissed',
+    );
+  }
+  await board.waitIdle();
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('09a2_daily_pill');
+  await board.solveWithHints();
+  await board.waitForWinOverlay();
+  expect(board.state.dailyStreak, isNotNull, reason: 'the daily variant');
+  await tester.pumpFor(const Duration(milliseconds: 1500));
+  await shots.take('09a3_daily_win');
+
+  // "Back to Daily" (frame 5.4's own button) pops back to the Daily page
+  // pushed it from, for real, not only content-tested at the widget level
+  // (gameplay-screens' handoff note).
+  await tester.tap(find.text('Back to Daily'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isEmpty &&
+        find.byType(DailyPage).evaluate().isNotEmpty,
+    reason: 'back on the Daily screen',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('09a4_daily_solved');
+  // TODO(later): 5.6's day-7 chest modal needs a real 7-day streak
+  // (`StreakDailyService`, m3-design §8.2) under the system clock this
+  // file runs on — unlike `daily_fingerprint_test.dart`, it doesn't set
+  // `NESTY_FAKE_DATE`, so this can't fast-forward a week. Covered instead
+  // by `daily-museum-tools`'s `FakeClock`-driven widget tests.
+
+  await tester.tap(find.bySemanticsLabel('Back'));
+  await tester.pumpUntil(
+    () => find.byType(DailyPage).evaluate().isEmpty,
+    reason: 'back Home',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
 
   // ── Level 9 from the dev level picker: the owner's hint (frame 3.1)
   // and +1 Slot (frame 3.6) cases. ──
@@ -279,8 +491,47 @@ Future<void> _playthrough(
   // the r1c1 tower onto the only empty stand leaves no legal move (a
   // breadth-first search over the bundle: the shortest Out-of-Moves
   // line among levels 1–30). ──
+  // The dev flavor's boosters never run out, which hides every coin
+  // price. Debug-only, turn that off (README "Testing") and spend the Hint
+  // and +1 Slot gifts: Hint then opens its buy popup (frame 3.3), and the
+  // Out-of-Moves sheet below prices its +1 Slot row (frame 3.5). +1 Slot
+  // itself stays free in debug builds (m3-design §7.3), so its own popup
+  // isn't reachable here. Before the level opens: the bloc reads the
+  // boosters into its state on each board change.
+  final save = get<SaveService>();
+  (save as InMemorySaveService).debugUnlimitedBoosters = false;
+  for (final kind in [BoosterKind.hint, BoosterKind.extraSlot]) {
+    while (save.boosterCount(kind) > 0) {
+      save.useBooster(kind);
+    }
+  }
   await board.jumpTo(16, 'Hard');
   await shots.take('10_l16_board');
+  // Towers were already introduced by the daily above: no card here
+  // (each mechanic's card shows once per save, m3-design §10.4).
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  expect(find.byType(IntroMechanicCard), findsNothing);
+  await tester.tap(find.text('Hint'));
+  await tester.pumpUntil(
+    () => find.byType(BoosterBuyPopup).evaluate().isNotEmpty,
+    reason: 'the Hint booster popup',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('10a_booster_popup_hint');
+  // The scrim also reads "Close"; the last is the card's own button.
+  await tester.tap(
+    find
+        .descendant(
+          of: find.byType(BoosterBuyPopup),
+          matching: find.bySemanticsLabel('Close'),
+        )
+        .last,
+  );
+  await tester.pumpUntil(
+    () => find.byType(BoosterBuyPopup).evaluate().isEmpty,
+    reason: 'the booster popup closed',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
   // The top leaving r1c1 reveals the nest under it from t = 0:
   // doll_reveal's `drop` 0–7 f from its buried step, the wipe 7–19 f.
   final reveal = await board.move('r1c1', 'r0c3');
@@ -293,6 +544,7 @@ Future<void> _playthrough(
   expect(board.state.status, GameplayStatus.outOfMoves);
   await tester.pumpFor(const Duration(milliseconds: 700));
   await shots.take('11_out_of_moves');
+  save.debugUnlimitedBoosters = null;
   // The sheet ducks the music to 0.4 (and plays jingle_oom).
   await music.expectPlaying(
     MusicTrack.game,
@@ -326,6 +578,28 @@ Future<void> _playthrough(
   expect(music.service.playingTracks, isEmpty, reason: 'Music off');
   await tester.tap(find.bySemanticsLabel('Music'));
   await music.expectPlaying(MusicTrack.game, duck: DuckReason.pause.factor);
+  // Pause → Settings → back to the paused level (m3-design §10.1).
+  await tester.tap(
+    find.descendant(
+      of: find.byType(PauseDialog),
+      matching: find.bySemanticsLabel('Settings'),
+    ),
+  );
+  await tester.pumpUntil(
+    () => find.byType(SettingsPage).evaluate().isNotEmpty,
+    reason: 'Settings over the paused level',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('12b_pause_settings');
+  await tester.tap(find.bySemanticsLabel('Close'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(SettingsPage).evaluate().isEmpty &&
+        find.byType(PauseDialog).evaluate().isNotEmpty,
+    reason: 'back to the paused level',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('12c_pause_back');
   await board.pauseToHome(level: 3);
   await tester.pumpFor(const Duration(milliseconds: 700));
   await shots.take('13_home_after');
@@ -339,7 +613,120 @@ Future<void> _playthrough(
   await shots.take('15_l21_board');
   await board.openPause();
   await board.pauseToHome(level: 3);
+
+  // ── Level 20 (chapter 1's last): Chapter complete (frame 4.6). No move
+  // is scripted (the same reasoning as the daily's hints above; §7.1's 200
+  // launch levels means a level's exact board can still change before its
+  // chapter ships). ──
+  await board.jumpTo(20, 'Super Hard');
+  await board.solveWithHints();
+  await board.waitForWinOverlay();
+  await tester.pumpFor(const Duration(milliseconds: 1500));
+  await tester.tap(find.text('Continue'));
+  await tester.pumpUntil(
+    () => find.byType(ChapterCompleteOverlay).evaluate().isNotEmpty,
+    reason: 'chapter 1 complete',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 800));
+  await shots.take('16_chapter_complete');
+  await tester.tap(find.text('Continue'));
+  await tester.pumpUntil(
+    () => find.byType(ChapterCompleteOverlay).evaluate().isEmpty,
+    reason: 'chapter complete closed',
+  );
+  await board.waitForLevel(21);
+  await board.openPause();
+  await board.pauseToHome(level: 21);
+  // Chapter 1's figurine is on the shelf now (frame 6.1 with one earned),
+  // and its modal (frame 6.2).
+  await tester.tap(_nav('Museum'));
+  await tester.pumpUntil(
+    () => find.byType(MuseumPage).evaluate().isNotEmpty,
+    reason: 'the Museum tab',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  await shots.take('16b_museum_earned');
+  await _openFigurine(tester, 'Classic Family');
+  await shots.take('16c_museum_earned_modal');
+  await _closeFigurine(tester);
+  await tester.tap(_nav('Home'));
+  await tester.pumpUntil(
+    () => find.byType(HomePage).evaluate().isNotEmpty,
+    reason: 'back Home',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+
+  // ── Level 30 (the last bundled level): All Levels Done (frame 4.9),
+  // then its teal "Play Bonus Level 1" (frame 4.10's HUD pill). ──
+  await board.jumpTo(30, 'Super Hard');
+  await board.solveWithHints();
+  await board.waitForWinOverlay();
+  await tester.pumpFor(const Duration(milliseconds: 1500));
+  await tester.tap(find.text('Continue'));
+  await tester.pumpUntil(
+    () => find.byType(AllLevelsDone).evaluate().isNotEmpty,
+    timeout: const Duration(seconds: 10),
+    reason: 'all levels done',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 800));
+  await shots.take('17_all_levels_done');
+  final beforeBonus = board.state.levelNumber;
+  await tester.tap(find.text('Play Bonus Level 1'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(AllLevelsDone).evaluate().isEmpty &&
+        board.state.levelNumber != beforeBonus &&
+        board.game.geometry != null &&
+        board.game.skin != null,
+    timeout: const Duration(seconds: 30),
+    reason: 'Bonus Level 1 with its skin',
+  );
+  await board.waitIdle();
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('18_bonus_level_pill');
+
   expect(music.service.failedTracks, isEmpty);
+}
+
+/// Every doll preview on screen has its skin art (no `FxSpinner` left),
+/// then a beat for the frame to settle.
+Future<void> _artReady(WidgetTester tester, String what) async {
+  await tester.pumpUntil(
+    () => find.byType(FxSpinner).evaluate().isEmpty,
+    timeout: const Duration(seconds: 30),
+    reason: '$what with its skin art',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+}
+
+/// The bottom nav's own label (Home's Museum tile also reads "Museum").
+Finder _nav(String label) => find.descendant(
+  of: find.byType(NestyBottomNav),
+  matching: find.text(label),
+);
+
+/// A Museum cabinet figurine's modal (frames 6.2, 6.3), by the tile's
+/// label ("Classic Family", "Classic · soon", "Chapter 3").
+Future<void> _openFigurine(WidgetTester tester, String label) async {
+  await tester.tap(find.bySemanticsLabel(label));
+  await tester.pumpUntil(
+    () => find.byType(FigurineModal).evaluate().isNotEmpty,
+    reason: 'the $label modal',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+}
+
+Future<void> _closeFigurine(WidgetTester tester) async {
+  await tester.tap(
+    find.descendant(
+      of: find.byType(FigurineModal),
+      matching: find.bySemanticsLabel('Close'),
+    ),
+  );
+  await tester.pumpUntil(
+    () => find.byType(FigurineModal).evaluate().isEmpty,
+    reason: 'the figurine modal closed',
+  );
 }
 
 /// An open slot holding the run of [length] [color] dolls from [outer] down.
@@ -430,6 +817,32 @@ final class _Board {
     return drop(to);
   }
 
+  /// A real drag from [from] onto [to] (the L2 tutorial's step 4 accepts
+  /// only a drag, m3-design §10.4): press, travel in small steps past the
+  /// touch slop, release over [to]. Returns the board's timeline time when
+  /// it scheduled the move's batch.
+  Future<double> dragMove(String from, String to) async {
+    await waitIdle();
+    final before = state.moveSeq;
+    final start = centreOf(from);
+    final end = centreOf(to);
+    final gesture = await _tester.startGesture(start);
+    await _tester.pump(const Duration(milliseconds: 100));
+    const steps = 12;
+    for (var i = 1; i <= steps; i++) {
+      await gesture.moveTo(Offset.lerp(start, end, i / steps)!);
+      await _tester.pump(const Duration(milliseconds: 16));
+    }
+    await _tester.pump(const Duration(milliseconds: 100));
+    await gesture.up();
+    await _tester.pumpUntil(
+      () => state.moveSeq > before && _caughtUp,
+      reason: 'the drag onto $to applied',
+      step: const Duration(milliseconds: 4),
+    );
+    return game.board.timeline!.nowMs;
+  }
+
   /// Taps [to] with a nest lifted; returns the board's timeline time when it
   /// scheduled the move's batch.
   Future<double> drop(String to) async {
@@ -469,6 +882,40 @@ final class _Board {
         timeline.isIdle &&
         !timeline.inputLocked;
   }, reason: 'the board to go idle');
+
+  /// Applies the solver's own hint repeatedly until the level is won: a
+  /// generic way to finish a board without scripting its exact moves (frame
+  /// 3.1's Hint, spec §6.3), for levels this file otherwise only jumps to
+  /// for a screen that needs a win (chapter complete, All Levels Done) or
+  /// whose board is generated fresh each run (the daily). Never needs coins:
+  /// the dev flavor's `SaveService.unlimitedBoosters` (spec §7.3) keeps Hint
+  /// free.
+  Future<void> solveWithHints({int maxMoves = 30}) async {
+    for (var i = 0; i < maxMoves; i++) {
+      if (state.status != GameplayStatus.playing) return;
+      // A mechanic this save hasn't met yet opens on its intro card, which
+      // holds input until dismissed (m3-design §10.4).
+      for (var shown = state.intro; shown != null; shown = state.intro) {
+        await _tester.pumpFor(const Duration(milliseconds: 400));
+        await _tester.tap(find.text('Got it'));
+        await _tester.pumpUntil(
+          () => state.intro != shown,
+          reason: 'the ${shown.name} intro card dismissed',
+        );
+      }
+      await waitIdle();
+      if (state.status != GameplayStatus.playing) return;
+      await _tester.tap(find.text('Hint'));
+      await _tester.pumpUntil(
+        () => state.hint != null,
+        timeout: const Duration(seconds: 15),
+        reason: 'a hint',
+      );
+      final hint = state.hint!;
+      await move(hint.from, hint.to);
+    }
+    fail('did not solve within $maxMoves moves');
+  }
 
   /// Level [number] is on the board with its own art: the bloc has it, the
   /// board laid it out and the skin prepared for that layout arrived.

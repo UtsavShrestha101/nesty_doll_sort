@@ -29,6 +29,23 @@ class FakeSkinService implements SkinService {
     required double devicePixelRatio,
     required DollSymbols symbols,
   }) async => _PlaceholderLevelSkin();
+
+  @override
+  String selectedSkinId = 'classic';
+
+  @override
+  Future<bool> selectSkin(String skinId) async {
+    selectedSkinId = skinId;
+    return true;
+  }
+
+  @override
+  Future<LevelSkin?> prepareShowcase({
+    required List<DollColor> colors,
+    required double devicePixelRatio,
+    required DollSymbols symbols,
+    String? skinId,
+  }) async => _PlaceholderLevelSkin();
 }
 
 final class _PlaceholderLevelSkin implements LevelSkin {

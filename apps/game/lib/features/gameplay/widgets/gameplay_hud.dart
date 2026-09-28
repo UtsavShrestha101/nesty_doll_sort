@@ -26,6 +26,8 @@ class GameplayHud extends StatelessWidget {
     required this.onPause,
     this.sparkleScale = FamilyCounter.defaultSparkleScale,
     this.locked = false,
+    this.bonusNumber,
+    this.dailyDateLabel,
     this.library,
     super.key,
   });
@@ -33,6 +35,15 @@ class GameplayHud extends StatelessWidget {
   final int level;
   final Tier tier;
   final int coins;
+
+  /// Set for Bonus Endless (`PlayRequest.bonus`): the level pill shows
+  /// "Bonus Level N" (frame 4.10) instead of [level]/[tier].
+  final int? bonusNumber;
+
+  /// Set for the daily puzzle (`PlayRequest.daily`): the level pill shows
+  /// the calendar glyph and this formatted date (frame 5.3) instead of
+  /// [level]/[tier]. Takes priority over [bonusNumber].
+  final String? dailyDateLabel;
 
   /// The counter as the board has shown it (sets that have landed).
   final int setsDone;
@@ -84,10 +95,7 @@ class GameplayHud extends StatelessWidget {
               child: CoinPill(coins: coins),
             ),
           ),
-          LayoutId(
-            id: _HudSlot.level,
-            child: LevelPill(level: level, tier: tier),
-          ),
+          LayoutId(id: _HudSlot.level, child: _levelPill()),
           LayoutId(
             id: _HudSlot.counter,
             child: IgnorePointer(
@@ -102,6 +110,18 @@ class GameplayHud extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// The level pill (frames 2.2, 4.10, 5.3): the daily's date chip, else
+  /// Bonus Endless's "Bonus Level N", else the normal level/tier pill.
+  Widget _levelPill() {
+    final dailyDateLabel = this.dailyDateLabel;
+    final bonusNumber = this.bonusNumber;
+    if (dailyDateLabel != null) {
+      return LevelPill.daily(dateLabel: dailyDateLabel);
+    }
+    if (bonusNumber != null) return LevelPill.bonus(level: bonusNumber);
+    return LevelPill(level: level, tier: tier);
   }
 }
 

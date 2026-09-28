@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/database/hive_boxes.dart';
 import 'package:nesty_game/core/services/database/settings_schema.dart';
 
 /// Behavior every [DatabaseService] must share, run against both the Hive
@@ -14,6 +15,21 @@ void runDatabaseServiceContract(
 
     setUp(() async => database = await create());
     tearDown(() => database.close());
+
+    test('the save document text reads back as written (D63, '
+        'm3-design §3.2)', () async {
+      expect(database.readSaveDocument(), isNull);
+      await database.writeSaveDocument('{"schema":1}');
+      await database.writeSaveDocument('{"schema":1,"coins":5}');
+      expect(database.readSaveDocument(), '{"schema":1,"coins":5}');
+      expect(database.readSaveBackup(SaveBoxKeys.backup(0)), isNull);
+      await database.writeSaveBackup(SaveBoxKeys.backup(0), 'old');
+      await database.writeSaveBackup(SaveBoxKeys.invalidBackup, 'bad');
+      await database.flushSave();
+      expect(database.readSaveBackup(SaveBoxKeys.backup(0)), 'old');
+      expect(database.readSaveBackup(SaveBoxKeys.invalidBackup), 'bad');
+      expect(database.readSaveDocument(), '{"schema":1,"coins":5}');
+    });
 
     test('a fresh store returns the spec §13.3 defaults', () {
       expect(database.soundEnabled, SettingsDefaults.sound);

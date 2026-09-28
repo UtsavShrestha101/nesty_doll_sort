@@ -35,27 +35,31 @@ void main() {
     await database.setSymbolsMode(SymbolsMode.large);
     final first = showcase.prepare(devicePixelRatio: 2);
     final again = showcase.prepare(devicePixelRatio: 2);
-    expect(skins.requests, hasLength(1), reason: 'the request in flight');
-    expect(skins.requests.single.devicePixelRatio, 2);
-    expect(skins.requests.single.symbols, DollSymbols.large);
-    final skin = skins.complete(0);
+    expect(
+      skins.showcaseRequests,
+      hasLength(1),
+      reason: 'the request in flight',
+    );
+    expect(skins.showcaseRequests.single.devicePixelRatio, 2);
+    expect(skins.showcaseRequests.single.symbols, DollSymbols.large);
+    final skin = skins.completeShowcase(0);
     await Future.wait([first, again]);
     expect(showcase.current.value, skin);
 
     await showcase.prepare(devicePixelRatio: 2);
-    expect(skins.requests, hasLength(1), reason: 'already here');
+    expect(skins.showcaseRequests, hasLength(1), reason: 'already here');
   });
 
   test('release frees the rasters; prepare brings them back', () async {
     final first = showcase.prepare(devicePixelRatio: 1);
-    final a = skins.complete(0);
+    final a = skins.completeShowcase(0);
     await first;
     showcase.release();
     expect(showcase.current.value, isNull);
     expect(a.disposed, isTrue);
 
     final second = showcase.prepare(devicePixelRatio: 1);
-    final b = skins.complete(1);
+    final b = skins.completeShowcase(1);
     await second;
     expect(showcase.current.value, b);
   });
@@ -63,7 +67,7 @@ void main() {
   test('a result released before it lands is disposed unseen', () async {
     final first = showcase.prepare(devicePixelRatio: 1);
     showcase.release();
-    final a = skins.complete(0);
+    final a = skins.completeShowcase(0);
     await first;
     expect(a.disposed, isTrue);
     expect(showcase.current.value, isNull);
@@ -71,23 +75,23 @@ void main() {
 
   test('a failure leaves the placeholder shelves and can retry', () async {
     final first = showcase.prepare(devicePixelRatio: 1);
-    skins.fail(0);
+    skins.failShowcase(0);
     await first;
     expect(showcase.current.value, isNull);
 
     final retry = showcase.prepare(devicePixelRatio: 1);
-    final b = skins.complete(1);
+    final b = skins.completeShowcase(1);
     await retry;
     expect(showcase.current.value, b);
   });
 
   test('dispose frees everything and stops preparing', () async {
     final first = showcase.prepare(devicePixelRatio: 1);
-    final a = skins.complete(0);
+    final a = skins.completeShowcase(0);
     await first;
     showcase.dispose();
     expect(a.disposed, isTrue);
     await showcase.prepare(devicePixelRatio: 1);
-    expect(skins.requests, hasLength(1));
+    expect(skins.showcaseRequests, hasLength(1));
   });
 }

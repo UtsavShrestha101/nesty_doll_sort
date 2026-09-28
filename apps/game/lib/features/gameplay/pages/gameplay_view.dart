@@ -2,22 +2,34 @@ import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:math' as math;
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:nesty_core/nesty_core.dart' show GameState;
 import 'package:nesty_game/core/base/base_async_state.dart';
+import 'package:nesty_game/core/error/app_exception.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/audio/jingle_player.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/music/music_duck.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
-import 'package:nesty_game/core/ui/widgets/retry_view.dart';
+import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/overlays/all_levels_done.dart';
+import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
+import 'package:nesty_game/features/gameplay/overlays/chapter_complete_overlay.dart';
+import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
+import 'package:nesty_game/features/gameplay/overlays/next_level_failed_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
+import 'package:nesty_game/features/gameplay/overlays/tutorial_overlay.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_board.dart';
@@ -31,8 +43,21 @@ import 'package:nesty_game/features/gameplay/widgets/soft_stuck_banner.dart';
 import 'package:nesty_game/features/gameplay/widgets/theme_background_view.dart';
 import 'package:nesty_render/nesty_render.dart';
 
-/// Which overlay covers the board (frames 2.8, 3.5, 3.9, 4.9).
-enum GameplayOverlay { none, pause, win, outOfMoves, allLevelsDone }
+/// Which page-timed overlay covers the board (frames 2.8, 3.5, 3.9, 4.6,
+/// 4.9); the booster popup, the tutorial overlay and the intro card are
+/// drawn straight from the bloc's `offer`/`tutorial`/`intro` fields instead,
+/// since they need no page-side sequencing.
+enum GameplayOverlay {
+  none,
+  pause,
+  win,
+  outOfMoves,
+  chapterComplete,
+  allLevelsDone,
+
+  /// Continue's next level couldn't be made (review CORRECTNESS-3).
+  continueFailed,
+}
 
 /// The gameplay screen (frame 2.2; spec §10.2 #3; m2-lottie-design §11,
 /// §16 lane "Screens"), bottom to top:
@@ -41,8 +66,9 @@ enum GameplayOverlay { none, pause, win, outOfMoves, allLevelsDone }
 ///   (`BlocListener` on `effectSeq` → [GameplayBoard.apply]);
 /// - the HUD at the safe-area top, the booster bar at the bottom, the
 ///   soft-stuck banner (3.4) and the new-chapter ribbon (4.7, L21);
-/// - the overlays: win (2.8), out of moves (3.5), pause (3.9) and all
-///   levels done (4.9).
+/// - the overlays: win (2.8), out of moves (3.5), pause (3.9), all levels
+///   done (4.9), and the retry card of a Continue whose next level
+///   couldn't be made.
 ///
 /// It owns no game truth (CLAUDE.md rule 10): the bloc decides, the board
 /// plays, and this page times the overlays on the board's reports (the
@@ -55,19 +81,24 @@ enum GameplayOverlay { none, pause, win, outOfMoves, allLevelsDone }
 /// the symbols mode to the board.
 class GameplayView extends StatefulWidget {
   const GameplayView({
-    required this.levelNumber,
+    required this.request,
     required this.services,
     required this.onHome,
+    required this.onSettings,
     this.boardFactory = NestyGameBoard.new,
     super.key,
   });
 
-  /// The level the route opened (1-based play order): the retry target.
-  final int levelNumber;
+  /// What the route opened (docs/plans/m3-design.md §6): the retry target.
+  final PlayRequest request;
   final GameplayServices services;
 
   /// Leaves for Home (pause 3.9, all levels done 4.9).
   final VoidCallback onHome;
+
+  /// Opens Settings over the level (pause 3.9's Settings tile); completes
+  /// when the player is back.
+  final Future<void> Function() onSettings;
 
   /// Builds the board; tests pass a recording fake.
   final GameplayBoardFactory boardFactory;
@@ -113,6 +144,10 @@ class _GameplayViewState extends State<GameplayView> {
 
   WinSummary? _win;
   bool _continuing = false;
+
+  /// Why the last Continue's next level couldn't be made, while
+  /// [GameplayOverlay.continueFailed] shows it (review CORRECTNESS-3).
+  AppException? _continueFailure;
   PauseSettings? _settings;
 
   /// The next level's art, prepared while the win overlay is up; Continue
@@ -124,6 +159,13 @@ class _GameplayViewState extends State<GameplayView> {
   /// sheet stays closed until another move runs out again.
   int? _outOfMovesSeq;
   double _devicePixelRatio = 1;
+
+  /// The Color symbols mode the board and the level's art were given.
+  DollSymbols _symbols = DollSymbols.subtle;
+
+  /// The board's current layout, for the tutorial overlay's holes (it draws
+  /// from the same geometry the board just laid its dolls out on).
+  BoardGeometry? _geometry;
 
   GameplayBloc get _bloc => context.read<GameplayBloc>();
   GameplayState? get _state => _bloc.state.data;
@@ -144,10 +186,11 @@ class _GameplayViewState extends State<GameplayView> {
     _devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
     // The board lays itself out between the HUD and the bar, and reports
     // each new layout (onLayout).
+    _symbols = widget.services.database.symbolsMode.dollSymbols;
     _board
       ..padding = MediaQuery.paddingOf(context)
       ..reduceMotion = context.reduceMotion
-      ..symbols = widget.services.database.symbolsMode.dollSymbols;
+      ..symbols = _symbols;
   }
 
   @override
@@ -161,6 +204,9 @@ class _GameplayViewState extends State<GameplayView> {
   // --- The bloc --------------------------------------------------------
 
   void _onBlocState(BuildContext context, AsyncValue<GameplayState> value) {
+    if (value case AsyncValueError<GameplayState>(:final exception)) {
+      _onContinueFailed(exception);
+    }
     final state = value.data;
     if (state == null) return;
     if (state.effectSeq != _appliedEffectSeq) {
@@ -182,6 +228,24 @@ class _GameplayViewState extends State<GameplayView> {
       setState(() => _setsShown = state.setsCompleted);
     }
     _board.apply(effect, state.board);
+    // A restored board that was already out of moves or won (review
+    // CORRECTNESS-1) plays no batch, so the board never reports it: open
+    // its overlay now, as `_syncOutcome` would for a board with no
+    // timeline (it then finds it open and does nothing).
+    if (effect case BoardResetEffect(reason: BoardResetReason.start)) {
+      switch (state.status) {
+        case GameplayStatus.won:
+          _openWin(state);
+        // TODO(M7): a restored board whose intro card was never dismissed
+        // shows the card over this sheet, whose rows then wait for "Got it".
+        case GameplayStatus.outOfMoves when _overlay == GameplayOverlay.none:
+          _openOutOfMoves(state);
+        case GameplayStatus.playing ||
+            GameplayStatus.outOfMoves ||
+            GameplayStatus.allLevelsDone:
+          break;
+      }
+    }
   }
 
   /// A new level (the route's, or Continue's): its chapter, a fresh
@@ -194,6 +258,7 @@ class _GameplayViewState extends State<GameplayView> {
       _showRibbon = chapter.opensWithRibbon;
       _win = null;
       _continuing = false;
+      _continueFailure = null;
       if (_overlay != GameplayOverlay.pause) _overlay = GameplayOverlay.none;
     });
     _board.overlayOpen = false;
@@ -226,10 +291,12 @@ class _GameplayViewState extends State<GameplayView> {
     }
   }
 
-  /// The board laid a level out ([geometry]): rasterize its art for it.
+  /// The board laid a level out ([geometry]): rasterize its art for it and
+  /// keep it for the tutorial overlay's holes.
   void _onLayout(BoardGeometry geometry) {
     final state = _state;
     if (!mounted || state == null) return;
+    setState(() => _geometry = geometry);
     unawaited(
       _skins.prepare(
         state.entry.level,
@@ -282,11 +349,6 @@ class _GameplayViewState extends State<GameplayView> {
   void _openWin(GameplayState state) {
     final chapter =
         _chapter ?? ChapterProgress.of(state.entry, widget.services.levels);
-    // TODO(M3): a win that completes its chapter (chapter.isComplete) goes
-    // on to Chapter complete (4.6), which calls JingleCues.chapterComplete:
-    // the music fades out, then jingle_chapter only (audio plan Q40). Its
-    // Continue calls widget.services.music.playGame() for the next level,
-    // which fades music_game back in over chapterIn (2000 ms).
     _board.overlayOpen = true;
     setState(() {
       _setsShown = state.totalSets;
@@ -294,24 +356,27 @@ class _GameplayViewState extends State<GameplayView> {
         reward: state.winReward,
         families: WinSummary.familiesOf(state.entry.level, state.board),
         chapter: chapter,
+        dailyStreak: state.dailyStreak,
       );
       _overlay = GameplayOverlay.win;
     });
-    _prefetchNextLevel(state);
+    unawaited(_prefetchNextLevel(state));
   }
 
   /// Rasterizes the next level's art for the layout the board will give it,
-  /// while the win overlay is up and the board is idle. The layout the
-  /// board reports for that level then adopts it in the same frame, so its
-  /// first frame draws its own dolls: the previous level's skin holds only
-  /// its own colours (review CORRECTNESS-1).
-  void _prefetchNextLevel(GameplayState state) {
-    // The bloc's `NextLevelPressed` asks the same repository for the same
-    // order, so both get the same entry.
-    final next = widget.services.levels.entryAt(state.levelNumber + 1);
-    // TODO(M3): Bonus Endless past the last level prefetches the bonus
-    // level (spec §7.1); All Levels Done needs no board art.
-    if (next == null) return;
+  /// while the win overlay is up and the board is idle, from whatever
+  /// `nextRequest` is: the next campaign level, a generated Bonus Endless
+  /// level (already prefetching in `LevelResolver`, so this resolves at
+  /// once) or nothing after a daily (m3-design §10.8; the resolver never
+  /// throws, rule 3). The layout the board reports for that level then
+  /// adopts it in the same frame, so its first frame draws its own dolls:
+  /// the previous level's skin holds only its own colours (review
+  /// CORRECTNESS-1).
+  Future<void> _prefetchNextLevel(GameplayState state) async {
+    final nextRequest = state.nextRequest;
+    if (nextRequest == null) return;
+    final next = await widget.services.resolver.resolve(nextRequest);
+    if (next == null || !mounted) return;
     final geometry = _board.layoutFor(GameState.initial(next.level));
     if (geometry == null) return;
     _nextArt = _skins.prefetch(
@@ -340,17 +405,48 @@ class _GameplayViewState extends State<GameplayView> {
         !state.acceptsInput) {
       return;
     }
-    final database = widget.services.database;
     _bloc.add(const PauseChanged(paused: true));
     _board.paused = true;
     setState(() {
-      _settings = PauseSettings(
-        sound: database.soundEnabled,
-        music: database.musicEnabled,
-        haptics: database.hapticsEnabled,
-      );
+      _settings = _readPauseSettings();
       _overlay = GameplayOverlay.pause;
     });
+  }
+
+  /// The pause dialog's toggles as the settings store has them now.
+  PauseSettings _readPauseSettings() {
+    final database = widget.services.database;
+    return PauseSettings(
+      sound: database.soundEnabled,
+      music: database.musicEnabled,
+      haptics: database.hapticsEnabled,
+    );
+  }
+
+  /// Pause's Settings tile (frame 3.9): Settings opens over the level and
+  /// writes the same settings (review CORRECTNESS-4). Back here, the
+  /// dialog shows them as they are now, and the board takes the Color
+  /// symbols mode, re-preparing the level's art, which bakes the symbols
+  /// in (`SkinService.prepareForLevel`), when it changed.
+  Future<void> _openSettings() async {
+    await widget.onSettings();
+    if (!mounted) return;
+    final symbols = widget.services.database.symbolsMode.dollSymbols;
+    final changed = symbols != _symbols;
+    _symbols = symbols;
+    _board.symbols = symbols;
+    setState(() {
+      if (_overlay == GameplayOverlay.pause) _settings = _readPauseSettings();
+    });
+    final state = _state;
+    final geometry = _geometry;
+    if (!changed || state == null || geometry == null) return;
+    await _skins.prepare(
+      state.entry.level,
+      geometry: geometry,
+      devicePixelRatio: _devicePixelRatio,
+      symbols: symbols,
+    );
   }
 
   void _resume() {
@@ -394,9 +490,53 @@ class _GameplayViewState extends State<GameplayView> {
         _resume();
       case GameplayOverlay.outOfMoves:
         _closeOverlay();
-      case GameplayOverlay.win || GameplayOverlay.allLevelsDone:
+      case GameplayOverlay.win ||
+          GameplayOverlay.chapterComplete ||
+          GameplayOverlay.allLevelsDone:
         break;
+      // The failure card's way out (review CORRECTNESS-3).
+      case GameplayOverlay.continueFailed:
+        widget.onHome();
     }
+  }
+
+  /// The win overlay's Continue (m3-design §8.4, §9.3): back to Daily after
+  /// a daily win (it has no `nextRequest`, spec §7.5); Chapter complete
+  /// (4.6) after a win that completed one; the next level otherwise.
+  void _onWinContinue(GameplayState state) {
+    if (_continuing) return;
+    if (state.dailyStreak != null) {
+      _backToDaily();
+      return;
+    }
+    if (state.completedChapterId != null) {
+      _openChapterComplete();
+      return;
+    }
+    unawaited(_continue());
+  }
+
+  /// Frame 5.4's "Back to Daily": pops back to the Daily route it was
+  /// pushed from (`DailyPage._playDaily`), never `NextLevelPressed` (the
+  /// daily has no next, spec §7.5). `pop`, not `maybePop`: this page's own
+  /// `PopScope` vetoes a `maybePop` (it turns system back into Pause).
+  void _backToDaily() {
+    setState(() => _continuing = true);
+    context.router.pop();
+  }
+
+  /// Chapter complete (frame 4.6, m3-design §9.3): the music fades out for
+  /// `jingle_chapter` as it opens; its own Continue plays `music_game`
+  /// again and resolves `nextRequest` like a normal win.
+  void _openChapterComplete() {
+    widget.services.jingleCues.chapterComplete();
+    setState(() => _overlay = GameplayOverlay.chapterComplete);
+  }
+
+  void _continueFromChapterComplete() {
+    if (_continuing) return;
+    widget.services.music.playGame();
+    unawaited(_continue());
   }
 
   Future<void> _continue() async {
@@ -413,6 +553,57 @@ class _GameplayViewState extends State<GameplayView> {
     _bloc.add(const NextLevelPressed());
   }
 
+  /// Continue asked for a level that couldn't be made (review
+  /// CORRECTNESS-3): the bloc keeps the won state and emits the error, so
+  /// the win or Chapter-complete overlay would stay up with its Continue
+  /// spent. The failure card replaces it instead, with Try again and Back
+  /// to Home. An error with no Continue in flight is the route's own
+  /// (the page's [RetryView]) or one the bloc recovers from itself.
+  void _onContinueFailed(AppException exception) {
+    final continuingFrom = switch (_overlay) {
+      GameplayOverlay.win ||
+      GameplayOverlay.chapterComplete ||
+      GameplayOverlay.continueFailed => true,
+      GameplayOverlay.none ||
+      GameplayOverlay.pause ||
+      GameplayOverlay.outOfMoves ||
+      GameplayOverlay.allLevelsDone => false,
+    };
+    if (!_continuing || !continuingFrom) return;
+    setState(() {
+      _continuing = false;
+      _continueFailure = exception;
+      _overlay = GameplayOverlay.continueFailed;
+    });
+  }
+
+  /// The failure card's Try again: the bloc still holds the won level, so
+  /// Continue's `NextLevelPressed` asks for the same next level again.
+  void _retryContinue() => unawaited(_continue());
+
+  /// "Next: Chapter N+1 · Name" (frame 4.6), from the next campaign level's
+  /// own chapter; null past the last catalog chapter (`nextRequest` is a
+  /// bonus level instead) hides the line.
+  String? _nextChapterLine(GameplayState state) {
+    final nextRequest = state.nextRequest;
+    if (nextRequest is! CampaignPlay) return null;
+    final nextEntry = widget.services.levels.entryAt(nextRequest.order);
+    if (nextEntry == null) return null;
+    final next = ChapterProgress.of(nextEntry, widget.services.levels);
+    return context.localizations.chapterCompleteNext(
+      next.number,
+      next.displayName(context.localizations),
+    );
+  }
+
+  /// The daily puzzle's date chip, "Sep 26" (frame 5.3, `LevelPill.daily`).
+  String _dailyDateLabel(BuildContext context, int yyyymmdd) {
+    final date = LocalDate.fromYyyymmdd(yyyymmdd);
+    return DateFormat.MMMd(
+      Localizations.localeOf(context).toString(),
+    ).format(date.startOfDay);
+  }
+
   // --- Build ------------------------------------------------------------
 
   @override
@@ -426,7 +617,17 @@ class _GameplayViewState extends State<GameplayView> {
         listener: _onBlocState,
         builder: (context, value) {
           final state = value.data;
-          final theme = _chapter?.theme ?? ChapterTheme.ch01;
+          // The player's fixed theme, else the level's own chapter (or the
+          // last chapter's/current chapter's for bonus/daily, m3-design
+          // §9.1); `_chapter` (the entry's own bundle chapter) only while
+          // nothing has loaded yet.
+          final theme = state == null
+              ? _chapter?.theme ?? ChapterTheme.ch01
+              : ChapterTheme.byId(
+                      widget.services.save.document.selectedTheme ??
+                          state.play.themeId,
+                    ) ??
+                    ChapterTheme.ch01;
           return Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: theme.fallbackColor,
@@ -445,10 +646,14 @@ class _GameplayViewState extends State<GameplayView> {
                   Center(
                     child: RetryView(
                       exception: value.exception,
-                      onRetry: () =>
-                          _bloc.add(GameplayStarted(widget.levelNumber)),
+                      onRetry: () => _bloc.add(GameplayStarted(widget.request)),
                     ),
                   ),
+                // A generated request (bonus, daily) resolves behind a
+                // spinner over the old board, kept on screen underneath
+                // (m3-design §6.4 item 1, §10.8).
+                if (value.isLoading)
+                  const _GeneratingOverlay(key: ValueKey('generatingSpinner')),
               ],
             ),
           );
@@ -466,6 +671,9 @@ class _GameplayViewState extends State<GameplayView> {
     final chapter = _chapter;
     final symbols = services.database.symbolsMode.dollSymbols;
     final bloc = _bloc;
+    // All Levels Done (4.9): a bonus request past the last campaign level.
+    final nextRequest = state.nextRequest;
+    final bonusRequest = nextRequest is BonusPlay ? nextRequest : null;
     // Won: input is locked for the winning batch (~2.4 s) and the win
     // overlay, but the chrome keeps its look (frame 2.5 draws it at full
     // strength while the set flies) and only swallows touches, instead of
@@ -478,7 +686,27 @@ class _GameplayViewState extends State<GameplayView> {
     final hudCoins = won
         ? math.max(0, state.coins - state.winReward)
         : state.coins;
+    // Frames 4.10, 5.3: Bonus Endless and the daily puzzle name themselves
+    // on the level pill instead of "Level N".
+    final request = state.play.request;
+    final bonusNumber = request is BonusPlay ? request.number : null;
+    final dailyDateLabel = switch (request) {
+      DailyPlay(:final yyyymmdd) => _dailyDateLabel(context, yyyymmdd),
+      _ => null,
+    };
     return [
+      // Under the HUD (m3-design §10.4): its scrim never dims the pause
+      // button or the coin pill.
+      if (state.tutorial case final cue?)
+        Positioned.fill(
+          key: const ValueKey('tutorialOverlay'),
+          child: TutorialOverlay(
+            cue: cue,
+            board: state.board,
+            geometry: _geometry,
+            library: services.fx,
+          ),
+        ),
       Positioned(
         left: 0,
         right: 0,
@@ -490,6 +718,8 @@ class _GameplayViewState extends State<GameplayView> {
           setsDone: math.min(_setsShown, state.totalSets),
           setsTotal: state.totalSets,
           sparkleScale: _counterSparkleScale,
+          bonusNumber: bonusNumber,
+          dailyDateLabel: dailyDateLabel,
           library: services.fx,
           onPause:
               won || (overlay == GameplayOverlay.none && state.acceptsInput)
@@ -562,6 +792,10 @@ class _GameplayViewState extends State<GameplayView> {
             child: OutOfMovesSheet(
               freeUndosLeft: state.freeUndosLeft,
               showFreeUndos: !state.unlimitedBoosters,
+              undoPrice: state.undoPrice,
+              slotPrice: state.slotPrice,
+              extraSlotsLeft: state.extraSlotsLeft,
+              unlimitedBoosters: state.unlimitedBoosters,
               onUndo: state.canUndo
                   ? () {
                       _closeOverlay();
@@ -598,8 +832,30 @@ class _GameplayViewState extends State<GameplayView> {
               symbols: symbols,
               feedback: services.feedback,
               library: services.fx,
-              onContinue: _continuing ? () {} : _continue,
+              onContinue: _continuing ? () {} : () => _onWinContinue(state),
             ),
+          ),
+        ),
+      if (overlay == GameplayOverlay.chapterComplete && chapter != null)
+        Positioned.fill(
+          key: const ValueKey(GameplayOverlay.chapterComplete),
+          child: ChapterCompleteOverlay(
+            chapterNumber: chapter.number,
+            chapterName: chapter.displayName(context.localizations),
+            figurineId: chapter.figurineId,
+            coins: state.chapterReward,
+            nextLine: _nextChapterLine(state),
+            library: services.fx,
+            onContinue: _continuing ? () {} : _continueFromChapterComplete,
+          ),
+        ),
+      if (overlay == GameplayOverlay.continueFailed && _continueFailure != null)
+        Positioned.fill(
+          key: const ValueKey(GameplayOverlay.continueFailed),
+          child: NextLevelFailedCard(
+            exception: _continueFailure!,
+            onRetry: _continuing ? null : _retryContinue,
+            onHome: widget.onHome,
           ),
         ),
       if (overlay == GameplayOverlay.pause && _settings != null)
@@ -631,6 +887,7 @@ class _GameplayViewState extends State<GameplayView> {
               onResume: _resume,
               onRestart: _restartFromPause,
               onHome: widget.onHome,
+              onSettings: () => unawaited(_openSettings()),
             ),
           ),
         ),
@@ -644,8 +901,70 @@ class _GameplayViewState extends State<GameplayView> {
             symbols: symbols,
             library: services.fx,
             onHome: widget.onHome,
+            bonusNumber: bonusRequest?.number,
+            // TODO(M7): if this bonus level can't be generated the card
+            // stays up with its button live; Continue's failure has the
+            // retry card (`NextLevelFailedCard`), this path doesn't yet.
+            onPlayBonus: bonusRequest == null
+                ? null
+                : () => bloc.add(GameplayStarted(bonusRequest)),
+          ),
+        ),
+      if (state.offer case final offer?)
+        Positioned.fill(
+          key: const ValueKey('boosterOffer'),
+          child: BoosterBuyPopup(
+            type: offer.type,
+            price: offer.price,
+            coins: state.coins,
+            freeUndosPerLevel: services.save.freeUndosPerLevel,
+            onBuy: state.coins >= offer.price
+                ? () => bloc.add(BoosterPurchaseConfirmed(offer.type))
+                : null,
+            onDismiss: () => bloc.add(const BoosterPurchaseDismissed()),
+          ),
+        ),
+      if (state.intro case final mechanic?)
+        Positioned.fill(
+          key: const ValueKey('introCard'),
+          // The level's own dolls and board pieces (review FIDELITY-6).
+          child: IntroMechanicCard(
+            mechanic: mechanic,
+            skin: skin,
+            levelColors: [
+              for (final color in state.entry.level.setsByColor.keys)
+                if (!color.isWild) color,
+            ],
+            symbols: symbols,
+            library: services.fx,
+            onGotIt: () => bloc.add(const IntroDismissed()),
           ),
         ),
     ];
   }
+}
+
+/// `ui_spinner` over the old board while a generated request resolves
+/// (m3-design §6.4 item 1, §10.8): it absorbs touches, since the board
+/// beneath is the level just left, not the one loading.
+class _GeneratingOverlay extends StatelessWidget {
+  const _GeneratingOverlay({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Positioned.fill(
+    child: AbsorbPointer(
+      child: Center(
+        child: SizedBox.square(
+          dimension: 48,
+          child: LottieFxView(
+            id: FxId.uiSpinner,
+            fallback: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: AppColorTokens.primary,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

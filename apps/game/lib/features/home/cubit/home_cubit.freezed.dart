@@ -14,16 +14,27 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HomeState {
 
-/// The level the play button starts (spec §10.2 #2): the save's
-/// current level, moved past any skipped bundled level.
- int get currentLevel;/// Its tier, for the play button's HARD / SUPER HARD badge (§6.6).
- Tier get tier;/// Its chapter (`ch01`): Home's background follows the player's
-/// chapter.
- String get chapterId;/// The coin pill.
- int get coins;/// Levels available offline.
- int get levelCount;/// Every bundled level is won: Play shows All Levels Done (frame 4.9)
-/// until Bonus Endless (M3).
- bool get allLevelsDone;
+/// What PLAY starts (`LevelResolver.homeRequest`): a campaign level
+/// while one is left, else Bonus Endless (m3-design §7.4, D74). A saved
+/// board of this request continues.
+ PlayRequest get playRequest;/// [playRequest]'s tier, for the play button's badge (§6.6): the
+/// bundle entry's for a campaign level, `DifficultyCurve.tierForLevel`
+/// for a bonus one.
+ Tier get tier;/// The board theme behind the hero: `selectedTheme ?? current chapter's
+/// theme` (m3-design §10.3, §9.4).
+ String get themeId;/// The coin pill.
+ int get coins;/// Hides the Remove Ads tile (spec §9.2; M6).
+ bool get adsRemoved;/// The Daily tile: locked before Level 2 is won (m3-design §8.3).
+ bool get dailyUnlocked;/// The Daily tile's flame badge, 0 hides it.
+ int get dailyStreak;/// The next uncollected figurine's id (`FigurineInfo.id`), null once
+/// every catalog chapter is collected (`museumAllCollected`).
+ String? get museumFigurineId;/// Its locked art (`FigurineInfo.lockedArtAsset`).
+ String? get museumLockedArtAsset;/// The current chapter's levels already won, of [museumTotal]
+/// (m3-design §10.3's "15/20"); meaningless once [museumAllCollected].
+ int get museumDone; int get museumTotal;/// Every catalog chapter's figurine is in the museum (Bonus Endless):
+/// the tile shows [museumCollectedCount] of [museumCollectedTotal]
+/// instead (`TODO(design)`, m3-design §10.6).
+ bool get museumAllCollected; int get museumCollectedCount; int get museumCollectedTotal;
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -34,16 +45,16 @@ $HomeStateCopyWith<HomeState> get copyWith => _$HomeStateCopyWithImpl<HomeState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeState&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.chapterId, chapterId) || other.chapterId == chapterId)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.allLevelsDone, allLevelsDone) || other.allLevelsDone == allLevelsDone));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeState&&(identical(other.playRequest, playRequest) || other.playRequest == playRequest)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.themeId, themeId) || other.themeId == themeId)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.adsRemoved, adsRemoved) || other.adsRemoved == adsRemoved)&&(identical(other.dailyUnlocked, dailyUnlocked) || other.dailyUnlocked == dailyUnlocked)&&(identical(other.dailyStreak, dailyStreak) || other.dailyStreak == dailyStreak)&&(identical(other.museumFigurineId, museumFigurineId) || other.museumFigurineId == museumFigurineId)&&(identical(other.museumLockedArtAsset, museumLockedArtAsset) || other.museumLockedArtAsset == museumLockedArtAsset)&&(identical(other.museumDone, museumDone) || other.museumDone == museumDone)&&(identical(other.museumTotal, museumTotal) || other.museumTotal == museumTotal)&&(identical(other.museumAllCollected, museumAllCollected) || other.museumAllCollected == museumAllCollected)&&(identical(other.museumCollectedCount, museumCollectedCount) || other.museumCollectedCount == museumCollectedCount)&&(identical(other.museumCollectedTotal, museumCollectedTotal) || other.museumCollectedTotal == museumCollectedTotal));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentLevel,tier,chapterId,coins,levelCount,allLevelsDone);
+int get hashCode => Object.hash(runtimeType,playRequest,tier,themeId,coins,adsRemoved,dailyUnlocked,dailyStreak,museumFigurineId,museumLockedArtAsset,museumDone,museumTotal,museumAllCollected,museumCollectedCount,museumCollectedTotal);
 
 @override
 String toString() {
-  return 'HomeState(currentLevel: $currentLevel, tier: $tier, chapterId: $chapterId, coins: $coins, levelCount: $levelCount, allLevelsDone: $allLevelsDone)';
+  return 'HomeState(playRequest: $playRequest, tier: $tier, themeId: $themeId, coins: $coins, adsRemoved: $adsRemoved, dailyUnlocked: $dailyUnlocked, dailyStreak: $dailyStreak, museumFigurineId: $museumFigurineId, museumLockedArtAsset: $museumLockedArtAsset, museumDone: $museumDone, museumTotal: $museumTotal, museumAllCollected: $museumAllCollected, museumCollectedCount: $museumCollectedCount, museumCollectedTotal: $museumCollectedTotal)';
 }
 
 
@@ -54,11 +65,11 @@ abstract mixin class $HomeStateCopyWith<$Res>  {
   factory $HomeStateCopyWith(HomeState value, $Res Function(HomeState) _then) = _$HomeStateCopyWithImpl;
 @useResult
 $Res call({
- int currentLevel, Tier tier, String chapterId, int coins, int levelCount, bool allLevelsDone
+ PlayRequest playRequest, Tier tier, String themeId, int coins, bool adsRemoved, bool dailyUnlocked, int dailyStreak, String? museumFigurineId, String? museumLockedArtAsset, int museumDone, int museumTotal, bool museumAllCollected, int museumCollectedCount, int museumCollectedTotal
 });
 
 
-
+$PlayRequestCopyWith<$Res> get playRequest;
 
 }
 /// @nodoc
@@ -71,18 +82,35 @@ class _$HomeStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentLevel = null,Object? tier = null,Object? chapterId = null,Object? coins = null,Object? levelCount = null,Object? allLevelsDone = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? playRequest = null,Object? tier = null,Object? themeId = null,Object? coins = null,Object? adsRemoved = null,Object? dailyUnlocked = null,Object? dailyStreak = null,Object? museumFigurineId = freezed,Object? museumLockedArtAsset = freezed,Object? museumDone = null,Object? museumTotal = null,Object? museumAllCollected = null,Object? museumCollectedCount = null,Object? museumCollectedTotal = null,}) {
   return _then(_self.copyWith(
-currentLevel: null == currentLevel ? _self.currentLevel : currentLevel // ignore: cast_nullable_to_non_nullable
-as int,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
-as Tier,chapterId: null == chapterId ? _self.chapterId : chapterId // ignore: cast_nullable_to_non_nullable
+playRequest: null == playRequest ? _self.playRequest : playRequest // ignore: cast_nullable_to_non_nullable
+as PlayRequest,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
+as Tier,themeId: null == themeId ? _self.themeId : themeId // ignore: cast_nullable_to_non_nullable
 as String,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
-as int,levelCount: null == levelCount ? _self.levelCount : levelCount // ignore: cast_nullable_to_non_nullable
-as int,allLevelsDone: null == allLevelsDone ? _self.allLevelsDone : allLevelsDone // ignore: cast_nullable_to_non_nullable
-as bool,
+as int,adsRemoved: null == adsRemoved ? _self.adsRemoved : adsRemoved // ignore: cast_nullable_to_non_nullable
+as bool,dailyUnlocked: null == dailyUnlocked ? _self.dailyUnlocked : dailyUnlocked // ignore: cast_nullable_to_non_nullable
+as bool,dailyStreak: null == dailyStreak ? _self.dailyStreak : dailyStreak // ignore: cast_nullable_to_non_nullable
+as int,museumFigurineId: freezed == museumFigurineId ? _self.museumFigurineId : museumFigurineId // ignore: cast_nullable_to_non_nullable
+as String?,museumLockedArtAsset: freezed == museumLockedArtAsset ? _self.museumLockedArtAsset : museumLockedArtAsset // ignore: cast_nullable_to_non_nullable
+as String?,museumDone: null == museumDone ? _self.museumDone : museumDone // ignore: cast_nullable_to_non_nullable
+as int,museumTotal: null == museumTotal ? _self.museumTotal : museumTotal // ignore: cast_nullable_to_non_nullable
+as int,museumAllCollected: null == museumAllCollected ? _self.museumAllCollected : museumAllCollected // ignore: cast_nullable_to_non_nullable
+as bool,museumCollectedCount: null == museumCollectedCount ? _self.museumCollectedCount : museumCollectedCount // ignore: cast_nullable_to_non_nullable
+as int,museumCollectedTotal: null == museumCollectedTotal ? _self.museumCollectedTotal : museumCollectedTotal // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
-
+/// Create a copy of HomeState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PlayRequestCopyWith<$Res> get playRequest {
+  
+  return $PlayRequestCopyWith<$Res>(_self.playRequest, (value) {
+    return _then(_self.copyWith(playRequest: value));
+  });
+}
 }
 
 
@@ -164,10 +192,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentLevel,  Tier tier,  String chapterId,  int coins,  int levelCount,  bool allLevelsDone)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( PlayRequest playRequest,  Tier tier,  String themeId,  int coins,  bool adsRemoved,  bool dailyUnlocked,  int dailyStreak,  String? museumFigurineId,  String? museumLockedArtAsset,  int museumDone,  int museumTotal,  bool museumAllCollected,  int museumCollectedCount,  int museumCollectedTotal)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeState() when $default != null:
-return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.levelCount,_that.allLevelsDone);case _:
+return $default(_that.playRequest,_that.tier,_that.themeId,_that.coins,_that.adsRemoved,_that.dailyUnlocked,_that.dailyStreak,_that.museumFigurineId,_that.museumLockedArtAsset,_that.museumDone,_that.museumTotal,_that.museumAllCollected,_that.museumCollectedCount,_that.museumCollectedTotal);case _:
   return orElse();
 
 }
@@ -185,10 +213,10 @@ return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentLevel,  Tier tier,  String chapterId,  int coins,  int levelCount,  bool allLevelsDone)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( PlayRequest playRequest,  Tier tier,  String themeId,  int coins,  bool adsRemoved,  bool dailyUnlocked,  int dailyStreak,  String? museumFigurineId,  String? museumLockedArtAsset,  int museumDone,  int museumTotal,  bool museumAllCollected,  int museumCollectedCount,  int museumCollectedTotal)  $default,) {final _that = this;
 switch (_that) {
 case _HomeState():
-return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.levelCount,_that.allLevelsDone);case _:
+return $default(_that.playRequest,_that.tier,_that.themeId,_that.coins,_that.adsRemoved,_that.dailyUnlocked,_that.dailyStreak,_that.museumFigurineId,_that.museumLockedArtAsset,_that.museumDone,_that.museumTotal,_that.museumAllCollected,_that.museumCollectedCount,_that.museumCollectedTotal);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +233,10 @@ return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentLevel,  Tier tier,  String chapterId,  int coins,  int levelCount,  bool allLevelsDone)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( PlayRequest playRequest,  Tier tier,  String themeId,  int coins,  bool adsRemoved,  bool dailyUnlocked,  int dailyStreak,  String? museumFigurineId,  String? museumLockedArtAsset,  int museumDone,  int museumTotal,  bool museumAllCollected,  int museumCollectedCount,  int museumCollectedTotal)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeState() when $default != null:
-return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.levelCount,_that.allLevelsDone);case _:
+return $default(_that.playRequest,_that.tier,_that.themeId,_that.coins,_that.adsRemoved,_that.dailyUnlocked,_that.dailyStreak,_that.museumFigurineId,_that.museumLockedArtAsset,_that.museumDone,_that.museumTotal,_that.museumAllCollected,_that.museumCollectedCount,_that.museumCollectedTotal);case _:
   return null;
 
 }
@@ -220,24 +248,43 @@ return $default(_that.currentLevel,_that.tier,_that.chapterId,_that.coins,_that.
 
 
 class _HomeState implements HomeState {
-  const _HomeState({this.currentLevel = 1, this.tier = Tier.easy, this.chapterId = 'ch01', this.coins = 0, this.levelCount = 0, this.allLevelsDone = false});
+  const _HomeState({required this.playRequest, this.tier = Tier.easy, this.themeId = 'ch01', this.coins = 0, this.adsRemoved = false, this.dailyUnlocked = false, this.dailyStreak = 0, this.museumFigurineId, this.museumLockedArtAsset, this.museumDone = 0, this.museumTotal = ChapterInfo.levelsPerChapter, this.museumAllCollected = false, this.museumCollectedCount = 0, this.museumCollectedTotal = 0});
   
 
-/// The level the play button starts (spec §10.2 #2): the save's
-/// current level, moved past any skipped bundled level.
-@override@JsonKey() final  int currentLevel;
-/// Its tier, for the play button's HARD / SUPER HARD badge (§6.6).
+/// What PLAY starts (`LevelResolver.homeRequest`): a campaign level
+/// while one is left, else Bonus Endless (m3-design §7.4, D74). A saved
+/// board of this request continues.
+@override final  PlayRequest playRequest;
+/// [playRequest]'s tier, for the play button's badge (§6.6): the
+/// bundle entry's for a campaign level, `DifficultyCurve.tierForLevel`
+/// for a bonus one.
 @override@JsonKey() final  Tier tier;
-/// Its chapter (`ch01`): Home's background follows the player's
-/// chapter.
-@override@JsonKey() final  String chapterId;
+/// The board theme behind the hero: `selectedTheme ?? current chapter's
+/// theme` (m3-design §10.3, §9.4).
+@override@JsonKey() final  String themeId;
 /// The coin pill.
 @override@JsonKey() final  int coins;
-/// Levels available offline.
-@override@JsonKey() final  int levelCount;
-/// Every bundled level is won: Play shows All Levels Done (frame 4.9)
-/// until Bonus Endless (M3).
-@override@JsonKey() final  bool allLevelsDone;
+/// Hides the Remove Ads tile (spec §9.2; M6).
+@override@JsonKey() final  bool adsRemoved;
+/// The Daily tile: locked before Level 2 is won (m3-design §8.3).
+@override@JsonKey() final  bool dailyUnlocked;
+/// The Daily tile's flame badge, 0 hides it.
+@override@JsonKey() final  int dailyStreak;
+/// The next uncollected figurine's id (`FigurineInfo.id`), null once
+/// every catalog chapter is collected (`museumAllCollected`).
+@override final  String? museumFigurineId;
+/// Its locked art (`FigurineInfo.lockedArtAsset`).
+@override final  String? museumLockedArtAsset;
+/// The current chapter's levels already won, of [museumTotal]
+/// (m3-design §10.3's "15/20"); meaningless once [museumAllCollected].
+@override@JsonKey() final  int museumDone;
+@override@JsonKey() final  int museumTotal;
+/// Every catalog chapter's figurine is in the museum (Bonus Endless):
+/// the tile shows [museumCollectedCount] of [museumCollectedTotal]
+/// instead (`TODO(design)`, m3-design §10.6).
+@override@JsonKey() final  bool museumAllCollected;
+@override@JsonKey() final  int museumCollectedCount;
+@override@JsonKey() final  int museumCollectedTotal;
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +296,16 @@ _$HomeStateCopyWith<_HomeState> get copyWith => __$HomeStateCopyWithImpl<_HomeSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeState&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.chapterId, chapterId) || other.chapterId == chapterId)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.allLevelsDone, allLevelsDone) || other.allLevelsDone == allLevelsDone));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeState&&(identical(other.playRequest, playRequest) || other.playRequest == playRequest)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.themeId, themeId) || other.themeId == themeId)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.adsRemoved, adsRemoved) || other.adsRemoved == adsRemoved)&&(identical(other.dailyUnlocked, dailyUnlocked) || other.dailyUnlocked == dailyUnlocked)&&(identical(other.dailyStreak, dailyStreak) || other.dailyStreak == dailyStreak)&&(identical(other.museumFigurineId, museumFigurineId) || other.museumFigurineId == museumFigurineId)&&(identical(other.museumLockedArtAsset, museumLockedArtAsset) || other.museumLockedArtAsset == museumLockedArtAsset)&&(identical(other.museumDone, museumDone) || other.museumDone == museumDone)&&(identical(other.museumTotal, museumTotal) || other.museumTotal == museumTotal)&&(identical(other.museumAllCollected, museumAllCollected) || other.museumAllCollected == museumAllCollected)&&(identical(other.museumCollectedCount, museumCollectedCount) || other.museumCollectedCount == museumCollectedCount)&&(identical(other.museumCollectedTotal, museumCollectedTotal) || other.museumCollectedTotal == museumCollectedTotal));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentLevel,tier,chapterId,coins,levelCount,allLevelsDone);
+int get hashCode => Object.hash(runtimeType,playRequest,tier,themeId,coins,adsRemoved,dailyUnlocked,dailyStreak,museumFigurineId,museumLockedArtAsset,museumDone,museumTotal,museumAllCollected,museumCollectedCount,museumCollectedTotal);
 
 @override
 String toString() {
-  return 'HomeState(currentLevel: $currentLevel, tier: $tier, chapterId: $chapterId, coins: $coins, levelCount: $levelCount, allLevelsDone: $allLevelsDone)';
+  return 'HomeState(playRequest: $playRequest, tier: $tier, themeId: $themeId, coins: $coins, adsRemoved: $adsRemoved, dailyUnlocked: $dailyUnlocked, dailyStreak: $dailyStreak, museumFigurineId: $museumFigurineId, museumLockedArtAsset: $museumLockedArtAsset, museumDone: $museumDone, museumTotal: $museumTotal, museumAllCollected: $museumAllCollected, museumCollectedCount: $museumCollectedCount, museumCollectedTotal: $museumCollectedTotal)';
 }
 
 
@@ -269,11 +316,11 @@ abstract mixin class _$HomeStateCopyWith<$Res> implements $HomeStateCopyWith<$Re
   factory _$HomeStateCopyWith(_HomeState value, $Res Function(_HomeState) _then) = __$HomeStateCopyWithImpl;
 @override @useResult
 $Res call({
- int currentLevel, Tier tier, String chapterId, int coins, int levelCount, bool allLevelsDone
+ PlayRequest playRequest, Tier tier, String themeId, int coins, bool adsRemoved, bool dailyUnlocked, int dailyStreak, String? museumFigurineId, String? museumLockedArtAsset, int museumDone, int museumTotal, bool museumAllCollected, int museumCollectedCount, int museumCollectedTotal
 });
 
 
-
+@override $PlayRequestCopyWith<$Res> get playRequest;
 
 }
 /// @nodoc
@@ -286,19 +333,36 @@ class __$HomeStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentLevel = null,Object? tier = null,Object? chapterId = null,Object? coins = null,Object? levelCount = null,Object? allLevelsDone = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? playRequest = null,Object? tier = null,Object? themeId = null,Object? coins = null,Object? adsRemoved = null,Object? dailyUnlocked = null,Object? dailyStreak = null,Object? museumFigurineId = freezed,Object? museumLockedArtAsset = freezed,Object? museumDone = null,Object? museumTotal = null,Object? museumAllCollected = null,Object? museumCollectedCount = null,Object? museumCollectedTotal = null,}) {
   return _then(_HomeState(
-currentLevel: null == currentLevel ? _self.currentLevel : currentLevel // ignore: cast_nullable_to_non_nullable
-as int,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
-as Tier,chapterId: null == chapterId ? _self.chapterId : chapterId // ignore: cast_nullable_to_non_nullable
+playRequest: null == playRequest ? _self.playRequest : playRequest // ignore: cast_nullable_to_non_nullable
+as PlayRequest,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
+as Tier,themeId: null == themeId ? _self.themeId : themeId // ignore: cast_nullable_to_non_nullable
 as String,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
-as int,levelCount: null == levelCount ? _self.levelCount : levelCount // ignore: cast_nullable_to_non_nullable
-as int,allLevelsDone: null == allLevelsDone ? _self.allLevelsDone : allLevelsDone // ignore: cast_nullable_to_non_nullable
-as bool,
+as int,adsRemoved: null == adsRemoved ? _self.adsRemoved : adsRemoved // ignore: cast_nullable_to_non_nullable
+as bool,dailyUnlocked: null == dailyUnlocked ? _self.dailyUnlocked : dailyUnlocked // ignore: cast_nullable_to_non_nullable
+as bool,dailyStreak: null == dailyStreak ? _self.dailyStreak : dailyStreak // ignore: cast_nullable_to_non_nullable
+as int,museumFigurineId: freezed == museumFigurineId ? _self.museumFigurineId : museumFigurineId // ignore: cast_nullable_to_non_nullable
+as String?,museumLockedArtAsset: freezed == museumLockedArtAsset ? _self.museumLockedArtAsset : museumLockedArtAsset // ignore: cast_nullable_to_non_nullable
+as String?,museumDone: null == museumDone ? _self.museumDone : museumDone // ignore: cast_nullable_to_non_nullable
+as int,museumTotal: null == museumTotal ? _self.museumTotal : museumTotal // ignore: cast_nullable_to_non_nullable
+as int,museumAllCollected: null == museumAllCollected ? _self.museumAllCollected : museumAllCollected // ignore: cast_nullable_to_non_nullable
+as bool,museumCollectedCount: null == museumCollectedCount ? _self.museumCollectedCount : museumCollectedCount // ignore: cast_nullable_to_non_nullable
+as int,museumCollectedTotal: null == museumCollectedTotal ? _self.museumCollectedTotal : museumCollectedTotal // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
-
+/// Create a copy of HomeState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PlayRequestCopyWith<$Res> get playRequest {
+  
+  return $PlayRequestCopyWith<$Res>(_self.playRequest, (value) {
+    return _then(_self.copyWith(playRequest: value));
+  });
+}
 }
 
 // dart format on

@@ -1,35 +1,52 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/base/base_async_state.dart';
+import 'package:nesty_game/core/models/intro_mechanic.dart';
+import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
+import 'package:nesty_game/core/repository/level_resolver.dart';
 import 'package:nesty_game/core/services/audio/fake_audio_service.dart';
 import 'package:nesty_game/core/services/audio/jingle_player.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/music/fake_music_service.dart';
+import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
+import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
+import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
+import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
+import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
+import 'package:nesty_game/features/gameplay/overlays/tutorial_overlay.dart';
+import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_services.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/booster_bar.dart';
 import 'package:nesty_game/features/gameplay/widgets/chapter_ribbon.dart';
 import 'package:nesty_game/features/gameplay/widgets/soft_stuck_banner.dart';
+import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
 import '../../../core/ui/support/ui_harness.dart';
 import '../../../helpers/level_fixtures.dart';
 import '../../support/controlled_skin_service.dart';
 import '../../support/screen_harness.dart';
 import '../bloc/support/bloc_fixtures.dart';
+import '../bloc/support/scripted_level_resolver.dart';
 import '../bloc/support/scripted_solver_service.dart';
 
 /// Half the chapter ribbon's width at rest on its canvas: 380 dp (LOTTIE.md
@@ -76,38 +93,60 @@ Future<_Screen> _pump(
   WidgetTester tester, {
   List<LevelBundleEntry>? entries,
   int level = 1,
+  PlayRequest? request,
   bool drivesOutcomes = true,
   ScriptedSolverService? solver,
   SkinService? skins,
   FakeRemoteConfigService? config,
+  SaveService? save,
+  LevelResolver? resolver,
   Size size = const Size(390, 844),
   double textScale = 1,
   bool reduceMotion = false,
+  Future<void> Function(FakeDatabaseService database)? onSettings,
 }) async {
-  final used = entries ?? [entryFor(tutorialLevel)];
-  final bloc = buildBloc(entries: used, solver: solver, config: config);
+  // The board shape only (id T0001, never gated by the M3 tutorial script,
+  // which keys on the real L0001/L0002 ids, m3-design §10.4): tests that
+  // aren't specifically about the tutorial use this instead of the real
+  // `tutorialLevel`/`L0001`, so a scripted cue never silently swallows their
+  // taps (bloc lane's known_issues on this file).
+  final used = entries ?? [entryFor(defaultLevel)];
+  final usedRequest = request ?? PlayRequest.campaign(level);
+  final bloc = buildBloc(
+    entries: used,
+    solver: solver,
+    config: config,
+    save: save,
+    resolver: resolver,
+  );
   addTearDown(bloc.close);
   final factory = FakeBoardFactory(drivesOutcomes: drivesOutcomes);
   final database = FakeDatabaseService();
   final homes = <int>[];
   final music = FakeMusicService();
   final jingles = FakeAudioService();
+  final jingleCues = JingleCues(music, jingles);
+  addTearDown(jingleCues.dispose);
   await pumpScreen(
     tester,
     BlocProvider.value(
-      value: bloc..add(GameplayStarted(level)),
+      value: bloc..add(GameplayStarted(usedRequest)),
       child: GameplayView(
-        levelNumber: level,
+        request: usedRequest,
         services: GameplayServices(
           skins: skins ?? FakeSkinService(),
           levels: FakeLevelRepository(entries: used),
+          resolver: resolverOf(bloc),
+          save: saveOf(bloc),
           database: database,
           fx: FakeFxLibrary(),
           feedback: RecordingCues(),
           music: music,
           jingles: jingles,
+          jingleCues: jingleCues,
         ),
         onHome: () => homes.add(1),
+        onSettings: () async => onSettings?.call(database),
         boardFactory: factory.call,
       ),
     ),
@@ -181,10 +220,10 @@ void main() {
       'opens when the board has played it, Continue loads the next level', (
     tester,
   ) async {
-    final second = levelFrom(tutorialLevelJson);
+    final second = levelFrom(defaultLevelJson);
     final screen = await _pump(
       tester,
-      entries: [entryFor(tutorialLevel), entryFor(second, order: 2)],
+      entries: [entryFor(defaultLevel), entryFor(second, order: 2)],
     );
     await _win(tester, screen);
     // The bloc has won, but the board is still playing the batch.
@@ -241,7 +280,7 @@ void main() {
       final skins = ControlledSkinService();
       final screen = await _pump(
         tester,
-        entries: [entryFor(tutorialLevel), entryFor(redBlue, order: 2)],
+        entries: [entryFor(defaultLevel), entryFor(redBlue, order: 2)],
         skins: skins,
       );
       screen.board.layOut(screen.state.board);
@@ -328,10 +367,10 @@ void main() {
 
   testWidgets('won: the HUD keeps the old balance until the next level '
       '(frames 1.5 and 2.8, Q57)', (tester) async {
-    final second = levelFrom(tutorialLevelJson);
+    final second = levelFrom(defaultLevelJson);
     final screen = await _pump(
       tester,
-      entries: [entryFor(tutorialLevel), entryFor(second, order: 2)],
+      entries: [entryFor(defaultLevel), entryFor(second, order: 2)],
     );
     int hudCoins() => tester.widget<CoinPill>(find.byType(CoinPill)).coins;
     final before = screen.state.coins;
@@ -361,20 +400,46 @@ void main() {
 
   testWidgets('soft stuck with nothing to undo suggests Restart, and Undo '
       'doesn\'t glow (review FIDELITY-6)', (tester) async {
+    // `canUndo` only means "there is a move in history" (`session.canUndo`,
+    // m3-design §7.3): under the M3 coin-offer economy it stays true with 0
+    // free undos (the press opens the offer instead), so the only way
+    // there is genuinely nothing to undo is a completing move, which clears
+    // the history outright (spec §2.4). Two families, one of which
+    // completes in a single move while the other stays untouched, so the
+    // board keeps playing (not won) with an empty history.
+    final level = levelFrom('''
+{
+  "schemaVersion": 1,
+  "id": "T0201",
+  "maxSize": 3,
+  "shelves": [
+    [ {"type": "open", "nest": ["red3"]},
+      {"type": "open", "nest": ["blue3"]},
+      {"type": "open", "nest": ["red2", "red1"]} ],
+    [ {"type": "open", "nest": ["blue2", "blue1"]},
+      {"type": "open", "nest": null},
+      {"type": "open", "nest": null} ]
+  ]
+}
+''');
     final screen = await _pump(
       tester,
-      // No free undos: Undo can't help (the coin path is M3).
-      config: FakeRemoteConfigService()
-        ..setOverride(RemoteConfigKeys.freeUndosPerLevel, 0),
+      entries: [entryFor(level)],
       solver: ScriptedSolverService(
         onSoftStuck: (state) =>
             state.moveCount > 0 ? SolveVerdict.unsolvable : SolveVerdict.solved,
       ),
     );
-    await screen.move(tester, red2, red3);
+    // r0c2 (red2 over red1) onto r0c0 (red3): the red family completes.
+    await screen.move(tester, 'r0c2', 'r0c0');
     await _settle(tester);
+    expect(screen.state.status, GameplayStatus.playing, reason: 'blue is left');
     expect(screen.state.softStuck, isTrue);
-    expect(screen.state.canUndo, isFalse);
+    expect(
+      screen.state.canUndo,
+      isFalse,
+      reason: 'the completing move cleared the history (spec §2.4)',
+    );
     expect(find.text('Try Restart? You can keep playing too.'), findsOneWidget);
     expect(find.byType(BoosterGlow), findsNothing);
     await tester.tap(
@@ -407,6 +472,124 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     expect(screen.homes, hasLength(1));
     await tester.pump(const Duration(seconds: 2));
+  });
+
+  group('a Continue whose next level fails (review CORRECTNESS-3)', () {
+    // Bonus Endless: bonus 2 can't be made (the resolver answers null, as
+    // for a generator/isolate failure), so NextLevelPressed ends in an
+    // AsyncValueError that still carries the won state.
+    ScriptedLevelResolver failingBonus() => ScriptedLevelResolver(
+      entries: {
+        const PlayRequest.bonus(1): playEntryFor(
+          const PlayRequest.bonus(1),
+          defaultLevel,
+        ),
+      },
+      nextOf: (request) => switch (request) {
+        BonusPlay(:final number) => PlayRequest.bonus(number + 1),
+        _ => null,
+      },
+    );
+
+    Finder inFailure(String text) => find.descendant(
+      of: find.byKey(const ValueKey(GameplayOverlay.continueFailed)),
+      matching: find.text(text),
+    );
+
+    testWidgets('offers Try again, which retries, and Back to Home', (
+      tester,
+    ) async {
+      final resolver = failingBonus();
+      final screen = await _pump(
+        tester,
+        request: const PlayRequest.bonus(1),
+        resolver: resolver,
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await _settle(tester);
+      expect(screen.bloc.state, isA<AsyncValueError<GameplayState>>());
+      expect(inFailure('Something went wrong.'), findsOneWidget);
+      expect(inFailure('Try again'), findsOneWidget);
+      expect(inFailure('Back to Home'), findsOneWidget);
+
+      // Still failing: the card stays, and Try again works again.
+      await tester.tap(inFailure('Try again'));
+      await _settle(tester);
+      expect(inFailure('Try again'), findsOneWidget);
+
+      // The generator recovers: Try again plays bonus 2.
+      resolver.entries[const PlayRequest.bonus(2)] = playEntryFor(
+        const PlayRequest.bonus(2),
+        levelFrom(defaultLevelJson),
+      );
+      await tester.tap(inFailure('Try again'));
+      await _settle(tester);
+      expect(screen.state.play.request, const PlayRequest.bonus(2));
+      expect(screen.state.status, GameplayStatus.playing);
+      expect(
+        find.byKey(const ValueKey(GameplayOverlay.continueFailed)),
+        findsNothing,
+      );
+      expect(screen.board.overlayOpen, isFalse);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets("Chapter complete's Continue gets the same card", (
+      tester,
+    ) async {
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(defaultLevel, chapterId: 'ch01')],
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.campaign(1): playEntryFor(
+              const PlayRequest.campaign(1),
+              defaultLevel,
+              chapterId: 'ch01',
+              completesChapter: true,
+            ),
+          },
+          nextOf: (_) => const PlayRequest.campaign(2),
+        ),
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await _settle(tester);
+      expect(find.text('CHAPTER 1 COMPLETE'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await _settle(tester);
+      expect(find.text('CHAPTER 1 COMPLETE'), findsNothing);
+      expect(inFailure('Try again'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('Back to Home and the back button leave', (tester) async {
+      final screen = await _pump(
+        tester,
+        request: const PlayRequest.bonus(1),
+        resolver: failingBonus(),
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await _settle(tester);
+      await tester.tap(inFailure('Back to Home'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(screen.homes, hasLength(1));
+      await tester.binding.handlePopRoute();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(screen.homes, hasLength(2));
+    });
   });
 
   testWidgets('a board without a timeline: outcomes follow the bloc', (
@@ -480,10 +663,10 @@ void main() {
 
     testWidgets('the win overlay ducks the music to 0.3 while it is up; '
         'Continue brings it back', (tester) async {
-      final second = levelFrom(tutorialLevelJson);
+      final second = levelFrom(defaultLevelJson);
       final screen = await _pump(
         tester,
-        entries: [entryFor(tutorialLevel), entryFor(second, order: 2)],
+        entries: [entryFor(defaultLevel), entryFor(second, order: 2)],
       );
       await _win(tester, screen);
       expect(screen.music.ducking, isEmpty, reason: 'the set still flies');
@@ -507,7 +690,14 @@ void main() {
         'jingle_oom once the duck is in; closing it lifts the duck', (
       tester,
     ) async {
-      final screen = await _pump(tester, entries: [entryFor(outOfMovesLevel)]);
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        // The board's tower would otherwise lock input behind the unseen
+        // "towers" intro card (m3-design §10.4): this test is about the
+        // out-of-moves sheet, not the card.
+        save: saveWithIntrosSeen(),
+      );
       await screen.move(tester, 'r0c0', 'r0c3');
       screen.board.callbacks.onOutOfMoves();
       await tester.pump();
@@ -530,10 +720,11 @@ void main() {
       final screen = await _pump(
         tester,
         entries: [
-          entryFor(tutorialLevel),
+          entryFor(defaultLevel),
           entryFor(outOfMovesLevel, order: 2, chapterId: 'ch02'),
         ],
         level: 2,
+        save: saveWithIntrosSeen(),
       );
       expect(find.byType(ChapterRibbon), findsOneWidget);
       await screen.move(tester, 'r0c0', 'r0c3');
@@ -555,6 +746,7 @@ void main() {
         tester,
         entries: [entryFor(outOfMovesLevel)],
         drivesOutcomes: false,
+        save: saveWithIntrosSeen(),
       );
       await screen.move(tester, 'r0c0', 'r0c3');
       await tester.pump();
@@ -613,6 +805,56 @@ void main() {
     });
   });
 
+  // Review CORRECTNESS-4: Settings is a route over the level, and its
+  // toggles are the same settings as the pause dialog's.
+  testWidgets('Pause → Settings → back: the dialog re-reads the toggles and '
+      'the board takes the new Color symbols, with its art re-prepared', (
+    tester,
+  ) async {
+    final skins = ControlledSkinService();
+    final back = Completer<void>();
+    var opened = 0;
+    final screen = await _pump(
+      tester,
+      skins: skins,
+      onSettings: (database) async {
+        opened++;
+        await database.setMusicEnabled(false);
+        await database.setSymbolsMode(SymbolsMode.large);
+        await back.future;
+      },
+    );
+    screen.board.layOut(screen.state.board);
+    skins.complete(0);
+    await tester.pump();
+    expect(screen.board.symbols, DollSymbols.subtle);
+    expect(skins.requests.single.symbols, DollSymbols.subtle);
+
+    await tester.tap(find.bySemanticsLabel('Pause'));
+    await _settle(tester);
+    PauseSettings dialogSettings() =>
+        tester.widget<PauseDialog>(find.byType(PauseDialog)).settings;
+    expect(dialogSettings().music, isTrue);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(PauseDialog),
+        matching: find.text('Settings'),
+      ),
+    );
+    await tester.pump();
+    expect(opened, 1);
+
+    back.complete();
+    await _settle(tester);
+    expect(dialogSettings().music, isFalse);
+    expect(screen.board.symbols, DollSymbols.large);
+    expect(skins.requests, hasLength(2));
+    expect(skins.requests.last.symbols, DollSymbols.large);
+    skins.complete(1);
+    await tester.pump();
+    expect(screen.board.skins.last, same(skins.made[1]));
+  });
+
   testWidgets('the back button and leaving the app open the pause dialog', (
     tester,
   ) async {
@@ -636,7 +878,11 @@ void main() {
 
   testWidgets('out of moves: the sheet opens on the board report and its '
       'rows act', (tester) async {
-    final screen = await _pump(tester, entries: [entryFor(outOfMovesLevel)]);
+    final screen = await _pump(
+      tester,
+      entries: [entryFor(outOfMovesLevel)],
+      save: saveWithIntrosSeen(),
+    );
     await screen.move(tester, 'r0c0', 'r0c3');
     expect(screen.state.status, GameplayStatus.outOfMoves);
     expect(find.text('No moves left!'), findsNothing);
@@ -656,6 +902,133 @@ void main() {
     );
   });
 
+  group('a restored outcome (review CORRECTNESS-1)', () {
+    // The board only reports outcomes after playing a move's batch, and a
+    // restore is a start reset: the page opens the overlay itself.
+    testWidgets('a board saved out of moves opens its sheet again, and its '
+        'undo plays', (tester) async {
+      final save = saveWithIntrosSeen();
+      final stuck = GameSession(outOfMovesLevel)..move('r0c0', 'r0c3');
+      save.saveInProgress(
+        InProgressLevel(
+          request: const PlayRequest.campaign(1),
+          levelId: outOfMovesLevel.id,
+          levelVersion: 1,
+          session: GameSessionCodec.encode(stuck),
+        ),
+      );
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        save: save,
+      );
+      await _settle(tester);
+      expect(screen.state.status, GameplayStatus.outOfMoves);
+      expect(find.text('No moves left!'), findsOneWidget);
+      expect(screen.board.overlayOpen, isTrue);
+
+      await tester.tap(find.text('Take back your last move'));
+      await _settle(tester);
+      expect(find.text('No moves left!'), findsNothing);
+      expect(screen.state.status, GameplayStatus.playing);
+      expect(screen.board.overlayOpen, isFalse);
+    });
+
+    testWidgets('a board saved won opens the win overlay with its reward', (
+      tester,
+    ) async {
+      final save = FakeSaveService();
+      final won = GameSession(defaultLevel)
+        ..move(red1, red2)
+        ..move(red2, red3);
+      save.saveInProgress(
+        InProgressLevel(
+          request: const PlayRequest.campaign(1),
+          levelId: defaultLevel.id,
+          levelVersion: 1,
+          session: GameSessionCodec.encode(won),
+        ),
+      );
+      final screen = await _pump(
+        tester,
+        entries: [
+          entryFor(defaultLevel),
+          entryFor(levelFrom(defaultLevelJson), order: 2),
+        ],
+        save: save,
+      );
+      await _settle(tester);
+      expect(screen.state.status, GameplayStatus.won);
+      expect(find.bySemanticsLabel('Level Complete!'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(screen.state.levelNumber, 2);
+      await tester.pump(const Duration(seconds: 2));
+    });
+  });
+
+  group('out of moves: the sheet\'s prices come from the state '
+      '(m3-design §7.3, frame 3.5)', () {
+    Future<void> openSheet(
+      WidgetTester tester, {
+      required int extraSlots,
+      FakeRemoteConfigService? config,
+    }) async {
+      // `free_undos_per_level` is read through the save's Remote Config.
+      final save = FakeSaveService(remoteConfig: config);
+      while (save.boosterCount(BoosterKind.extraSlot) > extraSlots) {
+        save.useBooster(BoosterKind.extraSlot);
+      }
+      for (final mechanic in IntroMechanic.values) {
+        save.markIntroSeen(mechanic);
+      }
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        save: save,
+        config: config,
+      );
+      await screen.move(tester, 'r0c0', 'r0c3');
+      screen.board.callbacks.onOutOfMoves();
+      await _settle(tester);
+      expect(find.text('No moves left!'), findsOneWidget);
+    }
+
+    Finder inSheet(String text) => find.descendant(
+      of: find.byType(OutOfMovesSheet),
+      matching: find.text(text),
+    );
+
+    testWidgets('free undos spent and no +1 Slot held: price_undo and '
+        'price_slot', (tester) async {
+      await openSheet(
+        tester,
+        extraSlots: 0,
+        config: FakeRemoteConfigService()
+          ..setOverride(RemoteConfigKeys.freeUndosPerLevel, 0),
+      );
+      expect(
+        inSheet('${RemoteConfigKeys.priceUndo.defaultValue}'),
+        findsOneWidget,
+      );
+      expect(
+        inSheet('${RemoteConfigKeys.priceSlot.defaultValue}'),
+        findsOneWidget,
+      );
+      expect(inSheet('0'), findsNothing);
+    });
+
+    testWidgets('a +1 Slot held: no price on its row', (tester) async {
+      await openSheet(tester, extraSlots: 1);
+      expect(
+        inSheet('${RemoteConfigKeys.priceSlot.defaultValue}'),
+        findsNothing,
+      );
+      expect(inSheet('0'), findsNothing);
+    });
+  });
+
   testWidgets('a dismissed sheet stays closed until moves run out again', (
     tester,
   ) async {
@@ -663,6 +1036,7 @@ void main() {
       tester,
       entries: [entryFor(outOfMovesLevel)],
       drivesOutcomes: false,
+      save: saveWithIntrosSeen(),
     );
     await screen.move(tester, 'r0c0', 'r0c3');
     await _settle(tester);
@@ -706,11 +1080,11 @@ void main() {
   testWidgets('the first level of a chapter names it (4.7, L21)', (
     tester,
   ) async {
-    final second = levelFrom(tutorialLevelJson);
+    final second = levelFrom(defaultLevelJson);
     await _pump(
       tester,
       entries: [
-        entryFor(tutorialLevel),
+        entryFor(defaultLevel),
         entryFor(second, order: 2, chapterId: 'ch02'),
       ],
       level: 2,
@@ -736,6 +1110,152 @@ void main() {
     expect(screen.board.reduceMotion, isTrue);
   });
 
+  group('Chapter complete (4.6) and the daily win variant (5.4)', () {
+    testWidgets('a win that completes its chapter opens Chapter complete after '
+        'Continue, which then loads the next level (m3-design §9.3)', (
+      tester,
+    ) async {
+      final second = levelFrom(defaultLevelJson);
+      final resolver = ScriptedLevelResolver(
+        entries: {
+          const PlayRequest.campaign(1): playEntryFor(
+            const PlayRequest.campaign(1),
+            defaultLevel,
+            chapterId: 'ch01',
+            completesChapter: true,
+            rewardCoins: 10,
+          ),
+          const PlayRequest.campaign(2): playEntryFor(
+            const PlayRequest.campaign(2),
+            second,
+            chapterId: 'ch02',
+          ),
+        },
+        nextOf: (_) => const PlayRequest.campaign(2),
+      );
+      final screen = await _pump(
+        tester,
+        entries: [
+          entryFor(defaultLevel, chapterId: 'ch01'),
+          entryFor(second, order: 2, chapterId: 'ch02'),
+        ],
+        resolver: resolver,
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onFamilyLanded(1, 1, 1.5);
+      await tester.pump();
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      expect(find.bySemanticsLabel('Level Complete!'), findsOneWidget);
+
+      await tester.tap(find.text('Continue'));
+      await _settle(tester);
+      // Chapter complete, not the next level yet.
+      expect(find.bySemanticsLabel('Level Complete!'), findsNothing);
+      expect(screen.state.levelNumber, 1);
+      expect(find.text('CHAPTER 1 COMPLETE'), findsOneWidget);
+      // The figurine just earned, not the chapter (review FIDELITY-1).
+      expect(find.text('The Classic Family'), findsOneWidget);
+      expect(find.text('Added to your Museum!'), findsOneWidget);
+      expect(find.text('+150 coins'), findsOneWidget);
+      expect(find.text('Next: Chapter 2 · Rainy Café Corner'), findsOneWidget);
+      // JingleCues.chapterComplete() faded the music out at once.
+      expect(screen.music.calls, contains(const MusicCall.stopForChapter()));
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(screen.music.calls, contains(const MusicCall.playGame()));
+      expect(screen.state.levelNumber, 2);
+      expect(find.text('CHAPTER 1 COMPLETE'), findsNothing);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('a daily win: "Daily solved!", the streak card instead of the '
+        'chapter card, and "Back to Daily" (frame 5.4)', (tester) async {
+      const request = PlayRequest.daily(20260926);
+      final resolver = ScriptedLevelResolver(
+        entries: {
+          request: playEntryFor(request, defaultLevel, rewardCoins: 50),
+        },
+      );
+      final screen = await _pump(tester, request: request, resolver: resolver);
+      await _win(tester, screen);
+      screen.board.callbacks.onFamilyLanded(1, 1, 1.5);
+      await tester.pump();
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      expect(find.bySemanticsLabel('Daily solved!'), findsOneWidget);
+      expect(find.bySemanticsLabel('Level Complete!'), findsNothing);
+      expect(find.text('1-day streak'), findsOneWidget);
+      expect(find.byType(WinChapterCard), findsNothing);
+      expect(find.text('Back to Daily'), findsOneWidget);
+      expect(find.text('Continue'), findsNothing);
+    });
+  });
+
+  group('The purchase-offer popup, the tutorial overlay and intro cards '
+      '(m3-design §7.3, §10.4)', () {
+    testWidgets('a booster press with none left opens its buy popup; Buy '
+        'and Dismiss send the bloc events', (tester) async {
+      final screen = await _pump(
+        tester,
+        save: FakeSaveService(
+          initial: const SaveDocument(inventory: BoosterInventory(hint: 0)),
+        ),
+      );
+      await tester.tap(find.text('Hint'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(BoosterBuyPopup), findsOneWidget);
+      expect(screen.state.acceptsInput, isFalse);
+
+      await tester.tap(find.byType(NestyCloseButton));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(BoosterBuyPopup), findsNothing);
+      expect(screen.state.offer, isNull);
+    });
+
+    testWidgets('an unseen mechanic opens its intro card; Got it dismisses '
+        'it', (tester) async {
+      final screen = await _pump(tester, entries: [entryFor(outOfMovesLevel)]);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(IntroMechanicCard), findsOneWidget);
+      expect(find.text('Towers!'), findsOneWidget);
+
+      await tester.tap(find.text('Got it'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(IntroMechanicCard), findsNothing);
+      expect(screen.state.intro, isNull);
+    });
+
+    testWidgets("the intro card draws the level's own art, in the level's "
+        'colours (review FIDELITY-6)', (tester) async {
+      final skins = ControlledSkinService();
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        skins: skins,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      IntroMechanicCard card() =>
+          tester.widget<IntroMechanicCard>(find.byType(IntroMechanicCard));
+      expect(card().skin, isNull, reason: 'before the art has landed');
+      expect(card().levelColors, [DollColor.red, DollColor.blue]);
+
+      screen.board.layOut(screen.state.board);
+      final skin = skins.complete(0);
+      await tester.pump();
+      expect(card().skin, same(skin));
+    });
+
+    testWidgets('the scripted tutorial move draws the scrim, the hand and '
+        'the tooltip', (tester) async {
+      final screen = await _pump(tester, entries: [entryFor(tutorialLevel)]);
+      screen.board.layOut(screen.state.board);
+      await tester.pump();
+      expect(find.byType(TutorialOverlay), findsOneWidget);
+    });
+  });
+
   for (final size in screenSizes) {
     for (final scale in textScales) {
       testWidgets('fits ${size.width.toInt()} wide at $scale× text', (
@@ -756,11 +1276,11 @@ void main() {
 
       testWidgets('the chapter ribbon fits ${size.width.toInt()} wide at '
           '$scale× text', (tester) async {
-        final second = levelFrom(tutorialLevelJson);
+        final second = levelFrom(defaultLevelJson);
         await _pump(
           tester,
           entries: [
-            entryFor(tutorialLevel),
+            entryFor(defaultLevel),
             entryFor(second, order: 2, chapterId: 'ch02'),
           ],
           level: 2,

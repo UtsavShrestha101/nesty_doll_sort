@@ -76,6 +76,53 @@ void main() {
     expect(find.bySemanticsLabel('1 of 4 families done'), findsOneWidget);
   });
 
+  testWidgets('Bonus Endless: "Bonus Level N" (frame 4.10)', (tester) async {
+    await pumpScreen(
+      tester,
+      Scaffold(
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: GameplayHud(
+            level: 56,
+            tier: Tier.hard,
+            coins: 830,
+            setsDone: 1,
+            setsTotal: 4,
+            bonusNumber: 3,
+            onPause: () {},
+            library: FakeFxLibrary(),
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Bonus Level 3'), findsOneWidget);
+    expect(find.text('Level 56'), findsNothing);
+  });
+
+  testWidgets('the daily puzzle: the date chip (frame 5.3)', (tester) async {
+    await pumpScreen(
+      tester,
+      Scaffold(
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: GameplayHud(
+            level: 56,
+            tier: Tier.hard,
+            coins: 830,
+            setsDone: 1,
+            setsTotal: 4,
+            dailyDateLabel: 'Sep 26',
+            onPause: () {},
+            library: FakeFxLibrary(),
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Daily'), findsOneWidget);
+    expect(find.text('Sep 26'), findsOneWidget);
+    expect(find.bySemanticsLabel('Daily puzzle, Sep 26'), findsOneWidget);
+  });
+
   testWidgets('pause sends its tap; disabled while an overlay is up', (
     tester,
   ) async {

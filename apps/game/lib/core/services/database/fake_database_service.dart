@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/database/hive_boxes.dart';
 import 'package:nesty_game/core/services/database/settings_schema.dart';
 
 /// In-memory [DatabaseService]: nothing survives a restart.
@@ -22,6 +23,7 @@ class FakeDatabaseService implements DatabaseService {
   bool _haptics = SettingsDefaults.haptics;
   SymbolsMode _symbols = SettingsDefaults.symbols;
   String _languageCode = SettingsDefaults.locale;
+  final Map<String, String> _save = {};
 
   @override
   bool get soundEnabled => _sound;
@@ -64,6 +66,23 @@ class FakeDatabaseService implements DatabaseService {
 
   @override
   Stream<String> get languageStream => _languageController.stream;
+
+  @override
+  String? readSaveDocument() => _save[SaveBoxKeys.document];
+
+  @override
+  Future<void> writeSaveDocument(String json) async =>
+      _save[SaveBoxKeys.document] = json;
+
+  @override
+  String? readSaveBackup(String key) => _save[key];
+
+  @override
+  Future<void> writeSaveBackup(String key, String json) async =>
+      _save[key] = json;
+
+  @override
+  Future<void> flushSave() async {}
 
   @override
   @disposeMethod

@@ -24,6 +24,7 @@ final class WinSummary {
     required this.reward,
     required this.families,
     required this.chapter,
+    this.dailyStreak,
   });
 
   /// Coins the win paid (the "+N").
@@ -32,8 +33,14 @@ final class WinSummary {
   /// One hopping doll per completed colour, in board order.
   final List<DollColor> families;
 
-  /// The chapter card (frame 2.8 "Chapter 3 · 16 / 20").
+  /// The chapter card (frame 2.8 "Chapter 3 · 16 / 20"); still computed for
+  /// a daily win (the background and the ribbon read it) but not shown,
+  /// since [dailyStreak] replaces it with the streak card (frame 5.4).
   final ChapterProgress chapter;
+
+  /// Set only for the daily puzzle (m3-design §8.4): the streak after this
+  /// solve, frame 5.4's variant instead of [chapter]'s card.
+  final int? dailyStreak;
 
   /// One doll per colour that made a family on [board], in the order the
   /// colours first appear on [level]'s board (frame 2.8's plank).
@@ -226,7 +233,8 @@ class _WinOverlayState extends State<WinOverlay>
   Widget _content(BuildContext context, WinOverlaySchedule schedule) {
     final l10n = context.localizations;
     final summary = widget.summary;
-    final title = l10n.winTitle;
+    final dailyStreak = summary.dailyStreak;
+    final title = dailyStreak == null ? l10n.winTitle : l10n.dailyWinTitle;
     const canvas = WinOverlay.ribbonCanvas;
     final ribbonScale = LottieRibbonFit.scaleFor(
       MediaQuery.sizeOf(context).width,
@@ -284,7 +292,9 @@ class _WinOverlayState extends State<WinOverlay>
           const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: WinChapterCard(progress: summary.chapter),
+            child: dailyStreak == null
+                ? WinChapterCard(progress: summary.chapter)
+                : DailyStreakCard(streak: dailyStreak),
           ),
           // NestyOverlay: the buttons start at 630, 60 below the 86-tall
           // card (484–570). With the ×3 button hidden (M6), Continue is the
@@ -293,7 +303,9 @@ class _WinOverlayState extends State<WinOverlay>
           Padding(
             padding: const EdgeInsets.fromLTRB(28, 0, 28, 16),
             child: TactileButton(
-              label: l10n.winContinue,
+              label: dailyStreak == null
+                  ? l10n.winContinue
+                  : l10n.dailyBackToDaily,
               onPressed: widget.onContinue,
             ),
           ),

@@ -4,7 +4,8 @@ import 'package:nesty_game/core/services/remote_config/fake_remote_config_servic
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 
 /// Spec §9.4, transcribed by hand from the spec text so a drifted default in
-/// code fails here.
+/// code fails here, plus the owner's `reward_medium` (Q5, D64) and M3's
+/// `reward_chapter` (docs/plans/m3-design.md §7.1).
 const _spec94 = <String, Object>{
   'interstitial_first_level': 8,
   'interstitial_every_n_levels': 3,
@@ -17,8 +18,10 @@ const _spec94 = <String, Object>{
   'price_hint': 60,
   'price_slot': 150,
   'reward_easy': 10,
+  'reward_medium': 10,
   'reward_hard': 25,
   'reward_superhard': 50,
+  'reward_chapter': 150,
   'daily_reward': 50,
   'streak7_reward': 300,
   'remove_ads_offer_after_interstitials': 3,
@@ -44,7 +47,7 @@ void main() {
     test('names are unique, so no key shadows another', () {
       final names = RemoteConfigKeys.all.map((key) => key.name).toList();
       expect(names.toSet(), hasLength(names.length));
-      expect(names, hasLength(17));
+      expect(names, hasLength(19));
     });
 
     test('typed accessors point at the right parameters', () {
@@ -53,6 +56,10 @@ void main() {
       expect(RemoteConfigKeys.priceSlot.name, 'price_slot');
       expect(RemoteConfigKeys.priceSlot.defaultValue, 150);
       expect(RemoteConfigKeys.streak7Reward.defaultValue, 300);
+      expect(RemoteConfigKeys.rewardMedium.name, 'reward_medium');
+      expect(RemoteConfigKeys.rewardMedium.defaultValue, 10);
+      expect(RemoteConfigKeys.rewardChapter.name, 'reward_chapter');
+      expect(RemoteConfigKeys.rewardChapter.defaultValue, 150);
     });
   });
 

@@ -1,8 +1,7 @@
 // The game is offline-first (CLAUDE.md rule 3): every sound, symbol, skin,
 // board sprite, theme, level, animation and font the code references must
 // be in the bundle. These checks load through the real asset bundle, so a
-// folder missing from pubspec.yaml fails here, not on a device. Later
-// features extend the lists (museum PNGs).
+// folder missing from pubspec.yaml fails here, not on a device.
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -10,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/repository/bundled_catalog_repository.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
@@ -171,6 +171,56 @@ void main() {
     );
   });
 
+  group('museum figurines (m3-design §9.5)', () {
+    final chapters = BundledCatalogRepository.bundledChapters;
+
+    test('every bundled figurine ships its earned and locked PNG', () {
+      expectAssets([
+        for (final chapter in chapters) ...[
+          chapter.figurine.artAsset,
+          chapter.figurine.lockedArtAsset,
+        ],
+      ]);
+    });
+
+    test('nothing else ships under assets/museum/', () {
+      expect(assets.where((a) => a.startsWith('assets/museum/')).toSet(), {
+        for (final chapter in chapters) ...[
+          chapter.figurine.artAsset,
+          chapter.figurine.lockedArtAsset,
+        ],
+      });
+    });
+
+    test('each is a real PNG at 600×600', () async {
+      for (final chapter in chapters) {
+        for (final asset in [
+          chapter.figurine.artAsset,
+          chapter.figurine.lockedArtAsset,
+        ]) {
+          final data = await rootBundle.load(asset);
+          final bytes = data.buffer.asUint8List(
+            data.offsetInBytes,
+            data.lengthInBytes,
+          );
+          expect(bytes.sublist(0, 8), const [
+            0x89,
+            0x50,
+            0x4E,
+            0x47,
+            0x0D,
+            0x0A,
+            0x1A,
+            0x0A,
+          ], reason: asset);
+          final view = ByteData.sublistView(bytes);
+          expect(view.getUint32(16, Endian.big), 600, reason: '$asset width');
+          expect(view.getUint32(20, Endian.big), 600, reason: '$asset height');
+        }
+      }
+    });
+  });
+
   test('the offline level bundle ships and decodes without issues', () async {
     expectAssets(['assets/levels/bundle.json']);
     final result = LevelBundleCodec.decodeString(
@@ -191,7 +241,14 @@ void main() {
           .where((a) => a.startsWith('${FxId.assetDirectory}/'))
           .toSet();
       expect(shipped, {for (final id in FxId.values) id.assetPath});
-      expect(assets.where((a) => a.endsWith('.png')), isEmpty);
+      // The placeholder PNGs never ship (D50); the bundled museum figurines
+      // (m3-design §9.5) are the app's only legitimate PNGs.
+      expect(
+        assets.where(
+          (a) => a.startsWith('${FxId.assetDirectory}/') && a.endsWith('.png'),
+        ),
+        isEmpty,
+      );
     });
 
     test('each parses with LottieComposition.fromBytes, clean, decoding no '

@@ -7,6 +7,7 @@ import 'package:nesty_game/features/fx/fx_image_source.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/overlays/modal_placement.dart';
 import 'package:nesty_game/features/gameplay/overlays/overlay_entrance.dart';
+import 'package:nesty_game/features/gameplay/overlays/overlay_text_link.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -15,13 +16,17 @@ import 'package:nesty_render/nesty_render.dart';
 /// — play bonus levels meanwhile." over a scrim, after the last bundled
 /// level (the gameplay page) or from Home once every level is won.
 ///
-/// TODO(M3): Bonus Endless (spec §7.1): the design's teal "Play Bonus
-/// Level 1" button above a "Back to Home" link. Until bonus levels exist,
-/// Back to Home is the card's button.
+/// Bonus Endless (spec §7.1, m3-design §7.4): with [bonusNumber] the teal
+/// "★ Play Bonus Level N" button starts it (`GameplayStarted(nextRequest)`,
+/// in the same page), and "Back to Home" is the quiet text link 16 below it
+/// (NestyOverlay `isBonus`, review FIDELITY-11); without one (no bonus
+/// resolved yet) Back to Home is the card's only button.
 class AllLevelsDone extends StatelessWidget {
   const AllLevelsDone({
     required this.families,
     required this.onHome,
+    this.bonusNumber,
+    this.onPlayBonus,
     this.images,
     this.renderer,
     this.symbols = DollSymbols.subtle,
@@ -32,6 +37,12 @@ class AllLevelsDone extends StatelessWidget {
   /// Up to five dolls hop in the illustration.
   final List<DollColor> families;
   final VoidCallback onHome;
+
+  /// `PlayRequest.bonus(number)`'s number, for "Play Bonus Level N".
+  final int? bonusNumber;
+
+  /// Null hides the bonus button (only past `bonusNumber` is resolved).
+  final VoidCallback? onPlayBonus;
   final FxImageSource? images;
   final DollRenderer? renderer;
   final DollSymbols symbols;
@@ -41,6 +52,9 @@ class AllLevelsDone extends StatelessWidget {
   /// 59 safe area.
   static const double side = 24;
   static const double cardTop = 150 - 59;
+
+  /// NestyOverlay `isBonus`: "Back to Home" `margin-top:16px`.
+  static const double _linkGap = 16;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +69,13 @@ class AllLevelsDone extends StatelessWidget {
         ],
       ),
       child: ModalCard(
+        // The link's touch area reaches past its text into the card's
+        // bottom padding, so the text keeps the frame's 22 below it.
+        padding: bonusNumber == null
+            ? null
+            : ModalCard.plainPadding.copyWith(
+                bottom: ModalCard.plainPadding.bottom - OverlayTextLink.slack,
+              ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -84,7 +105,19 @@ class AllLevelsDone extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            TactileButton(label: l10n.allLevelsBackHome, onPressed: onHome),
+            if (bonusNumber != null) ...[
+              TactileButton(
+                label: l10n.allLevelsPlayBonus(bonusNumber!),
+                icon: NestyIcons.star,
+                variant: TactileButtonVariant.teal,
+                onPressed: onPlayBonus,
+              ),
+              // NestyOverlay: the text 16 below the button; its touch area
+              // takes the first [OverlayTextLink.slack] of that.
+              const SizedBox(height: _linkGap - OverlayTextLink.slack),
+              OverlayTextLink(label: l10n.allLevelsBackHome, onPressed: onHome),
+            ] else
+              TactileButton(label: l10n.allLevelsBackHome, onPressed: onHome),
           ],
         ),
       ),

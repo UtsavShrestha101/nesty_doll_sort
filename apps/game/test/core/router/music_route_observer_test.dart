@@ -47,8 +47,24 @@ void main() {
       expect(MusicRouteObserver.trackFor(SplashRoute.name), isNull);
       expect(MusicRouteObserver.trackFor(HomeRoute.name), MusicTrack.home);
       expect(MusicRouteObserver.trackFor(GameplayRoute.name), MusicTrack.game);
-      expect(MusicRouteObserver.trackFor('SettingsRoute'), MusicTrack.home);
       expect(MusicRouteObserver.trackFor(null), MusicTrack.home);
+      // M3's screens (AUDIO.md: Daily, Museum, Shop, Skin detail and
+      // Settings play music_home; every board, daily and bonus included, is
+      // a GameplayRoute and plays music_game).
+      for (final name in [
+        MainShellRoute.name,
+        SettingsRoute.name,
+        DailyRoute.name,
+        SkinDetailRoute.name,
+        ShopRoute.name,
+        MuseumRoute.name,
+      ]) {
+        expect(
+          MusicRouteObserver.trackFor(name),
+          MusicTrack.home,
+          reason: name,
+        );
+      }
     });
 
     test('Splash → Home → a level → Home', () {

@@ -79,6 +79,62 @@ final class ControlledSkinService implements SkinService {
 
   /// Fails request [index].
   void fail(int index) => _pending[index].completeError(StateError('no art'));
+
+  @override
+  String selectedSkinId = 'classic';
+
+  @override
+  Future<bool> selectSkin(String skinId) async {
+    selectedSkinId = skinId;
+    return true;
+  }
+
+  /// What each [prepareShowcase] call asked for, in order.
+  final List<
+    ({
+      List<DollColor> colors,
+      double devicePixelRatio,
+      DollSymbols symbols,
+      String skinId,
+    })
+  >
+  showcaseRequests = [];
+  final List<Completer<LevelSkin?>> _pendingShowcase = [];
+
+  /// A [prepareShowcase] call waits until the test completes it
+  /// ([completeShowcase], [failShowcase]), in any order — the same pattern
+  /// as [prepareForLevel], so callers like `ShowcaseDolls` can be tested
+  /// through their in-flight/release/dispose races (m3-design §9.2).
+  @override
+  Future<LevelSkin?> prepareShowcase({
+    required List<DollColor> colors,
+    required double devicePixelRatio,
+    required DollSymbols symbols,
+    String? skinId,
+  }) {
+    final id = skinId ?? selectedSkinId;
+    showcaseRequests.add((
+      colors: colors,
+      devicePixelRatio: devicePixelRatio,
+      symbols: symbols,
+      skinId: id,
+    ));
+    final completer = Completer<LevelSkin?>();
+    _pendingShowcase.add(completer);
+    return completer.future;
+  }
+
+  /// Completes showcase request [index] (0-based) with a new skin.
+  RecordingLevelSkin completeShowcase(int index) {
+    final skin = RecordingLevelSkin('showcase:$index');
+    made.add(skin);
+    _pendingShowcase[index].complete(skin);
+    return skin;
+  }
+
+  /// Fails showcase request [index] (the requested skin's art can't be
+  /// prepared at all, `SkinService.prepareShowcase`'s null case).
+  void failShowcase(int index) => _pendingShowcase[index].complete(null);
 }
 
 final class _NoImages implements FxImageSource {

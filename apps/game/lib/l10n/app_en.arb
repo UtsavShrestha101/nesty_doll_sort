@@ -474,9 +474,9 @@
     "description": "The chapter card's line on the chapter's last level (frame 2.8 at 20 / 20, spec §7.2)."
   },
 
-  "figurineName": "{figurine, select, classic{The Classic Family} sailor{The Sailor Family} baker{The Baker Family} other{}}",
+  "figurineName": "{figurine, select, classic{The Classic Family} sailor{The Sailor Family} baker{The Baker Family} astronaut{The Astronaut Family} gardener{The Gardener Family} snow{The Snow Family} circus{The Circus Family} musician{The Musician Family} royal{The Royal Family} explorer{The Explorer Family} other{}}",
   "@figurineName": {
-    "description": "A museum figurine family's name (spec §7.2, frames 1.5, 2.8). {figurine} is the museum item id; ids without a design name are empty and their line is hidden.",
+    "description": "A museum figurine family's name (spec §7.2, frames 1.5, 2.8, 4.6; m3 §9.3). {figurine} is the museum item id; ids without a design name are empty and their line is hidden. astronaut/gardener/snow/circus/musician/royal/explorer are placeholder title-cased names pending the owner's figurine names 4-10 (Q73); update them, not the id list, once the owner answers.",
     "placeholders": {
       "figurine": {
         "type": "String",
@@ -574,8 +574,949 @@
     "description": "Text button under the all-levels-done card (frame 4.9)."
   },
 
+  "nextLevelFailedHome": "Back to Home",
+  "@nextLevelFailedHome": {
+    "description": "Text link under 'Try again' on the card shown over the win overlay when Continue's next level (a generated Bonus Endless level) couldn't be made (spec §7.1; no frame yet, review CORRECTNESS-3). Leaves the level for Home."
+  },
+
   "devLevelPickerTitle": "Jump to a level",
   "@devLevelPickerTitle": {
     "description": "Title of the dev-flavor level picker sheet (dev builds only; plan P4)."
+  },
+
+  "navShop": "Shop",
+  "@navShop": {
+    "description": "The shell's bottom-nav Shop tab label (frame 2.1; m3 §10.1, §10.9)."
+  },
+
+  "navMuseum": "Museum",
+  "@navMuseum": {
+    "description": "The shell's bottom-nav Museum tab label (frame 2.1; m3 §10.1, §10.9)."
+  },
+
+  "homeDailyTile": "Daily Puzzle",
+  "@homeDailyTile": {
+    "description": "Home's Daily Puzzle tile label (frame 2.1; m3 §10.3)."
+  },
+
+  "homeMuseumTile": "Museum",
+  "@homeMuseumTile": {
+    "description": "Home's Museum tile label (frame 2.1; m3 §10.3)."
+  },
+
+  "homeRemoveAdsTile": "Remove Ads",
+  "@homeRemoveAdsTile": {
+    "description": "Home's Remove Ads tile label, hidden once ads are removed (frame 2.1; m3 §10.3)."
+  },
+
+  "homeMuseumProgress": "{done}/{total}",
+  "@homeMuseumProgress": {
+    "description": "Home's Museum tile progress bar caption: levels done of the current chapter, no spaces around the slash (frame 2.1; m3 §10.3). Distinct from museumCount, which the Museum screen's collection card uses.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "15"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "20"
+      }
+    }
+  },
+
+  "homeDailyLocked": "After Level 2",
+  "@homeDailyLocked": {
+    "description": "Home's Daily Puzzle tile before Level 2, replacing homeDailyTile while the tile is locked (m3 §10.3, Q67; a design gap, no frame shows this state)."
+  },
+
+  "streakBadgeSemantics": "{count, plural, =1{1-day streak} other{{count}-day streak}}",
+  "@streakBadgeSemantics": {
+    "description": "Screen-reader label of the Daily Puzzle tile's flame streak badge (frame 2.1; m3 §10.9).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "4"
+      }
+    }
+  },
+
+  "settingColorSymbols": "Color symbols",
+  "@settingColorSymbols": {
+    "description": "Settings' Subtle/Large segmented row label (frame 8.1; spec §11.1, m3 §10.2)."
+  },
+
+  "symbolsSubtle": "Subtle",
+  "@symbolsSubtle": {
+    "description": "Settings' Color symbols segment for DollSymbols.subtle (frame 8.1)."
+  },
+
+  "symbolsLarge": "Large",
+  "@symbolsLarge": {
+    "description": "Settings' Color symbols segment for DollSymbols.assist (frame 8.1)."
+  },
+
+  "settingLanguage": "Language",
+  "@settingLanguage": {
+    "description": "Settings' Language row label, opening the language sheet (frame 8.1)."
+  },
+
+  "settingRestorePurchases": "Restore Purchases",
+  "@settingRestorePurchases": {
+    "description": "Settings' Restore Purchases row label, shown disabled until M6 (frame 8.1, TODO(M6))."
+  },
+
+  "settingPrivacyChoices": "Privacy choices",
+  "@settingPrivacyChoices": {
+    "description": "Settings' Privacy choices row label (UMP consent), shown disabled until M6 (frame 8.1, TODO(M6))."
+  },
+
+  "settingPrivacyPolicy": "Privacy Policy",
+  "@settingPrivacyPolicy": {
+    "description": "Settings' Privacy Policy row label; hidden while AppLinks.privacyPolicyUrl is empty (frame 8.1, Q73)."
+  },
+
+  "settingSupport": "Support",
+  "@settingSupport": {
+    "description": "Settings' Support row label; hidden while AppLinks.supportEmail is empty (frame 8.1, Q73)."
+  },
+
+  "settingSupportValue": "Email us",
+  "@settingSupportValue": {
+    "description": "Settings' Support row's trailing value (frame 8.1)."
+  },
+
+  "settingsFooter": "Nesty: Doll Sort · v{version} (build {build}) · Player ID {playerId}",
+  "@settingsFooter": {
+    "description": "Settings' footer caption: the app version and build (AppInfoService) and the local player id (SaveService.playerId; frame 8.1, m3 §10.2, D79).",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.0.0"
+      },
+      "build": {
+        "type": "String",
+        "example": "42"
+      },
+      "playerId": {
+        "type": "String",
+        "example": "7F3A-21C9"
+      }
+    }
+  },
+
+  "languageSheetTitle": "Language",
+  "@languageSheetTitle": {
+    "description": "Title of the language sheet (frame 8.2)."
+  },
+
+  "languageSheetDone": "Done",
+  "@languageSheetDone": {
+    "description": "Closes the language sheet (frame 8.2)."
+  },
+
+  "languageName": "{language, select, es{Spanish} pt_BR{Portuguese} id{Indonesian} hi{Hindi} de{German} fr{French} tr{Turkish} ja{Japanese} other{}}",
+  "@languageName": {
+    "description": "A launch language's name in the UI language, next to its autonym, which is data rather than ARB since it reads the same in every locale (frame 8.2, m3 §10.2). {language} is the locale code.",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "es"
+      }
+    }
+  },
+
+  "languageComingSoon": "Coming soon",
+  "@languageComingSoon": {
+    "description": "Screen-reader note on a language sheet row that is disabled until its ARB file exists (frame 8.2, TODO(M7))."
+  },
+
+  "languageRowSemantics": "{autonym}, {detail}",
+  "@languageRowSemantics": {
+    "description": "Screen-reader label of an unselected language sheet row (frame 8.2, spec §16): the language's own name, then its languageName, or languageComingSoon when the row is disabled.",
+    "placeholders": {
+      "autonym": {
+        "type": "String",
+        "example": "Español"
+      },
+      "detail": {
+        "type": "String",
+        "example": "Spanish"
+      }
+    }
+  },
+
+  "dailyStreakDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@dailyStreakDays": {
+    "description": "The Daily streak card's big number (frame 5.1: \"4 days\"; m3 §10.5).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "4"
+      }
+    }
+  },
+
+  "dailyStreakKeep": "Play today to keep your streak",
+  "@dailyStreakKeep": {
+    "description": "The Daily streak card's subtitle while today isn't solved yet, streak > 0 (frame 5.1)."
+  },
+
+  "dailyStreakStart": "Play today to start a streak",
+  "@dailyStreakStart": {
+    "description": "The Daily streak card's subtitle before any streak has started (streak = 0; m3 §10.5, a design gap)."
+  },
+
+  "dailyStreakDone": "Done for today. See you tomorrow!",
+  "@dailyStreakDone": {
+    "description": "The Daily streak card's subtitle once today's puzzle is solved (frame 5.5: dailyDone scene)."
+  },
+
+  "dailyStreakWeek": "A full week!",
+  "@dailyStreakWeek": {
+    "description": "The Daily streak card's subtitle on the streak's 7th day, once the chest is reached (frame 5.6: dailyChest scene)."
+  },
+
+  "dailyFreezes": "{count, plural, =0{0 left} =1{1 freeze} other{{count} freezes}}",
+  "@dailyFreezes": {
+    "description": "The Daily streak card's freeze chip (frame 5.1; m3 §8, D76: freeze cap 1 per ISO week).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "dailyDay": "Day",
+  "@dailyDay": {
+    "description": "Prefix on the 7-day strip's day-7 chest label (frame 5.1)."
+  },
+
+  "dailyToday": "Today",
+  "@dailyToday": {
+    "description": "The 7-day strip's label for today's cell (frame 5.1)."
+  },
+
+  "dailyTomorrow": "Tmrw",
+  "@dailyTomorrow": {
+    "description": "The 7-day strip's label for tomorrow's cell; kept short to fit the strip (frame 5.1)."
+  },
+
+  "dailyDaySemantics": "{state, select, done{Day {day}, done} today{Today, day {day}} tomorrow{Tomorrow, day {day}} chest{Day {day}, chest} other{Day {day}}}",
+  "@dailyDaySemantics": {
+    "description": "Screen-reader label of one cell of the Daily 7-day strip (frame 5.1, spec §16): the cell's day of the cycle and its state. Spell out 'Tomorrow' here, unlike the strip's short dailyTomorrow.",
+    "placeholders": {
+      "state": {
+        "type": "String",
+        "example": "tomorrow"
+      },
+      "day": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+
+  "dailyPlaySemantics": "{count, plural, =1{Play, 1 coin} other{Play, {count} coins}}",
+  "@dailyPlaySemantics": {
+    "description": "Screen-reader label of the Daily puzzle card's Play button and its coin reward chip (frame 5.1, spec §16).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "50"
+      }
+    }
+  },
+
+  "dailyChestRow": "Day 7 chest · {coins} coins",
+  "@dailyChestRow": {
+    "description": "The 7-day strip's chest row caption (frame 5.1).",
+    "placeholders": {
+      "coins": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "300"
+      }
+    }
+  },
+
+  "dailyChestToGo": "{count, plural, =1{1 day to go} other{{count} days to go}}",
+  "@dailyChestToGo": {
+    "description": "Days left to the Day 7 chest, not counting today (frame 5.5: dailyDone scene, \"2 days to go\"; m3 §8.4).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "dailyChestToGoToday": "{count, plural, =1{1 day to go, counting today} other{{count} days to go, counting today}}",
+  "@dailyChestToGoToday": {
+    "description": "Days left to the Day 7 chest, counting today (frame 5.1, \"3 days to go, counting today\"; m3 §8.4).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+
+  "dailyChestOpenedToday": "Opened today",
+  "@dailyChestOpenedToday": {
+    "description": "The 7-day strip's chest row once the Day 7 chest has been collected (frame 5.6: dailyChest scene, \"chestSub: 'Opened today'\")."
+  },
+
+  "dailyPuzzleTitle": "{weekday}’s puzzle",
+  "@dailyPuzzleTitle": {
+    "description": "The Daily puzzle card's title (frame 5.1; m3 §8.4).",
+    "placeholders": {
+      "weekday": {
+        "type": "String",
+        "example": "Friday"
+      }
+    }
+  },
+
+  "dailyPuzzleInfo": "{colors, plural, =1{1 color} other{{colors} colors}} · {tier}",
+  "@dailyPuzzleInfo": {
+    "description": "The Daily puzzle card's subtitle: colors and tier (frame 5.1, \"5 colors · Hard\"). {tier} is tierName.",
+    "placeholders": {
+      "colors": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "5"
+      },
+      "tier": {
+        "type": "String",
+        "example": "Hard"
+      }
+    }
+  },
+
+  "dailyPlay": "Play",
+  "@dailyPlay": {
+    "description": "The Daily puzzle card's Play button (frame 5.1)."
+  },
+
+  "dailySolvedChip": "Solved · +{coins}",
+  "@dailySolvedChip": {
+    "description": "The Daily puzzle card's chip once solved, replacing dailyPlay (frame 5.5, m3 §8.4).",
+    "placeholders": {
+      "coins": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "50"
+      }
+    }
+  },
+
+  "dailyNextPuzzle": "Next puzzle in {time}",
+  "@dailyNextPuzzle": {
+    "description": "The Daily solved state's countdown line (frame 5.5). {time} is dailyCountdown.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14h 12m"
+      }
+    }
+  },
+
+  "dailyCountdown": "{hours}h {minutes}m",
+  "@dailyCountdown": {
+    "description": "The Daily countdown's hours and minutes to the next puzzle (frame 5.5).",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "14"
+      },
+      "minutes": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "12"
+      }
+    }
+  },
+
+  "playLevel": "Play Level {level}",
+  "@playLevel": {
+    "description": "The Daily solved state's button back to the campaign (frame 5.5). {level} is the campaign level number.",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "56"
+      }
+    }
+  },
+
+  "dailySavedTitle": "Streak saved!",
+  "@dailySavedTitle": {
+    "description": "The \"streak saved\" info toast's title, shown once after a freeze covers a missed day (frame 5.2)."
+  },
+
+  "dailySavedBody": "A freeze covered {weekday}. You'll earn a new one next week.",
+  "@dailySavedBody": {
+    "description": "The \"streak saved\" toast's body (frame 5.2).",
+    "placeholders": {
+      "weekday": {
+        "type": "String",
+        "example": "Friday"
+      }
+    }
+  },
+
+  "dailyChestTitle": "7-day streak!",
+  "@dailyChestTitle": {
+    "description": "The Day 7 chest modal's ribbon title (frame 5.6)."
+  },
+
+  "dailyChestBody": "A full week of puzzles. Your chest is open.",
+  "@dailyChestBody": {
+    "description": "The Day 7 chest modal's body (frame 5.6)."
+  },
+
+  "dailyChestDouble": "Double it",
+  "@dailyChestDouble": {
+    "description": "The Day 7 chest modal's rewarded-ad button; hidden until M6 (frame 5.6, TODO(M6))."
+  },
+
+  "dailyChestCollect": "Collect",
+  "@dailyChestCollect": {
+    "description": "The Day 7 chest modal's main button (frame 5.6)."
+  },
+
+  "dailyWinTitle": "Daily solved!",
+  "@dailyWinTitle": {
+    "description": "The daily win card's ribbon title, in place of winTitle (frame 5.4, m3 §8.4)."
+  },
+
+  "dailyWinStreak": "{count}-day streak",
+  "@dailyWinStreak": {
+    "description": "The daily win card's streak line (frame 5.4).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "5"
+      }
+    }
+  },
+
+  "dailyWinChestHint": "{count, select, 0{Your Day 7 chest is ready!} 1{One more day to the Day 7 chest} 2{Two more days to the Day 7 chest} 3{Three more days to the Day 7 chest} 4{Four more days to the Day 7 chest} 5{Five more days to the Day 7 chest} 6{Six more days to the Day 7 chest} other{{count} more days to the Day 7 chest}}",
+  "@dailyWinChestHint": {
+    "description": "The daily win card's line about the Day 7 chest, days left after today's solve (frame 5.4). {count} is the day count (0-6) as a decimal string, e.g. \"count.toString()\": gen-l10n's `select` only accepts String placeholders, unlike `plural`, which can't express six distinct spelled-out numbers for English (only \"one\"/\"other\" ever apply).",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+
+  "dailyBackToDaily": "Back to Daily",
+  "@dailyBackToDaily": {
+    "description": "The daily win card's secondary action, back to the Daily screen instead of the next campaign level (m3 §10.1)."
+  },
+
+  "museumTitle": "Museum",
+  "@museumTitle": {
+    "description": "The Museum screen's header title (frame 6.1)."
+  },
+
+  "museumCollection": "Collection",
+  "@museumCollection": {
+    "description": "The Museum screen's collection card label (frame 6.1)."
+  },
+
+  "museumCount": "{done} / {total}",
+  "@museumCount": {
+    "description": "The Museum screen's collection card count, e.g. \"2 / 10\" (frame 6.1). Distinct from homeMuseumProgress, which has no spaces.",
+    "placeholders": {
+      "done": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "10"
+      }
+    }
+  },
+
+  "museumNextLine": "Chapter {number}: {done} of {total} levels to {name}",
+  "@museumNextLine": {
+    "description": "The Museum screen's collection card line naming the next figurine (frame 6.1). {name} is figurineName.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      },
+      "done": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "15"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "20"
+      },
+      "name": {
+        "type": "String",
+        "example": "The Baker Family"
+      }
+    }
+  },
+
+  "museumAllHome": "Every family is home.",
+  "@museumAllHome": {
+    "description": "The Museum screen's collection card once all ten figurines are collected, replacing museumNextLine (m3 §10.6, a design gap: no frame shows this state)."
+  },
+
+  "museumFamilyLabel": "{name} Family",
+  "@museumFamilyLabel": {
+    "description": "A figurine's cabinet label once earned, e.g. \"Classic Family\" (frame 6.1). {name} is figurineShortName.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Classic"
+      }
+    }
+  },
+
+  "museumSoonLabel": "{name} · soon",
+  "@museumSoonLabel": {
+    "description": "The next figurine's cabinet label, not yet earned (frame 6.1, \"Baker · soon\"). {name} is figurineShortName.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Baker"
+      }
+    }
+  },
+
+  "figurineShortName": "{figurine, select, classic{Classic} sailor{Sailor} baker{Baker} astronaut{Astronaut} gardener{Gardener} snow{Snow} circus{Circus} musician{Musician} royal{Royal} explorer{Explorer} other{}}",
+  "@figurineShortName": {
+    "description": "A figurine's short name, without \"The … Family\" (frame 6.1's cabinet labels, museumFamilyLabel/museumSoonLabel; m3 §10.6). {figurine} is the museum item id.",
+    "placeholders": {
+      "figurine": {
+        "type": "String",
+        "example": "classic"
+      }
+    }
+  },
+
+  "figurineFlavor": "{figurine, select, sailor{“They keep a seashell in the smallest doll, just in case.”} other{}}",
+  "@figurineFlavor": {
+    "description": "A figurine's italic flavor text in its detail modal; ids without one are empty and the line is hidden (frame 6.2; Q73 asks the owner for the other nine). {figurine} is the museum item id.",
+    "placeholders": {
+      "figurine": {
+        "type": "String",
+        "example": "sailor"
+      }
+    }
+  },
+
+  "museumChapterChip": "Chapter {number} · {name}",
+  "@museumChapterChip": {
+    "description": "The figurine detail modal's chapter chip (frame 6.2). {name} is chapterName.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      },
+      "name": {
+        "type": "String",
+        "example": "Rainy Café Corner"
+      }
+    }
+  },
+
+  "museumCollectedOn": "Collected · {date}",
+  "@museumCollectedOn": {
+    "description": "The figurine detail modal's collected date, when known (frame 6.2, \"Collected · Sep 12\").",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sep 12"
+      }
+    }
+  },
+
+  "museumCollected": "Collected",
+  "@museumCollected": {
+    "description": "The figurine detail modal's collected line when the date isn't known (frame 6.2, spec §13.3 museum entries added before the date field)."
+  },
+
+  "museumLockedText": "Finish Chapter {number} to bring this family home.",
+  "@museumLockedText": {
+    "description": "The locked figurine modal's body (frame 6.3).",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+
+  "shopTitle": "Shop",
+  "@shopTitle": {
+    "description": "The Shop screen's header title (frame 7.3)."
+  },
+
+  "shopTabCoins": "Coins",
+  "@shopTabCoins": {
+    "description": "The Shop's Coins tab label (frame 7.3)."
+  },
+
+  "shopTabSkins": "Skins",
+  "@shopTabSkins": {
+    "description": "The Shop's Skins tab label (frame 7.3)."
+  },
+
+  "shopTabThemes": "Themes",
+  "@shopTabThemes": {
+    "description": "The Shop's Themes tab label (frame 7.7)."
+  },
+
+  "shopTabNoAds": "No Ads",
+  "@shopTabNoAds": {
+    "description": "The Shop's No Ads tab label (frame 7.8)."
+  },
+
+  "shopEquipped": "Equipped",
+  "@shopEquipped": {
+    "description": "A skin card's state once it's the equipped skin (frame 7.3)."
+  },
+
+  "shopEquip": "Equip",
+  "@shopEquip": {
+    "description": "An owned, unequipped skin card's button (frame 7.3, 7.4)."
+  },
+
+  "skinName": "{skin, select, classic{Classic} space{Space} ocean{Ocean} sweets{Sweets} forest{Forest Friends} winter{Winter} other{}}",
+  "@skinName": {
+    "description": "A skin's display name (frame 7.3, 7.4). {skin} is the SkinService/catalog skin id; forest-bear ships unsold and unnamed here (D75).",
+    "placeholders": {
+      "skin": {
+        "type": "String",
+        "example": "ocean"
+      }
+    }
+  },
+
+  "skinDescription": "{skin, select, ocean{Sailor collars, tiny anchors and wave trims.} other{}}",
+  "@skinDescription": {
+    "description": "A skin's detail-page description; ids without one are empty and the line is hidden (frame 7.4; Q73 asks the owner for the other five). {skin} is the skin id.",
+    "placeholders": {
+      "skin": {
+        "type": "String",
+        "example": "ocean"
+      }
+    }
+  },
+
+  "skinDetailTitle": "Skin",
+  "@skinDetailTitle": {
+    "description": "The skin detail screen's header title (frame 7.4)."
+  },
+
+  "skinDetailColors": "All 11 colors · symbols kept",
+  "@skinDetailColors": {
+    "description": "The skin detail screen's colors caption, over the two shelves of all 11 colors (frame 7.4)."
+  },
+
+  "skinDetailSizes": "Every size nests the same way. Only the paint changes.",
+  "@skinDetailSizes": {
+    "description": "The skin detail screen's size-lineup caption (frame 7.4)."
+  },
+
+  "shopBuy": "Buy",
+  "@shopBuy": {
+    "description": "The skin detail screen's buy button label; a coin chip with the price trails it (frame 7.4)."
+  },
+
+  "shopBuySemantics": "{count, plural, =1{Buy, 1 coin} other{Buy, {count} coins}}",
+  "@shopBuySemantics": {
+    "description": "Screen-reader label of the skin detail screen's Buy button and its trailing coin-price chip (frame 7.4, spec §16).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "800"
+      }
+    }
+  },
+
+  "balanceLine": "{count, plural, =1{You have 1 coin} other{You have {count} coins}}",
+  "@balanceLine": {
+    "description": "The player's coin balance line: the skin detail screen (frame 7.4) and the buy popup's BuyPopupBody (frames 3.2, 3.3).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "830"
+      }
+    }
+  },
+
+  "shopDownloading": "Downloading {percent}%",
+  "@shopDownloading": {
+    "description": "A skin card's downloading state; built for M4 and unreachable while every skin is bundled (frame 7.5).",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "64"
+      }
+    }
+  },
+
+  "themesMatchTitle": "Match each chapter",
+  "@themesMatchTitle": {
+    "description": "The Themes tab's toggle row title (frame 7.7)."
+  },
+
+  "themesMatchSubtitle": "Uses the theme of the chapter you're in",
+  "@themesMatchSubtitle": {
+    "description": "The Themes tab's toggle row subtitle (frame 7.7)."
+  },
+
+  "themeInUse": "In use",
+  "@themeInUse": {
+    "description": "A theme card's state once it's the selected theme (frame 7.7)."
+  },
+
+  "themeUse": "Use",
+  "@themeUse": {
+    "description": "An owned, unselected theme card's button (frame 7.7); turns the \"Match each chapter\" toggle off."
+  },
+
+  "themeChapterLock": "Ch {number}",
+  "@themeChapterLock": {
+    "description": "A locked theme card's chip, the chapter that unlocks it (frame 7.7).",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "shopClosedTitle": "The store is closed for now",
+  "@shopClosedTitle": {
+    "description": "The Coins and No Ads tabs' store-closed card title, shown until M6 (m3 §10.7, D75, Q75, TODO(M6))."
+  },
+
+  "shopClosedBody": "Coin packs and Remove Ads come in a later update.",
+  "@shopClosedBody": {
+    "description": "The store-closed card's body (m3 §10.7, TODO(M6))."
+  },
+
+  "buyUndoText": "{count, plural, =1{Your 1 free undo is used. Take back one more move.} other{Your {count} free undos are used. Take back one more move.}}",
+  "@buyUndoText": {
+    "description": "The Undo buy popup's benefit line (frame 3.2, \"Your 2 free undos are used…\"; spec §8). {count} is the level's free-undo count.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "buyHintText": "Shows your next best move.",
+  "@buyHintText": {
+    "description": "The Hint buy popup's benefit line (frame 3.3)."
+  },
+
+  "buySlotText": "Adds one empty stand for this level.",
+  "@buySlotText": {
+    "description": "The +1 Slot buy popup's benefit line (frame 3.6, spec §3.6)."
+  },
+
+  "tutorialStep1Chip": "STEP 1 OF 2",
+  "@tutorialStep1Chip": {
+    "description": "L1's tutorial step 1 chip (frame 1.3; m3 §10.4)."
+  },
+
+  "tutorialStep1Title": "Tap the small doll",
+  "@tutorialStep1Title": {
+    "description": "L1's tutorial step 1 title (frame 1.3)."
+  },
+
+  "tutorialStep1Text": "Dolls nest into the same color, one size bigger.",
+  "@tutorialStep1Text": {
+    "description": "L1's tutorial step 1 body (frame 1.3)."
+  },
+
+  "tutorialStep2Chip": "STEP 2 OF 2",
+  "@tutorialStep2Chip": {
+    "description": "L1's tutorial step 2 chip (frame 1.4)."
+  },
+
+  "tutorialStep2Title": "Now tap the big one",
+  "@tutorialStep2Title": {
+    "description": "L1's tutorial step 2 title (frame 1.4)."
+  },
+
+  "tutorialStep2Text": "The small doll drops inside with a clack.",
+  "@tutorialStep2Text": {
+    "description": "L1's tutorial step 2 body (frame 1.4)."
+  },
+
+  "tutorialStep3Title": "Finish the family",
+  "@tutorialStep3Title": {
+    "description": "L1's tutorial step 3 title; no frame or chip (m3 §10.4, a design gap)."
+  },
+
+  "tutorialStep3Text": "Tap the smallest doll, then the family.",
+  "@tutorialStep3Text": {
+    "description": "L1's tutorial step 3 body; no frame or chip (m3 §10.4, a design gap)."
+  },
+
+  "tutorialSwallowChip": "NEW MOVE",
+  "@tutorialSwallowChip": {
+    "description": "L2's tutorial swallow-move chip (frame 1.6)."
+  },
+
+  "tutorialSwallowTitle": "Big can swallow small",
+  "@tutorialSwallowTitle": {
+    "description": "L2's tutorial swallow-move title (frame 1.6)."
+  },
+
+  "tutorialSwallowText": "Drop a big doll onto the next size down and it closes right over it.",
+  "@tutorialSwallowText": {
+    "description": "L2's tutorial swallow-move body (frame 1.6)."
+  },
+
+  "introNew": "NEW",
+  "@introNew": {
+    "description": "The mechanic intro card's chip for the towers/glass/ice cards (frames 4.1-4.3; m3 §10.4). The gold-doll card uses a different chip, TODO(v1.1)."
+  },
+
+  "introTowersTitle": "Towers!",
+  "@introTowersTitle": {
+    "description": "The towers intro card's title (frame 4.1, first met at L16)."
+  },
+
+  "introTowersText": "Only the top nest can move. Clear it to reveal the doll hiding underneath.",
+  "@introTowersText": {
+    "description": "The towers intro card's body (frame 4.1)."
+  },
+
+  "introGlassTitle": "Glass Cases",
+  "@introGlassTitle": {
+    "description": "The glass-case intro card's title (frame 4.2, first met at L31)."
+  },
+
+  "introGlassText": "A locked doll is freed when the family on its padlock is complete.",
+  "@introGlassText": {
+    "description": "The glass-case intro card's body (frame 4.2)."
+  },
+
+  "introIceTitle": "Ice",
+  "@introIceTitle": {
+    "description": "The ice intro card's title (frame 4.3, first met at L51)."
+  },
+
+  "introIceText": "Every family you finish cracks the ice. At zero, the doll is free.",
+  "@introIceText": {
+    "description": "The ice intro card's body (frame 4.3)."
+  },
+
+  "introTowersBuriedTag": "+{count}",
+  "@introTowersBuriedTag": {
+    "description": "The walnut tag at a tower's stand in the Towers intro card's illustration: how many nests are still buried in it (frame 4.1, NestyOverlay INTRO; the board's own tag, spec §3.2).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "introIceCount": "{count}",
+  "@introIceCount": {
+    "description": "The blue chip over an iced doll in the Ice intro card's illustration: how many cracks are left (frame 4.3, NestyOverlay INTRO; the board's ice badge, spec §3.4).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "introGotIt": "Got it",
+  "@introGotIt": {
+    "description": "Every mechanic intro card's dismiss button (frames 4.1-4.3, 4.8)."
+  },
+
+  "chapterCompleteTitle": "CHAPTER {number} COMPLETE",
+  "@chapterCompleteTitle": {
+    "description": "The chapter-complete overlay's title (frame 4.6, spec §7.2).",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+
+  "chapterCompleteAdded": "Added to your Museum!",
+  "@chapterCompleteAdded": {
+    "description": "The chapter-complete overlay's museum line (frame 4.6)."
+  },
+
+  "chapterCompleteCoins": "+{count} coins",
+  "@chapterCompleteCoins": {
+    "description": "The chapter-complete overlay's coin pill, reward_chapter (frame 4.6, D72).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "150"
+      }
+    }
+  },
+
+  "chapterCompleteNext": "Next: Chapter {number} · {name}",
+  "@chapterCompleteNext": {
+    "description": "The chapter-complete overlay's next-chapter line (frame 4.6). {name} is chapterName.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "4"
+      },
+      "name": {
+        "type": "String",
+        "example": "Snowy Cabin"
+      }
+    }
+  },
+
+  "gameplayGenerating": "Setting up the shelves…",
+  "@gameplayGenerating": {
+    "description": "The generating-board state's caption over the old board's ui_spinner while a bonus level generates (m3 §10.8, a design gap: no frame shows this state)."
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/l10n/app_localizations.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 /// Where a level sits in its chapter (spec §7.1: 20 levels per chapter,
@@ -45,6 +46,14 @@ final class ChapterProgress {
   /// `chapterName` ARB select key.
   final String chapterId;
 
+  /// The chapter's name: `chapterName` (ARB) for ch01–ch06, else "Chapter
+  /// N" (`winChapter`, m3-design §9.1: "Chapter names exist for ch01–ch06
+  /// only... ch07+ show 'Chapter N'").
+  static String nameOf(AppLocalizations l10n, String chapterId, int number) {
+    final name = l10n.chapterName(chapterId);
+    return name.isEmpty ? l10n.winChapter(number) : name;
+  }
+
   /// 1-based.
   final int number;
 
@@ -62,6 +71,9 @@ final class ChapterProgress {
   /// name.
   ChapterTheme get theme =>
       ChapterTheme.byId(chapterId) ?? ChapterTheme.forChapter(number);
+
+  /// This chapter's display name (see [nameOf]).
+  String displayName(AppLocalizations l10n) => nameOf(l10n, chapterId, number);
 
   /// The last level of the chapter was just won (frame 4.5, "20 / 20").
   bool get isComplete => done >= total;

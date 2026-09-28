@@ -17,7 +17,7 @@ class RibbonTitle extends StatelessWidget {
     super.key,
   });
 
-  /// The 7-day chest's streak ribbon (NestyMenus 5.6), for later screens.
+  /// The 7-day chest's streak ribbon (NestyMenus 5.6; `ModalCard.ribbon`).
   const RibbonTitle.streak(this.title, {super.key})
     : gradient = AppGradientTokens.streak,
       edgeColor = AppColorTokens.streakEdge;

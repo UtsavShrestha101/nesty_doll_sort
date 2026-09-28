@@ -22,7 +22,12 @@ Android device, is the owner's check on a real phone; the steps are in
 [docs/PROGRESS.md](docs/PROGRESS.md) under "M2 acceptance". After M2, the
 designer's v3 Lottie export and the audio delivery (two music loops, three
 jingles and the final sound effects) were imported and wired in (PROGRESS
-"Post-M2 round", D59–D61). Milestones,
+"Post-M2 round", D59–D61). M3 (the app shell and meta: the save, the
+economy, chapters, the Museum, Bonus Endless, the Daily, the tutorial, Home,
+Settings and the Shop) is code complete: the kill-and-resume and the
+same-date daily pass on an iOS simulator and an Android emulator, and its
+last checks are the owner's on physical phones (PROGRESS "M3 acceptance").
+Milestones,
 decisions and open questions are tracked there, and every remaining item in
 [docs/BACKLOG.md](docs/BACKLOG.md).
 
@@ -187,19 +192,80 @@ cd apps/admin            && flutter test
 cd tools                 && dart test         # nesty_tools
 ```
 
-The on-device playthrough (the dev flavor with every real service: levels 1
-and 2 to the win overlay, level 9's hint and two extra slots, level 16 into
-Out of Moves, Pause with Music off and on, Home, and level 21's chapter
-ribbon) needs a booted simulator or emulator. It can't listen, so it checks
-the music through `SoLoudMusicService`'s state (the loop on each screen and
-each overlay's duck), and fails if any sound, music or Lottie file didn't
-load or a failure was logged. It saves its screenshots through the driver,
-into `$NESTY_SCREENSHOT_DIR` or `apps/game/build/integration_test/screenshots/`:
+The on-device checks run the dev flavor with every real service (Hive, the
+isolate solver and generator, SoLoud, the Lottie files) on a booted
+simulator or emulator, through `flutter drive`. Start the playthrough and
+the resume's phase A from a fresh install (`xcrun simctl uninstall <udid>
+com.futrix.nesty.dev` or `adb -s <serial> uninstall com.futrix.nesty.dev`):
+they expect a fresh save.
+
+The playthrough goes Splash → Home → the shell tabs, the Museum and its
+modals, the Shop, Settings and its language sheet → levels 1 and 2 through
+the scripted tutorial → the Daily (5.1, its intro cards, 5.3–5.5) → level 9's
+hint and extra slots → level 16's Hint popup and Out of Moves → Pause →
+Settings and back → level 21's chapter ribbon → level 20's chapter complete
+and the earned Museum → level 30's All Levels Done and the bonus pill. It
+can't listen, so it checks the music through `SoLoudMusicService`'s state
+(the loop on each screen and each overlay's duck), and fails if any sound,
+music or Lottie file didn't load. It saves its screenshots through the
+driver, into `$NESTY_SCREENSHOT_DIR` or
+`apps/game/build/integration_test/screenshots/`. The fixed date makes the
+daily's board, and so its intro cards, the same on every run:
+
+```bash
+cd apps/game && NESTY_SCREENSHOT_DIR=/some/dir flutter drive --flavor dev \
+  --driver test_driver/integration_test.dart \
+  --target integration_test/playthrough_test.dart \
+  --dart-define=NESTY_FAKE_DATE=20260926 -d <device-id>
+```
+
+The dev flavor's boosters never run out, which hides every coin price. The
+playthrough turns that off with `InMemorySaveService.debugUnlimitedBoosters`
+(debug builds only; profile and release ignore it) to reach the Hint popup
+and the Out-of-Moves sheet's priced +1 Slot row. +1 Slot itself stays free
+in debug builds (m3-design §7.3).
+
+Kill mid-level and resume (M3's acceptance) is two runs with a real kill
+between them. `flutter test` and a plain `flutter drive` stop and uninstall
+the app when they finish, which wipes its data, so phase A keeps it running;
+installing phase B's build over it keeps the data:
+
+```bash
+cd apps/game
+flutter drive --flavor dev --keep-app-running --driver test_driver/integration_test.dart \
+  --target integration_test/resume_phase_a_test.dart -d <device-id>
+xcrun simctl terminate <udid> com.futrix.nesty.dev      # iOS
+adb -s <serial> shell am force-stop com.futrix.nesty.dev # Android
+flutter drive --flavor dev --driver test_driver/integration_test.dart \
+  --target integration_test/resume_phase_b_test.dart -d <device-id>
+```
+
+Phase A wins levels 1 and 2, opens level 3 from Home's PLAY, makes two
+moves, an undo, a +1 Slot and a move onto it; phase B taps Home's PLAY and
+asserts the same board, undos left and extra slots. Each phase writes its
+values (`level`, `freeUndosLeft`, `extraSlotCount` and the session's
+canonical JSON as `fingerprint`) to `apps/game/build/integration_response_data.json`
+and a `NESTY_RESUME` log line; the two must be equal.
+
+The daily puzzle must be the same level on every device (M3's acceptance):
 
 ```bash
 cd apps/game && flutter drive --flavor dev --driver test_driver/integration_test.dart \
-  --target integration_test/playthrough_test.dart -d <device-id>
+  --target integration_test/daily_fingerprint_test.dart \
+  --dart-define=NESTY_FAKE_DATE=20260926 -d <device-id>
 ```
+
+It writes the day's generated level as canonical JSON (`fingerprint` in
+`apps/game/build/integration_response_data.json`, and a `NESTY_DAILY` log
+line). Run it on two devices: the two strings must be equal, and their
+Hash64 must match the core's golden for that date
+(`packages/nesty_core/test/generator/golden_test.dart`, `'daily 20260926'`).
+
+Two harness facts for widget tests: `Bloc.close()` never completes inside
+`testWidgets`' fake-async zone, so never await it there (use
+`tester.runAsync`); and real Hive I/O started from that zone only finishes
+by alternating `tester.runAsync` with `pump` (`settle` in
+`apps/game/test/app_flow_test.dart`).
 
 The 60 fps check (M2's acceptance) runs a profile build on a physical phone:
 `cd apps/game && flutter run --profile --flavor dev -t lib/main_dev.dart -d

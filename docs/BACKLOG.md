@@ -6,7 +6,7 @@ This file records what is left. In-code markers are indexed separately in
 [TODO_INDEX.md](TODO_INDEX.md), which `dart run nesty_tools:todo_index` generates from
 `TODO(<tag>)` comments. Never edit it by hand.
 
-Last updated: 2026-09-27 (M1 closed; M2 code complete after the review fix pass, its acceptance waiting on the owner's 60 fps device check and the manual L1–30 pass; the post-M2 round landed Claude Design v3 and the music and jingles).
+Last updated: 2026-09-28 (M3 code complete; acceptance pending the owner's two physical-device checks. Review fix pass: 22 findings fixed. M2 acceptance still waits on the owner's device checks, D65).
 
 ## How this file works
 
@@ -33,6 +33,9 @@ Last updated: 2026-09-27 (M1 closed; M2 code complete after the review fix pass,
   - `v3` is [plans/claude-design-v3-check.md](plans/claude-design-v3-check.md),
     the check of Claude Design's v3 Lottie export (its points 3a–3f are in
     [plans/claude-design-v3-changes.md](plans/claude-design-v3-changes.md)).
+  - `m3 §n` is section n of [plans/m3-design.md](plans/m3-design.md), the
+    authoritative M3 design (D66–D80); `plan-m3` is its approved
+    [plans/plan-m3.md](plans/plan-m3.md).
   - A path is a file in this repo.
 - **One place per item.** Implementation items go in the milestone that builds
   them. Anything only the owner can supply or decide goes in
@@ -294,79 +297,102 @@ M2 was committed (PROGRESS "Post-M2 round", D59–D61).
 - [ ] Owner device check of this round on the dev flavor: the Level 9 hint (arrow over brown3, glow on brown2's stand, arrowhead into brown2's head), +1 Slot twice (two full-size green pads, a doll standing on one), a tower reveal (L16+: the new top drops from its buried step, then the wipe), the win ribbon and the L21 chapter ribbon on a 390 dp phone — lottie lane report
 - [ ] Owner audio acceptance on a mid-range Android and an iPhone: both loops wrap with no gap or click over 3 full cycles; crossfades, ducks and fades per the tokens and audible; Music off silent within 300 ms and staying silent across routes, ads and the lifecycle; chimes, the win SFX and the jingles over ducked music without clipping (turn on SoLoud's limiter only if clipping is heard, M7); streaming adds under 3 MB resident; the app grows by about 2 MB; iOS mixes with the Music app and follows the silent switch; Android dev/stg screen recordings have sound — audio "Acceptance", Q61–Q63
 
-## M3 — App shell and meta
+## M3 — App shell and meta — code complete; acceptance pending (2026-09-28, plan [plans/plan-m3.md](plans/plan-m3.md))
 
 Acceptance (§18): kill the app mid-level and it resumes exactly where it was.
 The daily puzzle is identical on two devices on the same date.
 
+Lanes and ownership: m3 §2 and §14. Each item below names the m3 section it
+follows.
+
+Status on 2026-09-28 (PROGRESS "M3 acceptance"): every automated gate passes,
+and both criteria pass on the iPhone 16 Pro simulator and the API 35
+emulator. What is left is the owner's two physical-device checks below. The
+design gaps the M3 stand-ins cover moved to M7 (see "Design gaps").
+
+- [ ] Owner: on a physical phone, swipe the app away mid-level (after a few moves, an undo and a +1 Slot), relaunch, tap PLAY: the same board, undos and extra slots — §18 M3; README "Testing" has the automated two-phase version
+- [ ] Owner: on two physical phones set to the same date, open the Daily and compare the board (the automated check matched the simulator, the emulator and the core golden) — §18 M3
+
+### Contracts stage
+
+- [x] The authoritative design `docs/plans/m3-design.md`, and the frozen Dart contracts: `GameSessionCodec`'s API and `Generator.generateWithRetries` (core); `PlayRequest`, `PlayEntry`, `BoosterType`, `IntroMechanic`; `AppClock` + `LocalDate`; `SaveService`, `SaveDocument`, its lenient codec and migrations, `HiveBoxes.save` and the raw save accessors; `CatalogRepository` with the bundled data; `LevelGeneratorService`, `LevelResolver`, `DailyService` with fakes; `reward_medium`, `reward_chapter`; the route tree with stub pages; `GameplayRoute(request:)` and the M3 bloc fields and events — m3 §1, D66–D80 (done 2026-09-27)
+- [x] Add `package_info_plus` and `url_launcher`, remove `hive_ce_generator`, with the rule-9 reasons — m3 §10.2, D80 (done 2026-09-27)
+- [x] After the first iOS build of this round, commit the `pod install` changes for `url_launcher_ios` and `package_info_plus` (Podfile.lock, the Xcode project) — D80, integrator (done 2026-09-28: the first iOS build updated `apps/game/ios/Podfile.lock` for the two pods; the Xcode project didn't change)
+
 ### Save and economy
 
-- [ ] Persistent save document with the §13.3 fields, atomic writes, a schema version and migrations, in the store Q3 picks. It replaces the D13 stub (`InMemorySaveService` in the real env, which then only backs `FakeSaveService`), and `AppEnv.real` is dropped from the fake save. `AssetSkinService` then loads the save's selected skin — §13.3, D13, Q3, services report
-- [ ] Save the in-progress level on every move and on app pause. Restore it when `levelVersion` matches, otherwise restart the level. The bloc restores with `GameSession.restore(level, state, history, undosUsed:)` — §13.3, bloc report
-- [ ] Acceptance: save/restore round-trip tests (state, undo, `levelVersion`), plus a kill-and-relaunch check on a device — §18 M3
-- [ ] Coins — §7.3:
+- [x] Persistent save document with the §13.3 fields, atomic writes, a schema version and migrations, in the store Q3 picks. It replaces the D13 stub (`InMemorySaveService` in the real env, which then only backs `FakeSaveService`), and `AppEnv.real` is dropped from the fake save. `AssetSkinService` then loads the save's selected skin — §13.3, D13, Q3, services report. Build: `HiveSaveService` (load, backups, the coalescing write queue, `SaveLifecycleFlusher` on paused/detached, the in-memory fallback) over the frozen `SaveDocumentCodec` and `SaveMigrations` — m3 §3.2, D63, D67, D68 (services lane) (done 2026-09-28: `HiveSaveService` in the real env, `FakeSaveService` in the fake env only; `AssetSkinService` loads the selected skin)
+- [x] Save the in-progress level on every move and on app pause. Restore it when `levelVersion` matches, otherwise restart the level. The bloc restores with `GameSession.restore(level, state, history, undosUsed:)` — §13.3, bloc report; m3 §3.4, §6.4, D71 (gameplay-bloc lane) (done 2026-09-28: a restored board also takes its status from core, so an out-of-moves or won save reopens its sheet or win (review CORRECTNESS-1))
+- [x] Acceptance: save/restore round-trip tests (state, undo, `levelVersion`), plus a kill-and-relaunch check on a device — §18 M3; m3 §14 (the Hive, bloc and app-flow tests; the two-phase `flutter drive` on the iPhone 16 simulator and the API 35 emulator), m3 §16 (done 2026-09-28: the codec, Hive, bloc and `app_flow_test` (a) round trips, and the two-phase `flutter drive` kill on the iPhone 16 Pro simulator and the API 35 emulator (PROGRESS "M3 acceptance"); the physical-phone check is the owner item below)
+- [x] Coins — §7.3: (done 2026-09-28)
   - Earn: 10 easy, 10 medium (see Q5), 25 hard, 50 superhard; 150 per chapter; 50 per daily; 300 for the day-7 chest.
   - Spend: undo 20 after the free ones, hint 60, slot 150.
-- [ ] Persist the booster inventory, with the starter gift of 3 hints and 2 slots — §8
-- [ ] Booster purchase popup, coin path: frames 3.2 (Undo) and 3.3 (Hint), with "You have N coins". Wire the coin path of Undo, Hint and +1 Slot once the free undos or the inventory run out in `GameplayBloc` (`_withBoosters` and its handlers, `TODO(M3)`; `booster_use{source: coins}`), the coin rows of the out-of-moves sheet and the coin badges of the booster bar (frames 3.2, 3.3, 3.5) — §10.2 #7, bloc and screens reports
-- [ ] Settings footer version and build, which needs `package_info_plus` with a rule-9 reason — frame 8.1, CLAUDE.md rule 9
+  - Every number from Remote Config (`reward_medium` D64, `reward_chapter` D72/Q68) — m3 §7.1 (the keys are done; the callers are the bloc, daily and shop lanes)
+- [x] Persist the booster inventory, with the starter gift of 3 hints and 2 slots — §8; m3 §3.1 (in the save document, services lane) (done 2026-09-28)
+- [x] Booster purchase popup, coin path: frames 3.2 (Undo) and 3.3 (Hint), with "You have N coins". Wire the coin path of Undo, Hint and +1 Slot once the free undos or the inventory run out in `GameplayBloc` (`_withBoosters` and its handlers, `TODO(M3)`; `booster_use{source: coins}`), the coin rows of the out-of-moves sheet and the coin badges of the booster bar (frames 3.2, 3.3, 3.5) — §10.2 #7, bloc and screens reports; m3 §7.3 (the bloc's `BoosterOffer` flow, gameplay-bloc lane) and §10.8 (the popup, rows and badges, gameplay-screens lane), D73 (done 2026-09-28: a confirm buys only the offer that is up and spends only when the booster applies (review CORRECTNESS-7); the Out-of-Moves sheet reads its prices from the state)
+- [x] Settings footer version and build, which needs `package_info_plus` with a rule-9 reason — frame 8.1, CLAUDE.md rule 9; m3 §10.2 (`AppInfoService`, services lane; the footer, shell-home-settings lane; the package is added, D80) (done 2026-09-28)
+- [x] `AppInfoService` (`PackageAppInfoService` + fake), `LinkLauncher` (`UrlLinkLauncher` + fake) and `AppLinks` (empty until supplied, `TODO(M8)`) — m3 §10.2, §11, D79 (services lane) (done 2026-09-28: `AppLinks` stays empty until the owner supplies the URLs, so the Privacy Policy and Support rows stay hidden (`TODO(M8)`))
 
 ### Progression
 
-- [ ] Chapters of 20 levels, each showing its theme on Home and in play. "Match each chapter" is the default (`selectedTheme: null`) — §7.1, §7.4
-- [ ] Chapter complete overlay (frame 4.6): spotlight, figurine, "Added to your Museum!", +150 coins, next chapter, `fx_twinkle` — §10.2 #9, lottie §15
-- [ ] Museum progress on the win card: chapter, count, bar, "Next up" and the locked figurine (frames 1.5, 2.8). M2 built the card with a placeholder tile for the figurine art, and `figurineName` names 3 of the 10 figurines (see Owner inputs) — §7.2, screens report
-- [ ] Museum detail's "Collected · Sep 12" chip needs a collected date, but the §13.3 save stores `museum` as ids only. Per D22 (the design wins), the M3 save records the date each figurine was collected. Record the §13.3 addition in PROGRESS when the save schema is built — frame 6.2, §13.3, D22, Q3
-- [ ] Bonus Endless: generate with `seed = 1_000_000 + levelNumber` on the curve, with the bonus intro (4.9) and the teal "Bonus Level N" pill (4.10) — §7.1. Pass the global play order to `DifficultyCurve.bonusParams` ("Bonus Level N" = order − last published order); define the deterministic retry seed on a `GeneratorFailure` (A14; none occurred for 1–300); generate in the solver isolate (CLAUDE.md rule 8); decide what the app shows for `simulation.expertOnly` (Q31 kept the generator's behaviour: flagged, not rejected; review SPEC-03). `NextLevelPressed` past the last level then starts it instead of `GameplayStatus.allLevelsDone`, and All Levels Done (4.9) gains "Play Bonus Level 1" and "Back to Home". The win overlay then prefetches the bonus level's art as it does the next level's (`TODO(M3)` in `gameplay_view.dart`), and Home's PLAY names the bonus level instead of "All done!" (D58) — generator, bloc and screens reports, review fix pass
-- [ ] A `SkinService` method for the showcase dolls of Splash and Home, replacing `ShowcaseDolls`' one-tower board (`TODO(M3)` in `apps/game/lib/features/home/showcase/showcase_dolls.dart`) — screens report
-- [ ] The owner confirmed the default difficulty stage table (A16) on 2026-09-26 (Q34). Resolve the `TODO(M3)` in `packages/nesty_core/lib/src/generator/curve.dart` (doc only). Any later change still needs a `Generator.version` bump and new goldens and parity values — §6.6, A16
-- [ ] `SolverSnapshot` "generate" task (design §6 lists hint | softStuck | generate) with a params encoding, when on-device generation moves into the isolate — design §6, contracts report
-- [ ] `codec/game_state_codec.dart` (design §1 stretch goal): the in-progress save of `GameState` + undo history, persisting `GameSession.undosUsed` and restoring with `GameSession.restore(..., undosUsed:)` — §13.3, contracts and kernel reports
-- [ ] Museum: collection card and a walnut cabinet of 4 × 3 (6.1), detail modal (6.2), and the locked state with a bar and Play (6.3). The art comes from `design/museum/png/` (20 files: figurines and `_locked` silhouettes), because the museum SVGs use nested `<svg>` and mix-blend-mode. Extend `sync_design_assets` and the pubspec asset list to ship them — §7.2, §10.2 #10, audit
-- [ ] Daily puzzle: `seed = yyyymmdd`, a pinned `generatorVersion`, tier medium or hard. The date comes from an injected clock, never inside core — §7.5, CLAUDE.md rule 7. When `Generator.version` is ever bumped, keep a frozen v1 pipeline (PRNG, cuts, placement, validator, solver, simulator, daily table) for dailies so every device makes the same puzzle (Q35); decide the unlock level and the weekday rule (Q34) — generator report
-- [ ] Daily screens — §10.2 #11:
+- [x] Chapters of 20 levels, each showing its theme on Home and in play. "Match each chapter" is the default (`selectedTheme: null`) — §7.1, §7.4; m3 §9.1, §9.4 (the catalog is done; Home and the board read `selectedTheme ?? the chapter's theme`) (done 2026-09-28)
+- [x] Chapter complete overlay (frame 4.6): spotlight, figurine, "Added to your Museum!", +150 coins, next chapter, `fx_twinkle` — §10.2 #9, lottie §15; m3 §9.3, D72 (bloc: the completion rule and the one-update win; gameplay-screens: the overlay) (done 2026-09-28: titled with the figurine's name (review FIDELITY-1))
+- [x] Museum progress on the win card: chapter, count, bar, "Next up" and the locked figurine (frames 1.5, 2.8). M2 built the card with a placeholder tile for the figurine art, and `figurineName` names 3 of the 10 figurines (see Owner inputs) — §7.2, screens report; m3 §9.3 (the locked PNG from the catalog), §13 (names 4–10, Q73) (done 2026-09-28: figurines 4–10 keep placeholder names until the owner's Q73 answer (Owner inputs))
+- [x] Museum detail's "Collected · Sep 12" chip needs a collected date, but the §13.3 save stores `museum` as ids only. Per D22 (the design wins), the M3 save records the date each figurine was collected. Record the §13.3 addition in PROGRESS when the save schema is built — frame 6.2, §13.3, D22, Q3; m3 §3.1 (`museumCollected`, recorded in D67; written by `recordLevelWin`) (done 2026-09-28)
+- [x] Bonus Endless: generate with `seed = 1_000_000 + levelNumber` on the curve, with the bonus intro (4.9) and the teal "Bonus Level N" pill (4.10) — §7.1. Pass the global play order to `DifficultyCurve.bonusParams` ("Bonus Level N" = order − last published order); define the deterministic retry seed on a `GeneratorFailure` (A14; none occurred for 1–300); generate in the solver isolate (CLAUDE.md rule 8); decide what the app shows for `simulation.expertOnly` (Q31 kept the generator's behaviour: flagged, not rejected; review SPEC-03). `NextLevelPressed` past the last level then starts it instead of `GameplayStatus.allLevelsDone`, and All Levels Done (4.9) gains "Play Bonus Level 1" and "Back to Home". The win overlay then prefetches the bonus level's art as it does the next level's (`TODO(M3)` in `gameplay_view.dart`), and Home's PLAY names the bonus level instead of "All done!" (D58) — generator, bloc and screens reports, review fix pass; m3 §5 (the retry seeds, done), §6.2 (`DefaultLevelResolver`), §6.3 (`IsolateLevelGeneratorService`), §7.4 (the policy, D74/Q71; expert only plays as its tier) (done 2026-09-28)
+- [x] `DefaultLevelResolver` (both environments; cache, prefetch join, the embedded-level restore, `completesChapter`, `next`, `homeRequest`) and `IsolateLevelGeneratorService` (`Isolate.run`, level JSON back), replacing the fakes' `AppEnv.real` registrations — m3 §6.2, §6.3, §11, D70 (services lane) (done 2026-09-28: a board embedded by an older generator is regenerated (review CORRECTNESS-5))
+- [x] A `SkinService` method for the showcase dolls of Splash and Home, replacing `ShowcaseDolls`' one-tower board (`TODO(M3)` in `apps/game/lib/features/home/showcase/showcase_dolls.dart`) — screens report; m3 §9.2 (`prepareShowcase`, `selectSkin`, `selectedSkinId`: services lane; Home's use: shell-home-settings lane) (done 2026-09-28: `prepareShowcase` pins the rasterizers it uses, so concurrent previews never fall back to the placeholder (review CORRECTNESS-2))
+- [x] The owner confirmed the default difficulty stage table (A16) on 2026-09-26 (Q34). Resolve the `TODO(M3)` in `packages/nesty_core/lib/src/generator/curve.dart` (doc only). Any later change still needs a `Generator.version` bump and new goldens and parity values — §6.6, A16; m3 §5 (core-codec lane, with `Tier.medium`'s doc for D64) (done 2026-09-28)
+- [x] ~~`SolverSnapshot` "generate" task (design §6 lists hint | softStuck | generate) with a params encoding, when on-device generation moves into the isolate — design §6, contracts report~~ (dropped 2026-09-27: `Isolate.run` copies `GeneratorParams`, m3 §6.3, D70)
+- [x] `codec/game_state_codec.dart` (design §1 stretch goal): the in-progress save of `GameState` + undo history, persisting `GameSession.undosUsed` and restoring with `GameSession.restore(..., undosUsed:)` — §13.3, contracts and kernel reports; m3 §4: now `codec/game_session_codec.dart`, its API frozen by the contracts stage, format 1 and the `session.*` issue codes to implement (core-codec lane), D69 (done 2026-09-28: `GameSessionCodec` format 1)
+- [x] Museum: collection card and a walnut cabinet of 4 × 3 (6.1), detail modal (6.2), and the locked state with a bar and Play (6.3). The art comes from `design/museum/png/` (20 files: figurines and `_locked` silhouettes), because the museum SVGs use nested `<svg>` and mix-blend-mode. Extend `sync_design_assets` and the pubspec asset list to ship them — §7.2, §10.2 #10, audit; m3 §9.5 (the sync), §10.6 (the screen) (daily-museum-tools lane) (done 2026-09-28)
+- [x] Daily puzzle: `seed = yyyymmdd`, a pinned `generatorVersion`, tier medium or hard. The date comes from an injected clock, never inside core — §7.5, CLAUDE.md rule 7. When `Generator.version` is ever bumped, keep a frozen v1 pipeline (PRNG, cuts, placement, validator, solver, simulator, daily table) for dailies so every device makes the same puzzle (Q35); decide the unlock level and the weekday rule (Q34) — generator report; m3 §5 (the retries, done; the 28-date goldens, core-codec lane), §8.1 (`AppClock`, done), §8.3 (unlock after Level 2, D76/Q67) (done 2026-09-28: 28-date goldens on the VM, node, chrome and wasm; the unlock after Level 2)
+- [x] Daily screens — §10.2 #11: (done 2026-09-28: 5.2 and 5.6 are widget-tested with a fake clock; the screen rolls over at midnight (review CORRECTNESS-8))
   - 5.1: streak card, 7-day strip, chest row and puzzle card.
   - 5.2: streak saved.
   - 5.3: daily board with the date pill.
   - 5.4: solved, +50, no ×3.
   - 5.5: countdown to the next puzzle.
   - 5.6: chest modal with Collect ("Double it" is M6).
-- [ ] Streak rules: a missed day resets the streak, and one freeze is earned each week — §7.5
-- [ ] Acceptance: a seed test (same date → same level on every run), plus a two-device check — §18 M3
+  - m3 §8.4, §10.5 (daily-museum-tools lane); the 5.3 pill and the 5.4 win card: m3 §10.8 (gameplay-screens lane); the win path: m3 §8.5 (gameplay-bloc lane)
+- [x] Streak rules: a missed day resets the streak, and one freeze is earned each week — §7.5; m3 §8.2 (the algorithm and its worked table, D76/Q70): `StreakDailyService` for both environments (services lane) (done 2026-09-28)
+- [x] Acceptance: a seed test (same date → same level on every run), plus a two-device check — §18 M3; m3 §5 (VM + Chrome goldens), §16 (`NESTY_FAKE_DATE` on the simulator and the emulator, then the owner's two phones) (done 2026-09-28: the goldens, plus `daily_fingerprint_test` at `NESTY_FAKE_DATE=20260926` on the simulator and the emulator, both equal to the core's golden `7716bec2334e7d9a`; the two-phone check is the owner item below)
 
 ### Onboarding
 
-- [ ] L1 tutorial (frames 1.3, 1.4): scrim with holes, dotted arc, tooltip and the tapping hand `ui_tap_hand` (fingertip (48, 32) on the target; it works in a `LottieFxView` as it is). All other input is blocked — §7.6, lottie §15, FX runtime report
-- [ ] L1 third step: nest the last Cherry 1 to finish the family. No frame exists, so mark it `TODO(design)` — §7.6, frame 1.4
-- [ ] L1 complete (frame 1.5) and the L2 swallow drag demo (frame 1.6) with `ui_drag_hand`. It is board space through BoardFit, above the scrim: wrap its `LottieFxView` in a BoardFit `Transform`. Its `travel` holds need the lottie §6 hold fix until the re-export — §7.6, lottie §6, §15, FX runtime report
-- [ ] Mechanic intro cards, shown once each with a looping mini animation: towers at L16 (4.1), glass at L31 (4.2), ice at L51 (4.3) — §3, §7.6, §10.2 #8
+- [x] L1 tutorial (frames 1.3, 1.4): scrim with holes, dotted arc, tooltip and the tapping hand `ui_tap_hand` (fingertip (48, 32) on the target; it works in a `LottieFxView` as it is). All other input is blocked — §7.6, lottie §15, FX runtime report; m3 §10.4, D78 (the script and gating: gameplay-bloc lane; the overlay: gameplay-screens lane) (done 2026-09-28: the tap steps draw the dotted arc too (review FIDELITY-4))
+- [x] L1 third step: nest the last Cherry 1 to finish the family. No frame exists, so mark it `TODO(design)` — §7.6, frame 1.4; m3 §10.4 (step 3, provisional copy) (done 2026-09-28: built with provisional copy; the frame stays a design gap)
+- [x] L1 complete (frame 1.5) and the L2 swallow drag demo (frame 1.6) with `ui_drag_hand`. It is board space through BoardFit, above the scrim: wrap its `LottieFxView` in a BoardFit `Transform`. Its `travel` holds need the lottie §6 hold fix until the re-export — §7.6, lottie §6, §15, FX runtime report; m3 §10.4 (step 4; `tutorialDone` set on the swallow). The hold fix is gone since v3 (D60) (done 2026-09-28)
+- [x] Mechanic intro cards, shown once each with a looping mini animation: towers at L16 (4.1), glass at L31 (4.2), ice at L51 (4.3) — §3, §7.6, §10.2 #8; m3 §10.4 (first board with the mechanic, any kind; `seenIntros`), D78 (done 2026-09-28: static illustrations from the frames' board sprites and the level's skin at top 170 (review FIDELITY-6); the loops stay a design gap)
 
 ### Menus
 
-- [ ] Finish Home (frame 2.1) — §10.2 #2:
+- [x] Finish Home (frame 2.1) — §10.2 #2: (done 2026-09-28: the tiles stay above the nav on a 16:9 Android body, and Remove Ads opens the Shop's No Ads tab (m3 §10.3))
   - Tiles: Daily (streak badge), Museum (next-figurine progress), and a Remove Ads slot that hides once purchased.
   - Bottom nav: Shop · Home · Museum.
   - The coin pill's "+" opens the Shop.
-- [ ] Routes for Win, Pause, Settings, Daily, Museum, Shop and SkinDetail — `apps/game/lib/core/router/app_router.dart`, design/README.md "Navigation & state"
-- [ ] Settings (frame 8.1): Sound, Music and Haptics toggles (the `ui_toggle` component from Pause), Color symbols (Subtle or Large; the part-raster bodies are rebuilt on change, D45), Language, Privacy Policy link, Support email, and a footer. The Restore and Privacy choices rows are wired in M6. The rows use `NestyToggle` (on `ui_toggle`) and the language sheet `NestySheet` — §10.2 #13, UI lane report
-- [ ] The components M2 didn't need: segmented tabs, the bottom nav (on `WoodBar`), Home tiles with the streak badge, the buy popup's body (112 px icon disc with its 8 px halo), intro cards with the NEW chip, and the toast — design/README.md "Components", UI lane report
-- [ ] Language sheet with the 9 launch languages (frame 8.2) — §16
-- [ ] Enable Pause's Settings tile, and stop the flow test's pause from returning to Home — frame 3.9, `apps/game/test/app_flow_test.dart`
-- [ ] Shop on the bundled art — §7.4, §10.2 #12:
+  - m3 §10.3 (shell-home-settings lane)
+- [x] Routes for Win, Pause, Settings, Daily, Museum, Shop and SkinDetail — `apps/game/lib/core/router/app_router.dart`, design/README.md "Navigation & state" (done 2026-09-27 as stubs: the shell's Shop · Home · Museum tabs, and Settings, Daily, SkinDetail and `GameplayRoute(request)` over it; Win and Pause stay gameplay overlays; m3 §10.1)
+- [x] Settings (frame 8.1): Sound, Music and Haptics toggles (the `ui_toggle` component from Pause), Color symbols (Subtle or Large; the part-raster bodies are rebuilt on change, D45), Language, Privacy Policy link, Support email, and a footer. The Restore and Privacy choices rows are wired in M6. The rows use `NestyToggle` (on `ui_toggle`) and the language sheet `NestySheet` — §10.2 #13, UI lane report; m3 §10.2, D79 (shell-home-settings lane) (done 2026-09-28: Color symbols as the frame's two preview cards (review FIDELITY-8); the Privacy Policy and Support rows wait for `AppLinks`)
+- [x] The components M2 didn't need: segmented tabs, the bottom nav (on `WoodBar`), Home tiles with the streak badge, the buy popup's body (112 px icon disc with its 8 px halo), intro cards with the NEW chip, and the toast — design/README.md "Components", UI lane report; m3 §10.9 (ui-kit-arb lane) (done 2026-09-28)
+- [x] Every M3 string in `app_en.arb` with a description (the catalog of m3 §13), then gen-l10n — §16, CLAUDE.md "Code style" (ui-kit-arb lane) (done 2026-09-28)
+- [x] Language sheet with the 9 launch languages (frame 8.2) — §16; m3 §10.2 (only English selectable until M7, D79) (done 2026-09-28)
+- [x] Enable Pause's Settings tile, and stop the flow test's pause from returning to Home — frame 3.9, `apps/game/test/app_flow_test.dart`; m3 §10.1 (Settings pushed over the paused level) (done 2026-09-28: the Pause toggles and the board's symbols re-read on return (review CORRECTNESS-4))
+- [x] Shop on the bundled art — §7.4, §10.2 #12: (done 2026-09-28)
   - Tab shell: Coins · Skins · Themes · No Ads.
   - Skins grid (7.3), skin detail with Buy for coins (7.4), and the skin in play (7.6).
   - Themes grid with the "Match each chapter" toggle (7.7).
   - The downloading state's `ui_spinner` on the skin card (7.5; the download itself is M4) and `fx_twinkle` on the Shop — lottie §15
   - Theme ownership (`ownedThemes`), per frame 7.7's note: "Chapter themes unlock with their chapter and can then be used anywhere. Later ones can be bought early." A locked card shows "Ch N" and its coin price (1,200 / 1,500 / 2,000 for ch04–ch06 in the frame; §7.3 range 500–2000, prices from Remote Config or Firestore) — §7.3, §7.4, frame 7.7
+  - m3 §9.4, §10.7 (shop lane); the Coins and No Ads tabs show a store-closed card until M6 (D75, Q75)
 
 ### Audio and haptics
 
 - [x] Music playback (`music_home`, `music_game`) with separate music and SFX volumes, and the files synced and shipped (moved into the post-M2 round: the music arrived) — §11.3, tokens.json `sound.music`, D61 (done 2026-09-27)
-- [ ] Chapter complete (4.6) calls `JingleCues.chapterComplete()`: the music fades out over 400 ms, then `jingle_chapter` only (Q62). Its Continue calls `MusicService.playGame()`, which fades `music_game` in over 2000 ms — `TODO(M3)` in `gameplay_view.dart` and `jingle_cues.dart`, audio plan §4
-- [ ] `JingleCues.reward()` (`jingle_reward` over music ducked to 0.4) at a skin unlock (7.4), a theme unlock or purchase (7.7) and the daily chest (5.6) — `TODO(M3)` in `jingle_cues.dart`, Q62
-- [ ] Music by screen: the daily puzzle's and the bonus levels' boards play `music_game`; Daily, Museum, Shop, Skin detail and Settings play `music_home` (`MusicRouteObserver.trackFor`) — `TODO(M3)` in `music_route_observer.dart`, AUDIO.md "Music rules"
-- [ ] Settings' Music and Sound toggles only write `DatabaseService` (the music follows `musicEnabledChanges`, as Pause's do); a music volume control, if one is designed, calls `MusicService.setVolume`, which applies at once (Q66 asks whether it should fade) — frame 8.1, AUDIO.md "Music rules"
-- [ ] Tune the haptic patterns, including the multi-pulse success, on real devices — §11.2, PROGRESS "Notes for later milestones"
+- [x] Chapter complete (4.6) calls `JingleCues.chapterComplete()`: the music fades out over 400 ms, then `jingle_chapter` only (Q62). Its Continue calls `MusicService.playGame()`, which fades `music_game` in over 2000 ms — `TODO(M3)` in `gameplay_view.dart` and `jingle_cues.dart`, audio plan §4; m3 §9.3 (done 2026-09-28)
+- [x] `JingleCues.reward()` (`jingle_reward` over music ducked to 0.4) at a skin unlock (7.4), a theme unlock or purchase (7.7) and the daily chest (5.6) — `TODO(M3)` in `jingle_cues.dart`, Q62; m3 §9.4, §10.1 (a theme unlocked by reaching its chapter plays none) (done 2026-09-28)
+- [x] Music by screen: the daily puzzle's and the bonus levels' boards play `music_game`; Daily, Museum, Shop, Skin detail and Settings play `music_home` (`MusicRouteObserver.trackFor`) — `TODO(M3)` in `music_route_observer.dart`, AUDIO.md "Music rules"; m3 §10.1 (the route tree already gives it, pinned by `music_route_observer_test`; the `TODO(M3)` comment is the shell-home-settings lane's) (done 2026-09-28)
+- [x] Settings' Music and Sound toggles only write `DatabaseService` (the music follows `musicEnabledChanges`, as Pause's do); a music volume control, if one is designed, calls `MusicService.setVolume`, which applies at once (Q66 asks whether it should fade) — frame 8.1, AUDIO.md "Music rules"; m3 §10.2 (no volume slider is designed, so none is built) (done 2026-09-28)
 
 ## M4 — Firebase content
 
@@ -377,6 +403,7 @@ playable. Levels published in the admin appear on the next app resume.
 - [ ] Crashlytics: uncaught errors, plus non-fatals for `runGuarded` failures, the Hive fallback and level-validation failures — §14.4, D17
 - [ ] `FirebaseRemoteConfigService` over the hard-coded defaults, with prices and rewards read from it — §9.4, CLAUDE.md rule 6
 - [ ] `FirebaseAnalyticsService`, with every §14.4 event sent from the feature it belongs to — §14.4
+- [ ] When sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` once — m3 §6.2, D72
 - [ ] Level sync — §13.4:
   - `levels_cache.json` with `manifestVersion`.
   - Runs on launch and on resume when online, without blocking: the splash kicks it off unawaited, with the Remote Config refresh (`TODO(M4)` in `splash_cubit.dart`).
@@ -388,7 +415,8 @@ playable. Levels published in the admin appear on the next app resume.
 - [ ] PNG layer sets accepted by the game's skin loader — §12.2
 - [ ] A Storage skin loader that builds `SkinLayers` from the admin's pre-split per-group SVGs (the `SkinLayers(Map)` constructor is ready) — §13.5, §14.2, r2 report
 - [ ] Daily overrides from `dailyOverrides/{yyyymmdd}` — §7.5, §14.1
-- [ ] Chapter, theme, skin and museum metadata (names, flavor text, prices) from Firestore — §14.1
+- [ ] Chapter, theme, skin and museum metadata (names, flavor text, prices) from Firestore — §14.1; overlaid on `CatalogRepository` (`TODO(M4)` in `bundled_catalog_repository.dart`), m3 §9.1
+- [ ] When level sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` then (`PlayEntry.completesChapter` sees only the bundle it was resolved from) — m3 §6.2, D72
 - [ ] `connectivity_plus` to re-sync on reconnect, with its reason in PROGRESS — §13.2, §9.1
 - [ ] Airplane-mode tests with failing network services, plus a fresh-install device check — §18 M4
 - [ ] Install `firebase-tools` (it needs a JDK) and verify `firebase emulators:start` from `firebase/`, including the Auth emulator — PROGRESS M0 "Not verified yet"
@@ -467,6 +495,10 @@ Acceptance (§18): matches the design screens, with no layout overflows on 5
 screen sizes. Most of the original M7 integration moved into M2 (D23).
 
 - [ ] Fidelity pass, screen by screen, against every App Flow frame (01–08) with `ui-designer`, then owner sign-off — §18 M7
+- [ ] Tune the haptic patterns, including the multi-pulse success, on real devices (moved from M3: it needs the owner's hands on real phones; `TODO(M7)` in `system_haptics_service.dart`) — §11.2, PROGRESS "Notes for later milestones"
+- [ ] The Daily puzzle card's preview: draw the chapter background under its plank (NestyMenus isDaily, `backgrounds/ch3-seaside-market.svg` at center 42%/cover). `SkinService.background` is the one full-screen raster, so it needs a small per-card theme raster (`TODO(M7)` in `features/daily/widgets/puzzle_card.dart`) — frame 5.1, M3 review FIDELITY-2
+- [ ] "Play Bonus Level N" on All Levels Done when that level can't be generated: the card stays up with its button live. Continue's failure already has `NextLevelFailedCard`; give this path the same (`TODO(M7)` in `gameplay_view.dart`) — M3 review CORRECTNESS-3 follow-up
+- [ ] A restored out-of-moves board whose intro card was never dismissed shows the card over the reopened sheet, whose rows wait for "Got it" (`TODO(M7)` in `gameplay_view.dart`) — M3 review CORRECTNESS-1 follow-up
 - [ ] Overflow tests on small Android, standard phone, tall phone, small iPhone and iPad portrait, at 1.0× and 1.3× text — §18 M7, §16
 - [ ] Animation polish: tune by feel each clip's playback speed (never the JSON), the hand-coded tweens of lottie §9 (`TODO(M7)`), the wobble snap into `doll_move` (settle it before the move), an animated undo (`BoardResetEffect(undo)` cuts today), re-placing the clips in flight during a +1 Slot re-pitch, the coin count-up (700–1300 ms) guess, and the intro-card loops. The tower reveal's drop now comes from `doll_reveal` (D60) — §11.1, lottie §7, §9, timeline report
 - [x] Swap in the designer's Lottie re-export when it arrives (done 2026-09-27: Claude Design v3, imported in the post-M2 round, D59, D60) — re-export, lottie §18, D43:
@@ -495,7 +527,7 @@ production Firebase.
 - [ ] App icons: flatten the 1024 App Store icon (App Store Connect rejects alpha), and add an Android adaptive icon and a 512 px Play icon. `sync_design_assets` doesn't copy `design/store/` (its SVG uses unsupported features), so the launcher icons are generated separately — §18 M8, audit, `design/store/icon_1024.png`
 - [ ] Native splash (the Android 12 splash API and the iOS LaunchScreen) matching frame 1.1 — §18 M8
 - [ ] Store screenshot support: a clean capture mode — §18 M8
-- [ ] App size under 60 MB (`--analyze-size`), keeping an eye on the bundled art — §18 M8, D20
+- [ ] App size under 60 MB (`--analyze-size`), keeping an eye on the bundled art — §18 M8, D20. On 2026-09-28 the prod fat APK (every ABI) was 73.3 MB: measure the per-ABI app bundle
 - [ ] Performance profiling on a 2 GB Android — CLAUDE.md rule 8, `/perf-profile`. Include the level-load raster time of doll layers (design budget ≤ 250 ms; host flutter_tester measured 35–67 ms for 4 heights at DPR 3), board sprites and the theme background (r2/r3 reports)
 - [ ] Release configs with the ad IDs from `--dart-define`, never committed — CLAUDE.md rule 5
 - [ ] Android release signing with the upload key (`key.properties` kept out of git) — `apps/game/android/app/build.gradle.kts`
@@ -554,8 +586,8 @@ names the milestone it blocks.
   - [x] The nest rim above the body, consistent with `nesty-doll.js`, or confirm the current order.
   - [x] LOTTIE.md: "28" → 29; viewer anchors; trim paths and polystars allowed; the `textStyle` advice and the `remapTravel` sample fixed.
 - [ ] Optional, for a later export: `doll_move` with a hold frame at the end. lottie never draws `op`, so its last drawn frame is about 1 dp high and 2 % large and the sprite takes over mid-fall; then tighten `handoff_test`'s last-frame check. It wasn't in the v2 request, and v3 keeps the 16 f file — board report (M7)
-- [ ] Flavor text for 9 figurines. Only the Sailor Family has one — §7.2, frame 6.2 (M3)
-- [ ] Names for figurines 4–10 (astronaut, gardener, snow, circus, musician, royal, explorer): the design names only the Classic, Sailor and Baker Families, so `figurineName` returns '' and the win card hides "Next up" for chapters 4–10 (Q47) — UI lane report (M3)
+- [ ] Flavor text for 9 figurines. Only the Sailor Family has one — §7.2, frame 6.2 (M8; moved from M3: the Museum shows no flavor line until supplied)
+- [ ] Names for figurines 4–10 (astronaut, gardener, snow, circus, musician, royal, explorer): the design names only the Classic, Sailor and Baker Families, so `figurineName` returns '' and the win card hides "Next up" for chapters 4–10 (Q47) — UI lane report (M8; moved from M3: placeholder names ship until the owner's, Q73)
 - [ ] The colours the App Flow frames use that tokens.json lacks (e.g. `#6E4526` icon brown), listed in `apps/game/lib/core/ui/colors/app_colors.dart` with `TODO(design)`: add them to tokens.json `color`, then move the call sites to `AppColorTokens` — UI lane report (M7)
 - [ ] Names and background art for chapters 7–10. Only ch01–ch06 exist — §7.1, §12.4 (M3, M7)
 - [ ] Shelf plank, stand art and palette JSON for each theme, or confirmation that every theme shares the board art — §12.4 (M7)
@@ -566,7 +598,8 @@ names the milestone it blocks.
   - 6 screenshots (1290×2796).
 - [ ] Distinct dev and stg icons, if Q17 says yes (M8)
 - [ ] Admin panel designs. The handoff has none, and the admin placeholders point at `design/admin/*.png` — docs/DESIGN_BRIEF.md Prompt 14 (M5)
-- [ ] Privacy policy URL and support email address — §9.3, §17, frame 8.1 (M3, M8)
+- [ ] Privacy policy URL and support email address — §9.3, §17, frame 8.1 (M3, M8). Until then their Settings rows are hidden (`AppLinks`, m3 §10.2, Q73)
+- [ ] Descriptions for the Classic, Space, Sweets, Forest Friends and Winter skins (frame 7.4 has only Ocean's "Sailor collars, tiny anchors and wave trims."); hidden until supplied — m3 §9.1, Q73 (M8; moved from M3: hidden until supplied)
 
 ### Design gaps
 
@@ -575,8 +608,8 @@ system and mark them `TODO(design)`. The gaps that said (M7) moved to M7 on
 2026-09-27: M2 ships the design-system stand-ins, and the M7 fidelity pass
 takes the designs when they arrive.
 
-- [ ] L1 tutorial third step (Cherry 1 into the nest) — §7.6, frame 1.4 (M3)
-- [ ] Out-of-moves Undo row once the free undos are used — frame 3.5 (M3)
+- [ ] L1 tutorial third step (Cherry 1 into the nest) — §7.6, frame 1.4 (M7; moved from M3: the M3 stand-in ships)
+- [ ] Out-of-moves Undo row once the free undos are used — frame 3.5 (M7; moved from M3: the M3 stand-in ships)
 - [ ] +Slot at its limit (2 used this level) — §3.6 (M7)
 - [ ] Extra slot when the bottom shelf is full — §3.6, D22 (M7)
 - [ ] Boards with 1 shelf, 4 shelves or 5 slots per shelf — §2.1, §5.3 (M7). Built by scaling (D36): the 1-shelf preset (plank 540, Hs 150) and the 4-shelf preset (planks 250/395/539/684, Hs 104, every slot piece × 104/150), both `TODO(design)` in `packages/nesty_render/lib/src/board/shelf_presets.dart`; 5–6-slot rows shrink stands, pips, tag, glow, glass, ice, hint arrow, tower raise and (review RENDER-3) the dolls (`TODO(design)` in `board_layout.dart`)
@@ -585,10 +618,10 @@ takes the designs when they arrive.
 - [ ] A doll sealed in a glass case is taller than the case at maxSize ≥ 5 (the design's own maxSize-5 doll is 6 dp above it, NestyBoard:169) and wider at maxSize 6; on a 4-shelf board a top-row maxSize-6 doll (sealed, or on a tower) reaches ~2–6 dp above the frame — r1 report, review (M7)
 - [ ] Top-shelf towers: the D21 18 dp step per buried nest shrinks so the deepest silhouette stays under the HUD (`TODO(design)` in `board_geometry.dart` `buriedBaseY`); and a buried nest two or more sizes smaller than the top stays hidden at 18 dp per depth (Q38) — D21, review RENDER-4 (M7)
 - [ ] A designed look for the procedural fallback doll (spec §12.5; `TODO(design)` in `packages/nesty_render/lib/src/doll/placeholder_doll_painter.dart`) — r2 report (M7)
-- [ ] Looping animations for the intro cards — frames 4.1–4.3 (M3)
-- [ ] Home with a Super Hard level, in bonus mode, and with a streak of 0 — frame 2.1 (M3)
-- [ ] Win card in bonus mode — frame 2.8 (M3)
-- [ ] Streak lost — §7.5 (M3)
+- [ ] Looping animations for the intro cards — frames 4.1–4.3 (M7; moved from M3: the M3 stand-in ships)
+- [ ] Home with a Super Hard level, in bonus mode, and with a streak of 0 — frame 2.1 (M7; moved from M3: the M3 stand-in ships)
+- [ ] Win card in bonus mode — frame 2.8 (M7; moved from M3: the M3 stand-in ships)
+- [ ] Streak lost — §7.5 (M7; moved from M3: the M3 stand-in ships)
 - [ ] Ad loading, ad failed and ad timed out — §9.1 (M6)
 - [ ] Purchase failed and purchase pending — §9.2 (M6)
 - [ ] Restore found nothing — §9.2 (M6)
@@ -606,8 +639,20 @@ takes the designs when they arrive.
 - [ ] A load failure (the splash's retry): the player reads `genericLoadFailed` whether storage or content failed (`TODO(M7)` in `app_exception_extension.dart`, `TODO(design)` in `retry_view.dart`) — UI lane report (M7)
 - [ ] The splash's first frames draw the procedural placeholder dolls, which swap to the skin once it loads (about a second on the simulator, Q58) — integration playthrough (M7)
 - [ ] Anchors of `ui_toggle` and `ui_splash_loader`: LOTTIE.md says only "toggle box" and "bar box", taken as their top-left (Q56) — tools report (M7)
-- [ ] Home's PLAY once every bundled level is won: it reads "PLAY · All done!" and opens All Levels Done, where it used to promise "Level 31" (`TODO(design)` in `play_button.dart`, review FIDELITY-5) — frame 2.1, 4.9 (M3)
+- [ ] Home's PLAY once every bundled level is won (it used to read "PLAY · All done!" and promise "Level 31") (`TODO(design)` in `play_button.dart`, review FIDELITY-5) — frame 2.1, 4.9 (M7; moved from M3: M3's PLAY names "Bonus Level N" past the last level, m3 §7.4, §10.3, which no frame shows yet)
+- [ ] Home's Daily tile before Level 2 is won: no locked design; built dimmed with a lock and "After Level 2" (`TODO(design)`) — m3 §8.3, Q67 (M7; moved from M3: the M3 stand-in ships)
+- [ ] The Museum with all ten figurines collected ("Every family is home.") and the Museum tile in Bonus Endless — m3 §10.3, §10.6 (M7; moved from M3: the M3 stand-in ships)
+- [ ] A board being generated (a bonus level or the daily not prefetched): `ui_spinner` over the previous board, "Setting up the shelves…" — m3 §10.8 (M7; moved from M3: the M3 stand-in ships)
+- [ ] The Shop's Coins and No Ads tabs before M6: a store-closed card ("The store is closed for now") — m3 §10.7, Q75 (M6)
 - [ ] Soft stuck with nothing to undo (a completion cleared the history, or the free undos are spent): the banner suggests Restart, "Try Restart? You can keep playing too.", and Undo doesn't glow (`TODO(design)` in `soft_stuck_banner.dart`, review FIDELITY-6) — frame 3.4 (M7)
+- [ ] The Shop's colours that tokens.json lacks (the skin cards' backgrounds, Buy's coin-chip face, the 7.4 panel's highlight, edge and caption), in `SkinShopColors` with `TODO(design)` in `features/shop/widgets/shop_colors.dart`; and each skin's own 7.4 panel edge and caption ink (the frame draws only Ocean's) — frames 7.3, 7.4, M3 review RULES-3, FIDELITY-5 (M7)
+- [ ] Theme cards show the chapter's flat fallback colour, not a thumbnail of its art (`TODO(design)` in `features/shop/widgets/theme_grid_card.dart`) — frame 7.7, M3 review RULES-3 (M7)
+- [ ] No frame times the Shop purchase celebration (`TODO(design)` in `features/shop/widgets/purchase_twinkle_burst.dart`) — M3 review RULES-3 (M7)
+- [ ] Home on a short screen (a 16:9 Android body is about 630 tall): the tiles sit 12 above the nav and the hero scales down; frame 2.1 has no such variant (`TODO(design)` in `features/home/pages/home_page.dart`) — M3 device run, RULES-3 (M7)
+- [ ] `NestyToast`'s 3 s auto-dismiss has no frame timing (`TODO(design)` in `core/ui/widgets/feedback/nesty_toast.dart`) — M3 review RULES-3 (M7)
+- [ ] A designed failure state for a Continue whose next level can't be generated (built: the retry view and a "Back to Home" link, `TODO(design)` in `features/gameplay/overlays/next_level_failed_card.dart`) — M3 review CORRECTNESS-3 (M7)
+- [ ] A text-link style in tokens.json ("Back to Home" on 4.9 uses `buttonSmall` at 16, `TODO(design)` in `features/gameplay/overlays/overlay_text_link.dart`) — frame 4.9, M3 review FIDELITY-11 (M7)
+- [ ] Tokens for the 5.6 and 8.1 colours now in `AppColors` (`chestGlow`, `chestShadow`, `symbolsCardSelectedFace`, `symbolsCardRing`), with the item above on `app_colors.dart` — M3 review FIDELITY-8, FIDELITY-12 (M7)
 
 ### Copy to confirm
 
@@ -615,7 +660,7 @@ takes the designs when they arrive.
 - [ ] Remove Ads offer: "Restore it on any device" only holds for devices on the same store account — frame 7.9, §9.2 (M6)
 - [ ] BEST VALUE is on the 4,000 pack, but 9,000 for $9.99 is the better value per coin — frame 7.1, §9.2 (M6)
 - [ ] Casing: "Restore Purchases" (8.1) vs "Restore purchases" (7.8) — frames 8.1, 7.8 (M6)
-- [ ] Settings footer "Player ID": the spec has no player id. Use a local random id, or drop it — frame 8.1, §13.3 (M3)
+- [ ] Settings footer "Player ID": the spec has no player id. Use a local random id, or drop it — frame 8.1, §13.3 (M8; the default ships in M3: a local random id in the save, D79, Q74)
 
 ### Accounts and compliance
 
@@ -627,8 +672,8 @@ takes the designs when they arrive.
 
 ### Decisions
 
-- [ ] Q3: the save document in Hive or in the atomic JSON file? (blocks M3 save)
-- [ ] Q5: add a `reward_medium` key, or have medium read `reward_easy`? (M3)
+- [x] Q3: the save document in Hive or in the atomic JSON file? (blocks M3 save) (done 2026-09-27: a Hive box via `DatabaseService`, D63)
+- [x] Q5: add a `reward_medium` key, or have medium read `reward_easy`? (M3) (done 2026-09-27: `reward_medium`, default 10, D64)
 - [ ] Q6: return to the originally requested admin deep link after the first sign-in? (M5)
 - [ ] Q7: hash or path URLs for the admin? (M5)
 - [ ] Q10: confirm the bundle id `com.futrix.nesty` (plus `.dev`, `.stg`) before any store upload (M8)
@@ -649,13 +694,25 @@ takes the designs when they arrive.
 - [x] Q61–Q63: the audio plan's session, chapter-jingle and low-latency questions (done 2026-09-26: iOS `.ambient`; `jingle_chapter` only at chapter complete; low latency in prod only; D61)
 - [x] Q64: should the hint arc start at the source doll's head rather than 66 below its top (the prototype's value, which lands on a tall doll's upper body)? (M7) (done 2026-09-27: the owner kept the design's value, PROGRESS Q64)
 - [ ] Q65: should the extra slot's pulse stop while a doll stands on it? (M7)
-- [ ] Q66: should a music volume slider fade (SoLoud's `setVolume` applies at once and cancels a running fade)? No M2 caller (M3)
+- [ ] Q66: should a music volume slider fade (SoLoud's `setVolume` applies at once and cancels a running fade)? No M2 caller (M7; moved from M3: no slider is designed, so none was built)
+- [ ] Q67: the daily unlocks after Level 2 (the tutorial) is won, with intro cards covering any mechanic a daily shows first? (M3, D76)
+- [ ] Q68: the chapter reward as a Remote Config key `reward_chapter`, default 150, like Q5? (M3, D72)
+- [ ] Q69: after a kill, relaunch to Home with PLAY continuing the saved board, or open straight into the board? (M3, D71)
+- [ ] Q70: the streak readings: at most 1 freeze, granted each ISO week; a frozen day keeps but doesn't add; the chest on every 7th streak day; only today's date counts? (M3, D76)
+- [ ] Q71: bonus levels outside the chapters, never skipping levels published later? (M3, D74)
+- [ ] Q72: prices the frames don't show: Space 1,200; ch02 800 and ch03 1,000 bought early; `forest-bear` not sold? (M3, D75)
+- [ ] Q73: catalog content: figurine names 4–10 ("The <Name> Family"), 9 flavor texts, 5 skin descriptions, the names of chapters 7–10, the privacy URL and support email (hidden until supplied)? (M3, D75)
+- [ ] Q74: the Settings footer's Player ID: a local random id in the save, or drop it? (M3, D79)
+- [ ] Q75: the Shop's Coins and No Ads tabs before M6: a store-closed card, or hide the tabs? (M3, D75)
 - [x] Q30–Q38: the M1 and render decisions to confirm (towerless grading, expert-only generated levels, solver targets, admin memory, the curve table, the recorded defaults, bundle policy, authored levels, render defaults) (done 2026-09-26: the owner confirmed the recorded defaults, D52)
 - [ ] Update GAME_SPEC.md for this round's deviations, or keep them recorded only in PROGRESS? They are §2.2 tap policy (D22), §3.6 extra-slot placement (D22), §13.5 bundled art (D20), and the §12.3/§13.3 symbols value (Q4) — D19–D22
 
 ## Tech debt
 
 - [ ] Extract the duplicated base layer into a shared package — D6, Q8
+- [ ] `SkinDollRow` lives in `features/shop/widgets/` but the Daily card and Settings' Color symbols use it too: move it next to `LottieDoll` in `features/fx/` — M3 fix pass
+- [ ] A public digest helper in nesty_core (e.g. `LevelCodec.fingerprint`), so the app's integration tests can report the core goldens' short `Hash64` instead of the whole canonical JSON — M3 shop lane
+- [ ] CI: add `test/codec/game_session_codec_test.dart` and `test/generator/daily_golden_test.dart` to the `dart test -p node` parity line — M3 core-codec lane
 - [ ] Optional: use the same error-key names in both apps — Q26
 - [ ] The hooks guard only Write, Edit and MultiEdit, so a Bash redirect bypasses `block-secrets` and `block-generated` — PROGRESS "Review pass"
 - [ ] No test covers the bootstrap zone handler's `FlutterError.reportError` — PROGRESS "Review pass"
@@ -663,7 +720,7 @@ takes the designs when they arrive.
 - [ ] Watch CI's first GitHub run on `ubuntu-latest`: the Linux-only `grep -z` and `xargs --no-run-if-empty` format step, `setup-java`, shellcheck, and the APK build of `flutter_soloud`'s native code (it needs the NDK and CMake on the runner; only built locally so far) — PROGRESS M0 "Not verified yet", PROGRESS "Package reasons"
 - [ ] The VS Code launch configs are untested — PROGRESS M0 "Not verified yet"
 - [ ] Revisit `flutter_gen` now that assets exist, or keep hand-written asset paths (`sync_design_assets` owns the files, not typed accessors) — D3
-- [ ] `hive_ce_generator` produces nothing. Keep it or drop it once Q3 settles the save — PROGRESS "Package reasons"
+- [x] `hive_ce_generator` produces nothing. Keep it or drop it once Q3 settles the save — PROGRESS "Package reasons" (done 2026-09-27: removed, the save is one JSON document, D80)
 - [x] Refresh the root README.md: it still says `design/` is not in the repo, and it doesn't list `tools/` — README.md (done 2026-09-26: status, layout, tools commands, native build prerequisites)
 - [ ] Refresh the `code-explorer` map after M1 and M2. It says only `DollColor` exists; M1 core, the nesty_render API (D27, D36–D38) and the M2 Lottie contracts (D40–D52) are now built — `.claude/agents/code-explorer.md`
 - [ ] Make the Stop hook (`.claude/hooks/test-on-stop.sh`) run `dart test -x slow` in nesty_core now that the slow M1 acceptance test exists (owner's hook config) — design §5, contracts report
@@ -687,6 +744,7 @@ takes the designs when they arrive.
 - [ ] The tools contract table repeats the `FxId` file names and the `FxImageSlot` ids and sizes (tools can't import the game). `lottie_contract_test` reads the game's frozen `fx_id`/`fx_image_source`/`fx_spec` files with regexes, so a big reformat of them may need the regexes updated — tools report
 - [ ] `integration_test.framework` is embedded in every iOS configuration: CocoaPods links the dev-dependency plugin's pod everywhere, and only its registration is debug-only. Check the M8 release size and whether to keep it out of release builds — integration (M8)
 - [ ] `flutter drive` on Android ends with "Failed to uninstall app": it tries the base id `com.futrix.nesty`, not the flavor's `.dev`. The test result is unaffected — integration
+- [ ] `winRewardFor` lives in the bloc's `features/gameplay/bloc/win_reward.dart`, and `core/repository/fake_level_resolver.dart` (and the M3 `DefaultLevelResolver`) import it from there. Move it next to `RemoteConfigKeys` if more of core needs it — m3 §6.2
 - [ ] Deleting `apps/game/build/` alone leaves `apps/game/.dart_tool/flutter_build/` stamps that say the iOS native assets (objective_c's framework) are built, so the next iOS build fails with "NativeAssetsManifest.json references objective_c, which was not found". Clean both (`flutter clean`, or remove `.dart_tool/flutter_build` too); README "Troubleshooting" says so — fix-and-close verification
 
 ## Closed questions

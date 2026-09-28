@@ -6,6 +6,7 @@ import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
@@ -32,6 +33,7 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
       RepositoryProvider.value(value: get<SkinService>()),
       RepositoryProvider.value(value: get<FxLibrary>()),
       RepositoryProvider.value(value: get<ShowcaseDolls>()),
+      RepositoryProvider.value(value: get<DatabaseService>()),
     ],
     child: BlocProvider(
       create: (context) =>
@@ -70,6 +72,7 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
         background: context.read<SkinService>().background,
         library: context.read<FxLibrary>(),
         showcase: context.read<ShowcaseDolls>(),
+        symbols: context.read<DatabaseService>().symbolsMode.dollSymbols,
       ),
     );
   }
@@ -89,6 +92,7 @@ class SplashView extends StatefulWidget {
     this.background,
     this.library,
     this.showcase,
+    this.symbols = DollSymbols.subtle,
     super.key,
   });
 
@@ -98,6 +102,10 @@ class SplashView extends StatefulWidget {
   final ThemeBackground? background;
   final FxLibrary? library;
   final ShowcaseDolls? showcase;
+
+  /// The Color symbols mode of the placeholder dolls. The art bakes in its
+  /// own (`ShowcaseDolls`), so this shows only when that can't load.
+  final DollSymbols symbols;
 
   /// Design y 240 → 750.
   static const double blockHeight = 510;
@@ -266,6 +274,7 @@ class _SplashViewState extends State<SplashView> {
                 height: d.height,
                 images: skin?.images,
                 renderer: skin?.restRenderer,
+                symbols: widget.symbols,
                 library: widget.library,
                 // doll_idle is 3 s; the design's loops run 2.3–3 s.
                 speed: (3 / d.periodS).clamp(0.8, 1.2),

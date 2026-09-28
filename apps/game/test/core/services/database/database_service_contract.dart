@@ -35,7 +35,7 @@ void runDatabaseServiceContract(
       expect(database.soundEnabled, SettingsDefaults.sound);
       expect(database.musicEnabled, SettingsDefaults.music);
       expect(database.hapticsEnabled, SettingsDefaults.haptics);
-      expect(database.symbolsMode, SymbolsMode.subtle);
+      expect(database.symbolsMode, SettingsDefaults.symbols);
       expect(database.languageCode, 'en');
     });
 
@@ -74,6 +74,34 @@ void runDatabaseServiceContract(
       await database.setMusicEnabled(true);
       await pumpEventQueue();
       expect(seen, [(false, false), (true, true)]);
+    });
+
+    test('symbolsModeChanges emits each stored Color symbols mode, as '
+        'symbolsMode then reads it (the doll art follows it, D91)', () async {
+      final seen = <(SymbolsMode, SymbolsMode)>[];
+      final subscription = database.symbolsModeChanges.listen(
+        (mode) => seen.add((mode, database.symbolsMode)),
+      );
+      addTearDown(subscription.cancel);
+      await database.setSymbolsMode(SymbolsMode.subtle);
+      await database.setSymbolsMode(SymbolsMode.large);
+      await pumpEventQueue();
+      expect(seen, [
+        (SymbolsMode.subtle, SymbolsMode.subtle),
+        (SymbolsMode.large, SymbolsMode.large),
+      ]);
+    });
+
+    test('the other settings leave symbolsModeChanges quiet', () async {
+      final seen = <SymbolsMode>[];
+      final subscription = database.symbolsModeChanges.listen(seen.add);
+      addTearDown(subscription.cancel);
+      await database.setSoundEnabled(false);
+      await database.setMusicEnabled(false);
+      await database.setHapticsEnabled(false);
+      await database.setLanguage('fr');
+      await pumpEventQueue();
+      expect(seen, isEmpty);
     });
 
     test('the other settings leave musicEnabledChanges quiet', () async {

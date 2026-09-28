@@ -17,6 +17,7 @@ import 'package:nesty_game/core/services/database/settings_schema.dart';
 class FakeDatabaseService implements DatabaseService {
   final _languageController = StreamController<String>.broadcast();
   final _musicController = StreamController<bool>.broadcast();
+  final _symbolsController = StreamController<SymbolsMode>.broadcast();
 
   bool _sound = SettingsDefaults.sound;
   bool _music = SettingsDefaults.music;
@@ -53,7 +54,13 @@ class FakeDatabaseService implements DatabaseService {
   SymbolsMode get symbolsMode => _symbols;
 
   @override
-  Future<void> setSymbolsMode(SymbolsMode mode) async => _symbols = mode;
+  Future<void> setSymbolsMode(SymbolsMode mode) async {
+    _symbols = mode;
+    if (!_symbolsController.isClosed) _symbolsController.add(mode);
+  }
+
+  @override
+  Stream<SymbolsMode> get symbolsModeChanges => _symbolsController.stream;
 
   @override
   String get languageCode => _languageCode;
@@ -89,5 +96,6 @@ class FakeDatabaseService implements DatabaseService {
   Future<void> close() async {
     await _languageController.close();
     await _musicController.close();
+    await _symbolsController.close();
   }
 }

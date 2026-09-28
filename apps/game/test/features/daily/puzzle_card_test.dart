@@ -80,7 +80,7 @@ void main() {
 
     expect(skins.showcaseRequests, hasLength(1));
     expect(skins.showcaseRequests.single.colors, fiveColors);
-    expect(skins.showcaseRequests.single.symbols, DollSymbols.subtle);
+    expect(skins.showcaseRequests.single.symbols, DollSymbols.large);
     // Until the art is ready the preview spins; it never flashes the
     // placeholder dolls first.
     expect(find.byType(SkinDollRow), findsNothing);
@@ -102,20 +102,51 @@ void main() {
     expect(row(tester).colors, fiveColors);
   });
 
-  testWidgets('the Large symbols setting is what the preview bakes', (
+  testWidgets('the Subtle symbols setting is what the preview bakes', (
     tester,
   ) async {
     final skins = ControlledSkinService();
     final database = FakeDatabaseService();
-    await database.setSymbolsMode(SymbolsMode.large);
+    await database.setSymbolsMode(SymbolsMode.subtle);
     await pumpScreen(
       tester,
       card(skins, state(fiveColors), database: database),
     );
-    expect(skins.showcaseRequests.single.symbols, DollSymbols.large);
+    expect(skins.showcaseRequests.single.symbols, DollSymbols.subtle);
     skins.completeShowcase(0);
     await tester.pump();
-    expect(row(tester).symbols, DollSymbols.large);
+    expect(row(tester).symbols, DollSymbols.subtle);
+  });
+
+  // D91: the Daily page stays under a level, whose Pause opens Settings.
+  testWidgets('a Color symbols change prepares the preview again in the new '
+      'mode and releases the old art', (tester) async {
+    final skins = ControlledSkinService();
+    final database = FakeDatabaseService();
+    await pumpScreen(
+      tester,
+      card(skins, state(fiveColors), database: database),
+    );
+    final large = skins.completeShowcase(0);
+    await tester.pump();
+    expect(row(tester).skin, same(large));
+
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await tester.pump();
+    expect(skins.showcaseRequests, hasLength(2));
+    expect(skins.showcaseRequests.last.symbols, DollSymbols.subtle);
+    expect(skins.showcaseRequests.last.colors, fiveColors);
+    expect(large.disposed, isTrue);
+
+    final subtle = skins.completeShowcase(1);
+    await tester.pump();
+    expect(row(tester).skin, same(subtle));
+    expect(row(tester).symbols, DollSymbols.subtle);
+
+    // The same mode again prepares nothing.
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await tester.pump();
+    expect(skins.showcaseRequests, hasLength(2));
   });
 
   testWidgets('a new day’s colours prepare again and release the old art', (

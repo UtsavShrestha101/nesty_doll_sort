@@ -110,12 +110,26 @@ class HiveDatabaseService implements DatabaseService {
       _settings.put(SettingsKeys.haptics, enabled);
 
   @override
-  SymbolsMode get symbolsMode =>
-      SymbolsMode.fromStorage(_settings.get(SettingsKeys.symbols));
+  SymbolsMode get symbolsMode => SymbolsMode.fromStorage(
+    _settings.get(SettingsKeys.symbols),
+    fallback: SettingsDefaults.symbols,
+  );
 
   @override
   Future<void> setSymbolsMode(SymbolsMode mode) =>
       _settings.put(SettingsKeys.symbols, mode.storageValue);
+
+  @override
+  Stream<SymbolsMode> get symbolsModeChanges =>
+      _settings.watch(key: SettingsKeys.symbols).map((event) {
+        // As languageStream: a delete (or a rolled-back first write) reads
+        // back as the default.
+        if (event.deleted) return SettingsDefaults.symbols;
+        return SymbolsMode.fromStorage(
+          event.value,
+          fallback: SettingsDefaults.symbols,
+        );
+      });
 
   @override
   String get languageCode =>

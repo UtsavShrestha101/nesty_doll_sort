@@ -18,6 +18,7 @@ import 'package:nesty_game/features/gameplay/widgets/theme_background_view.dart'
 import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
+import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
 import 'package:nesty_render/nesty_render.dart';
@@ -46,6 +47,14 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
 
   @override
   Widget build(BuildContext context) {
+    // Settings opens over Home: the shelf follows a Color symbols change
+    // made there (D91; ShowcaseDolls prepares its art again).
+    return SymbolsModeBuilder(
+      builder: (context, symbols) => _view(context, symbols),
+    );
+  }
+
+  Widget _view(BuildContext context, DollSymbols symbols) {
     return BlocBuilder<HomeCubit, AsyncValue<HomeState>>(
       builder: (context, state) => HomeView(
         state: state,
@@ -67,7 +76,7 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
         library: context.read<FxLibrary>(),
         showcase: context.read<ShowcaseDolls>(),
         levels: context.read<LevelRepository>(),
-        symbols: context.read<DatabaseService>().symbolsMode.dollSymbols,
+        symbols: symbols,
       ),
     );
   }

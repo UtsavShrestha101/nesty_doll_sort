@@ -30,6 +30,14 @@ abstract interface class DatabaseService {
   SymbolsMode get symbolsMode;
   Future<void> setSymbolsMode(SymbolsMode mode);
 
+  /// Emits the Color symbols mode every time the stored value changes,
+  /// including a rollback or deletion back to the default. Each emission
+  /// equals what [symbolsMode] reads at that point. The art that bakes the
+  /// symbols in (the Home shelf, the Shop cards, the Daily card) follows
+  /// it, so a change made in Settings reaches the screens that stay mounted
+  /// under it.
+  Stream<SymbolsMode> get symbolsModeChanges;
+
   /// Persisted locale code, e.g. `en` or `pt_BR`.
   String get languageCode;
   Future<void> setLanguage(String languageCode);

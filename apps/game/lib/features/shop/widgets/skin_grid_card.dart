@@ -1,15 +1,18 @@
 import 'dart:async';
 
 import 'package:nesty_game/core/common_imports.dart';
+import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/repository/catalog_models.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spinner.dart';
+import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
 import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
 import 'package:nesty_game/features/shop/widgets/shop_colors.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
+import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
 /// One Skins-tab card (frame 7.3): [SkinInfo.previewColors]' three dolls on
 /// a plank over the skin's own card colour, then Equipped (green ring) /
@@ -53,9 +56,17 @@ class SkinGridCard extends StatefulWidget {
   State<SkinGridCard> createState() => _SkinGridCardState();
 }
 
-class _SkinGridCardState extends State<SkinGridCard> {
+class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
   LevelSkin? _art;
-  bool _preparing = false;
+
+  /// The symbols mode of the latest request. The Shop tab stays mounted
+  /// while Settings opens over Home, so a change there prepares the art
+  /// again; the old art stays up until the new lands (D91).
+  DollSymbols? _preparedSymbols;
+
+  /// Bumped by every request, so a superseded one's art is released on
+  /// arrival instead of shown.
+  int _request = 0;
 
   /// Until the skin's art arrives the preview shows the spinner, never the
   /// placeholder dolls; those draw only when the art couldn't be prepared
@@ -69,11 +80,15 @@ class _SkinGridCardState extends State<SkinGridCard> {
     _prepare();
   }
 
+  @override
+  void onSymbolsModeChanged(SymbolsMode mode) => _prepare();
+
   void _prepare() {
-    if (_art != null || _preparing) return;
-    _preparing = true;
-    final skins = context.read<SkinService>();
     final symbols = context.read<DatabaseService>().symbolsMode.dollSymbols;
+    if (symbols == _preparedSymbols) return;
+    _preparedSymbols = symbols;
+    final request = ++_request;
+    final skins = context.read<SkinService>();
     final dpr = MediaQuery.devicePixelRatioOf(context);
     unawaited(
       skins
@@ -84,14 +99,16 @@ class _SkinGridCardState extends State<SkinGridCard> {
             skinId: widget.skin.id,
           )
           .then((art) {
-            if (!mounted) {
+            if (!mounted || request != _request) {
               art?.dispose();
               return;
             }
+            final previous = _art;
             setState(() {
               _art = art;
               _prepared = true;
             });
+            previous?.dispose();
           }),
     );
   }
@@ -153,6 +170,10 @@ class _SkinGridCardState extends State<SkinGridCard> {
                         heights: const [66, 54, 44],
                         skin: _art,
                         library: context.read<FxLibrary>(),
+                        symbols: context
+                            .read<DatabaseService>()
+                            .symbolsMode
+                            .dollSymbols,
                       ),
                     )
                   else

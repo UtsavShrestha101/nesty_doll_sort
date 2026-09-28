@@ -378,6 +378,7 @@ design gaps the M3 stand-ins cover moved to M7 (see "Design gaps").
 - [x] Every M3 string in `app_en.arb` with a description (the catalog of m3 §13), then gen-l10n — §16, CLAUDE.md "Code style" (ui-kit-arb lane) (done 2026-09-28)
 - [x] Language sheet with the 9 launch languages (frame 8.2) — §16; m3 §10.2 (only English selectable until M7, D79) (done 2026-09-28)
 - [x] Enable Pause's Settings tile, and stop the flow test's pause from returning to Home — frame 3.9, `apps/game/test/app_flow_test.dart`; m3 §10.1 (Settings pushed over the paused level) (done 2026-09-28: the Pause toggles and the board's symbols re-read on return (review CORRECTNESS-4))
+- [x] Color symbols: Large on a fresh install, and every doll preview follows a change made in Settings. Home's shelf (`ShowcaseDolls`), the Shop's skin cards and the Daily card kept the mode they were prepared in until a restart; only the board re-read it — owner 2026-09-28, D91 (done 2026-09-28: `DatabaseService.symbolsModeChanges`, `FollowsSymbolsMode`, app flow test (h))
 - [x] Shop on the bundled art — §7.4, §10.2 #12: (done 2026-09-28)
   - Tab shell: Coins · Skins · Themes · No Ads.
   - Skins grid (7.3), skin detail with Buy for coins (7.4), and the skin in play (7.6).
@@ -495,6 +496,7 @@ Acceptance (§18): matches the design screens, with no layout overflows on 5
 screen sizes. Most of the original M7 integration moved into M2 (D23).
 
 - [ ] Fidelity pass, screen by screen, against every App Flow frame (01–08) with `ui-designer`, then owner sign-off — §18 M7
+- [ ] Home's shelf after a skin equip: `ShowcaseDolls` keys its art on the pixel ratio and the symbols mode, not the skin, and nothing tells it about `SkinService.selectSkin`, so after an equip in the Shop the Home shelf keeps the old skin until the app restarts (found by reading the code while fixing D91; not yet seen on a device) — §7.4, D58, D91
 - [ ] Tune the haptic patterns, including the multi-pulse success, on real devices (moved from M3: it needs the owner's hands on real phones; `TODO(M7)` in `system_haptics_service.dart`) — §11.2, PROGRESS "Notes for later milestones"
 - [ ] The Daily puzzle card's preview: draw the chapter background under its plank (NestyMenus isDaily, `backgrounds/ch3-seaside-market.svg` at center 42%/cover). `SkinService.background` is the one full-screen raster, so it needs a small per-card theme raster (`TODO(M7)` in `features/daily/widgets/puzzle_card.dart`) — frame 5.1, M3 review FIDELITY-2
 - [ ] "Play Bonus Level N" on All Levels Done when that level can't be generated: the card stays up with its button live. Continue's failure already has `NextLevelFailedCard`; give this path the same (`TODO(M7)` in `gameplay_view.dart`) — M3 review CORRECTNESS-3 follow-up
@@ -705,7 +707,7 @@ takes the designs when they arrive.
 - [ ] Q74: the Settings footer's Player ID: a local random id in the save, or drop it? (M3, D79)
 - [ ] Q75: the Shop's Coins and No Ads tabs before M6: a store-closed card, or hide the tabs? (M3, D75)
 - [x] Q30–Q38: the M1 and render decisions to confirm (towerless grading, expert-only generated levels, solver targets, admin memory, the curve table, the recorded defaults, bundle policy, authored levels, render defaults) (done 2026-09-26: the owner confirmed the recorded defaults, D52)
-- [ ] Update GAME_SPEC.md for this round's deviations, or keep them recorded only in PROGRESS? They are §2.2 tap policy (D22), §3.6 extra-slot placement (D22), §13.5 bundled art (D20), and the §12.3/§13.3 symbols value (Q4) — D19–D22
+- [ ] Update GAME_SPEC.md for this round's deviations, or keep them recorded only in PROGRESS? They are §2.2 tap policy (D22), §3.6 extra-slot placement (D22), §13.5 bundled art (D20), the §12.3/§13.3 symbols value (Q4), and the §12.3/§13.3 default symbols mode, now `large` (D91) — D19–D22, D91
 
 ## Tech debt
 

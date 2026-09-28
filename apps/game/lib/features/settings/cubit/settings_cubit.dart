@@ -5,6 +5,7 @@ import 'package:nesty_game/core/base/base_async_state.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/app_info/app_info_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/database/settings_schema.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 
 part 'settings_cubit.freezed.dart';

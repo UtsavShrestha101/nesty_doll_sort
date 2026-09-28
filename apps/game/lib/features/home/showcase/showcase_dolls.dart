@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/showcase_board.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
@@ -24,8 +25,10 @@ import 'package:nesty_render/nesty_render.dart';
 /// The splash prepares it while it loads (so Home opens with its dolls),
 /// and it stays for the app's life: Home keeps it while a level covers it,
 /// so the shelf never flashes placeholder dolls on the way back (PROGRESS
-/// D58). Never throws: without art the shelves draw the placeholder doll
-/// (rule 3).
+/// D58). It follows the Color symbols setting, which the bodies bake in:
+/// a change made in Settings, which opens over Home, rasterizes the shelf
+/// again in the new mode while the old art stays up (D91). Never throws:
+/// without art the shelves draw the placeholder doll (rule 3).
 ///
 /// Renders through [SkinService.prepareShowcase] (m3-design §9.2), which
 /// moved the board itself to `ShowcaseBoard`; [level], [geometry] and
@@ -33,10 +36,15 @@ import 'package:nesty_render/nesty_render.dart';
 /// unchanged for its callers (the splash and Home).
 @lazySingleton
 class ShowcaseDolls {
-  ShowcaseDolls(this._skins, this._database);
+  ShowcaseDolls(this._skins, this._database) {
+    _symbolsSubscription = _database.symbolsModeChanges.listen(
+      (_) => _followSymbols(),
+    );
+  }
 
   final SkinService _skins;
   final DatabaseService _database;
+  late final StreamSubscription<SymbolsMode> _symbolsSubscription;
 
   /// Home's shelf (tangerine, leaf, cherry, sky, grape); cherry is also the
   /// splash trio's colour.
@@ -60,6 +68,7 @@ class ShowcaseDolls {
   final ValueNotifier<LevelSkin?> _current = ValueNotifier(null);
   Future<void>? _preparing;
   double? _preparedFor;
+  DollSymbols? _preparedSymbols;
   int _generation = 0;
   bool _disposed = false;
 
@@ -71,25 +80,40 @@ class ShowcaseDolls {
   /// that art is already here.
   Future<void> prepare({required double devicePixelRatio}) {
     if (_disposed) return Future.value();
-    if (_current.value != null && _preparedFor == devicePixelRatio) {
-      return Future.value();
+    final symbols = _database.symbolsMode.dollSymbols;
+    if (_preparedFor == devicePixelRatio && _preparedSymbols == symbols) {
+      final inFlight = _preparing;
+      if (inFlight != null) return inFlight;
+      if (_current.value != null) return Future.value();
     }
-    final inFlight = _preparing;
-    if (inFlight != null && _preparedFor == devicePixelRatio) return inFlight;
     _preparedFor = devicePixelRatio;
+    _preparedSymbols = symbols;
     final generation = ++_generation;
-    final future = _prepare(devicePixelRatio, generation);
+    final future = _prepare(devicePixelRatio, symbols, generation);
     _preparing = future;
     return future;
   }
 
-  Future<void> _prepare(double devicePixelRatio, int generation) async {
+  /// The stored symbols mode changed: prepare the art again at the pixel
+  /// ratio it was made for. Nothing to do before the first [prepare] or
+  /// after [release], or when the mode is the one already prepared.
+  void _followSymbols() {
+    final devicePixelRatio = _preparedFor;
+    if (_disposed || devicePixelRatio == null) return;
+    unawaited(prepare(devicePixelRatio: devicePixelRatio));
+  }
+
+  Future<void> _prepare(
+    double devicePixelRatio,
+    DollSymbols symbols,
+    int generation,
+  ) async {
     LevelSkin? skin;
     try {
       skin = await _skins.prepareShowcase(
         colors: colors,
         devicePixelRatio: devicePixelRatio,
-        symbols: _database.symbolsMode.dollSymbols,
+        symbols: symbols,
       );
     } on Object catch (error, stack) {
       developer.log(
@@ -133,6 +157,7 @@ class ShowcaseDolls {
     if (_disposed) return;
     release();
     _disposed = true;
+    unawaited(_symbolsSubscription.cancel());
     _current.dispose();
   }
 }

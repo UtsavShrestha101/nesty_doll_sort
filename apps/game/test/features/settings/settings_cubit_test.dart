@@ -25,7 +25,7 @@ void main() {
             data.soundEnabled &&
             data.musicEnabled &&
             data.hapticsEnabled &&
-            data.symbolsMode == SymbolsMode.subtle &&
+            data.symbolsMode == SymbolsMode.large &&
             data.version == '1.0.0' &&
             data.buildNumber == '42';
       }),
@@ -68,9 +68,9 @@ void main() {
     expect(cubit.state.data?.hapticsEnabled, isFalse);
     expect(database.hapticsEnabled, isFalse);
 
-    await cubit.setSymbolsMode(SymbolsMode.large);
-    expect(cubit.state.data?.symbolsMode, SymbolsMode.large);
-    expect(database.symbolsMode, SymbolsMode.large);
+    await cubit.setSymbolsMode(SymbolsMode.subtle);
+    expect(cubit.state.data?.symbolsMode, SymbolsMode.subtle);
+    expect(database.symbolsMode, SymbolsMode.subtle);
   });
 
   test('a toggle before load does nothing (no data to update yet)', () async {

@@ -50,6 +50,70 @@ void main() {
     expect(skins.showcaseRequests, hasLength(1), reason: 'already here');
   });
 
+  // D91: Settings opens over Home, which keeps this art.
+  test('a Color symbols change prepares the shelf again at the same pixel '
+      'ratio, and the old art stays up until the new lands', () async {
+    final first = showcase.prepare(devicePixelRatio: 3);
+    final large = skins.completeShowcase(0);
+    await first;
+    expect(skins.showcaseRequests.single.symbols, DollSymbols.large);
+
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(2));
+    expect(skins.showcaseRequests.last.symbols, DollSymbols.subtle);
+    expect(skins.showcaseRequests.last.devicePixelRatio, 3);
+    expect(showcase.current.value, same(large), reason: 'no placeholder');
+
+    final subtle = skins.completeShowcase(1);
+    await pumpEventQueue();
+    expect(showcase.current.value, same(subtle));
+    expect(large.disposed, isTrue);
+
+    // The same mode again, or Home asking once more, prepares nothing.
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await showcase.prepare(devicePixelRatio: 3);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(2));
+  });
+
+  test('a Color symbols change supersedes a prepare in flight', () async {
+    final first = showcase.prepare(devicePixelRatio: 2);
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(2));
+
+    final stale = skins.completeShowcase(0);
+    await first;
+    expect(stale.disposed, isTrue);
+    expect(showcase.current.value, isNull);
+
+    final fresh = skins.completeShowcase(1);
+    await pumpEventQueue();
+    expect(showcase.current.value, same(fresh));
+  });
+
+  test('a Color symbols change before the first prepare, after release or '
+      'after dispose prepares nothing', () async {
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, isEmpty);
+
+    final first = showcase.prepare(devicePixelRatio: 1);
+    expect(skins.showcaseRequests.single.symbols, DollSymbols.subtle);
+    skins.completeShowcase(0);
+    await first;
+    showcase.release();
+    await database.setSymbolsMode(SymbolsMode.large);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(1));
+
+    showcase.dispose();
+    await database.setSymbolsMode(SymbolsMode.subtle);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(1));
+  });
+
   test('release frees the rasters; prepare brings them back', () async {
     final first = showcase.prepare(devicePixelRatio: 1);
     final a = skins.completeShowcase(0);

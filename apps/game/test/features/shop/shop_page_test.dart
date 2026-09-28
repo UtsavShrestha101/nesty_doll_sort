@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/base/base_async_state.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
+import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/repository/catalog_models.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
@@ -20,6 +21,7 @@ import 'package:nesty_game/features/shop/widgets/shop_closed_card.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 import 'package:nesty_game/features/shop/widgets/skin_grid_card.dart';
 import 'package:nesty_game/features/shop/widgets/theme_grid_card.dart';
+import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
 import '../../core/ui/support/ui_harness.dart';
 import '../support/controlled_skin_service.dart';
@@ -98,6 +100,7 @@ void main() {
     Size size = const Size(390, 844),
     double textScale = 1,
     SkinService? skinService,
+    DatabaseService? database,
   }) async {
     await pumpScreen(
       tester,
@@ -107,7 +110,7 @@ void main() {
             value: skinService ?? FakeSkinService(),
           ),
           RepositoryProvider<DatabaseService>.value(
-            value: FakeDatabaseService(),
+            value: database ?? FakeDatabaseService(),
           ),
           RepositoryProvider<FxLibrary>.value(value: FakeFxLibrary()),
         ],
@@ -233,6 +236,61 @@ void main() {
       expect(inCard(1, SkinDollRow), findsOneWidget);
       expect(tester.widget<SkinDollRow>(inCard(1, SkinDollRow)).skin, isNull);
       expect(inCard(2, FxSpinner), findsOneWidget);
+    });
+
+    // D91: the Shop tab stays mounted while Settings opens over Home.
+    testWidgets('a Color symbols change prepares every card again in the new '
+        'mode; each keeps its art until the new arrives', (tester) async {
+      final skinService = ControlledSkinService();
+      final database = FakeDatabaseService();
+      await pumpShop(
+        tester,
+        state: AsyncValue.data(data: skinsState()),
+        skinService: skinService,
+        database: database,
+      );
+      Finder inCard(int i, Type type) => find.descendant(
+        of: find.byType(SkinGridCard).at(i),
+        matching: find.byType(type),
+      );
+      SkinDollRow row(int i) =>
+          tester.widget<SkinDollRow>(inCard(i, SkinDollRow));
+      final large = [
+        for (var i = 0; i < skins.length; i++) skinService.completeShowcase(i),
+      ];
+      await tester.pump();
+      expect(skinService.showcaseRequests.map((r) => r.symbols).toSet(), {
+        DollSymbols.large,
+      });
+
+      await database.setSymbolsMode(SymbolsMode.subtle);
+      await tester.pump();
+      final again = skinService.showcaseRequests.skip(skins.length).toList();
+      expect(again.map((r) => r.skinId), skins.map((s) => s.id));
+      expect(again.map((r) => r.symbols).toSet(), {DollSymbols.subtle});
+      for (var i = 0; i < skins.length; i++) {
+        expect(row(i).skin, same(large[i]), reason: 'card $i: no spinner');
+        expect(inCard(i, FxSpinner), findsNothing, reason: 'card $i');
+      }
+
+      final subtle = [
+        for (var i = 0; i < skins.length; i++)
+          skinService.completeShowcase(skins.length + i),
+      ];
+      // No spinner is animating, so no frame is pending: the art lands in
+      // this pump's microtasks, and the next frame shows it.
+      await tester.pump();
+      await tester.pump();
+      for (var i = 0; i < skins.length; i++) {
+        expect(row(i).skin, same(subtle[i]), reason: 'card $i');
+        expect(row(i).symbols, DollSymbols.subtle, reason: 'card $i');
+        expect(large[i].disposed, isTrue, reason: 'card $i');
+      }
+
+      // The same mode again prepares nothing.
+      await database.setSymbolsMode(SymbolsMode.subtle);
+      await tester.pump();
+      expect(skinService.showcaseRequests, hasLength(2 * skins.length));
     });
 
     testWidgets('one card per sold skin, in catalog order', (tester) async {

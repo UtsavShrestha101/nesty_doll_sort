@@ -820,15 +820,15 @@ void main() {
       onSettings: (database) async {
         opened++;
         await database.setMusicEnabled(false);
-        await database.setSymbolsMode(SymbolsMode.large);
+        await database.setSymbolsMode(SymbolsMode.subtle);
         await back.future;
       },
     );
     screen.board.layOut(screen.state.board);
     skins.complete(0);
     await tester.pump();
-    expect(screen.board.symbols, DollSymbols.subtle);
-    expect(skins.requests.single.symbols, DollSymbols.subtle);
+    expect(screen.board.symbols, DollSymbols.large);
+    expect(skins.requests.single.symbols, DollSymbols.large);
 
     await tester.tap(find.bySemanticsLabel('Pause'));
     await _settle(tester);
@@ -847,9 +847,9 @@ void main() {
     back.complete();
     await _settle(tester);
     expect(dialogSettings().music, isFalse);
-    expect(screen.board.symbols, DollSymbols.large);
+    expect(screen.board.symbols, DollSymbols.subtle);
     expect(skins.requests, hasLength(2));
-    expect(skins.requests.last.symbols, DollSymbols.large);
+    expect(skins.requests.last.symbols, DollSymbols.subtle);
     skins.complete(1);
     await tester.pump();
     expect(screen.board.skins.last, same(skins.made[1]));

@@ -107,6 +107,11 @@ void main() {
   testWidgets('Color symbols switches DollSymbols mode', (tester) async {
     await pumpSettings(tester);
     final database = get<DatabaseService>();
+    // Large on a fresh install (owner, PROGRESS D91).
+    expect(database.symbolsMode.dollSymbols.name, 'large');
+
+    await tester.tap(find.text('Subtle'));
+    await tester.pump(const Duration(milliseconds: 300));
     expect(database.symbolsMode.dollSymbols.name, 'subtle');
 
     await tester.tap(find.text('Large'));

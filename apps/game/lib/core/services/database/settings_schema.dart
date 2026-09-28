@@ -14,12 +14,13 @@ abstract final class SettingsKeys {
 
 /// Defaults for a fresh install — spec §13.3
 /// `{"sound": true, "music": true, "haptics": true, "symbols": "subtle",
-/// "locale": "en"}`. Every [DatabaseService] implementation reads these, so
+/// "locale": "en"}`, except [symbols], which the owner made `large`
+/// (PROGRESS D91). Every [DatabaseService] implementation reads these, so
 /// the fake and Hive versions can't disagree.
 abstract final class SettingsDefaults {
   static const sound = true;
   static const music = true;
   static const haptics = true;
-  static const symbols = SymbolsMode.subtle;
+  static const symbols = SymbolsMode.large;
   static const locale = 'en';
 }

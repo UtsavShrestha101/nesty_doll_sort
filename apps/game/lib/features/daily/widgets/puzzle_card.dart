@@ -5,12 +5,14 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:intl/intl.dart';
 import 'package:nesty_core/nesty_core.dart' show DollColor;
 import 'package:nesty_game/core/common_imports.dart';
+import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spinner.dart';
+import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 import 'package:nesty_render/nesty_render.dart' show DollArt, DollSymbols;
 
@@ -112,7 +114,9 @@ class _InfoChip extends StatelessWidget {
 
 /// Frame 5.1's 120 px preview: today's colours on a plank, drawn in the
 /// equipped skin's art (`SkinService.prepareShowcase`, rasterized once per
-/// set of colours and released when it changes or the card goes away).
+/// set of colours and symbols mode, and released when either changes or
+/// the card goes away). The Daily page stays under a level, whose Pause
+/// opens Settings, so a Color symbols change there prepares it again (D91).
 /// The spinner shows until both the colours and the art are ready; a skin
 /// that can't be prepared draws the placeholder dolls (rule 3).
 class _Preview extends StatefulWidget {
@@ -124,9 +128,11 @@ class _Preview extends StatefulWidget {
   State<_Preview> createState() => _PreviewState();
 }
 
-class _PreviewState extends State<_Preview> {
-  /// The colours [_art] was prepared for; null before the first request.
+class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
+  /// The colours and symbols mode [_art] was prepared for; null before the
+  /// first request.
   List<DollColor>? _preparedFor;
+  DollSymbols? _preparedSymbols;
   LevelSkin? _art;
   bool _preparing = false;
 
@@ -150,10 +156,17 @@ class _PreviewState extends State<_Preview> {
     _prepareIfNeeded();
   }
 
+  @override
+  void onSymbolsModeChanged(SymbolsMode mode) => setState(_prepareIfNeeded);
+
   void _prepareIfNeeded() {
     final colors = _colors;
-    if (listEquals(colors, _preparedFor)) return;
+    final symbols = context.read<DatabaseService>().symbolsMode.dollSymbols;
+    if (listEquals(colors, _preparedFor) && symbols == _preparedSymbols) {
+      return;
+    }
     _preparedFor = colors;
+    _preparedSymbols = symbols;
     _releaseArt();
     final request = ++_request;
     if (colors == null) {
@@ -162,7 +175,6 @@ class _PreviewState extends State<_Preview> {
     }
     _preparing = true;
     final skins = context.read<SkinService>();
-    final symbols = context.read<DatabaseService>().symbolsMode.dollSymbols;
     final dpr = MediaQuery.devicePixelRatioOf(context);
     unawaited(
       skins

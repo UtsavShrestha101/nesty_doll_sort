@@ -69,6 +69,8 @@ final class _GatedDatabaseService implements DatabaseService {
   @override
   Future<void> setSymbolsMode(SymbolsMode mode) => _inner.setSymbolsMode(mode);
   @override
+  Stream<SymbolsMode> get symbolsModeChanges => _inner.symbolsModeChanges;
+  @override
   String get languageCode => _inner.languageCode;
   @override
   Future<void> setLanguage(String languageCode) =>

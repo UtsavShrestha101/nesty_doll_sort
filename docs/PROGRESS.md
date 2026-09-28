@@ -989,7 +989,7 @@ were removed with `flutter clean`. The first iOS build updated
 
 ## Decisions log
 
-D1–D13 are dated 2026-09-25, D14–D57 2026-09-26, D58–D80 2026-09-27 and D81–D89 2026-09-28
+D1–D13 are dated 2026-09-25, D14–D57 2026-09-26, D58–D80 2026-09-27 and D81–D89 and D91 2026-09-28
 (D26–D39 are the M1 and render build and review decisions; D40–D52 are the
 M2 Lottie decisions, the owner's of 2026-09-26 and the contracts stage's;
 D53–D57 are the M2 phase-4 lanes' and the integration's; D58 is the M2
@@ -997,7 +997,8 @@ review fix pass's; D59–D61 are the post-M2 round's, recording the owner's
 calls and deliveries of 2026-09-26; D63–D65 open M3; D66–D80 are the M3
 contracts stage's, recording [plans/m3-design.md](plans/m3-design.md), each
 default flagged with its question; D81–D89 are M3's integration, device
-checks and review fix pass's). D1, D8 and D12 were
+checks and review fix pass's; D91 is the owner's Color symbols default).
+D1, D8 and D12 were
 amended on 2026-09-26. D18–D23 are the owner's decisions for the round that
 covers the design foundation, M1 and M2, copied from its approved plan.
 
@@ -2122,6 +2123,26 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   show `FxSpinner` (`ui_spinner`) while the skin prepares, never a flash of
   the placeholder dolls, which draw only when the art can't be prepared
   (rule 3).
+- **D91. Large color symbols by default, and every doll preview follows the
+  setting (owner, 2026-09-28).** The owner asked for Large to be selected on
+  a fresh install and to show everywhere once chosen. This departs from
+  spec §12.3 ("always visible (subtly)") and §13.3 (`"symbols": "subtle"`);
+  the spec text stays as it is (BACKLOG "Owner inputs → Decisions").
+  - `SettingsDefaults.symbols` is `large`. Only a fresh install, or a player
+    who never picked a mode, changes: a stored `subtle` stays. An unknown
+    stored value now reads as the default (`SymbolsMode.fromStorage`'s
+    `fallback`).
+  - Settings opens over screens that stay mounted, and their art bakes the
+    symbols in (D45), so each kept the mode it was first prepared in until a
+    restart: Home's shelf (`ShowcaseDolls`, prepared on the splash), the
+    Shop tab's skin cards and the Daily card under a level. Only the board
+    re-read it (review CORRECTNESS-4).
+  - `DatabaseService.symbolsModeChanges` emits each stored mode, like
+    `musicEnabledChanges`. `ShowcaseDolls` follows it, and the widgets use
+    the `FollowsSymbolsMode` mixin (Home through `SymbolsModeBuilder`). The
+    old art stays up until the new art lands, except on the Daily card,
+    which shows its spinner (D89). The splash's placeholder dolls take the
+    stored mode too.
 
 ## Package reasons (CLAUDE.md rule 9)
 

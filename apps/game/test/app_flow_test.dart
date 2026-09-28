@@ -24,12 +24,15 @@ import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_page.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
+import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/museum/pages/museum_page.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/features/shop/pages/shop_page.dart';
+import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 import 'package:nesty_game/features/shop/widgets/skin_grid_card.dart';
 import 'package:nesty_game/features/splash/pages/splash_page.dart';
+import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
 import 'core/ui/support/ui_harness.dart';
 import 'helpers/test_dependencies.dart';
@@ -508,6 +511,60 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Close'));
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // D91: Settings opens over the shell, whose tabs stay mounted, so the
+  // shelf and the Shop cards must follow a Color symbols change made there.
+  testWidgets('(h) Large symbols on a fresh install; Settings -> Subtle -> '
+      'back: Home\'s shelf and the Shop cards draw Subtle', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(App(router: get<AppRouter>()));
+    await tester.pump();
+    await pumpFor(tester, const Duration(seconds: 1));
+
+    Set<DollSymbols> shelf() => {
+      for (final doll in tester.widgetList<LottieDoll>(
+        find.descendant(
+          of: find.byType(HomePage),
+          matching: find.byType(LottieDoll),
+        ),
+      ))
+        doll.symbols,
+    };
+    Set<DollSymbols> shopCards() => {
+      for (final row in tester.widgetList<SkinDollRow>(
+        find.descendant(
+          of: find.byType(SkinGridCard),
+          matching: find.byType(SkinDollRow),
+        ),
+      ))
+        row.symbols,
+    };
+
+    expect(shelf(), {DollSymbols.large});
+    // Mount the Shop tab, so its cards are prepared before the change.
+    await tester.tap(navLabel('Shop'));
+    await tester.pumpAndSettle();
+    expect(shopCards(), {DollSymbols.large});
+    await tester.tap(navLabel('Home'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('Settings'));
+    await pumpFor(tester, const Duration(milliseconds: 500));
+    await tester.tap(find.text('Subtle'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.bySemanticsLabel('Close'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomePage), findsOneWidget);
+    expect(shelf(), {DollSymbols.subtle});
+    await tester.tap(navLabel('Shop'));
+    await tester.pumpAndSettle();
+    expect(shopCards(), {DollSymbols.subtle});
     expect(tester.takeException(), isNull);
   });
 

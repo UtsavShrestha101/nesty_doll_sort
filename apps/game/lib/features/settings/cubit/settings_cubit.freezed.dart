@@ -214,7 +214,7 @@ return $default(_that.soundEnabled,_that.musicEnabled,_that.hapticsEnabled,_that
 
 
 class _SettingsState implements SettingsState {
-  const _SettingsState({this.soundEnabled = true, this.musicEnabled = true, this.hapticsEnabled = true, this.symbolsMode = SymbolsMode.subtle, this.version = '', this.buildNumber = '', this.playerId = ''});
+  const _SettingsState({this.soundEnabled = true, this.musicEnabled = true, this.hapticsEnabled = true, this.symbolsMode = SettingsDefaults.symbols, this.version = '', this.buildNumber = '', this.playerId = ''});
   
 
 @override@JsonKey() final  bool soundEnabled;

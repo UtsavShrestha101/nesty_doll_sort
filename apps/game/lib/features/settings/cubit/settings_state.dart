@@ -8,7 +8,7 @@ abstract class SettingsState with _$SettingsState {
     @Default(true) bool soundEnabled,
     @Default(true) bool musicEnabled,
     @Default(true) bool hapticsEnabled,
-    @Default(SymbolsMode.subtle) SymbolsMode symbolsMode,
+    @Default(SettingsDefaults.symbols) SymbolsMode symbolsMode,
 
     /// `AppInfoService.load()`'s version and build (the footer).
     @Default('') String version,

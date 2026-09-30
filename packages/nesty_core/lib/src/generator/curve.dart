@@ -1,8 +1,9 @@
 import 'package:nesty_core/src/generator/generator_params.dart';
+import 'package:nesty_core/src/simulator/bots.dart';
 import 'package:nesty_core/src/simulator/tier.dart';
 
 /// The difficulty curve and seeds for generated levels (spec §6.6, §7.1,
-/// §7.5).
+/// §7.5, and the race boards of spec-prop §7.7).
 ///
 /// Levels are numbered by global play order from 1, so Bonus Endless
 /// continues the curve where the published levels end (spec §7.1: "following
@@ -62,6 +63,35 @@ import 'package:nesty_core/src/simulator/tier.dart';
 /// Tier medium on Monday–Friday and hard on Saturday and Sunday, on the
 /// 31–50 boards (towers and one lock, no ice), so a daily needs no mechanic
 /// introduced after level 31.
+///
+/// ## vs Computer (spec-prop §7.7, the rule until the owner pastes it, Q85)
+///
+/// "rival 1 plays like the casual bot (§6.4) … on an easy board; rival 2
+/// like the smart bot … on a medium board; rival 3 like the smart bot … on a
+/// medium board. … No other bot policy is used." "Board: made by the
+/// generator from the curve's params for the rival's tier, at the stage of
+/// the player's highest level, with seed `3_000_000 + rival × 100_000 +
+/// raceNo`."
+///
+/// | Rival | [racePolicy] | [raceTier] | [raceSeed] range |
+/// |---|---|---|---|
+/// | 1 | casual | easy | 3,100,001–3,199,999 |
+/// | 2 | smart | medium | 3,200,001–3,299,999 |
+/// | 3 | smart | medium | 3,300,001–3,399,999 |
+///
+/// The stage is the one of the highest campaign level the player has won,
+/// so a race only uses mechanics the player has met (spec §3.7). Reading
+/// "the player's highest level" as the highest level won is the default of
+/// an owner question (docs/plans/m7-design.md, Phase 2). Race tiers are
+/// never superhard, so no race board has `maxSize` 6.
+///
+/// docs/plans/mode-vs-computer.md (rule 3) says the seed "can't collide with
+/// the daily (yyyymmdd) or bonus seeds (1_000_000 + N)". That holds for
+/// every seed a player can reach, though not for every integer: bonus seeds
+/// reach the race block only from level 2,100,001, and daily seeds only in
+/// the years 310–339 (3,101,015 reads as 0310-10-15). Keeping the formula,
+/// with `raceNo` at most [maxRaceNo], is the default of an owner question
+/// (docs/plans/m7-design.md, Phase 2).
 abstract final class DifficultyCurve {
   /// The tier pattern inside every block of 10 levels:
   /// `E E M E M H M E M S` (spec §6.6).
@@ -152,6 +182,76 @@ abstract final class DifficultyCurve {
     _checkDate(year, month, day, 'day');
     return year * 10000 + month * 100 + day;
   }
+
+  /// The rivals of vs Computer, numbered 1 to [raceRivals] (spec-prop §7.7:
+  /// "Three rivals unlock in turn").
+  static const int raceRivals = 3;
+
+  /// The largest `raceNo`: below 100,000, so each rival's seeds stay in its
+  /// own block of [raceSeed]. What New race does at the cap is the app's
+  /// (the default of an owner question: it replays the last board).
+  static const int maxRaceNo = 99999;
+
+  /// Spec-prop §7.7: `seed = 3_000_000 + rival × 100_000 + raceNo`, for
+  /// [rival] 1..[raceRivals] and [raceNo] 1..[maxRaceNo] (spec-prop §7.7
+  /// "`raceNo` counts that rival's races from 1"). Throws a [RangeError]
+  /// for anything else.
+  ///
+  /// It seeds the race's board ([raceParams]) and the rival's runs
+  /// (`RivalBot.runSeed`), so a Rematch, which keeps `raceNo`, replays the
+  /// same board and the same rival moves.
+  static int raceSeed(int rival, int raceNo) {
+    _checkRival(rival);
+    RangeError.checkValueInInterval(raceNo, 1, maxRaceNo, 'raceNo');
+    return 3000000 + rival * 100000 + raceNo;
+  }
+
+  /// How [rival] plays (spec-prop §7.7): rival 1 like the casual bot, rivals
+  /// 2 and 3 like the smart bot (spec §6.4). Throws a [RangeError] for a
+  /// rival outside 1..[raceRivals].
+  static SimBot racePolicy(int rival) {
+    _checkRival(rival);
+    return rival == 1 ? SimBot.casual : SimBot.smart;
+  }
+
+  /// The tier of [rival]'s boards (spec-prop §7.7, default of Q80): easy for
+  /// rival 1, medium for rivals 2 and 3. Throws a [RangeError] for a rival
+  /// outside 1..[raceRivals].
+  static Tier raceTier(int rival) {
+    _checkRival(rival);
+    return rival == 1 ? Tier.easy : Tier.medium;
+  }
+
+  /// The generator params of race [raceNo] against [rival] (spec-prop
+  /// §7.7): the board of [raceTier] at the stage of [highestWonLevel] (see
+  /// the table above), targeting that tier, seeded with [raceSeed], with id
+  /// `race-<rival>-<raceNo>`.
+  ///
+  /// [highestWonLevel] is the highest campaign level (global play order)
+  /// the player has won, so the board only uses mechanics they have met
+  /// (spec §3.7; see the class doc). The app works it out from its save;
+  /// core takes it as given. Throws a [RangeError] for a rival outside
+  /// 1..[raceRivals], a [raceNo] outside 1..[maxRaceNo] or a
+  /// [highestWonLevel] outside 1..[maxLevelNumber].
+  static GeneratorParams raceParams({
+    required int rival,
+    required int raceNo,
+    required int highestWonLevel,
+  }) {
+    final seed = raceSeed(rival, raceNo);
+    RangeError.checkValueInInterval(
+      highestWonLevel,
+      1,
+      maxLevelNumber,
+      'highestWonLevel',
+    );
+    final tier = raceTier(rival);
+    final board = _stageFor(highestWonLevel).board(tier);
+    return board.toParams(tier: tier, seed: seed, id: 'race-$rival-$raceNo');
+  }
+
+  static void _checkRival(int rival) =>
+      RangeError.checkValueInInterval(rival, 1, raceRivals, 'rival');
 
   static void _checkDate(int year, int month, int day, String name) {
     if (year < 1 || month < 1 || month > 12 || day < 1) {

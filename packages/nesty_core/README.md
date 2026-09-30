@@ -45,12 +45,12 @@ lib/
                              # Move, MoveEvent, MoveResult, session types
     codec/                   # LevelCodec (§5.1), LevelBundleCodec (§13.4), LevelIssue + IssueCodes
     validator/               # Validator (§5.3 rules 1–8), LayoutLimits
-    rules/                   # Rules facade + EventBuilder
+    rules/                   # Rules facade + EventBuilder, StarRating (spec-prop §7.10)
       engine/                # the one §4 kernel: NestCode, BoardLayout, Board, Kernel, MoveLog
     session/                 # GameSession: move, undo, restart, extra slots
     solver/                  # A* (search), canonical form, visited table, node store,
                              # bucket queue, hints, SolverRun, SolverSnapshot (isolate boundary)
-    simulator/               # Tier, casual and smart bots, Simulator
+    simulator/               # Tier, casual and smart bots, Simulator, RivalBot (the race's rival)
     generator/               # GeneratorParams, segments, placement, Generator, DifficultyCurve
     prng/                    # Prng: xoshiro128** seeded by splitmix32, derive()
     util/                    # u32 (web-safe 32-bit ops), Hash64 (two MurmurHash3_x86_32 halves)
@@ -61,20 +61,20 @@ benchmark/                   # solver, simulator and generator benchmarks (Stopw
 |---|---|---|
 | `models` | Immutable value types. `Nest` is stored as (color, outer, length), so an invalid nest can't exist. `GameState` wraps the kernel's packed board and exposes model views; slot ids are `r{row}c{col}` and `x0`/`x1` | §2.1, §3, §4 |
 | `rules/engine` | The allocation-free §4 kernel every caller runs: placement, inside and swallow merges, tower pops and reveals, completions, first-completion unlocks, ice from `completedSets`, gold hooks (v1.1) | §3, §4 |
-| `rules` | `Rules.tryMove` (events in the §4 order, destination `Revealed` after `Completed`), `legalMoves` (source, then target, in slot-id order), `isWon`, `isOutOfMoves` | §2.2, §2.3, §4 |
+| `rules` | `Rules.tryMove` (events in the §4 order, destination `Revealed` after `Completed`), `legalMoves` (source, then target, in slot-id order), `isWon`, `isOutOfMoves`. `StarRating`: a won campaign level's 1–3 stars from its moves against par with the two slack percentages, at most 2 when assisted (a hint, or an extra slot on the board) | §2.2, §2.3, §4, spec-prop §7.10 |
 | `session` | `GameSession`: undo history cleared on completion, restart, up to 2 extra slots on the bottom shelf kept through undo and restart | §2.4, §3.6, D22 |
-| `codec` | Strict schema-v1 JSON, integers read by value, issues collected with JSON pointers and ARB args; the bundle format of `apps/game/assets/levels/bundle.json` | §5.1, §13.4 |
+| `codec` | Strict schema-v1 JSON, integers read by value, issues collected with JSON pointers and ARB args; the bundle format of `apps/game/assets/levels/bundle.json`, whose entries carry the optional star-rating `par` (read leniently: a bad one is a warning) | §5.1, §13.4, spec-prop §7.10 |
 | `validator` | Rules 1–8 plus value checks (id, seed, ice ≤ `LayoutLimits.maxIce`, sizes, gold rejected until v1.1). Rule 8 runs `Solver.solve` with the admin budget; the game's loader uses `ValidationOptions.loader` (rules 1–7) | §5.3 |
 | `solver` | A* over canonical boards, `h = nests − setsRemaining`, the §6.3 pruning, budgets 500k / 30k / 20k (`unknown`, never `unsolvable`, when exhausted), hints with the A3 fallback, resumable `SolverRun`, `SolverSnapshot` Int32List format for the game's isolate | §6.2, §6.3 |
-| `simulator` | Casual and smart bots, 300 seeded runs each with a 250-move cap, integer tier edges (195 / 105 / 36 of 300), expert only below 150 smart wins | §6.4 |
-| `generator` | Seeded attempts `Prng(Prng.derive(seed, i))`, up to 50, validated (rules 1–8) and simulated; the first tier match or the closest; `DifficultyCurve` for bonus (`1 000 000 + n`) and daily (`yyyymmdd`) params | §6.5, §6.6, §7.1, §7.5 |
+| `simulator` | Casual and smart bots, 300 seeded runs each with a 250-move cap, integer tier edges (195 / 105 / 36 of 300), expert only below 150 smart wins. `RivalBot`, the vs Computer rival: the same bots one allocation-free step at a time (`BotPlayer.stepRun`, which `play` loops over), restarting a run that can't be won from its own labelled seed (`'RVL0'`/`'RVL1'`). Only the `SimBot` enum is exported; `BotPlayer` stays internal | §6.4, spec-prop §7.7 |
+| `generator` | Seeded attempts `Prng(Prng.derive(seed, i))`, up to 50, validated (rules 1–8) and simulated; the first tier match or the closest; `DifficultyCurve` for bonus (`1 000 000 + n`), daily (`yyyymmdd`) and race (`3 000 000 + rival × 100 000 + raceNo`, with each rival's policy and tier) params | §6.5, §6.6, §7.1, §7.5, spec-prop §7.7 |
 | `prng`, `util` | Deterministic, web-safe primitives, pinned by reference vectors from an independent implementation | §6.5, Q9 |
 
 ## Testing
 
 ```
 cd packages/nesty_core
-dart test                              # everything on the VM (CI): ~1,330 tests
+dart test                              # everything on the VM (CI): ~1,660 tests
 dart test -x slow                      # the quick loop (Stop hook)
 dart test -t slow                      # the M1 acceptance: 100 generated levels
 dart test -p node test/parity test/generator/golden_test.dart   # CI, dart2js
@@ -95,3 +95,17 @@ dart run benchmark/solver_benchmark.dart      # also: simulator_, generator_benc
 - Parity (`test/parity/`): each case compares with a constant computed on the
   VM, so only a web run can catch a web-only divergence. CI runs node, Chrome
   and dart2wasm.
+- Rival (`test/simulator/rival_bot_test.dart`, `test/parity/rival_parity_test.dart`):
+  the rival equals the simulator's runs through restarts, mirrors a
+  `GameSession` move for move, and its step digests come from an independent
+  Python reference (`test/simulator/reference/rivalref.py`). Race boards:
+  `test/generator/race_curve_test.dart` and three race goldens
+  (`test/parity/vectors/race_vectors.dart`).
+- Stars (`test/rules/star_rating_test.dart`, `test/parity/star_rating_parity_test.dart`,
+  `test/solver/par_oracle_test.dart`): the threshold table and bands worked
+  by hand, a digest over 363,000 `starsFor` values from an independent
+  Python reference (`test/rules/reference/starref.py`), and par against a
+  breadth-first oracle on every solvable fixture.
+- `dart run benchmark/rival_benchmark.dart` times the rival's steps on race
+  boards; `benchmark/race_board_sweep.dart` counts race boards that fail to
+  generate (report-only).

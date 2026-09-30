@@ -1,3 +1,44 @@
+## Unreleased — M7 phase 3, star ratings (2026-09-29)
+
+- `StarRating` (spec-prop §7.10, D125, D145): `threshold(par, slackPct)` =
+  `par + ⌈par × slack ÷ 100⌉` in integers, `starsFor` (3★ at ≤ t3, 2★ at
+  ≤ t2, else 1★; at most 2★ when assisted) and `starsForWin`, which reads
+  the move count and the extra slots off a won board. `maxStars` 3,
+  `minStars` 1, `assistedMaxStars` 2, and `maxSlackPct` 1000 (a technical
+  bound that keeps `par × slack` exact on the web).
+- `LevelBundleEntry.par` (D146): the solver's optimal moves, written after
+  `rewardCoins` only when present (a par-less bundle encodes byte for byte
+  as before) and read leniently: a bad par is one warning and no par, and
+  the entry is kept.
+- `Generator.version` stays 1: every golden and parity digest is unchanged.
+- Tests: the threshold table (par 1–60 at 0/20/60/100 %), the bands, the
+  cap, undo/restart/extra slots on a won board, the range errors; the
+  codec's round trip, golden text and leniency; par equals the hand-worked
+  optimum and an independent breadth-first search on every solvable fixture
+  and the random rule-8 boards (`test/solver/par_oracle_test.dart`); web
+  parity digests over 363,000 `starsFor` values and the lenient reads, from
+  an independent Python reference (`test/rules/reference/starref.py`).
+
+## Unreleased — M7 phase 2, vs Computer (2026-09-28)
+
+- `RivalBot` and `RivalStep` (spec-prop §7.7): the race's computer rival,
+  one allocation-free step at a time. It plays the simulator's casual or
+  smart bot (`BotPlayer.stepRun`, now the body of `BotPlayer.play`'s loop),
+  restarts a run that can't be won (no useful move, or the 250-move cap) as
+  a step of its own, and seeds run `i` with
+  `Prng.derive(raceSeed, 'RVL0' + bot, i)`, a stream apart from the
+  generator's attempts and retries.
+- `SimBot` is exported (`show SimBot`); `BotPlayer` and the engine stay
+  internal.
+- `DifficultyCurve.raceSeed` (`3 000 000 + rival × 100 000 + raceNo`),
+  `racePolicy`, `raceTier`, `raceParams`, `raceRivals` and `maxRaceNo`.
+- `Generator.version` stays 1: every golden and parity digest is unchanged.
+- Tests: the rival against the simulator's runs, a mirrored `GameSession`,
+  restarts, the race curve and three race goldens; parity digests from an
+  independent Python reference (`test/simulator/reference/rivalref.py`) on
+  the VM, node, Chrome and dart2wasm. Benchmarks: `rival_benchmark.dart`,
+  `race_board_sweep.dart`.
+
 ## 0.2.0 — M1 (2026-09-26)
 
 - Models: `Doll`, `Nest`, `OpenSlot` / `TowerSlot` / `LockedSlot` with ice,

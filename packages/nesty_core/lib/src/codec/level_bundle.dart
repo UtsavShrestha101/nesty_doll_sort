@@ -16,6 +16,7 @@ final class LevelBundleEntry {
     required this.version,
     required this.rewardCoins,
     required this.level,
+    this.par,
   });
 
   /// Global play order, 1-based and continuous (spec §5.2, §7.1).
@@ -36,6 +37,14 @@ final class LevelBundleEntry {
   /// The level itself: the entry's `data` (spec §5.1).
   final Level level;
 
+  /// The fewest moves that solve [level] from its start: the solver's
+  /// optimal solution at the admin budget (spec §5.2 `metrics.solverMoves`,
+  /// §6.3), written by `nesty_levels bundle build` and checked by `bundle
+  /// check` (spec-prop §7.10, D125). The star rating's par
+  /// (`StarRating`). Null means no stars for this entry (content without a
+  /// proven par plays without them); never below 1.
+  final int? par;
+
   @override
   bool operator ==(Object other) =>
       other is LevelBundleEntry &&
@@ -44,14 +53,17 @@ final class LevelBundleEntry {
       other.tier == tier &&
       other.version == version &&
       other.rewardCoins == rewardCoins &&
+      other.par == par &&
       other.level == level;
 
   @override
   int get hashCode =>
-      Object.hash(order, chapterId, tier, version, rewardCoins, level);
+      Object.hash(order, chapterId, tier, version, rewardCoins, par, level);
 
   @override
-  String toString() => 'LevelBundleEntry($order, ${level.id}, ${tier.id})';
+  String toString() =>
+      'LevelBundleEntry($order, ${level.id}, ${tier.id}'
+      '${par == null ? '' : ', par $par'})';
 }
 
 /// The bundled levels file, `apps/game/assets/levels/bundle.json`
@@ -145,10 +157,12 @@ final class LevelBundleDecodeResult {
 ///
 /// The encoder is deterministic so the committed file never churns: 2-space
 /// indent, fixed key order (`format, bundleVersion, levelsVersion, levels`;
-/// per entry `order, chapterId, tier, version, rewardCoins, data`), entries
-/// sorted by order, `data` in the level codec's canonical form, no
-/// timestamps. It writes the bundle as given and checks nothing; the level
-/// tools (`nesty_levels bundle build`) check before they encode.
+/// per entry `order, chapterId, tier, version, rewardCoins, par, data`, with
+/// `par` written only when the entry has one, so a par-less bundle encodes
+/// as it did before stars), entries sorted by order, `data` in the level
+/// codec's canonical form, no timestamps. It writes the bundle as given and
+/// checks nothing; the level tools (`nesty_levels bundle build`) check
+/// before they encode.
 ///
 /// The decoder is strict like the level codec (design A21): unknown keys,
 /// wrong types and values out of range are issues, and integers are read by
@@ -164,6 +178,11 @@ final class LevelBundleDecodeResult {
 ///    `Tier` id, else `bundle.unknownTier`), `version` (1 or more),
 ///    `rewardCoins` (0 or more) and `data` (a level; its issues are reported
 ///    under `/levels/<i>/data`). An entry with any error is skipped.
+///    `par` is optional and read leniently (spec-prop §7.10): absent is no
+///    par; an integer of 1 or more by value (`2.0` is 2) is the par;
+///    anything else is one *warning* (`schema.wrongType` or
+///    `schema.valueOutOfRange` at `/levels/<i>/par`) and no par, and the
+///    entry is kept, so a bad par never makes a level unplayable.
 /// 3. Among the entries with no error, in file order, one that reuses an
 ///    earlier entry's order (`bundle.duplicateOrder`) or level id
 ///    (`bundle.duplicateId`, with the kept entry's `order`) is skipped.
@@ -223,6 +242,7 @@ abstract final class LevelBundleCodec {
     _Keys.tier: entry.tier.id,
     _Keys.version: entry.version,
     _Keys.rewardCoins: entry.rewardCoins,
+    _Keys.par: ?entry.par,
     _Keys.data: LevelCodec.encode(entry.level),
   };
 }
@@ -239,6 +259,7 @@ abstract final class _Keys {
   static const tier = 'tier';
   static const version = 'version';
   static const rewardCoins = 'rewardCoins';
+  static const par = 'par';
   static const data = 'data';
 
   static const Set<String> bundle = {
@@ -254,6 +275,7 @@ abstract final class _Keys {
     tier,
     version,
     rewardCoins,
+    par,
     data,
   };
 }
@@ -439,6 +461,7 @@ final class _BundleDecoder {
     final tier = _tier(value, path);
     final version = _requiredInt(value, _Keys.version, path, min: 1);
     final rewardCoins = _requiredInt(value, _Keys.rewardCoins, path, min: 0);
+    final par = _par(value, path);
     final level = _data(value, path);
     _rejectUnknownKeys(value, _Keys.entry, path);
 
@@ -461,8 +484,50 @@ final class _BundleDecoder {
         version: version,
         rewardCoins: rewardCoins,
         level: level,
+        par: par,
       ),
     );
+  }
+
+  /// The entry's optional `par` (spec-prop §7.10), read leniently: absent
+  /// is null with no issue; an integral number of at least 1 by value is
+  /// the par; anything else is one warning and null, and never an error,
+  /// so the entry is kept.
+  int? _par(Map<Object?, Object?> entry, List<Object> path) {
+    if (!entry.containsKey(_Keys.par)) return null;
+    final value = entry[_Keys.par];
+    final at = [...path, _Keys.par];
+    // As _asInt: test the value, not the Dart type, so the web agrees.
+    if (value is! num ||
+        !value.isFinite ||
+        value != value.truncateToDouble() ||
+        value.abs() > _maxJsonInteger) {
+      _add(
+        IssueCodes.wrongType,
+        '"${_Keys.par}" must be ${_article(_Expected.integer)}; the level '
+        'plays without stars',
+        at,
+        args: {'field': _Keys.par, 'expected': _Expected.integer},
+        severity: IssueSeverity.warning,
+      );
+      return null;
+    }
+    final par = value.toInt();
+    if (par >= 1) return par;
+    _add(
+      IssueCodes.valueOutOfRange,
+      '"${_Keys.par}" must be 1 or more (got $par); the level plays without '
+      'stars',
+      at,
+      args: {
+        'field': _Keys.par,
+        'value': par,
+        'min': 1,
+        'max': _maxJsonInteger,
+      },
+      severity: IssueSeverity.warning,
+    );
+    return null;
   }
 
   Tier? _tier(Map<Object?, Object?> entry, List<Object> path) {
@@ -616,11 +681,13 @@ final class _BundleDecoder {
     String message,
     List<Object> path, {
     Map<String, Object> args = const {},
+    IssueSeverity severity = IssueSeverity.error,
   }) {
     _record(
       LevelIssue(
         code: code,
         message: message,
+        severity: severity,
         path: LevelIssue.pointer(path),
         args: args,
       ),

@@ -6,13 +6,18 @@ import 'package:nesty_core/src/rules/engine/board_layout.dart';
 import 'package:nesty_core/src/rules/engine/kernel.dart';
 import 'package:nesty_core/src/rules/engine/nest_code.dart';
 
-/// The simulator's two players (spec §6.4).
+/// The simulator's two players (spec §6.4), which are also the race's rival
+/// policies (spec-prop §7.7: "No other bot policy is used").
 ///
 /// [index] is the bot's label in its run seeds: run `i` of bot `b` draws from
-/// `Prng(Prng.derive(simSeed, b.index, i))` (design §3). The order is
-/// therefore part of the pipeline that `Generator.version` covers.
+/// `Prng(Prng.derive(simSeed, b.index, i))` (design §3), and a rival's run
+/// `i` from `RivalBot.runSeed`, which adds [index] to its stream label. The
+/// order is therefore part of the pipeline that `Generator.version` covers,
+/// and of every rival's moves.
 ///
-/// Internal to nesty_core (not exported by the barrel).
+/// Exported by the barrel on its own (`show SimBot`), so the app can name a
+/// rival's policy (`DifficultyCurve.racePolicy`, `RivalBot`); the players
+/// behind it stay internal.
 enum SimBot {
   /// Spec §6.4: a random merge 70% of the time when one exists, else a
   /// random legal move. No undo, no extra slots.
@@ -175,9 +180,21 @@ final class BotPlayer {
     return wins;
   }
 
+  /// What [stepRun] returns when the run is won: every set is complete.
+  static const int runWon = -1;
+
+  /// What [stepRun] returns when the run can't be won: it has made its
+  /// `moveCap` moves, or its board has no useful move.
+  static const int runLost = -2;
+
   /// Plays one run of [bot] from the level's start, drawing from [prng], and
   /// returns true on a win. [onMove] sees every move applied, as slot
   /// indexes (tests replay runs with it).
+  ///
+  /// The run is [stepRun] repeated on this player's own board until it
+  /// returns [runWon] or [runLost], so a run has one definition, which the
+  /// race's `RivalBot` shares (spec-prop §7.7 "plays like the casual bot
+  /// (§6.4)").
   bool play(
     SimBot bot,
     Prng prng,
@@ -186,19 +203,38 @@ final class BotPlayer {
   ]) {
     final board = _board..reset();
     while (true) {
-      if (Kernel.isWon(board)) return true;
-      if (board.moveCount >= moveCap) return false;
-      final count = Kernel.collectLegalMoves(board, _moves);
-      if (!_hasUsefulMove(board, count)) return false;
-      final entry = _pick(bot, board, count, prng);
-      // Both policies always move when a useful move exists; failing loudly
-      // beats a run that loops without its move count ever growing.
-      if (entry < 0) throw StateError('${bot.name} bot found no move');
-      final from = LegalMove.from(entry);
-      final to = LegalMove.to(entry);
-      Kernel.tryApply(board, from, to);
-      onMove?.call(from, to);
+      final entry = stepRun(bot, board, prng, moveCap);
+      if (entry == runWon) return true;
+      if (entry == runLost) return false;
+      onMove?.call(LegalMove.from(entry), LegalMove.to(entry));
     }
+  }
+
+  /// One step of a run of [bot] on [board], drawing from [prng]: the body of
+  /// [play]'s loop. In this order:
+  /// 1. [runWon] when [board] is won (spec §2.3), so a run that wins on its
+  ///    [moveCap]th move is a win;
+  /// 2. [runLost] when [board] has made [moveCap] moves (spec §6.4's cap);
+  /// 3. [runLost] when [board] has no useful move: no legal move at all, or
+  ///    only pointless ones (see the class doc);
+  /// 4. otherwise the `LegalMove` entry [bot] chose, which is applied to
+  ///    [board] before this returns.
+  ///
+  /// [moveCap] counts `board.moveCount`, the moves since the board's last
+  /// reset. Allocation-free (CLAUDE.md rule 8). Throws an [ArgumentError]
+  /// for a board of another layout.
+  int stepRun(SimBot bot, Board board, Prng prng, int moveCap) {
+    _checkLayout(board);
+    if (Kernel.isWon(board)) return runWon;
+    if (board.moveCount >= moveCap) return runLost;
+    final count = Kernel.collectLegalMoves(board, _moves);
+    if (!_hasUsefulMove(board, count)) return runLost;
+    final entry = _pick(bot, board, count, prng);
+    // Both policies always move when a useful move exists; failing loudly
+    // beats a run that loops without its move count ever growing.
+    if (entry < 0) throw StateError('${bot.name} bot found no move');
+    Kernel.tryApply(board, LegalMove.from(entry), LegalMove.to(entry));
+    return entry;
   }
 
   /// The `LegalMove` entry [bot] would play on [board], drawing from

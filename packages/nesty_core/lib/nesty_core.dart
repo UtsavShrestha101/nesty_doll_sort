@@ -31,10 +31,16 @@ export 'package:nesty_core/src/models/slot.dart';
 export 'package:nesty_core/src/models/slot_id.dart';
 // Seeded PRNG (spec §6.5).
 export 'package:nesty_core/src/prng/prng.dart';
-// Rules and the play session (spec §2.4, §3.6, §4).
+// Rules and the play session (spec §2.4, §3.6, §4); the star rating
+// (spec-prop §7.10).
 export 'package:nesty_core/src/rules/rules.dart';
+export 'package:nesty_core/src/rules/star_rating.dart';
 export 'package:nesty_core/src/session/game_session.dart';
-// Simulator and tiers (spec §6.4).
+// Simulator and tiers (spec §6.4); the bot policies and the race's rival
+// (spec-prop §7.7). The bots' players stay internal: only the policy enum
+// is exported.
+export 'package:nesty_core/src/simulator/bots.dart' show SimBot;
+export 'package:nesty_core/src/simulator/rival_bot.dart';
 export 'package:nesty_core/src/simulator/simulator.dart';
 export 'package:nesty_core/src/simulator/tier.dart';
 // Solver, hints and the isolate snapshot (spec §6.2, §6.3).

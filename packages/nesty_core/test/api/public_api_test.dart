@@ -25,13 +25,16 @@ void main() {
       IssueCodes, GameSessionCodec, GameSessionDecodeResult,
       // Validator.
       Validator, ValidationOptions, ValidationReport, LayoutLimits,
-      // Rules and session.
-      Rules, GameSession,
+      // Rules and session; the star rating (spec-prop §7.10).
+      Rules, GameSession, StarRating,
       // Solver.
       Solver, SolverRun, SolverBudgets, SolveVerdict, SolveResult, HintResult,
       HintSource, SolverSnapshot, SolverTask, LevelSolver,
       // Simulator.
       Simulator, SimulatorParams, SimulationResult, BotStats, Tier,
+      // The race's rival (spec-prop §7.7): the policy enum only, not the
+      // simulator's players.
+      SimBot, RivalBot, RivalStep,
       // Generator.
       Generator, GeneratorParams, GeneratorOutcome, GeneratorSuccess,
       GeneratorFailure, DifficultyCurve,
@@ -68,6 +71,35 @@ void main() {
 
     test('GameSession.maxExtraSlots (spec §3.6)', () {
       expect(GameSession.maxExtraSlots, 2);
+    });
+
+    test('StarRating constants (spec-prop §7.10, D125)', () {
+      expect(StarRating.maxStars, 3);
+      expect(StarRating.minStars, 1);
+      expect(StarRating.assistedMaxStars, 2);
+      expect(StarRating.maxSlackPct, 1000);
+    });
+
+    test("StarRating's frozen signatures (m7-design P3.3)", () {
+      // A compile-time pin: each call only builds with the frozen names.
+      final int Function(int, int) threshold = StarRating.threshold;
+      final int Function({
+        required int moves,
+        required int par,
+        required bool assisted,
+        required int star3SlackPct,
+        required int star2SlackPct,
+      })
+      starsFor = StarRating.starsFor;
+      final int Function(
+        GameState, {
+        required int par,
+        required bool hintUsed,
+        required int star3SlackPct,
+        required int star2SlackPct,
+      })
+      starsForWin = StarRating.starsForWin;
+      expect([threshold, starsFor, starsForWin], hasLength(3));
     });
 
     test('Generator constants (spec §6.5)', () {
@@ -136,6 +168,72 @@ void main() {
       expect(DifficultyCurve.dailySeed(2027, 1, 5), 20270105);
       expect(() => DifficultyCurve.dailySeed(2026, 13, 1), throwsRangeError);
       expect(() => DifficultyCurve.dailySeed(2026, 1, 0), throwsRangeError);
+    });
+  });
+
+  group('vs Computer contracts (spec-prop §7.7; m7-design Phase 2)', () {
+    test('raceSeed is 3,000,000 + rival × 100,000 + raceNo', () {
+      expect(DifficultyCurve.raceRivals, 3);
+      expect(DifficultyCurve.maxRaceNo, 99999);
+      expect(DifficultyCurve.raceSeed(1, 1), 3100001);
+      expect(DifficultyCurve.raceSeed(3, 99999), 3399999);
+    });
+
+    test('the policy and tier of each rival', () {
+      expect(
+        [
+          for (var rival = 1; rival <= 3; rival++)
+            DifficultyCurve.racePolicy(rival),
+        ],
+        [SimBot.casual, SimBot.smart, SimBot.smart],
+      );
+      expect(
+        [
+          for (var rival = 1; rival <= 3; rival++)
+            DifficultyCurve.raceTier(rival),
+        ],
+        [Tier.easy, Tier.medium, Tier.medium],
+      );
+    });
+
+    test('the race params shape: seed, tier and id', () {
+      final params = DifficultyCurve.raceParams(
+        rival: 2,
+        raceNo: 7,
+        highestWonLevel: 20,
+      );
+      expect(params.seed, 3200007);
+      expect(params.targetTier, Tier.medium);
+      expect(params.id, 'race-2-7');
+    });
+
+    test('the run seeds and the enums they depend on', () {
+      // 'RVL0': SimBot.index is added to it, so the enum order is pinned.
+      expect(RivalBot.runStream, 0x52564C30);
+      expect(SimBot.values.map((bot) => bot.name), ['casual', 'smart']);
+      expect(
+        RivalBot.runSeed(3100001, SimBot.smart, 2),
+        Prng.derive(3100001, 0x52564C31, 2),
+      );
+      expect(RivalStep.values.map((step) => step.name), [
+        'moved',
+        'finished',
+        'restarted',
+      ]);
+    });
+
+    test('a rival defaults to spec §6.4\'s 250-move cap', () {
+      final rival = RivalBot(
+        specExampleLevel(),
+        policy: SimBot.casual,
+        raceSeed: 3100001,
+      );
+      expect(rival.moveCap, SimulatorParams.defaultMoveCap);
+      expect(rival.moveCap, 250);
+    });
+
+    test('Generator.version stays 1: the race added no policy', () {
+      expect(Generator.version, 1);
     });
   });
 
@@ -330,6 +428,8 @@ void main() {
         ],
       );
       expect(make().bundleVersion, LevelBundle.currentBundleVersion);
+      // Spec-prop §7.10 (D146): par is optional; null means no stars.
+      expect(make().levels.single.par, isNull);
       expect(make(), make());
       expect(make().hashCode, make().hashCode);
       expect(() => make().levels.clear(), throwsUnsupportedError);

@@ -6,6 +6,7 @@ import 'package:nesty_tools/src/levels/cli_context.dart';
 import 'package:nesty_tools/src/levels/finding.dart';
 import 'package:nesty_tools/src/levels/level_analysis.dart';
 import 'package:nesty_tools/src/levels/level_inputs.dart';
+import 'package:nesty_tools/src/levels/star_report.dart';
 import 'package:nesty_tools/src/levels/text_table.dart';
 
 /// `validate [paths] [--loader] [--budget N]`: spec §5.3 rules 1–8 (with
@@ -122,22 +123,43 @@ int runSimulate(CliContext cli, List<String> arguments) {
   return errors == 0 ? ExitCodes.ok : ExitCodes.failed;
 }
 
-/// `report [paths] [--budget N] [--json]`: rules 1–8, the solve and the
-/// simulation in one table, the admin's level list columns (spec §15 #2).
+/// `report [paths] [--budget N] [--json] [--stars [--star3-slack N]
+/// [--star2-slack N] [--runs N]]`: rules 1–8, the solve and the simulation
+/// in one table, the admin's level list columns (spec §15 #2).
+///
+/// With `--stars`, the star shares instead (spec-prop §7.10, m7-design
+/// P3.3; [StarReport]): per chapter and bot, the share of won runs at
+/// 3★/2★/1★ at the given slack, against each level's par (the solver's
+/// optimum at `--budget`). A report, never a gate: it skips the simulator,
+/// since the bots run as [RivalBot]s.
 int runReport(CliContext cli, List<String> arguments) {
-  final args = cli.parse(arguments, flags: {'json'}, options: {'budget'});
+  final args = cli.parse(
+    arguments,
+    flags: {'json', 'stars'},
+    options: {'budget', ..._starOptions},
+  );
+  final stars = args.flag('stars');
+  if (!stars) {
+    for (final name in _starOptions) {
+      if (args.options.containsKey(name)) {
+        throw UsageError('--$name needs --stars.');
+      }
+    }
+  }
   final options = ValidationOptions(solverBudget: _budget(cli, args));
   final loaded = cli.inputs(args);
   final findings = [...loaded.findings];
   final analyses = [
     for (final input in loaded.inputs)
-      (input, analyzeLevel(input.level, options: options)),
+      (input, analyzeLevel(input.level, options: options, simulate: !stars)),
   ];
   for (final (input, analysis) in analyses) {
     findings.addAll(_issues(input, analysis.validation.issues));
   }
 
-  if (args.flag('json')) {
+  if (stars) {
+    _printStars(cli, args, analyses);
+  } else if (args.flag('json')) {
     cli.out.writeln(
       const JsonEncoder.withIndent('  ').convert([
         for (final (input, analysis) in analyses) reportJson(input, analysis),
@@ -148,6 +170,86 @@ int runReport(CliContext cli, List<String> arguments) {
   }
   final errors = cli.report(findings);
   return errors == 0 ? ExitCodes.ok : ExitCodes.failed;
+}
+
+const Set<String> _starOptions = {'star3-slack', 'star2-slack', 'runs'};
+
+/// `report --stars`: the [StarReport] table (or `--json`), with the levels
+/// that have no par (rule 8 didn't solve them) listed as not rated.
+void _printStars(
+  CliContext cli,
+  CliArgs args,
+  List<(LevelInput, LevelAnalysis)> analyses,
+) {
+  int slack(String name, int fallback) => cli.intOption(
+    args,
+    name,
+    fallback: fallback,
+    max: StarRating.maxSlackPct,
+  );
+  final star3 = slack('star3-slack', StarReport.defaultStar3SlackPct);
+  final star2 = slack('star2-slack', StarReport.defaultStar2SlackPct);
+  final runs = cli.intOption(
+    args,
+    'runs',
+    fallback: StarReport.defaultRuns,
+    min: 1,
+    max: StarReport.maxRuns,
+  );
+  final rated = [
+    for (final (input, analysis) in analyses)
+      if (analysis.par case final par?)
+        (chapterId: input.chapterId ?? '-', level: input.level, par: par),
+  ];
+  final unrated = [
+    for (final (input, analysis) in analyses)
+      if (analysis.par == null) input.label,
+  ];
+  final rows = StarReport.of(
+    rated,
+    star3SlackPct: star3,
+    star2SlackPct: star2,
+    runs: runs,
+  );
+  if (args.flag('json')) {
+    cli.out.writeln(
+      const JsonEncoder.withIndent('  ').convert({
+        'star3SlackPct': star3,
+        'star2SlackPct': star2,
+        'runsPerBot': runs,
+        'rows': [for (final row in rows) row.toJson()],
+        'unrated': unrated,
+      }),
+    );
+    return;
+  }
+  cli.out
+    ..writeln(
+      'Stars of the bots\' won runs (spec-prop §7.10), unassisted: 3★ at '
+      'moves ≤ par + ⌈par × $star3 ÷ 100⌉, 2★ at ≤ par + ⌈par × $star2 ÷ '
+      '100⌉, else 1★. $runs runs per bot and level (RivalBot race seeds '
+      '0–${runs - 1}); par is the solver\'s optimum.',
+    )
+    ..writeln(
+      renderTable(
+        ['chapter', 'bot', 'levels', 'won', '3★', '2★', '1★'],
+        [
+          for (final row in rows)
+            [
+              row.chapterId,
+              row.bot.name,
+              '${row.levels}',
+              '${row.wins}/${row.runs} ${StarShares.share(row.wins, row.runs)}',
+              for (final stars in const [3, 2, 1])
+                '${row.at(stars)} ${StarShares.share(row.at(stars), row.wins)}',
+            ],
+        ],
+        rightAligned: const {2},
+      ),
+    );
+  if (unrated.isNotEmpty) {
+    cli.out.writeln('No par, so not rated: ${unrated.join(', ')}');
+  }
 }
 
 /// The report columns shared by `report` and `bundle check`: order, id,

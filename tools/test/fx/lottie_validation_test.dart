@@ -43,7 +43,7 @@ Map<String, Object?> _asset(Map<String, Object?> json, String id) =>
 
 void main() {
   group('the owner\'s exports', () {
-    test('all 29 validate against the contract with no issue', () {
+    test('all 35 validate against the contract with no issue', () {
       final set = readDesignLottie(_root);
       expect(set.issues, isEmpty);
       expect(set.sources.map((s) => s.name), [
@@ -324,6 +324,67 @@ void main() {
         'ks': <String, Object?>{},
       });
       expect(_codes(stray, 'doll_move'), [LottieIssueCodes.hooks]);
+    });
+
+    test('m7-3: the intro loops author their size nulls, animated or not', () {
+      // `family_size` shrinks the family into the counter (ui_intro_glass).
+      expect(
+        lottieIsAnimated(
+          _ks(_layer(_real('ui_intro_glass'), 'family_size'), 's'),
+        ),
+        isTrue,
+      );
+      expect(_codes(_real('ui_intro_glass'), 'ui_intro_glass'), isEmpty);
+      // They must still be exactly the roles: a missing doll is an issue.
+      final missing = _real('ui_intro_ice');
+      _layers(missing).removeWhere((l) => l['nm'] == 'family_2_size');
+      expect(_codes(missing, 'ui_intro_ice'), [LottieIssueCodes.hooks]);
+    });
+
+    test(
+      'm7-1: case_size is a static, unique null (LOTTIE.md "Case size")',
+      () {
+        Map<String, Object?> tall() => _real('fx_glass_unlock_tall');
+
+        final missing = tall();
+        _layers(missing).removeWhere((l) => l['nm'] == 'case_size');
+        expect(_codes(missing, 'fx_glass_unlock_tall'), contains('hooks'));
+
+        final animated = tall();
+        (_layer(animated, 'case_size')['ks']! as Map<String, Object?>)['s'] = {
+          'a': 1,
+          'k': [
+            {
+              't': 0,
+              's': [100, 100, 100],
+            },
+            {
+              't': 5,
+              's': [90, 90, 100],
+            },
+          ],
+        };
+        expect(_codes(animated, 'fx_glass_unlock_tall'), [
+          LottieIssueCodes.hooks,
+        ]);
+
+        final shape = tall();
+        _layer(shape, 'case_size')['ty'] = 4; // A shape layer.
+        expect(_codes(shape, 'fx_glass_unlock_tall'), [LottieIssueCodes.hooks]);
+
+        final twice = tall();
+        (twice['layers']! as List<Object?>).add({
+          ..._layer(twice, 'case_size'),
+          'ind': 99,
+        });
+        expect(_codes(twice, 'fx_glass_unlock_tall'), [LottieIssueCodes.hooks]);
+      },
+    );
+
+    test('m7-3: ui_extra_slot rests on its `rest` marker at frame 0', () {
+      expect(_codes(_real('ui_extra_slot'), 'ui_extra_slot'), isEmpty);
+      final none = _real('ui_extra_slot')..remove('markers');
+      expect(_codes(none, 'ui_extra_slot'), [LottieIssueCodes.markers]);
     });
 
     test('travel and target_pos are where the contract says', () {

@@ -15,9 +15,11 @@ final _cubic = RegExp(
   r'\s*([^,\s)]+)\s*\)$',
 );
 
-/// Parses `#RGB`, `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)` or `rgba(r,g,b,a)`
-/// into a 32-bit ARGB integer (the `Color(0xAARRGGBB)` layout).
+/// Parses `#RGB`, `#RRGGBB`, `#RRGGBBAA`, `rgb(r,g,b)`, `rgba(r,g,b,a)` or
+/// the one CSS name the design writes, `white` (tokens v3: "Fredoka 700 21
+/// white"), into a 32-bit ARGB integer (the `Color(0xAARRGGBB)` layout).
 int parseCssColor(String value) {
+  if (value.trim() == 'white') return 0xFFFFFFFF;
   final hex = _hex.firstMatch(value.trim());
   if (hex != null) {
     var digits = hex.group(1)!;
@@ -314,3 +316,120 @@ double _round(double v) {
 }
 
 double _neg(double v) => v == 0 ? 0 : -v;
+
+/// A parsed CSS `linear-gradient(<angle>deg, <stop>, <stop>…)` (tokens v3's
+/// `gradient.versus` and `layout.chapters.current.header.scrim`).
+typedef CssLinearGradient = ({double angle, List<GradientStop> stops});
+
+final _linearGradient = RegExp(
+  r'^linear-gradient\(\s*(-?\d+(?:\.\d+)?)deg\s*,(.+)\)$',
+);
+
+/// Parses `linear-gradient(180deg, #7B8BEF, #4E5FD9)`, stops as
+/// [parseGradientStop] reads them (colors may be `rgba(…)` with commas).
+CssLinearGradient parseCssLinearGradient(String value) {
+  final m = _linearGradient.firstMatch(value.trim());
+  if (m == null) {
+    throw FormatException('Expected linear-gradient(<n>deg, …)', value);
+  }
+  final stops = [
+    for (final stop in _splitTopLevel(m[2]!, ','))
+      parseGradientStop(stop.trim()),
+  ];
+  if (stops.length < 2) {
+    throw FormatException('A gradient needs at least two stops', value);
+  }
+  return (angle: double.parse(m[1]!), stops: stops);
+}
+
+/// True when [value] is a `linear-gradient(…)` [parseCssLinearGradient]
+/// accepts.
+bool isCssLinearGradient(String value) {
+  try {
+    parseCssLinearGradient(value);
+    return true;
+  } on FormatException {
+    return false;
+  }
+}
+
+/// A parsed font shorthand of tokens v3: `Fredoka 700 16 #5B3A21`,
+/// `Nunito 800 9.5`, `Fredoka 700 17 #3242A8 tabular`, and the prose tail
+/// the design sometimes writes after it (`, sentence case`, `; thinking = …`,
+/// ` on a brass gradient`, ` with the replay glyph`).
+typedef FontSpec = ({
+  String family,
+  int weight,
+  double size,
+  int? color,
+  bool tabular,
+  String? tail,
+});
+
+final _fontSpec = RegExp(
+  r'^(Fredoka|Nunito) (\d{3}) (\d+(?:\.\d+)?)'
+  r'(?: (#[0-9A-Fa-f]{3,8}|rgba?\([^)]*\)|white))?( tabular)?'
+  r'(?:(?:, |; | (?=on |with ))(.+))?$',
+);
+
+/// Parses a font shorthand ([FontSpec]), or returns null when [value] is
+/// not one. The weight is not checked against the bundled ones here: the
+/// codegen does that against `font.<role>.weights`.
+FontSpec? tryParseFontSpec(String value) {
+  final m = _fontSpec.firstMatch(value.trim());
+  if (m == null) return null;
+  return (
+    family: m[1]!,
+    weight: int.parse(m[2]!),
+    size: double.parse(m[3]!),
+    color: m[4] == null ? null : parseCssColor(m[4]!),
+    tabular: m[5] != null,
+    tail: m[6],
+  );
+}
+
+/// A parsed stroke of tokens v3: `2px #FFFDF7`, `1.5px #D8B07A`.
+typedef CssStroke = ({double width, int color});
+
+final _stroke = RegExp(
+  r'^(\d+(?:\.\d+)?)px (#[0-9A-Fa-f]{3,8}|rgba?\([^)]*\))$',
+);
+
+/// Parses `<n>px <color>`, or returns null when [value] is not one.
+CssStroke? tryParseStroke(String value) {
+  final m = _stroke.firstMatch(value.trim());
+  if (m == null) return null;
+  return (width: double.parse(m[1]!), color: parseCssColor(m[2]!));
+}
+
+/// The chest card's rays (tokens v3 `chestModal.glow.rays`): one lit wedge
+/// of [litDeg] out of every [periodDeg], in [color].
+typedef ConicRays = ({int color, double litDeg, double periodDeg});
+
+final _conicRays = RegExp(
+  r'^repeating-conic-gradient\((rgba?\([^)]*\)) 0deg (\d+(?:\.\d+)?)deg, '
+  r'(rgba?\([^)]*\)) (\d+(?:\.\d+)?)deg (\d+(?:\.\d+)?)deg\)$',
+);
+
+/// Parses `repeating-conic-gradient(C 0deg Adeg, C0 Adeg Bdeg)`, where C0
+/// is the same colour as C at alpha 0 and starts where C ends.
+ConicRays parseConicRays(String value) {
+  final m = _conicRays.firstMatch(value.trim());
+  if (m == null) {
+    throw FormatException('Expected repeating-conic-gradient rays', value);
+  }
+  final lit = parseCssColor(m[1]!);
+  final clear = parseCssColor(m[3]!);
+  if (clear != (lit & 0x00FFFFFF) || m[2] != m[4]) {
+    throw FormatException(
+      'The rays fade to the same colour at 0 alpha, from where they end',
+      value,
+    );
+  }
+  final litDeg = double.parse(m[2]!);
+  final period = double.parse(m[5]!);
+  if (litDeg <= 0 || period <= litDeg || 360 % period != 0) {
+    throw FormatException('The ray period must divide 360°', value);
+  }
+  return (color: lit, litDeg: litDeg, periodDeg: period);
+}

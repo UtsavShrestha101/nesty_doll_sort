@@ -142,7 +142,9 @@ void main() {
   group('validateSfxWav (44.1 kHz mono 16-bit PCM)', () {
     test('every design/audio WAV passes, C2PA chunk and all', () {
       final wavs = designFiles('.wav');
-      expect(wavs, hasLength(17));
+      // 17 of v2, plus m7's star_1..3, chest_wiggle, chest_open and
+      // rival_complete.
+      expect(wavs, hasLength(23));
       for (final file in wavs) {
         expect(
           validateSfxWav(file.readAsBytesSync()),
@@ -192,6 +194,8 @@ void main() {
         'jingle_chapter.ogg',
         'jingle_oom.ogg',
         'jingle_reward.ogg',
+        'jingle_versus_lose.ogg',
+        'jingle_versus_win.ogg',
         'music_game.ogg',
         'music_home.ogg',
       ]);

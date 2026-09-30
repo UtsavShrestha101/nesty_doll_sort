@@ -33,7 +33,7 @@ drift; CI runs the checks in the "Generated code is committed and fresh" job.
 | Command | Reads | Writes |
 |---|---|---|
 | `dart run nesty_tools:gen_design_tokens [--check]` | `design/tokens.json` | `packages/nesty_render/lib/src/tokens/render_tokens.gen.dart`, `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart` |
-| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie,museum/png}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie,museum}/` |
+| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie,museum/png,ui}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie,museum,ui}/`, and the Android notification icon `apps/game/android/app/src/main/res/drawable/ic_notification.xml` |
 | `dart run nesty_tools:gen_fx_spec [--check]` | `design/lottie/*.json`, the contract table `lib/src/fx/lottie_contract.dart` | `apps/game/lib/features/fx/fx_spec.gen.dart` |
 | `dart run nesty_tools:gen_nesty_icons [--check]` | `tools/fonts/nesty_symbols.txt`, `apps/game/assets/fonts/NestySymbolsRounded.codepoints` | `apps/game/lib/core/ui/icons/nesty_icons.gen.dart` |
 | `dart run nesty_tools:todo_index [--check]` | every first-party source file | `docs/TODO_INDEX.md` |
@@ -53,15 +53,54 @@ Turns `design/tokens.json` into `static const` Dart:
   light, symbol per `DollColor` id; gold's gradient-map ramp and `gray^2`
   input), `DollColorDerivationTokens`, `SkinTokens`, `BoardTokens` (reference
   screen, board layout, pips, doll heights, HUD and booster-bar geometry),
-  `MotionTokens` (every `motion.*`: durations in ms, easings as `Cubic`,
-  reduced motion).
+  `MotionTokens` (every board `motion.*`: durations in ms, easings as
+  `Cubic`, reduced motion). Tokens v3 (m7-3) adds `plankTopsThreeShelvesTall`
+  (the shelf keys parse as `Nshelves` or `3shelvesTall`), the tall ice,
+  `GlassCaseTallTokens`, `BoardFitTokens`, `BoardPresetTokens` (the NestyBoard
+  presets with the design's own fit results, `rowOfFive`), `TowerStackTokens`,
+  `IcedTowerTokens`, `HintArcTokens`, `FallbackDollTokens` and
+  `ChapterThemeTokens` (ten chapters: id, `ChapterPalette`, the Shop crop),
+  plus the tag pop, row-of-5, tap-feedback, drag-hover and extra-slot
+  timings in `MotionTokens`.
 - **apps/game** (`ui_tokens.gen.dart`): `AppColorTokens`, `AppGradientTokens`
   (CSS angles → `Alignment`; the wood bar's `14px` stop stays a
   `PxLinearGradient` to `resolve(extent)`), `AppFontTokens`,
   `AppTextStyleTokens` (17 styles), `AppRadii` (`2xl` → `xxl`), `AppSpacing`,
   `AppShadowTokens` (CSS box-shadow lists as `NestyShadow`, which keeps
   `inset`), `HudTokens`, `BoosterBarTokens`, `BottomNavTokens`,
-  `UiMotionTokens`, `SoundTokens`.
+  `UiMotionTokens`, `SoundTokens`. Tokens v3 adds the family counter's hug
+  (E.18), one class per screen section from a generic emitter
+  (`lib/src/tokens/screen_tokens_codegen.dart`: `RivalStripTokens`,
+  `RaceBarTokens`, `Short169Tokens`, `WinStarsTokens`, `WinStarsShortTokens`,
+  `ChestCardTokens`, `HomeTokens`, `HomeShortTokens`, `ChaptersTokens`,
+  `MuseumTokens`, `RecordsTokens`, `RivalSelectTokens`, `ReplayCardTokens`,
+  `HintMiddleTokens`, `WinTwinklesTokens`, `GeneratingTokens`, `ShopTokens`,
+  `ChestModalTokens`, `SettingsTokens`, `TextLinkTokens`), the M7 UI motion
+  (`StarMotionTokens`, `ChestMotionTokens`, `RivalMotionTokens`,
+  `ToastTokens`, `ChaptersMotionTokens`, `PurchaseMotionTokens`) and
+  `IconTokens` (each use's glyph, all in the bundled font).
+
+The generic emitter turns each leaf into the Dart type its shape says: a
+number is a `double` (an `int` for counts and `…Ms`), `padding` an
+`EdgeInsets` in CSS order, two numbers under a size key a `Size`, `origin` an
+`Offset`, `points` a `List<Offset>`, a colour a `Color`, `gradient.<name>` a
+checked `AppGradientTokens` reference, `Fredoka|Nunito <weight> <size> …` a
+`TextStyle` (an unbundled weight fails), `<n>px <color>` a `TokenStroke`,
+`linear-gradient(…)` a `LinearGradient`, a box-shadow a `List<NestyShadow>`,
+a glyph key the glyph's name (checked against `icons`). Any other string is
+prose: a strict parser reads its numbers, or a list in the emitter names it
+with its reason; an unknown string fails the build.
+
+Rules the design repeats (`versus.*`, `chest.*`,
+`layout.extraSlot.limitPerLevel`, `settings.reduceMotion.default`) are
+documentation only: rules never come from tokens, and the game's
+`test/core/ui/tokens/rule_tokens_test.dart` pins each to its source
+(`RemoteConfigKeys`, `MilestoneChest`, `LayoutLimits`, `SettingsDefaults`).
+`layout.extraSlot.placement` contradicts spec §3.6 and is documented (D172).
+Formulas the hand-written code follows (the board fit's limits, the tower
+stack rule, the iced tower's tag) are pinned word for word
+(`TokenReader.documentedExact`), so a reworded formula fails until the code is
+re-read.
 
 `SoundTokens` (tokens.json `sound`, `design/audio/AUDIO.md`) has a
 `SoundCue` per event, including the three jingles (`chapterComplete`,
@@ -96,11 +135,12 @@ game:
 |---|---|
 | `skins/<id>/skin.svg` + `skin.json` | 7 skins |
 | `symbols/*.svg` | 11 |
-| `board/*.svg` | 15 (not `slot-stand.svg` / `tower-base.svg`, whose pips are baked in) |
-| `themes/chNN/background.svg` | 6 |
-| `audio/` | 22: 17 SFX `*.wav` + 5 `*.ogg` (2 music loops, 3 jingles) |
-| `lottie/*.json` | 29 (see "Lottie" below) |
+| `board/*.svg` | 18 (not `slot-stand.svg` / `tower-base.svg`, whose pips are baked in) |
+| `themes/chNN/background.svg` | 10 |
+| `audio/` | 30: 23 SFX `*.wav` + 7 `*.ogg` (2 music loops, 5 jingles) |
+| `lottie/*.json` | 35 (see "Lottie" below) |
 | `museum/NN-<id>[-locked].png` | 20 figurine PNGs (see below) |
+| `ui/<badges,chest,rivals,sprites,stars>/*.svg` | 35: the M7 UI art (24 badges, 2 chests, 4 rival portraits, 2 flight sprites, 3 stars) |
 
 SVGs lose their C2PA `<metadata>` block (about 7.7 KB each) and must pass the
 spec §12.2 rules in `package:nesty_render/svg_tools.dart` (no filters, masks,
@@ -121,8 +161,20 @@ Nothing is written if any file fails. Files the design no longer has are
 removed, and `--check` also fails when `apps/game/pubspec.yaml` doesn't list
 a synced folder.
 
-The 29 Lottie exports ship byte for byte too, `design/lottie/*.json` →
+The 35 Lottie exports ship byte for byte too, `design/lottie/*.json` →
 `lottie/<name>.json`; see "Lottie" below.
+
+The UI art (`design/ui/<folder>/<name>.svg`, names `[a-z0-9_]+`) is
+sanitized and validated like the board art. A file in `design/ui/icons/` is
+an issue (every icon use is a glyph of the bundled font), and so is any
+other folder. `design/ui/notification/ic_notification.svg` is not an asset:
+`lib/src/assets/android_vector.dart` converts it into the Android vector
+drawable the daily reminder names as its small icon
+(`apps/game/android/app/src/main/res/drawable/ic_notification.xml`, the main
+source set, every flavor; `res/raw/keep.xml` keeps it through R8). Only
+white-filled `<path>`s on a `0 0 W H` viewBox convert (even-odd kept); a
+group, transform, stroke, other colour or shape is an issue. `--check`
+compares its bytes like any asset.
 
 The 20 museum figurine PNGs (`design/museum/png/NN-<id>.png` and its
 `-locked` silhouette, one pair per bundled chapter figurine, m3-design §9.5)
@@ -147,9 +199,15 @@ Every animation ships as Lottie (PROGRESS D40–D52,
 
 - **The contract** (`lottie_contract.dart`) is LOTTIE.md v3's "Files" table
   as Dart, in `FxId` order: canvas, length, markers (in the JSON's order;
-  `fx_ice` has `rest_0` … `rest_3` at dr 0 and `crack_hit_0` … `crack_hit_3`),
-  loop, and the anchor, kind, travel S/T and `drop` start the JSON can't
-  carry. It also lists the image slots (`FxImageSlot` ids and declared sizes:
+  `fx_ice` has `rest_0` … `rest_3` at dr 0 and `crack_hit_0` … `crack_hit_3`;
+  `ui_extra_slot` rests on `rest` at frame 0 since m7-3), loop, and the
+  anchor, kind, travel S/T and `drop` start the JSON can't carry. m7-3 adds
+  `fx_glass_unlock_tall` (its `case_size` null is a `scaleNulls` entry the
+  game drives with `doll_size`), `ui_stars`, `ui_chest` and the three
+  `ui_intro_*` loops, whose `<role>_size` nulls (`mover`, `revealed`,
+  `family`, `family_2`, `freed`) are the file's own animation
+  (`sizesAuthored`: validated as present, never driven, so their `FxSpec`
+  lists no roles). It also lists the image slots (`FxImageSlot` ids and declared sizes:
   dolls 512×768, board pieces at 3× their dp size) and, per file, the hooks
   the runtime keys on: the `<role>_size` nulls, `travel`, `target_pos`,
   `drop`, the `rim_tint` and `tint` fills, the text layers, the nulls of
@@ -180,7 +238,7 @@ Every animation ships as Lottie (PROGRESS D40–D52,
   `fxSpecOf(id)`: frames, canvas, anchor, kind, markers, travel S/T, size
   roles, image layers with their key paths (precomp children as
   `[precomp, child]`) and their static authored scale and anchor, text
-  layers, colour fills, loop. Validation rules out holds and animated image
+  layers, colour fills, scale nulls, loop. Validation rules out holds and animated image
   scales, so it never emits `FxHold`s or `scaleAnimated`. The board timeline
   reads it and stays pure Dart. `test/fx/fx_spec_codegen_test.dart` checks
   the committed file; the game's `fx_spec_drift_test.dart` re-reads the
@@ -199,7 +257,8 @@ which the contract test reads) agree.
 Rounded (Apache 2.0) at pinned commits, checks their SHA-256, cuts static
 instances with fontTools (Fredoka 500/600/700, Nunito 500–800), subsets the
 icon font to `nesty_symbols.txt` (the 48 glyphs of design/README.md
-"Typography & icons") at FILL 1 / wght 600 / GRAD 0 / opsz 24 (first
+"Typography & icons", the 18 its "m7 adds" names and the splash errors'
+`sd_card_alert` and `inventory_2`: 68) at FILL 1 / wght 600 / GRAD 0 / opsz 24 (first
 `bake_feature_variations.py` points the cmap at the `<name>.fill` glyphs the
 font swaps in at FILL 1 through GSUB, which the subset drops), installs
 everything plus the licence texts into `apps/game/assets/fonts/`, records
@@ -234,8 +293,9 @@ prints. Run `dart run nesty_tools:nesty_levels --help` for the full usage.
 | `solve [paths] [--budget N]` | Verdict, optimal moves, nodes, branching and the move list (spec §6.3). Fails unless every level is solved. |
 | `simulate [paths] [--runs N] [--seed S] [--move-cap N]` | Casual and smart bot wins, the suggested tier and "expert only" (spec §6.4). |
 | `report [paths] [--budget N] [--json]` | One row per level: order, id, chapter, declared and simulated tier, casual %, smart %, solver moves, nodes, status. `--json` prints the same as a JSON array. |
-| `bundle build` | `tools/levels/manifest.json` + `authored/` → `apps/game/assets/levels/bundle.json` (2-space indent, fixed key order, sorted by order, `rewardCoins` from the tier). Refuses a changed board whose `version` wasn't raised (spec §13.3). |
-| `bundle check` | CI: the bundle is fresh, and every level passes rules 1–8, has the declared tier the simulator gives (design A32; a `tierOverride` reason may keep the declared tier on the tutorials and on open-slot-only boards, which always simulate easy, D26), and follows the §6.6 pattern, the §3.7 schedule, 20-level chapters and the M2 layout (2–3 shelves, ≤ 4 slots per shelf). |
+| `report [paths] --stars [--star3-slack 20] [--star2-slack 60] [--runs 300] [--json]` | The star shares instead (spec-prop §7.10, m7-design P3.3): per chapter and bot, the share of won runs at 3★/2★/1★ (unassisted) against each level's par, from `RivalBot` runs with race seeds 0…runs−1; then `all`. The slack defaults mirror the game's Remote Config keys. A report, never a gate. |
+| `bundle build` | `tools/levels/manifest.json` + `authored/` → `apps/game/assets/levels/bundle.json` (2-space indent, fixed key order, sorted by order, `rewardCoins` from the tier, `par` the solver's optimal moves: validation rule 8 at the admin budget). Refuses a changed board whose `version` wasn't raised (spec §13.3) and a level the solver doesn't prove (`build.parUnproven`). |
+| `bundle check` | CI: the bundle is fresh (a missing or different `par` is `bundle.parMismatch`), and every level passes rules 1–8, has the declared tier the simulator gives (design A32; a `tierOverride` reason may keep the declared tier on the tutorials and on open-slot-only boards, which always simulate easy, D26), and follows the §6.6 pattern, the §3.7 schedule (maxSize 6 only on superhard levels), 20-level chapters and the M2 layout (2–3 shelves, ≤ 4 slots per shelf). E12: no two consecutive levels share a layout signature (the tutorials excepted), and from L31 no level is expert only (smart bot under half its runs). |
 | `generate --params <json\|file> --seed S [--count N]`, `--bonus N [--count C]`, `--daily YYYYMMDD` `[--verify] [--out DIR]` | Runs the generator (spec §6.5) on explicit params and seeds, the Bonus Endless curve (§7.1) or a date's daily puzzle (§7.5). `--verify` re-validates each level with rules 1–8 on a fresh solve (the M1 acceptance check). |
 | `fixtures check` | nesty_core's solver fixtures (`packages/nesty_core/test/fixtures/`) are canonical, pass rules 1–7 and give the verdicts and optimal move counts in `test/solver/fixture_expectations.dart`. |
 

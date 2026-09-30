@@ -54,11 +54,95 @@ LottiePoint _pointOf(RegExpMatch m) =>
 /// A number as LOTTIE.md writes it, with a typographic minus (`−18`).
 double _num(String text) => double.parse(text.replaceAll('−', '-'));
 
+/// One row of LOTTIE.md's "Image slots" table, read into slot ids and
+/// their pixel sizes.
+final class _SlotRow {
+  _SlotRow(this.cell, this.ids, this.sizes, {required this.reference});
+
+  final String cell;
+
+  /// Every slot id the row names, expanded.
+  final List<String> ids;
+
+  /// Each id's px size (the ids of a reference row are skipped).
+  final List<(String, (double, double))> sizes;
+
+  /// m7-3's "the same rasters as the board files": a row that lists slots
+  /// already given above, for another file.
+  final bool reference;
+}
+
+/// The slot ids of one first cell, one list per backticked token, with
+/// three expansions:
+/// - `glass_case_0/1/2` → `glass_case_0`, `glass_case_1`, `glass_case_2`;
+/// - `ice_0` … `ice_3` → the ids in between join `ice_0`'s list;
+/// - m7-3's "`mover`, `revealed` (lid and body)": each bare role before the
+///   parenthesis → `<role>_lid`, `<role>_body`.
+List<List<String>> _slotGroups(String cell) {
+  final tokens = RegExp(r'`([a-z0-9_/]+)`').allMatches(cell).toList();
+  final lidAndBody = cell.indexOf('(lid and body)');
+  final groups = <List<String>>[];
+  for (final (i, token) in tokens.indexed) {
+    final id = token[1]!;
+    if (lidAndBody != -1 && token.start < lidAndBody) {
+      groups.add(['${id}_lid', '${id}_body']);
+    } else if (id.contains('/')) {
+      final [first, ...more] = id.split('/');
+      final base = first.substring(0, first.lastIndexOf('_') + 1);
+      groups.add([first, ...more.map((n) => '$base$n')]);
+    } else if (i + 1 < tokens.length &&
+        cell.substring(token.end, tokens[i + 1].start).contains('…')) {
+      final base = id.substring(0, id.lastIndexOf('_') + 1);
+      final from = int.parse(id.split('_').last);
+      final to = int.parse(tokens[i + 1][1]!.split('_').last);
+      groups.add([id, for (var n = from + 1; n < to; n++) '$base$n']);
+    } else {
+      groups.add([id]);
+    }
+  }
+  return groups;
+}
+
+List<_SlotRow> _imageSlotRows() {
+  final rows = <_SlotRow>[];
+  for (final [cell, supplies, ...] in _table(
+    _read('$designLottieDir/$lottieContractDoc'),
+    'Image slots',
+  )) {
+    final groups = _slotGroups(cell);
+    // "… at 3×: 348×156, 120×150 and 270×102 px (116×52, 40×50 and 90×34
+    // dp)": each group takes the next px size of the second cell (dp sizes
+    // in parentheses are skipped), or all of them take the only one.
+    final pixels = [
+      for (final m in RegExp(
+        r'(\d+)×(\d+)',
+      ).allMatches(supplies.replaceAll(RegExp(r'\([^)]*dp[^)]*\)'), '')))
+        (double.parse(m[1]!), double.parse(m[2]!)),
+    ];
+    expect(pixels, isNotEmpty, reason: cell);
+    final reference = supplies.startsWith('the same rasters as');
+    rows.add(
+      _SlotRow(
+        cell,
+        [for (final g in groups) ...g],
+        [
+          if (!reference)
+            for (final (i, group) in groups.indexed)
+              for (final id in group)
+                (id, pixels.length == 1 ? pixels.single : pixels[i]),
+        ],
+        reference: reference,
+      ),
+    );
+  }
+  return rows;
+}
+
 void main() {
   final rows = _filesTable();
 
-  test('lists the LOTTIE.md files in table order (29, not the 28 it says)', () {
-    expect(rows, hasLength(29));
+  test('lists the LOTTIE.md files in table order (35 since m7-3)', () {
+    expect(rows, hasLength(35));
     expect(
       [for (final c in lottieContracts) c.name],
       [for (final r in rows) r.name],
@@ -84,12 +168,14 @@ void main() {
         expect(c.frames, int.parse(frames![1]!));
         expect(c.loops, row.length.contains('loop'));
 
-        // Segments: "`lift` 0–7", or a rest marker with no end, "`rest_0`
-        // 0" (dr 0). LOTTIE.md lists `fx_ice`'s rest markers last; the
-        // contract keeps the JSON's order, which the validator checks.
+        // Segments: "`lift` 0–7", a rest marker with no end, "`rest_0`
+        // 0" (dr 0), or m7-3's "`rest` = frame 0" (`ui_extra_slot`). A bare
+        // "rest = frame 0" (no backticks) is prose, not a marker. LOTTIE.md
+        // lists `fx_ice`'s rest markers last; the contract keeps the JSON's
+        // order, which the validator checks.
         final markers = [
           for (final m in RegExp(
-            r'`(\w+)` (\d+)(?:–(\d+))?',
+            r'`(\w+)` (?:= frame )?(\d+)(?:–(\d+))?',
           ).allMatches(row.segments))
             LottieMarker(
               m[1]!,
@@ -100,19 +186,28 @@ void main() {
         expect(c.markers.toSet(), markers.toSet());
         expect(c.markers, hasLength(markers.length));
 
-        // Kind: board space, segmented (markers) or in place.
+        // Kind: board space, segmented (markers) or in place. A marker
+        // that only names the rest frame (dr 0 alone) or the whole-file
+        // `loop` of an intro card doesn't make a file segmented.
+        final segments = markers.where(
+          (m) =>
+              !(m.duration == 0 && markers.every((n) => n.duration == 0)) &&
+              !(m.name == 'loop' && m.start == 0 && m.end == c.frames),
+        );
         expect(
           c.kind,
           row.canvas == 'board'
               ? LottieKind.boardSpace
-              : markers.isNotEmpty
+              : segments.isNotEmpty
               ? LottieKind.segmented
               : LottieKind.inPlace,
         );
 
         // Anchor: board-space files are placed by their top-left and carry
         // S → T; a "doll base" wins over a case/ice corner; "center" is the
-        // canvas centre; a "box" is placed by its top-left.
+        // canvas centre; a "box" (the intro cards' "illustration box") is
+        // placed by its top-left, and so is `ui_stars`, whose "canvas top"
+        // is set by `layout.winStars`.
         if (row.canvas == 'board') {
           final st = RegExp(
             r'S \(([\d.]+), ([\d.]+)\) → T \(([\d.]+), ([\d.]+)\)',
@@ -139,7 +234,9 @@ void main() {
           ).firstMatch(row.anchor);
           final first = _pair.firstMatch(dollBase?[1] ?? row.anchor);
           final LottiePoint anchor;
-          if (first != null) {
+          if (row.anchor.contains('canvas top')) {
+            anchor = LottiePoint.zero;
+          } else if (first != null) {
             anchor = _pointOf(first);
           } else if (row.anchor == 'center') {
             anchor = LottiePoint(w / 2, h / 2);
@@ -161,84 +258,48 @@ void main() {
           drop == null ? isNull : LottiePoint(_num(drop[1]!), _num(drop[2]!)),
         );
         expect(c.hookLayers.contains('drop'), drop != null);
+
+        // m7-1: "stand surface (100, 212) = the `case_size` null": the
+        // anchor null is also a scale null the game drives.
+        final scaleNull = RegExp(
+          r'= the `(\w+)` null',
+        ).firstMatch(row.anchor)?[1];
+        expect(c.scaleNulls, {?scaleNull});
+        if (scaleNull != null) expect(c.requiredLayers, contains(scaleNull));
       });
     }
   });
 
   test('the image slots are LOTTIE.md "Image slots", each used somewhere', () {
-    final ids = <String>[];
-    for (final cells in _table(
-      _read('$designLottieDir/$lottieContractDoc'),
-      'Image slots',
-    )) {
-      final cell = cells[0];
-      final tokens = RegExp(r'`([a-z0-9_/]+)`').allMatches(cell).toList();
-      for (final (i, token) in tokens.indexed) {
-        final id = token[1]!;
-        final base = id.substring(0, id.lastIndexOf('_') + 1);
-        if (id.contains('/')) {
-          // `glass_case_0/1/2`
-          final [first, ...more] = id.split('/');
-          ids
-            ..add(first)
-            ..addAll(more.map((n) => '$base$n'));
-          continue;
-        }
-        ids.add(id);
-        // `ice_0` … `ice_3`
-        if (i + 1 < tokens.length &&
-            cell.substring(token.end, tokens[i + 1].start).contains('…')) {
-          final from = int.parse(id.split('_').last);
-          final to = int.parse(tokens[i + 1][1]!.split('_').last);
-          for (var n = from + 1; n < to; n++) {
-            ids.add('$base$n');
-          }
-        }
+    final ids = <String>{};
+    for (final row in _imageSlotRows()) {
+      if (row.reference) {
+        // "the same rasters as the board files": slots listed above.
+        expect(ids, containsAll(row.ids), reason: row.cell);
       }
+      // m7-3's rows may name a v3 slot again for a new file (`mover`,
+      // `doll_silhouette` in `ui_intro_towers`); its size must agree (the
+      // next test).
+      ids.addAll(row.ids);
     }
-    expect(lottieImageSlots.map((s) => s.id).toSet(), ids.toSet());
-    expect(ids.toSet(), hasLength(ids.length));
-    expect({for (final c in lottieContracts) ...c.imageAssets}, ids.toSet());
+    final contractIds = lottieImageSlots.map((s) => s.id).toList();
+    expect(contractIds.toSet(), hasLength(contractIds.length));
+    expect(contractIds.toSet(), ids);
+    expect({for (final c in lottieContracts) ...c.imageAssets}, ids);
   });
 
   test(
     'declared sizes are LOTTIE.md "Image slots" pixel sizes (3× boards)',
     () {
-      // "… at 3×: 348×156, 120×150 and 270×102 px (116×52, 40×50 and 90×34
-      // dp)": each backticked id group of the first cell takes the next px
-      // size of the second (dp sizes in parentheses are skipped), or all of
-      // them take the only one.
       final sizes = <String, (double, double)>{};
-      for (final [ids, supplies, ...] in _table(
-        _read('$designLottieDir/$lottieContractDoc'),
-        'Image slots',
-      )) {
-        final pixels = [
-          for (final m in RegExp(
-            r'(\d+)×(\d+)',
-          ).allMatches(supplies.replaceAll(RegExp(r'\([^)]*dp\)'), '')))
-            (double.parse(m[1]!), double.parse(m[2]!)),
-        ];
-        final groups = RegExp(r'`([a-z0-9_/]+)`').allMatches(ids).toList();
-        expect(pixels, isNotEmpty, reason: ids);
-        for (final (i, group) in groups.indexed) {
-          final size = pixels.length == 1 ? pixels.single : pixels[i];
-          final id = group[1]!;
-          if (id.contains('/')) {
-            final [first, ...more] = id.split('/');
-            final base = first.substring(0, first.lastIndexOf('_') + 1);
-            for (final n in [first, ...more.map((m) => '$base$m')]) {
-              sizes[n] = size;
-            }
-          } else {
-            sizes[id] = size;
-          }
+      for (final row in _imageSlotRows()) {
+        for (final (id, size) in row.sizes) {
+          expect(sizes[id] ?? size, size, reason: '$id in ${row.cell}');
+          sizes[id] = size;
         }
       }
       for (final slot in lottieImageSlots) {
-        // `ice_1`, `ice_2` sit inside the `ice_0` … `ice_3` range.
-        final size = sizes[slot.id] ?? sizes['ice_0'];
-        expect((slot.width, slot.height), size, reason: slot.id);
+        expect((slot.width, slot.height), sizes[slot.id], reason: slot.id);
       }
     },
   );
@@ -271,13 +332,14 @@ void main() {
     'size roles, rim and tint follow LOTTIE.md "Doll size, rim and tint"',
     () {
       for (final c in lottieContracts) {
-        // Every file that draws a doll part sizes that role.
+        // Every file that draws a doll part sizes that role (`family_2_lid`
+        // is `family2`'s). `doll_silhouette` is a wood blank, not a role:
+        // `doll_reveal` sizes it through `doll`, the intro towers through
+        // their `buried` null.
         final roles = {
           for (final id in c.imageAssets)
-            if (id.endsWith('_lid') ||
-                id.endsWith('_body') ||
-                id == 'doll_silhouette')
-              LottieRole.values.byName(id.split('_').first),
+            if (RegExp(r'^(\w+)_(lid|body)$').firstMatch(id) case final m?)
+              LottieRole.ofPrefix(m[1]!)!,
         };
         expect(c.roles, roles, reason: c.name);
       }

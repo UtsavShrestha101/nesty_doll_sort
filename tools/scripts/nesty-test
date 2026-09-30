@@ -2,11 +2,40 @@
 # nesty-test: a full test run of the game on a simulator or emulator, from a
 # fresh install (README "Testing").
 #
-#   1. host checks: flutter analyze and every test suite (skip: --device-only)
+#   1. host checks (skip: --device-only), CI's list except codegen drift:
+#      dart format, flutter analyze, every test suite, nesty_core's web parity
+#      (node; chrome and dart2wasm when Chrome is installed), the drift checks
+#      of the design files, assets, FX specs and TODO index, the level bundle
+#      and solver fixtures, and the admin's web build
 #   2. boots the device and shows it (the Simulator app, or the emulator window)
-#   3. the playthrough, with its screenshots (integration_test/playthrough_test.dart)
+#   3. the playthrough, with its screenshots (integration_test/playthrough_test.dart),
+#      including the race against rival 1 (M7 phase 2), slowed by NESTY_RACE_PACE_MS
 #   4. kill mid-level and resume: phase A, a real kill, phase B, compared (M3)
 #   5. the daily puzzle's fingerprint, compared with nesty_core's own level (M3)
+#   6. M7 phase 4's device files (Claude Design's m7-3), each from a fresh
+#      install with its own screenshots:
+#      board        board_layouts_test.dart: levels 31-200's presets, the tall
+#                   glass case, the top-shelf tower, the iced tower's tag, two
+#                   +1 Slots, the tap nudge, the drag hover, the hint's counter
+#      race         race_loss_test.dart twice: `loss` (the rival paced at
+#                   NESTY_RACE_PACE_MS=250 finishes first; Rematch, Pause and
+#                   Settings, Leave race's confirm, New race) and `oom` (Out
+#                   of Moves in a race, the rival never finishing)
+#      meta         meta_screens_test.dart: Home, Chapters and the level card,
+#                   the Museum, Records, the Shop's Forest Bear and themes, a
+#                   theme in play (a seeded returning player)
+#      daily_states daily_states_test.dart three times, with NESTY_FAKE_DATE:
+#                   `chest` (a 6-day streak's day-7 chest), `paused` (paused,
+#                   then relit) and `settings` (the toggles, Reduce motion,
+#                   Relaxed mode's free undo, Large symbols on a board)
+#      overlays     overlays_test.dart: the replay's helper note, the milestone
+#                   chest's flights, the 10th bonus chest, the generating card,
+#                   Out of Moves with the free undos spent, the +1 Slot limit,
+#                   soft-stuck with Restart glowing, the intro loops
+#   7. optional, Android only, never in the default run (--only reminder): the
+#      daily reminder (M7 phase 3), with POST_NOTIFICATIONS granted by
+#      `pm grant` before launch so no OS dialog opens: on in Settings, one
+#      pending reminder; off, none (integration_test/reminder_test.dart)
 #
 # Every run writes its logs, screenshots and summary to
 # apps/game/build/nesty-test/<timestamp>/ (or $NESTY_TEST_OUT), and exits 1
@@ -25,7 +54,9 @@ Usage: nesty-test [options]
                         Android: an AVD name (default flutter_emulator) or a
                         running serial such as emulator-5554
   --device-only         skip the host checks (analyze and the test suites)
-  --only <steps>        comma-separated subset of: gates,playthrough,resume,daily
+  --only <steps>        comma-separated subset of: gates,playthrough,resume,daily,
+                        board,race,meta,daily_states,overlays,reminder
+                        (reminder: Android only, and only when named)
   --date <yyyymmdd>     the daily's date (default 20260926, the core golden)
   --headless            Android: start the emulator without a window
   --shutdown            shut the device down at the end if this run booted it
@@ -35,6 +66,8 @@ Examples:
   nesty-test                          everything on the iPhone 16 Pro simulator
   nesty-test --device-only            skip the host checks
   nesty-test --android --only playthrough
+  nesty-test --device-only --only board,race   two of phase 4's device files
+  nesty-test --android --only reminder   the optional Android reminder check
 USAGE
 }
 
@@ -44,6 +77,12 @@ DEVICE=""
 DEVICE_ONLY=0
 ONLY=""
 DAILY_DATE="${NESTY_TEST_DATE:-20260926}"
+# The rival's pace for the playthrough's race (ms per move; a dev debug
+# build only honours it): slow enough that the solver's moves always win.
+RACE_PACE_MS=600000
+# race_loss_test's `loss` scenario: fast enough that the computer finishes
+# first while the player never moves.
+RACE_LOSS_PACE_MS=250
 HEADLESS=0
 SHUTDOWN=0
 while [ $# -gt 0 ]; do
@@ -65,6 +104,12 @@ done
 SKIP_DEVICE=0
 wants() {
   [ "$SKIP_DEVICE" = 1 ] && [ "$1" != gates ] && return 1
+  # The reminder check is optional: it runs only when --only names it, and
+  # only on Android (iOS skips it: see step 6).
+  if [ "$1" = reminder ]; then
+    [ "$PLATFORM" = android ] || return 1
+    case ",$ONLY," in *",reminder,"*) return 0 ;; *) return 1 ;; esac
+  fi
   if [ -n "$ONLY" ]; then
     case ",$ONLY," in *",$1,"*) return 0 ;; *) return 1 ;; esac
   fi
@@ -85,6 +130,13 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT="${NESTY_TEST_OUT:-$GAME/build/nesty-test/$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/screenshots"
 ln -sfn "$OUT" "$GAME/build/nesty-test/latest" 2>/dev/null || true
+# Keep only the newest runs: each holds ~130 MB of screenshots and logs, and
+# the disk filling up is what failed the owner's run (2026-09-29).
+if [ -z "${NESTY_TEST_OUT:-}" ]; then
+  ls -1dt "$GAME/build/nesty-test"/[0-9]*-[0-9]*/ 2>/dev/null |
+    tail -n +$(("${NESTY_TEST_KEEP_RUNS:-5}" + 1)) |
+    while IFS= read -r old; do rm -rf "$old"; done
+fi
 
 # ── Output helpers ─────────────────────────────────────────────────────────
 if [ -t 1 ]; then
@@ -95,14 +147,13 @@ fi
 NAMES=(); RESULTS=(); NOTES=()
 FAILED=0
 
-record() { # name result note
+record() { # name PASS|FAIL|SKIP note
   NAMES+=("$1"); RESULTS+=("$2"); NOTES+=("$3")
-  if [ "$2" = PASS ]; then
-    echo "  ${GREEN}PASS${RESET} $1 ${DIM}$3${RESET}"
-  else
-    FAILED=1
-    echo "  ${RED}FAIL${RESET} $1 ${DIM}$3${RESET}"
-  fi
+  case "$2" in
+    PASS) echo "  ${GREEN}PASS${RESET} $1 ${DIM}$3${RESET}" ;;
+    SKIP) echo "  ${DIM}SKIP $1 ($3)${RESET}" ;;
+    *) FAILED=1; echo "  ${RED}FAIL${RESET} $1 ${DIM}$3${RESET}" ;;
+  esac
 }
 
 section() { echo; echo "${BOLD}== $1${RESET}"; }
@@ -118,6 +169,9 @@ run_step() { # name log-name command...
   fi
   record "$name" FAIL "$((SECONDS - start)) s, see logs/$(basename "$log")"
   tail -n 15 "$log" | sed 's/^/      /'
+  if grep -q 'No space left on device' "$log"; then
+    echo "      ${RED}${BOLD}The disk filled up during this step${RESET}${RED} (\"No space left on device\" in its log): free some space and run it again.${RESET}"
+  fi
   return 1
 }
 
@@ -126,27 +180,78 @@ die() { echo "${RED}nesty-test: $*${RESET}" >&2; exit 2; }
 command -v flutter >/dev/null || die "flutter is not on PATH"
 command -v python3 >/dev/null || die "python3 is not on PATH"
 
+# A device run builds the app, installs it and saves ~90 screenshots, and a
+# full disk fails it deep inside flutter drive with a driver stack trace
+# (2026-09-29: "No space left on device" writing flutter_driver_commands_0.log).
+# So check first. Override the floor with NESTY_TEST_MIN_FREE_GB.
+MIN_FREE_GB="${NESTY_TEST_MIN_FREE_GB:-8}"
+check_disk() { # when
+  local free_kb
+  free_kb="$(df -Pk "$ROOT" | awk 'NR == 2 { print $4 }')"
+  [ -n "$free_kb" ] || return 0
+  if [ "$free_kb" -lt $((MIN_FREE_GB * 1024 * 1024)) ]; then
+    die "only $((free_kb / 1024 / 1024)) GB free on this disk $1; a run needs at least $MIN_FREE_GB GB (builds, the simulator's writes, screenshots). Free some space, or set NESTY_TEST_MIN_FREE_GB."
+  fi
+}
+check_disk "at the start"
+
 echo "${BOLD}nesty-test${RESET} — $PLATFORM, output in $OUT"
 cd "$ROOT" || die "can't enter $ROOT"
 flutter pub get >"$OUT/logs/pub_get.log" 2>&1 || die "flutter pub get failed (logs/pub_get.log)"
 
 # ── 1. Host checks ─────────────────────────────────────────────────────────
+# CI's checks (.github/workflows/ci.yaml), so a green run here means a green
+# CI. The one CI check left out is codegen drift: it regenerates every
+# generated file, which a local run shouldn't do to a working tree.
+
+# CI's format step, portable to macOS (no `grep -z`), and it also covers new
+# untracked files. Generated files keep their generators' format.
+format_check() {
+  cd "$ROOT" && git ls-files --cached --others --exclude-standard -- '*.dart' \
+    | grep -vE '\.(g|freezed|gr|config|gen)\.dart$|/lib/l10n/app_localizations[^/]*\.dart$|/firebase_options[^/]*\.dart$' \
+    | tr '\n' '\0' | xargs -0 dart format --output=none --set-exit-if-changed
+}
+
+have_chrome() {
+  [ -n "${CHROME_EXECUTABLE:-}" ] ||
+    [ -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ] ||
+    command -v google-chrome >/dev/null 2>&1
+}
+
 if wants gates; then
   section "Host checks"
+  run_step "dart format (CI's list; generated files skipped)" format format_check
   run_step "flutter analyze --fatal-infos --fatal-warnings" analyze \
     flutter analyze --fatal-infos --fatal-warnings
   run_step "nesty_core: dart test" core bash -c "cd '$ROOT/packages/nesty_core' && dart test"
+  if command -v node >/dev/null 2>&1; then
+    run_step "nesty_core: web parity and goldens on node" core_node bash -c \
+      "cd '$ROOT/packages/nesty_core' && dart test -p node test/parity test/generator/golden_test.dart"
+  else
+    record "nesty_core: web parity on node" SKIP "node is not installed; CI runs it"
+  fi
+  if have_chrome; then
+    run_step "nesty_core: web parity on chrome and dart2wasm" core_chrome bash -c \
+      "cd '$ROOT/packages/nesty_core' && dart test -p chrome test/parity && dart test -p chrome -c dart2wasm test/parity"
+  else
+    record "nesty_core: web parity on chrome and dart2wasm" SKIP "Chrome is not installed; CI runs it"
+  fi
   run_step "nesty_render: flutter test" render bash -c "cd '$ROOT/packages/nesty_render' && flutter test"
   run_step "game: flutter test" game_tests bash -c "cd '$GAME' && flutter test --timeout 90s"
   run_step "admin: flutter test" admin_tests bash -c "cd '$ROOT/apps/admin' && flutter test"
   run_step "tools: dart test" tools_tests bash -c "cd '$ROOT/tools' && dart test"
+  run_step "design tokens, icons, assets, FX specs and TODO index are current" drift bash -c \
+    "cd '$ROOT' && dart run nesty_tools:gen_design_tokens --check && dart run nesty_tools:gen_nesty_icons --check && dart run nesty_tools:sync_design_assets --check && dart run nesty_tools:gen_fx_spec --check && dart run nesty_tools:todo_index --check"
+  run_step "level bundle and solver fixtures" levels bash -c \
+    "cd '$ROOT' && dart run nesty_tools:nesty_levels bundle check && dart run nesty_tools:nesty_levels fixtures check"
+  run_step "admin: flutter build web" admin_web bash -c \
+    "cd '$ROOT/apps/admin' && flutter build web -t lib/main_prod.dart"
 fi
 
-if ! wants playthrough && ! wants resume && ! wants daily; then
-  DEVICE_STEPS=0
-else
-  DEVICE_STEPS=1
-fi
+DEVICE_STEPS=0
+for step in playthrough resume daily board race meta daily_states overlays reminder; do
+  if wants "$step"; then DEVICE_STEPS=1; fi
+done
 
 # ── 2. The device ──────────────────────────────────────────────────────────
 DEVICE_ID=""
@@ -201,8 +306,12 @@ boot_android() {
     local window=""
     [ "$HEADLESS" = 1 ] && window=-no-window
     echo "  starting the $avd emulator"
+    # With audio: the playthrough checks that every sound and music file
+    # loads, and SoLoud can't start its output stream on an emulator started
+    # with -no-audio (miniaudio's ma_device_start fails, so the game keeps
+    # its sounds off, as it must on a device without audio).
     # shellcheck disable=SC2086 # $window is one flag or nothing
-    "$emulator" -avd "$avd" $window -no-audio -no-snapshot-save -no-boot-anim \
+    "$emulator" -avd "$avd" $window -no-snapshot-save -no-boot-anim \
       >"$OUT/logs/emulator.log" 2>&1 &
     EMULATOR_PID=$!
     BOOTED_HERE=1
@@ -254,6 +363,10 @@ response_to() { # file
 
 if [ "$DEVICE_STEPS" = 1 ]; then
   section "Device"
+  check_disk "before the device steps"
+  # The driver saves each screenshot there (test_driver/integration_test.dart);
+  # every device file prefixes its own names (b_, r_, meta-, d_, ov_).
+  export NESTY_SCREENSHOT_DIR="$OUT/screenshots"
   if [ "$PLATFORM" = ios ]; then boot_ios; else boot_android; fi
   if [ $? -ne 0 ] || [ -z "$DEVICE_ID" ]; then
     record "boot the $PLATFORM device" FAIL "the device steps were skipped"
@@ -265,11 +378,28 @@ fi
 if wants playthrough; then
   section "Playthrough (fresh install)"
   uninstall_app
-  # The driver saves each screenshot there (test_driver/integration_test.dart).
-  export NESTY_SCREENSHOT_DIR="$OUT/screenshots"
   if run_step "playthrough_test (screenshots)" playthrough \
-    drive playthrough_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" --timeout 900; then
+    drive playthrough_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" \
+      --dart-define=NESTY_RACE_PACE_MS="$RACE_PACE_MS" --timeout 1800; then
     echo "      $(ls "$OUT/screenshots" | wc -l | tr -d ' ') screenshots in screenshots/"
+    # E13 (m7-design §13): the time from main() to level 1's first playable
+    # frame on this fresh install, and until the splash's exit transition
+    # is over, which the playthrough reports. Both are recorded, not held to
+    # a threshold (the owner's device check notes the seconds, Q114). Since
+    # phase 4 the first launch fades into level 1 over 400 ms (frame 10.8):
+    # the board is playable under the fade, so the first number counts from
+    # main() to that frame as before, and the second includes the fade.
+    response_to "$OUT/playthrough.json"
+    if e13="$(python3 -c '
+import json, sys
+e13 = json.load(open(sys.argv[1]))["e13"]
+playable, alone = e13["launchToLevel1PlayableMs"], e13["launchToLevel1AloneMs"]
+print(f"{playable} ms from main() to the first playable frame, {alone} ms to level 1 alone on screen")
+' "$OUT/playthrough.json" 2>/dev/null)"; then
+      record "E13: launch to level 1 playable" PASS "$e13"
+    else
+      record "E13: launch to level 1 playable" FAIL "no e13 in the playthrough's response data"
+    fi
   fi
 fi
 
@@ -327,6 +457,96 @@ PY
   fi
 fi
 
+# ── 6. M7 phase 4's device files (fresh installs) ──────────────────────────
+# One step per file (and per scenario), each from a fresh install: every one
+# seeds its own save (`integration_test/support/seeded_save.dart`) or needs a
+# fresh one. Its response data is kept as <step>.json.
+drive_fresh() { # label log-name response target extra-args...
+  local label="$1" log="$2" response="$3"; shift 3
+  uninstall_app
+  if run_step "$label" "$log" drive "$@"; then
+    response_to "$OUT/$response.json"
+    return 0
+  fi
+  return 1
+}
+
+if wants board; then
+  section "Board layouts, levels 31-200 (fresh install)"
+  drive_fresh "board_layouts_test (screenshots b_*)" board_layouts board_layouts \
+    board_layouts_test.dart --timeout 1800
+fi
+
+if wants race; then
+  section "vs Computer, the losing side (fresh installs)"
+  drive_fresh "race_loss_test loss: the computer finishes first (screenshots r_*)" \
+    race_loss race_loss \
+    race_loss_test.dart --dart-define=NESTY_RACE_SCENARIO=loss \
+    --dart-define=NESTY_RACE_PACE_MS="$RACE_LOSS_PACE_MS" --timeout 600
+  drive_fresh "race_loss_test oom: Out of Moves in a race" race_oom race_oom \
+    race_loss_test.dart --dart-define=NESTY_RACE_SCENARIO=oom \
+    --dart-define=NESTY_RACE_PACE_MS="$RACE_PACE_MS" --timeout 600
+fi
+
+if wants meta; then
+  section "Home, Chapters, Museum, Records and the Shop (fresh install)"
+  drive_fresh "meta_screens_test (screenshots meta-*)" meta_screens meta_screens \
+    meta_screens_test.dart --timeout 600
+fi
+
+if wants daily_states; then
+  section "The daily's states and Settings ($DAILY_DATE, fresh installs)"
+  for scenario in chest paused settings; do
+    drive_fresh "daily_states_test $scenario (screenshots d_*)" \
+      "daily_states_$scenario" "daily_states_$scenario" \
+      daily_states_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" \
+      --dart-define=NESTY_DAILY_SCENARIO="$scenario" --timeout 600
+  done
+fi
+
+if wants overlays; then
+  section "The gameplay overlays (fresh install)"
+  drive_fresh "overlays_test (screenshots ov_*)" overlays overlays \
+    overlays_test.dart --timeout 1800
+fi
+
+# ── 7. The daily reminder (optional, Android) ──────────────────────────────
+case ",$ONLY," in
+  *",reminder,"*)
+    if [ "$PLATFORM" != android ]; then
+      # simctl privacy can't grant notifications, and flutter drive can't tap
+      # iOS's permission alert: the owner checks a real reminder on a phone.
+      section "Daily reminder"
+      echo "  skipped on iOS: Android only (nesty-test --android --only reminder)"
+    fi
+    ;;
+esac
+if wants reminder; then
+  section "Daily reminder (fresh install, Android)"
+  {
+    uninstall_app
+    APK="$GAME/build/app/outputs/flutter-apk/app-dev-debug.apk"
+    SDK="$(adb -s "$DEVICE_ID" shell getprop ro.build.version.sdk | tr -d '\r')"
+    # Built and installed first, so POST_NOTIFICATIONS (API 33+) can be
+    # granted before the app ever runs; flutter drive then reinstalls the
+    # same APK with `adb install -r`, which keeps the grant.
+    if run_step "build the reminder_test APK" reminder_build \
+      bash -c "cd '$GAME' && flutter build apk --debug --flavor dev -t integration_test/reminder_test.dart" &&
+      run_step "install it" reminder_install adb -s "$DEVICE_ID" install -r "$APK"; then
+      if [ "${SDK:-0}" -ge 33 ]; then
+        run_step "pm grant POST_NOTIFICATIONS (API $SDK)" reminder_grant \
+          adb -s "$DEVICE_ID" shell pm grant "$APP_ID" android.permission.POST_NOTIFICATIONS
+      else
+        record "POST_NOTIFICATIONS" PASS "API $SDK: no runtime permission to grant"
+      fi
+      if run_step "reminder_test: on -> one pending, off -> none" reminder \
+        drive reminder_test.dart --use-application-binary "$APK" --timeout 600; then
+        response_to "$OUT/reminder.json"
+      fi
+    fi
+  }
+fi
+
 # ── Summary ────────────────────────────────────────────────────────────────
 if [ "$SHUTDOWN" = 1 ] && [ "$BOOTED_HERE" = 1 ]; then
   if [ "$PLATFORM" = ios ]; then
@@ -345,7 +565,11 @@ fi
 
 section "Summary"
 for i in "${!NAMES[@]}"; do
-  if [ "${RESULTS[$i]}" = PASS ]; then mark="${GREEN}PASS${RESET}"; else mark="${RED}FAIL${RESET}"; fi
+  case "${RESULTS[$i]}" in
+    PASS) mark="${GREEN}PASS${RESET}" ;;
+    SKIP) mark="${DIM}SKIP${RESET}" ;;
+    *) mark="${RED}FAIL${RESET}" ;;
+  esac
   printf '  %s  %s %s\n' "$mark" "${NAMES[$i]}" "${DIM}${NOTES[$i]}${RESET}"
 done
 echo

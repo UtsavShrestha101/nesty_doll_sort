@@ -13,6 +13,10 @@ void main() {
       expect(parseCssColor('#11223380'), 0x80112233);
     });
 
+    test('reads the one CSS name the design writes, white (tokens v3)', () {
+      expect(parseCssColor('white'), 0xFFFFFFFF);
+    });
+
     test('parses rgba() with alpha rounded to 8 bits', () {
       expect(parseCssColor('rgba(60,30,10,0.55)'), 0x8C3C1E0A);
       expect(parseCssColor('rgba(255, 255, 255, .22)'), 0x38FFFFFF);
@@ -223,5 +227,103 @@ void main() {
   test('farthestCornerRadius', () {
     expect(farthestCornerRadius(0.5, 0.5), closeTo(0.7071, 1e-4));
     expect(farthestCornerRadius(0.35, 0.3), closeTo(0.9552, 1e-4));
+  });
+
+  group('tokens v3 shapes', () {
+    test('parseCssLinearGradient: angle and stops, rgba commas and all', () {
+      final versus = parseCssLinearGradient(
+        'linear-gradient(180deg, #7B8BEF, #4E5FD9)',
+      );
+      expect(versus.angle, 180);
+      expect([for (final s in versus.stops) s.color], [0xFF7B8BEF, 0xFF4E5FD9]);
+      final scrim = parseCssLinearGradient(
+        'linear-gradient(180deg,rgba(20,40,70,0) 25%,rgba(20,40,70,.62))',
+      );
+      expect(scrim.stops.first.color, 0x00142846);
+      expect(scrim.stops.first.position, const FractionStop(0.25));
+      expect(scrim.stops.last.color, 0x9E142846);
+      for (final bad in [
+        'linear-gradient(to bottom, #000, #fff)',
+        'linear-gradient(180deg, #000)',
+        'radial-gradient(#000, #fff)',
+      ]) {
+        expect(() => parseCssLinearGradient(bad), throwsFormatException);
+        expect(isCssLinearGradient(bad), isFalse);
+      }
+    });
+
+    test('tryParseFontSpec: family, weight, size, colour, tabular, tail', () {
+      final name = tryParseFontSpec('Fredoka 700 16 #5B3A21')!;
+      expect(
+        (name.family, name.weight, name.size, name.color, name.tabular),
+        ('Fredoka', 700, 16.0, 0xFF5B3A21, false),
+      );
+      expect(name.tail, isNull);
+      expect(tryParseFontSpec('Nunito 800 9.5')!.size, 9.5);
+      expect(tryParseFontSpec('Nunito 800 9.5')!.color, isNull);
+      expect(
+        tryParseFontSpec('Fredoka 700 17 #3242A8 tabular')!.tabular,
+        isTrue,
+      );
+      expect(tryParseFontSpec('Fredoka 700 21 white')!.color, 0xFFFFFFFF);
+      expect(
+        tryParseFontSpec('Nunito 800 11 #6E4526, sentence case')!.tail,
+        'sentence case',
+      );
+      expect(
+        tryParseFontSpec('Fredoka 700 11.5 #4A3008 on a brass gradient')!.tail,
+        'on a brass gradient',
+      );
+      expect(
+        tryParseFontSpec('Nunito 700 12 #8A5B3A; thinking = three dots')!.tail,
+        'thinking = three dots',
+      );
+      for (final notFont in [
+        'Roboto 700 16',
+        'Fredoka bold 16',
+        'Fredoka 700',
+        '#5B3A21',
+        'gradient.success, Fredoka 700 12',
+      ]) {
+        expect(tryParseFontSpec(notFont), isNull, reason: notFont);
+      }
+    });
+
+    test('tryParseStroke: <n>px <color>', () {
+      expect(tryParseStroke('2px #FFFDF7'), (width: 2.0, color: 0xFFFFFDF7));
+      expect(tryParseStroke('1.5px #D8B07A')!.width, 1.5);
+      expect(tryParseStroke('4px rgba(242,137,59,.28)')!.color, 0x47F2893B);
+      for (final notStroke in [
+        '2 #FFF',
+        '2px',
+        '3px chapter accentTop',
+        '0 2px 0 #FFF',
+        'inset 1.5px #F2C230',
+      ]) {
+        expect(tryParseStroke(notStroke), isNull, reason: notStroke);
+      }
+    });
+
+    test('parseConicRays: one lit wedge per period, fading to clear', () {
+      final rays = parseConicRays(
+        'repeating-conic-gradient(rgba(255,200,90,.55) 0deg 9deg, '
+        'rgba(255,200,90,0) 9deg 24deg)',
+      );
+      expect(rays, (color: 0x8CFFC85A, litDeg: 9.0, periodDeg: 24.0));
+      for (final bad in [
+        // The clear stop is another colour.
+        'repeating-conic-gradient(rgba(255,200,90,.55) 0deg 9deg, '
+            'rgba(0,0,0,0) 9deg 24deg)',
+        // It doesn't start where the ray ends.
+        'repeating-conic-gradient(rgba(255,200,90,.55) 0deg 9deg, '
+            'rgba(255,200,90,0) 10deg 24deg)',
+        // 25° doesn't divide the circle.
+        'repeating-conic-gradient(rgba(255,200,90,.55) 0deg 9deg, '
+            'rgba(255,200,90,0) 9deg 25deg)',
+        'conic-gradient(#fff, #000)',
+      ]) {
+        expect(() => parseConicRays(bad), throwsFormatException, reason: bad);
+      }
+    });
   });
 }

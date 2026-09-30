@@ -47,7 +47,7 @@ void main() {
   });
 
   group('soundFilesOf', () {
-    test('design/tokens.json: 17 SFX, 3 jingles, 2 loops with frames', () {
+    test('design/tokens.json: 23 SFX, 5 jingles, 2 loops with frames', () {
       final json =
           jsonDecode(
                 File(
@@ -56,10 +56,30 @@ void main() {
               )
               as Map<String, Object?>;
       final files = soundFilesOf(json)!;
-      expect(files.sfx, hasLength(17));
-      expect(files.sfx, containsAll(['pick', 'clack_3', 'complete_5']));
+      expect(files.sfx, hasLength(23));
+      expect(
+        files.sfx,
+        containsAll([
+          'pick',
+          'clack_3',
+          'complete_5',
+          // m7-3: the stars, the chest and the race's rival.
+          'star_1',
+          'star_2',
+          'star_3',
+          'chest_wiggle',
+          'chest_open',
+          'rival_complete',
+        ]),
+      );
       expect(files.sfx.where(isJingleFile), isEmpty);
-      expect(files.jingles, ['jingle_chapter', 'jingle_oom', 'jingle_reward']);
+      expect(files.jingles, [
+        'jingle_chapter',
+        'jingle_oom',
+        'jingle_reward',
+        'jingle_versus_lose',
+        'jingle_versus_win',
+      ]);
       expect(files.musicFrames, {'music_game': 3024000, 'music_home': 2940000});
     });
 

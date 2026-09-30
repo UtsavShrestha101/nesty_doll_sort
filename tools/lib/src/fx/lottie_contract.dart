@@ -78,13 +78,37 @@ final class LottieMarker {
 }
 
 /// Which doll a `<role>_size` null sizes; mirrors the game's `FxRole`.
+///
+/// The board files use [doll], [mover] and [target]; the mechanic intro
+/// loops (m7-3, LOTTIE.md "Image slots") add [revealed] (`ui_intro_towers`),
+/// [family], [family2] and [freed] (`ui_intro_glass`, `ui_intro_ice`).
 enum LottieRole {
-  doll,
-  mover,
-  target;
+  doll('doll'),
+  mover('mover'),
+  target('target'),
+  revealed('revealed'),
+  family('family'),
+
+  /// Its slots and null are `family_2_*`, so the prefix is explicit.
+  family2('family_2'),
+  freed('freed');
+
+  const LottieRole(this.prefix);
+
+  /// The id prefix of the role's image slots (`<prefix>_lid`,
+  /// `<prefix>_body`) and of its size null.
+  final String prefix;
 
   /// The null LOTTIE.md "Doll size" names for this role.
-  String get sizeNull => '${name}_size';
+  String get sizeNull => '${prefix}_size';
+
+  /// The role whose [prefix] is [prefix], or null.
+  static LottieRole? ofPrefix(String prefix) {
+    for (final role in values) {
+      if (role.prefix == prefix) return role;
+    }
+    return null;
+  }
 }
 
 /// The LOTTIE.md hook layers other than the size nulls: the nulls whose
@@ -113,8 +137,9 @@ final class LottieImageSlot {
 /// Every image asset id any file may use, with its declared size. Doll parts
 /// are the whole 512×768 skin artboard (layers at 19.53 %); board pieces are
 /// declared at 3× their dp size (layers at 33.33 %, anchor ×3): glow ring
-/// 116×52 dp, hint arrow 40×50, extra slot 90×34, glass case 86×143, unlock
-/// symbol 12×12, ice 96×160.
+/// 116×52 dp, hint arrow 40×50, extra slot 90×34, glass case 86×143, tall
+/// glass case 93×152, unlock symbol 12×12, ice 96×160. The UI art of m7-3 is
+/// at 3× too: stars 44×44 (glow 73.3), chest 130×108.3.
 const lottieImageSlots = [
   LottieImageSlot('doll_lid', 512, 768),
   LottieImageSlot('doll_body', 512, 768),
@@ -135,6 +160,24 @@ const lottieImageSlots = [
   LottieImageSlot('ice_2', 288, 480),
   LottieImageSlot('ice_3', 288, 480),
   LottieImageSlot('ice_shatter', 288, 480),
+  // m7-3: `fx_glass_unlock_tall`, `ui_stars`, `ui_chest` and the intro
+  // loops' doll roles (LOTTIE.md "Image slots").
+  LottieImageSlot('glass_case_tall_0', 279, 456),
+  LottieImageSlot('glass_case_tall_1', 279, 456),
+  LottieImageSlot('glass_case_tall_2', 279, 456),
+  LottieImageSlot('star_filled', 132, 132),
+  LottieImageSlot('star_empty', 132, 132),
+  LottieImageSlot('star_glow', 220, 220),
+  LottieImageSlot('chest_closed', 390, 325),
+  LottieImageSlot('chest_open', 390, 325),
+  LottieImageSlot('revealed_lid', 512, 768),
+  LottieImageSlot('revealed_body', 512, 768),
+  LottieImageSlot('family_lid', 512, 768),
+  LottieImageSlot('family_body', 512, 768),
+  LottieImageSlot('family_2_lid', 512, 768),
+  LottieImageSlot('family_2_body', 512, 768),
+  LottieImageSlot('freed_lid', 512, 768),
+  LottieImageSlot('freed_body', 512, 768),
 ];
 
 /// The slot for [id], or null.
@@ -161,8 +204,10 @@ final class LottieFileContract {
     this.dropFrom,
     this.imageAssets = const {},
     this.roles = const {},
+    this.sizesAuthored = false,
     this.hookLayers = const {},
     this.requiredLayers = const {},
+    this.scaleNulls = const {},
     this.fills = const {},
     this.textLayers = const [],
   });
@@ -181,8 +226,9 @@ final class LottieFileContract {
 
   /// The point placed on the game point (m2-lottie-design §2 table).
   /// [LottiePoint.zero] for board-space files (placed by the canvas's
-  /// top-left) and for the two "box" files, `ui_toggle` and
-  /// `ui_splash_loader`, whose canvas is the widget's box.
+  /// top-left), for the "box" files, `ui_toggle`, `ui_splash_loader` and the
+  /// three `ui_intro_*` loops, whose canvas is the widget's box, and for
+  /// `ui_stars`, placed by its canvas (`layout.winStars.starsCanvas`).
   final LottiePoint anchor;
 
   /// Exactly the JSON's markers, in order.
@@ -206,6 +252,13 @@ final class LottieFileContract {
   /// Exactly the `<role>_size` nulls the file has.
   final Set<LottieRole> roles;
 
+  /// The `<role>_size` nulls are the file's own animation, never driven by
+  /// the game (m7-3's intro loops: the fixed-size card dolls, and the
+  /// families that shrink into the counter). Their scale may animate, and
+  /// `FxSpec.roles` is empty, so the runtime installs no size delegate; the
+  /// image slots still say which role (colour) each doll part is.
+  final bool sizesAuthored;
+
   /// Exactly the [lottieHookLayers] the file has.
   final Set<String> hookLayers;
 
@@ -214,6 +267,13 @@ final class LottieFileContract {
   /// bob, pulse, burst and shake, LOTTIE.md v3 "Format"): they must exist,
   /// once.
   final Set<String> requiredLayers;
+
+  /// Root nulls other than the `<role>_size` ones whose scale the runtime
+  /// overrides with `ValueDelegate.transformScale` (LOTTIE.md "Case size":
+  /// `fx_glass_unlock_tall`'s `case_size`, set to the same h / 150 as
+  /// `doll_size`). Each must be a null with a static scale, once; the game
+  /// reads them as `FxSpec.scaleNulls`.
+  final Set<String> scaleNulls;
 
   /// Exactly the [lottieHookFills] the file has.
   final Set<String> fills;
@@ -233,7 +293,9 @@ const _moverTargetParts = {
 const _travelS = LottiePoint(100, 500);
 const _travelT = LottiePoint(300, 500);
 
-/// The 29 files, in LOTTIE.md "Files" order (the game's `FxId` order).
+/// The 35 files, in LOTTIE.md "Files" order (the game's `FxId` order): the
+/// 29 of v3, then m7-3's `fx_glass_unlock_tall` (after `fx_glass_unlock`)
+/// and its five `ui_*` files (last).
 const lottieContracts = [
   LottieFileContract(
     'doll_pick',
@@ -403,6 +465,28 @@ const lottieContracts = [
     // frame 0 shows the unlock symbol (LOTTIE.md v2, v3).
     requiredLayers: {'doll', 'padlock_ping'},
   ),
+  // m7-1: the tall case for a sealed size-5 or size-6 doll. Every piece but
+  // the doll hangs from `case_size` on the stand surface (the anchor), and
+  // the doll stands on the surface, so it rests and lands at (100, 212).
+  LottieFileContract(
+    'fx_glass_unlock_tall',
+    width: 200,
+    height: 280,
+    frames: 54,
+    kind: LottieKind.inPlace,
+    anchor: LottiePoint(100, 212),
+    imageAssets: {
+      'glass_case_tall_0',
+      'glass_case_tall_1',
+      'glass_case_tall_2',
+      'unlock_symbol',
+      'doll_lid',
+      'doll_body',
+    },
+    roles: {LottieRole.doll},
+    requiredLayers: {'doll', 'padlock_ping', 'case_size'},
+    scaleNulls: {'case_size'},
+  ),
   LottieFileContract(
     'fx_ice',
     width: 180,
@@ -515,6 +599,9 @@ const lottieContracts = [
     frames: 96,
     kind: LottieKind.inPlace,
     anchor: LottiePoint(55, 25),
+    // m7-3 (E.21): the loop starts and ends on the static pad's pose, so
+    // the game starts it at `rest`, frame 0 (undoing D116's frame 24).
+    markers: [LottieMarker('rest', 0, 0)],
     loops: true,
     imageAssets: {'extra_slot'},
     // The stand's pulse, off the image layer since v2.
@@ -594,6 +681,107 @@ const lottieContracts = [
     travelS: _travelS,
     travelT: _travelT,
     hookLayers: {'travel'},
+  ),
+  // m7-2: the win card's star rating. Placed by its canvas
+  // (`layout.winStars.starsCanvas`), not by a point: three empty stars at
+  // rest, `star_n` pops the n-th filled star on its parent null.
+  LottieFileContract(
+    'ui_stars',
+    width: 240,
+    height: 110,
+    frames: 120,
+    kind: LottieKind.segmented,
+    markers: [
+      LottieMarker('star_1', 0, 20),
+      LottieMarker('star_2', 20, 20),
+      LottieMarker('star_3', 40, 20),
+      LottieMarker('flourish', 60, 60),
+    ],
+    imageAssets: {'star_filled', 'star_empty', 'star_glow'},
+  ),
+  // m7-2: the milestone and day-7 chest. `idle` and `open_idle` loop as
+  // segments; the file itself plays once.
+  LottieFileContract(
+    'ui_chest',
+    width: 200,
+    height: 200,
+    frames: 410,
+    kind: LottieKind.segmented,
+    anchor: LottiePoint(100, 186),
+    markers: [
+      LottieMarker('arrive', 0, 36),
+      LottieMarker('idle', 36, 180),
+      LottieMarker('wiggle', 216, 29),
+      LottieMarker('open', 245, 45),
+      LottieMarker('open_idle', 290, 120),
+    ],
+    imageAssets: {'chest_closed', 'chest_open'},
+  ),
+  // m7-3 (D): the mechanic intro cards' loops, on the card's 302×230
+  // illustration box (placed by its top-left, like `ui_toggle`). One
+  // `loop` marker spans each file. Every size null is authored, not driven:
+  // the role ones (some animate) and the glass and ice files' `case_size`
+  // and `ice_size`.
+  LottieFileContract(
+    'ui_intro_towers',
+    width: 302,
+    height: 230,
+    frames: 240,
+    kind: LottieKind.inPlace,
+    markers: [LottieMarker('loop', 0, 240)],
+    loops: true,
+    imageAssets: {
+      'mover_lid',
+      'mover_body',
+      'revealed_lid',
+      'revealed_body',
+      'doll_silhouette',
+    },
+    roles: {LottieRole.mover, LottieRole.revealed},
+    sizesAuthored: true,
+  ),
+  LottieFileContract(
+    'ui_intro_glass',
+    width: 302,
+    height: 230,
+    frames: 240,
+    kind: LottieKind.inPlace,
+    markers: [LottieMarker('loop', 0, 240)],
+    loops: true,
+    imageAssets: {
+      'family_lid',
+      'family_body',
+      'freed_lid',
+      'freed_body',
+      'glass_case_0',
+      'glass_case_1',
+      'glass_case_2',
+      'unlock_symbol',
+    },
+    roles: {LottieRole.family, LottieRole.freed},
+    sizesAuthored: true,
+  ),
+  LottieFileContract(
+    'ui_intro_ice',
+    width: 302,
+    height: 230,
+    frames: 300,
+    kind: LottieKind.inPlace,
+    markers: [LottieMarker('loop', 0, 300)],
+    loops: true,
+    imageAssets: {
+      'family_lid',
+      'family_body',
+      'family_2_lid',
+      'family_2_body',
+      'freed_lid',
+      'freed_body',
+      'ice_0',
+      'ice_1',
+      'ice_shatter',
+    },
+    roles: {LottieRole.family, LottieRole.family2, LottieRole.freed},
+    sizesAuthored: true,
   ),
 ];
 

@@ -48,6 +48,9 @@ final class FxSpecFacts {
   });
 
   final LottieFileContract contract;
+
+  /// The contract's scale nulls, sorted (`FxSpec.scaleNulls`).
+  List<String> get scaleNulls => [...contract.scaleNulls]..sort();
   final int frames;
   final double width;
   final double height;
@@ -55,7 +58,7 @@ final class FxSpecFacts {
   /// In the JSON's order.
   final List<LottieMarker> markers;
 
-  /// In `LottieRole` order.
+  /// In `LottieRole` order; empty when the contract's `sizesAuthored`.
   final List<LottieRole> roles;
 
   /// Depth-first in layer order, precomp children after their precomp.
@@ -148,9 +151,11 @@ FxSpecFacts extractFxSpecFacts(LottieSource source) {
           (m['dr']! as num).toDouble(),
         ),
     ],
+    // The roles the game drives: none when the file authors its sizes.
     roles: [
-      for (final role in LottieRole.values)
-        if (names.contains(role.sizeNull)) role,
+      if (!contract.sizesAuthored)
+        for (final role in LottieRole.values)
+          if (names.contains(role.sizeNull)) role,
     ],
     imageLayers: imageLayers,
     textLayers: [
@@ -180,13 +185,13 @@ String fxSpecSource(List<FxSpecFacts> facts) {
       'not carry',
     )
     ..writeln(
-      '// (anchor, kind, loop, travel S/T), the LOTTIE.md v3 contract table in',
+      '// (anchor, kind, loop, travel S/T, scale nulls), the LOTTIE.md v3 contract',
     )
     ..writeln(
-      '// tools/lib/src/fx/lottie_contract.dart. Validation guarantees that',
+      '// table in tools/lib/src/fx/lottie_contract.dart. Validation guarantees',
     )
     ..writeln(
-      '// no travel null holds and no image layer animates its transform.',
+      '// that no travel null holds and no image layer animates its transform.',
     )
     ..writeln()
     ..writeln("import 'dart:ui' show Offset;")
@@ -256,6 +261,11 @@ String fxSpecSource(List<FxSpecFacts> facts) {
     if (f.colorFills.isNotEmpty) {
       b.writeln(
         '    colorFills: [${f.colorFills.map((t) => "'$t'").join(', ')}],',
+      );
+    }
+    if (f.scaleNulls.isNotEmpty) {
+      b.writeln(
+        '    scaleNulls: [${f.scaleNulls.map((t) => "'$t'").join(', ')}],',
       );
     }
     if (c.loops) b.writeln('    loops: true,');

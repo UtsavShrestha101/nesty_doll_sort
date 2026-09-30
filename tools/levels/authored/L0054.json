@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "L0054",
+  "maxSize": 4,
+  "shelves": [
+    [ {"type": "tower", "stack": [["teal2", "teal1"], ["pink4", "pink3"], ["red4", "red3", "red2"]]},
+      {"type": "tower", "stack": [["blue2", "blue1"], ["purple3", "purple2"], ["blue4", "blue3"]]},
+      {"type": "open", "nest": ["pink2"]},
+      {"type": "open", "nest": ["teal3"]} ],
+    [ {"type": "open", "nest": ["green1"]},
+      {"type": "open", "nest": ["pink1"]},
+      {"type": "tower", "stack": [["teal4"], ["navy3", "navy2", "navy1"], ["navy4"]]},
+      {"type": "open", "nest": ["purple4"]} ],
+    [ {"type": "open", "nest": ["red1"], "ice": 2},
+      {"type": "open", "nest": ["purple1"]},
+      {"type": "open", "nest": ["green4", "green3", "green2"]},
+      {"type": "open", "nest": null} ]
+  ],
+  "generatorVersion": 1,
+  "seed": 5005402
+}

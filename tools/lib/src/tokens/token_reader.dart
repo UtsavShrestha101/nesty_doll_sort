@@ -157,6 +157,25 @@ final class TokenReader {
     return '$node';
   }
 
+  /// A prose leaf kept as documentation whose exact wording hand-written
+  /// code follows (a formula, a rule of placement): any other text fails
+  /// the codegen, so a design change is re-read before the code is trusted.
+  String documentedExact(
+    String path,
+    String expected, {
+    required String reason,
+  }) {
+    final text = documented(path, reason: reason);
+    if (text != expected) {
+      throw TokenFormatException(
+        path,
+        'the wording changed ("$text"); re-read it, update the hand-written '
+        'code ($reason) and the expected text in tools/lib/src/tokens/',
+      );
+    }
+    return text;
+  }
+
   /// Marks every leaf under [path] as documented only (e.g. `haptics`,
   /// whose patterns are hand-written code).
   void documentedTree(String path, {required String reason}) {

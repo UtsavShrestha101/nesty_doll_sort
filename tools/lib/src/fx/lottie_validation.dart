@@ -327,7 +327,8 @@ final class _Validator {
       if (layer['ty'] != _null) {
         add(LottieIssueCodes.hooks, '"${role.sizeNull}" is not a null layer');
       }
-      if (lottieIsAnimated(lottieTransform(layer, 's'))) {
+      if (!contract.sizesAuthored &&
+          lottieIsAnimated(lottieTransform(layer, 's'))) {
         add(
           LottieIssueCodes.hooks,
           '"${role.sizeNull}" has an animated scale; the game overrides it '
@@ -341,6 +342,23 @@ final class _Validator {
         'size nulls are ${_sorted(roles.map((r) => r.sizeNull))}, expected '
         '${_sorted(contract.roles.map((r) => r.sizeNull))}',
       );
+    }
+
+    // The other scale nulls the runtime drives (`case_size`): like a size
+    // null, a null whose scale the game overrides.
+    for (final name in contract.scaleNulls) {
+      for (final layer in rootLayers.where((l) => l['nm'] == name)) {
+        if (layer['ty'] != _null) {
+          add(LottieIssueCodes.hooks, '"$name" is not a null layer');
+        }
+        if (lottieIsAnimated(lottieTransform(layer, 's'))) {
+          add(
+            LottieIssueCodes.hooks,
+            '"$name" has an animated scale; the game overrides it '
+            '(LOTTIE.md "Case size")',
+          );
+        }
+      }
     }
 
     final hooks = {
@@ -358,10 +376,13 @@ final class _Validator {
     for (final name in {
       ...contract.hookLayers,
       ...contract.requiredLayers,
+      ...contract.scaleNulls,
       for (final r in contract.roles) r.sizeNull,
     }) {
       final n = count(name);
-      if (n == 0 && contract.requiredLayers.contains(name)) {
+      if (n == 0 &&
+          (contract.requiredLayers.contains(name) ||
+              contract.scaleNulls.contains(name))) {
         add(LottieIssueCodes.hooks, 'no root layer "$name"');
       } else if (n > 1) {
         add(

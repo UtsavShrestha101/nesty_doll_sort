@@ -2,7 +2,12 @@
 //   skins/<id>/skin.svg + skin.json, symbols/*.svg, board/*.svg (not the
 //   baked-pip stands), themes/chNN/background.svg, audio/*.wav (SFX) and
 //   audio/*.ogg (music loops, jingles; never AUDIO.md), lottie/*.json
-//   (never design/lottie/images/ or LOTTIE.md)
+//   (never design/lottie/images/ or LOTTIE.md), museum/*.png and
+//   ui/<badges|chest|rivals|sprites|stars>/*.svg (the M7 UI art)
+// plus one platform file: design/ui/notification/ic_notification.svg →
+//   apps/game/android/app/src/main/res/drawable/ic_notification.xml, the
+//   reminder's small icon as an Android vector (lib/src/assets/
+//   android_vector.dart; only white-filled paths convert).
 // SVGs lose their C2PA <metadata> and are validated against spec §12.2
 // (package:nesty_render/svg_tools.dart). Audio ships byte for byte after a
 // format check (WAV 44.1 kHz mono 16-bit PCM; Ogg Vorbis 44.1 kHz stereo,
@@ -64,11 +69,20 @@ void main(List<String> arguments) {
       '  ${WriteOutcome.values.where(counts.containsKey).map((o) => '${counts[o]} ${o.name}').join(', ')}',
     );
   }
+  for (final output in plan.outputs) {
+    final outcome = result.outputOutcomes[output.path]!;
+    stdout.writeln(
+      '  ${'platform'.padRight(8)} ${output.path} (${outcome.name})',
+    );
+  }
   for (final removed in result.removed) {
     stdout.writeln('  ${check ? 'stale  ' : 'removed'} $removed');
   }
   if (check) {
-    for (final entry in result.outcomes.entries) {
+    for (final entry in [
+      ...result.outcomes.entries,
+      ...result.outputOutcomes.entries,
+    ]) {
       if (entry.value != WriteOutcome.unchanged) {
         stdout.writeln('  ${entry.value.name.padRight(9)} ${entry.key}');
       }

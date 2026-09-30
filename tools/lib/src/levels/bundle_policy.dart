@@ -1,11 +1,17 @@
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_tools/src/levels/finding.dart';
+import 'package:nesty_tools/src/levels/layout_signature.dart';
+
+/// One bundled level in play order, for the checks that compare a level
+/// with its neighbours ([BundlePolicy.checkVariety]).
+typedef OrderedLevel = ({int order, Level level, String subject});
 
 /// What `nesty_levels bundle check` requires of the bundled levels beyond
 /// validation rules 1–8 (design §4): the declared tier follows the spec §6.6
 /// pattern and matches the simulator (A32), chapters are 20 levels (§7.1),
-/// mechanics arrive on the spec §3.7 schedule, and boards fit the layouts
-/// the M2 game draws.
+/// mechanics arrive on the spec §3.7 schedule, boards fit the layouts the M2
+/// game draws, no two neighbours share a layout, and from L31 the smart bot
+/// wins at least half its runs (brainstorm §3 E12).
 abstract final class BundlePolicy {
   /// The guided tutorials (spec §7.6: L1 nesting, L2 swallow). They may
   /// keep a declared tier the simulator disagrees with (design §4), as may
@@ -43,6 +49,12 @@ abstract final class BundlePolicy {
   /// (design §4), which also leaves the bottom row room for both extra slots
   /// (owner override D22).
   static const int maxRowSlots = 4;
+
+  /// The first play order where an expert-only level (the smart bot wins
+  /// under half its runs, spec §6.4) is an error rather than a warning
+  /// (brainstorm §3 E12): the levels from L31 are made for M7 (D90), while
+  /// L1–L30 were authored and accepted in M2.
+  static const int expertOnlyErrorFrom = 31;
 
   /// The chapter id of play order [order]: `ch01` for 1–20, `ch02` for
   /// 21–40, …
@@ -110,6 +122,16 @@ abstract final class BundlePolicy {
           '${level.maxSize}',
         );
       }
+    }
+    // Spec §3.7: from L121, "occasional maxSize 6 'super hard' levels", so a
+    // board of sixes is always a superhard slot of the §6.6 pattern
+    // (brainstorm §4: L130, L140 … L200).
+    if (level.maxSize == 6 && expectedTier != Tier.superhard) {
+      error(
+        FindingCodes.scheduleMaxSize,
+        'maxSize 6 at L$order, a ${expectedTier.id} slot: spec §3.7 keeps '
+        'maxSize 6 for super hard levels',
+      );
     }
     final colors = features.colors;
     if (order == 1 && colors != 1) {
@@ -195,7 +217,8 @@ abstract final class BundlePolicy {
   /// ([tutorialOrders]) or an open-slot-only [level] ([isOpenSlotsOnly],
   /// D26) may keep its declared tier with a [tierOverride] reason; anywhere
   /// else an override is an error and does not excuse a mismatch. An
-  /// expert-only level (smart win rate below 0.5, spec §6.4) is a warning.
+  /// expert-only level (smart win rate below 0.5, spec §6.4) is an error
+  /// from [expertOnlyErrorFrom] (brainstorm §3 E12) and a warning before.
   static List<Finding> checkTier({
     required int order,
     required Tier declared,
@@ -243,13 +266,48 @@ abstract final class BundlePolicy {
       );
     }
     if (simulation.expertOnly) {
+      final isError = order >= expertOnlyErrorFrom;
       findings.add(
         Finding(
           FindingCodes.expertOnly,
           'Expert only: the smart bot wins ${simulation.smart.wins}/'
-          '${simulation.smart.runs}, below half (spec §6.4)',
+          '${simulation.smart.runs}, below half (spec §6.4)'
+          '${isError ? '. From L$expertOnlyErrorFrom a bundled level must '
+                    'not be expert only (E12): rework the board' : ''}',
           subject: subject,
-          severity: FindingSeverity.warning,
+          severity: isError ? FindingSeverity.error : FindingSeverity.warning,
+        ),
+      );
+    }
+    return findings;
+  }
+
+  /// Brainstorm §3 E12: two consecutive [levels] (in play order) must not
+  /// share a [LayoutSignature], or the second reads as a reskin of the
+  /// first. The tutorials ([tutorialOrders]) are exempt among themselves:
+  /// they teach one move on one small board each. Only orders that follow
+  /// each other are compared, so a level missing from the list (a file that
+  /// didn't load, already reported) never pairs up two others.
+  static List<Finding> checkVariety(List<OrderedLevel> levels) {
+    final findings = <Finding>[];
+    for (var i = 1; i < levels.length; i++) {
+      final previous = levels[i - 1];
+      final current = levels[i];
+      if (current.order != previous.order + 1) continue;
+      if (tutorialOrders.contains(previous.order) &&
+          tutorialOrders.contains(current.order)) {
+        continue;
+      }
+      final signature = LayoutSignature.of(current.level);
+      if (signature != LayoutSignature.of(previous.level)) continue;
+      findings.add(
+        Finding(
+          FindingCodes.varietySameLayout,
+          'L${current.order} has the same layout as L${previous.order} '
+          '(${previous.subject}): $signature. Consecutive levels need '
+          'another shape, tower count or depth, glass, ice, color count or '
+          'maxSize (E12)',
+          subject: current.subject,
         ),
       );
     }

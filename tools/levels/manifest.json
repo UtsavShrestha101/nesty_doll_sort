@@ -250,6 +250,1366 @@
       "tier": "superhard",
       "version": 1,
       "notes": "Chapter 2 finale: 3 towers 3 deep on a 3,4 board with 1 empty slot, 4 colors; 9 of the 12 nests start in towers, 6 of them hidden."
+    },
+    {
+      "order": 31,
+      "id": "L0031",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass arrives (spec §3.7, its intro card §7.6), alone and easy (brainstorm §4): no towers, one case in the middle of the board. It opens on red, whose two pieces sit on the same shelf, so one merge breaks it; inside is navy3-1, and navy4 waits on the top shelf. 7 moves. Drafted with generate (seed 5003102, --params {\"colors\":4,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":0,\"emptySlots\":1,\"locked\":1,\"targetTier\":\"easy\"}: the 31–50 easy row with 2 colors and 4 towers fewer, 3×4), then hand-tuned: the case moved from the bottom-left corner to the middle shelf (swapped with green4), next to the red that opens it. Report before and after: 7 moves, casual 300/300, smart 300/300."
+    },
+    {
+      "order": 32,
+      "id": "L0032",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass practice (brainstorm §4, L32–34). 6 colors at maxSize 4; 4 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll navy nest, opened by green. 11 moves. Generated (seed 5003201, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with 2×4 instead of 3×3."
+    },
+    {
+      "order": 33,
+      "id": "L0033",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass practice (brainstorm §4, L32–34). 5 colors at maxSize 4; 3 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by blue (its color starts under tower tops). 15 moves. Generated (seed 5003301, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with 3×3 instead of 2×4, towers -1."
+    },
+    {
+      "order": 34,
+      "id": "L0034",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass practice (brainstorm §4, L32–34). 6 colors at maxSize 4; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by navy. 12 moves. Generated (seed 5003404, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with 3×4 instead of 3×3, towers -1. Replaced after the H/S review (2026-09-28): the first pick (seed 5003400) read like L32 (easy, 2×4, four towers 3 deep, one glass case, 11 moves each)."
+    },
+    {
+      "order": 35,
+      "id": "L0035",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass with towers (brainstorm §4, L35–39). 5 colors at maxSize 4; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by brown (its color starts under tower tops). 15 moves. Generated (seed 5003500, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row as it stands. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5003500) read like L33 and L37 (medium, 3×3, three or four towers 4 deep, one glass case, 15 moves each)."
+    },
+    {
+      "order": 36,
+      "id": "L0036",
+      "chapterId": "ch02",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Glass with towers (brainstorm §4, L35–39). 7 colors at maxSize 4; 6 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll pink nest, opened by brown (its color starts under tower tops). 19 moves. Generated (seed 5003601, generate --params {\"colors\":7,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"hard\"}): the 31–50 hard row with colors +1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 37,
+      "id": "L0037",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass with towers (brainstorm §4, L35–39). 5 colors at maxSize 4; 4 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll red nest, opened by brown (its color starts under tower tops). 15 moves. Generated (seed 5003701, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with 3×3 instead of 2×4."
+    },
+    {
+      "order": 38,
+      "id": "L0038",
+      "chapterId": "ch02",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass with towers (brainstorm §4, L35–39). 6 colors at maxSize 4; 5 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by navy (its color starts under tower tops). 12 moves. Generated (seed 5003801, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 39,
+      "id": "L0039",
+      "chapterId": "ch02",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass with towers (brainstorm §4, L35–39). 4 colors at maxSize 4; 3 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by yellow (its color starts under tower tops). 15 moves. Generated (seed 5003900, generate --params {\"colors\":4,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with colors -1, towers -1."
+    },
+    {
+      "order": 40,
+      "id": "L0040",
+      "chapterId": "ch02",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 2 finale: towers and glass (brainstorm §4). Six towers 4 deep bury all of red, the color that opens the case, and the case holds orange1, the last piece orange needs. 22 moves, the longest of chapter 2. Drafted with generate (seed 5004003, --params {\"colors\":7,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"targetTier\":\"superhard\"}: the 31–50 superhard row with colors +1, towers +1 and 3×3), then hand-tuned: the case moved from the top-left corner to the centre of the board (swapped with the tower of red3, orange4, blue3, brown1). Sealing navy4-3 instead of orange1 made it hard (casual 61/300), so orange1 stays. Report: casual 16 -> 15/300, smart 300/300, nodes 1,862 -> 1,386."
+    },
+    {
+      "order": 41,
+      "id": "L0041",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 5 colors at maxSize 4; 3 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by navy (its color starts under tower tops); a glass case sealing a 3-doll navy nest, opened by green (its color starts under tower tops). 10 moves. Generated (seed 5004100, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with colors -1, 2×4 instead of 3×3, towers -1, glass 2."
+    },
+    {
+      "order": 42,
+      "id": "L0042",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 7 colors at maxSize 4; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 2-doll green nest, opened by yellow (its color starts under tower tops). 11 moves. Generated (seed 5004202, generate --params {\"colors\":7,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with colors +1, 3×4 instead of 3×3, towers -1."
+    },
+    {
+      "order": 43,
+      "id": "L0043",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 5 colors at maxSize 4; 3 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll blue nest, opened by navy (its color starts under tower tops); a glass case sealing a 1-doll yellow nest, opened by orange (its color starts under tower tops). 14 moves. Generated (seed 5004301, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with 3×3 instead of 2×4, towers -1, glass 2."
+    },
+    {
+      "order": 44,
+      "id": "L0044",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 7 colors at maxSize 4; 5 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll brown nest, opened by yellow (its color starts under tower tops). 11 moves. Generated (seed 5004402, generate --params {\"colors\":7,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with colors +1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 45,
+      "id": "L0045",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 6 colors at maxSize 4; 3 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 2-doll blue nest, opened by navy (its color starts under tower tops); a glass case sealing a 1-doll purple nest, opened by brown (its color starts under tower tops). 16 moves. Generated (seed 5004505, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with colors +1, 3×4 instead of 2×4, towers -1, glass 2. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5004500) read like L43 (medium, 3×3, three towers 4 deep, two glass cases, 14 moves each)."
+    },
+    {
+      "order": 46,
+      "id": "L0046",
+      "chapterId": "ch03",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 6 colors at maxSize 4; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll navy nest, opened by blue (its color starts under tower tops). 18 moves. Generated (seed 5004604, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"hard\"}): the 31–50 hard row as it stands."
+    },
+    {
+      "order": 47,
+      "id": "L0047",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 5 colors at maxSize 4; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by teal (its color starts under tower tops); a glass case sealing a 2-doll red nest, opened by teal (its color starts under tower tops). 15 moves. Generated (seed 5004703, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with glass 2."
+    },
+    {
+      "order": 48,
+      "id": "L0048",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 6 colors at maxSize 4; 3 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll purple nest, opened by red (its color starts under tower tops). 11 moves. Generated (seed 5004801, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 31–50 easy row with towers -1."
+    },
+    {
+      "order": 49,
+      "id": "L0049",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass variety (brainstorm §4, L41–50). 6 colors at maxSize 4; 4 towers 4 deep on two shelves of 3; 1 empty slot; a glass case sealing a 3-doll navy nest, opened by yellow (its color starts under tower tops). 15 moves. Generated (seed 5004904, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 31–50 medium row with colors +1, 2×3 instead of 2×4."
+    },
+    {
+      "order": 50,
+      "id": "L0050",
+      "chapterId": "ch03",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6). 7 colors at maxSize 4; 6 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll yellow nest, opened by pink (its color starts under tower tops); a glass case sealing a 1-doll pink nest, opened by blue (its color starts under tower tops). 22 moves. Generated (seed 5005004, generate --params {\"colors\":7,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":0,\"targetTier\":\"superhard\"}): the 31–50 superhard row with colors +1, 3×3 instead of 2×4, towers +1, glass 2."
+    },
+    {
+      "order": 51,
+      "id": "L0051",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Ice arrives (spec §3.7, its intro card §7.6), alone (brainstorm §4): no towers or glass, one iced slot with counter 1 in the middle of the board. It holds green2, which green needs; completing any family (navy is one merge away) shatters it. 7 moves. Drafted with generate (seed 5005151, --params {\"colors\":4,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":0,\"emptySlots\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}: the 51–70 easy row with 2 colors and 4 towers fewer, 3×4), then hand-tuned: the iced slot moved from the bottom-right corner to the middle shelf, beside green4-3 (swapped with teal3-2). Report before and after: 7 moves, casual 300/300, smart 300/300."
+    },
+    {
+      "order": 52,
+      "id": "L0052",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 5 colors at maxSize 4; 4 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by red (its color starts under tower tops); ice 1 on a tower. 12 moves. Generated (seed 5005200, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 51–70 easy row with colors -1, glass 1."
+    },
+    {
+      "order": 53,
+      "id": "L0053",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 5 colors at maxSize 4; 6 towers 3 deep on two shelves of 4; 1 empty slot; ice 3 on a tower. 15 moves. Generated (seed 5005300, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":3,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 51–70 medium row with colors -1, 2×4 instead of 3×3, towers +1, glass 0."
+    },
+    {
+      "order": 54,
+      "id": "L0054",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 7 colors at maxSize 4; 3 towers 3 deep on three shelves of 4; 1 empty slot; ice 2 on an open slot. 12 moves. Generated (seed 5005402, generate --params {\"colors\":7,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 51–70 easy row with colors +1, 3×4 instead of 3×3, towers -1. Replaced after the H/S review (2026-09-28): the first pick (seed 5005400) read like L52 (easy, 3×3, three or four towers 3 deep, one glass case and one iced slot, 12 moves each)."
+    },
+    {
+      "order": 55,
+      "id": "L0055",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 5 colors at maxSize 4; 6 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll teal nest, opened by blue (its color starts under tower tops); ice 2 on a tower. 16 moves. Generated (seed 5005500, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 51–70 medium row with colors -1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 56,
+      "id": "L0056",
+      "chapterId": "ch03",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 6 colors at maxSize 4; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by orange (its color starts under tower tops); ice 1 on a tower. 19 moves. Generated (seed 5005600, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 51–70 hard row with colors -1, 3×4 instead of 3×3, towers -1."
+    },
+    {
+      "order": 57,
+      "id": "L0057",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 5 colors at maxSize 4; 6 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by yellow (its color starts under tower tops); ice 1 on a tower. 16 moves. Generated (seed 5005700, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 51–70 medium row with colors -1, towers +1."
+    },
+    {
+      "order": 58,
+      "id": "L0058",
+      "chapterId": "ch03",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 6 colors at maxSize 4; 3 towers 3 deep on three shelves of 4; 1 empty slot; ice 2 on an open slot. 12 moves. Generated (seed 5005800, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 51–70 easy row with 3×4 instead of 3×3, towers -1."
+    },
+    {
+      "order": 59,
+      "id": "L0059",
+      "chapterId": "ch03",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Ice and towers (brainstorm §4, L52–59). 6 colors at maxSize 4; 6 towers 3 deep on three shelves of 3; 1 empty slot; ice 2 on a tower. 16 moves. Generated (seed 5005900, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":3,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 51–70 medium row with towers +1, glass 0."
+    },
+    {
+      "order": 60,
+      "id": "L0060",
+      "chapterId": "ch03",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 3 finale: ice, glass and towers (brainstorm §4). A glass case in the centre seals pink4-3 (a partial nest) and opens on blue, whose three pieces all start in towers (two of them hidden); ice 3 locks one tower. 24 moves, the longest of chapter 3. Drafted with generate (seed 5006000, --params {\"colors\":8,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":7,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"superhard\"}: the 51–70 superhard row with colors +1, towers +1 and 1 glass), then hand-tuned: the case moved from the top-left corner to the centre (swapped with the tower of green2, blue2-1, blue4, navy3). Ice 2 instead of 3 changed nothing of note, so 3 stays. Report: casual 2 -> 4/300, smart 231 -> 226/300, nodes 464."
+    },
+    {
+      "order": 61,
+      "id": "L0061",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 4 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by green (its color starts under tower tops); ice 1 on a tower. 11 moves. Generated (seed 5006100, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 51–70 easy row with colors -1, 2×4 instead of 3×3, glass 1."
+    },
+    {
+      "order": 62,
+      "id": "L0062",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 3 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll red nest, opened by orange (its color starts under tower tops); ice 2 on an open slot; ice 3 on an open slot. 12 moves. Generated (seed 5006200, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 51–70 easy row with colors -1, towers -1, glass 1, ice 2."
+    },
+    {
+      "order": 63,
+      "id": "L0063",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 4 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by navy (its color starts under tower tops); ice 1 on an open slot; ice 1 on an open slot. 15 moves. Generated (seed 5006300, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 51–70 medium row with colors -1, 3×4 instead of 3×3, towers -1, ice 2."
+    },
+    {
+      "order": 64,
+      "id": "L0064",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 4 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll pink nest, opened by yellow (its color starts under tower tops); a glass case sealing a 3-doll teal nest, opened by pink (its color starts under tower tops); ice 1 on a tower; ice 1 on a tower. 12 moves. Generated (seed 5006400, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 51–70 easy row with colors -1, 2×4 instead of 3×3, glass 2, ice 2."
+    },
+    {
+      "order": 65,
+      "id": "L0065",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 5 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by red (its color starts under tower tops); ice 1 on a tower; ice 1 on an open slot. 15 moves. Generated (seed 5006500, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 51–70 medium row with colors -1, ice 2."
+    },
+    {
+      "order": 66,
+      "id": "L0066",
+      "chapterId": "ch04",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 7 colors at maxSize 4; 6 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by blue (its color starts under tower tops); ice 1 on a tower. 19 moves. Generated (seed 5006600, generate --params {\"colors\":7,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 51–70 hard row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 67,
+      "id": "L0067",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 5 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll blue nest, opened by orange (its color starts under tower tops); ice 1 on an open slot. 16 moves. Generated (seed 5006700, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 51–70 medium row with colors -1."
+    },
+    {
+      "order": 68,
+      "id": "L0068",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 5 colors at maxSize 4; 5 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by orange (its color starts under tower tops); a glass case sealing a 1-doll navy nest, opened by pink (its color starts under tower tops); ice 1 on a tower. 12 moves. Generated (seed 5006800, generate --params {\"colors\":5,\"maxSize\":4,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 51–70 easy row with colors -1, 2×4 instead of 3×3, towers +1, glass 2."
+    },
+    {
+      "order": 69,
+      "id": "L0069",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice together (brainstorm §4, L61–70). 6 colors at maxSize 4; 4 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by pink (its color starts under tower tops); a glass case sealing a 1-doll purple nest, opened by pink (its color starts under tower tops); ice 2 on a tower; ice 1 on an open slot. 16 moves. Generated (seed 5006901, generate --params {\"colors\":6,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 51–70 medium row with 3×4 instead of 3×3, towers -1, glass 2, ice 2. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5006900) read like L67 (medium, 3×3, five towers 3 deep, one glass case and one iced slot, 16 moves each)."
+    },
+    {
+      "order": 70,
+      "id": "L0070",
+      "chapterId": "ch04",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6). 8 colors at maxSize 4; 5 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll teal nest, opened by navy (its color starts under tower tops); a glass case sealing a 1-doll pink nest, opened by teal (its color starts under tower tops); ice 3 on an open slot. 23 moves. Generated (seed 5007000, generate --params {\"colors\":8,\"maxSize\":4,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"superhard\"}): the 51–70 superhard row with colors +1, 3×4 instead of 3×3, towers -1, glass 2."
+    },
+    {
+      "order": 71,
+      "id": "L0071",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 arrives (spec §3.7), alone and easy with few colors (brainstorm §4): 3 colors, no towers, glass or ice. Purple starts as five single dolls, so the player builds a whole 5-tall family. 8 moves. Drafted with generate (seed 5007152, --params {\"colors\":3,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":0,\"emptySlots\":1,\"targetTier\":\"easy\"}: the 71–120 easy row with 3 colors and 4 towers fewer, no glass or ice, 3×4), then hand-tuned: purple5 swapped with yellow5-2 so the tallest doll starts on the top shelf beside purple4, 3 and 2. Report before and after: 8 moves, casual 300/300, smart 300/300."
+    },
+    {
+      "order": 72,
+      "id": "L0072",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 6 colors at maxSize 5; 5 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll teal nest, opened by orange (its color starts under tower tops); ice 3 on a tower. 13 moves. Generated (seed 5007200, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with towers +1."
+    },
+    {
+      "order": 73,
+      "id": "L0073",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 5 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 3-doll red nest, opened by navy (its color starts under tower tops). 16 moves. Generated (seed 5007301, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1, 2×4 instead of 3×3."
+    },
+    {
+      "order": 74,
+      "id": "L0074",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 6 colors at maxSize 5; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 3-doll blue nest, opened by green (its color starts under tower tops); ice 2 on a tower. 13 moves. Generated (seed 5007401, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with 3×4 instead of 3×3, towers -1. Replaced after the H/S review (2026-09-28): the first pick (seed 5007400) read like L72 (easy, 3×3, five towers 3 deep, one glass case and one iced slot, 13 moves each)."
+    },
+    {
+      "order": 75,
+      "id": "L0075",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll red nest, opened by blue (its color starts under tower tops). 17 moves. Generated (seed 5007501, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors +1, towers +1. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5007500) read like L73 and L77 (medium, 2×4, four or five towers 4 deep, one glass case, 16–17 moves)."
+    },
+    {
+      "order": 76,
+      "id": "L0076",
+      "chapterId": "ch04",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; ice 1 on a tower. 20 moves. Generated (seed 5007600, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 71–120 hard row with colors -1."
+    },
+    {
+      "order": 77,
+      "id": "L0077",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 5 colors at maxSize 5; 4 towers 4 deep on two shelves of 3; 1 empty slot; a glass case sealing a 1-doll green nest, opened by navy (its color starts under tower tops). 16 moves. Generated (seed 5007701, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1, 2×3 instead of 3×3. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5007700) read like L75 and L79 (medium, 2×4, five towers 4 deep, one glass case, 17 moves each)."
+    },
+    {
+      "order": 78,
+      "id": "L0078",
+      "chapterId": "ch04",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 6 colors at maxSize 5; 4 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 3-doll navy nest, opened by teal (its color starts under tower tops); ice 3 on a tower. 13 moves. Generated (seed 5007800, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row as it stands."
+    },
+    {
+      "order": 79,
+      "id": "L0079",
+      "chapterId": "ch04",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall-doll planning at maxSize 5 (brainstorm §4, L72–79). 6 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by red (its color starts under tower tops). 17 moves. Generated (seed 5007901, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 80,
+      "id": "L0080",
+      "chapterId": "ch04",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 4 finale: tall-doll planning (brainstorm §4). Seven towers 4 deep, four of them capped by a 5-tall doll that must wait for its family. 29 moves, the longest of chapter 4. Drafted with generate (seed 5008003, --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":7,\"towerDepth\":4,\"emptySlots\":1,\"targetTier\":\"superhard\"}: the 71–120 superhard row with colors +1 and 3×4), then hand-tuned: the tall tower tops pink5 and navy5 swapped towers. Report: 28 -> 29 moves, casual 15 -> 6/300, smart 300/300, nodes 5,677 -> 16,920."
+    },
+    {
+      "order": 81,
+      "id": "L0081",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 6 colors at maxSize 5; 3 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 1-doll teal nest, opened by red (its color starts under tower tops); ice 2 on a tower. 13 moves. Generated (seed 5008100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with towers -1, depth 4, 0 empty."
+    },
+    {
+      "order": 82,
+      "id": "L0082",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 3 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 1-doll pink nest, opened by purple (its color starts under tower tops); ice 2 on an open slot. 13 moves. Generated (seed 5008200, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors -1, 2×4 instead of 3×3, towers -1, depth 4, 0 empty."
+    },
+    {
+      "order": 83,
+      "id": "L0083",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 1-doll orange nest, opened by yellow (its color starts under tower tops). 17 moves. Generated (seed 5008300, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1, 0 empty."
+    },
+    {
+      "order": 84,
+      "id": "L0084",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 7 colors at maxSize 5; 3 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 3-doll brown nest, opened by pink (its color starts under tower tops); ice 2 on an open slot. 13 moves. Generated (seed 5008400, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors +1, towers -1, depth 4, 0 empty. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5008400) read like L82 (easy, 2×4, three towers 4 deep, one glass case, one iced slot and no empty slot, 13 moves each)."
+    },
+    {
+      "order": 85,
+      "id": "L0085",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 6 colors at maxSize 5; 3 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 2-doll blue nest, opened by brown (its color starts under tower tops). 17 moves. Generated (seed 5008500, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with 3×4 instead of 3×3, towers -1, 0 empty."
+    },
+    {
+      "order": 86,
+      "id": "L0086",
+      "chapterId": "ch05",
+      "tier": "hard",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 0 empty slots; ice 3 on a tower. 21 moves. Generated (seed 5008600, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 71–120 hard row with colors -1, 2×4 instead of 3×3, 0 empty."
+    },
+    {
+      "order": 87,
+      "id": "L0087",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 1-doll yellow nest, opened by red (its color starts under tower tops). 17 moves. Generated (seed 5008700, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with 0 empty."
+    },
+    {
+      "order": 88,
+      "id": "L0088",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 7 colors at maxSize 5; 4 towers 4 deep on two shelves of 3; 0 empty slots; a glass case sealing a 2-doll purple nest, opened by brown; ice 1 on a tower. 14 moves. Generated (seed 5008800, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors +1, 2×3 instead of 3×3, depth 4, 0 empty."
+    },
+    {
+      "order": 89,
+      "id": "L0089",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 7 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 3-doll pink nest, opened by brown (its color starts under tower tops). 17 moves. Generated (seed 5008900, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors +1, 2×4 instead of 3×3, 0 empty."
+    },
+    {
+      "order": 90,
+      "id": "L0090",
+      "chapterId": "ch05",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6). 6 colors at maxSize 5; 7 towers 4 deep on three shelves of 3; 0 empty slots. 25 moves. Generated (seed 5009000, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":7,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":0,\"targetTier\":\"superhard\"}): the 71–120 superhard row with 0 empty."
+    },
+    {
+      "order": 91,
+      "id": "L0091",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 7 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 1-doll brown nest, opened by orange (its color starts under tower tops); ice 1 on a tower. 14 moves. Generated (seed 5009100, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors +1, 2×4 instead of 3×3, depth 4, 0 empty."
+    },
+    {
+      "order": 92,
+      "id": "L0092",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 7 colors at maxSize 5; 3 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 2-doll purple nest, opened by blue (its color starts under tower tops); ice 1 on a tower. 14 moves. Generated (seed 5009200, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors +1, towers -1, depth 4, 0 empty."
+    },
+    {
+      "order": 93,
+      "id": "L0093",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 3 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 1-doll navy nest, opened by blue (its color starts under tower tops). 18 moves. Generated (seed 5009300, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1, 3×4 instead of 3×3, towers -1, 0 empty."
+    },
+    {
+      "order": 94,
+      "id": "L0094",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 4 towers 4 deep on two shelves of 3; 0 empty slots; a glass case sealing a 1-doll purple nest, opened by blue; ice 1 on a tower. 14 moves. Generated (seed 5009401, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors -1, 2×3 instead of 3×3, depth 4, 0 empty."
+    },
+    {
+      "order": 95,
+      "id": "L0095",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 6 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 1-doll teal nest, opened by pink (its color starts under tower tops). 18 moves. Generated (seed 5009503, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with towers +1, 0 empty."
+    },
+    {
+      "order": 96,
+      "id": "L0096",
+      "chapterId": "ch05",
+      "tier": "hard",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 4; 0 empty slots; ice 1 on a tower. 22 moves. Generated (seed 5009600, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 71–120 hard row with colors +1, 3×4 instead of 3×3, 0 empty."
+    },
+    {
+      "order": 97,
+      "id": "L0097",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 1-doll purple nest, opened by orange (its color starts under tower tops). 18 moves. Generated (seed 5009700, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1, 2×4 instead of 3×3, towers +1, 0 empty."
+    },
+    {
+      "order": 98,
+      "id": "L0098",
+      "chapterId": "ch05",
+      "tier": "easy",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 6 colors at maxSize 5; 3 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 2-doll brown nest, opened by yellow (its color starts under tower tops); ice 1 on an open slot. 15 moves. Generated (seed 5009800, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with 3×4 instead of 3×3, towers -1, depth 4, 0 empty."
+    },
+    {
+      "order": 99,
+      "id": "L0099",
+      "chapterId": "ch05",
+      "tier": "medium",
+      "version": 1,
+      "notes": "maxSize 5 settles in: every tower 4 deep, and no empty slot at the start (brainstorm §4, chapter 5). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 1-doll yellow nest, opened by pink (its color starts under tower tops). 19 moves. Generated (seed 5009901, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1, towers +1, 0 empty. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5009901) read like L97 (medium, 2×4, four or five towers 4 deep, one glass case and no empty slot, 18 moves each)."
+    },
+    {
+      "order": 100,
+      "id": "L0100",
+      "chapterId": "ch05",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 5 finale: deeper towers and fewer empty slots (brainstorm §4): seven towers all 4 deep and no empty slot at the start, so the first move must be a merge. 30 moves, the longest of chapter 5. Drafted with generate (seed 5010001, --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":7,\"towerDepth\":4,\"emptySlots\":0,\"targetTier\":\"superhard\"}: the 71–120 superhard row with colors +1, 3×4 and 0 empty), then hand-tuned in two report-checked steps: navy5 from the bottom of the top-right tower to the top of the second tower (swapped with navy2), so the first move nests navy4-3 into it; and orange5 from the open slot to the bottom of a tower (swapped with teal4), so the orange family has to be dug out. Report: 28 -> 29 -> 30 moves, casual 25 -> 8 -> 4/300, smart 300/300, nodes 12,590 -> 3,193 -> 1,889."
+    },
+    {
+      "order": 101,
+      "id": "L0101",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "An ordinary level: the golden doll (spec §3.5, §3.7) is v1.1 (D90). A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 6 colors at maxSize 5; 5 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by navy (its color starts under tower tops); ice 2 on an open slot. 13 moves. Generated (seed 5010100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with towers +1."
+    },
+    {
+      "order": 102,
+      "id": "L0102",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 7 colors at maxSize 5; 4 towers 3 deep on three shelves of 4; 2 empty slots; a glass case sealing a 1-doll brown nest, opened by navy (its color starts under tower tops); ice 1 on an open slot. 13 moves. Generated (seed 5010202, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":2,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors +1, 3×4 instead of 3×3, 2 empty. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5010200) read like L101 and L104 (easy, four or five towers 3 deep, one glass case and one iced slot, 13 moves each)."
+    },
+    {
+      "order": 103,
+      "id": "L0103",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 6 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by navy (its color starts under tower tops). 17 moves. Generated (seed 5010301, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 104,
+      "id": "L0104",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 5 colors at maxSize 5; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by navy (its color starts under tower tops); ice 1 on a tower. 13 moves. Generated (seed 5010400, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors -1, 3×4 instead of 3×3, towers -1."
+    },
+    {
+      "order": 105,
+      "id": "L0105",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by red (its color starts under tower tops). 17 moves. Generated (seed 5010500, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors +1, towers +1."
+    },
+    {
+      "order": 106,
+      "id": "L0106",
+      "chapterId": "ch06",
+      "tier": "hard",
+      "version": 1,
+      "notes": "A puzzle-y hard level at maxSize 5 (brainstorm §4, chapter 6). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 0 empty slots; ice 2 on an open slot. 21 moves. Generated (seed 5010601, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 71–120 hard row with colors -1, 0 empty."
+    },
+    {
+      "order": 107,
+      "id": "L0107",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 7 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by orange (its color starts under tower tops). 17 moves. Generated (seed 5010700, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors +1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 108,
+      "id": "L0108",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 5 colors at maxSize 5; 5 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll green nest, opened by navy (its color starts under tower tops); ice 1 on a tower. 14 moves. Generated (seed 5010800, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors -1, towers +1."
+    },
+    {
+      "order": 109,
+      "id": "L0109",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll blue nest, opened by pink (its color starts under tower tops). 17 moves. Generated (seed 5010905, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors +1, 3×4 instead of 3×3. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5010900) read like L107 (medium, 2×4, four or five towers 4 deep, one glass case, 17 moves each)."
+    },
+    {
+      "order": 110,
+      "id": "L0110",
+      "chapterId": "ch06",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6). 7 colors at maxSize 5; 7 towers 4 deep on three shelves of 3; 1 empty slot. 25 moves. Generated (seed 5011002, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":7,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":0,\"targetTier\":\"superhard\"}): the 71–120 superhard row with colors +1."
+    },
+    {
+      "order": 111,
+      "id": "L0111",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 6 colors at maxSize 5; 4 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll red nest, opened by green (its color starts under tower tops); ice 3 on an open slot. 14 moves. Generated (seed 5011100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with 3×4 instead of 3×3."
+    },
+    {
+      "order": 112,
+      "id": "L0112",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 7 colors at maxSize 5; 5 towers 3 deep on three shelves of 3; 2 empty slots; a glass case sealing a 4-doll orange nest, opened by navy (its color starts under tower tops); ice 2 on a tower. 14 moves. Generated (seed 5011204, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":2,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors +1, towers +1, 2 empty."
+    },
+    {
+      "order": 113,
+      "id": "L0113",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by orange (its color starts under tower tops). 18 moves. Generated (seed 5011300, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with 3×4 instead of 3×3."
+    },
+    {
+      "order": 114,
+      "id": "L0114",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 5 colors at maxSize 5; 5 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll green nest, opened by yellow (its color starts under tower tops); ice 2 on a tower. 14 moves. Generated (seed 5011402, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors -1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 115,
+      "id": "L0115",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll blue nest, opened by pink (its color starts under tower tops). 18 moves. Generated (seed 5011500, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors -1."
+    },
+    {
+      "order": 116,
+      "id": "L0116",
+      "chapterId": "ch06",
+      "tier": "hard",
+      "version": 1,
+      "notes": "A puzzle-y hard level at maxSize 5 (brainstorm §4, chapter 6). 6 colors at maxSize 5; 6 towers 4 deep on three shelves of 3; 1 empty slot; ice 1 on an open slot. 22 moves. Generated (seed 5011603, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 71–120 hard row with towers +1."
+    },
+    {
+      "order": 117,
+      "id": "L0117",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 2-doll orange nest, opened by teal (its color starts under tower tops). 18 moves. Generated (seed 5011702, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with colors +1, 3×4 instead of 3×3."
+    },
+    {
+      "order": 118,
+      "id": "L0118",
+      "chapterId": "ch06",
+      "tier": "easy",
+      "version": 1,
+      "notes": "A relaxing easy level at maxSize 5 (brainstorm §4, chapter 6). 5 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 2 empty slots; a glass case sealing a 2-doll navy nest, opened by purple (its color starts under tower tops); ice 1 on an open slot. 15 moves. Generated (seed 5011800, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":2,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 71–120 easy row with colors -1, 3×4 instead of 3×3, towers +1, 2 empty."
+    },
+    {
+      "order": 119,
+      "id": "L0119",
+      "chapterId": "ch06",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Everything at maxSize 5 (brainstorm §4, chapter 6). 6 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by red (its color starts under tower tops). 18 moves. Generated (seed 5011900, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 71–120 medium row with towers +1."
+    },
+    {
+      "order": 120,
+      "id": "L0120",
+      "chapterId": "ch06",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 6 finale: everything at maxSize 5, puzzle-y (brainstorm §4). Eight towers 4 deep on a 4,4,4 board. 31 moves, the longest of chapter 6. Drafted with generate (seed 5012003, --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":8,\"towerDepth\":4,\"emptySlots\":1,\"targetTier\":\"superhard\"}: the 71–120 superhard row with colors +1, towers +1 and 3×4), then hand-tuned: navy2 and brown3 swapped between the second towers of the top and bottom shelves, which tightens the line (branching 6.88 -> 4.98). Report: 30 -> 31 moves, casual 22 -> 10/300, smart 300/300, nodes 13,132 -> 12,893."
+    },
+    {
+      "order": 121,
+      "id": "L0121",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 5 towers 3 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by pink (its color starts under tower tops); ice 2 on a tower. 13 moves. Generated (seed 5012103, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 2×4 instead of 3×3, towers +1. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5012100) read like L122 (easy, four towers 3 deep, one glass case and one iced slot, 13–14 moves)."
+    },
+    {
+      "order": 122,
+      "id": "L0122",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll pink nest, opened by green (its color starts under tower tops); ice 3 on a tower. 14 moves. Generated (seed 5012203, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 3×4 instead of 3×3, towers -1. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5012201) read like L121 and L124 (easy, four towers 3 deep, one glass case and one iced slot, 13–14 moves)."
+    },
+    {
+      "order": 123,
+      "id": "L0123",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll brown nest, opened by purple (its color starts under tower tops). 17 moves. Generated (seed 5012301, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 2×4 instead of 3×3."
+    },
+    {
+      "order": 124,
+      "id": "L0124",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 7 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by blue (its color starts under tower tops); ice 2 on a tower. 14 moves. Generated (seed 5012401, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 3×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 125,
+      "id": "L0125",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 3-doll navy nest, opened by pink (its color starts under tower tops). 17 moves. Generated (seed 5012502, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row as it stands."
+    },
+    {
+      "order": 126,
+      "id": "L0126",
+      "chapterId": "ch07",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 6 towers 4 deep on two shelves of 4; 1 empty slot; ice 2 on a tower. 21 moves. Generated (seed 5012600, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 127,
+      "id": "L0127",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by yellow (its color starts under tower tops). 19 moves. Generated (seed 5012704, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 3×4 instead of 3×3. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5012700) read like L125 (medium, 3×3, four or five towers 4 deep, one glass case, 17–18 moves)."
+    },
+    {
+      "order": 128,
+      "id": "L0128",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by brown (its color starts under tower tops); ice 1 on a tower. 14 moves. Generated (seed 5012801, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 3×4 instead of 3×3, towers -1."
+    },
+    {
+      "order": 129,
+      "id": "L0129",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 7 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by purple (its color starts under tower tops). 18 moves. Generated (seed 5012903, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 130,
+      "id": "L0130",
+      "chapterId": "ch07",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The first maxSize 6 level (spec §3.7 'occasional maxSize 6 super hard levels', brainstorm §4: the S slots from L130), hand-tuned. yellow6 starts in the open, and the first moves build the 6-tall yellow family in it. 26 moves. Drafted with generate (seed 5013002, --params {\"colors\":6,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":7,\"towerDepth\":4,\"emptySlots\":1,\"targetTier\":\"superhard\"}: the 121+ superhard row as it stands), then hand-tuned: yellow3 swapped with blue1 so it sits right under yellow5-4 and follows it into yellow6. Report: 25 -> 26 moves, casual 33 -> 23/300 (clear of the hard band at 36), smart 294 -> 300/300, nodes 7,266 -> 4,755."
+    },
+    {
+      "order": 131,
+      "id": "L0131",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by teal (its color starts under tower tops); ice 1 on a tower. 15 moves. Generated (seed 5013100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 3×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 132,
+      "id": "L0132",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 3 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 4-doll green nest, opened by yellow (its color starts under tower tops); ice 3 on an open slot. 14 moves. Generated (seed 5013253, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 3×4 instead of 3×3, towers -1. Replaced after the H/S review (2026-09-28): the first pick (seed 5013200) read like L131 and L134 (easy, five towers 3 deep, one glass case and one iced slot, 15 moves each)."
+    },
+    {
+      "order": 133,
+      "id": "L0133",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by teal (its color starts under tower tops). 18 moves. Generated (seed 5013300, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 134,
+      "id": "L0134",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 5 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by yellow; ice 1 on a tower. 15 moves. Generated (seed 5013401, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with towers +1."
+    },
+    {
+      "order": 135,
+      "id": "L0135",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 2-doll blue nest, opened by navy (its color starts under tower tops). 19 moves. Generated (seed 5013502, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with 3×4 instead of 3×3."
+    },
+    {
+      "order": 136,
+      "id": "L0136",
+      "chapterId": "ch07",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; ice 2 on an open slot. 22 moves. Generated (seed 5013600, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with colors -1."
+    },
+    {
+      "order": 137,
+      "id": "L0137",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by pink (its color starts under tower tops). 19 moves. Generated (seed 5013700, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 138,
+      "id": "L0138",
+      "chapterId": "ch07",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 6 colors at maxSize 5; 4 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by purple; ice 2 on an open slot. 16 moves. Generated (seed 5013802, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 3×4 instead of 3×3."
+    },
+    {
+      "order": 139,
+      "id": "L0139",
+      "chapterId": "ch07",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Chapter 7 at maxSize 5 (brainstorm §4). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll teal nest, opened by red (its color starts under tower tops). 19 moves. Generated (seed 5013901, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, towers +1."
+    },
+    {
+      "order": 140,
+      "id": "L0140",
+      "chapterId": "ch07",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 7 finale, maxSize 6 (brainstorm §4). Eight towers 4 deep; pink6 starts in the open. 32 moves, the longest of chapter 7. Drafted with generate (seed 5014001, --params {\"colors\":6,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":8,\"towerDepth\":4,\"emptySlots\":1,\"targetTier\":\"superhard\"}: the 121+ superhard row with towers +1 and 3×4), then hand-tuned in two report-checked steps: pink6 out of the middle shelf's second tower into the open slot on the top shelf (swapped with pink2), then teal4 and blue1 swapped between two towers. Report: 30 -> 31 -> 32 moves, casual 24 -> 3 -> 3/300, smart 300/300, nodes 4,814 -> 14,587 -> 4,046."
+    },
+    {
+      "order": 141,
+      "id": "L0141",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 6 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by brown; ice 1 on a tower. 14 moves. Generated (seed 5014100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 2×4 instead of 3×3, depth 4."
+    },
+    {
+      "order": 142,
+      "id": "L0142",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll green nest, opened by teal (its color starts under tower tops); ice 1 on a tower. 14 moves. Generated (seed 5014200, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, depth 4."
+    },
+    {
+      "order": 143,
+      "id": "L0143",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 6 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll blue nest, opened by pink (its color starts under tower tops). 18 moves. Generated (seed 5014300, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with towers +1."
+    },
+    {
+      "order": 144,
+      "id": "L0144",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by blue (its color starts under tower tops); ice 1 on a tower. 15 moves. Generated (seed 5014401, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 2×4 instead of 3×3, towers +1, depth 4."
+    },
+    {
+      "order": 145,
+      "id": "L0145",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by brown (its color starts under tower tops). 18 moves. Generated (seed 5014501, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, 3×4 instead of 3×3. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5014501) read like L143 and L147 (medium, 3×3, five towers 4 deep, one glass case, 18 moves each)."
+    },
+    {
+      "order": 146,
+      "id": "L0146",
+      "chapterId": "ch08",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 5 colors at maxSize 5; 6 towers 4 deep on two shelves of 4; 1 empty slot; ice 3 on a tower. 22 moves. Generated (seed 5014601, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with colors -1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 147,
+      "id": "L0147",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 6 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll teal nest, opened by brown (its color starts under tower tops). 18 moves. Generated (seed 5014705, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with 2×4 instead of 3×3, towers +1. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5014700) read like L145 and L149 (medium, 3×3, five towers 4 deep, one glass case, 18 moves each)."
+    },
+    {
+      "order": 148,
+      "id": "L0148",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll red nest, opened by green (its color starts under tower tops); ice 1 on a tower. 15 moves. Generated (seed 5014802, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 2×4 instead of 3×3, towers +1, depth 4."
+    },
+    {
+      "order": 149,
+      "id": "L0149",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll teal nest, opened by purple (its color starts under tower tops). 18 moves. Generated (seed 5014901, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, towers +1."
+    },
+    {
+      "order": 150,
+      "id": "L0150",
+      "chapterId": "ch08",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6) at maxSize 6, which the plan keeps for the S slots from L130 (brainstorm §4). 7 colors at maxSize 6; 8 towers 4 deep on three shelves of 3; 1 empty slot. 26 moves. Generated (seed 5015001, generate --params {\"colors\":7,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":8,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":0,\"targetTier\":\"superhard\"}): the 121+ superhard row with colors +1, towers +1."
+    },
+    {
+      "order": 151,
+      "id": "L0151",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 6 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by teal (its color starts under tower tops); ice 2 on a tower. 16 moves. Generated (seed 5015103, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 2×4 instead of 3×3, towers +1, depth 4."
+    },
+    {
+      "order": 152,
+      "id": "L0152",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll teal nest, opened by brown (its color starts under tower tops); ice 3 on an open slot. 15 moves. Generated (seed 5015202, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with depth 4."
+    },
+    {
+      "order": 153,
+      "id": "L0153",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by purple (its color starts under tower tops). 18 moves. Generated (seed 5015305, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 154,
+      "id": "L0154",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by blue (its color starts under tower tops); ice 1 on an open slot. 16 moves. Generated (seed 5015404, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 3×4 instead of 3×3, depth 4. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5015400) read like L152 (easy, 3×3, four or five towers 4 deep, one glass case and one iced slot, 15–16 moves)."
+    },
+    {
+      "order": 155,
+      "id": "L0155",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 3-doll yellow nest, opened by blue (its color starts under tower tops). 20 moves. Generated (seed 5015505, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, 3×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 156,
+      "id": "L0156",
+      "chapterId": "ch08",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 6 colors at maxSize 5; 6 towers 4 deep on two shelves of 4; 1 empty slot; ice 3 on a tower. 23 moves. Generated (seed 5015601, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 157,
+      "id": "L0157",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll teal nest, opened by blue (its color starts under tower tops). 19 moves. Generated (seed 5015702, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5015701) read like L155 (medium, 3×4, five towers 4 deep, one glass case, 20 moves each)."
+    },
+    {
+      "order": 158,
+      "id": "L0158",
+      "chapterId": "ch08",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 5 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll orange nest, opened by teal (its color starts under tower tops); ice 1 on a tower. 16 moves. Generated (seed 5015800, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 2×4 instead of 3×3, depth 4."
+    },
+    {
+      "order": 159,
+      "id": "L0159",
+      "chapterId": "ch08",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Tall towers: a tower-heavy pick, every tower 4 deep (brainstorm §4, chapter 8). 5 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by teal (its color starts under tower tops). 19 moves. Generated (seed 5015902, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 2×4 instead of 3×3, towers +1."
+    },
+    {
+      "order": 160,
+      "id": "L0160",
+      "chapterId": "ch08",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 8 finale, tall towers at maxSize 6 (brainstorm §4): eight towers 4 deep on a 4,4,4 board and only four open slots; red5-4 starts at the bottom of a tower and red6 at the bottom of another, with red1 under brown1. 33 moves, the longest of chapter 8. Drafted with generate (seed 5016004, --params {\"colors\":6,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":8,\"towerDepth\":4,\"emptySlots\":1,\"targetTier\":\"superhard\"}: the 121+ superhard row with towers +1 and 3×4), then hand-tuned in two report-checked steps: red1 from the open slot to the bottom of the third top-shelf tower (swapped with blue1), then blue1 onto the bottom-left tower in place of orange4, which goes to the open slot. Report: 31 -> 32 -> 33 moves, casual 8 -> 0 -> 0/300, smart 300/300, nodes 1,295 -> 1,937 -> 3,759. Re-tuned after the H/S review (2026-09-28: casual 0/300 on a finale with no glass or ice to soften it, where the finales L40–L140 and L180 win 1–5% of casual runs) in two more report-checked swaps that keep 33 moves: blue5 with orange2 between the two end towers of the middle shelf, then red1 with red5-4 between the third and fourth top-shelf towers. Report: casual 0 -> 4 -> 7/300, smart 300/300, nodes 3,759 -> 17,127 -> 12,568, about 3.8 -> 6.1 -> 5.4 choices a move."
+    },
+    {
+      "order": 161,
+      "id": "L0161",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 4 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by yellow (its color starts under tower tops); a glass case sealing a 2-doll purple nest, opened by orange (its color starts under tower tops); ice 2 on an open slot. 14 moves. Generated (seed 5016100, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, glass 2."
+    },
+    {
+      "order": 162,
+      "id": "L0162",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 7 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 3-doll purple nest, opened by blue (its color starts under tower tops); ice 2 on a tower; ice 3 on an open slot. 14 moves. Generated (seed 5016200, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 3×4 instead of 3×3, towers +1, ice 2. Replaced in the H/S review fix pass (2026-09-28), which ran the review's near-duplicate check on every level: the first pick (seed 5016200) read like L161 and L164 (easy, four towers 3 deep, two glass cases and one iced slot, 14–15 moves)."
+    },
+    {
+      "order": 163,
+      "id": "L0163",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 6 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 2-doll brown nest, opened by green (its color starts under tower tops); ice 1 on a tower; ice 2 on a tower. 18 moves. Generated (seed 5016300, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with towers +1, ice 2."
+    },
+    {
+      "order": 164,
+      "id": "L0164",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 6 colors at maxSize 5; 4 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll green nest, opened by orange (its color starts under tower tops); a glass case sealing a 2-doll brown nest, opened by orange (its color starts under tower tops); ice 2 on an open slot. 15 moves. Generated (seed 5016400, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 3×4 instead of 3×3, glass 2."
+    },
+    {
+      "order": 165,
+      "id": "L0165",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by pink (its color starts under tower tops); a glass case sealing a 1-doll green nest, opened by navy (its color starts under tower tops); ice 2 on a tower. 18 moves. Generated (seed 5016500, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 2×4 instead of 3×3, towers +1, glass 2, ice 1."
+    },
+    {
+      "order": 166,
+      "id": "L0166",
+      "chapterId": "ch09",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 6 colors at maxSize 5; 6 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by green (its color starts under tower tops); ice 1 on a tower; ice 2 on an open slot. 22 moves. Generated (seed 5016600, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"hard\"}): the 121+ hard row with towers +1, glass 1, ice 2."
+    },
+    {
+      "order": 167,
+      "id": "L0167",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by blue (its color starts under tower tops); ice 2 on an open slot; ice 1 on an open slot. 19 moves. Generated (seed 5016700, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 3×4 instead of 3×3, ice 2."
+    },
+    {
+      "order": 168,
+      "id": "L0168",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 4 towers 3 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by blue (its color starts under tower tops); a glass case sealing a 1-doll purple nest, opened by yellow (its color starts under tower tops); ice 1 on a tower; ice 3 on a tower. 15 moves. Generated (seed 5016800, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, glass 2, ice 2."
+    },
+    {
+      "order": 169,
+      "id": "L0169",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 3 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll teal nest, opened by orange (its color starts under tower tops); a glass case sealing a 2-doll purple nest, opened by pink (its color starts under tower tops); ice 1 on a tower. 19 moves. Generated (seed 5016900, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 3×4 instead of 3×3, towers -1, glass 2, ice 1."
+    },
+    {
+      "order": 170,
+      "id": "L0170",
+      "chapterId": "ch09",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6) at maxSize 6, which the plan keeps for the S slots from L130 (brainstorm §4). 5 colors at maxSize 6; 6 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll navy nest, opened by blue (its color starts under tower tops); a glass case sealing a 1-doll pink nest, opened by purple (its color starts under tower tops); ice 2 on an open slot. 27 moves. Generated (seed 5017000, generate --params {\"colors\":5,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"superhard\"}): the 121+ superhard row with colors -1, 3×4 instead of 3×3, towers -1, glass 2, ice 1. Replaced after the H/S review (2026-09-28): the first pick (seed 5017000, 3×3 with seven towers) never won by chance on the chapter's chest level (casual 0/300, smart 268/300, about 2.5 choices a move); this one is casual 27/300, smart 300/300, about 4.3."
+    },
+    {
+      "order": 171,
+      "id": "L0171",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 6 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll red nest, opened by brown (its color starts under tower tops); ice 1 on an open slot; ice 2 on a tower. 16 moves. Generated (seed 5017100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 121+ easy row with 3×4 instead of 3×3, towers +1, ice 2."
+    },
+    {
+      "order": 172,
+      "id": "L0172",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by navy (its color starts under tower tops); a glass case sealing a 1-doll navy nest, opened by blue (its color starts under tower tops); ice 1 on a tower. 16 moves. Generated (seed 5017200, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 3×4 instead of 3×3, towers +1, glass 2."
+    },
+    {
+      "order": 173,
+      "id": "L0173",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll red nest, opened by yellow (its color starts under tower tops); a glass case sealing a 1-doll navy nest, opened by green (its color starts under tower tops); ice 1 on a tower. 19 moves. Generated (seed 5017300, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, towers +1, glass 2, ice 1."
+    },
+    {
+      "order": 174,
+      "id": "L0174",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 5 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll blue nest, opened by teal (its color starts under tower tops); ice 3 on an open slot; ice 1 on an open slot. 16 moves. Generated (seed 5017400, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":3,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 3×4 instead of 3×3, towers +1, ice 2."
+    },
+    {
+      "order": 175,
+      "id": "L0175",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by brown (its color starts under tower tops); ice 1 on a tower; ice 2 on a tower. 20 moves. Generated (seed 5017500, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, towers +1, ice 2."
+    },
+    {
+      "order": 176,
+      "id": "L0176",
+      "chapterId": "ch09",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 6 colors at maxSize 5; 5 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll purple nest, opened by yellow (its color starts under tower tops); ice 1 on an open slot. 23 moves. Generated (seed 5017600, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with 3×4 instead of 3×3, glass 1."
+    },
+    {
+      "order": 177,
+      "id": "L0177",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 2-doll green nest, opened by orange (its color starts under tower tops); a glass case sealing a 1-doll orange nest, opened by navy (its color starts under tower tops); ice 3 on an open slot; ice 3 on an open slot. 20 moves. Generated (seed 5017700, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with 3×4 instead of 3×3, glass 2, ice 2."
+    },
+    {
+      "order": 178,
+      "id": "L0178",
+      "chapterId": "ch09",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 4 towers 3 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll pink nest, opened by teal (its color starts under tower tops); a glass case sealing a 1-doll teal nest, opened by navy (its color starts under tower tops); ice 1 on an open slot; ice 1 on a tower. 16 moves. Generated (seed 5017800, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":3,\"emptySlots\":1,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 3×4 instead of 3×3, glass 2, ice 2."
+    },
+    {
+      "order": 179,
+      "id": "L0179",
+      "chapterId": "ch09",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Glass and ice gallery (brainstorm §4, chapter 9). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 1 empty slot; a glass case sealing a 1-doll yellow nest, opened by purple (its color starts under tower tops); a glass case sealing a 1-doll red nest, opened by brown (its color starts under tower tops); ice 1 on an open slot. 20 moves. Generated (seed 5017900, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 3×4 instead of 3×3, glass 2, ice 1."
+    },
+    {
+      "order": 180,
+      "id": "L0180",
+      "chapterId": "ch09",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "Chapter 9 finale, the glass and ice gallery at maxSize 6 (brainstorm §4): two glass cases seal green1 (opens on blue) and green6 (opens on red), so green needs both broken; ice 2 and ice 3 lock two towers. 34 moves, the longest of chapter 9. Drafted with generate (seed 5018003, --params {\"colors\":7,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":8,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"superhard\"}: the 121+ superhard row with colors +1, towers +1, 3×4, 2 glass and 2 ice), then hand-tuned in three report-checked swaps between towers (teal6 with red4, purple6 with teal3, then teal4 with teal1), each adding a move. Report: 31 -> 32 -> 33 -> 34 moves, casual 4 -> 4 -> 6 -> 5/300, smart 300/300, nodes 2,379 -> 11,264."
+    },
+    {
+      "order": 181,
+      "id": "L0181",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 5 colors at maxSize 5; 3 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 2-doll teal nest, opened by pink (its color starts under tower tops); a glass case sealing a 3-doll pink nest, opened by orange (its color starts under tower tops); ice 1 on an open slot. 15 moves. Generated (seed 5018100, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":2,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 2×4 instead of 3×3, towers -1, depth 4, 0 empty, glass 2."
+    },
+    {
+      "order": 182,
+      "id": "L0182",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 0 empty slots. 15 moves. Generated (seed 5018200, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 121+ easy row with depth 4, 0 empty, glass 0, ice 0."
+    },
+    {
+      "order": 183,
+      "id": "L0183",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 0 empty slots; ice 3 on an open slot; ice 3 on an open slot. 19 moves. Generated (seed 5018300, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, 3×4 instead of 3×3, 0 empty, glass 0, ice 2."
+    },
+    {
+      "order": 184,
+      "id": "L0184",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 5 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 1-doll red nest, opened by purple (its color starts under tower tops); ice 2 on a tower. 15 moves. Generated (seed 5018400, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors -1, 2×4 instead of 3×3, depth 4, 0 empty."
+    },
+    {
+      "order": 185,
+      "id": "L0185",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 6 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot. 19 moves. Generated (seed 5018500, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":0,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with towers +1, glass 0."
+    },
+    {
+      "order": 186,
+      "id": "L0186",
+      "chapterId": "ch10",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 1-doll red nest, opened by yellow (its color starts under tower tops); ice 2 on an open slot. 22 moves. Generated (seed 5018600, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with colors +1, 3×4 instead of 3×3, 0 empty, glass 1."
+    },
+    {
+      "order": 187,
+      "id": "L0187",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 1-doll brown nest, opened by blue (its color starts under tower tops). 19 moves. Generated (seed 5018700, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, towers +1."
+    },
+    {
+      "order": 188,
+      "id": "L0188",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 6 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 0 empty slots; a glass case sealing a 1-doll navy nest, opened by pink (its color starts under tower tops). 16 moves. Generated (seed 5018800, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 121+ easy row with 2×4 instead of 3×3, depth 4, 0 empty, ice 0."
+    },
+    {
+      "order": 189,
+      "id": "L0189",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 7 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 1 empty slot; a glass case sealing a 4-doll purple nest, opened by pink (its color starts under tower tops); a glass case sealing a 1-doll yellow nest, opened by purple. 19 moves. Generated (seed 5018900, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":2,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, towers +1, glass 2."
+    },
+    {
+      "order": 190,
+      "id": "L0190",
+      "chapterId": "ch10",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The block's super hard slot (spec §6.6) at maxSize 6, which the plan keeps for the S slots from L130 (brainstorm §4). 5 colors at maxSize 6; 6 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 1-doll navy nest, opened by yellow (its color starts under tower tops). 27 moves. Generated (seed 5019000, generate --params {\"colors\":5,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":6,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"superhard\"}): the 121+ superhard row with colors -1, 3×4 instead of 3×3, towers -1, 0 empty, glass 1."
+    },
+    {
+      "order": 191,
+      "id": "L0191",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 6 colors at maxSize 5; 4 towers 4 deep on three shelves of 3; 0 empty slots; a glass case sealing a 1-doll green nest, opened by pink (its color starts under tower tops). 16 moves. Generated (seed 5019100, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":0,\"targetTier\":\"easy\"}): the 121+ easy row with depth 4, 0 empty, ice 0."
+    },
+    {
+      "order": 192,
+      "id": "L0192",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 7 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 1-doll pink nest, opened by teal (its color starts under tower tops); ice 3 on a tower. 16 moves. Generated (seed 5019200, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 2×4 instead of 3×3, towers +1, depth 4."
+    },
+    {
+      "order": 193,
+      "id": "L0193",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 5 colors at maxSize 5; 5 towers 4 deep on three shelves of 3; 0 empty slots. 20 moves. Generated (seed 5019300, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":0,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, towers +1, 0 empty, glass 0."
+    },
+    {
+      "order": 194,
+      "id": "L0194",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 6 colors at maxSize 5; 3 towers 4 deep on three shelves of 4; 0 empty slots; ice 1 on a tower. 16 moves. Generated (seed 5019400, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":3,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with 3×4 instead of 3×3, towers -1, depth 4, 0 empty, glass 0."
+    },
+    {
+      "order": 195,
+      "id": "L0195",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 5 colors at maxSize 5; 5 towers 4 deep on two shelves of 4; 0 empty slots; ice 1 on a tower. 20 moves. Generated (seed 5019500, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":5,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 2×4 instead of 3×3, towers +1, 0 empty, glass 0, ice 1."
+    },
+    {
+      "order": 196,
+      "id": "L0196",
+      "chapterId": "ch10",
+      "tier": "hard",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 6 colors at maxSize 5; 6 towers 4 deep on three shelves of 3; 0 empty slots; ice 2 on a tower. 24 moves. Generated (seed 5019600, generate --params {\"colors\":6,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":3,\"towers\":6,\"towerDepth\":4,\"emptySlots\":0,\"locked\":0,\"iceSlots\":1,\"targetTier\":\"hard\"}): the 121+ hard row with towers +1, 0 empty."
+    },
+    {
+      "order": 197,
+      "id": "L0197",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 7 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 3-doll yellow nest, opened by pink (its color starts under tower tops); ice 2 on an open slot; ice 2 on a tower. 20 moves. Generated (seed 5019700, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with colors +1, 3×4 instead of 3×3, 0 empty, ice 2."
+    },
+    {
+      "order": 198,
+      "id": "L0198",
+      "chapterId": "ch10",
+      "tier": "easy",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 7 colors at maxSize 5; 4 towers 4 deep on two shelves of 4; 1 empty slot; a glass case sealing a 2-doll brown nest, opened by red (its color starts under tower tops); ice 3 on a tower. 17 moves. Generated (seed 5019800, generate --params {\"colors\":7,\"maxSize\":5,\"shelves\":2,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":1,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"easy\"}): the 121+ easy row with colors +1, 2×4 instead of 3×3, depth 4."
+    },
+    {
+      "order": 199,
+      "id": "L0199",
+      "chapterId": "ch10",
+      "tier": "medium",
+      "version": 1,
+      "notes": "Grand tour: a mix of mechanics unlike the rest of the chapter (brainstorm §4, chapter 10). 5 colors at maxSize 5; 4 towers 4 deep on three shelves of 4; 0 empty slots; a glass case sealing a 1-doll red nest, opened by orange (its color starts under tower tops); a glass case sealing a 1-doll orange nest, opened by teal (its color starts under tower tops); ice 3 on an open slot; ice 1 on an open slot. 21 moves. Generated (seed 5019900, generate --params {\"colors\":5,\"maxSize\":5,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":4,\"towerDepth\":4,\"emptySlots\":0,\"locked\":2,\"iceSlots\":2,\"targetTier\":\"medium\"}): the 121+ medium row with colors -1, 3×4 instead of 3×3, 0 empty, glass 2, ice 2."
+    },
+    {
+      "order": 200,
+      "id": "L0200",
+      "chapterId": "ch10",
+      "tier": "superhard",
+      "version": 1,
+      "notes": "The grand finale (brainstorm §4, chapter 10's grand tour): every mechanic at once at maxSize 6. Eight towers 4 deep and no empty slot; a glass case seals orange1 and opens on brown, and brown2-1 is frozen under ice 3, so three families must finish before brown can complete and open the case. 35 moves, the longest level in the game. Drafted with generate (seed 5020000, --params {\"colors\":7,\"maxSize\":6,\"shelves\":3,\"slotsPerShelf\":4,\"towers\":8,\"towerDepth\":4,\"emptySlots\":0,\"locked\":1,\"iceSlots\":1,\"targetTier\":\"superhard\"}: the 121+ superhard row with colors +1, towers +1, 3×4, no empty slot, one glass case and one ice), then hand-tuned in three report-checked swaps, each adding a move: orange3 with purple1 between the first two towers, orange6 with yellow3 so orange6 sits under orange4, and blue1 with blue2 between a tower and the open slot. Report: 31 -> 33 -> 34 -> 35 moves, casual 9 -> 1 -> 0 -> 0/300, smart 300/300, nodes 5,946 -> 10,335."
     }
   ]
 }

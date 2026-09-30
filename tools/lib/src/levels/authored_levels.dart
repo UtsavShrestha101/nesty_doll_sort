@@ -16,14 +16,17 @@ final class AuthoredLevel {
   final File file;
 
   /// The bundle entry this level becomes. The reward follows the declared
-  /// tier (spec §7.3, design A27).
-  LevelBundleEntry toBundleEntry() => LevelBundleEntry(
+  /// tier (spec §7.3, design A27). [par] is the star rating's par, the
+  /// solver's optimum (spec-prop §7.10, D146): `bundle build` passes it,
+  /// and null writes no `par` key.
+  LevelBundleEntry toBundleEntry({int? par}) => LevelBundleEntry(
     order: entry.order,
     chapterId: entry.chapterId,
     tier: entry.tier,
     version: entry.version,
     rewardCoins: entry.tier.defaultRewardCoins,
     level: level,
+    par: par,
   );
 }
 
@@ -53,10 +56,14 @@ final class AuthoredLevels {
       !findings.any((f) => f.isError);
 
   /// The bundle these levels make (design §4). Only meaningful when
-  /// [isComplete].
-  LevelBundle toBundle() => LevelBundle(
+  /// [isComplete]. [pars] maps a level id to its par (spec-prop §7.10); a
+  /// level missing from it gets no `par` key.
+  LevelBundle toBundle({Map<String, int> pars = const {}}) => LevelBundle(
     levelsVersion: manifest!.levelsVersion,
-    levels: [for (final level in levels) level.toBundleEntry()],
+    levels: [
+      for (final level in levels)
+        level.toBundleEntry(par: pars[level.entry.id]),
+    ],
   );
 }
 

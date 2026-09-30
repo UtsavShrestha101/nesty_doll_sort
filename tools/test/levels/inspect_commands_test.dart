@@ -241,6 +241,201 @@ void main() {
       ]);
     });
 
+    // Spec-prop §7.10 and m7-design P3.3: `report --stars` prints, per
+    // chapter and bot, the share of won runs at 3★/2★/1★ (unassisted),
+    // where run s is RivalBot(level, policy:, raceSeed: s) stepped to its
+    // first `finished` (a win) or `restarted` (a loss). The pars and the
+    // thresholds below are worked by hand: L1 par 2 (t3 = 2 + ⌈0.4⌉ = 3,
+    // t2 = 2 + ⌈1.2⌉ = 4), L2 par 3 (t3 = 3 + ⌈0.6⌉ = 4, t2 = 3 + ⌈1.8⌉ =
+    // 5), and nesty_core's fixture 004_placement_first par 5 (t3 = 6,
+    // t2 = 8), all at the default 20 / 60.
+    group('--stars', () {
+      const placementFirst =
+          '{"schemaVersion":1,"id":"L0003","maxSize":3,"shelves":['
+          '[{"type":"tower","stack":[["red2"],["blue1"]]},'
+          '{"type":"tower","stack":[["blue2"],["red1"]]},'
+          '{"type":"open","nest":["red3"]}],'
+          '[{"type":"open","nest":["blue3"]},{"type":"open","nest":null}]]}';
+      const thresholds = {'L0001': (3, 4), 'L0002': (4, 5), 'L0003': (6, 8)};
+
+      void writeThree() => repo
+        ..writeTutorials()
+        ..writeLevel('L0003', placementFirst)
+        ..writeManifest([
+          manifestEntry(1, 'L0001'),
+          manifestEntry(2, 'L0002'),
+          manifestEntry(3, 'L0003', tier: 'medium', chapterId: 'ch02'),
+        ]);
+
+      /// The test's own count from the public API: won runs at 1★, 2★, 3★
+      /// of [bot] over [ids] with race seeds 0 … runs − 1.
+      ({int wins, List<int> stars}) recount(
+        List<String> ids,
+        SimBot bot,
+        int runs,
+      ) {
+        var wins = 0;
+        final stars = [0, 0, 0];
+        for (final id in ids) {
+          final level = LevelCodec.decodeString(
+            repo.read('tools/levels/authored/$id.json'),
+          ).level!;
+          final (t3, t2) = thresholds[id]!;
+          for (var seed = 0; seed < runs; seed++) {
+            final rival = RivalBot(level, policy: bot, raceSeed: seed);
+            var step = rival.step();
+            while (step == RivalStep.moved) {
+              step = rival.step();
+            }
+            if (step != RivalStep.finished) continue;
+            wins++;
+            final moves = rival.moveCount;
+            stars[moves <= t3
+                ? 2
+                : moves <= t2
+                ? 1
+                : 0]++;
+          }
+        }
+        return (wins: wins, stars: stars);
+      }
+
+      test('per chapter and bot, then all, against the solver\'s par', () {
+        writeThree();
+        final run = repo.run([
+          'report',
+          LevelPaths.manifest,
+          '--stars',
+          '--runs',
+          '40',
+          '--json',
+        ]);
+        expect(run.exitCode, 0, reason: '$run');
+        final json = jsonDecode(run.out) as Map<String, Object?>;
+        expect(json['star3SlackPct'], 20);
+        expect(json['star2SlackPct'], 60);
+        expect(json['runsPerBot'], 40);
+        expect(json['unrated'], isEmpty);
+        final rows = (json['rows']! as List).cast<Map<String, Object?>>();
+        expect(
+          [for (final r in rows) '${r['chapterId']} ${r['bot']}'],
+          [
+            'ch01 casual',
+            'ch01 smart',
+            'ch02 casual',
+            'ch02 smart',
+            'all casual',
+            'all smart',
+          ],
+        );
+        for (final row in rows) {
+          final ids = switch (row['chapterId']) {
+            'ch01' => ['L0001', 'L0002'],
+            'ch02' => ['L0003'],
+            _ => ['L0001', 'L0002', 'L0003'],
+          };
+          final bot = SimBot.values.byName(row['bot']! as String);
+          final expected = recount(ids, bot, 40);
+          final label = '${row['chapterId']} ${row['bot']}';
+          expect(row['levels'], ids.length, reason: label);
+          expect(row['runs'], 40 * ids.length, reason: label);
+          expect(row['wins'], expected.wins, reason: label);
+          expect(
+            [row['stars1'], row['stars2'], row['stars3']],
+            expected.stars,
+            reason: label,
+          );
+        }
+        // On open-slot boards the smart bot always merges (a merge always
+        // exists there, and it ranks merges above placements), and each
+        // merge lowers nests − sets by one, so it wins in par: all 3★.
+        final smart = rows[1];
+        expect(smart['wins'], 80);
+        expect(smart['stars3'], 80);
+      });
+
+      test('the table names the slack and runs; other slack moves the '
+          'shares', () {
+        writeThree();
+        final run = repo.run([
+          'report',
+          LevelPaths.manifest,
+          '--stars',
+          '--runs=10',
+          '--star3-slack',
+          '0',
+          '--star2-slack',
+          '0',
+        ]);
+        expect(run.exitCode, 0, reason: '$run');
+        final lines = run.out.trim().split('\n');
+        expect(lines.first, contains('⌈par × 0 ÷ 100⌉'));
+        expect(lines.first, contains('10 runs per bot and level'));
+        expect(lines[1], startsWith('chapter  bot     levels  won'));
+        expect(lines[1], matches(RegExp(r'3★ +2★ +1★$')));
+        expect(lines, hasLength(8), reason: 'the note, a header and 6 rows');
+        // Columns are two or more spaces apart; a cell may hold one space.
+        final cells = [
+          for (final line in lines.skip(2)) line.split(RegExp(' {2,}')),
+        ];
+        // At 0 % both thresholds are par, so no win is 2★, and the smart
+        // bot's ch01 runs are all at par (see the test above).
+        for (final row in cells) {
+          expect(row[5], anyOf('0 0.0%', '0 -'), reason: '$row');
+        }
+        expect(cells[1], [
+          'ch01',
+          'smart',
+          '2',
+          '20/20 100.0%',
+          '20 100.0%',
+          '0 0.0%',
+          '0 0.0%',
+        ]);
+      });
+
+      test('a level without a par is left out and listed', () {
+        repo
+          ..write('levels/one.json', tutorial1('One'))
+          ..write(
+            'deadlock.json',
+            '{"schemaVersion":1,"id":"D","maxSize":3,"shelves":['
+                '[{"type":"locked","unlockColor":"blue","nest":["red3","red2"]},'
+                '{"type":"locked","unlockColor":"red","nest":["blue3","blue2"]}],'
+                '[{"type":"open","nest":["red1"]},{"type":"open","nest":["blue1"]},'
+                '{"type":"open","nest":null}]]}',
+          );
+        final run = repo.run([
+          'report',
+          'levels',
+          'deadlock.json',
+          '--stars',
+          '--runs',
+          '5',
+        ]);
+        expect(run.exitCode, 1, reason: 'rule 8 still fails D');
+        expect(run.err, contains(IssueCodes.unsolvable));
+        expect(run.out, contains('No par, so not rated: D'));
+        expect(run.out, contains(RegExp(r'^-  +casual +1 ', multiLine: true)));
+        expect(run.out, isNot(contains('all ')));
+      });
+
+      test('bad star options are usage errors', () {
+        repo.writeTutorials();
+        for (final arguments in [
+          ['report', '--runs', '5'],
+          ['report', '--star3-slack', '20'],
+          ['report', '--stars', '--runs', '0'],
+          ['report', '--stars', '--star2-slack', '1001'],
+          ['report', '--stars', '--star3-slack', '-1'],
+        ]) {
+          final run = repo.run(arguments);
+          expect(run.exitCode, 64, reason: '$arguments');
+        }
+        expect(repo.run(['report', '--runs', '5']).err, contains('--stars'));
+      });
+    });
+
     test('an unsolvable level is still simulated (rules 1–7 hold)', () {
       repo.write(
         'deadlock.json',

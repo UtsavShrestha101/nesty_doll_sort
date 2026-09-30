@@ -82,9 +82,18 @@ abstract final class FindingCodes {
   static const idMismatch = 'build.idMismatch';
   static const versionNotBumped = 'build.versionNotBumped';
 
+  /// The solver did not prove the level at the admin budget, so it has no
+  /// par and the bundle is not written (spec-prop §7.10, D146).
+  static const parUnproven = 'build.parUnproven';
+
   // --- bundle check ---
   static const bundleMissing = 'bundle.missing';
   static const bundleDrift = 'bundle.drift';
+
+  /// A committed entry's `par` is missing or differs from the solver's
+  /// optimum (spec-prop §7.10: par "is computed when the level bundle is
+  /// built, and checked with it").
+  static const parMismatch = 'bundle.parMismatch';
 
   // --- Tier (spec §6.4, design A32) ---
   static const tierMismatch = 'tier.mismatch';
@@ -102,6 +111,9 @@ abstract final class FindingCodes {
   static const scheduleIce = 'policy.schedule.ice';
   static const layoutShelves = 'policy.layout.shelves';
   static const layoutRowSlots = 'policy.layout.rowSlots';
+
+  // --- Variety (brainstorm §3 E12) ---
+  static const varietySameLayout = 'policy.variety.sameLayout';
 
   // --- fixtures check ---
   static const fixtureNotCanonical = 'fixture.notCanonical';

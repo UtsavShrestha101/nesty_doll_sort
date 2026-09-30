@@ -86,18 +86,23 @@ void main() {
         expect(symbol.anchor, const LottiePoint(18, 18));
         for (final f in facts) {
           for (final l in f.imageLayers) {
-            final doll =
-                l.assetId.startsWith('doll_') ||
-                l.assetId.startsWith('mover_') ||
-                l.assetId.startsWith('target_');
+            // A doll part is a 512×768 artboard slot (the intro loops'
+            // `family_*`, `freed_*` and `revealed_*` too).
+            final doll = lottieImageSlotOf(l.assetId)!.width == 512;
             expect(
               l.scale,
-              anyOf(
+              anyOf([
                 const LottiePoint(1, 1), // a precomp child at the artboard
-                doll
-                    ? const LottiePoint(0.1953, 0.1953)
-                    : const LottiePoint(0.3333, 0.3333),
-              ),
+                if (doll)
+                  const LottiePoint(0.1953, 0.1953)
+                else
+                  const LottiePoint(0.3333, 0.3333),
+                // `ui_intro_glass` authors its padlock symbol at 80 % of
+                // the board's (9.6 of 12 dp): 3× at 26.67 %.
+                if (f.contract.name == 'ui_intro_glass' &&
+                    l.assetId == 'unlock_symbol')
+                  const LottiePoint(0.2667, 0.2667),
+              ]),
               reason: '${f.contract.name} ${l.keyPath.join(' › ')}',
             );
           }
@@ -161,6 +166,27 @@ void main() {
     ]);
     expect(of('fx_ice').frames, 150);
     expect(of('doll_reveal').frames, 31);
+  });
+
+  test('m7-3: scale nulls, authored intro sizes, the extra slot\'s rest', () {
+    expect(of('fx_glass_unlock_tall').scaleNulls, ['case_size']);
+    expect(of('fx_glass_unlock_tall').roles, [LottieRole.doll]);
+    expect(of('fx_glass_unlock').scaleNulls, isEmpty);
+    // The intro loops animate their own size nulls: the game drives none.
+    for (final name in ['ui_intro_towers', 'ui_intro_glass', 'ui_intro_ice']) {
+      expect(of(name).roles, isEmpty, reason: name);
+      expect(of(name).contract.roles, isNotEmpty, reason: name);
+    }
+    expect(of('ui_extra_slot').markers.map((m) => m.toString()), [
+      'rest 0.0+0.0',
+    ]);
+    final source = fxSpecSource(facts);
+    expect(source, contains("scaleNulls: ['case_size'],"));
+    expect(
+      RegExp('scaleNulls:').allMatches(source),
+      hasLength(1),
+      reason: 'only fx_glass_unlock_tall drives another scale null',
+    );
   });
 
   test('emits short literals: no float noise, Offset.zero for (0, 0)', () {

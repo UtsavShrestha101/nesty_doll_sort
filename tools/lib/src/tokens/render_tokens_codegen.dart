@@ -1,4 +1,6 @@
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_tools/src/fx/lottie_contract.dart';
+import 'package:nesty_tools/src/tokens/board_tokens_codegen.dart';
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
@@ -12,11 +14,29 @@ String renderTokensSource(TokenReader t, {required String header}) {
     _derivation(t),
     _skin(t),
     _board(t),
+    ...boardV3Classes(t),
     _motion(t),
   ];
+  t
+    ..documented(
+      'meta.updated',
+      reason: 'the delivery date, in the design handoff only',
+    )
+    ..documented(
+      'layout.extraSlot.placement',
+      reason:
+          'contradicts spec §3.6; D172 keeps the bottom shelf (lane B: '
+          'BoardShape.withExtraSlot, rowOfFive for 5)',
+    )
+    ..documented(
+      'layout.extraSlot.limitPerLevel',
+      reason:
+          'a rule, never read from tokens: LayoutLimits.maxExtraSlots '
+          '(nesty_core); rule_tokens_test pins it',
+    );
   return [
     header,
-    "import 'dart:ui' show Color, Offset, Size;",
+    "import 'dart:ui' show Color, Offset, Rect, Size;",
     '',
     "import 'package:flutter/animation.dart' show Cubic;",
     "import 'package:nesty_core/nesty_core.dart' show DollColor;",
@@ -331,22 +351,45 @@ ConstClass _board(TokenReader t) {
     doc: 'Slot pitch = `$spacing`.',
   );
   final planks = <String>[];
+  String? tallPlanks;
   for (final key in t.keys('$lb.planksY')) {
-    final shelves = _shelfCount(key, '$lb.planksY');
-    final ys = t.numbers(
-      '$lb.planksY.$key',
-      symbol: '$b.plankTopsByShelfCount',
-    );
+    final (shelves, tall) = _shelfCount(key, '$lb.planksY');
+    final symbol = tall
+        ? '$b.plankTopsThreeShelvesTall'
+        : '$b.plankTopsByShelfCount';
+    final ys = t.numbers('$lb.planksY.$key', symbol: symbol);
     if (ys.length != shelves) {
       throw TokenFormatException('$lb.planksY.$key', 'needs $shelves planks');
     }
-    planks.add('$shelves: [${ys.map(doubleLiteral).join(', ')}]');
+    final list = '[${ys.map(doubleLiteral).join(', ')}]';
+    if (!tall) {
+      planks.add('$shelves: $list');
+    } else if (shelves == 3 && tallPlanks == null) {
+      tallPlanks = list;
+    } else {
+      throw TokenFormatException(
+        '$lb.planksY.$key',
+        'only 3shelvesTall has a tall variant',
+      );
+    }
   }
   c.add(
     'plankTopsByShelfCount',
     '{${planks.join(', ')}}',
     type: 'Map<int, List<double>>',
     doc: 'Plank top y per shelf count (tokens.json `$lb.planksY`).',
+  );
+  if (tallPlanks == null) {
+    throw TokenFormatException('$lb.planksY', 'needs 3shelvesTall');
+  }
+  c.add(
+    'plankTopsThreeShelvesTall',
+    tallPlanks,
+    type: 'List<double>',
+    doc:
+        'The size-6 boards\' three shelves (tokens.json '
+        '`$lb.planksY.3shelvesTall`, `layout.boardPresets.threeShelvesTall`): '
+        '12 dp higher, 6 dp longer pitch.',
   );
   n('$lb.plankHeight', 'plankHeight');
   size('$lb.stand', 'standSize');
@@ -357,7 +400,53 @@ ConstClass _board(TokenReader t) {
     doc: 'The doll base sits this far below the stand top.',
   );
   size('$lb.glassCase', 'glassCaseSize');
-  size('$lb.iceOverlay', 'iceOverlaySize');
+  final (_, iceHeight) = size('$lb.iceOverlay', 'iceOverlaySize');
+  final (_, tallIceHeight) = size(
+    '$lb.iceOverlayTall',
+    'iceOverlayTallSize',
+    doc:
+        'The tall ice of `threeShelvesTall` (tokens.json '
+        '`$lb.iceOverlayTall`).',
+  );
+  // "plankTop + 16.5 − overlay height (160 → plankTop + 9 − 152.5 as
+  // before; 168 on threeShelvesTall, where fx_ice plays at scale (1, 1.05)
+  // from the ice bottom)".
+  final iceTop = t.string('$lb.iceOverlayTop', symbol: '$b.iceTopFromPlank');
+  t.string('$lb.iceOverlayTop', symbol: '$b.iceTallFxScaleY');
+  const nr = r'(\d+(?:\.\d+)?)';
+  final im = RegExp(
+    '^plankTop \\+ $nr − overlay height \\($nr → plankTop \\+ $nr − $nr as '
+    'before; $nr on threeShelvesTall, where fx_ice plays at scale '
+    '\\(1, $nr\\) from the ice bottom\\)\$',
+  ).firstMatch(iceTop);
+  if (im == null) {
+    throw TokenFormatException('$lb.iceOverlayTop', 'unexpected wording');
+  }
+  final fromPlank = double.parse(im[1]!);
+  if (double.parse(im[2]!) != iceHeight ||
+      double.parse(im[5]!) != tallIceHeight ||
+      (fromPlank - iceHeight - (double.parse(im[3]!) - double.parse(im[4]!)))
+              .abs() >
+          1e-9) {
+    throw TokenFormatException(
+      '$lb.iceOverlayTop',
+      'its worked example does not match the overlay sizes',
+    );
+  }
+  c.add(
+    'iceTopFromPlank',
+    doubleLiteral(fromPlank),
+    doc:
+        'An ice overlay\'s top = plankTop + this − its height (tokens.json '
+        '`$lb.iceOverlayTop`).',
+  );
+  c.add(
+    'iceTallFxScaleY',
+    doubleLiteral(double.parse(im[6]!)),
+    doc:
+        'On the tall ice, `fx_ice` plays at scale (1, this) from the ice\'s '
+        'bottom (LOTTIE.md m7-1).',
+  );
   final hit = t.string('$lb.hitArea', symbol: '$b.minHitExtent');
   final hm = RegExp(r'^whole slot column, min (\d+)$').firstMatch(hit);
   if (hm == null) throw TokenFormatException('$lb.hitArea', 'unexpected');
@@ -437,7 +526,10 @@ ConstClass _board(TokenReader t) {
   );
   final maxHeights = <String>[];
   for (final key in t.keys('$ld.slotMaxDollHeight')) {
-    final shelves = _shelfCount(key, '$ld.slotMaxDollHeight');
+    final (shelves, tall) = _shelfCount(key, '$ld.slotMaxDollHeight');
+    if (tall) {
+      throw TokenFormatException('$ld.slotMaxDollHeight.$key', 'no tall key');
+    }
     maxHeights.add(
       '$shelves: ${doubleLiteral(t.number('$ld.slotMaxDollHeight.$key', symbol: '$b.slotMaxDollHeightByShelfCount'))}',
     );
@@ -496,10 +588,16 @@ ConstClass _board(TokenReader t) {
 
 typedef Size2 = (num, num);
 
-int _shelfCount(String key, String path) {
-  final m = RegExp(r'^(\d+)shelves$').firstMatch(key);
-  if (m == null) throw TokenFormatException('$path.$key', 'expected Nshelves');
-  return int.parse(m[1]!);
+/// `3shelves` → (3, false); tokens v3's `3shelvesTall` → (3, true).
+(int, bool) _shelfCount(String key, String path) {
+  final m = RegExp(r'^(\d+)shelves(Tall)?$').firstMatch(key);
+  if (m == null) {
+    throw TokenFormatException(
+      '$path.$key',
+      'expected Nshelves or NshelvesTall',
+    );
+  }
+  return (int.parse(m[1]!), m[2] != null);
 }
 
 ConstClass _motion(TokenReader t) {
@@ -680,5 +778,60 @@ ConstClass _motion(TokenReader t) {
   flag('reducedMotion.shake', 'reducedMotionShake');
   flag('reducedMotion.confetti', 'reducedMotionConfetti');
   flag('reducedMotion.wobble', 'reducedMotionWobble');
+
+  // Tokens v3 (m7-3): the iced tower's tag pop, the row-of-5 re-pitch, tap
+  // feedback on a slot with nothing selected (E.13), the drag hover
+  // (E.14) and the extra slot's pad (E.16, E.21).
+  ms('tagPop.duration', 'tagPopMs');
+  n('tagPop.from', 'tagPopFrom');
+  curve('tagPop.easing', 'tagPopCurve');
+  t.documentedExact(
+    'motion.tagPop.delay',
+    'with fx_ice shatter frame 48 (0 ms into the segment)',
+    reason:
+        'the pop starts with fx_ice\'s `shatter` marker (a test pins '
+        'frame 48)',
+  );
+  ms('rowOfFive.duration', 'rowOfFiveMs');
+  curve('rowOfFive.easing', 'rowOfFiveCurve');
+  t.documentedExact(
+    'motion.rowOfFive.then',
+    'ui_extra_slot starts',
+    reason: 'the pad pops in after the re-pitch (lane B)',
+  );
+  t.documented(r'motion.tapFeedback.$note', reason: 'the design item id');
+  n('tapFeedback.emptyStand.dip', 'tapDip');
+  ms('tapFeedback.emptyStand.ms', 'tapDipMs');
+  t.documentedExact(
+    'motion.tapFeedback.emptyStand.haptic',
+    'light',
+    reason: 'HapticsService.light (lane B)',
+  );
+  n('tapFeedback.lockedCase.padlockScale', 'padlockPingScale');
+  ms('tapFeedback.lockedCase.ms', 'padlockPingMs');
+  n('tapFeedback.iced.counterScale', 'iceBumpScale');
+  ms('tapFeedback.iced.ms', 'iceBumpMs');
+  t.documented(r'motion.dragHover.$note', reason: 'the design item id');
+  final hover = t.string(
+    'motion.dragHover.validTarget',
+    symbol: '$m.dragHoverGlowOpacity',
+  );
+  final hm = RegExp(r'^fx_select_glow at (\d+) %$').firstMatch(hover);
+  if (hm == null || lottieContractOf('fx_select_glow') == null) {
+    throw TokenFormatException('motion.dragHover.validTarget', 'unexpected');
+  }
+  c.add(
+    'dragHoverGlowOpacity',
+    doubleLiteral(int.parse(hm[1]!) / 100),
+    doc: 'A valid drop target under a drag: "$hover".',
+  );
+  t.documentedExact(
+    'motion.dragHover.invalidTarget',
+    'none',
+    reason: 'an invalid target shows nothing (lane B)',
+  );
+  t.documented(r'motion.extraSlot.$note', reason: 'the design item ids');
+  ms('extraSlot.stopUnderDollMs', 'extraSlotStopUnderDollMs');
+  i('extraSlot.restFrame', 'extraSlotRestFrame');
   return c;
 }

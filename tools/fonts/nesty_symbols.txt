@@ -49,3 +49,25 @@ add
 download
 casino
 shuffle
+# M7 phase 4 (design m7-3, tokens.json `icons`; PROGRESS D173+).
+auto_stories
+military_tech
+share
+ios_share
+notifications
+notifications_off
+schedule
+spa
+motion_photos_off
+route
+flag
+computer
+all_inclusive
+replay
+logout
+refresh
+open_in_new
+layers
+# The splash error views (ui-spec-game C9), not yet in tokens.json `icons`.
+sd_card_alert
+inventory_2

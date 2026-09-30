@@ -1,6 +1,7 @@
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_tools/src/levels/bundle_policy.dart';
 import 'package:nesty_tools/src/levels/finding.dart';
+import 'package:nesty_tools/src/levels/layout_signature.dart';
 import 'package:test/test.dart';
 
 Nest nest(DollColor color, int outer, [int length = 1]) =>
@@ -380,6 +381,232 @@ void main() {
       expect(findings.map((f) => f.code), [FindingCodes.expertOnly]);
       expect(findings.single.isError, isFalse);
       expect(tier(6, Tier.hard, sim(50, smartWins: 150)), isEmpty);
+    });
+
+    test('expert only is an error from L31 (E12), a warning up to L30', () {
+      expect(BundlePolicy.expertOnlyErrorFrom, 31);
+      final l30 = tier(30, Tier.superhard, sim(20, smartWins: 149));
+      expect(l30.map((f) => f.code), [FindingCodes.expertOnly]);
+      expect(l30.single.isError, isFalse);
+      for (final order in [31, 36, 200]) {
+        final findings = tier(
+          order,
+          DifficultyCurve.tierForLevel(order),
+          sim(switch (DifficultyCurve.tierForLevel(order)) {
+            Tier.easy => 300,
+            Tier.medium => 150,
+            Tier.hard => 50,
+            Tier.superhard => 20,
+          }, smartWins: 149),
+        );
+        expect(findings.map((f) => f.code), [
+          FindingCodes.expertOnly,
+        ], reason: 'L$order');
+        expect(findings.single.isError, isTrue, reason: 'L$order');
+        expect(findings.single.message, contains('149/300'));
+      }
+      expect(
+        tier(31, Tier.easy, sim(300, smartWins: 150)),
+        isEmpty,
+        reason: 'exactly half is not expert only (spec §6.4)',
+      );
+    });
+  });
+
+  group('maxSize 6 (spec §3.7: super hard levels from L121)', () {
+    final size6 = board(colors: [DollColor.red, DollColor.blue], maxSize: 6);
+
+    test('only on a superhard slot', () {
+      expect(check(130, size6), isEmpty);
+      expect(check(200, size6), isEmpty);
+      for (final order in [121, 125, 126, 129, 131, 199]) {
+        expect(
+          check(order, size6),
+          [FindingCodes.scheduleMaxSize],
+          reason: 'L$order is ${DifficultyCurve.tierForLevel(order).id}',
+        );
+      }
+    });
+
+    test('and never before L121, whatever the tier', () {
+      expect(check(120, size6), [FindingCodes.scheduleMaxSize]);
+      expect(check(110, size6), [FindingCodes.scheduleMaxSize]);
+    });
+  });
+
+  group('layout signature and variety (E12)', () {
+    // Three shelves of 3: a tower 2 deep at slot 0, a glass case at slot 3
+    // and ice on slot 4; red, blue and green.
+    Level mixed({
+      List<DollColor> colors = const [
+        DollColor.red,
+        DollColor.blue,
+        DollColor.green,
+      ],
+      int towerAt = 0,
+    }) => board(
+      colors: colors,
+      maxSize: 4,
+      rows: 3,
+      perRow: 3,
+      modify: (i, slot) {
+        if (i == towerAt) {
+          return TowerSlot([nest(colors.last, 1), nest(colors.first, 1)]);
+        }
+        final inside = slot.nests.firstOrNull;
+        if (i == 3) return LockedSlot(unlockColor: colors.first, nest: inside);
+        if (i == 4) return OpenSlot(nest: inside, ice: 2);
+        return slot;
+      },
+    );
+
+    test('reads shelves, towers, glass, ice, colors and maxSize', () {
+      final signature = LayoutSignature.of(mixed());
+      expect(signature.rows, [3, 3, 3]);
+      expect(signature.towerDepths, [2]);
+      expect(signature.locked, 1);
+      expect(signature.iced, 1);
+      expect(signature.colors, 3);
+      expect(signature.maxSize, 4);
+      expect(
+        signature.toString(),
+        'shelves 3,3,3 · towers 2 · glass 1 · ice 1 · 3 colors · maxSize 4',
+      );
+      expect(
+        LayoutSignature.of(board()).toString(),
+        'shelves 3,3 · towers none · glass 0 · ice 0 · 1 colors · maxSize 3',
+      );
+    });
+
+    test('tower depths are compared as a sorted list', () {
+      Level towers(int first, int second) => board(
+        colors: fourColors,
+        maxSize: 4,
+        rows: 3,
+        perRow: 4,
+        modify: (i, slot) => switch (i) {
+          9 => TowerSlot([
+            for (var d = 0; d < first; d++) nest(DollColor.pink, 1),
+          ]),
+          10 => TowerSlot([
+            for (var d = 0; d < second; d++) nest(DollColor.pink, 1),
+          ]),
+          _ => slot,
+        },
+      );
+      expect(LayoutSignature.of(towers(2, 4)).towerDepths, [2, 4]);
+      expect(
+        LayoutSignature.of(towers(4, 2)),
+        LayoutSignature.of(towers(2, 4)),
+      );
+      expect(
+        LayoutSignature.of(towers(3, 3)),
+        isNot(LayoutSignature.of(towers(2, 4))),
+      );
+    });
+
+    test('ignores which colors are used and where things stand', () {
+      final recolored = mixed(
+        colors: const [DollColor.pink, DollColor.navy, DollColor.teal],
+      );
+      expect(LayoutSignature.of(recolored), LayoutSignature.of(mixed()));
+      expect(
+        LayoutSignature.of(mixed(towerAt: 8)),
+        LayoutSignature.of(mixed()),
+      );
+    });
+
+    test('each part tells two boards apart', () {
+      final base = LayoutSignature.of(
+        board(colors: fourColors, maxSize: 4, rows: 3, perRow: 3),
+      );
+      final others = {
+        'shelves': board(colors: fourColors, maxSize: 4, rows: 2, perRow: 4),
+        'slots per shelf': board(
+          colors: fourColors,
+          maxSize: 4,
+          rows: 3,
+          perRow: 4,
+        ),
+        'a tower': board(
+          colors: fourColors,
+          maxSize: 4,
+          rows: 3,
+          perRow: 3,
+          modify: (i, slot) => i == 8
+              ? TowerSlot([nest(DollColor.red, 1), nest(DollColor.red, 1)])
+              : slot,
+        ),
+        'glass': board(
+          colors: fourColors,
+          maxSize: 4,
+          rows: 3,
+          perRow: 3,
+          modify: (i, slot) => i == 7
+              ? LockedSlot(unlockColor: DollColor.red, nest: slot.nests.first)
+              : slot,
+        ),
+        'ice': board(
+          colors: fourColors,
+          maxSize: 4,
+          rows: 3,
+          perRow: 3,
+          modify: (i, slot) =>
+              i == 7 ? OpenSlot(nest: slot.nests.first, ice: 1) : slot,
+        ),
+        'colors': board(
+          colors: [...fourColors.take(3)],
+          maxSize: 4,
+          rows: 3,
+          perRow: 3,
+        ),
+        'maxSize': board(colors: fourColors, maxSize: 5, rows: 3, perRow: 3),
+      };
+      for (final MapEntry(key: part, value: level) in others.entries) {
+        expect(LayoutSignature.of(level), isNot(base), reason: part);
+      }
+    });
+
+    List<String> variety(List<(int, Level)> levels) => [
+      for (final f in BundlePolicy.checkVariety([
+        for (final (order, level) in levels)
+          (order: order, level: level, subject: 'L$order'),
+      ]))
+        '${f.subject} ${f.code}',
+    ];
+
+    test('two consecutive levels with one layout are an error', () {
+      final a = board(colors: fourColors, maxSize: 4, rows: 3, perRow: 3);
+      final b = board(colors: fourColors, maxSize: 4, rows: 3, perRow: 4);
+      expect(variety([(30, b), (31, a), (32, a), (33, b)]), [
+        'L32 ${FindingCodes.varietySameLayout}',
+      ]);
+      final finding = BundlePolicy.checkVariety([
+        (order: 31, level: a, subject: 'L0031'),
+        (order: 32, level: a, subject: 'L0032'),
+      ]).single;
+      expect(finding.isError, isTrue);
+      expect(finding.message, contains('L31 (L0031)'));
+      expect(finding.message, contains('shelves 3,3,3'));
+    });
+
+    test('from L3 on, as every level from L3 to L30 differs', () {
+      final open = board(colors: fourColors, rows: 3, perRow: 3);
+      expect(variety([(3, open), (4, open)]), [
+        'L4 ${FindingCodes.varietySameLayout}',
+      ]);
+      expect(variety([(2, board()), (3, board())]), [
+        'L3 ${FindingCodes.varietySameLayout}',
+      ], reason: 'L3 is no tutorial');
+    });
+
+    test('the tutorials are exempt among themselves', () {
+      expect(variety([(1, board()), (2, board())]), isEmpty);
+    });
+
+    test('only orders that follow each other are compared', () {
+      final a = board(colors: fourColors, maxSize: 4, rows: 3, perRow: 3);
+      expect(variety([(40, a), (42, a)]), isEmpty);
     });
   });
 }

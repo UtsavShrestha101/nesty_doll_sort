@@ -11,14 +11,59 @@ void main() {
   String read(String relative) =>
       File(p.join(root.path, relative)).readAsStringSync();
 
-  test('the glyph list is exactly the design README icon list', () {
+  test('the glyph list is exactly the design README icon lists', () {
     final readme = read('design/README.md');
-    final match = RegExp(
-      r'Glyphs used: (.*?)\. Bundle the font',
+    final v1 = RegExp(r'Glyphs used: (.*?)\. m7 adds').firstMatch(readme);
+    final m7 = RegExp(
+      r'm7 adds \(I\.10\): (.*?)\. The full map',
     ).firstMatch(readme);
-    expect(match, isNotNull, reason: 'README wording changed');
-    final fromReadme = match![1]!.split(',').map((s) => s.trim()).toList();
-    expect(parseGlyphList(read(glyphListPath)), fromReadme);
+    expect(v1, isNotNull, reason: 'README wording changed');
+    expect(m7, isNotNull, reason: 'README wording changed');
+    final first = v1![1]!.split(',').map((s) => s.trim()).toList();
+    // "share (iOS: ios_share), …, all_inclusive (unlimited Undo) redeem
+    // (chests)": each glyph, with the iOS one from its parenthesis, and
+    // without the ones the v1 list has (redeem, check_circle).
+    final added = <String>[];
+    for (final m in RegExp(
+      r'([a-z][a-z0-9_]*)(?: \(([^)]*)\))?',
+    ).allMatches(m7![1]!)) {
+      for (final glyph in [
+        m[1]!,
+        if (m[2] case final note? when note.startsWith('iOS: '))
+          note.substring(5),
+      ]) {
+        if (!first.contains(glyph) && !added.contains(glyph)) added.add(glyph);
+      }
+    }
+    expect(added, hasLength(18), reason: 'the m7 list (D171 says 17)');
+    // The splash errors' two glyphs (phase 4 lead note 2): in the pinned
+    // font, not yet in the README or tokens.json `icons`.
+    const splashErrors = ['sd_card_alert', 'inventory_2'];
+    expect(parseGlyphList(read(glyphListPath)), [
+      ...first,
+      ...added,
+      ...splashErrors,
+    ]);
+  });
+
+  test('every glyph tokens.json names is in the font', () {
+    final glyphs = parseGlyphList(read(glyphListPath)).toSet();
+    final tokens = read('design/tokens.json');
+    final icons = RegExp(
+      r'"icons": \{(.*?)\n  \}',
+      dotAll: true,
+    ).firstMatch(tokens)![1]!;
+    final named = [
+      for (final m in RegExp(r'"(\w+)": "([a-z0-9_]+)"').allMatches(icons))
+        m[2]!,
+      // The layout sections name a few glyphs too.
+      for (final m in RegExp(
+        r'"(?:glyph|undoBadge|icon)": "([a-z0-9_]+)"',
+      ).allMatches(tokens))
+        m[1]!,
+    ];
+    expect(named, isNotEmpty);
+    expect(named.where((g) => !glyphs.contains(g)), isEmpty);
   });
 
   test('the font codepoints cover the glyph list and nothing else', () {

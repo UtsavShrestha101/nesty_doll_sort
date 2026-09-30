@@ -30,12 +30,20 @@ Commands:
       Casual and smart bots and the tier they suggest (spec §6.4).
   report [paths] [--budget N] [--json]
       Rules, solver and simulator in one table.
+  report [paths] --stars [--star3-slack 20] [--star2-slack 60] [--runs 300]
+      The star shares instead: per chapter and bot, the won runs at 3, 2
+      and 1 stars against each level's par (spec-prop §7.10). A report,
+      never a gate.
   bundle build
-      tools/levels/manifest.json + tools/levels/authored/ → the game's bundle.
+      tools/levels/manifest.json + tools/levels/authored/ → the game's bundle,
+      each level with its par: the solver's optimal moves (rule 8 at the
+      admin budget; a level it doesn't prove stops the build).
   bundle check
-      CI: the bundle is fresh, every level passes rules 1–8, its simulated
-      tier is its declared tier, and the bundle follows the §6.6 tier
-      pattern, the §3.7 schedule and the M2 layout.
+      CI: the bundle is fresh (pars included), every level passes rules 1–8,
+      its simulated tier is its declared tier, and the bundle follows the
+      §6.6 tier pattern, the §3.7 schedule and the M2 layout; no two
+      consecutive levels share a layout, and from L31 none is expert only
+      (E12).
   generate --params <json|file> --seed S [--count N] [--out DIR]
       The generator (spec §6.5) for seeds S … S+N−1.
   fixtures check

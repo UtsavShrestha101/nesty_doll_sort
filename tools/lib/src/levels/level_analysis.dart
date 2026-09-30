@@ -21,6 +21,15 @@ final class LevelAnalysis {
 
   /// Spec §5.2 `metrics.solverMoves`: the optimal solution's length.
   int? get solverMoves => solve?.solution?.length;
+
+  /// The star rating's par (spec-prop §7.10, D146): [solverMoves] when rule
+  /// 8 solved the level, which `bundle build` writes and `bundle check`
+  /// compares. Null when rule 8 didn't solve it, and for a board already won
+  /// at its start (a par is 1 or more).
+  int? get par {
+    final moves = solverMoves;
+    return moves != null && moves >= 1 ? moves : null;
+  }
 }
 
 /// Runs the one validator (with [options]) and, when [simulate] and rules

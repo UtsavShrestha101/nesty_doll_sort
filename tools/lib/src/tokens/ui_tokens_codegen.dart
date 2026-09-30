@@ -1,7 +1,9 @@
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
+import 'package:nesty_tools/src/tokens/screen_tokens_codegen.dart';
 import 'package:nesty_tools/src/tokens/sound_files.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
+import 'package:nesty_tools/src/tokens/ui_tokens_v3.dart';
 
 /// Emits `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart`: app colors,
 /// gradients, type, radii, spacing, shadows, HUD/booster/nav layout, UI
@@ -21,6 +23,7 @@ String uiTokensSource(TokenReader t, {required String header}) {
     _bottomNav(t),
     _uiMotion(t),
     _sound(t),
+    ...uiV3Classes(t),
   ];
   t.documentedTree(
     'haptics',
@@ -54,6 +57,19 @@ ConstClass _colors(TokenReader t) {
   final c = ConstClass(name, 'App colors (tokens.json `color`).');
   for (final key in t.keys('color')) {
     final member = memberName(key);
+    final raw = t.peek('color.$key');
+    // Tokens v3 names one "colour" by its art: `starEmpty` is the empty
+    // star's SVG (a test checks it ships), not a colour.
+    final art = raw is String && !isCssColor(raw)
+        ? RegExp(r'^(ui/[a-z0-9_/]+\.svg) \((.+)\)$').firstMatch(raw)
+        : null;
+    if (art != null) {
+      t.documented(
+        'color.$key',
+        reason: 'an art reference (${art[1]}), drawn from the UI art',
+      );
+      continue;
+    }
     final value = t.string('color.$key', symbol: '$name.$member');
     c.add(member, colorLiteral(parseCssColor(value)), doc: '`$value`.');
   }
@@ -72,6 +88,16 @@ ConstClass _gradients(TokenReader t) {
     final base = 'gradient.$key';
     final member = memberName(key);
     final symbol = '$name.$member';
+    // Tokens v3 writes `gradient.versus` as a CSS string.
+    if (t.peek(base) case final String css) {
+      c.add(
+        member,
+        linearGradientLiteral(parseCssLinearGradient(css), base),
+        doc: '`$css`.',
+      );
+      t.string(base, symbol: symbol);
+      continue;
+    }
     final type = t.string('$base.type', symbol: symbol);
     final stops = [
       for (final s in t.strings('$base.stops', symbol: symbol))
@@ -418,6 +444,39 @@ ConstClass _hud(TokenReader t) {
   n('coinPillHeight', 'coinPillHeight');
   n('familyCounter.top', 'familyCounterTop');
   n('familyCounter.height', 'familyCounterHeight');
+  // Tokens v3 (E.18): the counter hugs its label.
+  t.documented('$p.familyCounter.\$note', reason: 'the design item id');
+  n('familyCounter.labelMinWidth', 'familyCounterLabelMinWidth');
+  c.add(
+    'familyCounterPadding',
+    edgeInsetsLiteral(
+      t.numbers(
+        '$p.familyCounter.padding',
+        symbol: '$name.familyCounterPadding',
+      ),
+      '$p.familyCounter.padding',
+    ),
+    doc: 'Inside the counter pill.',
+  );
+  final icon = t.numbers(
+    '$p.familyCounter.icon',
+    symbol: '$name.familyCounterIconSize',
+    length: 2,
+  );
+  c.add('familyCounterIconSize', sizeLiteral(icon[0], icon[1]));
+  n('familyCounter.gap', 'familyCounterGap');
+  final examples = <String>[];
+  for (final key in t.keys('$p.familyCounter.examples')) {
+    examples.add(
+      '${stringLiteral(key)}: ${doubleLiteral(t.number('$p.familyCounter.examples.$key', symbol: '$name.familyCounterWidthExamples'))}',
+    );
+  }
+  c.add(
+    'familyCounterWidthExamples',
+    '{${examples.join(', ')}}',
+    type: 'Map<String, double>',
+    doc: 'The design\'s counter widths by label, for the layout test.',
+  );
   return c;
 }
 

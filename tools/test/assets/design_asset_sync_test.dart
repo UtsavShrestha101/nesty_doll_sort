@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:nesty_tools/src/assets/android_vector.dart';
 import 'package:nesty_tools/src/assets/design_asset_sync.dart';
 import 'package:nesty_tools/src/file_writes.dart';
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
@@ -80,6 +81,12 @@ List<int> _png({int width = 600, int height = 600}) {
   ];
 }
 
+/// A notification icon the Android converter accepts.
+String _icon() => _svg(
+  '<defs></defs><path d="M2 2H8V8H2Z" fill="#FFFFFF" fill-rule="evenodd"/>',
+  box: '0 0 24 24',
+);
+
 /// The scratch repo's one Lottie export: the owner's `fx_sparkle`, checked
 /// against its real contract entry.
 final _fakeLottieTable = [lottieContractOf('fx_sparkle')!];
@@ -127,6 +134,10 @@ Directory _fakeRepo() {
   write('design/lottie/images/glow_ring.png', [0x89, 0x50, 0x4e, 0x47]);
   write('design/museum/png/01-classic.png', _png());
   write('design/museum/png/01-classic-locked.png', _png());
+  for (final folder in uiArtFolders) {
+    write('design/ui/$folder/${folder}_1.svg', _svg('<path d="M0 0"/>'));
+  }
+  write('design/ui/notification/ic_notification.svg', _icon());
   write('design/tokens.json', '{"dollColor":{"red":{"symbol":"heart"}}}');
   write(
     'apps/game/pubspec.yaml',
@@ -134,11 +145,15 @@ Directory _fakeRepo() {
         '    - assets/audio/\n    - assets/board/\n'
         '    - assets/lottie/\n    - assets/museum/\n'
         '    - assets/skins/classic/\n    - assets/symbols/\n'
-        '    - assets/themes/ch07/\n',
+        '    - assets/themes/ch07/\n'
+        '${uiArtFolders.map((f) => '    - assets/ui/$f/\n').join()}',
   );
   addTearDown(() => root.deleteSync(recursive: true));
   return root;
 }
+
+Iterable<String> _destinationsOf(AssetSyncPlan plan) =>
+    plan.assets.map((a) => a.destination);
 
 void main() {
   group('the real design/ handoff', () {
@@ -154,18 +169,54 @@ void main() {
       for (final a in plan.assets) {
         counts[a.category] = (counts[a.category] ?? 0) + 1;
       }
-      // 7 skins × (svg + json), 11 symbols, 17 board − 2 baked-pip stands,
-      // 6 chapter themes, 17 SFX (WAV) + 2 music loops and 3 jingles (OGG),
-      // 29 Lottie files, 10 figurines × (earned + locked) museum PNGs.
+      // 7 skins × (svg + json), 11 symbols, 20 board − 2 baked-pip stands
+      // (m7-3 adds the tall glass case's 3), 10 chapter themes, 23 SFX (WAV)
+      // + 2 music loops and 5 jingles (OGG), 35 Lottie files, 10 figurines ×
+      // (earned + locked) museum PNGs, and m7-3's UI art: 24 badges, 2
+      // chests, 4 rival portraits, 2 sprites, 3 stars.
       expect(counts, {
         'skins': 14,
         'symbols': 11,
-        'board': 15,
-        'themes': 6,
-        'audio': 22,
-        'lottie': 29,
+        'board': 18,
+        'themes': 10,
+        'audio': 30,
+        'lottie': 35,
         'museum': 20,
+        'ui': 35,
       });
+      expect(
+        [
+          for (final folder in uiArtFolders)
+            plan.assets
+                .where((a) => a.destination.startsWith('ui/$folder/'))
+                .length,
+        ],
+        [24, 2, 4, 2, 3],
+      );
+      expect(
+        _destinationsOf(plan),
+        containsAll([
+          'board/glass-case-tall-0.svg',
+          'themes/ch07/background.svg',
+          'themes/ch10/background.svg',
+          'audio/star_1.wav',
+          'audio/rival_complete.wav',
+          'audio/jingle_versus_win.ogg',
+          'audio/jingle_versus_lose.ogg',
+          'lottie/fx_glass_unlock_tall.json',
+          'lottie/ui_intro_ice.json',
+          'ui/badges/first_family.svg',
+          'ui/badges/first_family_locked.svg',
+          'ui/rivals/rival_locked.svg',
+          'ui/stars/star_glow.svg',
+        ]),
+      );
+      expect(
+        _destinationsOf(plan).where((d) => d.contains('notification')),
+        isEmpty,
+        reason: 'the notification icon is a platform file, not an asset',
+      );
+      expect(plan.outputs.map((o) => o.path), [notificationIconDrawable]);
       final destinations = plan.assets.map((a) => a.destination);
       expect(destinations, contains('skins/forest-bear/skin.svg'));
       expect(destinations, contains('themes/ch06/background.svg'));
@@ -243,6 +294,30 @@ void main() {
       );
       expect(result.removed, isEmpty);
       expect(result.missingPubspecDirs, isEmpty);
+      expect(
+        result.outputOutcomes,
+        {notificationIconDrawable: WriteOutcome.unchanged},
+        reason: 'run dart run nesty_tools:sync_design_assets',
+      );
+    });
+
+    test('the Android notification icon is the design file, converted', () {
+      final drawable = File(
+        p.join(root.path, notificationIconDrawable),
+      ).readAsStringSync();
+      final design = File(
+        p.join(root.path, notificationIconSource),
+      ).readAsStringSync();
+      expect(drawable, androidVectorOf(design).xml);
+      expect(drawable, contains('GENERATED'));
+      expect(drawable, contains('android:fillType="evenOdd"'));
+      // The reminder names it by this resource; R8 keeps it (res/raw).
+      expect(
+        File(
+          p.join(root.path, 'apps/game/android/app/src/main/res/raw/keep.xml'),
+        ).readAsStringSync(),
+        contains('@drawable/ic_notification'),
+      );
     });
   });
 
@@ -259,6 +334,7 @@ void main() {
         'assets/skins/classic/',
         'assets/symbols/',
         'assets/themes/ch07/',
+        for (final folder in uiArtFolders) 'assets/ui/$folder/',
       ]);
 
       final first = applyAssetSyncPlan(plan, root);
@@ -275,9 +351,90 @@ void main() {
         isTrue,
       );
 
+      expect(first.outputOutcomes, {
+        notificationIconDrawable: WriteOutcome.created,
+      });
+      expect(
+        File(
+          p.join(root.path, gameAssetsDir, 'ui/stars/stars_1.svg'),
+        ).readAsStringSync(),
+        '<svg $_ns viewBox="0 0 10 10"><path d="M0 0"/></svg>',
+      );
+
       final second = applyAssetSyncPlan(_plan(root), root);
       expect(second.outcomes.values.toSet(), {WriteOutcome.unchanged});
+      expect(second.outputOutcomes.values.toSet(), {WriteOutcome.unchanged});
       expect(second.hasDrift, isFalse);
+    });
+
+    test(
+      'an edited notification drawable is drift, and the sync rewrites it',
+      () {
+        final root = _fakeRepo();
+        applyAssetSyncPlan(_plan(root), root);
+        final drawable = File(p.join(root.path, notificationIconDrawable))
+          ..writeAsStringSync('<vector/>');
+        final check = applyAssetSyncPlan(_plan(root), root, dryRun: true);
+        expect(
+          check.outputOutcomes[notificationIconDrawable],
+          WriteOutcome.updated,
+        );
+        expect(check.hasDrift, isTrue);
+        expect(drawable.readAsStringSync(), '<vector/>');
+        applyAssetSyncPlan(_plan(root), root);
+        expect(
+          drawable.readAsStringSync(),
+          contains('android:pathData="M2 2H8V8H2Z"'),
+        );
+      },
+    );
+
+    test('UI art: design/ui/icons is an issue, and so are unknown folders', () {
+      final root = _fakeRepo();
+      void write(String path, String content) => (File(
+        p.join(root.path, path),
+      )..parent.createSync(recursive: true)).writeAsStringSync(content);
+      write('design/ui/icons/share.svg', _svg('<path d="M0 0"/>'));
+      write('design/ui/frames/frame.svg', _svg('<path d="M0 0"/>'));
+      write('design/ui/stars/Star Big.svg', _svg('<path d="M0 0"/>'));
+      write('design/ui/stars/star.png', 'x');
+      write('design/ui/readme.txt', 'x');
+      final issues = _plan(root).issues;
+      expect(issues, [
+        'design/ui/frames: unknown UI art folder (expected badges, chest, '
+            'rivals, sprites, stars, icons, notification)',
+        'design/ui/icons/share.svg: icons ship as glyphs of the bundled '
+            'font; add the glyph to tokens.json `icons` and '
+            'tools/fonts/nesty_symbols.txt instead',
+        'design/ui/readme.txt: unexpected file in design/ui',
+        'design/ui/stars/Star Big.svg: UI art files are named [a-z0-9_]+.svg',
+        'design/ui/stars/star.png: UI art files are named [a-z0-9_]+.svg',
+      ]);
+    });
+
+    test('UI art is validated like the board art (spec §12.2)', () {
+      final root = _fakeRepo();
+      File(
+        p.join(root.path, 'design/ui/badges/badges_1.svg'),
+      ).writeAsStringSync(_svg('<text>hi</text>'));
+      expect(_plan(root).issues, [
+        contains('design/ui/badges/badges_1.svg: forbiddenElement'),
+      ]);
+    });
+
+    test('a notification icon the converter refuses blocks the sync', () {
+      final root = _fakeRepo();
+      final icon = File(p.join(root.path, notificationIconSource));
+      icon.writeAsStringSync(
+        _svg('<path d="M0 0H9" fill="#F2893B"/>', box: '0 0 24 24'),
+      );
+      expect(_plan(root).issues, [
+        '$notificationIconSource: a <path> is filled #F2893B, not white',
+      ]);
+      icon.deleteSync();
+      expect(_plan(root).issues, [
+        "$notificationIconSource: missing (the daily reminder's small icon)",
+      ]);
     });
 
     test('removes files the design no longer has (dry run only reports)', () {
@@ -318,6 +475,7 @@ void main() {
         'assets/skins/classic/',
         'assets/symbols/',
         'assets/themes/ch07/',
+        for (final folder in uiArtFolders) 'assets/ui/$folder/',
       ]);
     });
 
@@ -410,7 +568,7 @@ void main() {
       expect(
         planDesignAssetSync(root).issues,
         contains(contains('design/lottie/doll_pick.json: missing')),
-        reason: 'the default table wants all 29 files',
+        reason: 'the default table wants all 35 files',
       );
     });
 

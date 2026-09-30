@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:nesty_render/svg_tools.dart';
+import 'package:nesty_tools/src/assets/android_vector.dart';
 import 'package:nesty_tools/src/assets/audio_formats.dart';
 import 'package:nesty_tools/src/assets/png_formats.dart';
 import 'package:nesty_tools/src/file_writes.dart';
@@ -24,7 +25,17 @@ const syncedAssetRoots = [
   'audio',
   gameLottieDir,
   'museum',
+  'ui',
 ];
+
+/// The `design/ui/` folders that ship as UI art (m7-3, phase 4 architecture
+/// §1.3 and §3.4): `design/ui/<folder>/<name>.svg` →
+/// `assets/ui/<folder>/<name>.svg`, metadata stripped and validated like the
+/// board art. `design/ui/notification/` is the Android small icon (a
+/// platform output, [notificationIconDrawable]); `design/ui/icons/` must
+/// stay empty, since every icon use is a glyph of the bundled font (tokens
+/// `icons.$note`).
+const uiArtFolders = ['badges', 'chest', 'rivals', 'sprites', 'stars'];
 
 /// The ten bundled museum figurine ids, in chapter order (m3-design §9.1,
 /// §9.5). Must match `BundledCatalogRepository.figurineIds`; `tools/` does
@@ -53,6 +64,7 @@ const audioContractDoc = 'AUDIO.md';
 final _themeName = RegExp(r'^ch(\d{2})_[a-z0-9_]+\.svg$');
 final _audioName = RegExp(r'^([a-z0-9_]+)\.(wav|ogg)$');
 final _svgName = RegExp(r'^[a-z0-9-]+\.svg$');
+final _uiSvgName = RegExp(r'^[a-z0-9_]+\.svg$');
 
 /// One file the sync will write, relative to [gameAssetsDir].
 final class PlannedAsset {
@@ -80,11 +92,34 @@ final class PlannedAsset {
   final int sourceSize;
 }
 
+/// A generated file outside `apps/game/assets/` (a platform resource), by
+/// its repo-relative [path]: the sync writes it and `--check` compares its
+/// bytes, but it is not a Flutter asset.
+final class PlannedOutput {
+  PlannedOutput({
+    required this.source,
+    required this.path,
+    required this.bytes,
+  });
+
+  /// Repo-relative design file.
+  final String source;
+
+  /// Repo-relative output, e.g. [notificationIconDrawable].
+  final String path;
+
+  final List<int> bytes;
+}
+
 /// Everything the sync would do, computed without touching the app assets.
 final class AssetSyncPlan {
-  AssetSyncPlan(this.assets, this.issues);
+  AssetSyncPlan(this.assets, this.issues, {this.outputs = const []});
 
   final List<PlannedAsset> assets;
+
+  /// The platform files generated from `design/` (the Android notification
+  /// icon).
+  final List<PlannedOutput> outputs;
 
   /// Validation problems (`source: issue`). Non-empty → nothing is written.
   final List<String> issues;
@@ -322,6 +357,76 @@ AssetSyncPlan planDesignAssetSync(
     }
   }
 
+  // UI art (m7-3): design/ui/<folder>/*.svg → ui/<folder>/*.svg, and the
+  // Android notification icon from design/ui/notification/.
+  final outputs = <PlannedOutput>[];
+  final uiDir = Directory(p.join(design.path, 'ui'));
+  if (!uiDir.existsSync()) {
+    issues.add('design/ui: missing');
+  } else {
+    final entries = uiDir.listSync().toList()
+      ..sort((a, b) => a.path.compareTo(b.path));
+    for (final entry in entries) {
+      final name = p.basename(entry.path);
+      if (name.startsWith('.')) continue;
+      if (entry is! Directory) {
+        issues.add('design/ui/$name: unexpected file in design/ui');
+      } else if (name == 'icons') {
+        for (final file in filesIn('ui/icons')) {
+          issues.add(
+            '${rel(file)}: icons ship as glyphs of the bundled font; add the '
+            'glyph to tokens.json `icons` and tools/fonts/nesty_symbols.txt '
+            'instead',
+          );
+        }
+      } else if (name == 'notification') {
+        final icon = File(p.join(repoRoot.path, notificationIconSource));
+        for (final file in filesIn('ui/notification')) {
+          if (file.path != icon.path) {
+            issues.add(
+              '${rel(file)}: unexpected file in design/ui/notification',
+            );
+          }
+        }
+      } else if (!uiArtFolders.contains(name)) {
+        issues.add(
+          'design/ui/$name: unknown UI art folder (expected '
+          '${[...uiArtFolders, 'icons', 'notification'].join(', ')})',
+        );
+      }
+    }
+    for (final folder in uiArtFolders) {
+      for (final file in filesIn('ui/$folder')) {
+        final name = p.basename(file.path);
+        if (!_uiSvgName.hasMatch(name)) {
+          issues.add('${rel(file)}: UI art files are named [a-z0-9_]+.svg');
+          continue;
+        }
+        addSvg('ui', file, 'ui/$folder/$name', validateSvg);
+      }
+    }
+    final icon = File(p.join(repoRoot.path, notificationIconSource));
+    if (!icon.existsSync()) {
+      issues.add(
+        "$notificationIconSource: missing (the daily reminder's small icon)",
+      );
+    } else {
+      final vector = androidVectorOf(icon.readAsStringSync());
+      for (final issue in vector.issues) {
+        issues.add('$notificationIconSource: $issue');
+      }
+      if (vector.xml case final xml?) {
+        outputs.add(
+          PlannedOutput(
+            source: notificationIconSource,
+            path: notificationIconDrawable,
+            bytes: utf8.encode(xml),
+          ),
+        );
+      }
+    }
+  }
+
   _checkSymbolsCoverTokens(repoRoot, assets, issues);
   _checkAudioCoversTokens(repoRoot, audio, oggFrames, issues);
 
@@ -332,7 +437,7 @@ AssetSyncPlan planDesignAssetSync(
     }
   }
   assets.sort((a, b) => a.destination.compareTo(b.destination));
-  return AssetSyncPlan(assets, issues);
+  return AssetSyncPlan(assets, issues, outputs: outputs);
 }
 
 // Every dollColor symbol named in tokens.json must ship, or a doll would
@@ -409,10 +514,18 @@ void _checkAudioCoversTokens(
 
 /// What [applyAssetSyncPlan] did (or, dry-run, would do).
 final class AssetSyncResult {
-  AssetSyncResult(this.outcomes, this.removed, this.missingPubspecDirs);
+  AssetSyncResult(
+    this.outcomes,
+    this.removed,
+    this.missingPubspecDirs, {
+    this.outputOutcomes = const {},
+  });
 
   /// Destination → outcome.
   final Map<String, WriteOutcome> outcomes;
+
+  /// Platform output path ([PlannedOutput.path]) → outcome.
+  final Map<String, WriteOutcome> outputOutcomes;
 
   /// Stale files under the synced roots (removed unless dry-run).
   final List<String> removed;
@@ -422,6 +535,7 @@ final class AssetSyncResult {
 
   bool get hasDrift =>
       outcomes.values.any((o) => o != WriteOutcome.unchanged) ||
+      outputOutcomes.values.any((o) => o != WriteOutcome.unchanged) ||
       removed.isNotEmpty ||
       missingPubspecDirs.isNotEmpty;
 }
@@ -446,6 +560,14 @@ AssetSyncResult applyAssetSyncPlan(
       dryRun: dryRun,
     );
   }
+  final outputOutcomes = {
+    for (final output in plan.outputs)
+      output.path: writeBytesIfChanged(
+        File(p.join(repoRoot.path, output.path)),
+        output.bytes,
+        dryRun: dryRun,
+      ),
+  };
   final planned = {for (final a in plan.assets) a.destination};
   final removed = <String>[];
   for (final category in syncedAssetRoots) {
@@ -467,6 +589,7 @@ AssetSyncResult applyAssetSyncPlan(
     outcomes,
     removed,
     _missingPubspecDirs(repoRoot, plan.assetDirectories),
+    outputOutcomes: outputOutcomes,
   );
 }
 

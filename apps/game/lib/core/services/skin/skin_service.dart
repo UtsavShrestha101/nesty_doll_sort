@@ -76,6 +76,13 @@ abstract interface class SkinService {
   /// returns false; never throws.
   Future<bool> selectSkin(String skinId);
 
+  /// Emits [selectedSkinId] after every [selectSkin] that switched it (not
+  /// for a failed or same-skin call), once the new layers are equipped. The
+  /// art that stays mounted while the Shop equips a skin (Home's shelf,
+  /// `ShowcaseDolls`) follows it (docs/plans/m7-design.md §18, the "Home's
+  /// shelf after a skin equip" fix).
+  Stream<String> get selectedSkinChanges;
+
   /// A one-tower showcase board of [colors] (Home shelf, Shop cards, skin
   /// detail; `ShowcaseBoard`), in [skinId]'s art (default:
   /// [selectedSkinId]). At most two non-selected skins' layers stay cached

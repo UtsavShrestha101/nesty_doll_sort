@@ -173,6 +173,9 @@ void main() {
         FxId.fxTwinkle,
         FxId.dollWinHop,
         FxId.dollWinDance,
+        FxId.uiIntroTowers,
+        FxId.uiIntroGlass,
+        FxId.uiIntroIce,
       ]) {
         final plan = FxPlan.whole(fxSpecOf(id), reduced: true);
         expect(plan.restFrame, 0, reason: id.fileName);
@@ -218,6 +221,10 @@ void main() {
           FxId.dollWinDance,
           FxId.dollWinHop,
           FxId.fxTwinkle,
+          // m7-3's intro card loops: frame 0, still (phase 4).
+          FxId.uiIntroTowers,
+          FxId.uiIntroGlass,
+          FxId.uiIntroIce,
         ]),
       );
       expect(

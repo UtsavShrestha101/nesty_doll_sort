@@ -12,6 +12,8 @@ import 'package:nesty_game/core/services/analytics/fake_analytics_service.dart';
 import 'package:nesty_game/core/services/clock/fake_clock.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/fake_daily_service.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -104,7 +106,9 @@ final Level icedLevel = levelFrom(icedLevelJson);
 /// core-codec lane has landed it), so a restore test exercises the real
 /// round trip rather than a stand-in. The solver, save, resolver and daily
 /// service it was built with are available through [scriptedSolverOf],
-/// [saveOf], [resolverOf] and [dailyOf].
+/// [saveOf], [resolverOf] and [dailyOf]. [settings] defaults to a fresh
+/// [FakeDatabaseService] (relaxed mode off, m7-design §10), available
+/// through [settingsOf].
 GameplayBloc buildBloc({
   List<LevelBundleEntry>? entries,
   SolverService? solver,
@@ -112,8 +116,9 @@ GameplayBloc buildBloc({
   SaveService? save,
   AnalyticsService? analytics,
   LevelResolver? resolver,
-  FakeDailyService? daily,
+  DailyService? daily,
   FakeClock? clock,
+  DatabaseService? settings,
   bool freeExtraSlots = false,
   Duration softStuckDebounce = const Duration(milliseconds: 5),
 }) {
@@ -127,6 +132,7 @@ GameplayBloc buildBloc({
   final usedDaily = daily ?? FakeDailyService(usedClock);
   final usedResolver =
       resolver ?? FakeLevelResolver(levels, usedSave, usedConfig);
+  final usedSettings = settings ?? FakeDatabaseService();
   final bloc = GameplayBloc(
     levels,
     usedSolver,
@@ -136,6 +142,7 @@ GameplayBloc buildBloc({
     usedResolver,
     usedDaily,
     usedClock,
+    usedSettings,
     freeExtraSlots: freeExtraSlots,
     softStuckDebounce: softStuckDebounce,
   );
@@ -143,6 +150,7 @@ GameplayBloc buildBloc({
   _saves[bloc] = usedSave;
   _resolvers[bloc] = usedResolver;
   _dailies[bloc] = usedDaily;
+  _settings[bloc] = usedSettings;
   return bloc;
 }
 
@@ -150,6 +158,7 @@ final Expando<SolverService> _solvers = Expando();
 final Expando<SaveService> _saves = Expando();
 final Expando<LevelResolver> _resolvers = Expando();
 final Expando<DailyService> _dailies = Expando();
+final Expando<DatabaseService> _settings = Expando();
 
 /// The [ScriptedSolverService] [bloc] was built with.
 ScriptedSolverService scriptedSolverOf(GameplayBloc bloc) =>
@@ -164,6 +173,9 @@ LevelResolver resolverOf(GameplayBloc bloc) => _resolvers[bloc]!;
 /// The [FakeDailyService] [bloc] was built with.
 FakeDailyService dailyOf(GameplayBloc bloc) =>
     _dailies[bloc]! as FakeDailyService;
+
+/// The settings store [bloc] was built with (relaxed mode).
+DatabaseService settingsOf(GameplayBloc bloc) => _settings[bloc]!;
 
 /// A [FakeSaveService] that counts [saveInProgress] calls, so a test can
 /// assert a save happened after every applied move, undo, restart and +1

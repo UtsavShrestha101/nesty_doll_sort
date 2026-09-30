@@ -6,6 +6,7 @@ import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/game/components/board_stand_ins.dart';
 import 'package:nesty_game/features/gameplay/overlays/modal_placement.dart';
 import 'package:nesty_game/features/gameplay/overlays/overlay_entrance.dart';
@@ -25,10 +26,13 @@ import 'package:nesty_render/nesty_render.dart';
 /// bases and the buried silhouettes, the intact and shattered glass case,
 /// the ice frames), with the board's flat stand-ins while a piece is
 /// unavailable. The dolls play the widget-hosted `doll_idle` loop.
-// TODO(design): m3-design §10.4 asks for a looping mini animation of each
-// mechanic (`doll_reveal`, `fx_glass_unlock`, `fx_ice` are board-hosted
-// files); no loop is designed for a card, so the pieces stand still
-// (BACKLOG).
+///
+/// With the level's skin the picture is the design's own loop (m7-3, frames
+/// 4.1–4.3): `ui_intro_towers`, `ui_intro_glass` or `ui_intro_ice` in the
+/// 302×230 slot, looping, its dolls and board pieces filled from the skin
+/// (LOTTIE.md "Mechanic intro card"). Under reduced motion it rests on frame
+/// 0. Without the file (or the skin) the still picture above stands in
+/// (rule 3).
 class IntroMechanicCard extends StatelessWidget {
   const IntroMechanicCard({
     required this.mechanic,
@@ -299,8 +303,139 @@ abstract final class IntroIllustration {
 
 /// The picture at the frame's 302×230 size, scaled down (from the plank)
 /// on a card narrower than the reference.
-class _MechanicIllustration extends StatelessWidget {
+class _MechanicIllustration extends StatefulWidget {
   const _MechanicIllustration({
+    required this.mechanic,
+    required this.skin,
+    required this.levelColors,
+    required this.symbols,
+    required this.library,
+  });
+
+  final IntroMechanic mechanic;
+  final LevelSkin? skin;
+  final List<DollColor> levelColors;
+  final DollSymbols symbols;
+  final FxLibrary? library;
+
+  @override
+  State<_MechanicIllustration> createState() => _MechanicIllustrationState();
+}
+
+class _MechanicIllustrationState extends State<_MechanicIllustration> {
+  late LottieFxController _controller = _newController();
+  bool _started = false;
+
+  /// The loop's file for [mechanic] (`loop` marker, 240–300 frames).
+  static FxId idOf(IntroMechanic mechanic) => switch (mechanic) {
+    IntroMechanic.towers => FxId.uiIntroTowers,
+    IntroMechanic.glass => FxId.uiIntroGlass,
+    IntroMechanic.ice => FxId.uiIntroIce,
+  };
+
+  /// The colours the loop's roles draw: the frame's own where the level's
+  /// skin has them, else spares from the level (`IntroIllustration.castFor`).
+  LottieFxController _newController() {
+    final controller = LottieFxController(idOf(widget.mechanic));
+    final available = widget.skin == null
+        ? const <DollColor>[]
+        : widget.levelColors;
+    final request = controller.images.request;
+    switch (widget.mechanic) {
+      case IntroMechanic.towers:
+        final cast = IntroIllustration.castFor(const [
+          DollColor.blue,
+          DollColor.green,
+        ], available);
+        request
+          ..mover = cast[DollColor.blue]
+          ..revealed = cast[DollColor.green];
+      case IntroMechanic.glass:
+        final cast = IntroIllustration.castFor(const [
+          DollColor.green,
+          DollColor.blue,
+        ], available);
+        request
+          ..family = cast[DollColor.green]
+          ..freed = cast[DollColor.blue]
+          // The padlock carries the family's colour symbol.
+          ..unlockColor = cast[DollColor.green];
+      case IntroMechanic.ice:
+        final cast = IntroIllustration.castFor(const [
+          DollColor.blue,
+          DollColor.green,
+          DollColor.red,
+        ], available);
+        request
+          ..family = cast[DollColor.blue]
+          ..family2 = cast[DollColor.green]
+          ..freed = cast[DollColor.red];
+    }
+    return controller;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Reduced motion rests on frame 0 (ambient loop, FxMotionPolicy).
+    _controller.playWhole();
+  }
+
+  @override
+  void didUpdateWidget(_MechanicIllustration oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.mechanic != widget.mechanic ||
+        !identical(oldWidget.skin, widget.skin) ||
+        oldWidget.levelColors != widget.levelColors) {
+      final old = _controller;
+      _controller = _newController()..playWhole();
+      WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final still = _StillIllustration(
+      mechanic: widget.mechanic,
+      skin: widget.skin,
+      levelColors: widget.levelColors,
+      symbols: widget.symbols,
+      library: widget.library,
+    );
+    final skin = widget.skin;
+    return ExcludeSemantics(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomCenter,
+        child: SizedBox.fromSize(
+          size: IntroCard.illustrationSize,
+          child: skin == null
+              ? still
+              : LottieFxView(
+                  id: idOf(widget.mechanic),
+                  controller: _controller,
+                  library: widget.library,
+                  images: skin.images,
+                  fallback: still,
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The still picture (NestyOverlay `INTRO`) at the frame's 302×230 size:
+/// the stand-in while the loop or the skin isn't there (rule 3).
+class _StillIllustration extends StatelessWidget {
+  const _StillIllustration({
     required this.mechanic,
     required this.skin,
     required this.levelColors,
@@ -323,83 +458,77 @@ class _MechanicIllustration extends StatelessWidget {
       for (final piece in pieces)
         if (piece case IntroDollPiece(:final color)) color,
     ], skin == null ? const [] : levelColors);
-    return ExcludeSemantics(
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.bottomCenter,
-        child: SizedBox.fromSize(
-          size: IntroCard.illustrationSize,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              for (final piece in pieces)
-                switch (piece) {
-                  IntroSpritePiece(:final sprite, :final rect) =>
-                    Positioned.fromRect(
-                      rect: rect,
-                      child: CustomPaint(
-                        painter: _SpritePainter(sprite, skin?.sprites),
-                      ),
-                    ),
-                  IntroDollPiece(
-                    :final color,
-                    :final centerX,
-                    :final baseY,
-                    :final height,
-                  ) =>
-                    LottieDoll.positioned(
-                      centerX: centerX,
-                      baseY: baseY,
-                      doll: LottieDoll(
-                        id: FxId.dollIdle,
-                        color: cast[color] ?? color,
-                        height: height,
-                        images: skin?.images,
-                        renderer: skin?.restRenderer,
-                        symbols: symbols,
-                        library: library,
-                      ),
-                    ),
-                  IntroArrowPiece(:final left) => Positioned(
-                    left: left,
-                    top: IntroArrowPiece.top,
-                    child: const Icon(
-                      NestyIcons.arrowForward,
-                      size: IntroArrowPiece.size,
-                      color: AppColorTokens.primaryEdge,
-                    ),
+    return SizedBox.fromSize(
+      size: IntroCard.illustrationSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (final piece in pieces)
+            switch (piece) {
+              IntroSpritePiece(:final sprite, :final rect) =>
+                Positioned.fromRect(
+                  rect: rect,
+                  child: CustomPaint(
+                    painter: _SpritePainter(sprite, skin?.sprites),
                   ),
-                  IntroChipPiece(:final kind, :final count, :final topLeft) =>
-                    Positioned(
-                      left: topLeft.dx,
-                      top: topLeft.dy,
-                      child: _Chip(
-                        color: switch (kind) {
-                          IntroChipKind.buried => AppColorTokens.walnut,
-                          IntroChipKind.unlock => DollPalette.of(
-                            DollColor.purple,
-                          ).base,
-                          IntroChipKind.ice => AppColorTokens.ice,
-                        },
-                        child: switch (kind) {
-                          IntroChipKind.buried => _chipText(
-                            l10n.introTowersBuriedTag(count ?? 0),
-                          ),
-                          IntroChipKind.ice => _chipText(
-                            l10n.introIceCount(count ?? 0),
-                          ),
-                          IntroChipKind.unlock => const Icon(
-                            NestyIcons.star,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                        },
+                ),
+              IntroDollPiece(
+                :final color,
+                :final centerX,
+                :final baseY,
+                :final height,
+              ) =>
+                LottieDoll.positioned(
+                  centerX: centerX,
+                  baseY: baseY,
+                  doll: LottieDoll(
+                    id: FxId.dollIdle,
+                    color: cast[color] ?? color,
+                    height: height,
+                    images: skin?.images,
+                    renderer: skin?.restRenderer,
+                    symbols: symbols,
+                    library: library,
+                  ),
+                ),
+              IntroArrowPiece(:final left) => Positioned(
+                left: left,
+                top: IntroArrowPiece.top,
+                child: const Icon(
+                  NestyIcons.arrowForward,
+                  size: IntroArrowPiece.size,
+                  color: AppColorTokens.primaryEdge,
+                ),
+              ),
+              IntroChipPiece(:final kind, :final count, :final topLeft) =>
+                Positioned(
+                  left: topLeft.dx,
+                  top: topLeft.dy,
+                  child: _Chip(
+                    color: switch (kind) {
+                      IntroChipKind.buried => AppColorTokens.walnut,
+                      IntroChipKind.unlock => DollPalette.of(
+                        DollColor.purple,
+                      ).base,
+                      IntroChipKind.ice => AppColorTokens.ice,
+                    },
+                    child: switch (kind) {
+                      IntroChipKind.buried => _chipText(
+                        l10n.introTowersBuriedTag(count ?? 0),
                       ),
-                    ),
-                },
-            ],
-          ),
-        ),
+                      IntroChipKind.ice => _chipText(
+                        l10n.introIceCount(count ?? 0),
+                      ),
+                      IntroChipKind.unlock => const Icon(
+                        NestyIcons.star,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    },
+                  ),
+                ),
+            },
+        ],
       ),
     );
   }
@@ -439,7 +568,10 @@ final class _SpritePainter extends CustomPainter {
     final standIn = switch (sprite) {
       BoardSprite.glassCase0 ||
       BoardSprite.glassCase1 ||
-      BoardSprite.glassCase2 => _glass,
+      BoardSprite.glassCase2 ||
+      BoardSprite.glassCaseTall0 ||
+      BoardSprite.glassCaseTall1 ||
+      BoardSprite.glassCaseTall2 => _glass,
       BoardSprite.ice0 ||
       BoardSprite.ice1 ||
       BoardSprite.ice2 ||

@@ -1,6 +1,9 @@
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_spec.dart';
+import 'package:nesty_game/features/fx/fx_spec.gen.dart';
+import 'package:nesty_render/nesty_render.dart' show MotionTokens;
 
 /// A sound and/or haptic the board timeline fires at a time inside a clip
 /// (LOTTIE.md "When each one plays"; m2-lottie-design §7).
@@ -140,6 +143,16 @@ abstract final class FxTiming {
 
   /// Win overlay: families start hopping this far apart (App Flow 2.8).
   static const winFamilyStaggerMs = 150.0;
+
+  /// `ui_extra_slot`: the frame its pulse starts on and rests on, the file's
+  /// `rest` marker: frame 0, the static pad's own pose (100 % scale, 100 %
+  /// opacity: LOTTIE.md m7-3 E.21, tokens `motion.extraSlot.restFrame`). The
+  /// loop runs 0 → 104 % at 24 → 96 % at 72 → 100 % at 96. It starts here,
+  /// so the hand-off from the static pad has no pop, and a doll standing on
+  /// the pad stops it back here (E.16).
+  static double get extraSlotRestFrame =>
+      fxSpecOf(FxId.uiExtraSlot).marker('rest')?.start ??
+      MotionTokens.extraSlotRestFrame.toDouble();
 }
 
 /// `fx_ice`'s segments by ice stage (LOTTIE.md v3 "When each one plays",

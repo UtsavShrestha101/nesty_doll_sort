@@ -13,6 +13,7 @@ import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 
 import '../../helpers/level_fixtures.dart';
@@ -71,6 +72,7 @@ void main() {
     FakeLevelResolver resolver,
     FakeSaveService save,
     FakeClock clock,
+    FakeShareService share,
   })
   build({
     DailyStatus? status,
@@ -89,18 +91,21 @@ void main() {
     );
     final clock = FakeClock();
     final daily = FakeDailyService(clock, status: status);
+    final share = FakeShareService();
     return (
       cubit: DailyCubit(
         daily,
         resolver,
         theSave,
         FakeRemoteConfigService(),
+        share,
         countdownInterval: countdownInterval,
       ),
       daily: daily,
       resolver: resolver,
       save: theSave,
       clock: clock,
+      share: share,
     );
   }
 
@@ -276,6 +281,7 @@ void main() {
           resolver,
           theSave,
           remote,
+          FakeShareService(),
           countdownInterval: countdownInterval,
         ),
         clock: clock,

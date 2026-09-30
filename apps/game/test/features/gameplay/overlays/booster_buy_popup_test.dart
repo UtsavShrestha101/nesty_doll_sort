@@ -102,4 +102,91 @@ void main() {
       });
     }
   }
+
+  group(
+    'a price the balance can\'t cover (D195, phase 4 architecture §3.7)',
+    () {
+      Widget unaffordable({VoidCallback? onNeedCoins, VoidCallback? onBuy}) =>
+          BoosterBuyPopup(
+            type: BoosterType.undo,
+            price: 60,
+            coins: 10,
+            freeUndosPerLevel: 2,
+            onBuy: onBuy,
+            onNeedCoins: onNeedCoins,
+            onDismiss: () {},
+          );
+
+      testWidgets('with a way to the Shop the coin button is enabled and '
+          'opens Not enough coins with the shortfall', (tester) async {
+        var shops = 0;
+        await pumpScreen(tester, unaffordable(onNeedCoins: () => shops++));
+        await tester.pump(const Duration(milliseconds: 300));
+        final button = tester.widget<CoinPriceButton>(
+          find.byType(CoinPriceButton),
+        );
+        expect(button.onPressed, isNotNull);
+
+        await tester.tap(find.byType(CoinPriceButton));
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.text('A few more coins'), findsOneWidget);
+        expect(find.text('You need 50 more coins'), findsOneWidget);
+        // The item chip names the booster.
+        expect(find.text('Undo'), findsWidgets);
+
+        await tester.tap(find.text('Go to Shop'));
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(shops, 1);
+      });
+
+      testWidgets('Not now closes the dialog and changes nothing', (
+        tester,
+      ) async {
+        var shops = 0;
+        await pumpScreen(tester, unaffordable(onNeedCoins: () => shops++));
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.byType(CoinPriceButton));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.tap(find.text('Not now'));
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.text('A few more coins'), findsNothing);
+        expect(shops, 0);
+        expect(find.byType(BoosterBuyPopup), findsOneWidget);
+      });
+
+      testWidgets('an affordable price still buys, never the dialog', (
+        tester,
+      ) async {
+        var buys = 0;
+        await pumpScreen(
+          tester,
+          BoosterBuyPopup(
+            type: BoosterType.undo,
+            price: 60,
+            coins: 100,
+            freeUndosPerLevel: 2,
+            onBuy: () => buys++,
+            onNeedCoins: () {},
+            onDismiss: () {},
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.byType(CoinPriceButton));
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(buys, 1);
+        expect(find.text('A few more coins'), findsNothing);
+      });
+
+      testWidgets('without a way to the Shop it stays disabled, as before', (
+        tester,
+      ) async {
+        await pumpScreen(tester, unaffordable());
+        await tester.pump(const Duration(milliseconds: 300));
+        final button = tester.widget<CoinPriceButton>(
+          find.byType(CoinPriceButton),
+        );
+        expect(button.onPressed, isNull);
+      });
+    },
+  );
 }

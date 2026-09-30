@@ -31,10 +31,17 @@ sealed class FxCommand {
 /// Take a component from [clip]'s pool, place it and play [segment]. Hide
 /// the top-doll sprite of every slot in `clip.hides` from now on.
 final class StartClip extends FxCommand {
-  const StartClip(super.atMs, this.clip, this.segment);
+  const StartClip(super.atMs, this.clip, this.segment, {this.phaseMs = 0});
 
   final FxClip clip;
   final FxSegment segment;
+
+  /// Extra ms already "elapsed" the moment this clip's first frame draws,
+  /// on top of any natural scheduling lateness (`FxCommandSink.execute`'s
+  /// `lateMs`): a loop that must open already mid-cycle so its first frame
+  /// matches what it replaces, with no pop (`ui_extra_slot`'s rest-pose
+  /// hand-off, `FxTiming.extraSlotRestFrame`, m2-lottie-design §9.6).
+  final double phaseMs;
 
   @override
   String toString() => '@${atMs.toStringAsFixed(1)} start $clip $segment';

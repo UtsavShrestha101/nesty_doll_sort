@@ -3,14 +3,21 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
+import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/models/reduce_motion_mode.dart';
+import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/database/hive_boxes.dart';
 import 'package:nesty_game/core/services/database/hive_database_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/hive_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_document_codec.dart';
+
+import 'save_migrations_test.dart' show schema1Document;
 
 /// A [DatabaseService] proxy that counts and can pause `writeSaveDocument`
 /// calls, for the write-queue coalescing test.
@@ -71,6 +78,27 @@ final class _GatedDatabaseService implements DatabaseService {
   @override
   Stream<SymbolsMode> get symbolsModeChanges => _inner.symbolsModeChanges;
   @override
+  bool get relaxedMode => _inner.relaxedMode;
+  @override
+  Future<void> setRelaxedMode(bool enabled) => _inner.setRelaxedMode(enabled);
+  @override
+  Stream<bool> get relaxedModeChanges => _inner.relaxedModeChanges;
+  @override
+  ReduceMotionMode get reduceMotion => _inner.reduceMotion;
+  @override
+  Future<void> setReduceMotion(ReduceMotionMode mode) =>
+      _inner.setReduceMotion(mode);
+  @override
+  Stream<ReduceMotionMode> get reduceMotionChanges =>
+      _inner.reduceMotionChanges;
+  @override
+  ReminderSettings get reminder => _inner.reminder;
+  @override
+  Future<void> setReminder(ReminderSettings reminder) =>
+      _inner.setReminder(reminder);
+  @override
+  Stream<ReminderSettings> get reminderChanges => _inner.reminderChanges;
+  @override
   String get languageCode => _inner.languageCode;
   @override
   Future<void> setLanguage(String languageCode) =>
@@ -107,6 +135,97 @@ void main() {
       expect(reload.coins, 40);
       expect(reload.currentLevel, 5);
       expect(reload.playerId, save.playerId);
+      await reload.dispose();
+    });
+
+    test('round trip: every schema-2 field survives a real Hive write and '
+        'reload (m7-design §3.2)', () async {
+      final full = SaveDocument(
+        currentLevel: 24,
+        highestLevel: 26,
+        coins: 830,
+        inventory: const BoosterInventory(hint: 1, slot: 0),
+        ownedSkins: const ['classic', 'ocean'],
+        selectedSkin: 'ocean',
+        ownedThemes: const ['ch01', 'ch05'],
+        selectedTheme: 'ch05',
+        museum: const ['ch01'],
+        museumCollected: {'ch01': LocalDate(2026, 9, 12)},
+        daily: DailyProgress(
+          streak: 9,
+          lit: true,
+          run: 2,
+          lastDate: LocalDate(2026, 9, 27),
+          freezes: 1,
+          freezeWeek: 202639,
+          done: [LocalDate(2026, 9, 26), LocalDate(2026, 9, 27)],
+          frozen: [LocalDate(2026, 9, 25)],
+          noticeDate: LocalDate(2026, 9, 25),
+          chestPending: true,
+          // The share text's and the reminder offer's facts (m7-design
+          // P3.4).
+          lastSolve: DailySolve(
+            date: LocalDate(2026, 9, 27),
+            moves: 22,
+            families: 6,
+            minuteOfDay: 1200,
+          ),
+        ),
+        inProgress: const InProgressLevel(
+          request: PlayRequest.campaign(24),
+          levelId: 'L0024',
+          levelVersion: 2,
+          session: {'format': 1, 'undosUsed': 1},
+          // A hint since the last Restart (Q116; m7-design P3.6).
+          hinted: true,
+        ),
+        adCounters: const AdCounters(winsSinceInterstitial: 1, lastAdAt: 5),
+        stats: const SaveStats(wins: 23, moves: 612, boostersUsed: {'hint': 2}),
+        seenIntros: const ['towers'],
+        tutorialDone: true,
+        bonus: const BonusProgress(next: 3),
+        playerId: '7F3A-21C9',
+        levelBests: const {'L0024@2': 16, 'L0003@1': 9},
+        // The star rating's best per level id (m7-design P3.4).
+        levelStars: const {'L0024': 3, 'L0003': 1},
+        starTipShown: true,
+        records: const SaveRecords(
+          families: 212,
+          dolls: 780,
+          // Below the derivable badge thresholds, and `first_family` (the
+          // one 23 wins would otherwise grant on load) is already listed,
+          // so `SaveService.load`'s silent badge grant is a no-op here:
+          // this test is only about storage, not badge rules.
+          dailies: 5,
+          longestRun: 9,
+          badges: ['first_family'],
+        ),
+        chests: const ChestProgress(opened: [10], bonusOpened: [10, 20]),
+        race: const RaceProgress(
+          rivals: [
+            RivalProgress(unlocked: true, raceNo: 5),
+            RivalProgress(unlocked: true, raceNo: 1),
+            RivalProgress(),
+          ],
+        ),
+        unknown: const {'zeta': 1, 'alpha': 'kept'},
+      );
+
+      final first = await HiveDatabaseService.open(directory: directory.path);
+      await first.writeSaveDocument(SaveDocumentCodec.write(full));
+      await first.flushSave();
+      final save = HiveSaveService(first, FakeRemoteConfigService());
+      await save.load();
+      // The load-time badge grant found nothing new (see above): the
+      // document read back is exactly what was written.
+      expect(save.document, full);
+      await save.flush();
+      await first.close();
+
+      final second = await HiveDatabaseService.open(directory: directory.path);
+      final reload = HiveSaveService(second, FakeRemoteConfigService());
+      await reload.load();
+      expect(reload.document, full);
       await reload.dispose();
     });
 
@@ -166,7 +285,7 @@ void main() {
         directory: directory.path,
       );
       const future =
-          '{"schema":2,"currentLevel":9,"coins":70,"aFutureKey":"x"}';
+          '{"schema":3,"currentLevel":9,"coins":70,"aFutureKey":"x"}';
       await database.writeSaveDocument(future);
       await database.flushSave();
 
@@ -177,12 +296,100 @@ void main() {
       expect(save.document.unknown['aFutureKey'], 'x');
       await save.flush();
 
-      expect(database.readSaveBackup(SaveBoxKeys.backup(2)), future);
+      expect(database.readSaveBackup(SaveBoxKeys.backup(3)), future);
       // The document was written back at the current schema.
       final rewritten = database.readSaveDocument();
       expect(rewritten, isNotNull);
       expect(SaveDocumentCodec.read(rewritten).kind, SaveReadKind.current);
       await save.dispose();
+    });
+
+    test('a real schema-1 document migrates to schema 2 on load: backed up '
+        'once under doc_backup_v1, the derived fields filled, the badges it '
+        'implies granted, and written back (m7-design §3.3)', () async {
+      final database = await HiveDatabaseService.open(
+        directory: directory.path,
+      );
+      final original = schema1Document();
+      await database.writeSaveDocument(original);
+      await database.flushSave();
+
+      final save = HiveSaveService(database, FakeRemoteConfigService());
+      await save.load();
+      expect(save.currentLevel, 24);
+      expect(save.coins, 830);
+      expect(save.document.daily.lit, isTrue);
+      expect(save.document.daily.run, 6);
+      expect(save.document.records.longestRun, 6);
+      expect(save.document.records.dailies, 6);
+      // 23 wins imply a completed family (m7-design §12), granted silently.
+      expect(save.document.records.earned, [BadgeId.firstFamily]);
+      await save.flush();
+
+      expect(database.readSaveBackup(SaveBoxKeys.backup(1)), original);
+      final rewritten = database.readSaveDocument();
+      final reread = SaveDocumentCodec.read(rewritten);
+      expect(reread.kind, SaveReadKind.current);
+      expect(reread.document, save.document);
+
+      // The next launch reads it as current: nothing more to back up.
+      final again = HiveSaveService(database, FakeRemoteConfigService());
+      await again.load();
+      expect(again.document, save.document);
+      expect(database.readSaveBackup(SaveBoxKeys.backup(1)), original);
+      await again.dispose();
+      await save.dispose();
+    });
+
+    test('a race result survives a real Hive write and reload: beginRace '
+        'and recordRaceWin keep raceNo, coins, wins and the unlock, and a '
+        'kill (no recordRaceWin call) leaves no reward (m7-design P2.7, '
+        'P2.13)', () async {
+      final first = await HiveDatabaseService.open(directory: directory.path);
+      final save = HiveSaveService(first, FakeRemoteConfigService());
+      await save.load();
+      save.currentLevel = 25; // Past race_unlock_level (20).
+
+      final raceNo = save.beginRace(1);
+      expect(raceNo, 1);
+      await save.flush();
+      await first.close();
+
+      // "A kill leaves no reward": reopening after beginRace alone (no
+      // recordRaceWin) keeps the raceNo but pays nothing.
+      final reopened = await HiveDatabaseService.open(
+        directory: directory.path,
+      );
+      final afterKill = HiveSaveService(reopened, FakeRemoteConfigService());
+      await afterKill.load();
+      expect(afterKill.document.race.rivals[0].raceNo, 1);
+      expect(afterKill.coins, 0);
+      expect(afterKill.document.race.rivals[0].wins, 0);
+
+      final outcome = afterKill.recordRaceWin(
+        const RaceWinRecord(
+          rival: 1,
+          raceNo: 1,
+          rewardCoins: 20,
+          moves: 12,
+          families: 2,
+          dolls: 5,
+        ),
+      );
+      expect(outcome.coins, 20);
+      expect(outcome.unlockedRival, 2);
+      await afterKill.flush();
+      await reopened.close();
+
+      final third = await HiveDatabaseService.open(directory: directory.path);
+      final reload = HiveSaveService(third, FakeRemoteConfigService());
+      await reload.load();
+      expect(reload.coins, 20);
+      expect(reload.document.race.rivals[0].wins, 1);
+      expect(reload.document.race.rivals[0].raceNo, 1);
+      expect(reload.document.race.rivals[1].unlocked, isTrue);
+      expect(reload.document.records.has(BadgeId.firstRace), isTrue);
+      await reload.dispose();
     });
 
     test('a torn write (the last frame truncated) leaves the previous '

@@ -26,13 +26,17 @@ GameplayState _state({
   int undoPrice = 0,
   int hintPrice = 0,
   int slotPrice = 0,
+  bool relaxed = false,
+  int extraSlots = 0,
 }) {
   final level = levelFrom(tutorialLevelJson);
   final entry = entryFor(level);
   return GameplayState(
     play: FakeLevelResolver.campaignEntry(entry, entry.rewardCoins),
     entry: entry,
-    board: GameState.initial(level),
+    board: extraSlots == 0
+        ? GameState.initial(level)
+        : _withExtras(level, extraSlots),
     status: status,
     paused: paused,
     softStuck: softStuck,
@@ -47,7 +51,16 @@ GameplayState _state({
     undoPrice: undoPrice,
     hintPrice: hintPrice,
     slotPrice: slotPrice,
+    relaxed: relaxed,
   );
+}
+
+GameState _withExtras(Level level, int count) {
+  final session = GameSession(level);
+  for (var i = 0; i < count; i++) {
+    session.addExtraSlot();
+  }
+  return session.state;
 }
 
 void main() {
@@ -91,6 +104,27 @@ void main() {
         _state(extraSlotsLeft: 0, canAddSlot: false, slotPrice: 150),
       );
       expect(capped.slotBadge, isNull);
+    });
+
+    test('relaxed mode (E6; frame 10.9): Undo shows the all_inclusive glyph '
+        'instead of a count or price; Hint and +1 Slot are unchanged', () {
+      final model = BoosterBarModel.of(
+        _state(
+          relaxed: true,
+          freeUndosLeft: 0,
+          undoPrice: 20,
+          hintsLeft: 3,
+          extraSlotsLeft: 2,
+        ),
+      );
+      expect(model.undoBadge, const BoosterBadge.infinite());
+      expect(model.hintBadge, const BoosterBadge.count(3));
+      expect(model.slotBadge, const BoosterBadge.count(2));
+    });
+
+    test('the dev flavor wins over relaxed mode: no badge at all', () {
+      final model = BoosterBarModel.of(_state(relaxed: true, unlimited: true));
+      expect(model.undoBadge, isNull);
     });
 
     test('follows the bloc: nothing works while paused or once all levels '
@@ -145,11 +179,32 @@ void main() {
       expect(BoosterBarModel.of(_state(softStuck: true)).undoGlow, isTrue);
     });
 
-    test('soft stuck with nothing to undo glows nothing: the banner '
-        'suggests Restart (review FIDELITY-6)', () {
+    test('soft stuck with nothing to undo glows Restart, not Undo (frame '
+        '12.7)', () {
       final model = BoosterBarModel.of(_state(softStuck: true, canUndo: false));
       expect(model.undoGlow, isFalse);
       expect(model.undoEnabled, isFalse);
+      expect(model.restartGlow, isTrue);
+      // With an Undo that works, only Undo glows.
+      final undoable = BoosterBarModel.of(_state(softStuck: true));
+      expect(undoable.undoGlow, isTrue);
+      expect(undoable.restartGlow, isFalse);
+      expect(BoosterBarModel.of(_state()).restartGlow, isFalse);
+    });
+
+    test('+1 Slot at its limit (frame 12.9): the model carries how many the '
+        'level holds; before that, none', () {
+      final atLimit = BoosterBarModel.of(
+        _state(extraSlots: 2, canAddSlot: false),
+      );
+      expect(atLimit.slotLimit, 2);
+      expect(atLimit.slotEnabled, isFalse);
+      expect(atLimit.slotBadge, isNull);
+      expect(BoosterBarModel.of(_state(extraSlots: 1)).slotLimit, isNull);
+      expect(BoosterBarModel.of(_state()).slotLimit, isNull);
+      // A board that can't add one for another reason (a race) has held
+      // none: no sunk face.
+      expect(BoosterBarModel.of(_state(canAddSlot: false)).slotLimit, isNull);
     });
   });
 
@@ -280,6 +335,126 @@ void main() {
       final undo = tester.getCenter(find.byType(BoosterButton).first);
       expect(glow, undo);
       expect(tester.getSize(find.byType(BoosterGlow)), const Size(130, 110));
+    });
+
+    testWidgets('relaxed mode draws the all_inclusive glyph on Undo (frame '
+        '10.9; E6)', (tester) async {
+      await pumpScreen(
+        tester,
+        Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: BoosterBar(
+              model: BoosterBarModel.of(_state(relaxed: true)),
+              onUndo: () {},
+              onHint: () {},
+              onExtraSlot: () {},
+              onRestart: () {},
+            ),
+          ),
+        ),
+      );
+      expect(find.byIcon(IconUses.undoUnlimited), findsOneWidget);
+      final handle = tester.ensureSemantics();
+      expect(find.bySemanticsLabel('Undo, unlimited'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('hintKey marks the Hint button and hintGlow pulses behind '
+        'it only (the milestone chest\'s Collect flight, m7-design chest '
+        'sequence step 4)', (tester) async {
+      final hintKey = GlobalKey();
+      await pumpScreen(
+        tester,
+        Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: BoosterBar(
+              model: BoosterBarModel.of(_state()),
+              library: FakeFxLibrary(),
+              onUndo: () {},
+              onHint: () {},
+              onExtraSlot: () {},
+              onRestart: () {},
+              hintKey: hintKey,
+              hintGlow: true,
+            ),
+          ),
+        ),
+      );
+      // The keyed widget is the Hint button itself, not some other one.
+      expect(tester.widget<BoosterButton>(find.byKey(hintKey)).label, 'Hint');
+      expect(find.byType(BoosterGlow), findsOneWidget);
+      final glow = tester.getCenter(find.byType(BoosterGlow));
+      final hint = tester.getCenter(find.byKey(hintKey));
+      expect(glow, hint);
+    });
+
+    Future<void> pumpBar(
+      WidgetTester tester,
+      GameplayState state, {
+      VoidCallback? onSlotLimit,
+      VoidCallback? onExtraSlot,
+      bool hintGlow = false,
+    }) => pumpScreen(
+      tester,
+      Scaffold(
+        body: Align(
+          alignment: Alignment.bottomCenter,
+          child: BoosterBar(
+            model: BoosterBarModel.of(state),
+            library: FakeFxLibrary(),
+            onUndo: () {},
+            onHint: () {},
+            onExtraSlot: onExtraSlot ?? () {},
+            onRestart: () {},
+            onSlotLimit: onSlotLimit,
+            hintGlow: hintGlow,
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('+1 Slot at its limit: the sunk face and "2/2", a tap says '
+        'why and never adds a slot (frame 12.9)', (tester) async {
+      var limitTaps = 0;
+      var adds = 0;
+      await pumpBar(
+        tester,
+        _state(extraSlots: 2, canAddSlot: false),
+        onSlotLimit: () => limitTaps++,
+        onExtraSlot: () => adds++,
+      );
+      expect(find.text('2/2'), findsOneWidget);
+      final slot = tester.widget<BoosterButton>(
+        find.widgetWithText(BoosterButton, '+Slot'),
+      );
+      expect(slot.spent, isTrue);
+      await tester.tap(find.text('+Slot'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect((limitTaps, adds), (1, 0));
+      final handle = tester.ensureSemantics();
+      expect(find.bySemanticsLabel('+Slot, 2 of 2 used'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('Restart glows, and reads "Suggested", when the level looks '
+        'stuck with nothing to undo (frame 12.7)', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpBar(tester, _state(softStuck: true, canUndo: false));
+      final restart = tester.getCenter(find.byType(BoosterButton).last);
+      expect(tester.getCenter(find.byType(BoosterGlow)), restart);
+      expect(find.bySemanticsLabel('Restart. Suggested'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('the chest\'s hint landing tags Hint "+1" (frame 10.3d)', (
+      tester,
+    ) async {
+      await pumpBar(tester, _state(), hintGlow: true);
+      expect(find.text('+1'), findsOneWidget);
+      await pumpBar(tester, _state());
+      expect(find.text('+1'), findsNothing);
     });
   });
 }

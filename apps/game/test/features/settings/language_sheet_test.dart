@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_test/flutter_test.dart';
@@ -42,6 +44,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(LanguageSheet), findsOneWidget);
   }
+
+  testWidgets('the selected language says so to a screen reader, and '
+      'every row is a 48 dp target (review R16, R21)', (tester) async {
+    final handle = tester.ensureSemantics();
+    await openSheet(tester);
+    final english = tester.getSemantics(find.bySemanticsLabel('English'));
+    expect(
+      english.getSemanticsData().flagsCollection.isSelected,
+      Tristate.isTrue,
+    );
+    expect(english.rect.height, greaterThanOrEqualTo(48));
+    final spanish = tester.getSemantics(
+      find.bySemanticsLabel(RegExp('^Español, ')),
+    );
+    expect(
+      spanish.getSemanticsData().flagsCollection.isSelected,
+      Tristate.isFalse,
+    );
+    expect(spanish.rect.height, greaterThanOrEqualTo(48));
+    handle.dispose();
+  });
 
   testWidgets('pt_BR reads "Português (Brasil)" · "Portuguese" (the '
       'frame’s English name)', (tester) async {

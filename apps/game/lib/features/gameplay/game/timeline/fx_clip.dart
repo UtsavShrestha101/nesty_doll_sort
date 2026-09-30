@@ -39,6 +39,10 @@ enum FxClipPurpose {
   /// `fx_select_glow` under the hint's target.
   hintGlow,
 
+  /// `fx_select_glow` at 60 % under the legal stand a dragged doll is over
+  /// (E.14, `motion.dragHover`).
+  hoverGlow,
+
   /// `ui_extra_slot`, the pulsing stand of an extra slot.
   extraSlot,
 }

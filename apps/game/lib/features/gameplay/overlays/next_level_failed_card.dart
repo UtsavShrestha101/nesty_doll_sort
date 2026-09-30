@@ -1,41 +1,46 @@
 import 'package:flutter/widgets.dart';
-import 'package:nesty_game/core/error/app_exception.dart';
-import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/gameplay/overlays/modal_placement.dart';
 import 'package:nesty_game/features/gameplay/overlays/overlay_entrance.dart';
-import 'package:nesty_game/features/gameplay/overlays/overlay_text_link.dart';
 
-/// Continue's next level couldn't be made (review CORRECTNESS-3): a Bonus
-/// Endless level whose generation failed after its retries, or whose
-/// isolate died (the resolver answers null, rule 3). The page's
-/// [RetryView] (the failure's message and "Try again", which asks for the
-/// same level again) and a "Back to Home" link, on a card over the scrim,
-/// replace the win or Chapter-complete overlay whose Continue it was, so
-/// the player is never left on a dead Continue.
+/// A board that couldn't be set up (frames 12.6 and 9.3f; phase 4
+/// architecture §6.6): Continue's next level (a Bonus Endless level whose
+/// generation failed, rule 3) or a race's board. [title] and [body] say so
+/// in the design's words ("The shelves need a moment"), [retryLabel] asks
+/// for the same board again and [secondaryLabel], a text link, leaves
+/// ("Back to Home", "Back to races"). It replaces the win or Chapter
+/// complete overlay whose Continue it was, so the player is never left on a
+/// dead Continue.
 ///
-/// [onRetry] is null while a retry is in flight.
-// TODO(design): no App Flow frame shows a next-level failure; this is the
-// page's RetryView on the all-levels card's placement (NestyOverlay).
+/// While a retry is in flight the caller passes a no-op [onRetry]. [versus]
+/// takes section 09's indigo tone for a race (9.3f). Lane O draws frame
+/// 12.6's look (the icon disc, the tones) through `ErrorCard`.
 class NextLevelFailedCard extends StatelessWidget {
   const NextLevelFailedCard({
-    required this.exception,
+    required this.title,
+    required this.body,
+    required this.retryLabel,
+    required this.secondaryLabel,
     required this.onRetry,
-    required this.onHome,
+    required this.onSecondary,
+    this.versus = false,
     super.key,
   });
 
-  final AppException exception;
-  final VoidCallback? onRetry;
-  final VoidCallback onHome;
+  final String title;
+  final String body;
+  final String retryLabel;
+  final String secondaryLabel;
+  final VoidCallback onRetry;
+  final VoidCallback onSecondary;
 
-  /// NestyOverlay's modal cards: 24 from each side, the all-levels card's
-  /// top (150 on a 59 safe area).
-  static const double side = 24;
-  static const double cardTop = 150 - 59;
+  /// A race's card (9.3f): the versus button and disc.
+  final bool versus;
 
-  /// The link's text 16 below Try again, as under 4.9's teal button.
-  static const double _linkGap = 16;
+  /// Frame 12.6: the card 28 from each side, its top at y 250 (191 below
+  /// a 59 safe area).
+  static const double side = 28;
+  static const double cardTop = 250 - 59;
 
   @override
   Widget build(BuildContext context) => OverlayEntrance(
@@ -47,21 +52,16 @@ class NextLevelFailedCard extends StatelessWidget {
         ModalPlacement(cardTop: cardTop, side: side, child: content),
       ],
     ),
-    child: ModalCard(
-      padding: ModalCard.plainPadding.copyWith(
-        bottom: ModalCard.plainPadding.bottom - OverlayTextLink.slack,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RetryView(exception: exception, onRetry: onRetry ?? () {}),
-          const SizedBox(height: _linkGap - OverlayTextLink.slack),
-          OverlayTextLink(
-            label: context.localizations.nextLevelFailedHome,
-            onPressed: onHome,
-          ),
-        ],
-      ),
+    child: ErrorCard(
+      icon: IconUses.retry,
+      tone: versus ? ErrorCardTone.versus : ErrorCardTone.warm,
+      title: title,
+      body: body,
+      primaryLabel: retryLabel,
+      onPrimary: onRetry,
+      secondaryLabel: secondaryLabel,
+      onSecondary: onSecondary,
+      namesRoute: true,
     ),
   );
 }

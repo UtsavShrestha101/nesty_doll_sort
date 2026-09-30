@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 // The hint arrow, the hint arc, the glow ring and the +1 Slot stand on
 // Level 9's layout (3 shelves of 4/4/3, then two extra slots), drawn by the
 // real board with the shipped Lottie files through the game's own
@@ -15,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/skin/level_skin_images.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
+import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
@@ -69,6 +71,10 @@ bool _isCyan(int r, int g, int b, int a) =>
     a > 250 && r < 6 && g > 250 && b > 250;
 bool _isGreen(int r, int g, int b, int a) =>
     a > 250 && r < 6 && g > 250 && b < 6;
+
+/// The pad while it pulses: its opacity dips to 80 % at frame 72.
+bool _isPulsingGreen(int r, int g, int b, int a) =>
+    a > 150 && g > r + 100 && g > b + 100;
 
 /// The level's art as the skin service serves it: the real
 /// `LevelSkinImages` over blob doll parts and solid board sprites. The rest
@@ -277,37 +283,39 @@ void main() {
       expect(drawn!.center.dx, closeTo(target.centerX, 1));
     });
 
-    test('the arc: from over the source doll to beside the target\'s head, '
-        'the arrowhead pointing into it', () async {
+    test('the arc: the design cubic from 8 dp above the source doll to 8 dp '
+        'above the target\'s head, the arrowhead dropping into it', () async {
       final hint = h.board.hint;
       final s = g.scale;
-      // The source is right of the target: the design's case, `curve([s.cx
-      // − 16, s.dt + 66], c, [t.cx + 48, t.dt + 6])` with brown3 (size 3)
-      // and brown2 (size 2).
-      expect(source.centerX, greaterThan(target.centerX));
-      expect(hint.start!.dx, closeTo(source.centerX - 16 * s, 1e-9));
-      // 66 below brown3's top: its upper body, not its belly (a 150-unit
-      // doll here; the design's was 99, where 66 is two thirds).
-      expect(source.dollHeight(3) * 2 / 3, greaterThan(66 * s));
-      expect(hint.start!.dy, closeTo(source.dollTopY(3) + 66 * s, 1e-9));
-      expect(hint.end!.dx, closeTo(target.centerX + 48 * s, 1e-9));
-      expect(hint.end!.dy, closeTo(target.dollTopY(2) + 6 * s, 1e-9));
-      // It bulges toward the side it arrives from, so its last tangent
-      // heads left, into the target's head, not toward the empty r1c1.
-      final tangent = hint.end! - hint.control!;
-      expect(tangent.dx, lessThan(0));
+      expect(hint.start!.dx, closeTo(source.centerX, 1e-9));
+      expect(hint.start!.dy, closeTo(source.dollTopY(3) - 8 * s, 1e-9));
+      expect(hint.end!.dx, closeTo(target.centerX, 1e-9));
+      expect(hint.end!.dy, closeTo(target.dollTopY(2) - 8 * s, 1e-9));
+      // Both handles rise 56 dp above the higher end (the shelves differ).
+      final top = math.min(hint.start!.dy, hint.end!.dy) - 56 * s;
+      expect(hint.control1!.dy, closeTo(top, 1e-9));
+      expect(hint.control2!.dy, closeTo(top, 1e-9));
+      expect(hint.control1!.dx, closeTo(hint.start!.dx, 1e-9));
+      expect(hint.control2!.dx, closeTo(hint.end!.dx, 1e-9));
+      // Its last tangent is straight down, into the head.
+      final tangent = hint.end! - hint.control2!;
+      expect(tangent.dx, closeTo(0, 1e-9));
       expect(tangent.dy, greaterThan(0));
-      expect(
-        hint.control!.dx,
-        greaterThan((hint.start!.dx + hint.end!.dx) / 2),
-      );
       // Drawn: orange dashes near the start, the end and the middle.
       final snap = await h.render(pixelRatio: _dpr);
       bool orange(int r, int g, int b, int a) =>
           a > 200 && r > 220 && g > 110 && g < 160 && b < 90;
-      for (final (t, what) in const [(0.1, 'start'), (0.5, 'middle')]) {
-        final a = hint.start!, c = hint.control!, e = hint.end!;
-        final p = a * ((1 - t) * (1 - t)) + c * (2 * t * (1 - t)) + e * (t * t);
+      // (The very start hides behind the hint arrow, which sits on the arc's
+      // first stretch.)
+      for (final (t, what) in const [(0.3, 'start'), (0.5, 'middle')]) {
+        final a = hint.start!, c1 = hint.control1!;
+        final c2 = hint.control2!, e = hint.end!;
+        final u = 1 - t;
+        final p =
+            a * (u * u * u) +
+            c1 * (3 * u * u * t) +
+            c2 * (3 * u * t * t) +
+            e * (t * t * t);
         final near = _bounds(
           snap,
           orange,
@@ -337,69 +345,133 @@ void main() {
       );
     }
 
-    test('both new stands are the 90×34 pad on the bottom shelf, pulsing '
-        '96 % ↔ 104 % about the stand centre, no pips', () async {
-      (h, skin) = await _mount();
-      await addTwo();
-      expect(g.shelves.last.slots.map((s) => s.id).toList().sublist(3), [
-        'x0',
-        'x1',
-      ]);
-      for (final id in const ['x0', 'x1']) {
-        final slot = g.slot(id);
-        expect(slot.kind, SlotShapeKind.extra);
-        expect(slot.standRect.width, closeTo(90 * slot.furnitureScale, 1e-9));
-        _seek(h, FxId.uiExtraSlot, id, 48);
-      }
-      final peak = await h.render(pixelRatio: _dpr);
-      for (final id in const ['x0', 'x1']) {
-        final slot = g.slot(id);
-        _expectRect(
-          _bounds(peak, _isGreen, within: slot.standRect.inflate(1)),
-          _expected(
-            slot.standRect,
-            _padInset,
-            slot.furnitureScale,
-            scale: 1.04,
-          ),
-          '$id pad at its peak',
-        );
-      }
+    test(
+      'both new stands are the 90×34 pad on the bottom shelf, pulsing '
+      '100 % → 104 % → 96 % → 100 % about the stand centre, no pips',
+      () async {
+        (h, skin) = await _mount();
+        await addTwo();
+        expect(g.shelves.last.slots.map((s) => s.id).toList().sublist(3), [
+          'x0',
+          'x1',
+        ]);
+        for (final id in const ['x0', 'x1']) {
+          final slot = g.slot(id);
+          expect(slot.kind, SlotShapeKind.extra);
+          expect(slot.standRect.width, closeTo(90 * slot.furnitureScale, 1e-9));
+          _seek(h, FxId.uiExtraSlot, id, 24);
+        }
+        final peak = await h.render(pixelRatio: _dpr);
+        for (final id in const ['x0', 'x1']) {
+          final slot = g.slot(id);
+          _expectRect(
+            _bounds(peak, _isPulsingGreen, within: slot.standRect.inflate(1)),
+            _expected(
+              slot.standRect,
+              _padInset,
+              slot.furnitureScale,
+              scale: 1.04,
+            ),
+            '$id pad at its peak',
+          );
+        }
 
-      // The loop's rest pose (frames 0 and 96): 96 %, at 75 % opacity.
-      for (final id in const ['x0', 'x1']) {
-        _seek(h, FxId.uiExtraSlot, id, 0);
-      }
-      final rest = await h.render(pixelRatio: _dpr);
-      for (final id in const ['x0', 'x1']) {
-        final slot = g.slot(id);
-        _expectRect(
-          _bounds(
-            rest,
-            (r, g, b, a) => a > 150 && g > r + 100 && g > b + 100,
-            within: slot.standRect.inflate(1),
-          ),
-          _expected(
-            slot.standRect,
-            _padInset,
-            slot.furnitureScale,
-            scale: 0.96,
-          ),
-          '$id pad at rest',
-        );
-      }
+        // The trough (frame 72): 96 %.
+        for (final id in const ['x0', 'x1']) {
+          _seek(h, FxId.uiExtraSlot, id, 72);
+        }
+        final trough = await h.render(pixelRatio: _dpr);
+        for (final id in const ['x0', 'x1']) {
+          final slot = g.slot(id);
+          _expectRect(
+            _bounds(trough, _isPulsingGreen, within: slot.standRect.inflate(1)),
+            _expected(
+              slot.standRect,
+              _padInset,
+              slot.furnitureScale,
+              scale: 0.96,
+            ),
+            '$id pad at its trough',
+          );
+        }
+
+        // The loop's rest pose (frames 0 and 96, the file's `rest` marker):
+        // the static pad's own 100 % scale, opaque.
+        for (final id in const ['x0', 'x1']) {
+          _seek(h, FxId.uiExtraSlot, id, 0);
+        }
+        final rest = await h.render(pixelRatio: _dpr);
+        for (final id in const ['x0', 'x1']) {
+          final slot = g.slot(id);
+          _expectRect(
+            _bounds(
+              rest,
+              (r, g, b, a) => a > 250 && g > r + 100 && g > b + 100,
+              within: slot.standRect.inflate(1),
+            ),
+            _expected(slot.standRect, _padInset, slot.furnitureScale),
+            '$id pad at rest',
+          );
+        }
+      },
+    );
+
+    test('the loop opens on its rest frame 0, the static pad\'s own pose: '
+        'the hand-off has no pop (E.21, D184)', () async {
+      (h, skin) = await _mount();
+      await h.apply(ExtraSlotAddedEffect(h.session.addExtraSlot()!));
+      await h.run(BoardLayoutConstants.extraSlotRepitchMs * 1.0);
+      g = h.layouts.last;
+      await skin.sprites.prepare(
+        g,
+        devicePixelRatio: _dpr,
+        also: const [BoardSprite.extraSlot],
+      );
+
+      final clip = h.board.fx.liveClips.singleWhere(
+        (c) => c.fx == FxId.uiExtraSlot && c.slotId == 'x0',
+      );
+      final frame = h.board.fx.componentOf(clip.id)!.drawable.player.frame;
+      expect(FxTiming.extraSlotRestFrame, 0);
+      expect(frame, lessThan(2), reason: 'a frame or so into the loop');
+      expect(h.board.scene.slot('x0')!.pulses, 1);
+
+      final slot = g.slot('x0');
+      final snap = await h.render(pixelRatio: _dpr);
+      _expectRect(
+        _bounds(
+          snap,
+          (r, g, b, a) => a > 250 && g > r + 100 && g > b + 100,
+          within: slot.standRect.inflate(1),
+        ),
+        _expected(slot.standRect, _padInset, slot.furnitureScale),
+        'x0 pad at the hand-off, the static pad\'s 100 % scale and opacity',
+      );
     });
 
-    test('a doll placed on an extra slot stands on its surface, the pad '
-        'still pulsing under it', () async {
+    test('a doll placed on an extra slot stops the pulse (a 150 ms settle '
+        'onto the rest frame), and the pulse restarts from frame 0 once the '
+        'pad is empty again (E.16)', () async {
       (h, skin) = await _mount();
       await addTwo();
+      // Let the loop run a while, so it isn't on its rest frame.
+      await h.run(700);
       await h.select('r2c2');
       await h.move('r2c2', 'x0'); // brown1 onto the first extra stand
-      await h.run(600);
       final slot = g.slot('x0');
+      expect(h.board.scene.slot('x0')!.pulses, 1, reason: 'still flying');
+      await h.run(1200);
+      // The pad under the doll is the static one, in the same pose.
+      expect(h.board.scene.slot('x0')!.pulses, 0);
+      expect(
+        h.board.fx.liveClips.where(
+          (c) => c.fx == FxId.uiExtraSlot && c.slotId == 'x0',
+        ),
+        isEmpty,
+      );
+      // The other pad keeps pulsing.
+      expect(h.board.scene.slot('x1')!.pulses, 1);
       skin.renderer.painted.clear();
-      _seek(h, FxId.uiExtraSlot, 'x0', 48);
       final snap = await h.render(pixelRatio: _dpr);
       final doll = skin.renderer.painted.singleWhere(
         (p) => p.baseX == slot.centerX,
@@ -407,17 +479,26 @@ void main() {
       expect(doll.color, DollColor.brown);
       expect(doll.baseY, closeTo(slot.surfaceY, 1e-9));
       expect(doll.height, closeTo(g.dollHeight(1), 1e-9));
-      expect(h.board.scene.slot('x0')!.pulses, 1);
       _expectRect(
         _bounds(snap, _isGreen, within: slot.standRect.inflate(1)),
-        _expected(slot.standRect, _padInset, slot.furnitureScale, scale: 1.04),
-        'x0 pad under the doll',
+        _expected(slot.standRect, _padInset, slot.furnitureScale),
+        'x0 pad under the doll, at rest',
       );
       // The doll's base sits on the stand's top face, inside the pad.
       expect(
         slot.surfaceY,
         inInclusiveRange(slot.standRect.top, slot.standRect.bottom),
       );
+
+      // The doll leaves: the pad is empty, its pulse starts again at frame 0.
+      await h.select('x0');
+      await h.move('x0', 'r2c2');
+      expect(h.board.scene.slot('x0')!.pulses, 1);
+      final clip = h.board.fx.liveClips.singleWhere(
+        (c) => c.fx == FxId.uiExtraSlot && c.slotId == 'x0',
+      );
+      final frame = h.board.fx.componentOf(clip.id)!.drawable.player.frame;
+      expect(frame, lessThan(4));
     });
 
     test('without ui_extra_slot (rule 3) the stand is the static pad, '
@@ -447,8 +528,8 @@ void main() {
   });
 
   test('a hint within one column on Level 9 (r0c1 → r1c1, the empty '
-      'stand): the arc arrives from the middle and ends beside the head '
-      'of the doll that will stand there', () async {
+      'stand): the arc bows to the side it arrives from and ends over the '
+      'head of the doll that will stand there', () async {
     final (h, _) = await _mount();
     await h.apply(const HintShownEffect(Move('r0c1', 'r1c1')));
     final g = h.game.geometry!;
@@ -456,11 +537,18 @@ void main() {
     final hint = h.board.hint;
     expect(target.centerX, closeTo(g.slot('r0c1').centerX, 1e-9));
     // brown3 will stand there: its head, not the empty stand's top.
-    expect(hint.end!.dy, closeTo(target.dollTopY(3) + 6 * g.scale, 1e-9));
-    expect(hint.end!.dx, closeTo(target.centerX + 48 * g.scale, 1e-9));
-    final tangent = hint.end! - hint.control!;
-    expect(tangent.dx, lessThan(0), reason: 'into the head, from the right');
-    expect(tangent.dy, greaterThan(0));
+    expect(hint.end!.dy, closeTo(target.dollTopY(3) - 8 * g.scale, 1e-9));
+    expect(hint.end!.dx, closeTo(target.centerX, 1e-9));
+    // One column: the handles bow sideways (24 dp), so the arch doesn't fold
+    // onto itself.
+    expect(
+      hint.control1!.dx - hint.start!.dx,
+      closeTo(hint.control2!.dx - hint.end!.dx, 1e-9),
+    );
+    expect(
+      (hint.control1!.dx - hint.start!.dx).abs(),
+      closeTo(24 * g.scale, 1e-9),
+    );
     expect(
       h.board.fx.liveClips
           .where((c) => c.fx == FxId.fxSelectGlow)
@@ -470,25 +558,18 @@ void main() {
     );
   });
 
-  test('a small source doll: the arc starts two thirds down it, never '
-      'below it (pink1 r0c0 → pink2 r2c1)', () async {
+  test('a small source doll: the arc starts 8 dp above it (pink1 r0c0 → '
+      'pink2 r2c1)', () async {
     final (h, _) = await _mount();
     await h.apply(const HintShownEffect(Move('r0c0', 'r2c1')));
     final g = h.game.geometry!;
     final source = g.slot('r0c0');
     final target = g.slot('r2c1');
     final hint = h.board.hint;
-    expect(source.dollHeight(1) * 2 / 3, lessThan(66 * g.scale));
-    expect(
-      hint.start!.dy,
-      closeTo(source.dollTopY(1) + source.dollHeight(1) * 2 / 3, 1e-9),
-    );
-    // The source is left of the target: the arc arrives from its left.
-    expect(source.centerX, lessThan(target.centerX));
-    expect(hint.start!.dx, closeTo(source.centerX + 16 * g.scale, 1e-9));
-    expect(hint.end!.dx, closeTo(target.centerX - 48 * g.scale, 1e-9));
-    expect(hint.end!.dy, closeTo(target.dollTopY(2) + 6 * g.scale, 1e-9));
-    expect((hint.end! - hint.control!).dx, greaterThan(0));
+    expect(hint.start!.dy, closeTo(source.dollTopY(1) - 8 * g.scale, 1e-9));
+    expect(hint.start!.dx, closeTo(source.centerX, 1e-9));
+    expect(hint.end!.dx, closeTo(target.centerX, 1e-9));
+    expect(hint.end!.dy, closeTo(target.dollTopY(2) - 8 * g.scale, 1e-9));
   });
 
   test('FxClipPurpose of the hint clips', () async {

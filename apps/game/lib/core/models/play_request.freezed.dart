@@ -55,13 +55,15 @@ extension PlayRequestPatterns on PlayRequest {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CampaignPlay value)?  campaign,TResult Function( BonusPlay value)?  bonus,TResult Function( DailyPlay value)?  daily,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CampaignPlay value)?  campaign,TResult Function( BonusPlay value)?  bonus,TResult Function( DailyPlay value)?  daily,TResult Function( ReplayPlay value)?  replay,TResult Function( RacePlay value)?  race,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
 return campaign(_that);case BonusPlay() when bonus != null:
 return bonus(_that);case DailyPlay() when daily != null:
-return daily(_that);case _:
+return daily(_that);case ReplayPlay() when replay != null:
+return replay(_that);case RacePlay() when race != null:
+return race(_that);case _:
   return orElse();
 
 }
@@ -79,13 +81,15 @@ return daily(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CampaignPlay value)  campaign,required TResult Function( BonusPlay value)  bonus,required TResult Function( DailyPlay value)  daily,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CampaignPlay value)  campaign,required TResult Function( BonusPlay value)  bonus,required TResult Function( DailyPlay value)  daily,required TResult Function( ReplayPlay value)  replay,required TResult Function( RacePlay value)  race,}){
 final _that = this;
 switch (_that) {
 case CampaignPlay():
 return campaign(_that);case BonusPlay():
 return bonus(_that);case DailyPlay():
-return daily(_that);}
+return daily(_that);case ReplayPlay():
+return replay(_that);case RacePlay():
+return race(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -99,13 +103,15 @@ return daily(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CampaignPlay value)?  campaign,TResult? Function( BonusPlay value)?  bonus,TResult? Function( DailyPlay value)?  daily,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CampaignPlay value)?  campaign,TResult? Function( BonusPlay value)?  bonus,TResult? Function( DailyPlay value)?  daily,TResult? Function( ReplayPlay value)?  replay,TResult? Function( RacePlay value)?  race,}){
 final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
 return campaign(_that);case BonusPlay() when bonus != null:
 return bonus(_that);case DailyPlay() when daily != null:
-return daily(_that);case _:
+return daily(_that);case ReplayPlay() when replay != null:
+return replay(_that);case RacePlay() when race != null:
+return race(_that);case _:
   return null;
 
 }
@@ -122,12 +128,14 @@ return daily(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int order)?  campaign,TResult Function( int number)?  bonus,TResult Function( int yyyymmdd)?  daily,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int order)?  campaign,TResult Function( int number)?  bonus,TResult Function( int yyyymmdd)?  daily,TResult Function( int order)?  replay,TResult Function( int rival,  int raceNo)?  race,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
 return campaign(_that.order);case BonusPlay() when bonus != null:
 return bonus(_that.number);case DailyPlay() when daily != null:
-return daily(_that.yyyymmdd);case _:
+return daily(_that.yyyymmdd);case ReplayPlay() when replay != null:
+return replay(_that.order);case RacePlay() when race != null:
+return race(_that.rival,_that.raceNo);case _:
   return orElse();
 
 }
@@ -145,12 +153,14 @@ return daily(_that.yyyymmdd);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int order)  campaign,required TResult Function( int number)  bonus,required TResult Function( int yyyymmdd)  daily,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int order)  campaign,required TResult Function( int number)  bonus,required TResult Function( int yyyymmdd)  daily,required TResult Function( int order)  replay,required TResult Function( int rival,  int raceNo)  race,}) {final _that = this;
 switch (_that) {
 case CampaignPlay():
 return campaign(_that.order);case BonusPlay():
 return bonus(_that.number);case DailyPlay():
-return daily(_that.yyyymmdd);}
+return daily(_that.yyyymmdd);case ReplayPlay():
+return replay(_that.order);case RacePlay():
+return race(_that.rival,_that.raceNo);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -164,12 +174,14 @@ return daily(_that.yyyymmdd);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int order)?  campaign,TResult? Function( int number)?  bonus,TResult? Function( int yyyymmdd)?  daily,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int order)?  campaign,TResult? Function( int number)?  bonus,TResult? Function( int yyyymmdd)?  daily,TResult? Function( int order)?  replay,TResult? Function( int rival,  int raceNo)?  race,}) {final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
 return campaign(_that.order);case BonusPlay() when bonus != null:
 return bonus(_that.number);case DailyPlay() when daily != null:
-return daily(_that.yyyymmdd);case _:
+return daily(_that.yyyymmdd);case ReplayPlay() when replay != null:
+return replay(_that.order);case RacePlay() when race != null:
+return race(_that.rival,_that.raceNo);case _:
   return null;
 
 }
@@ -368,6 +380,140 @@ class _$DailyPlayCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') $Res call({Object? yyyymmdd = null,}) {
   return _then(DailyPlay(
 null == yyyymmdd ? _self.yyyymmdd : yyyymmdd // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ReplayPlay extends PlayRequest {
+  const ReplayPlay(this.order): super._();
+  
+
+ final  int order;
+
+/// Create a copy of PlayRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ReplayPlayCopyWith<ReplayPlay> get copyWith => _$ReplayPlayCopyWithImpl<ReplayPlay>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReplayPlay&&(identical(other.order, order) || other.order == order));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,order);
+
+@override
+String toString() {
+  return 'PlayRequest.replay(order: $order)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ReplayPlayCopyWith<$Res> implements $PlayRequestCopyWith<$Res> {
+  factory $ReplayPlayCopyWith(ReplayPlay value, $Res Function(ReplayPlay) _then) = _$ReplayPlayCopyWithImpl;
+@useResult
+$Res call({
+ int order
+});
+
+
+
+
+}
+/// @nodoc
+class _$ReplayPlayCopyWithImpl<$Res>
+    implements $ReplayPlayCopyWith<$Res> {
+  _$ReplayPlayCopyWithImpl(this._self, this._then);
+
+  final ReplayPlay _self;
+  final $Res Function(ReplayPlay) _then;
+
+/// Create a copy of PlayRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? order = null,}) {
+  return _then(ReplayPlay(
+null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class RacePlay extends PlayRequest {
+  const RacePlay({required this.rival, required this.raceNo}): super._();
+  
+
+ final  int rival;
+ final  int raceNo;
+
+/// Create a copy of PlayRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RacePlayCopyWith<RacePlay> get copyWith => _$RacePlayCopyWithImpl<RacePlay>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RacePlay&&(identical(other.rival, rival) || other.rival == rival)&&(identical(other.raceNo, raceNo) || other.raceNo == raceNo));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,rival,raceNo);
+
+@override
+String toString() {
+  return 'PlayRequest.race(rival: $rival, raceNo: $raceNo)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RacePlayCopyWith<$Res> implements $PlayRequestCopyWith<$Res> {
+  factory $RacePlayCopyWith(RacePlay value, $Res Function(RacePlay) _then) = _$RacePlayCopyWithImpl;
+@useResult
+$Res call({
+ int rival, int raceNo
+});
+
+
+
+
+}
+/// @nodoc
+class _$RacePlayCopyWithImpl<$Res>
+    implements $RacePlayCopyWith<$Res> {
+  _$RacePlayCopyWithImpl(this._self, this._then);
+
+  final RacePlay _self;
+  final $Res Function(RacePlay) _then;
+
+/// Create a copy of PlayRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? rival = null,Object? raceNo = null,}) {
+  return _then(RacePlay(
+rival: null == rival ? _self.rival : rival // ignore: cast_nullable_to_non_nullable
+as int,raceNo: null == raceNo ? _self.raceNo : raceNo // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

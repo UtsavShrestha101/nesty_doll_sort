@@ -2,9 +2,9 @@
 //
 // Source: design/lottie/*.json (validated by sync_design_assets, shipped
 // to apps/game/assets/lottie/) and, for what the JSON does not carry
-// (anchor, kind, loop, travel S/T), the LOTTIE.md v3 contract table in
-// tools/lib/src/fx/lottie_contract.dart. Validation guarantees that
-// no travel null holds and no image layer animates its transform.
+// (anchor, kind, loop, travel S/T, scale nulls), the LOTTIE.md v3 contract
+// table in tools/lib/src/fx/lottie_contract.dart. Validation guarantees
+// that no travel null holds and no image layer animates its transform.
 
 import 'dart:ui' show Offset;
 
@@ -399,6 +399,61 @@ const Map<FxId, FxSpec> fxSpecs = {
       ),
     ],
   ),
+  // fx_glass_unlock_tall: 54 f (900 ms), 200×280.
+  FxId.fxGlassUnlockTall: FxSpec(
+    id: FxId.fxGlassUnlockTall,
+    frames: 54,
+    width: 200,
+    height: 280,
+    anchor: Offset(100, 212),
+    kind: FxKind.inPlace,
+    roles: [FxRole.doll],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['padlock_ping', 'lock'],
+        slot: FxImageSlot.glassCaseTall0,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['unlock_symbol'],
+        slot: FxImageSlot.unlockSymbol,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(18, 18),
+      ),
+      FxImageLayer(
+        keyPath: ['glass_case_tall_0'],
+        slot: FxImageSlot.glassCaseTall0,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['glass_case_tall_1'],
+        slot: FxImageSlot.glassCaseTall1,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['glass_case_tall_2'],
+        slot: FxImageSlot.glassCaseTall2,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['doll_lid'],
+        slot: FxImageSlot.dollLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['doll_body'],
+        slot: FxImageSlot.dollBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+    ],
+    scaleNulls: ['case_size'],
+  ),
   // fx_ice: 150 f (2500 ms), 180×240.
   FxId.fxIce: FxSpec(
     id: FxId.fxIce,
@@ -575,6 +630,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     height: 50,
     anchor: Offset(55, 25),
     kind: FxKind.inPlace,
+    markers: [FxMarker('rest', 0, 0)],
     imageLayers: [
       FxImageLayer(
         keyPath: ['extra_slot'],
@@ -663,6 +719,266 @@ const Map<FxId, FxSpec> fxSpecs = {
     anchor: Offset.zero,
     kind: FxKind.boardSpace,
     travel: FxTravel(s: Offset(100, 500), t: Offset(300, 500)),
+    loops: true,
+  ),
+  // ui_stars: 120 f (2000 ms), 240×110.
+  FxId.uiStars: FxSpec(
+    id: FxId.uiStars,
+    frames: 120,
+    width: 240,
+    height: 110,
+    anchor: Offset.zero,
+    kind: FxKind.segmented,
+    markers: [
+      FxMarker('star_1', 0, 20),
+      FxMarker('star_2', 20, 20),
+      FxMarker('star_3', 40, 20),
+      FxMarker('flourish', 60, 60),
+    ],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['star_1_filled'],
+        slot: FxImageSlot.starFilled,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(66, 69),
+      ),
+      FxImageLayer(
+        keyPath: ['star_2_filled'],
+        slot: FxImageSlot.starFilled,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(66, 69),
+      ),
+      FxImageLayer(
+        keyPath: ['star_3_filled'],
+        slot: FxImageSlot.starFilled,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(66, 69),
+      ),
+      FxImageLayer(
+        keyPath: ['star_1_empty'],
+        slot: FxImageSlot.starEmpty,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(66, 69),
+      ),
+      FxImageLayer(
+        keyPath: ['star_2_empty'],
+        slot: FxImageSlot.starEmpty,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(66, 69),
+      ),
+      FxImageLayer(
+        keyPath: ['star_3_empty'],
+        slot: FxImageSlot.starEmpty,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(66, 69),
+      ),
+      FxImageLayer(
+        keyPath: ['star_glow'],
+        slot: FxImageSlot.starGlow,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(110, 112),
+      ),
+    ],
+  ),
+  // ui_chest: 410 f (6833 ms), 200×200.
+  FxId.uiChest: FxSpec(
+    id: FxId.uiChest,
+    frames: 410,
+    width: 200,
+    height: 200,
+    anchor: Offset(100, 186),
+    kind: FxKind.segmented,
+    markers: [
+      FxMarker('arrive', 0, 36),
+      FxMarker('idle', 36, 180),
+      FxMarker('wiggle', 216, 29),
+      FxMarker('open', 245, 45),
+      FxMarker('open_idle', 290, 120),
+    ],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['chest_closed'],
+        slot: FxImageSlot.chestClosed,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(195, 325),
+      ),
+      FxImageLayer(
+        keyPath: ['chest_open'],
+        slot: FxImageSlot.chestOpen,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(195, 325),
+      ),
+    ],
+  ),
+  // ui_intro_towers: 240 f (4000 ms), 302×230, loops.
+  FxId.uiIntroTowers: FxSpec(
+    id: FxId.uiIntroTowers,
+    frames: 240,
+    width: 302,
+    height: 230,
+    anchor: Offset.zero,
+    kind: FxKind.inPlace,
+    markers: [FxMarker('loop', 0, 240)],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['mover_lid'],
+        slot: FxImageSlot.moverLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['mover_body'],
+        slot: FxImageSlot.moverBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['revealed_lid'],
+        slot: FxImageSlot.revealedLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['revealed_body'],
+        slot: FxImageSlot.revealedBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['buried_silhouette'],
+        slot: FxImageSlot.dollSilhouette,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+    ],
+    loops: true,
+  ),
+  // ui_intro_glass: 240 f (4000 ms), 302×230, loops.
+  FxId.uiIntroGlass: FxSpec(
+    id: FxId.uiIntroGlass,
+    frames: 240,
+    width: 302,
+    height: 230,
+    anchor: Offset.zero,
+    kind: FxKind.inPlace,
+    markers: [FxMarker('loop', 0, 240)],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['unlock_symbol'],
+        slot: FxImageSlot.unlockSymbol,
+        scale: Offset(0.2667, 0.2667),
+        anchor: Offset(18, 18),
+      ),
+      FxImageLayer(
+        keyPath: ['glass_case_0'],
+        slot: FxImageSlot.glassCase0,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['glass_case_1'],
+        slot: FxImageSlot.glassCase1,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['glass_case_2'],
+        slot: FxImageSlot.glassCase2,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['freed_lid'],
+        slot: FxImageSlot.freedLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['freed_body'],
+        slot: FxImageSlot.freedBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['family_lid'],
+        slot: FxImageSlot.familyLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['family_body'],
+        slot: FxImageSlot.familyBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+    ],
+    loops: true,
+  ),
+  // ui_intro_ice: 300 f (5000 ms), 302×230, loops.
+  FxId.uiIntroIce: FxSpec(
+    id: FxId.uiIntroIce,
+    frames: 300,
+    width: 302,
+    height: 230,
+    anchor: Offset.zero,
+    kind: FxKind.inPlace,
+    markers: [FxMarker('loop', 0, 300)],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['ice_0'],
+        slot: FxImageSlot.ice0,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['ice_1'],
+        slot: FxImageSlot.ice1,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['ice_shatter'],
+        slot: FxImageSlot.iceShatter,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset.zero,
+      ),
+      FxImageLayer(
+        keyPath: ['freed_lid'],
+        slot: FxImageSlot.freedLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['freed_body'],
+        slot: FxImageSlot.freedBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['family_lid'],
+        slot: FxImageSlot.familyLid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['family_body'],
+        slot: FxImageSlot.familyBody,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['family_2_lid'],
+        slot: FxImageSlot.family2Lid,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+      FxImageLayer(
+        keyPath: ['family_2_body'],
+        slot: FxImageSlot.family2Body,
+        scale: Offset(0.1953, 0.1953),
+        anchor: Offset(256, 742),
+      ),
+    ],
     loops: true,
   ),
 };

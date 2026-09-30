@@ -30,7 +30,7 @@ void main() {
     await library.load();
   });
 
-  test('all 29 files load from the bundle, none failed', () {
+  test('all 35 files load from the bundle, none failed', () {
     expect(library.isLoaded, isTrue);
     expect(library.failed, isEmpty);
     for (final id in FxId.values) {
@@ -80,6 +80,11 @@ void main() {
             ..doll = DollColor.red
             ..mover = DollColor.blue
             ..target = DollColor.green
+            // The intro loops' roles (m7-3).
+            ..revealed = DollColor.purple
+            ..family = DollColor.orange
+            ..family2 = DollColor.teal
+            ..freed = DollColor.pink
             ..unlockColor = DollColor.yellow;
           for (final frame in _samples(spec)) {
             await snapshotDrawable(clip, frame);

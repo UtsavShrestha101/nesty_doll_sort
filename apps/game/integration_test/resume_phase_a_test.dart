@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
+import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
@@ -7,8 +9,8 @@ import 'support/resume_scenario.dart';
 
 /// Phase A of the device-kill resume check (plan-m3.md "Verification";
 /// spec §18 M3 "kill mid-level, resume exactly"): on a fresh install, wins
-/// levels 1 and 2, opens level 3 from Home's PLAY, plays `ResumeScenario`
-/// and flushes the save. `--keep-app-running` leaves the app up (a plain
+/// level 1 (which the splash opens straight away, E9) and level 2, opens
+/// level 3 from Home's PLAY, plays `ResumeScenario` and flushes the save. `--keep-app-running` leaves the app up (a plain
 /// `flutter test` or `flutter drive` stops and uninstalls it, wiping its
 /// data); it is then killed for real before phase B relaunches it. README
 /// "Testing" has the exact commands:
@@ -41,12 +43,14 @@ void main() {
       app.main();
       final board = Board(tester);
 
+      // A fresh save goes from the splash straight into level 1 (E9,
+      // m7-design §13), never Home first.
       await tester.pumpUntil(
-        () => find.bySemanticsLabel('Play level 1').evaluate().isNotEmpty,
+        () => find.byType(GameplayView).evaluate().isNotEmpty,
         timeout: const Duration(seconds: 60),
-        reason: 'Home on a fresh save (uninstall the app before phase A)',
+        reason: 'level 1 on a fresh save (uninstall the app before phase A)',
       );
-      await tester.pumpFor(const Duration(milliseconds: 500));
+      expect(find.byType(HomePage), findsNothing);
 
       await ResumeScenario.winTutorialLevels(tester, board);
       await tester.tap(

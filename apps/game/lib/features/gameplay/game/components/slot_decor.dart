@@ -3,10 +3,51 @@ import 'dart:ui' as ui;
 import 'package:flutter/painting.dart';
 import 'package:nesty_render/nesty_render.dart';
 
+/// The board's localized "+N" tower tag and ice badge text (ARB
+/// `boardTowerHidden`/`boardIceCount`, spec §16), and the direction their
+/// digits read in. [SlotDecor] never reads `AppLocalizations` or
+/// `Directionality` itself (nesty_render's components stay Flutter-locale
+/// free, CLAUDE.md rule 2): the page hands this down through
+/// `GameplayBoard.boardLabels` when it builds the board and again whenever
+/// the locale can have changed, the same way it hands over [levelSkin]s.
+///
+/// [fallback] reproduces the ARB's own English pattern ("+3", "2") for a
+/// board built before the page's first hand-off lands, and for tests that
+/// don't exercise localization (BACKLOG "the Flame board's '+N' tower tag
+/// and the ice badge's digits through ARB").
+final class BoardLabels {
+  const BoardLabels({
+    required this.towerTag,
+    required this.iceBadge,
+    this.textDirection = TextDirection.ltr,
+  });
+
+  /// `AppLocalizations.boardTowerHidden(count)`.
+  final String Function(int count) towerTag;
+
+  /// `AppLocalizations.boardIceCount(count)`.
+  final String Function(int count) iceBadge;
+
+  /// `Directionality.of(context)`. No launch language is RTL yet (l10n.md),
+  /// so every real hand-off is `ltr` today too; the field exists so a
+  /// future RTL locale doesn't need another round of plumbing.
+  final TextDirection textDirection;
+
+  static String _fallbackTag(int count) => '+$count';
+  static String _fallbackIce(int count) => '$count';
+
+  static const BoardLabels fallback = BoardLabels(
+    towerTag: _fallbackTag,
+    iceBadge: _fallbackIce,
+  );
+}
+
 /// The walnut "+N" tower tag and the blue ice badge of one slot
 /// (NestyBoard:16–17, :168, :180; docs/plans/m2-lottie-design.md §8, §9.6):
-/// laid out once per count and layout (a cached `TextPainter` per value),
-/// then drawn every frame without allocating (CLAUDE.md rule 8).
+/// laid out once per label and layout (a cached `TextPainter` per value),
+/// then drawn every frame without allocating (CLAUDE.md rule 8). The text
+/// itself and its direction come from outside ([BoardLabels]): this class
+/// only measures and paints them.
 ///
 /// Both are built in local coordinates (the tag from its top-left, the badge
 /// from its centre), so a shake or a re-pitch only translates the canvas.
@@ -29,15 +70,17 @@ final class SlotDecor {
   static final Paint _badgeEdgePaint = Paint()..color = badgeEdge;
   static final Paint _badgeRingPaint = Paint()..color = badgeRing;
 
-  int _tagCount = 0;
+  String? _tagText;
   double _tagScale = 0;
+  TextDirection _tagDirection = TextDirection.ltr;
   TextPainter? _tag;
   RRect? _tagPill;
   RRect? _tagRingRect;
   Offset _tagTextAt = Offset.zero;
 
-  int _badgeCount = 0;
+  String? _badgeText;
   double _badgeScale = 0;
+  TextDirection _badgeDirection = TextDirection.ltr;
   TextPainter? _badge;
   double _badgeRadius = 0;
   double _badgeRingRadius = 0;
@@ -45,25 +88,34 @@ final class SlotDecor {
   Offset _badgeTextAt = Offset.zero;
   final Paint _badgeFill = Paint();
 
-  /// The tag's text, for tests: `+N`, or null when none is laid out.
+  /// The tag's text, for tests: `+N` (through [BoardLabels.towerTag]), or
+  /// null when none is laid out.
   String? get tagLabel => _tag?.text?.toPlainText();
 
   /// The badge's text, for tests.
   String? get badgeLabel => _badge?.text?.toPlainText();
 
-  /// Lays the tag out for [count] buried nests at furniture scale [scale]
-  /// (per event). A count of 0 drops it.
-  void setTag(int count, double scale) {
-    if (count == _tagCount && scale == _tagScale) return;
-    _tagCount = count;
+  /// The tag's text direction, for tests: `BoardLabels.textDirection` as
+  /// laid out, or null when none is laid out.
+  TextDirection? get tagDirection => _tag?.textDirection;
+
+  /// The badge's text direction, for tests.
+  TextDirection? get badgeDirection => _badge?.textDirection;
+
+  /// Lays the tag out for [label] (`BoardLabels.towerTag(count)`, already
+  /// localized) at furniture scale [scale] reading [direction] (per event).
+  /// A null [label] (no buried nests) drops it.
+  void setTag(String? label, double scale, TextDirection direction) {
+    if (label == _tagText && scale == _tagScale && direction == _tagDirection) {
+      return;
+    }
+    _tagText = label;
     _tagScale = scale;
+    _tagDirection = direction;
     _tag?.dispose();
     _tag = null;
-    if (count <= 0) return;
-    // TODO(M7): the "+N" tag and the badge's digits through ARB, with the
-    // locale's text direction, when translations land (spec §16); every
-    // launch language writes "+3" this way (review PERF-RULES-3).
-    final text = _label('+$count', 12 * scale, 14 / 12, tagText);
+    if (label == null) return;
+    final text = _label(label, 12 * scale, 14 / 12, tagText, direction);
     final pill = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, text.width + 12 * scale, text.height + 4 * scale),
       Radius.circular(8 * scale),
@@ -74,18 +126,29 @@ final class SlotDecor {
     _tagTextAt = Offset(6 * scale, 2 * scale);
   }
 
-  /// Lays the badge out for [count] remaining ice at furniture scale
-  /// [scale], [diameter] logical px wide (`SlotGeometry.iceBadgeRect`). A
-  /// count of 0 drops it.
-  void setBadge(int count, double scale, double diameter) {
-    if (count == _badgeCount && scale == _badgeScale) return;
-    _badgeCount = count;
+  /// Lays the badge out for [label] (`BoardLabels.iceBadge(count)`, already
+  /// localized) at furniture scale [scale] reading [direction], [diameter]
+  /// logical px wide (`SlotGeometry.iceBadgeRect`). A null [label] (no ice
+  /// left) drops it.
+  void setBadge(
+    String? label,
+    double scale,
+    double diameter,
+    TextDirection direction,
+  ) {
+    if (label == _badgeText &&
+        scale == _badgeScale &&
+        direction == _badgeDirection) {
+      return;
+    }
+    _badgeText = label;
     _badgeScale = scale;
+    _badgeDirection = direction;
     _badge?.dispose();
     _badge = null;
-    if (count <= 0) return;
+    if (label == null) return;
     final radius = diameter / 2;
-    final text = _label('$count', 16 * scale, 1, badgeRing);
+    final text = _label(label, 16 * scale, 1, badgeRing, direction);
     _badge = text;
     _badgeRadius = radius;
     _badgeRingRadius = radius + 2.5 * scale;
@@ -104,26 +167,38 @@ final class SlotDecor {
 
   // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──
 
-  /// Draws the tag with its top-left at ([x], [y]).
-  void paintTag(Canvas canvas, double x, double y) {
+  /// Draws the tag with its top-left at ([x], [y]), [scale] times its size
+  /// about its centre (the pop-in of a tower whose ice shattered, 0.6 → 1).
+  void paintTag(Canvas canvas, double x, double y, [double scale = 1]) {
     final text = _tag;
     if (text == null) return;
     canvas
       ..save()
-      ..translate(x, y)
+      ..translate(x, y);
+    if (scale != 1) {
+      final pill = _tagPill!;
+      canvas
+        ..translate(pill.width / 2, pill.height / 2)
+        ..scale(scale)
+        ..translate(-pill.width / 2, -pill.height / 2);
+    }
+    canvas
       ..drawRRect(_tagRingRect!, _tagRingPaint)
       ..drawRRect(_tagPill!, _tagFillPaint);
     text.paint(canvas, _tagTextAt);
     canvas.restore();
   }
 
-  /// Draws the badge centred on ([x], [y]).
-  void paintBadge(Canvas canvas, double x, double y) {
+  /// Draws the badge centred on ([x], [y]), [scale] times its size (the
+  /// ice counter's bump when its slot is tapped, E.13).
+  void paintBadge(Canvas canvas, double x, double y, [double scale = 1]) {
     final text = _badge;
     if (text == null) return;
     canvas
       ..save()
-      ..translate(x, y)
+      ..translate(x, y);
+    if (scale != 1) canvas.scale(scale);
+    canvas
       ..drawCircle(_badgeEdgeCenter, _badgeRingRadius, _badgeEdgePaint)
       ..drawCircle(Offset.zero, _badgeRingRadius, _badgeRingPaint)
       ..drawCircle(Offset.zero, _badgeRadius, _badgeFill);
@@ -138,8 +213,8 @@ final class SlotDecor {
     _tag = null;
     _badge?.dispose();
     _badge = null;
-    _tagCount = 0;
-    _badgeCount = 0;
+    _tagText = null;
+    _badgeText = null;
   }
 
   static TextPainter _label(
@@ -147,6 +222,7 @@ final class SlotDecor {
     double fontSize,
     double height,
     Color color,
+    TextDirection direction,
   ) => TextPainter(
     text: TextSpan(
       text: text,
@@ -159,7 +235,7 @@ final class SlotDecor {
         color: color,
       ),
     ),
-    textDirection: TextDirection.ltr,
+    textDirection: direction,
     textScaler: TextScaler.noScaling,
   )..layout();
 }

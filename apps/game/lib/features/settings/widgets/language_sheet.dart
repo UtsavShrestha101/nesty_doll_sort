@@ -119,71 +119,78 @@ class _LanguageRow extends StatelessWidget {
     final l10n = context.localizations;
     return Opacity(
       opacity: enabled || selected ? 1 : 0.55,
-      child: TactileSurface(
-        style: _transparent,
-        radius: BorderRadius.zero,
-        onPressed: enabled ? onTap : null,
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
-        alignment: AlignmentDirectional.centerStart,
-        semanticLabel: selected
-            ? language.autonym
-            : l10n.languageRowSemantics(
-                language.autonym,
-                enabled
-                    ? l10n.languageName(language.code)
-                    : l10n.languageComingSoon,
-              ),
-        excludeChildSemantics: true,
-        child: Row(
-          children: [
-            // The autonym takes its whole width first (wrapping only if it
-            // alone is wider than the row); the trailing name shares its
-            // line when it fits, else runs under it. Never an ellipsis.
-            Expanded(
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 2,
-                children: [
-                  Text(
-                    language.autonym,
-                    style: AppTextStyleTokens.row.copyWith(
-                      fontSize: 16,
-                      height: 1.2,
-                      color: AppColorTokens.textPrimary,
+      // 11 + 11 around the 24 px line is 46: at least a 48 dp target
+      // (spec §10.3, review R21).
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: SettingsRow.minHeight),
+        child: TactileSurface(
+          style: _transparent,
+          radius: BorderRadius.zero,
+          onPressed: enabled ? onTap : null,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
+          alignment: AlignmentDirectional.centerStart,
+          // The ring is only drawn: the row says it (review R16).
+          selected: selected,
+          semanticLabel: selected
+              ? language.autonym
+              : l10n.languageRowSemantics(
+                  language.autonym,
+                  enabled
+                      ? l10n.languageName(language.code)
+                      : l10n.languageComingSoon,
+                ),
+          excludeChildSemantics: true,
+          child: Row(
+            children: [
+              // The autonym takes its whole width first (wrapping only if it
+              // alone is wider than the row); the trailing name shares its
+              // line when it fits, else runs under it. Never an ellipsis.
+              Expanded(
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 2,
+                  children: [
+                    Text(
+                      language.autonym,
+                      style: AppTextStyleTokens.row.copyWith(
+                        fontSize: 16,
+                        height: 1.2,
+                        color: AppColorTokens.textPrimary,
+                      ),
                     ),
-                  ),
-                  if (!selected)
-                    Wrap(
-                      spacing: 6,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          l10n.languageName(language.code),
-                          style: AppTextStyleTokens.caption.copyWith(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColorTokens.textMuted,
-                          ),
-                        ),
-                        if (!enabled)
+                    if (!selected)
+                      Wrap(
+                        spacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
                           Text(
-                            l10n.languageComingSoon,
+                            l10n.languageName(language.code),
                             style: AppTextStyleTokens.caption.copyWith(
-                              fontSize: 11,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                               color: AppColorTokens.textMuted,
                             ),
                           ),
-                      ],
-                    ),
-                ],
+                          if (!enabled)
+                            Text(
+                              l10n.languageComingSoon,
+                              style: AppTextStyleTokens.caption.copyWith(
+                                fontSize: 11,
+                                color: AppColorTokens.textMuted,
+                              ),
+                            ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            _SelectionRing(selected: selected),
-          ],
+              const SizedBox(width: 12),
+              _SelectionRing(selected: selected),
+            ],
+          ),
         ),
       ),
     );

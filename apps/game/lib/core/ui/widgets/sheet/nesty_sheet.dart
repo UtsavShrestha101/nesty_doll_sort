@@ -79,6 +79,7 @@ class NestySheet extends StatelessWidget {
             const SizedBox(height: 20),
             Semantics(
               header: true,
+              namesRoute: true,
               child: Text(
                 title,
                 style: AppTextStyles.sheetTitle,
@@ -92,6 +93,7 @@ class NestySheet extends StatelessWidget {
                 Expanded(
                   child: Semantics(
                     header: true,
+                    namesRoute: true,
                     child: Text(title, style: AppTextStyleTokens.screenTitle),
                   ),
                 ),
@@ -115,9 +117,11 @@ class NestySheet extends StatelessWidget {
           SizedBox(height: titleAction == null ? 20 : 12),
           Flexible(
             child: SingleChildScrollView(
-              // Room for the rows' 5 px edges and the highlighted ring.
+              // Room for the rows' 5 px edges and the highlighted 3 px ring,
+              // inside the clip. The clip keeps rows scrolled out of view
+              // from painting over the title and the screen above (the dev
+              // level picker's 200 tiles did, owner's review 2026-09-28).
               padding: const EdgeInsets.fromLTRB(3, 3, 3, 6),
-              clipBehavior: Clip.none,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

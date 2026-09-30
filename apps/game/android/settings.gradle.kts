@@ -19,7 +19,9 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.11.1" apply false
+    // 8.12.1 is share_plus 13's floor (M7 phase 3; PROGRESS "Package
+    // reasons"). Gradle 8.14 meets AGP 8.12's minimum of 8.13.
+    id("com.android.application") version "8.12.1" apply false
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 

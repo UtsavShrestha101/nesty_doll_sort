@@ -4,8 +4,9 @@ import 'package:nesty_game/core/services/remote_config/fake_remote_config_servic
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 
 /// Spec §9.4, transcribed by hand from the spec text so a drifted default in
-/// code fails here, plus the owner's `reward_medium` (Q5, D64) and M3's
-/// `reward_chapter` (docs/plans/m3-design.md §7.1).
+/// code fails here, plus the owner's `reward_medium` (Q5, D64), M3's
+/// `reward_chapter` (docs/plans/m3-design.md §7.1) and spec-prop §9.4's M7
+/// keys (docs/plans/m7-design.md §5).
 const _spec94 = <String, Object>{
   'interstitial_first_level': 8,
   'interstitial_every_n_levels': 3,
@@ -26,6 +27,18 @@ const _spec94 = <String, Object>{
   'streak7_reward': 300,
   'remove_ads_offer_after_interstitials': 3,
   'rate_prompt_level': 15,
+  'chest_coins': 100,
+  'chest_hints': 1,
+  'race_unlock_level': 20,
+  'race_pace_ms_1': 3000,
+  'race_pace_ms_2': 2400,
+  'race_pace_ms_3': 1600,
+  'race_pace_jitter_pct': 20,
+  'race_reward_1': 20,
+  'race_reward_2': 30,
+  'race_reward_3': 40,
+  'star3_slack_pct': 20,
+  'star2_slack_pct': 60,
 };
 
 void main() {
@@ -47,7 +60,7 @@ void main() {
     test('names are unique, so no key shadows another', () {
       final names = RemoteConfigKeys.all.map((key) => key.name).toList();
       expect(names.toSet(), hasLength(names.length));
-      expect(names, hasLength(19));
+      expect(names, hasLength(31));
     });
 
     test('typed accessors point at the right parameters', () {
@@ -60,6 +73,13 @@ void main() {
       expect(RemoteConfigKeys.rewardMedium.defaultValue, 10);
       expect(RemoteConfigKeys.rewardChapter.name, 'reward_chapter');
       expect(RemoteConfigKeys.rewardChapter.defaultValue, 150);
+      expect(RemoteConfigKeys.chestCoins.name, 'chest_coins');
+      expect(RemoteConfigKeys.chestHints.defaultValue, 1);
+      expect(RemoteConfigKeys.raceUnlockLevel.defaultValue, 20);
+      expect(RemoteConfigKeys.racePaceMs3.name, 'race_pace_ms_3');
+      expect(RemoteConfigKeys.raceReward2.defaultValue, 30);
+      expect(RemoteConfigKeys.star3SlackPct.name, 'star3_slack_pct');
+      expect(RemoteConfigKeys.star2SlackPct.defaultValue, 60);
     });
   });
 

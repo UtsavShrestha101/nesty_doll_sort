@@ -37,12 +37,33 @@ extension _Plans on BoardTimeline {
   Slot? _viewOf(GameState board, String slotId) =>
       board.slotIds.contains(slotId) ? board.slot(slotId) : null;
 
+  /// The nest standing on [slotId] in [board], or null when it is empty.
+  Nest? _topOfSlot(GameState board, String slotId) {
+    final view = _viewOf(board, slotId);
+    return view == null ? null : _topOf(view);
+  }
+
   /// The nests [slotId]'s tower buried at the start of the level, for the
   /// silhouette spacing (`SlotGeometry.buriedBaseY`, review RENDER-4).
   int _buriedAtStart(GameState board, String slotId) {
     if (SlotId.isExtra(slotId)) return 0;
     final initial = board.level.slot(slotId);
     return initial is TowerSlot ? initial.hiddenCount : 0;
+  }
+
+  /// The tallest size [slotId]'s tower held at the start of the level, and
+  /// whether it started iced: the rest of the tower stack's inputs
+  /// (`SlotGeometry.towerStack`), so the reveal moves the same silhouettes
+  /// the slot draws.
+  ({int? topSize, bool iced}) _stackInputs(GameState board, String slotId) {
+    if (SlotId.isExtra(slotId)) return (topSize: null, iced: false);
+    final initial = board.level.slot(slotId);
+    if (initial is! TowerSlot) return (topSize: null, iced: false);
+    var tallest = 0;
+    for (final nest in initial.stack) {
+      if (nest.outerSize > tallest) tallest = nest.outerSize;
+    }
+    return (topSize: tallest, iced: initial.isFrozen);
   }
 
   /// Plays `fx_select_glow`'s `out` on [glow] from [at] and returns it to
@@ -64,14 +85,16 @@ extension _Plans on BoardTimeline {
     _Batch b,
     SlotGeometry slot,
     FxClipPurpose purpose,
-    double at,
-  ) {
+    double at, {
+    double opacity = 1,
+  }) {
     final spec = _spec(FxId.fxSelectGlow);
     final glow = _newClip(
       b,
       FxId.fxSelectGlow,
       purpose,
       FxPlacement.anchored(FxAnchor.glow, _geometry, slot),
+      params: opacity == 1 ? FxClipParams.none : FxClipParams(opacity: opacity),
       slotId: slot.id,
       anchor: FxAnchor.glow,
     );
@@ -368,8 +391,24 @@ extension _Plans on BoardTimeline {
     b
       ..reserve(src, math.max(landed, sourceFree))
       ..reserve(dst, landed);
+    if (moving != null) {
+      // E.16: a doll standing on the +1 Slot's pad stops its pulse, and the
+      // pulse restarts once the pad is empty again.
+      if (SlotId.isExtra(dst)) _settlePulse(b, dst, landed);
+      if (SlotId.isExtra(src) && _topOfSlot(board, src) == null) {
+        _restartPulse(b, src, 0);
+      }
+    }
 
     final done = completed;
+    if (done != null && SlotId.isExtra(dst) && _topOfSlot(board, dst) == null) {
+      // The completed set leaves the pad when it flies.
+      _restartPulse(
+        b,
+        dst,
+        landed + b.at(FxSpec.msOf(FxTiming.completeFlyFrame)),
+      );
+    }
     if (done != null && gDst != null) {
       _planComplete(
         b,
@@ -450,6 +489,7 @@ extension _Plans on BoardTimeline {
     final slot = _geometry.slotOrNull(reveal.slotId);
     if (slot == null) return at;
     final buried = _buriedAtStart(board, reveal.slotId);
+    final inputs = _stackInputs(board, reveal.slotId);
     final segment = FxSegment.whole(
       _spec(FxId.dollReveal),
       speed: motion.oneShotSpeed,
@@ -464,7 +504,15 @@ extension _Plans on BoardTimeline {
         dollScale: LottieGeometry.roleScale(_height(reveal.nest.outerSize), _s),
         tint: reveal.nest.color,
         // The new top was buried at depth 1: the file picks it up there.
-        revealDrop: (slot.surfaceY - slot.buriedBaseY(1, buried: buried)) / _s,
+        revealDrop:
+            (slot.surfaceY -
+                slot.buriedBaseY(
+                  1,
+                  buried: buried,
+                  topSize: inputs.topSize,
+                  iced: inputs.iced,
+                )) /
+            _s,
       ),
       slotId: reveal.slotId,
       anchor: FxAnchor.dollBase,
@@ -473,6 +521,8 @@ extension _Plans on BoardTimeline {
     final shift = RevealDropTween(
       slot: slot,
       buried: buried,
+      topSize: inputs.topSize,
+      iced: inputs.iced,
       durationMs: b.at(FxSpec.msOf(FxTiming.revealDropEndFrame)),
     );
     final end = at + segment.durationMs;
@@ -623,14 +673,19 @@ extension _Plans on BoardTimeline {
   }) {
     switch (event) {
       case Unlocked(:final slotId):
+        // A sealed size-5 or size-6 doll has the tall case and its own file
+        // (same 54 frames and timing).
+        final glass = _geometry.slotOrNull(slotId)?.usesTallCase ?? false
+            ? FxId.fxGlassUnlockTall
+            : FxId.fxGlassUnlock;
         final segment = FxSegment.whole(
-          _spec(FxId.fxGlassUnlock),
+          _spec(glass),
           speed: motion.oneShotSpeed,
         );
         final end = at + segment.durationMs;
         b
           ..command(SyncSlot(at, slotId, board))
-          ..command(PlaySlotFx(at, slotId, FxId.fxGlassUnlock, segment))
+          ..command(PlaySlotFx(at, slotId, glass, segment))
           ..cue(
             FxCue(
               atMs: at,
@@ -638,7 +693,7 @@ extension _Plans on BoardTimeline {
               haptic: HapticPattern.unlock,
             ),
           )
-          ..command(ReleaseSlotFx(end, slotId, FxId.fxGlassUnlock))
+          ..command(ReleaseSlotFx(end, slotId, glass))
           ..reserve(slotId, end);
       case IceCracked(:final slotId, :final remaining):
         b
@@ -712,8 +767,57 @@ extension _Plans on BoardTimeline {
           )
           ..command(ReleaseSlotFx(end, slotId, FxId.fxIce))
           ..reserve(slotId, end);
+        _planTagPop(b, slotId, board, at: at);
       default:
         break;
+    }
+  }
+
+  /// The "+N" tag of a tower whose ice just shattered pops in with the
+  /// shatter (frame 48, 0 ms into its segment): 240 ms from 60 % scale,
+  /// `easeOutBack` (tokens `motion.tagPop`). The slot's `SyncSlot` at [at]
+  /// shows the tag; the tween scales it.
+  void _planTagPop(
+    _Batch b,
+    String slotId,
+    GameState board, {
+    required double at,
+  }) {
+    final view = _viewOf(board, slotId);
+    if (view is! TowerSlot || view.hiddenCount < 1) return;
+    final pop = TagPopTween(
+      slotId: slotId,
+      durationMs: b.at(MotionTokens.tagPopMs.toDouble()),
+    );
+    b
+      ..command(StartTween(at, pop))
+      ..command(EndTween(at + pop.durationMs, pop));
+  }
+
+  // ── Tap feedback (E.13, frame 12.13) ──
+
+  /// A tap on an unpickable slot with nothing lifted: the stand dips 2 dp
+  /// for 80 ms with a light haptic, the sealed case's padlock pings 1.15×
+  /// for 160 ms, the ice counter bumps 1.2× for 160 ms. Never the invalid
+  /// shake, no sound, and nothing is reserved: the next tap plays at once.
+  /// Reduced motion halves the durations (the batch's scale).
+  void _planNudge(_Batch b, SlotNudgeEffect e) {
+    if (_geometry.slotOrNull(e.slotId) == null) return;
+    final ms = switch (e.kind) {
+      SlotNudgeKind.emptyStand => MotionTokens.tapDipMs,
+      SlotNudgeKind.lockedCase => MotionTokens.padlockPingMs,
+      SlotNudgeKind.iced => MotionTokens.iceBumpMs,
+    };
+    final tween = NudgeTween(
+      slotId: e.slotId,
+      kind: e.kind,
+      durationMs: b.at(ms.toDouble()),
+    );
+    b
+      ..command(StartTween(0, tween))
+      ..command(EndTween(tween.durationMs, tween));
+    if (e.kind == SlotNudgeKind.emptyStand) {
+      b.cue(const FxCue(atMs: 0, haptic: HapticPattern.pick));
     }
   }
 
@@ -848,6 +952,33 @@ extension _Plans on BoardTimeline {
       ..reserve(dst, end);
   }
 
+  // ── Drag hover (E.14, frame 12.13) ──
+
+  /// Moves the drag hover's glow onto [slotId] (null: off): a legal stand
+  /// under the finger of a dragged doll gets `fx_select_glow` at 60 %
+  /// (tokens `motion.dragHover`, a pooled clip of its own), an illegal one
+  /// nothing. The glow follows the stand, not the column. Per stand change,
+  /// not per frame. Not a batch: it holds no input and keeps no order with
+  /// the effects.
+  void _planHover(_Batch b, String? slotId) {
+    final old = _hover;
+    if (old != null) {
+      _glowOut(b, old.glow, 0);
+      _hover = null;
+    }
+    final slot = slotId == null ? null : _geometry.slotOrNull(slotId);
+    if (slot == null) return;
+    const params = FxClipParams(opacity: MotionTokens.dragHoverGlowOpacity);
+    final glow = _glowIn(
+      b,
+      slot,
+      FxClipPurpose.hoverGlow,
+      0,
+      opacity: MotionTokens.dragHoverGlowOpacity,
+    );
+    _hover = _Hover(slotId: slot.id, glow: glow, params: params);
+  }
+
   // ── Hint (frame 3.1) ──
 
   void _planHint(_Batch b, Move move, GameState board) {
@@ -901,13 +1032,12 @@ extension _Plans on BoardTimeline {
     GameState board,
     BoardGeometry previous,
   ) {
-    b.cue(
-      const FxCue(
-        atMs: 0,
-        sound: SoundEffect.button,
-        haptic: HapticPattern.button,
-      ),
-    );
+    // No `button` cue here (BACKLOG "+1 Slot plays button twice"): whichever
+    // button triggered this (the booster bar, the buy popup's confirm) is a
+    // `TactileSurface` and already played `button` + the selection haptic
+    // the moment it activated. Cueing it again here doubled it, because
+    // this is the one board effect whose §7 cue happens to match a generic
+    // button's own tactile feedback exactly.
     // A second +1 Slot while the first re-pitch still runs (a double tap)
     // waits for it: its re-pitch then starts from the layout the first one
     // ends on, where the row really is, instead of snapping the row there
@@ -932,7 +1062,9 @@ extension _Plans on BoardTimeline {
     _startPulse(b, e.result.slotId, end);
   }
 
-  /// `ui_extra_slot` on [slotId]'s stand, looping at 1× from [at].
+  /// `ui_extra_slot` on [slotId]'s stand, looping at 1× from [at], from the
+  /// file's `rest` marker (frame 0), which is the static pad's own pose, so
+  /// the hand-off has no pop (E.21, D184).
   void _startPulse(_Batch b, String slotId, double at) {
     final slot = _geometry.slotOrNull(slotId);
     if (slot == null) return;
@@ -948,8 +1080,9 @@ extension _Plans on BoardTimeline {
       StartClip(
         at,
         pulse.clip,
-        FxSegment.whole(
-          _spec(FxId.uiExtraSlot),
+        FxSegment(
+          FxTiming.extraSlotRestFrame,
+          _spec(FxId.uiExtraSlot).frames.toDouble(),
           loop: true,
           speed: motion.informationalLoopSpeed,
         ),
@@ -957,6 +1090,51 @@ extension _Plans on BoardTimeline {
       track: pulse,
     );
     _extraPulses[slotId] = pulse;
+    _pulseStartMs[slotId] = b.startMs + at;
+  }
+
+  /// E.16: a doll landed on the pad at [at]: the loop settles onto its rest
+  /// frame over 150 ms (`motion.extraSlot.stopUnderDollMs`) and stops, and
+  /// the static pad, in the same pose, draws again. The loop's frame at [at]
+  /// is worked out from when it began (it runs at 1×), so it settles from
+  /// where it is.
+  void _settlePulse(_Batch b, String slotId, double at) {
+    final pulse = _extraPulses.remove(slotId);
+    final began = _pulseStartMs.remove(slotId);
+    if (pulse == null || began == null) return;
+    final elapsedMs = b.startMs + at - began;
+    if (elapsedMs < 0) {
+      // The loop hasn't started yet: it never does.
+      pulse.done = true;
+      return;
+    }
+    final total = _spec(FxId.uiExtraSlot).frames.toDouble();
+    final frame =
+        (elapsedMs * motion.informationalLoopSpeed * FxSpec.frameRate / 1000) %
+        total;
+    final remaining = total - frame;
+    final duration = b.at(MotionTokens.extraSlotStopUnderDollMs.toDouble());
+    if (remaining >= 0.5 && duration > 0) {
+      b.command(
+        PlayClipSegment(
+          at,
+          pulse.clip,
+          FxSegment(frame, total, speed: FxSpec.msOf(remaining) / duration),
+        ),
+        track: pulse,
+      );
+    }
+    b.command(
+      StopClip(at + (remaining >= 0.5 ? duration : 0), pulse.clip),
+      track: pulse,
+    );
+  }
+
+  /// E.16: the pad is empty again at [at] (a doll left it, or its completed
+  /// set flew): the loop restarts from frame 0.
+  void _restartPulse(_Batch b, String slotId, double at) {
+    if (_extraPulses.containsKey(slotId)) return;
+    _startPulse(b, slotId, at);
   }
 
   /// Moves every lasting clip (the selection, the hint, the extra-slot
@@ -991,6 +1169,8 @@ extension _Plans on BoardTimeline {
       place(hint.arrow, FxClipParams.none, size: hint.size);
       place(hint.glow, FxClipParams.none);
     }
+    final hover = _hover;
+    if (hover != null) place(hover.glow, hover.params);
     for (final pulse in _extraPulses.values) {
       place(pulse, FxClipParams.none);
     }
@@ -1002,10 +1182,13 @@ extension _Plans on BoardTimeline {
     _cancelAll();
     if (e.reason != BoardResetReason.undo) combo.reset();
     b.command(ResetBoard(0, e.snapshot, e.reason));
-    // Extra slots survive a restart and an undo (D22): their stands pulse
-    // again at once.
+    // Extra slots survive a restart and an undo (D22): their empty stands
+    // pulse again at once.
     for (final id in e.snapshot.slotIds) {
-      if (SlotId.isExtra(id)) _startPulse(b, id, 0);
+      // A pad with a doll on it rests (E.16).
+      if (SlotId.isExtra(id) && _topOfSlot(e.snapshot, id) == null) {
+        _startPulse(b, id, 0);
+      }
     }
   }
 }

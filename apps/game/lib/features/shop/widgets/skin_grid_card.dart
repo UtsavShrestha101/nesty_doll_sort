@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/semantics.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/repository/catalog_models.dart';
@@ -9,8 +10,10 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spinner.dart';
 import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
+import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
-import 'package:nesty_game/features/shop/widgets/shop_colors.dart';
+import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
+import 'package:nesty_game/features/shop/widgets/shop_look.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
@@ -27,9 +30,11 @@ class SkinGridCard extends StatefulWidget {
     required this.skin,
     required this.owned,
     required this.equipped,
+    required this.coins,
     required this.onTap,
     required this.onEquip,
     required this.onBuy,
+    required this.onGoToCoins,
     this.downloadPercent,
     super.key,
   });
@@ -37,14 +42,21 @@ class SkinGridCard extends StatefulWidget {
   final SkinInfo skin;
   final bool owned;
   final bool equipped;
+
+  /// The player's balance, for `NotEnoughCoinsDialog` (D112).
+  final int coins;
   final VoidCallback onTap;
   final VoidCallback onEquip;
 
   /// Awaited by the caller, which shows the purchase celebration on
-  /// success. Asked even when the price is more than the balance: the
-  /// price is orange either way (frame 7.3), and `ShopCubit.buySkin` then
-  /// opens the Coins tab (FIDELITY-7).
-  final Future<bool> Function() onBuy;
+  /// [PurchaseOutcome.bought] and, on [PurchaseOutcome.needsCoins], opens
+  /// `NotEnoughCoinsDialog` (D112). Asked even when the price is more than
+  /// the balance: the price is orange either way (frame 7.3).
+  final Future<PurchaseOutcome> Function() onBuy;
+
+  /// `NotEnoughCoinsDialog`'s "Go to Shop": switches the already-open Shop
+  /// to its Coins tab.
+  final VoidCallback onGoToCoins;
 
   /// TODO(M4): a skin mid-download shows this instead of Equip/Buy; no
   /// bundled skin ever sets it (frame 7.5).
@@ -116,10 +128,25 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
   Future<void> _buy() async {
     if (_buying) return;
     setState(() => _buying = true);
-    final ok = await widget.onBuy();
+    final outcome = await widget.onBuy();
     if (!mounted) return;
     setState(() => _buying = false);
-    if (ok) PurchaseTwinkleBurst.showOver(context);
+    switch (outcome) {
+      case PurchaseOutcome.bought:
+        PurchaseTwinkleBurst.celebrate(context);
+      case PurchaseOutcome.needsCoins:
+        unawaited(
+          NotEnoughCoinsDialog.show(
+            context,
+            price: widget.skin.priceCoins,
+            balance: widget.coins,
+            itemName: context.localizations.skinNameOf(widget.skin.id),
+            onGoToShop: widget.onGoToCoins,
+          ),
+        );
+      case PurchaseOutcome.unavailable:
+        break;
+    }
   }
 
   @override
@@ -135,14 +162,20 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
     final ring = widget.equipped
         ? AppColorTokens.success
         : downloading
-        ? SkinShopColors.downloadingCardRing
+        ? SkinDownloadColors.cardRing
         : null;
     return TactileSurface(
       style: _cardStyle(ring),
-      radius: const BorderRadius.all(Radius.circular(AppRadii.xl)),
+      radius: const BorderRadius.all(Radius.circular(26)),
       onPressed: widget.onTap,
       padding: const EdgeInsets.all(10),
-      semanticLabel: l10n.skinName(widget.skin.id),
+      // One node for the card (its tap opens the detail): the name, then
+      // what the footer shows, and the footer's Equip or Buy as the node's
+      // own actions, since the card's label covers the footer's button
+      // (review R14).
+      semanticLabel: l10n.skinNameOf(widget.skin.id),
+      semanticValue: _semanticState(l10n, downloading),
+      customSemanticsActions: _semanticActions(context, downloading),
       excludeChildSemantics: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -153,7 +186,7 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
             child: Container(
               height: SkinGridCard.previewHeight,
               decoration: BoxDecoration(
-                gradient: SkinShopColors.cardBackground(widget.skin.id),
+                gradient: ShopLook.card(widget.skin.id),
               ),
               child: Stack(
                 fit: StackFit.expand,
@@ -185,11 +218,18 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 2),
-            child: Text(
-              l10n.skinName(widget.skin.id),
-              style: AppTextStyles.cardTitle.copyWith(fontSize: 16),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                l10n.skinNameOf(widget.skin.id),
+                style: AppTextStyles.cardTitle.copyWith(
+                  fontSize: 22,
+                  color: AppColorTokens.textPrimary,
+                ),
+                maxLines: 1,
+                softWrap: false,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -197,6 +237,41 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
         ],
       ),
     );
+  }
+
+  /// What the footer shows, for the card's screen-reader value.
+  String _semanticState(AppLocalizations l10n, bool downloading) {
+    if (downloading) return l10n.shopDownloading(widget.downloadPercent!);
+    if (widget.equipped) return l10n.shopEquipped;
+    if (widget.owned) return l10n.shopOwned;
+    return l10n.coinPrice(widget.skin.priceCoins);
+  }
+
+  /// The footer button's action, offered on the card's own node: Equip for
+  /// an owned skin, Buy for one not owned (none while it is equipped,
+  /// downloading or being bought).
+  Map<CustomSemanticsAction, VoidCallback>? _semanticActions(
+    BuildContext context,
+    bool downloading,
+  ) {
+    if (downloading || widget.equipped) return null;
+    final l10n = context.localizations;
+    void withFeedback(VoidCallback action) {
+      TactileFeedback.of(context)?.activate();
+      action();
+    }
+
+    if (widget.owned) {
+      return {
+        CustomSemanticsAction(label: l10n.shopEquip): () =>
+            withFeedback(widget.onEquip),
+      };
+    }
+    if (_buying) return null;
+    return {
+      CustomSemanticsAction(label: l10n.shopBuy): () =>
+          withFeedback(() => unawaited(_buy())),
+    };
   }
 
   Widget _footer(BuildContext context, bool downloading) {
@@ -207,18 +282,28 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
     if (widget.equipped) {
       return _StatusPill(
         label: l10n.shopEquipped,
-        color: AppColorTokens.success,
-        face: SkinShopColors.equippedFace,
+        color: AppColorTokens.successEdge,
+        ring: AppColorTokens.successRing,
+        face: AppColorTokens.successTint,
         icon: NestyIcons.checkCircle,
       );
     }
+    // Frame 7.3 draws Equip at 34 and the price at 38 in a fixed-height
+    // cell: each answers across 48 dp over the gap above it and the card's
+    // padding below, instead of growing the card (review R19).
     if (widget.owned) {
-      return _EquipButton(label: l10n.shopEquip, onTap: widget.onEquip);
+      return TouchSlop(
+        child: _EquipButton(label: l10n.shopEquip, onTap: widget.onEquip),
+      );
     }
-    return CoinPriceButton(
-      price: widget.skin.priceCoins,
-      onPressed: _buying ? null : _buy,
-      size: TactileButtonSize.compact,
+    return TouchSlop(
+      child: ShopBuyButton(
+        price: widget.skin.priceCoins,
+        onPressed: _buying ? null : _buy,
+        height: 38,
+        radius: 14,
+        edge: 4,
+      ),
     );
   }
 
@@ -236,12 +321,14 @@ class _StatusPill extends StatelessWidget {
   const _StatusPill({
     required this.label,
     required this.color,
+    required this.ring,
     required this.face,
     required this.icon,
   });
 
   final String label;
   final Color color;
+  final Color ring;
   final Color face;
   final IconData icon;
 
@@ -249,7 +336,7 @@ class _StatusPill extends StatelessWidget {
   Widget build(BuildContext context) => NestySurface(
     style: SurfaceStyle(
       color: face,
-      shadows: [NestyShadow(color: color, inset: true, spread: 2)],
+      shadows: [NestyShadow(color: ring, inset: true, spread: 2)],
     ),
     radius: const BorderRadius.all(Radius.circular(13)),
     height: 34,
@@ -307,13 +394,9 @@ class _DownloadingPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NestySurface(
     style: const SurfaceStyle(
-      color: SkinShopColors.downloadingFace,
+      color: SkinDownloadColors.face,
       shadows: [
-        NestyShadow(
-          color: SkinShopColors.downloadingPillRing,
-          inset: true,
-          spread: 2,
-        ),
+        NestyShadow(color: SkinDownloadColors.pillRing, inset: true, spread: 2),
       ],
     ),
     radius: const BorderRadius.all(Radius.circular(13)),
@@ -327,8 +410,8 @@ class _DownloadingPill extends StatelessWidget {
           height: 16,
           child: CircularProgressIndicator(
             strokeWidth: 2.5,
-            color: SkinShopColors.downloadingText,
-            backgroundColor: SkinShopColors.downloadingPillRing,
+            color: SkinDownloadColors.text,
+            backgroundColor: SkinDownloadColors.pillRing,
           ),
         ),
         const SizedBox(width: 7),
@@ -337,7 +420,7 @@ class _DownloadingPill extends StatelessWidget {
           style: AppTextStyleTokens.button.copyWith(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: SkinShopColors.downloadingText,
+            color: SkinDownloadColors.text,
           ),
         ),
       ],

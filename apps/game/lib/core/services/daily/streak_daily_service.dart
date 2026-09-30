@@ -63,7 +63,7 @@ class StreakDailyService implements DailyService {
 
   @override
   DailyProgress progressAfterSolve(LocalDate date) =>
-      _solve(_save.document.daily, date);
+      _solveOn(_save.document.daily, date, _clock.today());
 
   @override
   int collectChest() {
@@ -104,6 +104,8 @@ class StreakDailyService implements DailyService {
       colors: DifficultyCurve.dailyParams(today.yyyymmdd).colors,
       unlocked: isUnlocked,
       streak: daily.streak,
+      lit: daily.lit,
+      run: daily.run,
       freezes: daily.freezes,
       solvedToday: solvedToday,
       cycleDone: solvedToday
@@ -112,6 +114,7 @@ class StreakDailyService implements DailyService {
       chestPending: daily.chestPending,
       freezeNotice: _freezeNotice(daily),
       inProgress: daily.inProgress != null,
+      solve: daily.lastSolve?.date == today ? daily.lastSolve : null,
     );
     // Only a real change fires: Home re-reads the status (refresh) on every
     // change, so an unchanged one firing again would loop forever.
@@ -145,12 +148,24 @@ class StreakDailyService implements DailyService {
   }
 
   /// Covers missed days between `daily.lastDate` and [today] with freezes
-  /// while they last, resetting the streak on the first uncovered day, then
-  /// grants today's week (m3-design §8.2 `reconcile`). Idempotent when
-  /// there is nothing to reconcile.
+  /// while they last, pausing the flame on the first uncovered day, then
+  /// grants today's week (m7-design §8 `reconcile`). The gentle streak
+  /// (`daily.streak`) is never lowered here, whatever happens to the run:
+  /// a pause only clears [DailyProgress.lit], [DailyProgress.run] and
+  /// [DailyProgress.lastDate]. Idempotent when there is nothing to
+  /// reconcile.
+  ///
+  /// When the clock went back ([today] before `lastDate`), nothing is
+  /// reconciled and nothing is granted: that week is behind the save
+  /// already, and granting it would let a clock rolled back and forth mint
+  /// a freeze per round trip past the once-per-ISO-week cap (m3-design
+  /// §8.2; M7 review R2). A freeze can't cover anything until today passes
+  /// `lastDate` again, so skipping the grant costs an honest player
+  /// nothing. `refresh` and `_solve` both reach this guard.
   static DailyProgress _reconcile(DailyProgress daily, LocalDate today) {
     var d = daily;
     final last = d.lastDate;
+    if (last != null && last > today) return d;
     if (last != null && last < today) {
       var day = last.addDays(1);
       final end = today.addDays(-1);
@@ -163,7 +178,9 @@ class StreakDailyService implements DailyService {
             lastDate: day,
           );
         } else {
-          d = d.copyWith(streak: 0, lastDate: null);
+          // An uncovered miss pauses the flame; the streak count itself
+          // is never lowered (spec-prop §7.5, m7-design §8: "gentle").
+          d = d.copyWith(lit: false, run: 0, lastDate: null);
           break;
         }
         day = day.addDays(1);
@@ -172,25 +189,48 @@ class StreakDailyService implements DailyService {
     return _grant(d, today);
   }
 
-  /// [daily] after solving [date]'s puzzle (m3-design §8.2 `solve`): pure,
-  /// nothing is written.
+  /// [daily] after solving [date]'s puzzle (m7-design §8 `solve`): pure,
+  /// nothing is written. `streak` (the days ever solved) always grows by
+  /// one; `run` (the unbroken run) restarts at 1 when [date] doesn't
+  /// continue the last one (a fresh streak, or a relight after a pause).
   static DailyProgress _solve(DailyProgress daily, LocalDate date) {
     var d = _reconcile(daily, date);
     if (d.done.contains(date)) return d;
     final last = d.lastDate;
     if (last != null && last > date) {
       // The clock went back: pays and records, but doesn't touch the
-      // streak (m3-design §8.2).
+      // streak, the run or the freeze (m7-design §8; `_reconcile` granted
+      // nothing either, M7 review R2).
       return d.copyWith(done: _appendDate(d.done, date));
     }
-    final streak = last == date.addDays(-1) ? d.streak + 1 : 1;
+    final run = last == date.addDays(-1) ? d.run + 1 : 1;
+    final streak = d.streak + 1;
     d = d.copyWith(
       streak: streak,
+      lit: true,
+      run: run,
       lastDate: date,
       done: _appendDate(d.done, date),
     );
     if (streak % _cycleLength == 0) d = d.copyWith(chestPending: true);
     return d;
+  }
+
+  /// [daily] after solving [date]'s puzzle on [today] (`progressAfterSolve`).
+  /// Only today's date counts toward the streak: a daily of another date,
+  /// such as one started before midnight and won after it, pays its coins
+  /// and adds to `done` only (m3-design §8.2, D76, Q70; m7-design §8; M7
+  /// review R6). Nothing is reconciled against [today] here either, so a
+  /// countdown `refresh` between midnight and the win gives the same end
+  /// state as none.
+  static DailyProgress _solveOn(
+    DailyProgress daily,
+    LocalDate date,
+    LocalDate today,
+  ) {
+    if (date == today) return _solve(daily, date);
+    if (daily.done.contains(date)) return daily;
+    return daily.copyWith(done: _appendDate(daily.done, date));
   }
 
   static List<LocalDate> _appendDate(List<LocalDate> dates, LocalDate date) {

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/app/localization_cubit/language_cubit.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/bundled_catalog_repository.dart';
 import 'package:nesty_game/core/repository/bundled_level_repository.dart';
 import 'package:nesty_game/core/repository/catalog_repository.dart';
@@ -44,7 +45,11 @@ import 'package:nesty_game/core/services/music/fake_music_service.dart';
 import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/music/soloud_music_service.dart';
+import 'package:nesty_game/core/services/notifications/fake_notification_service.dart';
+import 'package:nesty_game/core/services/notifications/local_notification_service.dart';
+import 'package:nesty_game/core/services/notifications/notification_service.dart';
 import 'package:nesty_game/core/services/purchase/purchase_service.dart';
+import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
 import 'package:nesty_game/core/services/remote_config/defaults_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
@@ -53,19 +58,33 @@ import 'package:nesty_game/core/services/save/hive_save_service.dart';
 import 'package:nesty_game/core/services/save/in_memory_save_service.dart';
 import 'package:nesty_game/core/services/save/save_lifecycle_flusher.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
+import 'package:nesty_game/core/services/share/fake_share_service.dart';
+import 'package:nesty_game/core/services/share/share_plus_share_service.dart';
+import 'package:nesty_game/core/services/share/share_service.dart';
 import 'package:nesty_game/core/services/skin/asset_skin_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/services/solver/fake_solver_service.dart';
 import 'package:nesty_game/core/services/solver/isolate_solver_service.dart';
 import 'package:nesty_game/core/services/solver/solver_service.dart';
+import 'package:nesty_game/core/services/system_settings/channel_system_settings_service.dart';
+import 'package:nesty_game/core/services/system_settings/fake_system_settings_service.dart';
+import 'package:nesty_game/core/services/system_settings/system_settings_service.dart';
+import 'package:nesty_game/core/services/ticker/frame_ticker.dart';
+import 'package:nesty_game/core/services/ticker/scheduler_frame_ticker.dart';
+import 'package:nesty_game/core/ui/art/ui_art_library.dart';
+import 'package:nesty_game/features/chapters/cubit/chapters_cubit.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
+import 'package:nesty_game/features/daily/cubit/reminder_offer_cubit.dart';
 import 'package:nesty_game/features/fx/asset_fx_library.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart';
+import 'package:nesty_game/features/race/cubit/race_cubit.dart';
+import 'package:nesty_game/features/race/cubit/rival_select_cubit.dart';
+import 'package:nesty_game/features/records/cubit/records_cubit.dart';
 import 'package:nesty_game/features/settings/cubit/settings_cubit.dart';
 import 'package:nesty_game/features/shop/cubit/shop_cubit.dart';
 import 'package:nesty_game/features/shop/cubit/skin_detail_cubit.dart';
@@ -107,6 +126,21 @@ void _expectEverythingResolves() {
   expect(get<LanguageCubit>(), same(get<LanguageCubit>()));
   // A navigator takes its own observer.
   expect(get<MusicRouteObserver>(), isNot(same(get<MusicRouteObserver>())));
+  // One frame ticker per race, the real one in both envs (m7-design P2.8).
+  final ticker = get<FrameTicker>();
+  expect(ticker, isA<SchedulerFrameTicker>());
+  expect(get<FrameTicker>(), isNot(same(ticker)));
+  ticker.dispose();
+  // M7 phase 3 (m7-design P3.1, P3.13): the reminder and the share card.
+  expect(get<NotificationService>(), same(get<NotificationService>()));
+  expect(get<ShareService>(), same(get<ShareService>()));
+  // One reminder in both envs: it composes interfaces, like
+  // SaveLifecycleFlusher, so it has no interface of its own.
+  expect(get<DailyReminder>(), same(get<DailyReminder>()));
+  // M7 phase 4 (m7-design P4.1): the UI art layer (D186) and "Open phone
+  // settings" (D189), one of each per app.
+  expect(get<UiArtLibrary>(), same(get<UiArtLibrary>()));
+  expect(get<SystemSettingsService>(), same(get<SystemSettingsService>()));
   // Feature cubits are factories: a fresh one per route.
   final splash = get<SplashCubit>();
   expect(get<SplashCubit>(), isNot(same(splash)));
@@ -122,6 +156,14 @@ void _expectEverythingResolves() {
     get<SettingsCubit>(),
     get<ShopCubit>(),
     get<SkinDetailCubit>(),
+    // M7 phase 1 (docs/plans/m7-design.md §1).
+    get<ChaptersCubit>(),
+    get<RecordsCubit>(),
+    // M7 phase 2 (m7-design P2.8): the race's cubit takes its request.
+    get<RivalSelectCubit>(),
+    get<RaceCubit>(param1: const RacePlay(rival: 1, raceNo: 1)),
+    // M7 phase 3 (m7-design P3.10): the Daily screen's one-time offer.
+    get<ReminderOfferCubit>(),
   ]) {
     addTearDown(cubit.close);
   }
@@ -150,6 +192,10 @@ void main() {
     expect(get<LevelGeneratorService>(), isA<FakeLevelGeneratorService>());
     expect(get<AppInfoService>(), isA<FakeAppInfoService>());
     expect(get<LinkLauncher>(), isA<FakeLinkLauncher>());
+    expect(get<NotificationService>(), isA<FakeNotificationService>());
+    expect(get<ShareService>(), isA<FakeShareService>());
+    expect(get<UiArtLibrary>(), isA<FakeUiArtLibrary>());
+    expect(get<SystemSettingsService>(), isA<FakeSystemSettingsService>());
     // The fake env plays levels 1–3 (copies of the bundled L0001–L0003).
     final levels = get<LevelRepository>();
     expect(levels, isA<FakeLevelRepository>());
@@ -183,6 +229,13 @@ void main() {
     expect(get<LevelGeneratorService>(), isA<IsolateLevelGeneratorService>());
     expect(get<AppInfoService>(), isA<PackageAppInfoService>());
     expect(get<LinkLauncher>(), isA<UrlLinkLauncher>());
+    // M7 phase 3: the real notification service's constructor touches no
+    // plugin, so resolving it here needs no platform (m7-design P3.10).
+    expect(get<NotificationService>(), isA<LocalNotificationService>());
+    expect(get<ShareService>(), isA<SharePlusShareService>());
+    // M7 phase 4: both constructors touch no plugin or asset.
+    expect(get<UiArtLibrary>(), isA<AssetUiArtLibrary>());
+    expect(get<SystemSettingsService>(), isA<ChannelSystemSettingsService>());
     // M3's persistent save (HiveSaveService extends InMemorySaveService,
     // which now only backs FakeSaveService, m3-design §3.2).
     expect(get<SaveService>(), isA<HiveSaveService>());

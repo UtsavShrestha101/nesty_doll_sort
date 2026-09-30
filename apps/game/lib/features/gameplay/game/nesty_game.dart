@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/painting.dart' show EdgeInsets;
 import 'package:lottie/lottie.dart' show LottieComposition;
 import 'package:nesty_core/nesty_core.dart';
@@ -13,6 +14,7 @@ import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/game/board_shape_of.dart';
 import 'package:nesty_game/features/gameplay/game/components/board_component.dart';
+import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/timeline.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -59,6 +61,7 @@ class NestyGame extends FlameGame {
     EdgeInsets padding = EdgeInsets.zero,
     bool reduceMotion = false,
     DollSymbols symbols = DollSymbols.subtle,
+    BoardLabels boardLabels = BoardLabels.fallback,
     ComboTracker? combo,
   }) : _padding = padding,
        board = BoardComponent(
@@ -74,7 +77,8 @@ class NestyGame extends FlameGame {
        ) {
     board
       ..motion = MotionSpec.of(reduceMotion: reduceMotion)
-      ..symbols = symbols;
+      ..symbols = symbols
+      ..labels = boardLabels;
   }
 
   /// The board (for the page's debug tools and tests).
@@ -136,6 +140,24 @@ class NestyGame extends FlameGame {
 
   /// The belly symbols of placeholder dolls (settings `symbols`).
   set symbols(DollSymbols value) => board.symbols = value;
+
+  /// The board's localized "+N" tower tag and ice badge text and direction
+  /// (ARB `boardTowerHidden`/`boardIceCount`, spec §16): from
+  /// `AppLocalizations.of(context)` and `Directionality.of(context)`, at
+  /// build and again whenever the locale can have changed. Before the page's
+  /// first hand-off (and in tests) the board shows `BoardLabels.fallback`'s
+  /// English pattern.
+  set boardLabels(BoardLabels value) => board.labels = value;
+
+  /// The legal drop targets of the lifted nest (`GameplayState.dropTargets`,
+  /// from core's `Rules.legalTargets`): the board glows the legal stand under
+  /// a dragged doll (E.14) and never decides legality itself.
+  Set<String> get dropTargets => board.dropTargets;
+  set dropTargets(Set<String> value) => board.dropTargets = value;
+
+  /// True while a hint's arrow rises into the family counter's place (frame
+  /// 3.1b, E.20).
+  ValueListenable<bool> get familyCounterYield => board.familyCounterYield;
 
   /// An overlay or sheet is up: the board drops input.
   bool get overlayOpen => board.overlayOpen;

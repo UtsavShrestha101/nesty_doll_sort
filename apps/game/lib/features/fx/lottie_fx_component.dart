@@ -62,6 +62,25 @@ class LottieFxComponent extends PositionComponent {
   /// Advances the drawable in Flame's [update] instead of from the timeline.
   bool autoAdvance = false;
 
+  /// The whole clip's opacity, 1 unless the host dims it (the drag hover's
+  /// glow at 60 %, E.14). Below 1 it draws through one layer, whose paint
+  /// and bounds are built once.
+  double get opacity => _opacity;
+  set opacity(double value) {
+    if (value == _opacity) return;
+    _opacity = value;
+    _layerPaint.color = ui.Color.fromRGBO(0, 0, 0, value);
+  }
+
+  double _opacity = 1;
+  final ui.Paint _layerPaint = ui.Paint();
+  late final ui.Rect _layerBounds = ui.Rect.fromLTWH(
+    0,
+    0,
+    drawable.spec.width,
+    drawable.spec.height,
+  );
+
   /// Called on the tick a one-shot reaches its end.
   void Function(LottieFxComponent component)? onFinished;
 
@@ -83,6 +102,7 @@ class LottieFxComponent extends PositionComponent {
   /// returned to its pool).
   void deactivate() {
     _active = false;
+    opacity = 1;
     drawable.reset();
     _dropRest();
   }
@@ -90,9 +110,11 @@ class LottieFxComponent extends PositionComponent {
   /// Puts the file's anchor on ([x], [y]) (logical px, the board's
   /// coordinates) at [scale]: the board scale for doll files and
   /// `fx_sparkle`, the slot's furniture scale for board pieces (§5).
-  void placeAt(double x, double y, double scale) {
+  /// [stretchY] stretches it vertically about the anchor (`fx_ice` on the
+  /// tall preset plays at (1, 1.05) from the ice bottom).
+  void placeAt(double x, double y, double scale, {double stretchY = 1}) {
     position.setValues(x, y);
-    this.scale.setValues(scale, scale);
+    this.scale.setValues(scale, scale * stretchY);
   }
 
   /// Lays a board-space file's reference screen over the board: top-left
@@ -145,12 +167,15 @@ class LottieFxComponent extends PositionComponent {
   @override
   void render(ui.Canvas canvas) {
     if (!_active) return;
+    final dimmed = _opacity < 1;
+    if (dimmed) canvas.saveLayer(_layerBounds, _layerPaint);
     if (cacheRest && drawable.player.isStill) {
       if (!_restIsCurrent) _recordRest();
       canvas.drawPicture(_rest!);
-      return;
+    } else {
+      drawable.draw(canvas);
     }
-    drawable.draw(canvas);
+    if (dimmed) canvas.restore();
   }
 
   bool get _restIsCurrent =>

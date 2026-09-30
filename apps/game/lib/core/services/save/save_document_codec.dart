@@ -60,7 +60,8 @@ final class SaveReadResult {
 }
 
 /// The save document to JSON and back, by hand (no json_serializable;
-/// docs/plans/m3-design.md §3.3).
+/// docs/plans/m3-design.md §3.3; schema 2's fields, docs/plans/
+/// m7-design.md §3.2).
 ///
 /// Reads are lenient and never throw: a value of the wrong type or out of
 /// range falls back to its default, list entries that can't be read are
@@ -119,8 +120,8 @@ abstract final class SaveDocumentCodec {
   static String write(SaveDocument doc) => jsonEncode(encode(doc));
 
   /// The JSON object of [doc]: the known keys in the order of
-  /// m3-design §3.1, then [SaveDocument.unknown]'s keys sorted by code
-  /// unit, so the text is stable. `schema` is always
+  /// m3-design §3.1 and m7-design §3.1, then [SaveDocument.unknown]'s keys
+  /// sorted by code unit, so the text is stable. `schema` is always
   /// [SaveDocument.currentSchema].
   static Map<String, Object?> encode(SaveDocument doc) {
     final unknown = doc.unknown.keys.where((k) => !_known.contains(k)).toList()
@@ -157,6 +158,30 @@ abstract final class SaveDocumentCodec {
       'tutorialDone': doc.tutorialDone,
       'bonus': {'next': doc.bonus.next},
       'playerId': doc.playerId,
+      'levelBests': doc.levelBests,
+      'levelStars': doc.levelStars,
+      'starTipShown': doc.starTipShown,
+      'records': {
+        'families': doc.records.families,
+        'dolls': doc.records.dolls,
+        'dailies': doc.records.dailies,
+        'longestRun': doc.records.longestRun,
+        'badges': doc.records.badges,
+      },
+      'chests': {
+        'opened': doc.chests.opened,
+        'bonusOpened': doc.chests.bonusOpened,
+      },
+      'race': {
+        'rivals': [
+          for (final rival in doc.race.rivals)
+            {
+              'unlocked': rival.unlocked,
+              'wins': rival.wins,
+              'raceNo': rival.raceNo,
+            },
+        ],
+      },
       for (final key in unknown) key: doc.unknown[key],
     };
   }
@@ -192,6 +217,12 @@ abstract final class SaveDocumentCodec {
       tutorialDone: _bool(raw['tutorialDone'], defaults.tutorialDone),
       bonus: BonusProgress(next: _int(_map(raw['bonus'])?['next'], 1, 1)),
       playerId: _playerId(raw['playerId']),
+      levelBests: _decodeBests(raw['levelBests']),
+      levelStars: _decodeStars(raw['levelStars']),
+      starTipShown: _bool(raw['starTipShown'], defaults.starTipShown),
+      records: _decodeRecords(raw['records']),
+      chests: _decodeChests(raw['chests']),
+      race: _decodeRace(raw['race']),
       unknown: {
         for (final MapEntry(:key, :value) in raw.entries)
           if (!_known.contains(key)) key: value,
@@ -224,6 +255,13 @@ abstract final class SaveDocumentCodec {
     'tutorialDone',
     'bonus',
     'playerId',
+    // Schema 2 (m7-design §3.1; the star rating's two, P3.4).
+    'levelBests',
+    'levelStars',
+    'starTipShown',
+    'records',
+    'chests',
+    'race',
     // Spec §13.3 lists `settings`, but they live in the settings box
     // (m3-design §3.1): a stray one is dropped, never written back.
     'settings',
@@ -244,6 +282,8 @@ abstract final class SaveDocumentCodec {
 
   static Map<String, Object?> _encodeDaily(DailyProgress daily) => {
     'streak': daily.streak,
+    'lit': daily.lit,
+    'run': daily.run,
     'lastDate': daily.lastDate?.toIso(),
     'freezes': daily.freezes,
     'freezeWeek': daily.freezeWeek,
@@ -251,15 +291,51 @@ abstract final class SaveDocumentCodec {
     'frozen': [for (final date in daily.frozen) date.toIso()],
     'noticeDate': daily.noticeDate?.toIso(),
     'chestPending': daily.chestPending,
+    'lastSolve': _encodeSolve(daily.lastSolve),
     'inProgress': _encodeInProgress(daily.inProgress),
   };
+
+  static Map<String, Object?>? _encodeSolve(DailySolve? solve) {
+    if (solve == null) return null;
+    return {
+      'date': solve.date.toIso(),
+      'moves': solve.moves,
+      'families': solve.families,
+      'minute': solve.minuteOfDay,
+    };
+  }
+
+  /// `daily.lastSolve` (m7-design P3.4): null unless its date parses; bad
+  /// counts read 0, a minute outside 0–1439 reads null.
+  static DailySolve? _decodeSolve(Object? value) {
+    final map = _map(value);
+    if (map == null) return null;
+    final date = LocalDate.tryParse(map['date']);
+    if (date == null) return null;
+    final minute = _intOrNull(map['minute']);
+    return DailySolve(
+      date: date,
+      moves: _int(map['moves'], 0, 0),
+      families: _int(map['families'], 0, 0),
+      minuteOfDay: minute != null && minute >= 0 && minute < 24 * 60
+          ? minute
+          : null,
+    );
+  }
 
   static DailyProgress _decodeDaily(Object? value) {
     final map = _map(value);
     if (map == null) return const DailyProgress();
     final freezes = _int(map['freezes'], 0, 0);
+    // The flame is lit exactly while a run is going (m7-design §8): a
+    // missing `lit` follows `run`, and a pair that disagrees reads as
+    // paused.
+    final run = _int(map['run'], 0, 0);
+    final lit = (_boolOrNull(map['lit']) ?? run > 0) && run > 0;
     return DailyProgress(
       streak: _int(map['streak'], 0, 0),
+      lit: lit,
+      run: lit ? run : 0,
       lastDate: LocalDate.tryParse(map['lastDate']),
       freezes: freezes > DailyProgress.maxFreezes
           ? DailyProgress.maxFreezes
@@ -269,6 +345,7 @@ abstract final class SaveDocumentCodec {
       frozen: _dateList(map['frozen']),
       noticeDate: LocalDate.tryParse(map['noticeDate']),
       chestPending: _bool(map['chestPending'], false),
+      lastSolve: _decodeSolve(map['lastSolve']),
       inProgress: _decodeInProgress(map['inProgress'], daily: true),
     );
   }
@@ -283,6 +360,7 @@ abstract final class SaveDocumentCodec {
       'tier': level.tier?.id,
       'level': level.level,
       'session': level.session,
+      'hinted': level.hinted,
     };
   }
 
@@ -301,7 +379,11 @@ abstract final class SaveDocumentCodec {
     final levelId = _string(map['levelId']);
     final levelVersion = _intOrNull(map['levelVersion']);
     final session = _map(map['session']);
+    // A replay or a race is never saved in progress (m7-design §6, P2.4):
+    // a stray one is dropped like any unreadable board.
     if (kind == null ||
+        kind == PlayKind.replay ||
+        kind == PlayKind.race ||
         (kind == PlayKind.daily) != daily ||
         number == null ||
         levelId == null ||
@@ -322,6 +404,7 @@ abstract final class SaveDocumentCodec {
       session: session,
       level: request.isGenerated ? level : null,
       tier: tierId == null ? null : Tier.tryFromId(tierId),
+      hinted: _bool(map['hinted'], false),
     );
   }
 
@@ -348,6 +431,81 @@ abstract final class SaveDocumentCodec {
       wins: _int(map['wins'], 0, 0),
       moves: _int(map['moves'], 0, 0),
       boostersUsed: used,
+    );
+  }
+
+  /// `levelBests`: non-empty keys with a move count of at least 1 (a win
+  /// takes a move); anything else is skipped.
+  static Map<String, int> _decodeBests(Object? value) {
+    final map = _map(value);
+    if (map == null) return const {};
+    return {
+      for (final MapEntry(:key, :value) in map.entries)
+        if (key.isNotEmpty && (_intOrNull(value) ?? 0) >= 1)
+          key: _intOrNull(value)!,
+    };
+  }
+
+  /// `levelStars` (m7-design P3.4): non-empty level ids with an integral
+  /// star count of 1–3; anything else is skipped.
+  static Map<String, int> _decodeStars(Object? value) {
+    final map = _map(value);
+    if (map == null) return const {};
+    return {
+      for (final MapEntry(:key, :value) in map.entries)
+        if (key.isNotEmpty &&
+            (_intOrNull(value) ?? 0) >= StarRating.minStars &&
+            _intOrNull(value)! <= StarRating.maxStars)
+          key: _intOrNull(value)!,
+    };
+  }
+
+  static SaveRecords _decodeRecords(Object? value) {
+    final map = _map(value);
+    if (map == null) return const SaveRecords();
+    return SaveRecords(
+      families: _int(map['families'], 0, 0),
+      dolls: _int(map['dolls'], 0, 0),
+      dailies: _int(map['dailies'], 0, 0),
+      longestRun: _int(map['longestRun'], 0, 0),
+      // Unknown ids (a newer app's badges) are kept (m7-design §3.2).
+      badges: _ids(map['badges'], null),
+    );
+  }
+
+  static ChestProgress _decodeChests(Object? value) {
+    final map = _map(value);
+    if (map == null) return const ChestProgress();
+    return ChestProgress(
+      opened: _numbers(map['opened']),
+      bonusOpened: _numbers(map['bonusOpened']),
+    );
+  }
+
+  /// Exactly [RaceProgress.rivalCount] rivals: a missing or unreadable one
+  /// is its fresh default, extra ones are dropped. Rival 1 is always
+  /// unlocked, and a rival with a win is too (m7-design §3.2).
+  static RaceProgress _decodeRace(Object? value) {
+    final stored = _map(value)?['rivals'];
+    final list = stored is List ? stored : const <Object?>[];
+    return RaceProgress(
+      rivals: [
+        for (var i = 0; i < RaceProgress.rivalCount; i++)
+          _decodeRival(i < list.length ? list[i] : null, i),
+      ],
+    );
+  }
+
+  static RivalProgress _decodeRival(Object? value, int index) {
+    final fallback = RaceProgress.defaultRivals[index];
+    final map = _map(value);
+    if (map == null) return fallback;
+    final wins = _int(map['wins'], 0, 0);
+    return RivalProgress(
+      unlocked:
+          index == 0 || wins > 0 || _bool(map['unlocked'], fallback.unlocked),
+      wins: wins,
+      raceNo: _int(map['raceNo'], 0, 0),
     );
   }
 
@@ -394,6 +552,17 @@ abstract final class SaveDocumentCodec {
 
   static bool _bool(Object? value, bool fallback) =>
       value is bool ? value : fallback;
+
+  static bool? _boolOrNull(Object? value) => value is bool ? value : null;
+
+  /// Distinct integers of at least 1, ascending.
+  static List<int> _numbers(Object? value) {
+    if (value is! List) return const [];
+    return <int>{
+      for (final item in value)
+        if ((_intOrNull(item) ?? 0) >= 1) _intOrNull(item)!,
+    }.toList()..sort();
+  }
 
   static String? _string(Object? value) =>
       value is String && value.isNotEmpty ? value : null;

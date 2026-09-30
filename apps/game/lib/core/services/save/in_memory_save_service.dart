@@ -1,12 +1,19 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:nesty_core/nesty_core.dart' show DifficultyCurve, StarRating;
 import 'package:nesty_game/core/flavor/flavor.dart';
 import 'package:nesty_game/core/flavor/flavor_config.dart';
 import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/records/badge_rules.dart';
+import 'package:nesty_game/core/services/records/record_rules.dart';
+import 'package:nesty_game/core/services/records/star_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -82,12 +89,15 @@ class InMemorySaveService implements SaveService {
   Future<void> load() => _loading ??= loadDocument();
 
   /// [load]'s body, run once. In memory: gives a fresh install its player
-  /// id.
+  /// id and grants the badges the document already implies
+  /// ([BadgeRules.withDerivable], silently, m7-design §12).
   @protected
   Future<void> loadDocument() async {
-    if (_document.playerId == null) {
-      update((d) => d.copyWith(playerId: newPlayerId()));
-    }
+    update(
+      (d) => BadgeRules.withDerivable(
+        d.playerId == null ? d.copyWith(playerId: newPlayerId()) : d,
+      ),
+    );
   }
 
   /// A new random Player ID, `7F3A-21C9` (frame 8.1; m3-design §3.1). App
@@ -194,14 +204,20 @@ class InMemorySaveService implements SaveService {
       );
 
   @override
-  void recordLevelWin(LevelWinRecord win) {
+  LevelWinOutcome recordLevelWin(LevelWinRecord win) {
     RangeError.checkNotNegative(win.rewardCoins, 'rewardCoins');
     RangeError.checkNotNegative(win.chapterReward, 'chapterReward');
     final request = win.request;
+    // A race's win is recordRaceWin's (m7-design P2.7): nothing here.
+    if (request is RacePlay) return const LevelWinOutcome();
     RangeError.checkValueInInterval(request.number, 1, 99991231, 'request');
+    var outcome = const LevelWinOutcome();
     update((d) {
+      // A replay pays nothing (spec-prop §7.1): the resolver already says
+      // 0, and the save holds to it whatever the record carries.
+      final replay = request is ReplayPlay;
       var next = d.copyWith(
-        coins: d.coins + win.rewardCoins,
+        coins: d.coins + (replay ? 0 : win.rewardCoins),
         stats: d.stats.copyWith(
           wins: d.stats.wins + 1,
           moves: d.stats.moves + math.max(0, win.moves),
@@ -234,17 +250,305 @@ class InMemorySaveService implements SaveService {
                 ? null
                 : next.inProgress,
           );
-        case DailyPlay():
-          final daily = win.daily ?? next.daily;
+        case DailyPlay(:final yyyymmdd):
+          var daily = win.daily ?? next.daily;
+          // A solve adds at most one date; one `done` lacked before is a
+          // daily solved for the first time (m7-design §12).
+          final solvedNew = daily.done.any(
+            (date) => !d.daily.done.contains(date),
+          );
+          // The Share text's facts and the reminder offer's hour
+          // (m7-design P3.4): only a first solve of the date replaces it,
+          // and only this path writes it (the record's `daily` never
+          // does).
+          daily = daily.copyWith(
+            lastSolve: solvedNew
+                ? DailySolve(
+                    date: LocalDate.fromYyyymmdd(yyyymmdd),
+                    moves: math.max(0, win.moves),
+                    families: math.max(0, win.families),
+                    minuteOfDay: _minuteOrNull(win.minuteOfDay),
+                  )
+                : d.daily.lastSolve,
+          );
           next = next.copyWith(
             daily: daily.inProgress?.request == request
                 ? daily.copyWith(inProgress: null)
                 : daily,
+            records: next.records.copyWith(
+              dailies: next.records.dailies + (solvedNew ? 1 : 0),
+              longestRun: math.max(next.records.longestRun, daily.run),
+            ),
           );
+        case ReplayPlay():
+          // No progress, museum or chapter reward (spec-prop §7.1), and
+          // nothing in progress to clear: a replay is never saved (§6).
+          break;
+        case RacePlay():
+          // Unreachable: returned above.
+          break;
       }
+
+      // The milestone chest, once per level number and never on a replay
+      // (m7-design §9): only the chest of this very request is paid.
+      final chest = win.chest;
+      ChestGrant? paid;
+      if (chest != null &&
+          !replay &&
+          _chestBelongsTo(chest, request) &&
+          !next.chests.hasOpened(chest)) {
+        paid = chest;
+        next = next.copyWith(
+          coins: next.coins + math.max(0, chest.coins),
+          inventory: next.inventory.withCount(
+            BoosterKind.hint,
+            next.inventory.hint + math.max(0, chest.hints),
+          ),
+          chests: next.chests.withOpened(chest),
+        );
+      }
+
+      // Best moves, bundled boards only (m7-design §11).
+      int? best;
+      int? previous;
+      final key = win.bestKey;
+      if (key != null &&
+          key.isNotEmpty &&
+          request.isBundled &&
+          win.moves >= 1) {
+        previous = next.levelBests[key];
+        best = previous == null ? win.moves : math.min(previous, win.moves);
+        if (best != previous) {
+          next = next.copyWith(levelBests: {...next.levelBests, key: best});
+        }
+      }
+
+      // Best stars, bundled boards only (spec-prop §7.10; m7-design P3.4):
+      // the highest ever, never lowered; the one-time tip on the first win
+      // below 3 stars (Q119). Nothing else reads stars.
+      int? bestStars;
+      int? previousStars;
+      var showStarTip = false;
+      final starsKey = win.starsKey;
+      final stars = win.stars;
+      if (starsKey != null &&
+          starsKey.isNotEmpty &&
+          stars != null &&
+          stars >= StarRating.minStars &&
+          stars <= StarRating.maxStars &&
+          request.isBundled) {
+        previousStars = next.levelStars[starsKey];
+        bestStars = math.max(previousStars ?? 0, stars);
+        if (bestStars != previousStars) {
+          next = next.copyWith(
+            levelStars: {...next.levelStars, starsKey: bestStars},
+          );
+        }
+        // The card marks it shown (`markStarTipShown`) once it had room
+        // for it; a capped win shows the helper note instead (Q145).
+        showStarTip =
+            stars < StarRating.maxStars &&
+            !win.starsCapped &&
+            !next.starTipShown;
+      }
+
+      // Records and badges (m7-design §12).
+      next = next.copyWith(
+        records: next.records.copyWith(
+          families: next.records.families + math.max(0, win.families),
+          dolls: next.records.dolls + math.max(0, win.dolls),
+        ),
+      );
+      final List<BadgeId> fresh;
+      (next, fresh) = _withWinBadges(next, win.boardBadges);
+
+      outcome = LevelWinOutcome(
+        bestMoves: best,
+        previousBest: previous,
+        chestPaid: paid,
+        newBadges: fresh,
+        stars: bestStars,
+        previousStars: previousStars,
+        showStarTip: showStarTip,
+      );
       return next;
     });
+    return outcome;
   }
+
+  /// [minute] when it is a minute of the day (0–1439), else null.
+  static int? _minuteOrNull(int? minute) =>
+      minute != null && minute >= 0 && minute < 24 * 60 ? minute : null;
+
+  @override
+  void markStarTipShown() {
+    try {
+      if (document.starTipShown) return;
+      update((d) => d.starTipShown ? d : d.copyWith(starTipShown: true));
+    } on Object catch (error, stack) {
+      // Rule 3: the tip may show once more; nothing else is at stake.
+      developer.log(
+        'marking the star tip shown failed',
+        name: 'nesty.save',
+        error: error,
+        stackTrace: stack,
+      );
+    }
+  }
+
+  @override
+  int backfillLevelStars(LevelRepository levels) {
+    try {
+      final slack = StarRules.slackOf(_remoteConfig);
+      var given = 0;
+      update((d) {
+        Map<String, int>? stars;
+        for (var order = 1; order < d.highestLevel; order++) {
+          final entry = levels.entryAt(order);
+          // Past the bundle: nothing more was won from it.
+          if (entry == null) break;
+          // A skipped (invalid) level resolves to its successor: only the
+          // level at exactly this order was won here.
+          if (entry.order != order) continue;
+          final par = entry.par;
+          if (par == null) continue;
+          final id = entry.level.id;
+          if ((stars ?? d.levelStars).containsKey(id)) continue;
+          final best = d.levelBests[LevelBests.key(id, entry.version)];
+          (stars ??= {...d.levelStars})[id] = StarRules.backfill(
+            par: par,
+            best: best,
+            slack: slack,
+          );
+          given++;
+        }
+        return stars == null ? d : d.copyWith(levelStars: stars);
+      });
+      return given;
+    } on Object catch (error, stack) {
+      // Rule 3: stars are cosmetic, so a failure here costs nothing but
+      // the stars; the next launch tries again.
+      developer.log(
+        'the star backfill failed',
+        name: 'nesty.save',
+        error: error,
+        stackTrace: stack,
+      );
+      return 0;
+    }
+  }
+
+  /// [next] with the badges a win earns appended, and those badges
+  /// (m7-design §12): the won board's own plus the ones derivable from
+  /// [next], the document after the win's other steps, each only once.
+  /// Both win paths share it ([recordLevelWin], [recordRaceWin]).
+  static (SaveDocument, List<BadgeId>) _withWinBadges(
+    SaveDocument next,
+    List<BadgeId> boardBadges,
+  ) {
+    final fresh = BadgeRules.newlyEarned({
+      ...boardBadges,
+      ...BadgeRules.derivable(next),
+    }, next.records);
+    if (fresh.isEmpty) return (next, fresh);
+    return (
+      next.copyWith(
+        records: next.records.copyWith(
+          badges: [...next.records.badges, for (final b in fresh) b.id],
+        ),
+      ),
+      fresh,
+    );
+  }
+
+  // --- vs Computer (spec-prop §7.7; m7-design P2.7) ---------------------------
+
+  @override
+  int? beginRace(int rival) {
+    if (rival < 1 || rival > RaceProgress.rivalCount) return null;
+    final current = _document.race.rivals[rival - 1];
+    if (!current.unlocked) return null;
+    // At the cap the raceNo stays, so New race replays the last board
+    // (the default of an owner question, m7-design P2.14).
+    final raceNo = math.min(current.raceNo + 1, DifficultyCurve.maxRaceNo);
+    update(
+      (d) => d.copyWith(
+        race: d.race.copyWith(
+          rivals: [
+            for (var i = 0; i < d.race.rivals.length; i++)
+              i == rival - 1
+                  ? d.race.rivals[i].copyWith(raceNo: raceNo)
+                  : d.race.rivals[i],
+          ],
+        ),
+      ),
+    );
+    return raceNo;
+  }
+
+  @override
+  RaceWinOutcome recordRaceWin(RaceWinRecord win) {
+    RangeError.checkValueInInterval(
+      win.rival,
+      1,
+      RaceProgress.rivalCount,
+      'rival',
+    );
+    RangeError.checkValueInInterval(
+      win.raceNo,
+      1,
+      DifficultyCurve.maxRaceNo,
+      'raceNo',
+    );
+    RangeError.checkNotNegative(win.rewardCoins, 'rewardCoins');
+    var outcome = const RaceWinOutcome();
+    update((d) {
+      final index = win.rival - 1;
+      final rivals = [...d.race.rivals];
+      rivals[index] = rivals[index].copyWith(wins: rivals[index].wins + 1);
+      // Spec-prop §7.7: "the first win against one unlocks the next".
+      int? unlocked;
+      if (index + 1 < rivals.length && !rivals[index + 1].unlocked) {
+        rivals[index + 1] = rivals[index + 1].copyWith(unlocked: true);
+        unlocked = index + 2;
+      }
+      var next = d.copyWith(
+        coins: d.coins + win.rewardCoins,
+        race: d.race.copyWith(rivals: rivals),
+        stats: d.stats.copyWith(
+          wins: d.stats.wins + 1,
+          moves: d.stats.moves + math.max(0, win.moves),
+        ),
+        records: d.records.copyWith(
+          families: d.records.families + math.max(0, win.families),
+          dolls: d.records.dolls + math.max(0, win.dolls),
+        ),
+      );
+      final List<BadgeId> fresh;
+      (next, fresh) = _withWinBadges(next, win.boardBadges);
+      outcome = RaceWinOutcome(
+        coins: win.rewardCoins,
+        unlockedRival: unlocked,
+        wins: rivals[index].wins,
+        newBadges: fresh,
+      );
+      return next;
+    });
+    return outcome;
+  }
+
+  /// [chest] is the one [request]'s own win reaches: a record can't pay
+  /// another level's chest.
+  static bool _chestBelongsTo(ChestGrant chest, PlayRequest request) =>
+      switch ((chest.source, request)) {
+        (ChestSource.campaign, CampaignPlay(:final order)) =>
+          order == chest.number,
+        (ChestSource.bonus, BonusPlay(:final number)) => number == chest.number,
+        _ => false,
+      };
+
+  @override
+  int? bestMovesFor(String levelKey) => _document.levelBests[levelKey];
 
   // --- In progress ------------------------------------------------------------
 
@@ -252,11 +556,17 @@ class InMemorySaveService implements SaveService {
   InProgressLevel? inProgressFor(PlayKind kind) => _document.inProgressOf(kind);
 
   @override
-  void saveInProgress(InProgressLevel level) => update(
-    (d) => level.request.kind == PlayKind.daily
-        ? d.copyWith(daily: d.daily.copyWith(inProgress: level))
-        : d.copyWith(inProgress: level),
-  );
+  void saveInProgress(InProgressLevel level) {
+    // A replay loses nothing on a kill, so it is never saved (m7-design
+    // §6), and it must never replace the main line's board. A race is never
+    // resumed (spec-prop §7.7 "Save"; m7-design P2.4).
+    if (level.request.isReplay || level.request.isRace) return;
+    update(
+      (d) => level.request.kind == PlayKind.daily
+          ? d.copyWith(daily: d.daily.copyWith(inProgress: level))
+          : d.copyWith(inProgress: level),
+    );
+  }
 
   @override
   void clearInProgress(PlayKind kind) => update(
@@ -264,6 +574,8 @@ class InMemorySaveService implements SaveService {
       PlayKind.daily => d.copyWith(daily: d.daily.copyWith(inProgress: null)),
       PlayKind.campaign || PlayKind.bonus =>
         d.inProgressOf(kind) == null ? d : d.copyWith(inProgress: null),
+      // Nothing is ever saved for a replay or a race.
+      PlayKind.replay || PlayKind.race => d,
     },
   );
 

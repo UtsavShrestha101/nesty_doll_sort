@@ -24,7 +24,8 @@ enum OverlayEntranceKind {
 
 /// Plays an overlay's entrance once when it is inserted: [builder] gets
 /// the 0–1 progress for the scrim, and [child] arrives with [kind]'s
-/// motion. Halved under reduced motion (D48).
+/// motion. Halved under reduced motion (D48). To a screen reader the
+/// overlay is modal ([ModalSemanticsScope]).
 class OverlayEntrance extends StatefulWidget {
   const OverlayEntrance({
     required this.kind,
@@ -88,8 +89,9 @@ class _OverlayEntranceState extends State<OverlayEntrance>
   @override
   Widget build(BuildContext context) {
     final child = widget.child;
-    // The content is in the semantics tree from its first frame: a screen
-    // reader announces the dialog as it opens, not once the fade is done.
+    // The content is in the semantics tree from its first frame, so the
+    // scope below is announced as the overlay opens, not once the fade is
+    // done.
     final Widget content = switch (widget.kind) {
       OverlayEntranceKind.modal => FadeTransition(
         opacity: _curve,
@@ -106,6 +108,8 @@ class _OverlayEntranceState extends State<OverlayEntrance>
         child: child,
       ),
     };
-    return widget.builder(context, _curve, content);
+    // A route of its own to a screen reader, over a page it hides: nothing
+    // behind the overlay can be reached or activated (review R11).
+    return ModalSemanticsScope(child: widget.builder(context, _curve, content));
   }
 }

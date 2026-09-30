@@ -195,6 +195,7 @@ final class FxClipParams {
     this.tint,
     this.revealDrop,
     this.shake = true,
+    this.opacity = 1,
   });
 
   /// No doll, no travel: glows, dust, sparkles, the hint arrow, the stand.
@@ -246,6 +247,10 @@ final class FxClipParams {
   /// `fx_ice`'s `ice` null get static values (§13).
   final bool shake;
 
+  /// The whole clip's opacity: 1, or 0.6 for the drag hover's glow
+  /// (`motion.dragHover`, E.14).
+  final double opacity;
+
   @override
   bool operator ==(Object other) =>
       other is FxClipParams &&
@@ -263,7 +268,8 @@ final class FxClipParams {
       other.rim == rim &&
       other.tint == tint &&
       other.revealDrop == revealDrop &&
-      other.shake == shake;
+      other.shake == shake &&
+      other.opacity == opacity;
 
   @override
   int get hashCode => Object.hash(
@@ -282,6 +288,7 @@ final class FxClipParams {
     tint,
     revealDrop,
     shake,
+    opacity,
   );
 
   @override

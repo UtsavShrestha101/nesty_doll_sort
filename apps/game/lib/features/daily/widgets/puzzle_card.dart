@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show listEquals;
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:nesty_core/nesty_core.dart' show DollColor;
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
@@ -10,6 +10,7 @@ import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
+import 'package:nesty_game/features/daily/widgets/daily_theme_background.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spinner.dart';
 import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
@@ -54,24 +55,12 @@ class PuzzleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.dailyPuzzleTitle(weekday),
-                  style: AppTextStyleTokens.cardTitle.copyWith(fontSize: 20),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              _InfoChip(
-                text: l10n.dailyPuzzleInfo(
-                  status.colors,
-                  l10n.tierName(status.tier.id),
-                ),
-              ),
-            ],
+          _TitleRow(
+            title: l10n.dailyPuzzleTitle(weekday),
+            info: l10n.dailyPuzzleInfo(
+              status.colors,
+              l10n.tierName(status.tier.id),
+            ),
           ),
           const SizedBox(height: 14),
           _Preview(state: state),
@@ -86,10 +75,98 @@ class PuzzleCard extends StatelessWidget {
   }
 }
 
+/// The card's title with its info chip on one row, as frame 5.1 draws
+/// them. A title too long for the room beside the chip scales down
+/// (m7-design §15's shared rule) while it keeps [minScale] of its size;
+/// past that (1.3× text on a phone) the chip moves under the title rather
+/// than shrinking the title to a caption. Never an ellipsis (review R27).
+class _TitleRow extends StatelessWidget {
+  const _TitleRow({required this.title, required this.info});
+
+  final String title;
+  final String info;
+
+  static const double _gap = 8;
+
+  /// The least share of its size the title may shrink to beside the chip.
+  static const double minScale = 0.85;
+
+  static final TextStyle _style = AppTextStyleTokens.cardTitle.copyWith(
+    fontSize: 20,
+  );
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final base = DefaultTextStyle.of(context).style;
+      final scaler = MediaQuery.textScalerOf(context);
+      final direction = Directionality.of(context);
+      final titleWidth = _lineWidth(
+        title,
+        base.merge(_style),
+        scaler,
+        direction,
+      );
+      final chipWidth =
+          _lineWidth(info, base.merge(_InfoChip.style), scaler, direction) +
+          _InfoChip.padding.horizontal;
+      final room = constraints.maxWidth - _gap - chipWidth;
+      final titleText = FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(title, style: _style, maxLines: 1, softWrap: false),
+      );
+      const chipGap = SizedBox(width: _gap, height: 6);
+      final chip = _InfoChip(text: info);
+      if (room >= titleWidth * minScale) {
+        return Row(
+          children: [
+            Expanded(child: titleText),
+            chipGap,
+            chip,
+          ],
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [titleText, chipGap, chip],
+      );
+    },
+  );
+
+  static double _lineWidth(
+    String text,
+    TextStyle style,
+    TextScaler scaler,
+    TextDirection direction,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: direction,
+      textScaler: scaler,
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
+  }
+}
+
 class _InfoChip extends StatelessWidget {
   const _InfoChip({required this.text});
 
   final String text;
+
+  static const EdgeInsets padding = EdgeInsets.symmetric(
+    horizontal: 9,
+    vertical: 5,
+  );
+
+  static final TextStyle style = AppTextStyleTokens.tierChip.copyWith(
+    fontSize: 12,
+    color: AppColors.textBrown,
+  );
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -98,16 +175,8 @@ class _InfoChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(9),
     ),
     child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      child: Text(
-        text,
-        style: AppTextStyleTokens.tierChip.copyWith(
-          fontSize: 12,
-          color: AppColors.textBrown,
-        ),
-        maxLines: 1,
-        softWrap: false,
-      ),
+      padding: padding,
+      child: Text(text, style: style, maxLines: 1, softWrap: false),
     ),
   );
 }
@@ -217,45 +286,39 @@ class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
       borderRadius: BorderRadius.circular(16),
       child: SizedBox(
         height: 120,
-        child: DecoratedBox(
-          // TODO(M7): the frame draws the chapter background
-          // (`backgrounds/ch3-seaside-market.svg`, center 42%/cover) under
-          // the plank; `SkinService.background` is the one full-screen
-          // raster, so this card keeps the flat fallback for now.
-          decoration: const BoxDecoration(color: Color(0xFFF3E6CF)),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              const PositionedDirectional(
-                start: 0,
-                end: 0,
-                bottom: 6,
-                child: PlankStrip(height: 22),
-              ),
-              if (colors != null && !_preparing)
-                _DollRow(
-                  colors: colors,
-                  skin: _art,
-                  symbols: context
-                      .read<DatabaseService>()
-                      .symbolsMode
-                      .dollSymbols,
-                )
-              else if (!state.previewFailed)
-                const Center(child: FxSpinner()),
-              if (state.status.solvedToday)
-                Positioned.fill(
-                  child: ColoredBox(
-                    color: const Color(0xB8FFF9EC),
-                    child: Center(
-                      child: _SolvedChip(
-                        label: l10n.dailySolvedChip(state.rewardCoins),
-                      ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const DailyThemeBackground(),
+            const PositionedDirectional(
+              start: 0,
+              end: 0,
+              bottom: 6,
+              child: PlankStrip(height: 22),
+            ),
+            if (colors != null && !_preparing)
+              _DollRow(
+                colors: colors,
+                skin: _art,
+                symbols: context
+                    .read<DatabaseService>()
+                    .symbolsMode
+                    .dollSymbols,
+              )
+            else if (!state.previewFailed)
+              const Center(child: FxSpinner()),
+            if (state.status.solvedToday)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: const Color(0xB8FFF9EC),
+                  child: Center(
+                    child: _SolvedChip(
+                      label: l10n.dailySolvedChip(state.rewardCoins),
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
@@ -463,11 +526,17 @@ class _SolvedFooter extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        TactileButton(
-          label: l10n.playLevel(state.homeLevelNumber),
-          onPressed: onPlayCampaign,
-          variant: TactileButtonVariant.secondary,
-          icon: NestyIcons.playArrow,
+        Row(
+          children: [
+            Expanded(
+              child: TactileButton(
+                label: l10n.playLevel(state.homeLevelNumber),
+                onPressed: onPlayCampaign,
+                variant: TactileButtonVariant.secondary,
+                icon: NestyIcons.playArrow,
+              ),
+            ),
+          ],
         ),
       ],
     );

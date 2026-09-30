@@ -84,6 +84,7 @@ class ChapterCompleteOverlay extends StatelessWidget {
                     children: [
                       Semantics(
                         header: true,
+                        namesRoute: true,
                         child: Text(
                           l10n.chapterCompleteTitle(chapterNumber),
                           textAlign: TextAlign.center,

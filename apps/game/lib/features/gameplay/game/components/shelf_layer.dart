@@ -75,7 +75,7 @@ class ShelfLayer extends Component {
     final slots = scene.geometry?.slots;
     if (slots == null) return;
     for (final slot in slots) {
-      _insetFor(slot.pipDiameter, slot.furnitureScale);
+      _insetFor(slot.pipDiameter, slot.pipScale);
     }
   }
 
@@ -104,7 +104,7 @@ class ShelfLayer extends Component {
       // The tag is the stand's label: it stays put while the tower above it
       // shakes (§9.3 shakes the composition, sprite, silhouettes and badge).
       if (slot.decor.hasTag) {
-        slot.decor.paintTag(canvas, slot.tagX(r), slot.tagY(r));
+        slot.decor.paintTag(canvas, slot.tagX(r), slot.tagY(r), slot.tagScale);
       }
     }
   }
@@ -129,7 +129,8 @@ class ShelfLayer extends Component {
     // `ui_extra_slot` draws the pulsing stand while it plays.
     if (slot.pulses > 0) return;
     final left = slot.standLeft(r);
-    final top = slot.standTop(r);
+    // E.13: an empty stand dips when tapped.
+    final top = slot.standTop(r) + slot.standDip;
     final width = slot.standWidth(r);
     final height = slot.standHeight(r);
     final sprite = sprites?.standFor(slot.geometry);
@@ -192,7 +193,9 @@ class ShelfLayer extends Component {
     final reveal = slot.reveal;
     final renderer = scene.renderer;
     final x = slot.centerX(r) + slot.shakeX;
-    for (var depth = buried.length; depth >= 1; depth--) {
+    // The tower stack draws fewer silhouettes where the room is short (m7-3
+    // `layout.towerStack`); the "+N" tag keeps the real count.
+    for (var depth = slot.buriedDrawn; depth >= 1; depth--) {
       final size = buried[depth - 1];
       if (size < 1 || size > slot.geometry.pipCount) continue;
       final baseY = reveal == null
@@ -228,11 +231,12 @@ class ShelfLayer extends Component {
     final view = slot.view;
     final count = g.pipCount;
     final radius = g.pipDiameter / 2;
-    final ring = BoardTokens.pipFilledRingWidth * g.furnitureScale;
-    final y = slot.pipCenterY(r);
+    // Pips stay 6 dp on a crowded row (`rowOfFive.pips`): the board scale only.
+    final ring = BoardTokens.pipFilledRingWidth * g.pipScale;
+    final y = slot.pipCenterY(r) + slot.standDip;
     final color = view.color;
     final fill = color == null ? null : _pipFills[color.index];
-    final inset = _insetFor(g.pipDiameter, g.furnitureScale);
+    final inset = _insetFor(g.pipDiameter, g.pipScale);
     for (var position = 0; position < count; position++) {
       canvas
         ..save()

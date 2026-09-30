@@ -76,6 +76,41 @@ void main() {
     expect(find.bySemanticsLabel('1 of 4 families done'), findsOneWidget);
   });
 
+  testWidgets('coinPillKey marks the coin pill, for the milestone chest\'s '
+      'Collect flight to find (m7-design chest sequence step 4)', (
+    tester,
+  ) async {
+    final coinPillKey = GlobalKey();
+    await pumpScreen(
+      tester,
+      Scaffold(
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: GameplayHud(
+            level: 56,
+            tier: Tier.hard,
+            coins: 830,
+            setsDone: 1,
+            setsTotal: 4,
+            onPause: () {},
+            library: FakeFxLibrary(),
+            coinPillKey: coinPillKey,
+          ),
+        ),
+      ),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(coinPillKey),
+        matching: find.byType(CoinPill),
+      ),
+      findsOneWidget,
+    );
+    final box = coinPillKey.currentContext!.findRenderObject()! as RenderBox;
+    expect(box.attached, isTrue);
+    expect(box.size, isNot(Size.zero));
+  });
+
   testWidgets('Bonus Endless: "Bonus Level N" (frame 4.10)', (tester) async {
     await pumpScreen(
       tester,
@@ -188,6 +223,89 @@ void main() {
       expect(find.bySemanticsLabel('0 of 4 families done'), findsOneWidget);
       await pumpCounter(tester, 1, 1);
       expect(find.bySemanticsLabel('1 of 1 family done'), findsOneWidget);
+    });
+  });
+
+  group('the family counter hugs its text (E.18)', () {
+    testWidgets('"4 / 4" is about 64 dp and "12 / 12" about 78 (tokens '
+        '`hud.familyCounter`)', (tester) async {
+      await pumpUi(tester, const SizedBox());
+      for (final (label, width) in [('4 / 4', 64.0), ('12 / 12', 78.0)]) {
+        expect(FamilyCounter.hugWidth(label), closeTo(width, 4), reason: label);
+      }
+      expect(HudTokens.familyCounterWidthExamples, {
+        '4 / 4': 64.0,
+        '12 / 12': 78.0,
+      });
+    });
+
+    testWidgets('the file\'s 70 dp pill scales to hug: smaller for "4 / 4", '
+        'larger for "12 / 12"', (tester) async {
+      Future<double> scaleFor(int done, int total) async {
+        await pumpUi(
+          tester,
+          FamilyCounter(done: done, total: total, library: FakeFxLibrary()),
+        );
+        final transform = tester.widget<Transform>(
+          find
+              .descendant(
+                of: find.byType(FamilyCounter),
+                matching: find.byType(Transform),
+              )
+              .first,
+        );
+        return transform.transform.storage[0];
+      }
+
+      final small = await scaleFor(1, 4);
+      final large = await scaleFor(12, 12);
+      expect(small, lessThan(1));
+      expect(large, greaterThan(1));
+      expect(small, greaterThanOrEqualTo(FamilyCounter.minHug));
+      expect(large, lessThanOrEqualTo(FamilyCounter.maxHug));
+    });
+  });
+
+  group('the chest\'s Collect bumps the coin pill (frame 10.3d)', () {
+    testWidgets('each new coinBump plays a 240 ms 1.3× bump; reduce motion '
+        'never moves it', (tester) async {
+      Widget hud(int bump) => Scaffold(
+        body: GameplayHud(
+          level: 1,
+          tier: Tier.easy,
+          coins: 100,
+          setsDone: 0,
+          setsTotal: 1,
+          onPause: () {},
+          coinBump: bump,
+          library: FakeFxLibrary(),
+        ),
+      );
+      double scale() {
+        final t = tester.widget<Transform>(
+          find
+              .ancestor(
+                of: find.byType(CoinPill),
+                matching: find.byType(Transform),
+              )
+              .first,
+        );
+        return t.transform.storage[0];
+      }
+
+      await pumpScreen(tester, hud(0));
+      expect(scale(), 1);
+      await pumpScreen(tester, hud(1));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(scale(), closeTo(1.3, 0.02));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(scale(), 1);
+
+      await pumpScreen(tester, hud(1), reduceMotion: true);
+      await pumpScreen(tester, hud(2), reduceMotion: true);
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(scale(), 1);
     });
   });
 }

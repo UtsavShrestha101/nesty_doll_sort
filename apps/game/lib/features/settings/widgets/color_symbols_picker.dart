@@ -91,16 +91,34 @@ class _ColorSymbolsPickerState extends State<ColorSymbolsPicker> {
       children: [
         Row(
           children: [
-            const Icon(
-              NestyIcons.visibility,
-              size: 24,
-              color: AppColorTokens.textSecondary,
+            ExcludeSemantics(
+              child: SizedBox.square(
+                dimension: SettingsTile.size,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: SettingsTile.wood.face,
+                    borderRadius: const BorderRadius.all(Radius.circular(14)),
+                  ),
+                  child: const Icon(
+                    NestyIcons.visibility,
+                    size: 24,
+                    color: AppColorTokens.textSecondary,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: SettingsTile.gap),
             Expanded(
-              child: Text(
-                l10n.settingColorSymbols,
-                style: AppTextStyleTokens.row,
+              child: Semantics(
+                header: true,
+                child: Text(
+                  l10n.settingColorSymbols,
+                  style: AppTextStyleTokens.cardTitle.copyWith(
+                    fontSize: 19,
+                    height: 1.15,
+                    color: AppColorTokens.textPrimary,
+                  ),
+                ),
               ),
             ),
           ],
@@ -152,19 +170,20 @@ class _SymbolsCard extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
+  /// tokens.json `settings.colorSymbolCards` (F.3): selected is a #FFF1E4
+  /// face inset with a 3 px orange ring, idle #FFFDF7 with a 2 px tan one.
   static const _selectedStyle = SurfaceStyle(
-    color: AppColors.symbolsCardSelectedFace,
-    shadows: [
-      NestyShadow(color: AppColorTokens.primary, inset: true, spread: 3),
-    ],
+    color: SettingsTokens.colorSymbolCardsSelectedFace,
+    shadows: SettingsTokens.colorSymbolCardsSelectedRing,
   );
 
   static const _style = SurfaceStyle(
-    color: AppColorTokens.surfaceWhite,
-    shadows: [
-      NestyShadow(color: AppColors.symbolsCardRing, inset: true, spread: 2),
-    ],
+    color: SettingsTokens.colorSymbolCardsIdleFace,
+    shadows: SettingsTokens.colorSymbolCardsIdleRing,
   );
+
+  /// The preview doll (F.3: 56 dp tall; the 2:3 doll makes it 37 wide).
+  static const double dollHeight = 56;
 
   void _handleTap(BuildContext context) {
     if (selected) return;
@@ -186,18 +205,20 @@ class _SymbolsCard extends StatelessWidget {
       onTap: () => _handleTap(context),
       child: NestySurface(
         style: selected ? _selectedStyle : _style,
-        radius: const BorderRadius.all(Radius.circular(18)),
-        padding: const EdgeInsets.all(8),
+        radius: const BorderRadius.all(
+          Radius.circular(SettingsTokens.colorSymbolCardsRadius),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 40,
-              height: 60,
+              width: dollHeight * 2 / 3,
+              height: dollHeight,
               child: ready
                   ? SkinDollRow(
                       colors: const [ColorSymbolsPicker.previewColor],
-                      heights: const [60],
+                      heights: const [_SymbolsCard.dollHeight],
                       skin: art,
                       symbols: symbols,
                       library: context.read<FxLibrary>(),
@@ -207,12 +228,12 @@ class _SymbolsCard extends StatelessWidget {
             const SizedBox(height: 5),
             Text(
               label,
-              style: AppTextStyleTokens.tabLabel.copyWith(
-                fontSize: 14,
+              style: AppTextStyleTokens.buttonSmall.copyWith(
+                fontSize: 16,
                 height: 1,
                 color: selected
                     ? AppColorTokens.primaryEdge
-                    : AppColorTokens.textSecondary,
+                    : AppColorTokens.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

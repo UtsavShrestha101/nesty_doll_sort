@@ -32,6 +32,9 @@ const _boardSprites = [
   'glass-case-0',
   'glass-case-1',
   'glass-case-2',
+  'glass-case-tall-0',
+  'glass-case-tall-1',
+  'glass-case-tall-2',
   'glow-ring',
   'hint-arrow',
   'ice-0',
@@ -43,6 +46,31 @@ const _boardSprites = [
   'slot-stand-blank',
   'tower-base-blank',
 ];
+
+/// The M7 UI art (design m7-3, synced from design/ui/ by
+/// `sync_design_assets`): every file the app draws, by folder.
+final _uiArt = {
+  'badges': [
+    for (final badge in [
+      'all_rivals',
+      'dailies_30',
+      'dailies_7',
+      'first_family',
+      'first_race',
+      'glass_breaker',
+      'grand_nest',
+      'ice_melter',
+      'level_100',
+      'level_200',
+      'museum_full',
+      'tall_order',
+    ]) ...[badge, '${badge}_locked'],
+  ],
+  'chest': ['chest_closed', 'chest_open'],
+  'rivals': ['rival_1', 'rival_2', 'rival_3', 'rival_locked'],
+  'sprites': ['coin_flight', 'hint_flight'],
+  'stars': ['star_empty', 'star_filled', 'star_glow'],
+};
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -71,6 +99,27 @@ void main() {
       expect(SoundTokens.musicFiles, [
         SoundTokens.musicGame,
         SoundTokens.musicHome,
+      ]);
+      // m7-3: 23 SFX (the stars, the chest, the rival) and 5 jingles (the
+      // race's win and loss).
+      expect(SoundTokens.allFiles, hasLength(23));
+      expect(
+        SoundTokens.allFiles,
+        containsAll([
+          'star_1',
+          'star_2',
+          'star_3',
+          'chest_wiggle',
+          'chest_open',
+          'rival_complete',
+        ]),
+      );
+      expect(SoundTokens.jingleFiles, [
+        'jingle_chapter',
+        'jingle_oom',
+        'jingle_reward',
+        'jingle_versus_lose',
+        'jingle_versus_win',
       ]);
     });
 
@@ -146,7 +195,11 @@ void main() {
     'bundled SVGs are metadata-free and pass the spec §12.2 rules',
     () async {
       final svgs = assets.where((a) => a.endsWith('.svg')).toList()..sort();
-      expect(svgs, hasLength(_skins.length + 11 + _boardSprites.length + 6));
+      final uiArt = _uiArt.values.fold(0, (n, files) => n + files.length);
+      expect(
+        svgs,
+        hasLength(_skins.length + 11 + _boardSprites.length + 10 + uiArt),
+      );
       for (final path in svgs) {
         final svg = await rootBundle.loadString(path);
         final issues = path.startsWith('assets/skins/')
@@ -158,16 +211,32 @@ void main() {
     },
   );
 
-  test('board sprites and the six chapter themes ship', () {
+  test('board sprites and the ten chapter themes ship', () {
     expectAssets([
       for (final name in _boardSprites) 'assets/board/$name.svg',
-      for (var ch = 1; ch <= 6; ch++)
+      for (var ch = 1; ch <= 10; ch++)
         'assets/themes/ch${ch.toString().padLeft(2, '0')}/background.svg',
     ]);
     expect(
       assets,
       isNot(contains('assets/board/slot-stand.svg')),
       reason: 'the baked-pip stands are not used (spec §10.3)',
+    );
+  });
+
+  test('the M7 UI art ships, and nothing else under assets/ui/', () {
+    final expected = {
+      for (final MapEntry(key: folder, value: files) in _uiArt.entries)
+        for (final file in files) 'assets/ui/$folder/$file.svg',
+    };
+    expect(expected, hasLength(35));
+    expect(assets.where((a) => a.startsWith('assets/ui/')).toSet(), expected);
+    expect(
+      assets.where(
+        (a) => a.startsWith('assets/') && a.contains('notification'),
+      ),
+      isEmpty,
+      reason: 'the notification icon is an Android drawable, not an asset',
     );
   });
 
@@ -236,7 +305,7 @@ void main() {
   });
 
   group('Lottie (PROGRESS D40, D50)', () {
-    test('exactly the 29 FxId files ship under assets/lottie/, no PNG', () {
+    test('exactly the 35 FxId files ship under assets/lottie/, no PNG', () {
       final shipped = assets
           .where((a) => a.startsWith('${FxId.assetDirectory}/'))
           .toSet();
@@ -303,9 +372,10 @@ void main() {
   });
 
   test('NestyIcons covers the design README glyph list once each', () {
-    expect(NestyIcons.byName, hasLength(48));
+    // 48 of v1, 18 m7 adds (I.10) and the splash errors' two (lead note 2).
+    expect(NestyIcons.byName, hasLength(68));
     final codepoints = NestyIcons.byName.values.map((i) => i.codePoint);
-    expect(codepoints.toSet(), hasLength(48));
+    expect(codepoints.toSet(), hasLength(68));
     expect(
       NestyIcons.byName.values.every(
         (i) => i.fontFamily == NestyIcons.fontFamily,

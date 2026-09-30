@@ -19,6 +19,7 @@ import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
+import 'package:nesty_game/features/home/widgets/home_chapter_card.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
 
 import '../../core/ui/support/ui_harness.dart';
@@ -59,6 +60,9 @@ void main() {
     VoidCallback? onRetry,
     VoidCallback? onDaily,
     VoidCallback? onMuseum,
+    VoidCallback? onChapters,
+    VoidCallback? onRecords,
+    VoidCallback? onVsComputer,
     ValueChanged<ShopTab>? onShop,
     VoidCallback? onSettings,
     FakeLevelRepository? repository,
@@ -73,6 +77,9 @@ void main() {
         onPlay: onPlay ?? (_) {},
         onDaily: onDaily ?? () {},
         onMuseum: onMuseum ?? () {},
+        onChapters: onChapters ?? () {},
+        onRecords: onRecords ?? () {},
+        onVsComputer: onVsComputer ?? () {},
         onShop: onShop ?? (_) {},
         onSettings: onSettings ?? () {},
         library: FakeFxLibrary(),
@@ -166,8 +173,7 @@ void main() {
     expect(settingsOpened, isTrue);
   });
 
-  testWidgets('the Daily tile opens Daily, dimmed and lock-badged while '
-      'locked', (tester) async {
+  testWidgets('the Daily tile ignores taps while it is locked', (tester) async {
     var dailyOpened = false;
     await pumpHome(
       tester,
@@ -182,6 +188,31 @@ void main() {
     expect(dailyOpened, isFalse, reason: 'the locked tile ignores taps');
   });
 
+  testWidgets('a locked tile tells a screen reader why, as its footer does '
+      '(review R15)', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.campaign(1),
+          raceUnlockLevel: 20,
+        ),
+      ),
+    );
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Daily Puzzle')).value,
+      'After Level 2',
+    );
+    expect(
+      tester
+          .getSemantics(find.bySemanticsLabel('vs Computer, computer player'))
+          .value,
+      'After Level 20',
+    );
+    handle.dispose();
+  });
+
   testWidgets('the Daily tile shows its streak badge once unlocked, and '
       'opens Daily', (tester) async {
     var dailyOpened = false;
@@ -192,6 +223,7 @@ void main() {
           playRequest: PlayRequest.campaign(4),
           dailyUnlocked: true,
           dailyStreak: 5,
+          dailyLit: true,
         ),
       ),
       onDaily: () => dailyOpened = true,
@@ -202,26 +234,338 @@ void main() {
     expect(dailyOpened, isTrue);
   });
 
-  testWidgets('the Museum tile shows the chapter bar and opens Museum', (
-    tester,
-  ) async {
-    var museumOpened = false;
+  // E2 the gentle streak (m7-design §8, §15.7): the Home badge takes its
+  // paused look, never red (Q96).
+  testWidgets('the Daily tile\'s streak badge is paused when the flame is '
+      'out', (tester) async {
     await pumpHome(
       tester,
       state: const AsyncValue.data(
         data: HomeState(
           playRequest: PlayRequest.campaign(4),
-          museumDone: 15,
-          museumTotal: 20,
+          dailyUnlocked: true,
+          dailyStreak: 9,
         ),
       ),
-      onMuseum: () => museumOpened = true,
     );
-    expect(find.text('Museum'), findsOneWidget);
-    expect(find.text('15/20'), findsOneWidget);
-    await tester.tap(find.text('Museum'));
-    expect(museumOpened, isTrue);
+    expect(find.bySemanticsLabel('9-day streak, paused'), findsOneWidget);
+    expect(find.bySemanticsLabel('9-day streak'), findsNothing);
   });
+
+  testWidgets('the chapter card opens Chapters and the Records button opens '
+      'Records (frame 2.1)', (tester) async {
+    var chaptersOpened = false;
+    var recordsOpened = false;
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.campaign(56),
+          tier: Tier.hard,
+          chapterNumber: 3,
+          chapterId: 'ch03',
+          chapterStars: 39,
+          chapterStarsPossible: 60,
+        ),
+      ),
+      onChapters: () => chaptersOpened = true,
+      onRecords: () => recordsOpened = true,
+    );
+    expect(find.text('CHAPTER 3'), findsOneWidget);
+    expect(find.text('Seaside Market'), findsOneWidget);
+    expect(find.text('39/60'), findsOneWidget);
+    expect(find.text('Records'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        'Chapter 3, Seaside Market, 39 of 60 stars. Opens chapters.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Seaside Market'));
+    expect(chaptersOpened, isTrue);
+    expect(recordsOpened, isFalse);
+
+    await tester.tap(find.text('Records'));
+    expect(recordsOpened, isTrue);
+  });
+
+  testWidgets('the chapter card and the Records button are one row, the same '
+      'height, 60 at least, the button 62 wide', (tester) async {
+    await pumpHome(tester);
+    final card = tester.getRect(find.byType(HomeChapterCard));
+    final button = tester.getRect(find.byType(HomeRecordsButton));
+    expect(card.height, greaterThanOrEqualTo(60));
+    expect(button.height, card.height);
+    expect(button.width, 62);
+    expect(button.top, card.top);
+    // Frame 2.1: the card ends 88 from the right, the button starts 78.
+    expect(390 - card.right, 88);
+    expect(390 - button.right, 16);
+  });
+
+  testWidgets('Bonus Endless: the card reads BONUS ENDLESS / Bonus levels '
+      'with the whole campaign\'s stars, and PLAY wears BONUS (frame 12.2)', (
+    tester,
+  ) async {
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.bonus(7),
+          chapterNumber: 10,
+          chapterId: 'ch10',
+          isBonus: true,
+          chapterStars: 552,
+          chapterStarsPossible: 600,
+          coins: 6420,
+        ),
+      ),
+    );
+    expect(find.text('BONUS ENDLESS'), findsOneWidget);
+    expect(find.text('Bonus levels'), findsOneWidget);
+    expect(find.text('552/600'), findsOneWidget);
+    expect(find.text('Bonus Level 7'), findsOneWidget);
+    expect(find.text('BONUS'), findsOneWidget);
+    expect(find.text('HARD'), findsNothing);
+    expect(
+      find.bySemanticsLabel('Bonus levels, 552 of 600 stars. Opens chapters.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'a Super Hard level: the bolt badge, not the flame (frame 12.1)',
+    (tester) async {
+      await pumpHome(
+        tester,
+        state: const AsyncValue.data(
+          data: HomeState(
+            playRequest: PlayRequest.campaign(60),
+            tier: Tier.superhard,
+          ),
+        ),
+      );
+      expect(find.text('SUPER HARD'), findsOneWidget);
+      expect(find.byIcon(NestyIcons.bolt), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Play level 60, Super Hard'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('a Normal level has no badge on PLAY', (tester) async {
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(playRequest: PlayRequest.campaign(3)),
+      ),
+    );
+    expect(find.text('HARD'), findsNothing);
+    expect(find.text('SUPER HARD'), findsNothing);
+    expect(find.text('BONUS'), findsNothing);
+  });
+
+  testWidgets('the vs Computer tile is locked below raceUnlockLevel: the '
+      'locked portrait with a lock chip, "After Level 20", dimmed, and it '
+      'never taps (frame 9.1)', (tester) async {
+    var opened = 0;
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.campaign(4),
+          raceUnlockLevel: 20,
+        ),
+      ),
+      onVsComputer: () => opened++,
+    );
+    expect(find.text('vs Computer'), findsOneWidget);
+    expect(find.text('After Level 20'), findsOneWidget);
+    expect(find.byIcon(NestyIcons.lock), findsOneWidget);
+    // Locked: the tag is not shown yet (no rival to label).
+    expect(find.byType(ComputerTag), findsNothing);
+    final portrait = tester.widget<UiArtImage>(
+      find.byWidgetPredicate(
+        (w) => w is UiArtImage && w.art == UiArt.rivalLocked,
+      ),
+    );
+    expect(portrait.size.width, 58);
+
+    await tester.tap(find.text('vs Computer'));
+    await tester.pump();
+    expect(opened, 0, reason: 'no tap and no shake while locked');
+  });
+
+  testWidgets('the vs Computer tile, unlocked: rival 1\'s portrait, the '
+      'Computer tag under the label, and a tap opens rival select', (
+    tester,
+  ) async {
+    var opened = 0;
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.campaign(21),
+          raceUnlockLevel: 20,
+          raceUnlocked: true,
+        ),
+      ),
+      onVsComputer: () => opened++,
+    );
+    expect(find.text('After Level 20'), findsNothing);
+    expect(find.byIcon(NestyIcons.lock), findsNothing);
+    // Every computer rival surface labels it a computer (ethics 4).
+    expect(find.byType(ComputerTag), findsOneWidget);
+    expect(find.text('Computer'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is UiArtImage && w.art == UiArt.rival1),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel('vs Computer, computer player'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('vs Computer'));
+    expect(opened, 1);
+  });
+
+  testWidgets('the tiles are Daily, vs Computer, Remove Ads, left to right', (
+    tester,
+  ) async {
+    await pumpHome(tester);
+    final xs = [
+      for (final label in ['Daily Puzzle', 'vs Computer', 'Remove Ads'])
+        tester.getCenter(find.text(label)).dx,
+    ];
+    expect(xs, orderedEquals([...xs]..sort()));
+    expect(xs.toSet(), hasLength(3));
+  });
+
+  testWidgets('a locked Daily tile has no lock glyph and no badge, only the '
+      'dimmed tile and its footer (frame 12.3)', (tester) async {
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(playRequest: PlayRequest.campaign(2), coins: 10),
+      ),
+    );
+    expect(find.byType(StreakBadge), findsNothing);
+    expect(find.text('After Level 2'), findsOneWidget);
+    expect(
+      tester
+          .widgetList<Opacity>(find.byType(Opacity))
+          .where((o) => o.opacity == 0.6)
+          .length,
+      2,
+      reason: 'Daily and vs Computer are dimmed to 60 %',
+    );
+  });
+
+  group('the Daily badge (frames 2.1, 12.2)', () {
+    HomeState streak({int days = 4, bool lit = true, bool relit = false}) =>
+        HomeState(
+          playRequest: const PlayRequest.campaign(9),
+          dailyUnlocked: true,
+          dailyStreak: days,
+          dailyLit: lit,
+          streakRelit: relit,
+        );
+
+    testWidgets('lit: the flame with its count, and a 26 tall pill', (
+      tester,
+    ) async {
+      await pumpHome(tester, state: AsyncValue.data(data: streak()));
+      expect(find.text('4'), findsOneWidget);
+      expect(find.byIcon(NestyIcons.localFireDepartment), findsOneWidget);
+      expect(tester.getSize(find.byType(StreakBadge)).height, 26);
+    });
+
+    testWidgets('a streak of 0 keeps the unlit flame and no number', (
+      tester,
+    ) async {
+      await pumpHome(
+        tester,
+        state: AsyncValue.data(data: streak(days: 0, lit: false)),
+      );
+      expect(find.byType(StreakBadge), findsOneWidget);
+      expect(find.byIcon(NestyIcons.localFireDepartment), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(StreakBadge),
+          matching: find.byType(Text),
+        ),
+        findsNothing,
+      );
+      expect(find.bySemanticsLabel(RegExp('streak')), findsNothing);
+    });
+
+    testWidgets('paused: the resting colours, never red, the number stays', (
+      tester,
+    ) async {
+      await pumpHome(
+        tester,
+        state: AsyncValue.data(data: streak(days: 9, lit: false)),
+      );
+      final flame = tester.widget<Icon>(
+        find.byIcon(NestyIcons.localFireDepartment),
+      );
+      expect(flame.color, AppColorTokens.streakPausedGlyph);
+      expect(find.text('9'), findsOneWidget);
+    });
+
+    testWidgets('relit: the lit look plus the glow ring, faded in once', (
+      tester,
+    ) async {
+      await pumpHome(tester, state: AsyncValue.data(data: streak(relit: true)));
+      bool ring() => tester
+          .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+          .any(
+            (b) =>
+                b.decoration is BoxDecoration &&
+                (b.decoration as BoxDecoration).border is Border &&
+                ((b.decoration as BoxDecoration).border! as Border).top.color ==
+                    AppColorTokens.relitGlow,
+          );
+      expect(ring(), isTrue);
+      final fade = find.descendant(
+        of: find.byType(StreakBadge),
+        matching: find.byType(Opacity),
+      );
+      expect(fade, findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(ring(), isTrue, reason: 'stays after the fade, no loop');
+    });
+
+    testWidgets('relit under reduce motion is a static ring', (tester) async {
+      await pumpScreen(
+        tester,
+        HomeView(
+          state: AsyncValue.data(data: streak(relit: true)),
+          onRetry: () {},
+          onPlay: (_) {},
+          onDaily: () {},
+          onMuseum: () {},
+          onShop: (_) {},
+          onSettings: () {},
+          library: FakeFxLibrary(),
+        ),
+        reduceMotion: true,
+      );
+      await tester.pump();
+      expect(find.byType(StreakBadge), findsOneWidget);
+      // No fade tween is running: everything settles at once.
+      await tester.pumpAndSettle(const Duration(milliseconds: 16));
+    });
+  });
+
+  // D111 (the owner's simulator review, 2026-09-28): Home dropped its
+  // Museum tile (the bottom nav's Museum tab already covers it), so this
+  // file no longer has a "the Museum tile shows..." test; `onMuseum` stays
+  // a required `HomeView` constructor argument (`pumpHome` still passes
+  // it, defaulted through the helper below) even though nothing here taps
+  // it any more.
 
   testWidgets('Remove Ads hides once adsRemoved, and the other tiles widen', (
     tester,
@@ -234,7 +578,25 @@ void main() {
     );
     expect(find.text('Remove Ads'), findsNothing);
     expect(find.text('Daily Puzzle'), findsOneWidget);
-    expect(find.text('Museum'), findsOneWidget);
+  });
+
+  testWidgets('Home has no Museum tile: the bottom nav\'s Museum tab covers '
+      'it (D111)', (tester) async {
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.campaign(4),
+          museumDone: 15,
+          museumTotal: 20,
+        ),
+      ),
+    );
+    expect(find.text('Museum'), findsNothing);
+    expect(find.text('15/20'), findsNothing);
+    expect(find.text('Daily Puzzle'), findsOneWidget);
+    expect(find.text('Remove Ads'), findsOneWidget);
+    expect(find.text('vs Computer'), findsOneWidget);
   });
 
   testWidgets('Remove Ads shows and opens nothing yet (M6)', (tester) async {
@@ -321,6 +683,35 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(LevelPickerSheet), findsNothing);
     expect(played, [const PlayRequest.campaign(2)]);
+  });
+
+  testWidgets('the picker opens scrolled to Home\'s own campaign level '
+      '(owner-fixes lane, 2026-09-28)', (tester) async {
+    // The default state's `playRequest` (top of this file): campaign 56.
+    await pumpHome(tester, repository: levels());
+    await tester.tap(find.text('Jump to a level'));
+    await tester.pumpAndSettle();
+    final sheet = tester.widget<LevelPickerSheet>(
+      find.byType(LevelPickerSheet),
+    );
+    expect(sheet.currentOrder, 56);
+  });
+
+  testWidgets('the picker opens unscrolled for a bonus PLAY (no campaign '
+      'order to scroll to)', (tester) async {
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(playRequest: PlayRequest.bonus(3)),
+      ),
+      repository: levels(),
+    );
+    await tester.tap(find.text('Jump to a level'));
+    await tester.pumpAndSettle();
+    final sheet = tester.widget<LevelPickerSheet>(
+      find.byType(LevelPickerSheet),
+    );
+    expect(sheet.currentOrder, isNull);
   });
 
   testWidgets('no picker without the level list', (tester) async {

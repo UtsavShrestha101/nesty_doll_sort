@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,12 +47,14 @@ Map<String, Object?> _entry(
   int order,
   Map<String, Object?> level, {
   String tier = 'easy',
+  Object? par,
 }) => {
   'order': order,
   'chapterId': 'ch01',
   'tier': tier,
   'version': 1,
   'rewardCoins': 10,
+  'par': ?par,
   'data': level,
 };
 
@@ -69,8 +72,10 @@ void main() {
     bundle: _Bundle({BundledLevelRepository.bundleAsset: json}),
   );
 
+  // M7 ships levels 1–200 in ten chapters of 20 (spec §7.1's launch target,
+  // D90; m7-design §18 gives this count to the levels lane).
   test(
-    'the shipped bundle loads: 30 levels in play order (rootBundle)',
+    'the shipped bundle loads: 200 levels in play order (rootBundle)',
     () async {
       final repository = BundledLevelRepository();
       expect(repository.levelCount, 0);
@@ -78,18 +83,63 @@ void main() {
 
       await repository.load();
 
-      expect(repository.levelCount, 30);
-      for (var order = 1; order <= 30; order++) {
+      expect(repository.levelCount, 200);
+      for (var order = 1; order <= 200; order++) {
         final entry = repository.entryAt(order)!;
         expect(entry.order, order);
         expect(entry.level.id, 'L${order.toString().padLeft(4, '0')}');
+        expect(
+          entry.chapterId,
+          'ch${((order - 1) ~/ 20 + 1).toString().padLeft(2, '0')}',
+        );
       }
-      expect(repository.entryAt(1)!.chapterId, 'ch01');
-      expect(repository.entryAt(21)!.chapterId, 'ch02');
       expect(repository.entryAt(0), isNull);
-      expect(repository.entryAt(31), isNull);
+      expect(repository.entryAt(201), isNull);
     },
   );
+
+  // Spec-prop §7.10 (D146): every bundled level carries its par, the
+  // solver's optimum that `nesty_levels bundle build` writes; the tutorial
+  // L1 is 2 moves (design §4), so its par is 2.
+  test('every shipped level has its star-rating par; L1 is 2', () async {
+    final repository = BundledLevelRepository();
+    await repository.load();
+
+    expect(repository.entryAt(1)!.par, 2);
+    expect(repository.entryAt(2)!.par, 3);
+    for (var order = 1; order <= repository.levelCount; order++) {
+      expect(
+        repository.entryAt(order)!.par,
+        greaterThanOrEqualTo(1),
+        reason: 'order $order',
+      );
+    }
+  });
+
+  test('a par crosses the worker isolate; a bad one is only a warning, and '
+      'its level still plays without stars', () async {
+    final repository = repositoryOf(
+      _bundleJson([
+        _entry(1, _level('A'), par: 2),
+        _entry(2, _level('B'), par: 0),
+        _entry(3, _level('C'), par: 'x'),
+        _entry(4, _level('D')),
+      ]),
+    );
+
+    await repository.load();
+
+    expect(repository.levelCount, 4);
+    expect(
+      [for (var o = 1; o <= 4; o++) repository.entryAt(o)!.level.id],
+      ['A', 'B', 'C', 'D'],
+    );
+    expect(
+      [for (var o = 1; o <= 4; o++) repository.entryAt(o)!.par],
+      [2, null, null, null],
+    );
+    expect(repository.checkedOn, BundledLevelRepository.workerName);
+  });
 
   test('a level that fails a validator rule is skipped; its order plays the '
       'next level and progress goes on from there', () async {
@@ -154,6 +204,85 @@ void main() {
     await repository.load();
 
     expect(repository.levelCount, 1);
+  });
+
+  // CLAUDE.md rule 8: the 200-level bundle's decode and rules 1–7 are
+  // several frames of work (57–75 ms AOT, 232–354 ms JIT on the dev Mac),
+  // so the splash's UI isolate must not run them.
+  group('off the UI isolate', () {
+    test('the shipped bundle is decoded and checked on the worker isolate, '
+        'not the caller\'s', () async {
+      final repository = BundledLevelRepository();
+
+      await repository.load();
+
+      expect(repository.levelCount, 200);
+      expect(repository.checkedOn, BundledLevelRepository.workerName);
+      expect(repository.checkedOn, isNot(Isolate.current.debugName));
+    });
+
+    test('load hands the asset text to its checker once and plays what it '
+        'returns', () async {
+      final json = _bundleJson([
+        _entry(1, _level('A')),
+        _entry(2, _level('B')),
+        _entry(3, _level('C')),
+      ]);
+      final texts = <String>[];
+      final repository = BundledLevelRepository(
+        bundle: _Bundle({BundledLevelRepository.bundleAsset: json}),
+        checker: (text) async {
+          texts.add(text);
+          final checked = BundledLevelRepository.checkBundle(text);
+          // Keeps only the first two: what plays comes from the checker.
+          return CheckedLevelBundle(
+            usable: true,
+            playable: checked.playable.take(2).toList(),
+            checkedOn: 'spy',
+          );
+        },
+      );
+
+      await repository.load();
+
+      expect(texts, [json]);
+      expect(repository.levelCount, 2);
+      expect(repository.entryAt(3), isNull);
+      expect(repository.checkedOn, 'spy');
+    });
+
+    test(
+      'a checker that fails is a content error the splash can retry',
+      () async {
+        var calls = 0;
+        final repository = BundledLevelRepository(
+          bundle: _Bundle({
+            BundledLevelRepository.bundleAsset: _bundleJson([
+              _entry(1, _level('A')),
+            ]),
+          }),
+          checker: (text) async {
+            if (calls++ == 0) throw StateError('the worker died');
+            return BundledLevelRepository.checkBundle(text);
+          },
+        );
+
+        await expectLater(
+          repository.load(),
+          throwsA(
+            isA<AppException>().having(
+              (e) => e.kind,
+              'kind',
+              AppExceptionKind.content,
+            ),
+          ),
+        );
+        await repository.load();
+
+        expect(repository.levelCount, 1);
+        expect(calls, 2);
+      },
+    );
   });
 
   test('loads once; concurrent and later calls share it', () async {

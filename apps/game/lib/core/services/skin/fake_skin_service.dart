@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:injectable/injectable.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
@@ -20,7 +22,7 @@ class FakeSkinService implements SkinService {
   Future<void> load() async {}
 
   @override
-  void dispose() {}
+  void dispose() => unawaited(_selectedSkinChanges.close());
 
   @override
   Future<LevelSkin> prepareForLevel(
@@ -33,11 +35,21 @@ class FakeSkinService implements SkinService {
   @override
   String selectedSkinId = 'classic';
 
+  final StreamController<String> _selectedSkinChanges =
+      StreamController.broadcast();
+
   @override
   Future<bool> selectSkin(String skinId) async {
+    final changed = skinId != selectedSkinId;
     selectedSkinId = skinId;
+    if (changed && !_selectedSkinChanges.isClosed) {
+      _selectedSkinChanges.add(skinId);
+    }
     return true;
   }
+
+  @override
+  Stream<String> get selectedSkinChanges => _selectedSkinChanges.stream;
 
   @override
   Future<LevelSkin?> prepareShowcase({

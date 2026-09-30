@@ -100,21 +100,29 @@ class TutorialOverlay extends StatelessWidget {
     );
   }
 
-  /// The chip (null for step 3: no frame shows it, `TODO(design)`), title
-  /// and text of [step] (spec §7.6; m3-design §10.4).
+  /// Level 1's steps: "STEP n OF 3" on all three (copy.md E `tut_step_chip`,
+  /// newer than frames 1.3, 1.4 and 10.8b's "OF 2"; lead note 6). Level 2's
+  /// swallow step keeps "NEW MOVE".
+  static const levelOneSteps = 3;
+
+  /// The chip, title and text of [step] (spec §7.6; m3-design §10.4).
   (String?, String, String) _copyFor(int step, AppLocalizations l10n) =>
       switch (step) {
         1 => (
-          l10n.tutorialStep1Chip,
+          l10n.tutorialStepChip(1, levelOneSteps),
           l10n.tutorialStep1Title,
           l10n.tutorialStep1Text,
         ),
         2 => (
-          l10n.tutorialStep2Chip,
+          l10n.tutorialStepChip(2, levelOneSteps),
           l10n.tutorialStep2Title,
           l10n.tutorialStep2Text,
         ),
-        3 => (null, l10n.tutorialStep3Title, l10n.tutorialStep3Text),
+        3 => (
+          l10n.tutorialStepChip(3, levelOneSteps),
+          l10n.tutorialStep3Title,
+          l10n.tutorialStep3Text,
+        ),
         _ => (
           l10n.tutorialSwallowChip,
           l10n.tutorialSwallowTitle,
@@ -440,7 +448,7 @@ class _Hand extends StatelessWidget {
       top: point.dy - _tapFingertip.dy,
       width: _tapCanvas.width,
       height: _tapCanvas.height,
-      child: LottieFxView(
+      child: _HandLoop(
         id: FxId.uiTapHand,
         library: library,
         // The glyph's fingertip on the canvas's.
@@ -481,9 +489,22 @@ class _BoardDragHand extends StatefulWidget {
 }
 
 class _BoardDragHandState extends State<_BoardDragHand> {
-  late final LottieFxController _controller = LottieFxController(
-    FxId.uiDragHand,
-  )..playWhole();
+  final LottieFxController _controller = LottieFxController(FxId.uiDragHand);
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Reduce motion: the hand rests at the start; it doesn't loop
+    // (ui-spec-game §2.4).
+    if (context.reduceMotion) {
+      _controller.seek(0);
+    } else {
+      _controller.playWhole();
+    }
+  }
 
   @override
   void dispose() {
@@ -537,7 +558,18 @@ class _GlyphDragHandState extends State<_GlyphDragHand>
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2400),
-  )..repeat();
+  );
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    // Reduce motion: the glyph rests at the start of its path.
+    if (!context.reduceMotion) _controller.repeat();
+  }
+
   late final Animation<double> _curve = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0, 0.6, curve: Curves.easeInOut),
@@ -564,5 +596,49 @@ class _GlyphDragHandState extends State<_GlyphDragHand>
       );
     },
     child: _Hand._glyph,
+  );
+}
+
+/// A looping hand file that rests on frame 0 under reduce motion (the tap
+/// hand doesn't tap-loop, ui-spec-game §2.4).
+class _HandLoop extends StatefulWidget {
+  const _HandLoop({required this.id, required this.library, this.fallback});
+
+  final FxId id;
+  final FxLibrary? library;
+  final Widget? fallback;
+
+  @override
+  State<_HandLoop> createState() => _HandLoopState();
+}
+
+class _HandLoopState extends State<_HandLoop> {
+  late final LottieFxController _controller = LottieFxController(widget.id);
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (context.reduceMotion) {
+      _controller.seek(0);
+    } else {
+      _controller.playWhole();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => LottieFxView(
+    id: widget.id,
+    controller: _controller,
+    library: widget.library,
+    fallback: widget.fallback,
   );
 }

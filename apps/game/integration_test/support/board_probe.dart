@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/base/base_async_state.dart';
+import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/game/board_shape_of.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
@@ -96,13 +99,29 @@ final class Board {
     );
   }
 
-  Future<void> waitIdle() => _tester.pumpUntil(() {
+  Future<void> waitIdle() => _tester.pumpUntil(
+    () {
+      final timeline = game.board.timeline;
+      return timeline != null &&
+          _caughtUp &&
+          timeline.isIdle &&
+          !timeline.inputLocked;
+    },
+    reason: 'the board to go idle',
+    describe: _describeIdle,
+  );
+
+  /// Why the board isn't idle, for [waitIdle]'s timeout message.
+  String _describeIdle() {
     final timeline = game.board.timeline;
-    return timeline != null &&
-        _caughtUp &&
-        timeline.isIdle &&
-        !timeline.inputLocked;
-  }, reason: 'the board to go idle');
+    if (timeline == null) return 'no timeline';
+    final data = bloc.state.data;
+    return 'caught up $_caughtUp, queue idle ${timeline.isIdle}, input '
+        'locked ${timeline.inputLocked} (paused ${timeline.paused}, overlay '
+        '${timeline.overlayOpen}), bloc ${data?.status} intro ${data?.intro} '
+        'paused ${data?.paused} moves ${data?.board.moveCount}, board moves '
+        '${game.board.board?.moveCount}';
+  }
 
   Future<void> waitForLevel(
     int number, {
@@ -116,9 +135,29 @@ final class Board {
           game.skin != null,
       timeout: const Duration(seconds: 30),
       reason: 'level $number with its skin',
+      describe: _describe,
     );
     await waitIdle();
     await _tester.pumpFor(settle);
+  }
+
+  /// What the gameplay page shows now, for a timeout's message: whether it
+  /// is up, the bloc's case (and its failure), the level and the art.
+  String _describe() {
+    if (find.byType(GameplayView).evaluate().isEmpty) {
+      final stack = [
+        for (final route in get<AppRouter>().stackData) route.name,
+      ];
+      return 'no gameplay page on screen; the router stacks $stack';
+    }
+    final state = bloc.state;
+    final data = state.data;
+    final game = _gameWidget.evaluate().isEmpty ? null : this.game;
+    return 'bloc ${state.runtimeType}'
+        '${state.exceptionOrNull == null ? '' : ' (${state.exceptionOrNull})'}'
+        ', level ${data?.levelNumber}, geometry '
+        '${game?.geometry == null ? 'none' : 'laid out'}, skin '
+        '${game?.skin == null ? 'none' : 'ready'}';
   }
 
   /// Home's dev "Jump to a level" picker (dev flavor).
@@ -134,6 +173,13 @@ final class Board {
       reason: 'the level picker',
     );
     await _tester.pumpFor(const Duration(milliseconds: 500));
+    // The sheet opens scrolled to the save's next level, so a level far
+    // from it is built but off screen (a seeded save at level 60 jumping to
+    // 10, the device run 2026-09-30): bring it into view first.
+    if (tile.hitTestable().evaluate().isEmpty) {
+      await Scrollable.ensureVisible(_tester.element(tile), alignment: 0.5);
+      await _tester.pumpFor(const Duration(milliseconds: 300));
+    }
     await _tester.tap(tile);
     await waitForLevel(number, settle: settle);
   }
@@ -153,6 +199,26 @@ final class Board {
     await _tester.pumpFor(const Duration(milliseconds: 800));
     await _tester.tap(find.text('Continue'));
     await waitForLevel(number);
+  }
+
+  /// The first win's Continue (E9, m7-design §13): Home, which offers
+  /// [level], never the next board.
+  Future<void> continueHome({required int level}) async {
+    await _tester.pumpUntil(
+      () => find.text('Continue').evaluate().isNotEmpty,
+      reason: 'the win overlay\'s Continue',
+    );
+    await _tester.pumpFor(const Duration(milliseconds: 800));
+    await _tester.tap(find.text('Continue'));
+    await _tester.pumpUntil(
+      () =>
+          find.byType(GameplayView).evaluate().isEmpty &&
+          find.byType(HomePage).evaluate().isNotEmpty &&
+          find.bySemanticsLabel('Play level $level').evaluate().isNotEmpty,
+      timeout: const Duration(seconds: 30),
+      reason: 'Home with level $level after the first win (E9)',
+    );
+    await _tester.pumpFor(const Duration(milliseconds: 600));
   }
 
   Future<void> openPause() async {
@@ -190,11 +256,13 @@ extension PumpUntil on WidgetTester {
     required String reason,
     Duration timeout = const Duration(seconds: 15),
     Duration step = const Duration(milliseconds: 50),
+    String Function()? describe,
   }) async {
     final end = DateTime.now().add(timeout);
     while (!condition()) {
       if (DateTime.now().isAfter(end)) {
-        fail('Timed out after $timeout waiting for $reason');
+        final seen = describe == null ? '' : ' (${describe()})';
+        fail('Timed out after $timeout waiting for $reason$seen');
       }
       await pump(step);
     }

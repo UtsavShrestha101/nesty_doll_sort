@@ -1,13 +1,18 @@
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/widgets.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
+import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
 import 'package:nesty_render/nesty_render.dart';
+
+export 'package:nesty_game/features/gameplay/game/components/slot_decor.dart'
+    show BoardLabels;
 
 /// What the Flame board tells the gameplay page (m2-lottie-design §7, §11;
 /// `NestyGame`'s "page's side of the bridge").
@@ -83,11 +88,34 @@ abstract interface class GameplayBoard {
   /// The player's belly symbols, for placeholder dolls.
   set symbols(DollSymbols symbols);
 
+  /// The board's localized "+N" tower tag and ice badge text and direction
+  /// (ARB `boardTowerHidden`/`boardIceCount`, spec §16): the page passes
+  /// `AppLocalizations.of(context)`'s two methods and
+  /// `Directionality.of(context)`, wrapped in a [BoardLabels], at build and
+  /// again on any dependency change that could mean a new locale (the same
+  /// place it re-reads [reduceMotion]). Before the page's first hand-off
+  /// (and in tests) the board shows `BoardLabels.fallback`'s English
+  /// pattern.
+  set boardLabels(BoardLabels labels);
+
+  /// The legal drop targets of the lifted nest, `GameplayState.dropTargets`
+  /// (core's `Rules.legalTargets`, computed by the bloc on the pick): the
+  /// board glows the legal stand under a dragged doll (E.14). The page sets
+  /// it with each effect it applies; the board never decides legality.
+  set dropTargets(Set<String> targets);
+
   /// The pause dialog: time stops and every slot drops input.
   set paused(bool paused);
 
   /// An overlay or sheet is open (win, out of moves): input is dropped.
   set overlayOpen(bool open);
+
+  /// True while a hint's arrow over the middle top-shelf stand rises into
+  /// the family counter's place (frame 3.1b; tokens `layout.hintMiddle`;
+  /// `SlotGeometry.hintNeedsCounter`): the HUD fades the counter out and
+  /// back when the hint ends (phase 4 architecture §2.6 E.20, §6.6). The
+  /// board drives it from the hint it plays.
+  ValueListenable<bool> get familyCounterYield;
 }
 
 /// Builds the page's board with its callbacks and services.
@@ -116,6 +144,12 @@ final class NestyGameBoard implements GameplayBoard {
 
   final NestyGame game;
 
+  // TODO(v1.1): the board has no screen-reader nodes (Flame adds none), so
+  // a VoiceOver or TalkBack player can't pick a slot. The owner decides
+  // whether that is v1 (M7 review R12, its PROGRESS question): a semantics
+  // layer from the page's `BoardGeometry`, one node per slot labelled from
+  // core's `GameState`, whose tap goes through the board's own input
+  // policy, with Claude Design's copy for the colours and slot states.
   @override
   late final Widget view = RepaintBoundary(
     child: GameWidget<NestyGame>(game: game),
@@ -146,6 +180,9 @@ final class NestyGameBoard implements GameplayBoard {
   set symbols(DollSymbols symbols) => game.symbols = symbols;
 
   @override
+  set boardLabels(BoardLabels labels) => game.boardLabels = labels;
+
+  @override
   set paused(bool paused) {
     if (paused) {
       game.pauseEngine();
@@ -155,5 +192,11 @@ final class NestyGameBoard implements GameplayBoard {
   }
 
   @override
+  set dropTargets(Set<String> targets) => game.dropTargets = targets;
+
+  @override
   set overlayOpen(bool open) => game.overlayOpen = open;
+
+  @override
+  ValueListenable<bool> get familyCounterYield => game.familyCounterYield;
 }

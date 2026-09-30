@@ -88,6 +88,7 @@ void main() {
         'void _afterAdvance(BoardTimeline timeline)',
         'void _followDrag(BoardTimeline timeline)',
         'void moveDrag(int pointer, double x, double y)',
+        'void _hover(double x, double y)',
         // _UnmountedSlots
         'void render(Canvas canvas)',
       ],
@@ -96,6 +97,12 @@ void main() {
         'double centerX(RepitchTween? r)',
         'double restBaseY(RepitchTween? r)',
         'double buriedBaseY(int depth, RepitchTween? r)',
+        'int get buriedDrawn',
+        'double get standDip',
+        'double get padlockPing',
+        'double get badgeBump',
+        'double get tagScale',
+        'double iceDollBaseY(RepitchTween? r)',
       ],
       'fx_layer.dart': [
         'void advance(double dtMs)',
@@ -116,8 +123,8 @@ void main() {
         'void render(Canvas canvas)',
       ],
       'slot_decor.dart': [
-        'void paintTag(Canvas canvas, double x, double y)',
-        'void paintBadge(Canvas canvas, double x, double y)',
+        'void paintTag(Canvas canvas, double x, double y, [double scale = 1])',
+        'void paintBadge(Canvas canvas, double x, double y, [double scale = 1])',
         'static void box(',
       ],
       'nest_component.dart': ['void render(Canvas canvas)'],
@@ -153,7 +160,7 @@ void main() {
     for (final good in [
       'for (var i = 0; i < slots.length; i++) {',
       'canvas.drawCircle(Offset.zero, radius, fill);',
-      'slot.decor.paintTag(canvas, slot.tagX(r), slot.tagY(r));',
+      'slot.decor.paintTag(canvas, slot.tagX(r), slot.tagY(r), slot.tagScale);',
       'case StartClip():',
       'final frame = scene.geometry?.fit.frame;',
       'SpriteDraw.box(canvas, sprite, left, top, width, height);',

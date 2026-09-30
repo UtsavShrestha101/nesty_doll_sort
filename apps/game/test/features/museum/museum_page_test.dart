@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/repository/bundled_catalog_repository.dart';
@@ -13,6 +14,7 @@ import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart';
 import 'package:nesty_game/features/museum/pages/museum_page.dart';
+import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
 
 import '../../core/ui/support/ui_harness.dart';
 import '../../helpers/level_fixtures.dart';
@@ -87,6 +89,9 @@ void main() {
     MuseumCubit cubit, {
     Size size = const Size(390, 844),
     double textScale = 1,
+    // A collected niche bobs forever, which `pumpAndSettle` would wait on:
+    // most tests hold it still, the bob's own tests turn it on.
+    bool reduceMotion = true,
   }) async {
     await precacheFigurines(tester);
     await pumpScreen(
@@ -94,6 +99,7 @@ void main() {
       BlocProvider<MuseumCubit>.value(value: cubit, child: const MuseumPage()),
       size: size,
       textScale: textScale,
+      reduceMotion: reduceMotion,
     );
     await cubit.load();
     await tester.pump();
@@ -105,8 +111,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('frame 6.1: the header, the collection card and the cabinet\'s '
-      'earned/next/locked labels and chip', (tester) async {
+  testWidgets('frame 6.1: the header with its count chip, the intro, the '
+      'next-family card and the cabinet\'s collected/next/locked niches', (
+    tester,
+  ) async {
     final cubit = build(
       document: const SaveDocument(
         coins: 90,
@@ -117,18 +125,95 @@ void main() {
     await pumpMuseum(tester, cubit);
 
     expect(find.text('Museum'), findsOneWidget);
-    expect(find.text('90'), findsOneWidget);
-    expect(find.text('Collection'), findsOneWidget);
+    // The tab has no coin pill and no back button (frame 6.1); Chapters
+    // opens from Home's chapter card only (Q92).
+    expect(find.text('90'), findsNothing);
+    expect(find.text('Chapters'), findsNothing);
     expect(find.text('1 / 10'), findsOneWidget);
     expect(
-      find.text('Chapter 2: 15 of 20 levels to The Sailor Family'),
+      find.text(
+        'Every chapter has a doll family. Win all 20 of its levels to '
+        'bring that family home.',
+      ),
       findsOneWidget,
     );
-    expect(find.text('Classic Family'), findsOneWidget);
-    expect(find.text('Sailor · soon'), findsOneWidget);
-    expect(find.text('15/20'), findsOneWidget);
+    // The next family leads: its name, "Chapter 2 · 5 levels to go" and Play.
+    expect(find.text('NEXT FAMILY'), findsOneWidget);
+    expect(find.text('Chapter 2 · 5 levels to go'), findsOneWidget);
+    expect(find.text('Play Level 36'), findsOneWidget);
+    // The name is on the card and on its own niche.
+    expect(find.text('The Sailor Family'), findsNWidgets(2));
+    expect(find.text('5 levels to go'), findsOneWidget);
+    // A collected family: a brass plate with its name.
+    expect(find.text('The Classic Family'), findsOneWidget);
+    // A locked niche: its chapter and its levels on two lines.
     expect(find.text('Chapter 3'), findsOneWidget);
+    expect(find.text('Levels 41–60'), findsOneWidget);
     expect(find.text('Chapter 10'), findsOneWidget);
+    expect(find.text('Levels 181–200'), findsOneWidget);
+  });
+
+  testWidgets('6.1b: nothing collected: the Classic family leads, "Chapter 1 '
+      '· 19 levels to go", Play Level 2, count 0 / 10', (tester) async {
+    final cubit = build(document: const SaveDocument(currentLevel: 2));
+    await pumpMuseum(tester, cubit);
+    expect(find.text('0 / 10'), findsOneWidget);
+    expect(find.text('Chapter 1 · 19 levels to go'), findsOneWidget);
+    expect(find.text('Play Level 2'), findsOneWidget);
+    expect(find.text('The Classic Family'), findsNWidgets(2));
+  });
+
+  testWidgets('every niche says what it is to a screen reader', (tester) async {
+    final handle = tester.ensureSemantics();
+    final cubit = build(
+      document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
+    );
+    await pumpMuseum(tester, cubit);
+    expect(
+      find.bySemanticsLabel('The Classic Family, collected'),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel(
+        'The Sailor Family, next, chapter 2, 5 levels to go',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel('Chapter 5, levels 81 to 100, locked'),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel('1 of 10 families home'), findsOneWidget);
+    handle.dispose();
+  });
+
+  testWidgets('a collected niche bobs 3 dp and stands still under reduce '
+      'motion', (tester) async {
+    final cubit = build(
+      document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
+    );
+    await pumpMuseum(tester, cubit, reduceMotion: false);
+    final art = find.byType(FigurineImage).at(1);
+    final before = tester.getTopLeft(art).dy;
+    await tester.pump(const Duration(milliseconds: 1500));
+    final moved = (tester.getTopLeft(art).dy - before).abs();
+    expect(moved, lessThanOrEqualTo(MuseumTokens.cabinetCollectedIdleBob));
+
+    final still = build(
+      document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
+    );
+    await precacheFigurines(tester);
+    await pumpScreen(
+      tester,
+      BlocProvider<MuseumCubit>.value(value: still, child: const MuseumPage()),
+      reduceMotion: true,
+    );
+    await still.load();
+    await tester.pump();
+    final artStill = find.byType(FigurineImage).at(1);
+    final y = tester.getTopLeft(artStill).dy;
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(tester.getTopLeft(artStill).dy, y);
   });
 
   testWidgets(
@@ -144,10 +229,10 @@ void main() {
       );
       await pumpMuseum(tester, cubit);
 
-      await tapAndSettle(tester, find.text('Classic Family'));
+      await tapAndSettle(tester, find.text('The Classic Family'));
 
       expect(find.text('Chapter 1 · Sunny Toy Shop'), findsOneWidget);
-      expect(find.text('The Classic Family'), findsOneWidget);
+      expect(find.text('The Classic Family'), findsNWidgets(2));
       expect(find.text('Collected · Sep 12'), findsOneWidget);
     },
   );
@@ -161,7 +246,7 @@ void main() {
       );
       await pumpMuseum(tester, cubit);
 
-      await tapAndSettle(tester, find.text('Classic Family'));
+      await tapAndSettle(tester, find.text('The Classic Family'));
 
       expect(find.text('Collected'), findsOneWidget);
       expect(find.textContaining('Collected ·'), findsNothing);
@@ -180,14 +265,14 @@ void main() {
       );
       await pumpMuseum(tester, cubit);
 
-      await tapAndSettle(tester, find.text('Classic Family'));
+      await tapAndSettle(tester, find.text('The Classic Family'));
       expect(
         find.text('“They keep a seashell in the smallest doll, just in case.”'),
         findsNothing,
       );
       await tapAndSettle(tester, find.byIcon(NestyIcons.close));
 
-      await tapAndSettle(tester, find.text('Sailor Family'));
+      await tapAndSettle(tester, find.text('The Sailor Family'));
       expect(
         find.text('“They keep a seashell in the smallest doll, just in case.”'),
         findsOneWidget,
@@ -195,24 +280,23 @@ void main() {
     },
   );
 
-  testWidgets('frame 6.3: tapping the next figurine shows the locked text, the '
+  testWidgets('frame 6.3: tapping the next niche shows the locked text, the '
       'chapter bar and "Play Level N", and Close dismisses it', (tester) async {
     final cubit = build(
       document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
     );
     await pumpMuseum(tester, cubit);
 
-    await tapAndSettle(tester, find.text('Sailor · soon'));
+    await tapAndSettle(tester, find.text('5 levels to go'));
 
     expect(
       find.text('Finish Chapter 2 to bring this family home.'),
       findsOneWidget,
     );
-    // The chapter bar's row and the cabinet's next chip both read
-    // "Chapter 2" / "15/20"; the modal adds a second instance of each.
     expect(find.text('Chapter 2'), findsOneWidget);
-    expect(find.text('15/20'), findsNWidgets(2));
-    expect(find.text('Play Level 36'), findsOneWidget);
+    // The next-family card already shows the same generic "go play your
+    // current level" action; the modal adds a second instance of it.
+    expect(find.text('Play Level 36'), findsNWidgets(2));
 
     await tapAndSettle(tester, find.byIcon(NestyIcons.close));
     expect(
@@ -221,25 +305,58 @@ void main() {
     );
   });
 
+  testWidgets('screen readers: the figurine card is modal, with a named '
+      'bar (review R11)', (tester) async {
+    final handle = tester.ensureSemantics();
+    final cubit = build(
+      document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
+    );
+    await pumpMuseum(tester, cubit);
+
+    await tapAndSettle(tester, find.text('5 levels to go'));
+    // The niches behind the card are out of a reader's reach (the live
+    // tree: a dropped node stays cached on its render object).
+    expect(
+      find.semantics.byLabel(
+        'The Sailor Family, next, chapter 2, 5 levels to go',
+      ),
+      findsNothing,
+    );
+    expect(
+      find.semantics.byLabel('The Classic Family, collected'),
+      findsNothing,
+    );
+    // The chapter bar says what its percent counts.
+    expect(
+      find.semantics.byPredicate((node) {
+        final data = node.getSemanticsData();
+        return data.label == 'Chapter 2' && data.value == '75%';
+      }),
+      findsOne,
+    );
+    handle.dispose();
+  });
+
   testWidgets(
-    'frame 6.3: a locked (not-next) figurine shows its own chapter number',
+    'frame 6.3: a locked (not-next) niche shows its own chapter number',
     (tester) async {
       final cubit = build(
         document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
       );
       await pumpMuseum(tester, cubit);
 
-      await tapAndSettle(tester, find.text('Chapter 3'));
+      await tapAndSettle(tester, find.text('Levels 41–60'));
 
       expect(
         find.text('Finish Chapter 3 to bring this family home.'),
         findsOneWidget,
       );
-      expect(find.text('Play Level 36'), findsOneWidget);
+      expect(find.text('Play Level 36'), findsNWidgets(2));
     },
   );
 
-  testWidgets('every chapter collected reads "Every family is home."', (
+  testWidgets('6.1c: every chapter collected: the brass disc, "Every family '
+      'is home." and "Full House · all 10 families", no Play button', (
     tester,
   ) async {
     final allIds = [
@@ -250,9 +367,54 @@ void main() {
     );
     await pumpMuseum(tester, cubit);
     expect(find.text('Every family is home.'), findsOneWidget);
+    expect(find.text('Full House · all 10 families'), findsOneWidget);
+    expect(find.text('10 / 10'), findsOneWidget);
+    expect(find.textContaining('Play Level'), findsNothing);
+    expect(find.text('NEXT FAMILY'), findsNothing);
+    // All ten niches are plates.
+    expect(find.textContaining(' Family'), findsNWidgets(10));
   });
 
-  for (final size in screenSizes) {
+  // The owner asked for each locked niche's chapter and levels (D111); each
+  // shows in two lines, or one short line when they wouldn't fit (narrow
+  // phones, 1.3× text), whole and inside its niche.
+  for (final size in [...screenSizes, const Size(402, 874)]) {
+    for (final textScale in textScales) {
+      testWidgets('every locked niche shows whole at '
+          '${size.width.toInt()}x${size.height.toInt()} ${textScale}x', (
+        tester,
+      ) async {
+        final cubit = build(
+          document: const SaveDocument(currentLevel: 36, museum: ['ch01']),
+        );
+        await pumpMuseum(tester, cubit, size: size, textScale: textScale);
+        final short = size.width < 360 || textScale > 1.15;
+        for (var chapter = 3; chapter <= 10; chapter++) {
+          final first = chapter * 20 - 19;
+          final labels = short
+              ? ['Ch $chapter · $first–${chapter * 20}']
+              : ['Chapter $chapter', 'Levels $first–${chapter * 20}'];
+          for (final label in labels) {
+            final text = find.text(label);
+            await tester.ensureVisible(text);
+            await tester.pump();
+            final paragraph = tester.renderObject<RenderParagraph>(text);
+            expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+            final cell = find
+                .ancestor(of: text, matching: find.byType(TactileSurface))
+                .first;
+            final textRect = tester.getRect(text);
+            final cellRect = tester.getRect(cell);
+            expect(textRect.left, greaterThanOrEqualTo(cellRect.left));
+            expect(textRect.right, lessThanOrEqualTo(cellRect.right));
+          }
+        }
+        expectNoLayoutErrors(tester);
+      });
+    }
+  }
+
+  for (final size in overflowScreenSizes) {
     for (final textScale in textScales) {
       testWidgets('no overflow at ${size.width.toInt()}x${size.height.toInt()} '
           '${textScale}x, cabinet and the 6.2/6.3 modals', (tester) async {
@@ -266,11 +428,11 @@ void main() {
         await pumpMuseum(tester, cubit, size: size, textScale: textScale);
         expectNoLayoutErrors(tester);
 
-        await tapAndSettle(tester, find.text('Classic Family'));
+        await tapAndSettle(tester, find.text('The Classic Family'));
         expectNoLayoutErrors(tester);
         await tapAndSettle(tester, find.byIcon(NestyIcons.close));
 
-        await tapAndSettle(tester, find.text('Sailor · soon'));
+        await tapAndSettle(tester, find.text('5 levels to go'));
         expectNoLayoutErrors(tester);
       });
     }

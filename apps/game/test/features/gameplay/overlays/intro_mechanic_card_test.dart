@@ -5,13 +5,16 @@ import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_board.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 import '../../../core/ui/support/ui_harness.dart';
+import '../../support/lottie_library.dart';
 import '../../support/screen_harness.dart';
 import '../bloc/support/bloc_fixtures.dart' show defaultLevel;
 
@@ -318,4 +321,113 @@ void main() {
       }
     }
   }
+
+  group('the loops (frames 4.1–4.3; `ui_intro_towers`, `_glass`, `_ice`)', () {
+    Widget loopCard(
+      IntroMechanic mechanic,
+      FakeFxLibrary library, {
+      LevelSkin? skin,
+    }) => IntroMechanicCard(
+      mechanic: mechanic,
+      onGotIt: () {},
+      skin: skin,
+      levelColors: const [
+        DollColor.red,
+        DollColor.blue,
+        DollColor.green,
+        DollColor.yellow,
+      ],
+      library: library,
+    );
+
+    for (final (mechanic, id) in [
+      (IntroMechanic.towers, FxId.uiIntroTowers),
+      (IntroMechanic.glass, FxId.uiIntroGlass),
+      (IntroMechanic.ice, FxId.uiIntroIce),
+    ]) {
+      testWidgets('${mechanic.name}: with the level\'s skin the picture is '
+          '${id.fileName}, looping, its roles in the level\'s colours', (
+        tester,
+      ) async {
+        final library = (await tester.runAsync(widgetLottieLibrary))!;
+        final skin = await _spriteSkin(tester);
+        await pumpScreen(tester, loopCard(mechanic, library, skin: skin));
+        await tester.pump(const Duration(milliseconds: 300));
+        final view = tester.widget<LottieFxView>(
+          find.byWidgetPredicate((w) => w is LottieFxView && w.id == id),
+        );
+        final controller = view.controller!;
+        expect(controller.isPlaying, isTrue);
+        expect(view.images, same(skin.images));
+        // No box for the still pieces once the loop plays.
+        final request = controller.images.request;
+        switch (mechanic) {
+          case IntroMechanic.towers:
+            expect(request.mover, isNotNull);
+            expect(request.revealed, isNotNull);
+          case IntroMechanic.glass:
+            expect(request.family, isNotNull);
+            expect(request.freed, isNotNull);
+            expect(
+              request.unlockColor,
+              request.family,
+              reason: 'the padlock carries the family\'s symbol',
+            );
+          case IntroMechanic.ice:
+            expect(request.family, isNotNull);
+            expect(request.family2, isNotNull);
+            expect(request.freed, isNotNull);
+        }
+        // The slot is the design's 302 × 230.
+        expect(tester.getSize(find.byWidget(view)), IntroCard.illustrationSize);
+      });
+
+      testWidgets('${mechanic.name}: reduce motion rests on frame 0, still', (
+        tester,
+      ) async {
+        final library = (await tester.runAsync(widgetLottieLibrary))!;
+        final skin = await _spriteSkin(tester);
+        await pumpScreen(
+          tester,
+          loopCard(mechanic, library, skin: skin),
+          reduceMotion: true,
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        final view = tester.widget<LottieFxView>(
+          find.byWidgetPredicate((w) => w is LottieFxView && w.id == id),
+        );
+        expect(view.controller!.isPlaying, isFalse);
+        expect(view.controller!.player.frame, 0);
+      });
+    }
+
+    testWidgets('without a skin the still picture stays (rule 3): no loop', (
+      tester,
+    ) async {
+      final library = (await tester.runAsync(widgetLottieLibrary))!;
+      await pumpScreen(tester, loopCard(IntroMechanic.towers, library));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is LottieFxView && w.id == FxId.uiIntroTowers,
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('the picture is decorative: no semantics of its own', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final library = (await tester.runAsync(widgetLottieLibrary))!;
+      final skin = await _spriteSkin(tester);
+      await pumpScreen(
+        tester,
+        loopCard(IntroMechanic.ice, library, skin: skin),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.bySemanticsLabel('Ice'), findsOneWidget);
+      handle.dispose();
+    });
+  });
 }

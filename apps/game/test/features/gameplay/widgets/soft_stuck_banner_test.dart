@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/gameplay/widgets/soft_stuck_banner.dart';
 
 import '../../../core/ui/support/ui_harness.dart';
 import '../../support/screen_harness.dart';
 
-Widget _banner({
-  required bool visible,
-  VoidCallback? onUndo,
-  VoidCallback? onRestart,
-}) => Scaffold(
+Widget _banner({required bool visible, VoidCallback? onUndo}) => Scaffold(
   body: Stack(
     children: [
       Positioned(
         left: SoftStuckBanner.side,
         right: SoftStuckBanner.side,
         top: 59 + SoftStuckBanner.top,
-        child: SoftStuckBanner(
-          visible: visible,
-          onUndo: onUndo,
-          onRestart: onRestart,
-        ),
+        child: SoftStuckBanner(visible: visible, onUndo: onUndo),
       ),
     ],
   ),
@@ -51,42 +44,24 @@ void main() {
     expect(find.text('Hmm, this looks stuck'), findsNothing);
   });
 
-  testWidgets('with nothing to undo it suggests Restart, and keeps saying '
-      'so while it slides out (review FIDELITY-6)', (tester) async {
-    var restarts = 0;
-    void restart() => restarts++;
-    await pumpScreen(tester, _banner(visible: false, onRestart: restart));
-    await pumpScreen(tester, _banner(visible: true, onRestart: restart));
+  testWidgets('with nothing to undo it is frame 12.7\'s toast: it suggests '
+      'Restart, has no button of its own, and keeps saying so while it '
+      'slides out (review FIDELITY-6)', (tester) async {
+    await pumpScreen(tester, _banner(visible: false));
+    await pumpScreen(tester, _banner(visible: true));
     await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Hmm, this looks stuck'), findsOneWidget);
     expect(find.text('Try Restart? You can keep playing too.'), findsOneWidget);
-    expect(find.text('Undo'), findsNothing);
-    await tester.tap(find.text('Restart'));
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(restarts, 1);
+    // Restart glows in the booster bar: nothing to press here.
+    expect(find.byType(TactileButton), findsNothing);
 
-    // The restart clears it; mid-way out, the copy and button still hold
-    // even though an Undo now exists.
-    await pumpScreen(
-      tester,
-      _banner(visible: false, onUndo: () {}, onRestart: restart),
-    );
+    // The restart clears it; mid-way out, the copy holds even though an
+    // Undo now exists.
+    await pumpScreen(tester, _banner(visible: false, onUndo: () {}));
     await tester.pump(const Duration(milliseconds: 60));
     expect(find.text('Try Restart? You can keep playing too.'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Hmm, this looks stuck'), findsNothing);
-  });
-
-  testWidgets('with an Undo, Undo it is, even if Restart is offered too', (
-    tester,
-  ) async {
-    await pumpScreen(tester, _banner(visible: false, onUndo: () {}));
-    await pumpScreen(
-      tester,
-      _banner(visible: true, onUndo: () {}, onRestart: () {}),
-    );
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Try Undo? You can keep playing too.'), findsOneWidget);
-    expect(find.text('Undo'), findsOneWidget);
   });
 
   for (final size in screenSizes) {

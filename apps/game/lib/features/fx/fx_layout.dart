@@ -16,6 +16,9 @@ import 'package:nesty_game/features/fx/fx_spec.dart';
 ///   (doll files, `fx_sparkle`) or by the slot's furniture scale `fs = s·q`
 ///   (board pieces).
 abstract final class FxLayout {
+  /// The scale null that sizes a whole tall glass case (LOTTIE.md m7-3).
+  static const caseSizeNull = 'case_size';
+
   /// A doll at 100 % `<role>_size` is 150 composition units tall (LOTTIE.md
   /// "Doll size": size 6 on a 3-shelf board).
   static const dollUnits = 150.0;
@@ -40,6 +43,7 @@ abstract final class FxLayout {
   static bool usesFurnitureScale(FxId id) => switch (id) {
     FxId.fxSelectGlow ||
     FxId.fxGlassUnlock ||
+    FxId.fxGlassUnlockTall ||
     FxId.fxIce ||
     FxId.fxDustPuff ||
     FxId.uiHintArrow ||
@@ -79,6 +83,15 @@ abstract final class FxLayout {
   /// logical heights (§5): `h / (150 · compositionScale)`, except that in
   /// `doll_nest` and `doll_swallow` the mover's is `hMover / hTarget`. A
   /// role whose height is null keeps its authored size.
+  ///
+  /// A file with a `case_size` null (`fx_glass_unlock_tall`,
+  /// `FxSpec.scaleNulls`) gets it set to the doll's own factor, so its case,
+  /// flash, shards, glints and padlock grow with the doll (LOTTIE.md m7-3).
+  /// [caseHeight] is the height of the doll the case is drawn for when it is
+  /// less than [doll] (`SlotGeometry.tallCaseHeight`).
+  /// [stretchY] is how much the host stretches the composition vertically
+  /// (`fx_ice` on the tall preset, 1.05): the doll's height factor is divided
+  /// by it so the doll isn't stretched with the ice.
   static void applyDollHeights(
     FxDrawableParams params,
     FxSpec spec, {
@@ -86,13 +99,22 @@ abstract final class FxLayout {
     double? doll,
     double? mover,
     double? target,
+    double stretchY = 1,
+    double? caseHeight,
   }) {
+    if (spec.scaleNulls.contains(caseSizeNull)) {
+      // The case follows the doll, or [caseHeight] where the column is too
+      // narrow for the doll's own (a row of 5 or 6).
+      final h = caseHeight ?? doll;
+      params.caseScale = h == null ? null : sizeFactor(h, compositionScale);
+    }
     for (final role in spec.roles) {
       switch (role) {
         case FxRole.doll:
           params.setSize(
             role,
             doll == null ? null : sizeFactor(doll, compositionScale),
+            stretchY: stretchY,
           );
         case FxRole.target:
           params.setSize(
@@ -109,6 +131,10 @@ abstract final class FxLayout {
                 ? (target == null ? null : mover / target)
                 : sizeFactor(mover, compositionScale),
           );
+        // The intro loops author their doll sizes (their FxSpec lists no
+        // roles): nothing to set.
+        case FxRole.revealed || FxRole.family || FxRole.family2 || FxRole.freed:
+          params.setSize(role, null);
       }
     }
   }

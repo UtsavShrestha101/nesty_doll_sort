@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:nesty_core/nesty_core.dart' show LayoutLimits;
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
@@ -27,6 +28,8 @@ final class BoosterBarModel {
     this.slotBadge,
     this.restartEnabled = false,
     this.undoGlow = false,
+    this.restartGlow = false,
+    this.slotLimit,
     this.locked = false,
   });
 
@@ -49,7 +52,12 @@ final class BoosterBarModel {
 
     return BoosterBarModel(
       undoEnabled: input && state.canUndo,
-      undoBadge: badgeFor(state.freeUndosLeft, state.undoPrice),
+      // Relaxed mode: free and unlimited, so the badge shows "∞" instead of
+      // a count (E6; m7-design §10, §15.6); the dev flavor still wins (no
+      // badge at all).
+      undoBadge: state.relaxed && !unlimited
+          ? const BoosterBadge.infinite()
+          : badgeFor(state.freeUndosLeft, state.undoPrice),
       // Frames 3.1 and 3.4 keep Hint live while a hint shows and while the
       // level is soft stuck; a press then gives no move and charges nothing
       // (the bloc ignores it, D22).
@@ -60,12 +68,19 @@ final class BoosterBarModel {
       // TODO(M6): the ▶ badge at 0 while an ad is ready (frame 2.2).
       hintBadge: badgeFor(state.hintsLeft, state.hintPrice),
       slotEnabled: input && state.canAddSlot,
+      // Frame 12.9: the level's extra slots are all placed (core says no
+      // more, with at least one on the board): the sunk face and "2/2".
+      slotLimit: !state.canAddSlot && !state.isRace
+          ? (state.board.extraSlotCount > 0 ? state.board.extraSlotCount : null)
+          : null,
       // The level's own limit of 2 (`canAddSlot` false) disables the
       // button entirely, with no badge to press: a coin offer only shows
       // while another slot is actually possible.
       slotBadge: state.canAddSlot
           ? badgeFor(state.extraSlotsLeft, state.slotPrice)
           : null,
+      // Frame 12.7: a soft-stuck board with nothing to undo glows Restart
+      // (the banner suggests it); with an Undo that works, Undo glows.
       restartEnabled: input,
       // Only an Undo that works is suggested: with nothing to undo (spec
       // §2.4 clears the history on a completion) the banner offers Restart
@@ -74,6 +89,10 @@ final class BoosterBarModel {
           state.softStuck &&
           state.status == GameplayStatus.playing &&
           state.canUndo,
+      restartGlow:
+          state.softStuck &&
+          state.status == GameplayStatus.playing &&
+          !state.canUndo,
       locked: won,
     );
   }
@@ -89,6 +108,15 @@ final class BoosterBarModel {
   /// Frame 3.4: the soft-stuck suggestion, `ui_booster_glow` behind Undo.
   final bool undoGlow;
 
+  /// Frame 12.7: the soft-stuck suggestion with nothing to undo,
+  /// `ui_booster_glow` behind Restart.
+  final bool restartGlow;
+
+  /// Frame 12.9: how many extra slots the level holds once no more can be
+  /// added (the sunk +1 Slot face and its "n/limit" badge); null while more
+  /// are possible.
+  final int? slotLimit;
+
   /// The buttons look as the flags say but take no touch (the won level).
   final bool locked;
 
@@ -103,6 +131,8 @@ final class BoosterBarModel {
       other.slotBadge == slotBadge &&
       other.restartEnabled == restartEnabled &&
       other.undoGlow == undoGlow &&
+      other.restartGlow == restartGlow &&
+      other.slotLimit == slotLimit &&
       other.locked == locked;
 
   @override
@@ -115,6 +145,8 @@ final class BoosterBarModel {
     slotBadge,
     restartEnabled,
     undoGlow,
+    restartGlow,
+    slotLimit,
     locked,
   );
 }
@@ -131,6 +163,10 @@ class BoosterBar extends StatelessWidget {
     required this.onExtraSlot,
     required this.onRestart,
     this.library,
+    this.hintKey,
+    this.hintGlow = false,
+    this.hintBump = 0,
+    this.onSlotLimit,
     super.key,
   });
 
@@ -142,6 +178,28 @@ class BoosterBar extends StatelessWidget {
 
   /// The FX library (DI by default), for the Undo glow.
   final FxLibrary? library;
+
+  /// Marks the Hint button's on-screen rect (`gameplay_view.dart`'s
+  /// `_hintButtonRect`), so the milestone chest modal's Collect step can
+  /// fly the hint sprite to it (m7-design chest sequence step 4). Null when
+  /// nothing needs to find it.
+  final GlobalKey? hintKey;
+
+  /// A brief `ui_booster_glow` pulse behind Hint (the same look as
+  /// [BoosterBarModel.undoGlow]'s soft-stuck suggestion), for the instant
+  /// the chest's hint sprite lands (m7-design chest sequence step 4:
+  /// "the badge bumps +1 with a `ui_booster_glow` pulse"). The badge's own
+  /// count is `state.hintsLeft`, already correct throughout (the chest's
+  /// hint is paid at the win, m7-design §9): this only adds the flourish.
+  final bool hintGlow;
+
+  /// The Hint badge bumps 1.3× for 240 ms each time this changes (the
+  /// chest's hint sprite landed, frame 10.3d).
+  final int hintBump;
+
+  /// A tap on the sunk +1 Slot face (frame 12.9): the board's toast says
+  /// why. Null makes it inert.
+  final VoidCallback? onSlotLimit;
 
   /// The +Slot glyph and label (NestyBoard `BST`).
   static const Color slotColor = Color(0xFF2F7A3E);
@@ -159,6 +217,7 @@ class BoosterBar extends StatelessWidget {
     final l10n = context.localizations;
     final bottom = MediaQuery.paddingOf(context).bottom;
     final width = buttonWidth(MediaQuery.sizeOf(context).width);
+    final limit = model.slotLimit;
     return WoodBar(
       height: height + bottom,
       padding: EdgeInsets.only(top: BoosterBarTokens.topInset, bottom: bottom),
@@ -179,11 +238,15 @@ class BoosterBar extends StatelessWidget {
               ),
               const SizedBox(width: BoosterBarTokens.gap),
               BoosterButton(
+                key: hintKey,
                 icon: NestyIcons.lightbulb,
                 label: l10n.boosterHint,
                 width: width,
                 badge: model.hintBadge,
                 onPressed: model.hintEnabled ? onHint : null,
+                glow: hintGlow ? BoosterGlow(library: library) : null,
+                badgeBump: hintBump,
+                gainTag: hintGlow ? l10n.hintGainedTag(1) : null,
               ),
               const SizedBox(width: BoosterBarTokens.gap),
               BoosterButton(
@@ -191,8 +254,22 @@ class BoosterBar extends StatelessWidget {
                 label: l10n.boosterExtraSlot,
                 width: width,
                 color: slotColor,
-                badge: model.slotBadge,
-                onPressed: model.slotEnabled ? onExtraSlot : null,
+                badge: limit == null
+                    ? model.slotBadge
+                    : BoosterBadge.limit(limit, LayoutLimits.maxExtraSlots),
+                spent: limit != null,
+                spentLabel: limit == null
+                    ? null
+                    : l10n.boosterLimitSemantics(
+                        l10n.boosterExtraSlot,
+                        limit,
+                        LayoutLimits.maxExtraSlots,
+                      ),
+                onPressed: limit != null
+                    ? onSlotLimit
+                    : model.slotEnabled
+                    ? onExtraSlot
+                    : null,
               ),
               const SizedBox(width: BoosterBarTokens.gap),
               BoosterButton(
@@ -200,6 +277,10 @@ class BoosterBar extends StatelessWidget {
                 label: l10n.restart,
                 width: width,
                 onPressed: model.restartEnabled ? onRestart : null,
+                glow: model.restartGlow ? BoosterGlow(library: library) : null,
+                semanticHint: model.restartGlow
+                    ? l10n.restartSuggestedHint
+                    : null,
               ),
             ],
           ),

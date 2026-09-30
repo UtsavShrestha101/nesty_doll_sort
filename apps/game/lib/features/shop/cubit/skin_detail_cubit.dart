@@ -17,8 +17,12 @@ part 'skin_detail_state.dart';
 
 /// One skin's detail (frame 7.4; docs/plans/m3-design.md §10.7): all 11
 /// colors, the size lineup, and Buy / Equip / Equipped. Follows
-/// [SaveService.changes] so a purchase elsewhere (or this screen's own)
-/// updates the balance and the button state.
+/// [SaveService.changes] and [SkinService.selectedSkinChanges] so a
+/// purchase or equip elsewhere (or this screen's own) updates the balance
+/// and the button state. Both are needed: the save's own change can fire
+/// before [SkinService.selectSkin] (which rasterizes the new skin) has
+/// actually finished, so relying on it alone left this page's Equipped
+/// state stale until it was reopened (owner 2026-09-28 simulator review).
 @injectable
 class SkinDetailCubit extends BaseAsyncCubit<SkinDetailState> {
   SkinDetailCubit(
@@ -28,7 +32,8 @@ class SkinDetailCubit extends BaseAsyncCubit<SkinDetailState> {
     this._analytics,
     this._jingles,
   ) {
-    _changes = _save.changes.listen((_) => _refresh());
+    _saveChanges = _save.changes.listen((_) => _refresh());
+    _skinChanges = _skins.selectedSkinChanges.listen((_) => _refresh());
   }
 
   final CatalogRepository _catalog;
@@ -36,7 +41,8 @@ class SkinDetailCubit extends BaseAsyncCubit<SkinDetailState> {
   final SkinService _skins;
   final AnalyticsService _analytics;
   final JingleCues _jingles;
-  late final StreamSubscription<void> _changes;
+  late final StreamSubscription<void> _saveChanges;
+  late final StreamSubscription<String> _skinChanges;
   String? _skinId;
 
   /// Loads [skinId]'s detail. An id the catalog doesn't know (never reached
@@ -107,7 +113,8 @@ class SkinDetailCubit extends BaseAsyncCubit<SkinDetailState> {
 
   @override
   Future<void> close() async {
-    await _changes.cancel();
+    await _saveChanges.cancel();
+    await _skinChanges.cancel();
     return super.close();
   }
 }

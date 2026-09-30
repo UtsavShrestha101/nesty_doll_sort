@@ -94,7 +94,10 @@ void main() {
     expect(rows[1].skin, same(large));
     expect(rows[1].symbols, DollSymbols.large);
     expect(rows.every((r) => r.colors.single == DollColor.green), isTrue);
-    expect(tester.getSize(find.byType(SkinDollRow).first), const Size(40, 60));
+    // F.3: the preview doll is 56 dp tall (2:3).
+    final size = tester.getSize(find.byType(SkinDollRow).first);
+    expect(size.height, 56);
+    expect(size.width, closeTo(56 * 2 / 3, 0.01));
   });
 
   testWidgets('a skin that can’t be prepared previews the placeholder', (
@@ -111,18 +114,20 @@ void main() {
     expect(rows.every((r) => r.skin == null), isTrue);
   });
 
-  testWidgets('the selected card is #FFF1E4 with a 3 px primary ring; the '
-      'other surfaceWhite with a 2 px ring', (tester) async {
+  testWidgets('the selected card is #FFF1E4 with a 3 px orange ring; the '
+      'other #FFFDF7 with a 2 px tan one (tokens settings.colorSymbolCards)', (
+    tester,
+  ) async {
     await pumpPicker(tester, ControlledSkinService());
     final selected = styleOf(tester, 'Subtle');
-    expect(selected.color, AppColors.symbolsCardSelectedFace);
+    expect(selected.color, const Color(0xFFFFF1E4));
     expect(selected.shadows, const [
-      NestyShadow(color: AppColorTokens.primary, inset: true, spread: 3),
+      NestyShadow(color: Color(0xFFF2893B), inset: true, spread: 3),
     ]);
     final other = styleOf(tester, 'Large');
-    expect(other.color, AppColorTokens.surfaceWhite);
+    expect(other.color, const Color(0xFFFFFDF7));
     expect(other.shadows, const [
-      NestyShadow(color: AppColors.symbolsCardRing, inset: true, spread: 2),
+      NestyShadow(color: Color(0xFFE2C9A3), inset: true, spread: 2),
     ]);
     expect(
       tester.widget<Text>(find.text('Subtle')).style?.color,
@@ -130,7 +135,7 @@ void main() {
     );
     expect(
       tester.widget<Text>(find.text('Large')).style?.color,
-      AppColorTokens.textSecondary,
+      AppColorTokens.textPrimary,
     );
   });
 

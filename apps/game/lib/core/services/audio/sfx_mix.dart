@@ -32,6 +32,8 @@ abstract final class SfxMix {
   static const Map<String, double> gains = {
     'bonk': 1,
     'button': 1,
+    'chest_open': 1,
+    'chest_wiggle': 1,
     'clack_1': 1,
     'clack_2': 1,
     'clack_3': 1,
@@ -46,7 +48,13 @@ abstract final class SfxMix {
     'jingle_chapter': 1,
     'jingle_oom': 1,
     'jingle_reward': 1,
+    'jingle_versus_lose': 1,
+    'jingle_versus_win': 1,
     'pick': 1,
+    'rival_complete': 1,
+    'star_1': 1,
+    'star_2': 1,
+    'star_3': 1,
     'unlock_glass': 1,
     'whoosh': 1,
     'win': 1,
@@ -79,6 +87,12 @@ abstract final class SfxMix {
     SoundEffect.iceCrack => SoundTokens.iceCrack,
     SoundEffect.iceShatter => SoundTokens.iceShatter,
     SoundEffect.button => SoundTokens.button,
+    SoundEffect.star1 => SoundTokens.star1,
+    SoundEffect.star2 => SoundTokens.star2,
+    SoundEffect.star3 => SoundTokens.star3,
+    SoundEffect.chestWiggle => SoundTokens.chestWiggle,
+    SoundEffect.chestOpen => SoundTokens.chestOpen,
+    SoundEffect.rivalComplete => SoundTokens.rivalComplete,
   };
 
   /// The token cue behind [jingle] (tokens.json `sound.events`).
@@ -86,10 +100,12 @@ abstract final class SfxMix {
     Jingle.chapter => SoundTokens.chapterComplete,
     Jingle.reward => SoundTokens.reward,
     Jingle.outOfMoves => SoundTokens.outOfMoves,
+    Jingle.versusWin => SoundTokens.raceWon,
+    Jingle.versusLose => SoundTokens.raceLost,
   };
 
   /// The file [jingle] plays (`jingle_chapter`, `jingle_reward`,
-  /// `jingle_oom`).
+  /// `jingle_oom`, `jingle_versus_win`, `jingle_versus_lose`).
   static String jingleFileOf(Jingle jingle) => jingleCueOf(jingle).files.first;
 
   /// The file [effect] plays. [randomIndex] picks a variant for a random

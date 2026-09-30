@@ -26,6 +26,13 @@ void main() {
       SoundEffect.iceCrack: 'ice_crack',
       SoundEffect.iceShatter: 'ice_shatter',
       SoundEffect.button: 'button',
+      // m7-3 (phase 4 architecture §3.11).
+      SoundEffect.star1: 'star_1',
+      SoundEffect.star2: 'star_2',
+      SoundEffect.star3: 'star_3',
+      SoundEffect.chestWiggle: 'chest_wiggle',
+      SoundEffect.chestOpen: 'chest_open',
+      SoundEffect.rivalComplete: 'rival_complete',
     });
   });
 
@@ -135,6 +142,8 @@ void main() {
         Jingle.chapter: 'jingle_chapter',
         Jingle.reward: 'jingle_reward',
         Jingle.outOfMoves: 'jingle_oom',
+        Jingle.versusWin: 'jingle_versus_win',
+        Jingle.versusLose: 'jingle_versus_lose',
       },
     );
     expect({

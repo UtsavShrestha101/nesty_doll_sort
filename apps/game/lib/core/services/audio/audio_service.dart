@@ -15,6 +15,23 @@ enum SoundEffect {
   iceCrack,
   iceShatter,
   button,
+
+  /// `star_1..3` (m7-3, AUDIO.md "Stars"): one per earned star as
+  /// `ui_stars` plays its `star_n` segment (tokens.json `sound.events.star1`
+  /// …`star3`; phase 4 architecture §3.6).
+  star1,
+  star2,
+  star3,
+
+  /// `chest_wiggle`: the chest's `wiggle` segment (§3.5).
+  chestWiggle,
+
+  /// `chest_open`: the lid opens (`open` segment, @483 ms).
+  chestOpen,
+
+  /// `rival_complete`: the computer rival completes a family in a race
+  /// (no haptic; §3.11).
+  rivalComplete,
 }
 
 /// The sound effects (spec §11.3). Implementations respect the Sound

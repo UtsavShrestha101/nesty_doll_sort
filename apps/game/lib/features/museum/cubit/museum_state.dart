@@ -24,7 +24,9 @@ abstract class MuseumEntry with _$MuseumEntry {
     /// `figurineShortName`, `figurineFlavor`.
     required String figurineId,
 
-    /// The chapter is in the save's `museum` (frame 6.1's colour art).
+    /// The chapter is in the save's `museum`, or (D111 fix) its 20 levels
+    /// are all won even though `museum` hasn't caught up yet — never
+    /// "soon" once [done] reaches [total] (frame 6.1's colour art).
     required bool earned,
 
     /// The first not-[earned] chapter, in chapter order (frame 6.1's
@@ -53,7 +55,10 @@ abstract class MuseumState with _$MuseumState {
     /// The header's coin pill (`SaveService.coins`).
     required int coins,
 
-    /// The collection card's "N / 10" (`museumCount`).
+    /// The collection card's "N / 10" (`museumCount`): how many [entries]
+    /// are [MuseumEntry.earned], not the save's raw `museum` list length
+    /// (D111 fix — they can differ until a fully-won chapter's figurine is
+    /// durably granted).
     required int collectedCount,
 
     /// The catalog's chapter count (`CatalogRepository.chapters.length`).
@@ -81,8 +86,12 @@ abstract class MuseumState with _$MuseumState {
     return null;
   }
 
-  /// Every chapter collected (frame 6.1 "Every family is home.").
-  // TODO(design): no App Flow frame shows every chapter collected; this
-  // reads the m3-design §10.6 fallback copy verbatim (`museumAllHome`).
+  /// Every chapter collected (frame 6.1c "Every family is home.").
   bool get allCollected => next == null;
+
+  /// The next family's levels still to win, or 0 once every family is home.
+  int get levelsToGo {
+    final entry = next;
+    return entry == null ? 0 : (entry.total - entry.done).clamp(0, entry.total);
+  }
 }

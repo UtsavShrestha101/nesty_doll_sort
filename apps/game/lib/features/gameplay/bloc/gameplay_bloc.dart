@@ -15,9 +15,14 @@ import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/repository/level_resolver.dart';
 import 'package:nesty_game/core/services/analytics/analytics_service.dart';
+import 'package:nesty_game/core/services/chest/milestone_chest.dart';
 import 'package:nesty_game/core/services/clock/app_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/records/badge_rules.dart';
+import 'package:nesty_game/core/services/records/record_rules.dart';
+import 'package:nesty_game/core/services/records/star_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -65,6 +70,23 @@ typedef SessionDecoder =
 /// [TutorialScript] gates input to L0001/L0002's scripted move (m3-design
 /// §10.4); [IntroMechanic] cards gate it to nothing until dismissed.
 ///
+/// M7 (docs/plans/m7-design.md §6–§13): [DatabaseService] is read for
+/// relaxed mode, live ([RelaxedModeChanged]); a replay pays and saves
+/// nothing; a win fills the win card's moves, best, chest countdown, chest,
+/// new badges and first-win flag from `SaveService.recordLevelWin`'s
+/// outcome.
+///
+/// vs Computer (m7-design P2.6): a race request plays the player's board
+/// here, beside the page's `RaceCubit`, which owns the rival, the clock
+/// and the result. Input waits for [RaceGateChanged] (open while the race
+/// runs). The race-bloc lane adds the rest of race mode: undo free and
+/// unlimited, Hint and +1 Slot off, no level record, no level events.
+///
+/// The tie rule (spec-prop §7.7 "on the same frame the player wins")
+/// relies on every in-play handler applying its move within the input's
+/// own microtasks, before the next frame's tick: `_inPlay`'s bodies must
+/// stay synchronous (no `await` before `session.move`).
+///
 /// Every new [BoardEffect] comes with a new `effectSeq`. A tap that also
 /// clears the hint emits two states: [HintClearedEffect], then the tap's
 /// own effect. A handler that changes nothing emits nothing (bloc drops a
@@ -79,7 +101,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     this._analytics,
     this._resolver,
     this._daily,
-    this._clock, {
+    this._clock,
+    this._settings, {
     @ignoreParam bool freeExtraSlots = kDebugMode,
     @ignoreParam Duration softStuckDebounce = softStuckDelay,
     @ignoreParam SessionEncoder encodeSession = GameSessionCodec.encode,
@@ -87,7 +110,11 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   }) : _freeExtraSlots = freeExtraSlots,
        _softStuckDebounce = softStuckDebounce,
        _encodeSession = encodeSession,
-       _decodeSession = decodeSession;
+       _decodeSession = decodeSession {
+    _relaxedChanges = _settings.relaxedModeChanges.listen((relaxed) {
+      if (!isClosed) add(RelaxedModeChanged(relaxed: relaxed));
+    });
+  }
 
   /// The soft-stuck check runs this long after the last board change, so a
   /// burst of moves asks the solver once (m2-lottie-design §11).
@@ -101,6 +128,10 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   final LevelResolver _resolver;
   final DailyService _daily;
   final AppClock _clock;
+
+  /// The settings store: relaxed mode (m7-design §10).
+  final DatabaseService _settings;
+  late final StreamSubscription<bool> _relaxedChanges;
 
   /// +1 Slot uses no booster (spec §18 M2 "extra slot (free in debug)").
   final bool _freeExtraSlots;
@@ -138,6 +169,16 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   int _attemptNumber = 0;
   int _hintsUsed = 0;
   int _slotsUsed = 0;
+
+  /// A hint was shown since the last Restart (Q116; m7-design P3.6): an
+  /// assisted win earns at most `StarRating.assistedMaxStars`. Set in
+  /// [_hintArrived] when it shows a charged hint move; a proven dead end
+  /// (no move, nothing charged) doesn't count. Cleared by [_restart] and by
+  /// [_begin] for a fresh session; a restored session takes the save's own
+  /// `InProgressLevel.hinted`, so a kill right after a hint still caps the
+  /// win. An extra slot on the board is read from core by
+  /// `StarRating.starsForWin` itself, so no flag is kept for it here.
+  bool _hintSinceRestart = false;
 
   /// The session of the level in play, for tests.
   @visibleForTesting
@@ -180,6 +221,16 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
           current.offer == null ? current : current.copyWith(offer: null),
     ),
     IntroDismissed() => _inPlay(emit, (current, _) => _dismissIntro(current)),
+    RelaxedModeChanged(:final relaxed) => _inPlay(
+      emit,
+      (current, session) => _setRelaxed(current, session, relaxed),
+    ),
+    RaceGateChanged(:final open) => _inPlay(
+      emit,
+      (current, _) => current.isRace && current.raceLive != open
+          ? current.copyWith(raceLive: open)
+          : current,
+    ),
     SoftStuckCheckDue(:final moveSeq) => _inPlay(
       emit,
       (current, _) => _softStuckDue(current, moveSeq),
@@ -244,9 +295,12 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
       play.bundleEntry ??
       LevelBundleEntry(
         order: switch (play.request) {
-          CampaignPlay(:final order) => order,
+          CampaignPlay(:final order) || ReplayPlay(:final order) => order,
           BonusPlay(:final number) => _levels.levelCount + number,
           DailyPlay(:final yyyymmdd) => yyyymmdd,
+          // A race isn't a level: its raceNo only fills the M2 widgets'
+          // order (m7-design P2.6), and it logs no level events.
+          RacePlay(:final raceNo) => raceNo,
         },
         chapterId: play.chapterId ?? play.themeId,
         tier: play.tier,
@@ -258,7 +312,9 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   /// The saved board of [play]'s kind, only when it matches (m3-design
   /// §3.4): same request, level id and version, and the codec accepts it.
   /// Anything else is the caller's cue to clear that slot and start fresh.
-  GameSession? _restoreSession(PlayEntry play) {
+  /// [hinted] is the save's own `InProgressLevel.hinted` (Q116; m7-design
+  /// P3.6), so a hint survives a kill and a restore.
+  ({GameSession session, bool hinted})? _restoreSession(PlayEntry play) {
     final saved = _save.inProgressFor(play.kind);
     if (saved == null ||
         saved.request != play.request ||
@@ -266,7 +322,9 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         saved.levelVersion != play.levelVersion) {
       return null;
     }
-    return _decodeSession(saved.session, play.level).session;
+    final session = _decodeSession(saved.session, play.level).session;
+    if (session == null) return null;
+    return (session: session, hinted: saved.hinted);
   }
 
   /// Loads [play] into a new session, restored when it matches the save.
@@ -286,7 +344,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     _cancelSolverWork();
     final entry = _entryOf(play);
     final restored = _restoreSession(play);
-    final session = restored ?? GameSession(entry.level);
+    final session = restored?.session ?? GameSession(entry.level);
     if (restored == null) _save.clearInProgress(play.kind);
     _session = session;
     _dragging = null;
@@ -295,10 +353,15 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     _attemptNumber = 1;
     _hintsUsed = 0;
     _slotsUsed = 0;
+    // Q116 (m7-design P3.6): a fresh session starts unassisted; a restored
+    // one takes the save's own flag, so a hint survives a kill.
+    _hintSinceRestart = restored?.hinted ?? false;
     _levelClock
       ..reset()
       ..start();
-    _logLevelStart(entry);
+    // vs Computer (m7-design P2.6): a race logs none of spec §14.4's level
+    // events (it isn't a level).
+    if (!play.request.isRace) _logLevelStart(entry);
     if (play.request case BonusPlay(:final number)) {
       unawaited(
         _analytics.logEvent('bonus_level_start', parameters: {'n': number}),
@@ -311,6 +374,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
       board: session.state,
       status: status,
       paused: previous?.paused ?? false,
+      relaxed: _settings.relaxedMode,
       moveSeq: previous == null ? 0 : previous.moveSeq + 1,
       effectSeq: (previous?.effectSeq ?? 0) + 1,
       effect: BoardResetEffect(
@@ -332,8 +396,14 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         break;
     }
     // The tutorial cue and the first unseen intro card both show at start
-    // and restore (m3-design §10.4); the intro card locks input over it.
-    return next.copyWith(intro: _firstUnseenIntro(play.level));
+    // and restore (m3-design §10.4); the intro card locks input over it. A
+    // replay shows neither, whatever `seenIntros` says (m7-design §6), and
+    // neither does a race (P2.6: "no tutorial cue, no intro card").
+    return next.copyWith(
+      intro: play.request.isReplay || play.request.isRace
+          ? null
+          : _firstUnseenIntro(play.level),
+    );
   }
 
   Future<void> _handleNextLevel(Emitter<AsyncValue<GameplayState>> emit) async {
@@ -355,7 +425,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   }
 
   /// [InProgressLevel] of [play] and [session] (m3-design §3.4): after
-  /// every applied move, undo, restart and +1 Slot.
+  /// every applied move, undo, restart, +1 Slot, and a charged hint (Q116;
+  /// m7-design P3.6), so `hinted` survives a kill.
   void _persistProgress(PlayEntry play, GameSession session) {
     final request = play.request;
     _save.saveInProgress(
@@ -366,6 +437,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         session: _encodeSession(session),
         level: request.isGenerated ? LevelCodec.encode(play.level) : null,
         tier: request.isGenerated ? play.tier : null,
+        hinted: _hintSinceRestart,
       ),
     );
   }
@@ -410,6 +482,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         );
       case AttemptMove(:final move):
         return _tryMove(base, session, move, byDrag: false);
+      case NudgeSlot(:final slotId, :final kind):
+        return _withEffect(base, SlotNudgeEffect(slotId, kind));
       case IgnoreTouch():
         return base;
     }
@@ -444,7 +518,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
             ),
           ),
         );
-      case CancelSelection() || AttemptMove() || IgnoreTouch():
+      case CancelSelection() || AttemptMove() || NudgeSlot() || IgnoreTouch():
         _dragging = null;
         return base;
     }
@@ -489,7 +563,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         );
       case AttemptMove(:final move):
         return _tryMove(current, session, move, byDrag: true);
-      case SelectSlot() || IgnoreTouch():
+      case SelectSlot() || NudgeSlot() || IgnoreTouch():
         return current;
     }
   }
@@ -537,12 +611,36 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
 
   GameplayState _undo(GameplayState current, GameSession session) {
     if (!_acceptsBoosters(current) || !current.canUndo) return current;
-    if (current.unlimitedBoosters || current.freeUndosLeft > 0) {
+    // Relaxed mode (E6, m7-design §10) and vs Computer (P2.6, "Undo and
+    // restart are free and unlimited"): undo is free and unlimited, so the
+    // coin offer never shows. `freeUndosLeft` and `session.undosUsed` still
+    // count underneath (nothing shows them), and the use still logs
+    // `booster_use` (m7-design P2.6), as in relaxed mode.
+    if (current.isRace ||
+        current.relaxed ||
+        current.unlimitedBoosters ||
+        current.freeUndosLeft > 0) {
       return _applyUndo(current, session, source: BoosterSource.free);
     }
     return current.copyWith(
       offer: BoosterOffer(type: BoosterType.undo, price: current.undoPrice),
     );
+  }
+
+  /// [RelaxedModeChanged] (m7-design §10, D104): read live, so a toggle made
+  /// from Pause → Settings applies to the level in play. Turning it on also
+  /// closes a pending undo offer (opened before the toggle): relaxed mode
+  /// never shows one.
+  GameplayState _setRelaxed(
+    GameplayState current,
+    GameSession session,
+    bool relaxed,
+  ) {
+    var next = current.copyWith(relaxed: relaxed);
+    if (relaxed && next.offer?.type == BoosterType.undo) {
+      next = next.copyWith(offer: null);
+    }
+    return _withBoosters(next, session);
   }
 
   GameplayState _applyUndo(
@@ -575,13 +673,18 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     _pendingHintSeq = null;
     _pendingHintSource = null;
     _attemptNumber++;
-    unawaited(
-      _analytics.logEvent(
-        'level_restart',
-        parameters: {'level': current.levelNumber},
-      ),
-    );
-    _logLevelStart(current.entry);
+    // Q116 (m7-design P3.6): Restart clears the assisted flag.
+    _hintSinceRestart = false;
+    // vs Computer (m7-design P2.6): no level events for a race.
+    if (!current.isRace) {
+      unawaited(
+        _analytics.logEvent(
+          'level_restart',
+          parameters: {'level': current.levelNumber},
+        ),
+      );
+      _logLevelStart(current.entry);
+    }
     // The initial board is solvable (spec §5.3 rule 8): no soft-stuck
     // check.
     return _afterBoardChange(
@@ -596,6 +699,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   }
 
   GameplayState _addExtraSlot(GameplayState current, GameSession session) {
+    // vs Computer (m7-design P2.6): +1 Slot is off. No offer, no spend.
+    if (current.isRace) return current;
     if (!_acceptsBoosters(current) || !current.canAddSlot) return current;
     if (_freeExtraSlots) {
       return _placeExtraSlot(current, session, source: BoosterSource.free);
@@ -631,6 +736,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   }
 
   GameplayState _hintPressed(GameplayState current) {
+    // vs Computer (m7-design P2.6): Hint is off. No offer, no spend.
+    if (current.isRace) return current;
     if (current.status != GameplayStatus.playing ||
         current.paused ||
         current.offer != null ||
@@ -699,6 +806,13 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     // charge only fails if the balance dropped since it was confirmed.
     if (!charged) return _withBoosters(current, session);
     _hintsUsed++;
+    // Q116 (m7-design P3.6): the win's stars cap at
+    // `StarRating.assistedMaxStars`, even after a kill: persist it now,
+    // since showing a hint doesn't otherwise change the board
+    // (`_afterBoardChange` never runs for it). A replay's or a race's
+    // board is never saved anyway (`SaveService.saveInProgress`).
+    _hintSinceRestart = true;
+    _persistProgress(current.play, session);
     _logBoosterUse(BoosterType.hint, source);
     return _withEffect(
       _withBoosters(current.copyWith(hint: move), session),
@@ -717,13 +831,23 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     GameSession session,
     BoosterType type,
   ) {
-    if (current.offer?.type != type ||
+    // vs Computer (m7-design P2.6): no offer is ever up for Hint or +1
+    // Slot, and undo never offers either (always free); belt and suspenders
+    // against a stale confirm.
+    if (current.isRace ||
+        current.offer?.type != type ||
         current.paused ||
         current.intro != null ||
         current.tutorial != null ||
         (current.status != GameplayStatus.playing &&
             current.status != GameplayStatus.outOfMoves)) {
       return current;
+    }
+    if (type == BoosterType.undo && current.relaxed) {
+      // Belt and suspenders (E6): relaxed mode never charges for undo, so a
+      // stale offer (relaxed turned on right as this arrived) just closes
+      // instead of spending coins.
+      return _withBoosters(current.copyWith(offer: null), session);
     }
     final price = switch (type) {
       BoosterType.undo => current.undoPrice,
@@ -810,12 +934,16 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
 
   GameplayState _markSoftStuck(GameplayState current) {
     if (current.softStuck) return current;
-    unawaited(
-      _analytics.logEvent(
-        'level_soft_stuck',
-        parameters: {'level': current.levelNumber},
-      ),
-    );
+    // vs Computer (m7-design P2.6): the soft-stuck check and banner stay in
+    // a race, but it logs no level event (a race isn't a level).
+    if (!current.isRace) {
+      unawaited(
+        _analytics.logEvent(
+          'level_soft_stuck',
+          parameters: {'level': current.levelNumber},
+        ),
+      );
+    }
     // A state change only: the banner and the Undo glow are HUD widgets,
     // so no board effect (and no new effectSeq).
     return current.copyWith(softStuck: true);
@@ -827,8 +955,20 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   GameplayState _win(GameplayState next, GameSession session) {
     _cancelSolverWork();
     _levelClock.stop();
+    if (next.isRace) {
+      // vs Computer (m7-design P2.6): a race isn't a level. Only the board
+      // status and the moves it took for the win card; no record, no
+      // coins, chest, figurine, currentLevel, best moves, firstWin or
+      // nextRequest, no prefetch, no analytics. `RaceCubit` records the win
+      // exactly once through `SaveService.recordRaceWin` (P2.5).
+      return next.copyWith(
+        status: GameplayStatus.won,
+        winMoves: next.board.moveCount,
+      );
+    }
     final play = next.play;
     final request = play.request;
+    final level = play.level;
     final chapterId = play.chapterId;
     final completesChapter =
         play.completesChapter &&
@@ -837,23 +977,82 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     final chapterReward = completesChapter
         ? _remoteConfig.value(RemoteConfigKeys.rewardChapter)
         : 0;
+    // Read before recording (E9, m7-design §13): the player's very first
+    // win ever, and only a campaign win sends Continue to Home.
+    final firstWin = request is CampaignPlay && _save.document.stats.wins == 0;
     DailyProgress? dailyProgress;
+    var dailyRelit = false;
     if (request is DailyPlay) {
-      dailyProgress = _daily.progressAfterSolve(
-        LocalDate.fromYyyymmdd(request.yyyymmdd),
-      );
+      final dailyDate = LocalDate.fromYyyymmdd(request.yyyymmdd);
+      dailyProgress = _daily.progressAfterSolve(dailyDate);
+      dailyRelit = dailyProgress.relitOn(dailyDate);
     }
-    _save.recordLevelWin(
+    final moves = session.state.moveCount;
+    // Star rating (spec-prop §7.10; m7-design P3.6): bundled boards only
+    // (`PlayEntry.par`); the daily, Bonus Endless and a race (already
+    // returned above) compute none. `_hintSinceRestart` and the board's own
+    // extra-slot count (read by `starsForWin` itself) cap an assisted win;
+    // undo, Restart's move reset and relaxed mode reach the rule only
+    // through `moveCount`, so they never lower stars on their own.
+    final slack = StarRules.slackOf(_remoteConfig);
+    final par = play.par;
+    final stars = par == null
+        ? null
+        : StarRating.starsForWin(
+            session.state,
+            par: par,
+            hintUsed: _hintSinceRestart,
+            star3SlackPct: slack.star3,
+            star2SlackPct: slack.star2,
+          );
+    // The helper note (Q145): the same rule, unassisted, would have given
+    // more (3) than this assisted win earned.
+    final starsCapped =
+        stars != null &&
+        par != null &&
+        StarRating.starsFor(
+              moves: moves,
+              par: par,
+              assisted: false,
+              star3SlackPct: slack.star3,
+              star2SlackPct: slack.star2,
+            ) >
+            stars;
+    final now = _clock.now();
+    final outcome = _save.recordLevelWin(
       LevelWinRecord(
         request: request,
         rewardCoins: play.rewardCoins,
-        moves: session.state.moveCount,
+        moves: moves,
         completedChapterId: completesChapter ? chapterId : null,
         chapterReward: chapterReward,
         date: _clock.today(),
         daily: dailyProgress,
+        // Bundled boards only (campaign, replay): m7-design §11.
+        bestKey: LevelBests.keyOf(play),
+        // Null for a replay, a daily and a bonus level that isn't one of
+        // the chest's own (`MilestoneChest.forWin`, m7-design §9).
+        chest: MilestoneChest.forWin(request, _remoteConfig),
+        families: RecordRules.familiesIn(level),
+        dolls: RecordRules.dollsNestedIn(level),
+        boardBadges: BadgeRules.forWonLevel(level),
+        starsKey: stars == null ? null : StarRules.keyOf(play),
+        stars: stars,
+        minuteOfDay: now.hour * 60 + now.minute,
+        starsCapped: starsCapped,
       ),
     );
+    // The replay card's 3-star target (Q118): only below 3 stars, and only
+    // when the moves were over it; never on a level's first win.
+    final target = StarRules.targetFor(play, slack);
+    final starTarget =
+        request.isReplay &&
+            stars != null &&
+            stars < StarRating.maxStars &&
+            target != null &&
+            moves > target
+        ? target
+        : null;
     final nextRequest = _resolver.next(request);
     // The win overlay prefetches Bonus Endless's next level (m3-design
     // §7.4); Continue then resolves it at once.
@@ -864,7 +1063,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         parameters: {
           'level': next.entry.order,
           'tier': play.tier.id,
-          'moves': session.state.moveCount,
+          'moves': moves,
           'seconds': _levelClock.elapsed.inSeconds,
           'undos': session.undosUsed,
           'hints': _hintsUsed,
@@ -894,6 +1093,19 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         completedChapterId: completesChapter ? chapterId : null,
         chapterReward: chapterReward,
         dailyStreak: dailyProgress?.streak,
+        dailyRelit: dailyRelit,
+        winMoves: moves,
+        bestMoves: outcome.bestMoves,
+        previousBest: outcome.previousBest,
+        chestLevelsLeft: MilestoneChest.levelsToNext(request),
+        chest: outcome.chestPaid,
+        newBadges: outcome.newBadges,
+        firstWin: firstWin,
+        stars: stars,
+        previousStars: outcome.previousStars,
+        starTarget: starTarget,
+        starTip: outcome.showStarTip,
+        starsCapped: starsCapped,
         nextRequest: nextRequest,
       ),
       session,
@@ -908,12 +1120,17 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
 
   GameplayState _outOfMoves(GameplayState next) {
     _cancelSolverWork();
-    unawaited(
-      _analytics.logEvent(
-        'level_out_of_moves',
-        parameters: {'level': next.levelNumber},
-      ),
-    );
+    // vs Computer (m7-design P2.6): no level events for a race; the sheet
+    // still opens (Undo and Restart only, race-ui) and the soft-stuck
+    // banner stays.
+    if (!next.isRace) {
+      unawaited(
+        _analytics.logEvent(
+          'level_out_of_moves',
+          parameters: {'level': next.levelNumber},
+        ),
+      );
+    }
     return next;
   }
 
@@ -951,8 +1168,14 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     // A won board is never saved as in progress (review CORRECTNESS-1):
     // `_win` records the win, which clears the slot in the same write, so
     // a kill in between restores the board before the winning move rather
-    // than a finished one.
-    if (status != GameplayStatus.won) _persistProgress(current.play, session);
+    // than a finished one. A replay is never saved either (m7-design §6),
+    // and neither is a race (P2.6 "no restore, no `_persistProgress`"; the
+    // save already ignores both, so this only skips the pointless encode).
+    if (status != GameplayStatus.won &&
+        !current.play.request.isReplay &&
+        !current.isRace) {
+      _persistProgress(current.play, session);
+    }
     _softStuckTimer?.cancel();
     if (checkSoftStuck && status == GameplayStatus.playing) {
       _scheduleSoftStuckCheck(next.moveSeq);
@@ -984,8 +1207,9 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
       extraSlotsLeft: extraSlots,
       unlimitedBoosters: unlimited,
       canUndo: session.canUndo,
-      canHint: true,
-      canAddSlot: session.canAddExtraSlot,
+      // vs Computer (m7-design P2.6): Hint and +1 Slot are off.
+      canHint: !current.isRace,
+      canAddSlot: !current.isRace && session.canAddExtraSlot,
       undoPrice: _remoteConfig.value(RemoteConfigKeys.priceUndo),
       hintPrice: _remoteConfig.value(RemoteConfigKeys.priceHint),
       slotPrice: _remoteConfig.value(RemoteConfigKeys.priceSlot),
@@ -993,21 +1217,44 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   }
 
   /// [current] with `tutorial` recomputed from the board and the selection
-  /// (m3-design §10.4), logging [completedStep] first (`tutorial_step`).
+  /// (m3-design §10.4), logging [completedStep] first (`tutorial_step`). A
+  /// replay never shows the cue, whatever `tutorialDone` says (m7-design
+  /// §6): it is never scripted input a second time. Neither does a race
+  /// (m7-design P2.6: "no tutorial cue").
   GameplayState _withTutorial(GameplayState current, {int? completedStep}) {
     if (completedStep != null) _logTutorialStep(completedStep);
-    final cue = TutorialScript.cueFor(
-      levelId: current.play.level.id,
-      tutorialDone: _save.document.tutorialDone,
-      board: current.board,
-      selectedSlotId: current.selectedSlotId,
-    );
+    final cue = current.play.request.isReplay || current.isRace
+        ? null
+        : TutorialScript.cueFor(
+            levelId: current.play.level.id,
+            tutorialDone: _save.document.tutorialDone,
+            board: current.board,
+            selectedSlotId: current.selectedSlotId,
+          );
     return current.copyWith(tutorial: cue);
   }
 
   /// [current] carrying [effect] with the next `effectSeq`.
-  GameplayState _withEffect(GameplayState current, BoardEffect effect) =>
-      current.copyWith(effect: effect, effectSeq: current.effectSeq + 1);
+  /// [current] with [effect] as its new effect. It also keeps
+  /// [GameplayState.dropTargets] in step with the selection: core's legal
+  /// targets for a nest just lifted, nothing once none is (E.14).
+  GameplayState _withEffect(GameplayState current, BoardEffect effect) {
+    final selected = current.selectedSlotId;
+    final Set<String> targets;
+    if (selected == null) {
+      targets = const <String>{};
+    } else if (effect is SelectionChangedEffect &&
+        effect.selected == selected) {
+      targets = Rules.legalTargets(current.board, selected).toSet();
+    } else {
+      targets = current.dropTargets;
+    }
+    return current.copyWith(
+      effect: effect,
+      effectSeq: current.effectSeq + 1,
+      dropTargets: targets,
+    );
+  }
 
   /// Any tap or drag clears the hint (frame 3.1): emits the cleared state
   /// with [HintClearedEffect] first, so the tap's own effect follows it.
@@ -1096,8 +1343,9 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     _cancelSolverWork();
+    await _relaxedChanges.cancel();
     return super.close();
   }
 }

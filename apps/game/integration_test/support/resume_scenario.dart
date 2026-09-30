@@ -34,21 +34,24 @@ abstract final class ResumeScenario {
   /// +1 Slot was pressed exactly once.
   static const int expectedExtraSlotCount = 1;
 
-  /// From a fresh save's Home: wins levels 1 and 2 with the tutorial's own
-  /// moves (frames 1.3–1.6, the ones `playthrough_test.dart` screenshots),
-  /// continues to level 3 and goes back Home through Pause, so Home's PLAY
-  /// now offers level 3 (`SaveService.currentLevel`).
+  /// From a fresh install: the splash opens level 1 straight away (E9,
+  /// m7-design §13); its tutorial moves win it (frames 1.3–1.6, the ones
+  /// `playthrough_test.dart` screenshots) and the first win's Continue goes
+  /// Home. Home's PLAY opens level 2, won through its scripted swallow;
+  /// Continue opens level 3 and Pause goes back Home, so Home's PLAY now
+  /// offers level 3 (`SaveService.currentLevel`).
   static Future<void> winTutorialLevels(
     WidgetTester tester,
     Board board,
   ) async {
-    await tester.tap(find.bySemanticsLabel('Play level 1'));
     await board.waitForLevel(1);
     // L1: red2 into red3, then red1 completes the family.
     await board.move('r0c2', 'r0c0');
     await board.move('r1c1', 'r0c0');
     await board.waitForWinOverlay();
-    await board.continueTo(2);
+    await board.continueHome(level: 2);
+    await tester.tap(find.bySemanticsLabel('Play level 2'));
+    await board.waitForLevel(2);
     // L2: the tutorial's swallow drag first (red3 over red2+red1, step 4),
     // then blue1 into blue2 and blue3 swallowing both.
     await tester.pumpUntil(

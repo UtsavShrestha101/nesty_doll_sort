@@ -34,6 +34,17 @@ void main() {
     expect(bonus.tier, Tier.easy);
   });
 
+  test('a race request comes from the script too, unscripted ones resolve '
+      'to null, and next is always null (m7-design P2.4)', () async {
+    const request = PlayRequest.race(rival: 1, raceNo: 1);
+    expect(await resolver.resolve(request), isNull);
+    final base = (await resolver.resolve(const PlayRequest.campaign(1)))!;
+    final race = base.copyWith(request: request, rewardCoins: 20);
+    resolver.generated[request] = race;
+    expect(await resolver.resolve(request), race);
+    expect(resolver.next(request), isNull);
+  });
+
   test('next and Home follow the published levels into Bonus Endless', () {
     expect(
       resolver.next(const PlayRequest.campaign(1)),

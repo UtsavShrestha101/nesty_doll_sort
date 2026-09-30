@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/hive_boxes.dart';
+import 'package:nesty_game/core/services/records/badge_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/in_memory_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -35,8 +36,9 @@ class HiveSaveService extends InMemorySaveService {
 
   /// [SaveService.load]'s body: read, migrate and decode the stored text
   /// (never throws), back it up first when it needs one, give a fresh
-  /// document its player id, then adopt it. Idempotent: `load()` (the base
-  /// class) only calls this once.
+  /// document its player id and the badges it already implies (silently,
+  /// m7-design §12), then adopt it. Idempotent: `load()` (the base class)
+  /// only calls this once.
   @override
   Future<void> loadDocument() async {
     final String? stored;
@@ -44,7 +46,11 @@ class HiveSaveService extends InMemorySaveService {
       stored = _database.readSaveDocument();
     } on Object catch (error, stack) {
       _log('reading the save document failed; starting fresh', error, stack);
-      adopt(document.copyWith(playerId: InMemorySaveService.newPlayerId()));
+      adopt(
+        BadgeRules.withDerivable(
+          document.copyWith(playerId: InMemorySaveService.newPlayerId()),
+        ),
+      );
       return;
     }
     final result = SaveDocumentCodec.read(stored);
@@ -64,6 +70,11 @@ class HiveSaveService extends InMemorySaveService {
     var next = result.document;
     if (next.playerId == null) {
       next = next.copyWith(playerId: InMemorySaveService.newPlayerId());
+      needsWrite = true;
+    }
+    final withBadges = BadgeRules.withDerivable(next);
+    if (withBadges != next) {
+      next = withBadges;
       needsWrite = true;
     }
     adopt(next);

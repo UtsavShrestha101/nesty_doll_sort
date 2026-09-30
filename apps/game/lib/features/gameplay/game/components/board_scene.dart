@@ -1,6 +1,8 @@
 import 'package:nesty_core/nesty_core.dart' show Move;
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/gameplay/bloc/tap_policy.dart'
+    show SlotNudgeKind;
 import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_view.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/hand_tween.dart';
@@ -21,13 +23,24 @@ final class SlotState {
 
   /// The layout a running re-pitch started from; null otherwise, and for
   /// the slot the re-pitch adds.
-  SlotGeometry? from;
+  SlotGeometry? get from => _from;
+  set from(SlotGeometry? value) {
+    _from = value;
+    _layoutStack();
+  }
+
+  SlotGeometry? _from;
 
   /// What the slot shows at rest, as of its last `SyncSlot`.
   SlotView view = SlotView.empty;
 
   /// The "+N" tag and the ice badge, laid out for [view].
   final SlotDecor decor = SlotDecor();
+
+  /// The board's localized tag/badge text and direction
+  /// (`BoardScene.labels`); English left-to-right until the page hands the
+  /// real one over.
+  BoardLabels labels = BoardLabels.fallback;
 
   int _hides = 0;
 
@@ -41,6 +54,21 @@ final class SlotState {
   /// §9.1: the buried nests shifting one step down while `doll_reveal`
   /// drops the tower's new top onto the stand.
   RevealDropTween? reveal;
+
+  /// E.13: the nudge of a tap on this slot while it plays (the empty
+  /// stand's dip, the padlock's ping, the ice counter's bump).
+  NudgeTween? nudge;
+
+  /// B.7: the "+N" tag popping in as the ice over its tower shatters.
+  TagPopTween? tagPop;
+
+  // The tower stack (m7-3 `layout.towerStack`) of the committed layout and
+  // of the one a re-pitch comes from, worked out once per view or layout
+  // change so no frame does it: the step between buried silhouettes and how
+  // many of them are drawn.
+  double _stackStep = 0;
+  int _stackDrawn = 0;
+  double _fromStackStep = 0;
 
   /// Whether a clip or tween draws this slot's top doll now (§10.1).
   bool get spriteHidden => _hides > 0;
@@ -58,6 +86,7 @@ final class SlotState {
   /// Shows [view] from now on and lays its tag and badge out.
   void setView(SlotView view) {
     this.view = view;
+    _layoutStack();
     _layoutDecor();
   }
 
@@ -65,14 +94,64 @@ final class SlotState {
   void setGeometry(SlotGeometry geometry) {
     this.geometry = geometry;
     from = null;
+    _layoutStack();
     _layoutDecor();
+  }
+
+  /// The page handed over new localized text (a fresh [BoardLabels], or the
+  /// board's first one): relabels the tag and badge already laid out
+  /// without waiting for their next view or geometry change.
+  void setLabels(BoardLabels labels) {
+    if (identical(this.labels, labels)) return;
+    this.labels = labels;
+    _layoutDecor();
+  }
+
+  /// The tower's silhouettes are spaced by its starting depth, its tallest
+  /// nest and whether it started iced, so the spacing stays put as it empties.
+  void _layoutStack() {
+    final v = view;
+    if (v.buriedAtStart <= 0) {
+      _stackStep = 0;
+      _stackDrawn = 0;
+      _fromStackStep = 0;
+      return;
+    }
+    final size = v.towerSizeAtStart > 0 ? v.towerSizeAtStart : null;
+    final iced = v.iceInitial > 0;
+    final stack = geometry.towerStack(
+      size ?? geometry.pipCount,
+      v.buriedAtStart,
+      iced: iced,
+    );
+    _stackStep = stack.step;
+    _stackDrawn = stack.drawn;
+    final old = _from;
+    _fromStackStep = old == null
+        ? stack.step
+        : old
+              .towerStack(size ?? old.pipCount, v.buriedAtStart, iced: iced)
+              .step;
   }
 
   void _layoutDecor() {
     final g = geometry;
+    final buried = view.buried.length;
+    final ice = view.ice;
     decor
-      ..setTag(view.buried.length, g.furnitureScale)
-      ..setBadge(view.ice, g.furnitureScale, g.iceBadgeRect.width);
+      ..setTag(
+        // Hidden while the ice is on: its counter is the slot's only number
+        // (m7-3 `layout.icedTower`); it pops in with the shatter.
+        buried > 0 && ice == 0 ? labels.towerTag(buried) : null,
+        g.furnitureScale,
+        labels.textDirection,
+      )
+      ..setBadge(
+        ice > 0 ? labels.iceBadge(ice) : null,
+        g.furnitureScale,
+        g.iceBadgeRect.width,
+        labels.textDirection,
+      );
   }
 
   void dispose() => decor.dispose();
@@ -97,6 +176,11 @@ final class SlotState {
   /// locked, else on the stand (§8).
   double restBaseY(RepitchTween? r) =>
       view.locked ? lockedDollBaseY(r) : surfaceY(r);
+
+  /// Where `fx_ice`'s anchor (its doll base) goes so its ice bottom lands on
+  /// the overlay's (`SlotGeometry.iceDollBaseY`).
+  double iceDollBaseY(RepitchTween? r) =>
+      _lerp(r, from?.iceDollBaseY, geometry.iceDollBaseY);
 
   double furnitureScale(RepitchTween? r) =>
       _lerp(r, from?.furnitureScale, geometry.furnitureScale);
@@ -147,12 +231,47 @@ final class SlotState {
   );
 
   /// Base y of the buried nest at [depth] at rest (D21, the spacing of the
-  /// tower's starting depth).
+  /// tower stack of the tower's starting depth).
   double buriedBaseY(int depth, RepitchTween? r) => _lerp(
     r,
-    from?.buriedBaseY(depth, buried: view.buriedAtStart),
-    geometry.buriedBaseY(depth, buried: view.buriedAtStart),
+    from == null ? null : from!.surfaceY - depth * _fromStackStep,
+    geometry.surfaceY - depth * _stackStep,
   );
+
+  /// How many buried silhouettes are drawn: at most the tower stack's count,
+  /// at most what the tower buries now.
+  int get buriedDrawn {
+    final buried = view.buried.length;
+    return buried < _stackDrawn ? buried : _stackDrawn;
+  }
+
+  /// The empty stand's dip now, in logical px (0 when still): 2 dp out and
+  /// back (E.13).
+  double get standDip {
+    final n = nudge;
+    return n == null || n.kind != SlotNudgeKind.emptyStand
+        ? 0
+        : n.wave * MotionTokens.tapDip;
+  }
+
+  /// The padlock's ping now: 1, up to 1.15 and back (E.13).
+  double get padlockPing {
+    final n = nudge;
+    return n == null || n.kind != SlotNudgeKind.lockedCase
+        ? 1
+        : 1 + n.wave * (MotionTokens.padlockPingScale - 1);
+  }
+
+  /// The ice counter's bump now: 1, up to 1.2 and back (E.13).
+  double get badgeBump {
+    final n = nudge;
+    return n == null || n.kind != SlotNudgeKind.iced
+        ? 1
+        : 1 + n.wave * (MotionTokens.iceBumpScale - 1);
+  }
+
+  /// The "+N" tag's pop-in scale: 0.6 → 1 while it pops, else 1.
+  double get tagScale => tagPop?.scale ?? 1;
 
   // ── End of hot path. ──
 
@@ -183,6 +302,13 @@ final class BoardScene {
 
   /// Belly symbols for the placeholder painter (part rasters bake theirs).
   DollSymbols symbols = DollSymbols.subtle;
+
+  /// The board's localized tag/badge text and direction
+  /// (`NestyGame.boardLabels`, ARB `boardTowerHidden`/`boardIceCount`, spec
+  /// §16): English left-to-right (`BoardLabels.fallback`) until the page
+  /// hands the real one over. Every slot added after a change picks this up
+  /// at once (`BoardComponent._addSlot`); existing ones need `setLabels`.
+  BoardLabels labels = BoardLabels.fallback;
 
   PlaceholderDollPainter? _placeholder;
 

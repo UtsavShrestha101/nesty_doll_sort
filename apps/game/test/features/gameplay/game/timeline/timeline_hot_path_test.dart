@@ -83,6 +83,7 @@ void main() {
     for (final signature in [
       'void update(double nowMs)',
       'double buriedBaseY(int depth)',
+      'void _changed()',
       'double lerp(double a, double b)',
     ]) {
       expect(tweens, contains(signature), reason: signature);

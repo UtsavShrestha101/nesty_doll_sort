@@ -15,9 +15,11 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  flutter_local_notifications: ^22.3.1
   flutter_localizations:
     sdk: flutter
   flutter_soloud: ^4.1.7
+  flutter_timezone: ^5.1.0
   freezed_annotation: ^3.1.0
   get_it: ^9.3.0
   hive_ce: ^2.20.0
@@ -31,6 +33,8 @@ dependencies:
   nesty_render:
     path: ../../packages/nesty_render
   package_info_plus: ^10.2.1
+  share_plus: ^13.3.0
+  timezone: ^0.11.1
   url_launcher: ^6.3.2
 
 dev_dependencies:
@@ -57,7 +61,7 @@ flutter:
   generate: true
 
   # Offline-first (CLAUDE.md rule 3): all art, sound and fonts ship in the app.
-  # skins/ symbols/ board/ themes/ audio/ museum/ are written by
+  # skins/ symbols/ board/ themes/ audio/ museum/ ui/ are written by
   # `dart run nesty_tools:sync_design_assets` from design/ (never by hand);
   # its --check fails if a synced folder is missing here. Flutter asset
   # folders are not recursive, so every subfolder is listed.
@@ -81,11 +85,22 @@ flutter:
     - assets/themes/ch04/
     - assets/themes/ch05/
     - assets/themes/ch06/
+    - assets/themes/ch07/
+    - assets/themes/ch08/
+    - assets/themes/ch09/
+    - assets/themes/ch10/
+    # The M7 UI art (m7-3): badges, chests, rival portraits, the chest
+    # moment's flight sprites and the stars, from design/ui/.
+    - assets/ui/badges/
+    - assets/ui/chest/
+    - assets/ui/rivals/
+    - assets/ui/sprites/
+    - assets/ui/stars/
     # The offline levels (spec §13.4): bundle.json, written by
     # `dart run nesty_tools:nesty_levels bundle build` from tools/levels/
     # (never by hand); CI's `bundle check` fails if it is stale.
     - assets/levels/
-    # Every animation (PROGRESS D40): the 29 design/lottie/*.json, copied
+    # Every animation (PROGRESS D40): the 35 design/lottie/*.json, copied
     # byte for byte and validated by `sync_design_assets` (never the
     # placeholder images/, D50). Loaded once by FxLibrary with
     # LottieComposition.fromBytes; their specs are fx_spec.gen.dart.

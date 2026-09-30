@@ -2,6 +2,8 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+import 'package:nesty_game/core/models/reduce_motion_mode.dart';
+import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
@@ -59,7 +61,9 @@ class HiveDatabaseService implements DatabaseService {
       );
       // developer.log never reaches the `flutter run` terminal.
       if (kDebugMode) debugPrint('[nesty.database] Hive failed: $error');
-      return FakeDatabaseService();
+      // A SessionOnlyDatabase, so a reader that acts on the OS (the
+      // reminder) can tell its defaults from the player's choices.
+      return SessionFallbackDatabaseService();
     }
   }
 
@@ -73,6 +77,12 @@ class HiveDatabaseService implements DatabaseService {
   String _readString(String key, String fallback) {
     final value = _settings.get(key);
     return value is String ? value : fallback;
+  }
+
+  /// An int in `min..max`, else [fallback].
+  int _readInt(String key, int fallback, {required int min, required int max}) {
+    final value = _settings.get(key);
+    return value is int && value >= min && value <= max ? value : fallback;
   }
 
   @override
@@ -130,6 +140,89 @@ class HiveDatabaseService implements DatabaseService {
           fallback: SettingsDefaults.symbols,
         );
       });
+
+  @override
+  bool get relaxedMode =>
+      _readBool(SettingsKeys.relaxed, SettingsDefaults.relaxed);
+
+  @override
+  Future<void> setRelaxedMode(bool enabled) =>
+      _settings.put(SettingsKeys.relaxed, enabled);
+
+  @override
+  Stream<bool> get relaxedModeChanges =>
+      _settings.watch(key: SettingsKeys.relaxed).map((event) {
+        // As languageStream: a delete (or a rolled-back first write) reads
+        // back as the default.
+        if (event.deleted) return SettingsDefaults.relaxed;
+        final value = event.value;
+        return value is bool ? value : SettingsDefaults.relaxed;
+      });
+
+  @override
+  ReduceMotionMode get reduceMotion => ReduceMotionMode.fromStorage(
+    _settings.get(SettingsKeys.reduceMotion),
+    fallback: SettingsDefaults.reduceMotion,
+  );
+
+  @override
+  Future<void> setReduceMotion(ReduceMotionMode mode) =>
+      _settings.put(SettingsKeys.reduceMotion, mode.storageValue);
+
+  @override
+  Stream<ReduceMotionMode> get reduceMotionChanges =>
+      _settings.watch(key: SettingsKeys.reduceMotion).map((event) {
+        // As languageStream: a delete (or a rolled-back first write) reads
+        // back as the default.
+        if (event.deleted) return SettingsDefaults.reduceMotion;
+        return ReduceMotionMode.fromStorage(
+          event.value,
+          fallback: SettingsDefaults.reduceMotion,
+        );
+      });
+
+  @override
+  ReminderSettings get reminder {
+    const defaults = SettingsDefaults.reminder;
+    return ReminderSettings(
+      on: _readBool(SettingsKeys.reminderOn, defaults.on),
+      hour: _readInt(SettingsKeys.reminderHour, defaults.hour, min: 0, max: 23),
+      minute: _readInt(
+        SettingsKeys.reminderMinute,
+        defaults.minute,
+        min: 0,
+        max: 59,
+      ),
+      offered: _readBool(SettingsKeys.reminderOffered, defaults.offered),
+    );
+  }
+
+  @override
+  Future<void> setReminder(ReminderSettings reminder) => _settings.putAll({
+    SettingsKeys.reminderOn: reminder.on,
+    SettingsKeys.reminderHour: reminder.hour,
+    SettingsKeys.reminderMinute: reminder.minute,
+    SettingsKeys.reminderOffered: reminder.offered,
+  });
+
+  @override
+  Stream<ReminderSettings> get reminderChanges {
+    // The four keys of one putAll arrive as four events that all read the
+    // same settings back, so only a value that differs from the last one
+    // seen (starting from what is stored now) is emitted: one putAll, one
+    // emission, and a write of the same settings is quiet. A delete reads
+    // back as the default, as languageStream does.
+    var last = reminder;
+    return _settings
+        .watch()
+        .where((event) => SettingsKeys.reminder.contains(event.key))
+        .map((_) => reminder)
+        .where((next) {
+          if (next == last) return false;
+          last = next;
+          return true;
+        });
+  }
 
   @override
   String get languageCode =>

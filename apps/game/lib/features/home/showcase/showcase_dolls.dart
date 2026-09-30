@@ -40,11 +40,13 @@ class ShowcaseDolls {
     _symbolsSubscription = _database.symbolsModeChanges.listen(
       (_) => _followSymbols(),
     );
+    _skinSubscription = _skins.selectedSkinChanges.listen((_) => _followSkin());
   }
 
   final SkinService _skins;
   final DatabaseService _database;
   late final StreamSubscription<SymbolsMode> _symbolsSubscription;
+  late final StreamSubscription<String> _skinSubscription;
 
   /// Home's shelf (tangerine, leaf, cherry, sky, grape); cherry is also the
   /// splash trio's colour.
@@ -103,6 +105,21 @@ class ShowcaseDolls {
     unawaited(prepare(devicePixelRatio: devicePixelRatio));
   }
 
+  /// The Shop equipped a new skin (`SkinService.selectSkin`, which writes
+  /// the save before it emits, m7-design §18 "Home's shelf after a skin
+  /// equip"): re-rasterize the shelf even though the pixel ratio and Color
+  /// symbols mode haven't changed, which [prepare]'s own "already here"
+  /// check would otherwise skip. Nothing to do before the first [prepare]
+  /// or after [release]/[dispose].
+  void _followSkin() {
+    final devicePixelRatio = _preparedFor;
+    if (_disposed || devicePixelRatio == null) return;
+    // Forces prepare() past its cache check, which otherwise only compares
+    // the pixel ratio and the symbols mode.
+    _preparedFor = null;
+    unawaited(prepare(devicePixelRatio: devicePixelRatio));
+  }
+
   Future<void> _prepare(
     double devicePixelRatio,
     DollSymbols symbols,
@@ -158,6 +175,7 @@ class ShowcaseDolls {
     release();
     _disposed = true;
     unawaited(_symbolsSubscription.cancel());
+    unawaited(_skinSubscription.cancel());
     _current.dispose();
   }
 }

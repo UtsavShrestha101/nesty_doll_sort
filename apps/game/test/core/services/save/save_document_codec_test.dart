@@ -25,6 +25,8 @@ void main() {
     museumCollected: {'ch01': LocalDate(2026, 9, 12)},
     daily: DailyProgress(
       streak: 4,
+      lit: true,
+      run: 3,
       lastDate: LocalDate(2026, 9, 25),
       freezes: 1,
       freezeWeek: 202639,
@@ -32,6 +34,13 @@ void main() {
       frozen: [LocalDate(2026, 9, 25)],
       noticeDate: LocalDate(2026, 9, 25),
       chestPending: true,
+      // The share text's and the reminder offer's facts (m7-design P3.4).
+      lastSolve: DailySolve(
+        date: LocalDate(2026, 9, 24),
+        moves: 14,
+        families: 4,
+        minuteOfDay: 1140,
+      ),
       inProgress: const InProgressLevel(
         request: PlayRequest.daily(20260926),
         levelId: 'daily-20260926',
@@ -46,6 +55,8 @@ void main() {
       levelId: 'L0024',
       levelVersion: 2,
       session: {'format': 1, 'undosUsed': 1},
+      // A hint since the last Restart (Q116; m7-design P3.6).
+      hinted: true,
     ),
     adCounters: const AdCounters(winsSinceInterstitial: 1, lastAdAt: 5),
     stats: const SaveStats(wins: 23, moves: 612, boostersUsed: {'hint': 2}),
@@ -53,6 +64,25 @@ void main() {
     tutorialDone: true,
     bonus: const BonusProgress(next: 3),
     playerId: '7F3A-21C9',
+    levelBests: const {'L0024@2': 16, 'L0003@1': 9},
+    // The star rating's best per level id (m7-design P3.4).
+    levelStars: const {'L0024': 3, 'L0003': 1},
+    starTipShown: true,
+    records: const SaveRecords(
+      families: 212,
+      dolls: 780,
+      dailies: 12,
+      longestRun: 9,
+      badges: ['first_family', 'a_future_badge'],
+    ),
+    chests: const ChestProgress(opened: [10], bonusOpened: [10, 20]),
+    race: const RaceProgress(
+      rivals: [
+        RivalProgress(unlocked: true, wins: 3, raceNo: 5),
+        RivalProgress(unlocked: true, raceNo: 1),
+        RivalProgress(),
+      ],
+    ),
     unknown: const {'zeta': 1, 'alpha': 'kept'},
   );
 
@@ -68,7 +98,18 @@ void main() {
   test('writes the known keys in order, then the unknown ones sorted', () {
     final keys = SaveDocumentCodec.encode(full).keys.toList();
     expect(keys.first, 'schema');
-    expect(keys.sublist(keys.length - 3), ['playerId', 'alpha', 'zeta']);
+    expect(keys.sublist(keys.length - 9), [
+      'playerId',
+      'levelBests',
+      // The star rating's two (m7-design P3.4), after levelBests.
+      'levelStars',
+      'starTipShown',
+      'records',
+      'chests',
+      'race',
+      'alpha',
+      'zeta',
+    ]);
     expect(keys, isNot(contains('settings')));
   });
 
@@ -105,7 +146,10 @@ void main() {
     expect(read.document.unknown, {
       'wallet': {'gems': 3},
     });
-    expect(SaveDocumentCodec.encode(read.document)['schema'], 1);
+    expect(
+      SaveDocumentCodec.encode(read.document)['schema'],
+      SaveDocument.currentSchema,
+    );
   });
 
   test('wrong types and ranges fall back, field by field', () {
@@ -203,5 +247,241 @@ void main() {
     expect(done, hasLength(DailyProgress.maxDates));
     expect(done.first, LocalDate(2026, 9, 11));
     expect(done.last, LocalDate(2026, 10, 11));
+  });
+
+  group('schema 2 (m7-design §3.2)', () {
+    SaveDocument readSchema2(Map<String, Object?> fields) =>
+        SaveDocumentCodec.read(jsonEncode({'schema': 2, ...fields})).document;
+
+    test('the flame is lit exactly while a run is going', () {
+      expect(
+        readSchema2({
+          'daily': {'streak': 5, 'lit': true, 'run': 2},
+        }).daily,
+        const DailyProgress(streak: 5, lit: true, run: 2),
+      );
+      // A missing `lit` follows the run.
+      expect(
+        readSchema2({
+          'daily': {'streak': 5, 'run': 2},
+        }).daily.lit,
+        isTrue,
+      );
+      // A pair that disagrees reads as paused.
+      for (final daily in [
+        {'streak': 5, 'lit': true, 'run': 0},
+        {'streak': 5, 'lit': false, 'run': 4},
+        {'streak': 5, 'lit': 'yes', 'run': -1},
+      ]) {
+        final read = readSchema2({'daily': daily}).daily;
+        expect(read.lit, isFalse, reason: '$daily');
+        expect(read.run, 0, reason: '$daily');
+        expect(read.streak, 5, reason: '$daily');
+      }
+    });
+
+    test('best moves keep readable keys with at least one move', () {
+      expect(
+        readSchema2({
+          'levelBests': {
+            'L0001@1': 3,
+            'L0002@1': 0,
+            'L0003@1': 'nine',
+            '': 4,
+            'L0004@2': 7.0,
+          },
+        }).levelBests,
+        {'L0001@1': 3, 'L0004@2': 7},
+      );
+    });
+
+    test('records read leniently, unknown badges kept in order', () {
+      expect(
+        readSchema2({
+          'records': {
+            'families': 12,
+            'dolls': -3,
+            'dailies': 'many',
+            'longestRun': 4,
+            'badges': ['first_family', 7, 'first_family', 'from_the_future'],
+          },
+        }).records,
+        const SaveRecords(
+          families: 12,
+          longestRun: 4,
+          badges: ['first_family', 'from_the_future'],
+        ),
+      );
+      expect(
+        const SaveRecords(badges: ['from_the_future', 'first_family']).earned,
+        [BadgeId.firstFamily],
+      );
+    });
+
+    test('chests keep distinct level numbers, ascending, apart per source', () {
+      expect(
+        readSchema2({
+          'chests': {
+            'opened': [30, 10, 30, 0, 'x'],
+            'bonusOpened': [20, 10],
+          },
+        }).chests,
+        const ChestProgress(opened: [10, 30], bonusOpened: [10, 20]),
+      );
+    });
+
+    test('there are always three rivals; rival 1 and any rival with a win '
+        'are unlocked', () {
+      expect(readSchema2({}).race, const RaceProgress());
+      expect(
+        readSchema2({
+          'race': {
+            'rivals': [
+              {'unlocked': false, 'wins': 0, 'raceNo': 2},
+              {'unlocked': false, 'wins': 1, 'raceNo': 3},
+            ],
+          },
+        }).race.rivals,
+        const [
+          RivalProgress(unlocked: true, raceNo: 2),
+          RivalProgress(unlocked: true, wins: 1, raceNo: 3),
+          RivalProgress(),
+        ],
+      );
+      final four = readSchema2({
+        'race': {
+          'rivals': [
+            for (var i = 0; i < 4; i++) {'unlocked': true, 'wins': i},
+          ],
+        },
+      }).race.rivals;
+      expect(four, hasLength(RaceProgress.rivalCount));
+    });
+
+    // M7 review R31: phase 3's fields (m7-design P3.4) read leniently.
+    test('star counts keep readable level ids with an integral 1-3', () {
+      expect(
+        readSchema2({
+          'levelStars': {
+            '': 3,
+            'L1': 4,
+            'L2': 2.0,
+            'L3': '3',
+            'L4': 0,
+            'L5': 1,
+            'L6': 2.5,
+            'L7': null,
+            'L8': -1,
+            'L9': true,
+            'L10': 3,
+          },
+        }).levelStars,
+        {'L2': 2, 'L5': 1, 'L10': 3},
+      );
+      for (final value in [
+        [3],
+        'L1',
+        3,
+        null,
+      ]) {
+        expect(
+          readSchema2({'levelStars': value}).levelStars,
+          isEmpty,
+          reason: '$value',
+        );
+      }
+    });
+
+    test('starTipShown is true only for a stored true', () {
+      expect(readSchema2({'starTipShown': true}).starTipShown, isTrue);
+      for (final value in ['yes', 1, 'true', null, <String, Object?>{}]) {
+        expect(
+          readSchema2({'starTipShown': value}).starTipShown,
+          isFalse,
+          reason: '$value',
+        );
+      }
+    });
+
+    test('the last daily solve needs a real date; bad counts read 0 and a '
+        'minute outside 0-1439 reads null', () {
+      DailySolve? solve(Object? value) => readSchema2({
+        'daily': {'lastSolve': value},
+      }).daily.lastSolve;
+      final date = LocalDate(2026, 9, 24);
+
+      for (final value in [
+        null,
+        '2026-09-24',
+        {'moves': 3, 'families': 2, 'minute': 600},
+        {'date': '2026-02-30', 'moves': 3},
+        {'date': '2026-9-24'},
+        {'date': 20260924},
+      ]) {
+        expect(solve(value), isNull, reason: '$value');
+      }
+      expect(
+        solve({'date': '2026-09-24', 'moves': 14, 'families': 4, 'minute': 0}),
+        DailySolve(date: date, moves: 14, families: 4, minuteOfDay: 0),
+      );
+      expect(solve({'date': '2026-09-24', 'minute': 1439})!.minuteOfDay, 1439);
+      expect(solve({'date': '2026-09-24', 'minute': 600.0})!.minuteOfDay, 600);
+      for (final minute in [1440, -1, 600.5, '600', true, null]) {
+        expect(
+          solve({'date': '2026-09-24', 'minute': minute})!.minuteOfDay,
+          isNull,
+          reason: '$minute',
+        );
+      }
+      expect(
+        solve({'date': '2026-09-24', 'moves': -2, 'families': 'x'}),
+        DailySolve(date: date),
+      );
+    });
+
+    test('an in-progress board is hinted only for a stored true', () {
+      Map<String, Object?> board(Object? hinted) => {
+        'kind': 'campaign',
+        'number': 24,
+        'levelId': 'L0024',
+        'levelVersion': 2,
+        'session': {'format': 1},
+        'hinted': ?hinted,
+      };
+      expect(readSchema2({'inProgress': board(true)}).inProgress!.hinted, true);
+      for (final value in ['y', 1, 'true', null]) {
+        final level = readSchema2({'inProgress': board(value)}).inProgress;
+        expect(level, isNotNull, reason: '$value');
+        expect(level!.hinted, isFalse, reason: '$value');
+      }
+    });
+
+    test('a replay board in progress is never read (a replay is never '
+        'saved, m7-design §6)', () {
+      final doc = readSchema2({
+        'inProgress': {
+          'kind': 'replay',
+          'number': 3,
+          'levelId': 'L0003',
+          'levelVersion': 1,
+          'session': {'format': 1},
+        },
+      });
+      expect(doc.inProgress, isNull);
+    });
+
+    test('a race board in progress is never read (a race is never saved, '
+        'm7-design P2.4, P2.13)', () {
+      final doc = readSchema2({
+        'inProgress': {
+          'kind': 'race',
+          'number': 1,
+          'levelId': 'race-1-1',
+          'levelVersion': 1,
+          'session': {'format': 1},
+        },
+      });
+      expect(doc.inProgress, isNull);
+    });
   });
 }

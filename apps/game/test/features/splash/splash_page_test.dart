@@ -153,20 +153,113 @@ void main() {
     expect(tester.widget<Wordmark>(find.byType(Wordmark)).dollShown, isTrue);
   });
 
-  testWidgets('offline content that failed to load offers a retry', (
-    tester,
-  ) async {
-    var retries = 0;
-    await pumpSplash(
+  group('the two errors (frames 12.10, 12.11; ErrorCard)', () {
+    testWidgets('content: "The shelves didn\'t unpack", the inventory glyph, '
+        'one Try again; the art stays under a dim and the loader hides', (
       tester,
-      error: const AppException(AppExceptionKind.content, message: 'bundle'),
-      onRetry: () => retries++,
-    );
-    expect(find.byType(RetryView), findsOneWidget);
-    expect(find.text('DOLL SORT'), findsNothing);
-    await tester.tap(find.text('Try again'));
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(retries, 1);
+    ) async {
+      var retries = 0;
+      await pumpSplash(
+        tester,
+        error: const AppException(AppExceptionKind.content, message: 'bundle'),
+        onRetry: () => retries++,
+      );
+      expect(find.byType(ErrorCard), findsOneWidget);
+      expect(find.text('The shelves didn’t unpack'), findsOneWidget);
+      expect(
+        find.text(
+          'Something went wrong while loading. Try again, or restart Nesty.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<Icon>(find.byIcon(IconUses.contentError)).size,
+        30,
+        reason: 'the splash card\'s 56 dp disc holds a 30 dp glyph',
+      );
+      // The wordmark stays, dimmed; the loader and caption are gone.
+      expect(find.byType(Wordmark), findsOneWidget);
+      expect(find.text('Dusting the shelves…'), findsNothing);
+      expect(find.byType(NestyProgressBar), findsNothing);
+      expect(
+        tester.widget<ColoredBox>(
+          find.byWidgetPredicate(
+            (w) => w is ColoredBox && w.color == SplashView.errorDim,
+          ),
+        ),
+        isNotNull,
+      );
+      await tester.tap(find.text('Try again'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(retries, 1);
+    });
+
+    testWidgets('storage: "Your phone is nearly full", what to do, and the '
+        'size Q157 defaults to', (tester) async {
+      await pumpSplash(
+        tester,
+        error: const AppException(AppExceptionKind.storage, message: 'disk'),
+      );
+      expect(find.text('Your phone is nearly full'), findsOneWidget);
+      expect(
+        find.text(
+          'Nesty needs about 60 MB to set up the shelves. Free some space, '
+          'then try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(IconUses.storageError), findsOneWidget);
+    });
+
+    testWidgets('the card sits at y 470 of the design, 28 in from each side', (
+      tester,
+    ) async {
+      await pumpSplash(
+        tester,
+        error: const AppException(AppExceptionKind.storage, message: 'disk'),
+      );
+      final card = tester.getRect(find.byType(ErrorCard));
+      expect(card.left, closeTo(28, 0.01));
+      expect(card.right, closeTo(390 - 28, 0.01));
+      expect(card.top, closeTo(470, 0.5));
+    });
+
+    testWidgets('the head is a live region and the card names the route', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpSplash(
+        tester,
+        error: const AppException(AppExceptionKind.content, message: 'x'),
+      );
+      final head = tester.getSemantics(find.text('The shelves didn’t unpack'));
+      expect(head.flagsCollection.isHeader, isTrue);
+      expect(head.getSemanticsData().flagsCollection.isLiveRegion, isTrue);
+      handle.dispose();
+    });
+
+    for (final size in overflowScreenSizes) {
+      for (final scale in textScales) {
+        for (final kind in [
+          AppExceptionKind.storage,
+          AppExceptionKind.content,
+        ]) {
+          testWidgets(
+            '${kind.name} fits ${size.width.toInt()}×${size.height.toInt()} '
+            'at $scale× text',
+            (tester) async {
+              await pumpSplash(
+                tester,
+                error: AppException(kind, message: 'x'),
+                size: size,
+                textScale: scale,
+              );
+              await expectAccessibleLayout(tester);
+            },
+          );
+        }
+      }
+    }
   });
 
   for (final size in screenSizes) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
@@ -15,8 +16,10 @@ import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spinner.dart';
 import 'package:nesty_game/features/shop/cubit/shop_cubit.dart';
+import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
 import 'package:nesty_game/features/shop/pages/shop_page.dart';
+import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
 import 'package:nesty_game/features/shop/widgets/shop_closed_card.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 import 'package:nesty_game/features/shop/widgets/skin_grid_card.dart';
@@ -93,10 +96,10 @@ void main() {
     ValueChanged<ShopTab>? onTabChanged,
     ValueChanged<String>? onSkinTap,
     Future<bool> Function(String)? onEquipSkin,
-    Future<bool> Function(String)? onBuySkin,
+    Future<PurchaseOutcome> Function(String)? onBuySkin,
     ValueChanged<bool>? onSetMatchesChapter,
     ValueChanged<String>? onUseTheme,
-    Future<bool> Function(String)? onBuyTheme,
+    Future<PurchaseOutcome> Function(String)? onBuyTheme,
     Size size = const Size(390, 844),
     double textScale = 1,
     SkinService? skinService,
@@ -121,10 +124,10 @@ void main() {
           onTabChanged: onTabChanged ?? (_) {},
           onSkinTap: onSkinTap ?? (_) {},
           onEquipSkin: onEquipSkin ?? (_) async => true,
-          onBuySkin: onBuySkin ?? (_) async => true,
+          onBuySkin: onBuySkin ?? (_) async => PurchaseOutcome.bought,
           onSetMatchesChapter: onSetMatchesChapter ?? (_) {},
           onUseTheme: onUseTheme ?? (_) {},
-          onBuyTheme: onBuyTheme ?? (_) async => true,
+          onBuyTheme: onBuyTheme ?? (_) async => PurchaseOutcome.bought,
         ),
       ),
       size: size,
@@ -307,7 +310,58 @@ void main() {
       await pumpShop(tester, state: AsyncValue.data(data: skinsState()));
       expect(find.text('Equipped'), findsOneWidget);
       expect(find.text('Equip'), findsOneWidget); // space: owned, not equipped
-      expect(find.text('800 coins'), findsOneWidget); // ocean's price
+      expect(find.text('800'), findsOneWidget); // ocean's price
+    });
+
+    testWidgets('a screen reader hears each card\'s state and gets its Equip '
+        'or Buy as the card\'s own actions (review R14)', (tester) async {
+      final handle = tester.ensureSemantics();
+      final equipped = <String>[];
+      final bought = <String>[];
+      await pumpShop(
+        tester,
+        state: AsyncValue.data(data: skinsState(coins: 5000)),
+        onEquipSkin: (id) async {
+          equipped.add(id);
+          return true;
+        },
+        onBuySkin: (id) async {
+          bought.add(id);
+          return PurchaseOutcome.unavailable;
+        },
+      );
+      SemanticsNode card(String name) =>
+          tester.getSemantics(find.bySemanticsLabel(name));
+      final classic = card('Classic').getSemanticsData();
+      final space = card('Space').getSemanticsData();
+      final ocean = card('Ocean').getSemanticsData();
+      expect(classic.value, 'Equipped');
+      expect(classic.customSemanticsActionIds, anyOf(isNull, isEmpty));
+      expect(space.value, 'Owned');
+      expect(ocean.value, '800 coins');
+
+      int actionId(String label) => CustomSemanticsAction.getIdentifier(
+        CustomSemanticsAction(label: label),
+      );
+      expect(space.customSemanticsActionIds, [actionId('Equip')]);
+      expect(ocean.customSemanticsActionIds, [actionId('Buy')]);
+
+      final owner = tester.binding.renderViews.first.owner!.semanticsOwner!;
+      owner.performAction(
+        card('Space').id,
+        SemanticsAction.customAction,
+        actionId('Equip'),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(equipped, ['space']);
+      owner.performAction(
+        card('Ocean').id,
+        SemanticsAction.customAction,
+        actionId('Buy'),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(bought, ['ocean']);
+      handle.dispose();
     });
 
     testWidgets('tapping the card (not its button) opens its detail', (
@@ -344,48 +398,93 @@ void main() {
       expect(tapped, isEmpty, reason: 'the footer button, not the card, wins');
     });
 
-    testWidgets('an unaffordable price stays orange and still asks, so the '
-        'cubit can open the Coins tab (frame 7.3, like 7.7; FIDELITY-7)', (
-      tester,
-    ) async {
+    testWidgets('an unaffordable price stays orange and still asks; needing '
+        'coins opens NotEnoughCoinsDialog instead of jumping to the Coins '
+        'tab (D112, replaces the FIDELITY-7 jump)', (tester) async {
       final bought = <String>[];
+      final tabs = <ShopTab>[];
       await pumpShop(
         tester,
         state: AsyncValue.data(data: skinsState(coins: 0)),
         onBuySkin: (id) async {
           bought.add(id);
-          return false;
+          return PurchaseOutcome.needsCoins;
         },
+        onTabChanged: tabs.add,
       );
-      final button = tester.widget<CoinPriceButton>(
-        find.byType(CoinPriceButton),
-      );
+      final button = tester.widget<ShopBuyButton>(find.byType(ShopBuyButton));
       expect(button.onPressed, isNotNull);
-      await tester.tap(find.byType(CoinPriceButton));
+      await tester.tap(find.byType(ShopBuyButton));
       await tester.pump(const Duration(milliseconds: 200));
       expect(bought, ['ocean']);
+      expect(tabs, isEmpty, reason: 'the dialog, not a jump, opens first');
+
+      expect(find.byType(NotEnoughCoinsDialog), findsOneWidget);
+      expect(find.text('800 coins'), findsWidgets); // ocean's price
+      expect(find.text('You need 800 more coins'), findsOneWidget);
+
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NotEnoughCoinsDialog), findsNothing);
+      expect(tabs, isEmpty, reason: 'Not now stays put');
     });
 
-    testWidgets('an affordable price buys', (tester) async {
+    testWidgets("NotEnoughCoinsDialog's Go to Shop switches to the Coins "
+        'tab', (tester) async {
+      final tabs = <ShopTab>[];
+      await pumpShop(
+        tester,
+        state: AsyncValue.data(data: skinsState(coins: 0)),
+        onBuySkin: (_) async => PurchaseOutcome.needsCoins,
+        onTabChanged: tabs.add,
+      );
+      await tester.tap(find.byType(ShopBuyButton));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      await tester.tap(find.text('Go to Shop'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NotEnoughCoinsDialog), findsNothing);
+      expect(tabs, [ShopTab.coins]);
+    });
+
+    testWidgets("the card's 38 px price answers across 48 dp without "
+        'growing the card (review R19)', (tester) async {
       final bought = <String>[];
       await pumpShop(
         tester,
         state: AsyncValue.data(data: skinsState(coins: 5000)),
         onBuySkin: (id) async {
           bought.add(id);
-          return true;
+          return PurchaseOutcome.unavailable;
         },
       );
-      final button = tester.widget<CoinPriceButton>(
-        find.byType(CoinPriceButton),
-      );
-      expect(button.onPressed, isNotNull);
-      await tester.tap(find.byType(CoinPriceButton));
+      final price = tester.getRect(find.byType(ShopBuyButton));
+      expect(price.height, lessThan(48), reason: "the frame's compact face");
+      // 4 px above the face: the card's gap, now part of the price's target.
+      await tester.tapAt(price.topCenter - const Offset(0, 4));
       await tester.pump(const Duration(milliseconds: 200));
       expect(bought, ['ocean']);
+    });
+
+    testWidgets('an affordable price buys, no dialog', (tester) async {
+      final bought = <String>[];
+      await pumpShop(
+        tester,
+        state: AsyncValue.data(data: skinsState(coins: 5000)),
+        onBuySkin: (id) async {
+          bought.add(id);
+          return PurchaseOutcome.bought;
+        },
+      );
+      final button = tester.widget<ShopBuyButton>(find.byType(ShopBuyButton));
+      expect(button.onPressed, isNotNull);
+      await tester.tap(find.byType(ShopBuyButton));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(bought, ['ocean']);
+      expect(find.byType(NotEnoughCoinsDialog), findsNothing);
       // Lets the purchase twinkle burst's own timer finish and remove
       // itself, so no timer is left pending when the test tears down.
-      await tester.pump(const Duration(milliseconds: 2300));
+      await tester.pump(const Duration(milliseconds: 2600));
     });
   });
 
@@ -419,7 +518,7 @@ void main() {
       );
       expect(find.text('In use'), findsOneWidget); // ch02
       expect(find.text('Use'), findsOneWidget); // ch01, owned
-      expect(find.text('1,200 coins'), findsOneWidget); // ch04's locked price
+      expect(find.text('1,200'), findsOneWidget); // ch04's locked price
       expect(find.byType(ThemeGridCard), findsNWidgets(3));
     });
 
@@ -460,15 +559,36 @@ void main() {
         state: AsyncValue.data(data: themesState(selectedThemeId: 'ch02')),
         onBuyTheme: (id) async {
           bought.add(id);
-          return true;
+          return PurchaseOutcome.bought;
         },
       );
-      await tester.tap(find.text('1,200 coins'));
+      await tester.tap(find.text('1,200'));
       await tester.pump(const Duration(milliseconds: 200));
       expect(bought, ['ch04']);
+      expect(find.byType(NotEnoughCoinsDialog), findsNothing);
       // Lets the purchase twinkle burst's own timer finish and remove
       // itself, so no timer is left pending when the test tears down.
-      await tester.pump(const Duration(milliseconds: 2300));
+      await tester.pump(const Duration(milliseconds: 2600));
+    });
+
+    testWidgets('needing coins opens NotEnoughCoinsDialog; Go to Shop '
+        'switches to the Coins tab (D112, like a skin)', (tester) async {
+      final tabs = <ShopTab>[];
+      await pumpShop(
+        tester,
+        // themesState's balance is 100; ch04 costs 1,200.
+        state: AsyncValue.data(data: themesState(selectedThemeId: 'ch02')),
+        onBuyTheme: (_) async => PurchaseOutcome.needsCoins,
+        onTabChanged: tabs.add,
+      );
+      await tester.tap(find.text('1,200'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.byType(NotEnoughCoinsDialog), findsOneWidget);
+      expect(find.text('You need 1,100 more coins'), findsOneWidget);
+
+      await tester.tap(find.text('Go to Shop'));
+      await tester.pumpAndSettle();
+      expect(tabs, [ShopTab.coins]);
     });
   });
 

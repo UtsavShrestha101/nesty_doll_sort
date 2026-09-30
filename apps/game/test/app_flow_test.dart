@@ -5,28 +5,42 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_core/nesty_core.dart' show Solver;
 import 'package:nesty_game/app/app.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/hive_database_service.dart';
 import 'package:nesty_game/core/services/music/fake_music_service.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
+import 'package:nesty_game/core/services/notifications/fake_notification_service.dart';
+import 'package:nesty_game/core/services/notifications/notification_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/hive_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_document_codec.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
+import 'package:nesty_game/core/services/share/fake_share_service.dart';
+import 'package:nesty_game/core/services/share/share_service.dart';
+import 'package:nesty_game/core/services/system_settings/fake_system_settings_service.dart';
+import 'package:nesty_game/core/services/system_settings/system_settings_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/features/chapters/pages/chapters_page.dart';
+import 'package:nesty_game/features/chapters/widgets/level_card.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
+import 'package:nesty_game/features/gameplay/overlays/race_result_overlay.dart';
+import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_page.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/museum/pages/museum_page.dart';
+import 'package:nesty_game/features/race/pages/rival_select_page.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/features/shop/pages/shop_page.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
@@ -59,6 +73,18 @@ void main() {
     }
   }
 
+  /// Seeds the DI's `SaveService` with a level already won (`highestLevel:
+  /// 2`, `currentLevel` left at its default 1), so the splash opens Home
+  /// instead of Level 1 (E9, m7-design §13): every flow below plays Home
+  /// first, which a genuinely fresh install no longer does. "Play level 1"
+  /// still shows, since `currentLevel` is untouched.
+  Future<void> seedPastFirstLevel() async {
+    await get.unregister<SaveService>();
+    get.registerSingleton<SaveService>(
+      FakeSaveService(initial: const SaveDocument(highestLevel: 2)),
+    );
+  }
+
   testWidgets('boots through Splash to Home, plays level 1, pauses and '
       'goes Home', (tester) async {
     tester.view
@@ -66,6 +92,7 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final music = get<MusicService>() as FakeMusicService;
+    await seedPastFirstLevel();
 
     await tester.pumpWidget(App(router: get<AppRouter>()));
     // The router parses the initial route asynchronously.
@@ -195,7 +222,7 @@ void main() {
       // pattern `app_router_test.dart` uses for one service). Everything
       // else stays the fake env's doubles. Opening Hive and resetting DI
       // are real I/O, so they run under `tester.runAsync`.
-      Future<void> bootOnTempDir() async {
+      Future<void> bootOnTempDir({bool seedPastFirstLevel = false}) async {
         await tester.runAsync(() async {
           await configureTestDependencies();
           final database = await HiveDatabaseService.open(
@@ -203,6 +230,16 @@ void main() {
           );
           await get.unregister<DatabaseService>();
           get.registerSingleton<DatabaseService>(database);
+          if (seedPastFirstLevel) {
+            // A genuinely fresh Hive store opens Level 1, not Home (E9,
+            // m7-design §13). Seed the persisted bytes directly, before
+            // `HiveSaveService` ever loads them, so this resume test's own
+            // "Home first" premise still holds; a real relaunch's own
+            // progress (read below) is never touched by this.
+            await database.writeSaveDocument(
+              SaveDocumentCodec.write(const SaveDocument(highestLevel: 2)),
+            );
+          }
           final save = HiveSaveService(database, get<RemoteConfigService>());
           await get.unregister<SaveService>();
           get.registerSingleton<SaveService>(save);
@@ -230,7 +267,7 @@ void main() {
 
       // --- First launch: Home's PLAY on level 3 (past the L1/L2 tutorial),
       // two moves, undo one, add an extra slot. ---
-      await bootOnTempDir();
+      await bootOnTempDir(seedPastFirstLevel: true);
       get<SaveService>().currentLevel = 3;
       await pumpFor(tester, const Duration(milliseconds: 300));
       final bloc = await playLevel3();
@@ -357,9 +394,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('(g) a daily win: Back to Daily returns to the Daily screen', (
-    tester,
-  ) async {
+  testWidgets('(g) a daily win: Back to Daily returns to the Daily screen, '
+      'with Share and the reminder offer; No thanks; Settings shows the '
+      'reminder off', (tester) async {
     tester.view
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
@@ -399,14 +436,81 @@ void main() {
       await pumpFor(tester, const Duration(milliseconds: 900));
     }
     expect(bloc.state.data!.status, GameplayStatus.won);
-    await pumpFor(tester, const Duration(seconds: 3));
+    // A fresh save's first win earns `first_family` (m7-design §12): the
+    // win overlay's badge toast opens ~900 ms in and stays 3 s
+    // (`NestyToast.defaultDuration`). Pumping past its own dismissal here
+    // (rather than the previous 3 s) avoids tearing the widget tree down
+    // with its raw `Future.delayed` still pending, which
+    // `flutter test` flags even though it is harmless at runtime.
+    await pumpFor(tester, const Duration(seconds: 5));
     expect(find.text('Back to Daily'), findsOneWidget);
+
+    // Frame 10.1 (D188): Share sits on the daily win card, above Back to
+    // Daily, and hands the share sheet G.6's spoiler-free text.
+    final share = get<ShareService>() as FakeShareService;
+    expect(find.byKey(WinOverlay.shareKey), findsOneWidget);
+    await tester.tap(find.byKey(WinOverlay.shareKey));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(share.shared, hasLength(1));
+    final text = share.shared.single;
+    expect(text, startsWith('Nesty Daily · '));
+    expect(text, contains('Solved in '));
+    expect(share.origins.single, isNotNull, reason: 'the iPad popover');
 
     // The page's own PopScope turns a maybePop into Pause; this must pop.
     await tester.tap(find.text('Back to Daily'));
     await pumpFor(tester, const Duration(seconds: 1));
     expect(find.byType(GameplayPage), findsNothing);
     expect(find.byType(DailyView), findsOneWidget);
+
+    // M7 phase 3 (m7-design P3.10, P3.13): the one-time reminder offer
+    // appears under the solved card. No thanks hides it and asks the OS
+    // nothing; the offer was still marked offered (Q138). Share moved to
+    // the daily win card in phase 4 (frame 10.1, D188).
+    expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Want a note when tomorrow’s puzzle is ready?'),
+      findsOneWidget,
+    );
+    final notifications = get<NotificationService>() as FakeNotificationService;
+    expect(notifications.requestCount, 0);
+    await tester.ensureVisible(find.text('No thanks'));
+    await tester.tap(find.text('No thanks'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text("Want a note when tomorrow's puzzle is ready?"),
+      findsNothing,
+    );
+    final database = get<DatabaseService>();
+    expect(database.reminder.offered, isTrue);
+    expect(database.reminder.on, isFalse);
+    expect(notifications.requestCount, 0);
+    expect(notifications.scheduleCalls, isEmpty);
+
+    // Home -> Settings: the daily is unlocked, so the reminder row shows,
+    // off, with no time row.
+    await tester.tap(find.bySemanticsLabel('Back'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomePage), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Settings'));
+    await pumpFor(tester, const Duration(milliseconds: 500));
+    expect(find.byType(SettingsPage), findsOneWidget);
+    final reminderToggle = find.byWidgetPredicate(
+      (w) => w is NestyToggle && w.semanticLabel == 'Daily reminder',
+    );
+    await tester.scrollUntilVisible(
+      reminderToggle,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(SettingsPage),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(tester.widget<NestyToggle>(reminderToggle).value, isFalse);
+    expect(find.text('Time'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -423,6 +527,7 @@ void main() {
           ..devicePixelRatio = 1
           ..padding = const FakeViewPadding(top: 24);
         addTearDown(tester.view.reset);
+        await seedPastFirstLevel();
         await tester.pumpWidget(App(router: get<AppRouter>()));
         await tester.pump();
         await pumpFor(tester, const Duration(seconds: 1));
@@ -430,6 +535,9 @@ void main() {
 
         final nav = tester.getRect(find.byType(NestyBottomNav));
         final tiles = find.byType(HomeTile);
+        // Daily, Remove Ads, vs Computer: 3, not 4 -- D111 (the owner's
+        // simulator review, 2026-09-28) dropped the Museum tile, since the
+        // bottom nav's own Museum tab already covers it.
         expect(tiles, findsNWidgets(3));
         for (var i = 0; i < 3; i++) {
           expect(
@@ -453,6 +561,7 @@ void main() {
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    await seedPastFirstLevel();
     await tester.pumpWidget(App(router: get<AppRouter>()));
     await tester.pump();
     await pumpFor(tester, const Duration(seconds: 1));
@@ -472,6 +581,7 @@ void main() {
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    await seedPastFirstLevel();
     await tester.pumpWidget(App(router: get<AppRouter>()));
     await tester.pump();
     await pumpFor(tester, const Duration(seconds: 1));
@@ -490,6 +600,7 @@ void main() {
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    await seedPastFirstLevel();
     await tester.pumpWidget(App(router: get<AppRouter>()));
     await tester.pump();
     await pumpFor(tester, const Duration(seconds: 1));
@@ -522,6 +633,7 @@ void main() {
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    await seedPastFirstLevel();
     await tester.pumpWidget(App(router: get<AppRouter>()));
     await tester.pump();
     await pumpFor(tester, const Duration(seconds: 1));
@@ -575,6 +687,7 @@ void main() {
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    await seedPastFirstLevel();
     await tester.pumpWidget(App(router: get<AppRouter>()));
     await tester.pump();
     await pumpFor(tester, const Duration(seconds: 1));
@@ -601,6 +714,217 @@ void main() {
     expect(find.byType(GameplayPage), findsOneWidget);
     expect(find.byType(PauseDialog), findsOneWidget);
     expect(find.text('Paused'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  // vs Computer (m7-design P2.8, P2.10, P2.13, P4.4), on the real router and
+  // the real Flame board: Home's tile → rival select → a race, won with the
+  // solver's moves → 9.4 (never 2.8's Continue) → system back, which first
+  // shows 9.6 (rival 2 unlocked, once) → Not now → rival select; then rival
+  // 2 → Pause (Settings reachable, Q132) → Leave race, which asks once
+  // (9.7b) → rival select. The page's own PopScope turns a maybePop into
+  // Pause, so both ways out must pop.
+  testWidgets('(i) vs Computer: tile, rival select, a won race, 9.6, and '
+      'Leave race with its confirm', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await get.unregister<SaveService>();
+    final save = FakeSaveService(
+      initial: const SaveDocument(currentLevel: 21, highestLevel: 21),
+    );
+    get.registerSingleton<SaveService>(save);
+
+    await tester.pumpWidget(App(router: get<AppRouter>()));
+    await tester.pump();
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(HomePage), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(HomePage),
+        matching: find.text('vs Computer'),
+      ),
+    );
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(RivalSelectView), findsOneWidget);
+    // Frame 9.2: one Start for the selected rival (rival 1, the only one
+    // unlocked).
+    expect(find.text('Start'), findsOneWidget);
+
+    await tester.tap(find.text('Start'));
+    await pumpFor(tester, const Duration(seconds: 2));
+    expect(find.byType(GameplayPage), findsOneWidget);
+    expect(save.document.race.rivals[0].raceNo, 1);
+    expect(find.text('Start'), findsOneWidget);
+    await tester.tap(find.text('Start'));
+    await pumpFor(tester, const Duration(milliseconds: 200));
+
+    final bloc = tester.element(find.byType(GameplayView)).read<GameplayBloc>();
+    final start = bloc.state.data!;
+    expect(start.isRace, isTrue);
+    expect(start.raceLive, isTrue);
+    final solution = Solver.solve(start.board).solution!;
+    for (final move in solution) {
+      bloc
+        ..add(SlotTapped(move.from))
+        ..add(SlotTapped(move.to));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+    }
+    expect(bloc.state.data!.status, GameplayStatus.won);
+    // The board plays every batch, then the win's (~2.4 s).
+    await pumpFor(tester, const Duration(seconds: 8));
+    expect(find.byType(RaceWinCard), findsOneWidget);
+    expect(find.byType(WinOverlay), findsNothing);
+    expect(find.text('You won the race!'), findsOneWidget);
+    expect(find.text('Computer'), findsWidgets);
+    expect(save.document.coins, 20, reason: 'race_reward_1');
+    expect(save.document.race.rivals[1].unlocked, isTrue);
+    // Past the badge toasts (2.5 s each, queued).
+    await pumpFor(tester, const Duration(seconds: 6));
+
+    // 9.4 has two buttons (lead note 9); system back is Back to races, and
+    // the first win's 9.6 card comes first.
+    expect(find.text('Back to races'), findsNothing);
+    expect(find.text('New race'), findsOneWidget);
+    expect(find.text('Rematch'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await pumpFor(tester, const Duration(milliseconds: 600));
+    expect(find.byType(RivalUnlockedCard), findsOneWidget);
+    expect(find.text('New rival unlocked!'), findsOneWidget);
+    await tester.tap(find.text('Not now'));
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(GameplayPage), findsNothing);
+    expect(find.byType(RivalSelectView), findsOneWidget);
+    expect(find.text('Start'), findsOneWidget, reason: 'one Start (9.2)');
+    expect(find.text('New'), findsOneWidget, reason: 'rival 2, not raced');
+
+    // Rival 2 ("Button"), then Pause → Leave race → its confirm: back to
+    // rival select, nothing paid.
+    await tester.tap(find.text('Button'));
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.tap(find.text('Start'));
+    await pumpFor(tester, const Duration(seconds: 2));
+    expect(find.byType(GameplayPage), findsOneWidget);
+    expect(save.document.race.rivals[1].raceNo, 1);
+    await tester.tap(find.bySemanticsLabel('Pause'));
+    await pumpFor(tester, const Duration(milliseconds: 400));
+    expect(find.byType(PauseDialog), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(PauseDialog),
+        matching: find.text('Settings'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Leave race'));
+    await pumpFor(tester, const Duration(milliseconds: 400));
+    expect(find.byType(GameplayPage), findsOneWidget, reason: 'asks first');
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('raceLeaveConfirm')),
+        matching: find.text('Leave race'),
+      ),
+    );
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(GameplayPage), findsNothing);
+    expect(find.byType(RivalSelectView), findsOneWidget);
+    expect(save.document.coins, 20);
+    expect(save.document.race.rivals[1].wins, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Frame 2.1's chapter card (Q92's answer, D193): Home → the chapter card
+  // → Chapters (10.4) → a won level's card (10.4b) → Play, a replay that
+  // pays nothing (E7).
+  testWidgets('(j) Home chapter card -> Chapters -> level card -> replay', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await get.unregister<SaveService>();
+    final save = FakeSaveService(
+      initial: const SaveDocument(
+        currentLevel: 2,
+        highestLevel: 2,
+        stats: SaveStats(wins: 1),
+      ),
+    );
+    get.registerSingleton<SaveService>(save);
+    await tester.pumpWidget(App(router: get<AppRouter>()));
+    await tester.pump();
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(HomePage), findsOneWidget);
+
+    await tester.tap(
+      find.bySemanticsLabel(RegExp(r'^Chapter 1, .*Opens chapters\.$')),
+    );
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(ChaptersPage), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Level 1, won')));
+    await pumpFor(tester, const Duration(milliseconds: 600));
+    expect(find.byType(LevelCard), findsOneWidget);
+    await tester.tap(
+      find.descendant(of: find.byType(LevelCard), matching: find.text('Play')),
+    );
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(GameplayPage), findsOneWidget);
+    final bloc = tester.element(find.byType(GameplayView)).read<GameplayBloc>();
+    expect(bloc.state.data!.play.request, const PlayRequest.replay(1));
+    expect(save.document.currentLevel, 2, reason: 'a replay moves nothing');
+    expect(tester.takeException(), isNull);
+  });
+
+  // Frame 10.2f (D189, D190): a Yes the OS denies keeps the reminder on and
+  // blocked; Settings' blocked row opens the phone's own settings page.
+  testWidgets('(k) Settings: a blocked reminder -> Open phone settings', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await get.unregister<SaveService>();
+    get.registerSingleton<SaveService>(
+      FakeSaveService(
+        initial: const SaveDocument(currentLevel: 3, highestLevel: 3),
+      ),
+    );
+    final notifications = get<NotificationService>() as FakeNotificationService
+      ..permissionAnswer = NotificationPermission.denied;
+    await tester.pumpWidget(App(router: get<AppRouter>()));
+    await tester.pump();
+    await pumpFor(tester, const Duration(seconds: 1));
+    await tester.tap(find.bySemanticsLabel('Settings'));
+    await pumpFor(tester, const Duration(milliseconds: 500));
+    expect(find.byType(SettingsPage), findsOneWidget);
+
+    final reminderToggle = find.byWidgetPredicate(
+      (w) => w is NestyToggle && w.semanticLabel == 'Daily reminder',
+    );
+    await tester.scrollUntilVisible(
+      reminderToggle,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(SettingsPage),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(reminderToggle);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(notifications.requestCount, 1);
+    expect(get<DatabaseService>().reminder.on, isTrue);
+    expect(find.text('Off in your phone’s settings'), findsOneWidget);
+
+    final system = get<SystemSettingsService>() as FakeSystemSettingsService;
+    await tester.tap(find.text('Open phone settings'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(system.openCalls, 1);
+    expect(notifications.requestCount, 1, reason: 'never asked twice');
     expect(tester.takeException(), isNull);
   });
 }

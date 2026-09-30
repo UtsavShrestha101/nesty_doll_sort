@@ -109,6 +109,37 @@ void main() {
     },
   );
 
+  test('D111: a chapter whose levels are all won never reads "soon", even '
+      'before `museum` catches up (the dev "Jump to a level" bug)', () async {
+    // The dev picker (or anything else moving currentLevel/highestLevel
+    // without a normal win) can leave `museum` behind: chapters 1 and 2
+    // are both fully played here ("Classic · soon" with a 20/20 badge
+    // was seen this way), but only chapter 1 was ever actually recorded.
+    final built = build(
+      document: const SaveDocument(currentLevel: 41, museum: ['ch01']),
+    );
+    await built.cubit.load();
+    final data = built.cubit.state.data!;
+
+    final ch01 = data.entries[0];
+    expect(ch01.earned, isTrue); // from `museum`, unchanged
+
+    final ch02 = data.entries[1];
+    expect(ch02.done, 20);
+    expect(ch02.total, 20);
+    expect(ch02.earned, isTrue, reason: 'all 20 levels won: never "soon"');
+    expect(ch02.isNext, isFalse);
+
+    final ch03 = data.entries[2];
+    expect(ch03.done, 0);
+    expect(ch03.earned, isFalse);
+    expect(ch03.isNext, isTrue, reason: 'the real next chapter, not ch02');
+
+    // The collection card's "N / 10" counts every earned chapter,
+    // including the derived one, so it never disagrees with the cabinet.
+    expect(data.collectedCount, 2);
+  });
+
   test('every chapter collected has no next and reads allCollected', () async {
     final allIds = [
       for (var n = 1; n <= 10; n++) 'ch${n.toString().padLeft(2, '0')}',

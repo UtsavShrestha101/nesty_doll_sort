@@ -120,13 +120,20 @@ void main() {
       ]);
 
       // Board space exactly when the file has a travel null; segmented
-      // exactly when it has markers.
+      // exactly when it has markers that name segments: a lone rest marker
+      // (`ui_extra_slot`'s `rest`, m7-3) or an intro card's whole-file
+      // `loop` doesn't make a file segmented.
       final hasTravel = names.contains('travel');
+      final segments = spec.markers.where(
+        (m) =>
+            !(m.duration == 0 && spec.markers.every((n) => n.duration == 0)) &&
+            !(m.name == 'loop' && m.start == 0 && m.end == spec.frames),
+      );
       expect(
         spec.kind,
         hasTravel
             ? FxKind.boardSpace
-            : spec.markers.isNotEmpty
+            : segments.isNotEmpty
             ? FxKind.segmented
             : FxKind.inPlace,
       );
@@ -157,9 +164,20 @@ void main() {
         );
       }
 
+      // The size nulls the game drives. The intro loops (m7-3) animate
+      // their own, so their FxSpec lists none; `family2`'s null is
+      // `family_2_size`.
+      String sizeNull(FxRole role) =>
+          role == FxRole.family2 ? 'family_2_size' : '${role.name}_size';
+      final authored = rootLayers.any(
+        (l) =>
+            FxRole.values.any((r) => l['nm'] == sizeNull(r)) &&
+            _animated(l, 's'),
+      );
       expect(spec.roles, [
-        for (final role in FxRole.values)
-          if (names.contains('${role.name}_size')) role,
+        if (!authored)
+          for (final role in FxRole.values)
+            if (names.contains(sizeNull(role))) role,
       ]);
       expect([
         for (final l in spec.imageLayers)

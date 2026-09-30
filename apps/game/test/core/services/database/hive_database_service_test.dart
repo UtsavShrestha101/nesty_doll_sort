@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/database/hive_boxes.dart';
 import 'package:nesty_game/core/services/database/hive_database_service.dart';
@@ -60,6 +61,24 @@ void main() {
       Hive.box<Object>(HiveBoxes.settings).get(SettingsKeys.symbols),
       'large',
     );
+    await database.close();
+  });
+
+  test('reminder values of the wrong type or out of range read as their '
+      'defaults (m7-design P3.10)', () async {
+    Hive.init(directory.path);
+    final raw = await Hive.openBox<Object>(HiveBoxes.settings);
+    await raw.put(SettingsKeys.reminderOn, 'yes');
+    await raw.put(SettingsKeys.reminderHour, 24);
+    await raw.put(SettingsKeys.reminderMinute, 7);
+    await raw.put(SettingsKeys.reminderOffered, true);
+    await raw.close();
+
+    final database = await HiveDatabaseService.open(directory: directory.path);
+    expect(database.reminder.on, isFalse);
+    expect(database.reminder.hour, SettingsDefaults.reminder.hour);
+    expect(database.reminder.minute, 7);
+    expect(database.reminder.offered, isTrue);
     await database.close();
   });
 
@@ -151,6 +170,9 @@ void main() {
       );
 
       expect(database, isA<FakeDatabaseService>());
+      // Marked, so the reminder never takes its default "off" for the
+      // player's answer (M7 review R30).
+      expect(database, isA<SessionOnlyDatabase>());
       expect(database.languageCode, SettingsDefaults.locale);
       await database.close();
     },

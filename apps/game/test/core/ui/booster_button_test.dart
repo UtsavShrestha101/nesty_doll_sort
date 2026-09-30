@@ -16,6 +16,10 @@ void main() {
     Widget? glow,
     VoidCallback? onPressed,
     RecordingFeedback? feedback,
+    bool spent = false,
+    String? spentLabel,
+    String? gainTag,
+    int badgeBump = 0,
   }) => pumpUi(
     tester,
     Center(
@@ -25,6 +29,10 @@ void main() {
         badge: badge,
         glow: glow,
         onPressed: onPressed,
+        spent: spent,
+        spentLabel: spentLabel,
+        gainTag: gainTag,
+        badgeBump: badgeBump,
       ),
     ),
     feedback: feedback ?? RecordingFeedback(),
@@ -45,6 +53,7 @@ void main() {
     (const BoosterBadge.count(2), 6.0, -7.0),
     (const BoosterBadge.ad(), 7.0, -8.0),
     (const BoosterBadge.coin(20), 9.0, -9.0),
+    (const BoosterBadge.infinite(), 6.0, -7.0),
   ]) {
     testWidgets('${badge.runtimeType} sits at the top-right, ($dx, $dy)', (
       tester,
@@ -72,6 +81,67 @@ void main() {
     await pumpBooster(tester, badge: const BoosterBadge.coin(20));
     expect(find.text('20'), findsOneWidget);
     expect(find.byType(CoinIcon), findsOneWidget);
+  });
+
+  testWidgets('relaxed mode\'s infinite badge is the all_inclusive glyph in '
+      'the pink count bubble (frame 10.9; E6)', (tester) async {
+    await pumpBooster(tester, badge: const BoosterBadge.infinite());
+    expect(find.byIcon(IconUses.undoUnlimited), findsOneWidget);
+    expect(find.text('∞'), findsNothing);
+    final bubble = tester.widget<NestySurface>(
+      find.ancestor(
+        of: find.byIcon(IconUses.undoUnlimited),
+        matching: find.byType(NestySurface),
+      ),
+    );
+    expect(bubble.style.color, AppColorTokens.badge);
+  });
+
+  testWidgets('a spent booster (frame 12.9): the sunk face, the muted glyph '
+      'and label, "2/2", still tappable', (tester) async {
+    var taps = 0;
+    await pumpBooster(
+      tester,
+      badge: const BoosterBadge.limit(2, 2),
+      spent: true,
+      spentLabel: '+Slot, 2 of 2 used',
+      onPressed: () => taps++,
+    );
+    expect(find.text('2/2'), findsOneWidget);
+    final face = tester.widget<TactileSurface>(find.byType(TactileSurface));
+    expect(face.style, BoosterButton.spentStyle);
+    expect(face.style.color, const Color(0xFFE8DCCB));
+    expect(
+      tester.widget<Icon>(find.byType(Icon)).color,
+      BoosterButton.spentColor,
+    );
+    await tester.tap(find.byType(TactileSurface));
+    expect(taps, 1);
+  });
+
+  testWidgets('a spent booster reads "+Slot, 2 of 2 used" to a screen '
+      'reader', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpBooster(
+      tester,
+      badge: const BoosterBadge.limit(2, 2),
+      spent: true,
+      spentLabel: '+Slot, 2 of 2 used',
+      onPressed: () {},
+    );
+    expect(find.bySemanticsLabel('+Slot, 2 of 2 used'), findsOneWidget);
+    handle.dispose();
+  });
+
+  testWidgets('the gain tag and the badge bump (frame 10.3d)', (tester) async {
+    await pumpBooster(
+      tester,
+      badge: const BoosterBadge.count(3),
+      gainTag: '+1',
+      badgeBump: 0,
+      onPressed: () {},
+    );
+    expect(find.text('+1'), findsOneWidget);
   });
 
   testWidgets('the glow slot is 130×110, centred behind the button', (
@@ -151,6 +221,10 @@ void main() {
       find.bySemanticsLabel('Hint, watch an ad for one more'),
       findsOneWidget,
     );
+    await pumpBooster(tester, badge: const BoosterBadge.infinite());
+    expect(find.bySemanticsLabel('Hint, unlimited'), findsOneWidget);
+    await pumpBooster(tester, badge: const BoosterBadge.limit(2, 2));
+    expect(find.bySemanticsLabel('Hint, 2 of 2 used'), findsOneWidget);
     handle.dispose();
   });
 }

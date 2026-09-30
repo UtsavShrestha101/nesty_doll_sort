@@ -174,3 +174,34 @@ final class SoundCue {
   final List<String> files;
   final SoundPick pick;
 }
+
+/// A solid stroke of tokens v3: a ring, an edge or an inset line
+/// (`2px #FFFDF7`, `3px #4E5FD9`).
+@immutable
+final class TokenStroke {
+  const TokenStroke({required this.width, required this.color});
+
+  final double width;
+  final Color color;
+
+  /// The same stroke as a [BorderSide].
+  BorderSide toBorderSide() => BorderSide(color: color, width: width);
+}
+
+/// A skin's Shop colours (tokens v3 `shop.skins.<id>`): its card and detail
+/// panel gradients (top to bottom), the panel's solid edge and the caption
+/// on the card.
+@immutable
+final class ShopSkinColors {
+  const ShopSkinColors({
+    required this.card,
+    required this.panel,
+    required this.edge,
+    required this.caption,
+  });
+
+  final List<Color> card;
+  final List<Color> panel;
+  final Color edge;
+  final Color caption;
+}

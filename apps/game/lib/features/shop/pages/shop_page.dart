@@ -9,6 +9,7 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/cubit/shop_cubit.dart';
+import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
 import 'package:nesty_game/features/shop/widgets/shop_closed_card.dart';
 import 'package:nesty_game/features/shop/widgets/skin_grid_card.dart';
@@ -98,10 +99,10 @@ class ShopView extends StatelessWidget {
   final ValueChanged<ShopTab> onTabChanged;
   final ValueChanged<String> onSkinTap;
   final Future<bool> Function(String skinId) onEquipSkin;
-  final Future<bool> Function(String skinId) onBuySkin;
+  final Future<PurchaseOutcome> Function(String skinId) onBuySkin;
   final ValueChanged<bool> onSetMatchesChapter;
   final ValueChanged<String> onUseTheme;
-  final Future<bool> Function(String themeId) onBuyTheme;
+  final Future<PurchaseOutcome> Function(String themeId) onBuyTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +121,10 @@ class ShopView extends StatelessWidget {
                 onBack: onBack,
                 coins: data?.coins,
               ),
-              const SizedBox(height: 12),
+              // The tabs' 48 dp box is its 46 px track plus 1 px above and
+              // below (review R19): 1 px off each gap keeps the frame's
+              // 12 and 16.
+              const SizedBox(height: 11),
               if (data != null) ...[
                 NestySegmentedTabs(
                   labels: [
@@ -132,7 +136,7 @@ class ShopView extends StatelessWidget {
                   selectedIndex: data.tab.index,
                   onChanged: (i) => onTabChanged(ShopTab.values[i]),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 15),
                 Expanded(child: _body(context, data)),
               ] else if (error != null)
                 Expanded(
@@ -157,12 +161,16 @@ class ShopView extends StatelessWidget {
       onSkinTap: onSkinTap,
       onEquipSkin: onEquipSkin,
       onBuySkin: onBuySkin,
+      // D112: "Go to Shop" on the not-enough-coins dialog switches the
+      // already-open Shop to its Coins tab, as the direct jump used to.
+      onGoToCoins: () => onTabChanged(ShopTab.coins),
     ),
     ShopTab.themes => _ThemesTab(
       state: data,
       onSetMatchesChapter: onSetMatchesChapter,
       onUseTheme: onUseTheme,
       onBuyTheme: onBuyTheme,
+      onGoToCoins: () => onTabChanged(ShopTab.coins),
     ),
   };
 }
@@ -174,12 +182,16 @@ class _SkinsTab extends StatelessWidget {
     required this.onSkinTap,
     required this.onEquipSkin,
     required this.onBuySkin,
+    required this.onGoToCoins,
   });
 
   final ShopState state;
   final ValueChanged<String> onSkinTap;
   final Future<bool> Function(String skinId) onEquipSkin;
-  final Future<bool> Function(String skinId) onBuySkin;
+  final Future<PurchaseOutcome> Function(String skinId) onBuySkin;
+
+  /// D112's not-enough-coins dialog "Go to Shop".
+  final VoidCallback onGoToCoins;
 
   @override
   Widget build(BuildContext context) => GridView.builder(
@@ -197,9 +209,11 @@ class _SkinsTab extends StatelessWidget {
         skin: skin,
         owned: state.ownsSkin(skin),
         equipped: state.isSkinEquipped(skin),
+        coins: state.coins,
         onTap: () => onSkinTap(skin.id),
         onEquip: () => onEquipSkin(skin.id),
         onBuy: () => onBuySkin(skin.id),
+        onGoToCoins: onGoToCoins,
       );
     },
   );
@@ -213,12 +227,16 @@ class _ThemesTab extends StatelessWidget {
     required this.onSetMatchesChapter,
     required this.onUseTheme,
     required this.onBuyTheme,
+    required this.onGoToCoins,
   });
 
   final ShopState state;
   final ValueChanged<bool> onSetMatchesChapter;
   final ValueChanged<String> onUseTheme;
-  final Future<bool> Function(String themeId) onBuyTheme;
+  final Future<PurchaseOutcome> Function(String themeId) onBuyTheme;
+
+  /// D112's not-enough-coins dialog "Go to Shop".
+  final VoidCallback onGoToCoins;
 
   @override
   Widget build(BuildContext context) {
@@ -289,8 +307,10 @@ class _ThemesTab extends StatelessWidget {
               theme: theme,
               owned: state.ownsTheme(theme),
               inUse: state.isThemeInUse(theme),
+              coins: state.coins,
               onUse: () => onUseTheme(theme.id),
               onBuy: () => onBuyTheme(theme.id),
+              onGoToCoins: onGoToCoins,
             );
           },
         ),

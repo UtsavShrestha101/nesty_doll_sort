@@ -291,10 +291,10 @@ as String,
 mixin _$ChapterInfo {
 
 /// The bundle's `chapterId`, `ch01` … `ch10`; also the `chapterName`
-/// ARB select key (names exist for ch01–ch06 only).
+/// ARB select key (copy.md G.4 names ch07–ch10).
  String get id;/// 1-based.
- int get number;/// Its board theme. Chapters 7–10 have no art yet, so they cycle
-/// ch01–ch06 (Q38, `ChapterTheme.forChapter`).
+ int get number;/// Its board theme: each launch chapter has its own (m7-3's ch07–ch10,
+/// D171; `ChapterTheme.forChapter`).
  String get themeId;/// The figurine completing it awards.
  FigurineInfo get figurine;/// Levels per chapter (spec §7.1).
  int get levels;
@@ -506,12 +506,12 @@ class _ChapterInfo implements ChapterInfo {
   
 
 /// The bundle's `chapterId`, `ch01` … `ch10`; also the `chapterName`
-/// ARB select key (names exist for ch01–ch06 only).
+/// ARB select key (copy.md G.4 names ch07–ch10).
 @override final  String id;
 /// 1-based.
 @override final  int number;
-/// Its board theme. Chapters 7–10 have no art yet, so they cycle
-/// ch01–ch06 (Q38, `ChapterTheme.forChapter`).
+/// Its board theme: each launch chapter has its own (m7-3's ch07–ch10,
+/// D171; `ChapterTheme.forChapter`).
 @override final  String themeId;
 /// The figurine completing it awards.
 @override final  FigurineInfo figurine;

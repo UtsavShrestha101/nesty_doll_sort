@@ -149,6 +149,64 @@ void main() {
     expect(showcase.current.value, b);
   });
 
+  // m7-design §18 "Home's shelf after a skin equip": SkinService.selectSkin
+  // writes the save and equips the new layers before it emits
+  // selectedSkinChanges, so by the time this fires prepareShowcase's
+  // default skinId (selectedSkinId) is already the new one.
+  test('a skin equip prepares the shelf again at the same pixel ratio and '
+      'symbols mode, and the old art stays up until the new lands', () async {
+    final first = showcase.prepare(devicePixelRatio: 2);
+    final classic = skins.completeShowcase(0);
+    await first;
+    expect(skins.showcaseRequests, hasLength(1));
+
+    await skins.selectSkin('ocean');
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(2));
+    expect(skins.showcaseRequests.last.devicePixelRatio, 2);
+    expect(
+      skins.showcaseRequests.last.symbols,
+      skins.showcaseRequests.first.symbols,
+    );
+    expect(showcase.current.value, same(classic), reason: 'no placeholder');
+
+    final ocean = skins.completeShowcase(1);
+    await pumpEventQueue();
+    expect(showcase.current.value, same(ocean));
+    expect(classic.disposed, isTrue);
+  });
+
+  test('selecting the already-equipped skin (no real change) prepares '
+      'nothing new', () async {
+    final first = showcase.prepare(devicePixelRatio: 2);
+    skins.completeShowcase(0);
+    await first;
+
+    await skins.selectSkin(skins.selectedSkinId);
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(1));
+  });
+
+  test('a skin equip before the first prepare, after release or after '
+      'dispose prepares nothing', () async {
+    await skins.selectSkin('ocean');
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, isEmpty);
+
+    final first = showcase.prepare(devicePixelRatio: 1);
+    skins.completeShowcase(0);
+    await first;
+    showcase.release();
+    await skins.selectSkin('classic');
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(1));
+
+    showcase.dispose();
+    await skins.selectSkin('ocean');
+    await pumpEventQueue();
+    expect(skins.showcaseRequests, hasLength(1));
+  });
+
   test('dispose frees everything and stops preparing', () async {
     final first = showcase.prepare(devicePixelRatio: 1);
     final a = skins.completeShowcase(0);

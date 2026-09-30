@@ -13,6 +13,7 @@ void main() {
       final expected = switch (id) {
         FxId.fxSelectGlow ||
         FxId.fxGlassUnlock ||
+        FxId.fxGlassUnlockTall ||
         FxId.fxIce ||
         FxId.fxDustPuff ||
         FxId.uiHintArrow ||

@@ -19,8 +19,12 @@ mixin _$DailyStatus {
  Tier get tier;/// Today's puzzle colors: `DifficultyCurve.dailyParams(today).colors`
 /// (frame 5.1 "5 colors").
  int get colors;/// Level 2 won (m3-design §8.3); a locked tile otherwise.
- bool get unlocked;/// Days in a row (frame 5.1 "4 days").
- int get streak;/// Freezes held, 0 or 1 (frame 5.1 "1 freeze", 5.2 "0 left").
+ bool get unlocked;/// The gentle streak (spec-prop §7.5, m7-design §8): the days solved,
+/// never lowered (frame 5.1 "4 days").
+ int get streak;/// The flame is lit (`DailyProgress.lit`): false before the first solve
+/// and while [paused].
+ bool get lit;/// The current unbroken run (`DailyProgress.run`); 0 while not [lit].
+ int get run;/// Freezes held, 0 or 1 (frame 5.1 "1 freeze", 5.2 "0 left").
  int get freezes;/// Today's puzzle is solved (frames 5.4, 5.5).
  bool get solvedToday;/// Streak days of the current 7-day cycle already done, 0–7: the strip
 /// checks days 1..cycleDone, raises day cycleDone + 1 as "Today" (not
@@ -32,7 +36,11 @@ mixin _$DailyStatus {
 /// "Streak saved!" banner (frame 5.2) names its weekday until
 /// `DailyService.acknowledgeFreezeNotice`.
  LocalDate? get freezeNotice;/// Today's board is saved mid-way: Play continues it.
- bool get inProgress;
+ bool get inProgress;/// Today's solve (`DailyProgress.lastSolve` when its date is today):
+/// the Share text's facts (E3) and the reminder offer's default hour
+/// (E4, Q81; m7-design P3.8). Null before today's solve, and for a day
+/// an older build solved (no Share then).
+ DailySolve? get solve;
 /// Create a copy of DailyStatus
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -43,16 +51,16 @@ $DailyStatusCopyWith<DailyStatus> get copyWith => _$DailyStatusCopyWithImpl<Dail
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyStatus&&(identical(other.today, today) || other.today == today)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.colors, colors) || other.colors == colors)&&(identical(other.unlocked, unlocked) || other.unlocked == unlocked)&&(identical(other.streak, streak) || other.streak == streak)&&(identical(other.freezes, freezes) || other.freezes == freezes)&&(identical(other.solvedToday, solvedToday) || other.solvedToday == solvedToday)&&(identical(other.cycleDone, cycleDone) || other.cycleDone == cycleDone)&&(identical(other.chestPending, chestPending) || other.chestPending == chestPending)&&(identical(other.freezeNotice, freezeNotice) || other.freezeNotice == freezeNotice)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyStatus&&(identical(other.today, today) || other.today == today)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.colors, colors) || other.colors == colors)&&(identical(other.unlocked, unlocked) || other.unlocked == unlocked)&&(identical(other.streak, streak) || other.streak == streak)&&(identical(other.lit, lit) || other.lit == lit)&&(identical(other.run, run) || other.run == run)&&(identical(other.freezes, freezes) || other.freezes == freezes)&&(identical(other.solvedToday, solvedToday) || other.solvedToday == solvedToday)&&(identical(other.cycleDone, cycleDone) || other.cycleDone == cycleDone)&&(identical(other.chestPending, chestPending) || other.chestPending == chestPending)&&(identical(other.freezeNotice, freezeNotice) || other.freezeNotice == freezeNotice)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.solve, solve) || other.solve == solve));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,today,tier,colors,unlocked,streak,freezes,solvedToday,cycleDone,chestPending,freezeNotice,inProgress);
+int get hashCode => Object.hash(runtimeType,today,tier,colors,unlocked,streak,lit,run,freezes,solvedToday,cycleDone,chestPending,freezeNotice,inProgress,solve);
 
 @override
 String toString() {
-  return 'DailyStatus(today: $today, tier: $tier, colors: $colors, unlocked: $unlocked, streak: $streak, freezes: $freezes, solvedToday: $solvedToday, cycleDone: $cycleDone, chestPending: $chestPending, freezeNotice: $freezeNotice, inProgress: $inProgress)';
+  return 'DailyStatus(today: $today, tier: $tier, colors: $colors, unlocked: $unlocked, streak: $streak, lit: $lit, run: $run, freezes: $freezes, solvedToday: $solvedToday, cycleDone: $cycleDone, chestPending: $chestPending, freezeNotice: $freezeNotice, inProgress: $inProgress, solve: $solve)';
 }
 
 
@@ -63,11 +71,11 @@ abstract mixin class $DailyStatusCopyWith<$Res>  {
   factory $DailyStatusCopyWith(DailyStatus value, $Res Function(DailyStatus) _then) = _$DailyStatusCopyWithImpl;
 @useResult
 $Res call({
- LocalDate today, Tier tier, int colors, bool unlocked, int streak, int freezes, bool solvedToday, int cycleDone, bool chestPending, LocalDate? freezeNotice, bool inProgress
+ LocalDate today, Tier tier, int colors, bool unlocked, int streak, bool lit, int run, int freezes, bool solvedToday, int cycleDone, bool chestPending, LocalDate? freezeNotice, bool inProgress, DailySolve? solve
 });
 
 
-
+$DailySolveCopyWith<$Res>? get solve;
 
 }
 /// @nodoc
@@ -80,23 +88,38 @@ class _$DailyStatusCopyWithImpl<$Res>
 
 /// Create a copy of DailyStatus
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? today = null,Object? tier = null,Object? colors = null,Object? unlocked = null,Object? streak = null,Object? freezes = null,Object? solvedToday = null,Object? cycleDone = null,Object? chestPending = null,Object? freezeNotice = freezed,Object? inProgress = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? today = null,Object? tier = null,Object? colors = null,Object? unlocked = null,Object? streak = null,Object? lit = null,Object? run = null,Object? freezes = null,Object? solvedToday = null,Object? cycleDone = null,Object? chestPending = null,Object? freezeNotice = freezed,Object? inProgress = null,Object? solve = freezed,}) {
   return _then(_self.copyWith(
 today: null == today ? _self.today : today // ignore: cast_nullable_to_non_nullable
 as LocalDate,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
 as Tier,colors: null == colors ? _self.colors : colors // ignore: cast_nullable_to_non_nullable
 as int,unlocked: null == unlocked ? _self.unlocked : unlocked // ignore: cast_nullable_to_non_nullable
 as bool,streak: null == streak ? _self.streak : streak // ignore: cast_nullable_to_non_nullable
+as int,lit: null == lit ? _self.lit : lit // ignore: cast_nullable_to_non_nullable
+as bool,run: null == run ? _self.run : run // ignore: cast_nullable_to_non_nullable
 as int,freezes: null == freezes ? _self.freezes : freezes // ignore: cast_nullable_to_non_nullable
 as int,solvedToday: null == solvedToday ? _self.solvedToday : solvedToday // ignore: cast_nullable_to_non_nullable
 as bool,cycleDone: null == cycleDone ? _self.cycleDone : cycleDone // ignore: cast_nullable_to_non_nullable
 as int,chestPending: null == chestPending ? _self.chestPending : chestPending // ignore: cast_nullable_to_non_nullable
 as bool,freezeNotice: freezed == freezeNotice ? _self.freezeNotice : freezeNotice // ignore: cast_nullable_to_non_nullable
 as LocalDate?,inProgress: null == inProgress ? _self.inProgress : inProgress // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,solve: freezed == solve ? _self.solve : solve // ignore: cast_nullable_to_non_nullable
+as DailySolve?,
   ));
 }
+/// Create a copy of DailyStatus
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DailySolveCopyWith<$Res>? get solve {
+    if (_self.solve == null) {
+    return null;
+  }
 
+  return $DailySolveCopyWith<$Res>(_self.solve!, (value) {
+    return _then(_self.copyWith(solve: value));
+  });
+}
 }
 
 
@@ -178,10 +201,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LocalDate today,  Tier tier,  int colors,  bool unlocked,  int streak,  int freezes,  bool solvedToday,  int cycleDone,  bool chestPending,  LocalDate? freezeNotice,  bool inProgress)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LocalDate today,  Tier tier,  int colors,  bool unlocked,  int streak,  bool lit,  int run,  int freezes,  bool solvedToday,  int cycleDone,  bool chestPending,  LocalDate? freezeNotice,  bool inProgress,  DailySolve? solve)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DailyStatus() when $default != null:
-return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,_that.freezes,_that.solvedToday,_that.cycleDone,_that.chestPending,_that.freezeNotice,_that.inProgress);case _:
+return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,_that.lit,_that.run,_that.freezes,_that.solvedToday,_that.cycleDone,_that.chestPending,_that.freezeNotice,_that.inProgress,_that.solve);case _:
   return orElse();
 
 }
@@ -199,10 +222,10 @@ return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LocalDate today,  Tier tier,  int colors,  bool unlocked,  int streak,  int freezes,  bool solvedToday,  int cycleDone,  bool chestPending,  LocalDate? freezeNotice,  bool inProgress)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LocalDate today,  Tier tier,  int colors,  bool unlocked,  int streak,  bool lit,  int run,  int freezes,  bool solvedToday,  int cycleDone,  bool chestPending,  LocalDate? freezeNotice,  bool inProgress,  DailySolve? solve)  $default,) {final _that = this;
 switch (_that) {
 case _DailyStatus():
-return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,_that.freezes,_that.solvedToday,_that.cycleDone,_that.chestPending,_that.freezeNotice,_that.inProgress);case _:
+return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,_that.lit,_that.run,_that.freezes,_that.solvedToday,_that.cycleDone,_that.chestPending,_that.freezeNotice,_that.inProgress,_that.solve);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -219,10 +242,10 @@ return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LocalDate today,  Tier tier,  int colors,  bool unlocked,  int streak,  int freezes,  bool solvedToday,  int cycleDone,  bool chestPending,  LocalDate? freezeNotice,  bool inProgress)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LocalDate today,  Tier tier,  int colors,  bool unlocked,  int streak,  bool lit,  int run,  int freezes,  bool solvedToday,  int cycleDone,  bool chestPending,  LocalDate? freezeNotice,  bool inProgress,  DailySolve? solve)?  $default,) {final _that = this;
 switch (_that) {
 case _DailyStatus() when $default != null:
-return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,_that.freezes,_that.solvedToday,_that.cycleDone,_that.chestPending,_that.freezeNotice,_that.inProgress);case _:
+return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,_that.lit,_that.run,_that.freezes,_that.solvedToday,_that.cycleDone,_that.chestPending,_that.freezeNotice,_that.inProgress,_that.solve);case _:
   return null;
 
 }
@@ -234,7 +257,7 @@ return $default(_that.today,_that.tier,_that.colors,_that.unlocked,_that.streak,
 
 
 class _DailyStatus extends DailyStatus {
-  const _DailyStatus({required this.today, required this.tier, required this.colors, this.unlocked = false, this.streak = 0, this.freezes = 0, this.solvedToday = false, this.cycleDone = 0, this.chestPending = false, this.freezeNotice, this.inProgress = false}): super._();
+  const _DailyStatus({required this.today, required this.tier, required this.colors, this.unlocked = false, this.streak = 0, this.lit = false, this.run = 0, this.freezes = 0, this.solvedToday = false, this.cycleDone = 0, this.chestPending = false, this.freezeNotice, this.inProgress = false, this.solve}): super._();
   
 
 /// The player's local date (`AppClock.today`).
@@ -246,8 +269,14 @@ class _DailyStatus extends DailyStatus {
 @override final  int colors;
 /// Level 2 won (m3-design §8.3); a locked tile otherwise.
 @override@JsonKey() final  bool unlocked;
-/// Days in a row (frame 5.1 "4 days").
+/// The gentle streak (spec-prop §7.5, m7-design §8): the days solved,
+/// never lowered (frame 5.1 "4 days").
 @override@JsonKey() final  int streak;
+/// The flame is lit (`DailyProgress.lit`): false before the first solve
+/// and while [paused].
+@override@JsonKey() final  bool lit;
+/// The current unbroken run (`DailyProgress.run`); 0 while not [lit].
+@override@JsonKey() final  int run;
 /// Freezes held, 0 or 1 (frame 5.1 "1 freeze", 5.2 "0 left").
 @override@JsonKey() final  int freezes;
 /// Today's puzzle is solved (frames 5.4, 5.5).
@@ -266,6 +295,11 @@ class _DailyStatus extends DailyStatus {
 @override final  LocalDate? freezeNotice;
 /// Today's board is saved mid-way: Play continues it.
 @override@JsonKey() final  bool inProgress;
+/// Today's solve (`DailyProgress.lastSolve` when its date is today):
+/// the Share text's facts (E3) and the reminder offer's default hour
+/// (E4, Q81; m7-design P3.8). Null before today's solve, and for a day
+/// an older build solved (no Share then).
+@override final  DailySolve? solve;
 
 /// Create a copy of DailyStatus
 /// with the given fields replaced by the non-null parameter values.
@@ -277,16 +311,16 @@ _$DailyStatusCopyWith<_DailyStatus> get copyWith => __$DailyStatusCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyStatus&&(identical(other.today, today) || other.today == today)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.colors, colors) || other.colors == colors)&&(identical(other.unlocked, unlocked) || other.unlocked == unlocked)&&(identical(other.streak, streak) || other.streak == streak)&&(identical(other.freezes, freezes) || other.freezes == freezes)&&(identical(other.solvedToday, solvedToday) || other.solvedToday == solvedToday)&&(identical(other.cycleDone, cycleDone) || other.cycleDone == cycleDone)&&(identical(other.chestPending, chestPending) || other.chestPending == chestPending)&&(identical(other.freezeNotice, freezeNotice) || other.freezeNotice == freezeNotice)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyStatus&&(identical(other.today, today) || other.today == today)&&(identical(other.tier, tier) || other.tier == tier)&&(identical(other.colors, colors) || other.colors == colors)&&(identical(other.unlocked, unlocked) || other.unlocked == unlocked)&&(identical(other.streak, streak) || other.streak == streak)&&(identical(other.lit, lit) || other.lit == lit)&&(identical(other.run, run) || other.run == run)&&(identical(other.freezes, freezes) || other.freezes == freezes)&&(identical(other.solvedToday, solvedToday) || other.solvedToday == solvedToday)&&(identical(other.cycleDone, cycleDone) || other.cycleDone == cycleDone)&&(identical(other.chestPending, chestPending) || other.chestPending == chestPending)&&(identical(other.freezeNotice, freezeNotice) || other.freezeNotice == freezeNotice)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.solve, solve) || other.solve == solve));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,today,tier,colors,unlocked,streak,freezes,solvedToday,cycleDone,chestPending,freezeNotice,inProgress);
+int get hashCode => Object.hash(runtimeType,today,tier,colors,unlocked,streak,lit,run,freezes,solvedToday,cycleDone,chestPending,freezeNotice,inProgress,solve);
 
 @override
 String toString() {
-  return 'DailyStatus(today: $today, tier: $tier, colors: $colors, unlocked: $unlocked, streak: $streak, freezes: $freezes, solvedToday: $solvedToday, cycleDone: $cycleDone, chestPending: $chestPending, freezeNotice: $freezeNotice, inProgress: $inProgress)';
+  return 'DailyStatus(today: $today, tier: $tier, colors: $colors, unlocked: $unlocked, streak: $streak, lit: $lit, run: $run, freezes: $freezes, solvedToday: $solvedToday, cycleDone: $cycleDone, chestPending: $chestPending, freezeNotice: $freezeNotice, inProgress: $inProgress, solve: $solve)';
 }
 
 
@@ -297,11 +331,11 @@ abstract mixin class _$DailyStatusCopyWith<$Res> implements $DailyStatusCopyWith
   factory _$DailyStatusCopyWith(_DailyStatus value, $Res Function(_DailyStatus) _then) = __$DailyStatusCopyWithImpl;
 @override @useResult
 $Res call({
- LocalDate today, Tier tier, int colors, bool unlocked, int streak, int freezes, bool solvedToday, int cycleDone, bool chestPending, LocalDate? freezeNotice, bool inProgress
+ LocalDate today, Tier tier, int colors, bool unlocked, int streak, bool lit, int run, int freezes, bool solvedToday, int cycleDone, bool chestPending, LocalDate? freezeNotice, bool inProgress, DailySolve? solve
 });
 
 
-
+@override $DailySolveCopyWith<$Res>? get solve;
 
 }
 /// @nodoc
@@ -314,24 +348,39 @@ class __$DailyStatusCopyWithImpl<$Res>
 
 /// Create a copy of DailyStatus
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? today = null,Object? tier = null,Object? colors = null,Object? unlocked = null,Object? streak = null,Object? freezes = null,Object? solvedToday = null,Object? cycleDone = null,Object? chestPending = null,Object? freezeNotice = freezed,Object? inProgress = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? today = null,Object? tier = null,Object? colors = null,Object? unlocked = null,Object? streak = null,Object? lit = null,Object? run = null,Object? freezes = null,Object? solvedToday = null,Object? cycleDone = null,Object? chestPending = null,Object? freezeNotice = freezed,Object? inProgress = null,Object? solve = freezed,}) {
   return _then(_DailyStatus(
 today: null == today ? _self.today : today // ignore: cast_nullable_to_non_nullable
 as LocalDate,tier: null == tier ? _self.tier : tier // ignore: cast_nullable_to_non_nullable
 as Tier,colors: null == colors ? _self.colors : colors // ignore: cast_nullable_to_non_nullable
 as int,unlocked: null == unlocked ? _self.unlocked : unlocked // ignore: cast_nullable_to_non_nullable
 as bool,streak: null == streak ? _self.streak : streak // ignore: cast_nullable_to_non_nullable
+as int,lit: null == lit ? _self.lit : lit // ignore: cast_nullable_to_non_nullable
+as bool,run: null == run ? _self.run : run // ignore: cast_nullable_to_non_nullable
 as int,freezes: null == freezes ? _self.freezes : freezes // ignore: cast_nullable_to_non_nullable
 as int,solvedToday: null == solvedToday ? _self.solvedToday : solvedToday // ignore: cast_nullable_to_non_nullable
 as bool,cycleDone: null == cycleDone ? _self.cycleDone : cycleDone // ignore: cast_nullable_to_non_nullable
 as int,chestPending: null == chestPending ? _self.chestPending : chestPending // ignore: cast_nullable_to_non_nullable
 as bool,freezeNotice: freezed == freezeNotice ? _self.freezeNotice : freezeNotice // ignore: cast_nullable_to_non_nullable
 as LocalDate?,inProgress: null == inProgress ? _self.inProgress : inProgress // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,solve: freezed == solve ? _self.solve : solve // ignore: cast_nullable_to_non_nullable
+as DailySolve?,
   ));
 }
 
+/// Create a copy of DailyStatus
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DailySolveCopyWith<$Res>? get solve {
+    if (_self.solve == null) {
+    return null;
+  }
 
+  return $DailySolveCopyWith<$Res>(_self.solve!, (value) {
+    return _then(_self.copyWith(solve: value));
+  });
+}
 }
 
 // dart format on

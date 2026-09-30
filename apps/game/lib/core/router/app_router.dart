@@ -5,10 +5,14 @@ import 'package:flutter/widgets.dart';
 import 'package:injectable/injectable.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/features/chapters/pages/chapters_page.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
+import 'package:nesty_game/features/gameplay/pages/gameplay_entrance.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_page.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/museum/pages/museum_page.dart';
+import 'package:nesty_game/features/race/pages/rival_select_page.dart';
+import 'package:nesty_game/features/records/pages/records_page.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
@@ -18,14 +22,17 @@ import 'package:nesty_game/features/splash/pages/splash_page.dart';
 
 part 'app_router.gr.dart';
 
-/// Every screen of the game (docs/plans/m3-design.md §10.1).
-/// `app_router.gr.dart` is generated — never edit it; rerun build_runner
-/// after touching a `@RoutePage`.
+/// Every screen of the game (docs/plans/m3-design.md §10.1,
+/// docs/plans/m7-design.md §2, §15, P2.8). `app_router.gr.dart` is generated —
+/// never edit it; rerun build_runner after touching a `@RoutePage`.
 ///
-/// Spec §10.1 flow: Splash → Home → Gameplay, and Home → Daily · Museum ·
-/// Shop · Settings. Home, Shop and Museum are the tabs of the bottom-nav
-/// shell; Settings, Daily, Skin detail and Gameplay are pushed over it,
-/// full screen. Pass data through the generated route constructors
+/// Spec §10.1 flow (spec-prop §10.1): Splash → Level 1 on a first launch
+/// or Home, then Gameplay, and Home → Daily · Museum · Shop · Settings ·
+/// vs Computer · Chapters · Records. Home, Shop and Museum are the tabs of
+/// the bottom-nav shell; Settings, Daily, Chapters, Records, rival select,
+/// Skin detail and Gameplay are pushed over it, full screen. A race is the
+/// gameplay page with `PlayRequest.race` (m7-design P2.8), never a page of
+/// its own. Pass data through the generated route constructors
 /// (`GameplayRoute(request: PlayRequest.campaign(3))`), never through path
 /// strings. Win, Out of Moves, Pause, the booster popup, the intro cards,
 /// Chapter complete and All Levels Done are overlays of the gameplay page,
@@ -55,8 +62,19 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: SettingsRoute.page, guards: [_contentReady]),
     AutoRoute(page: DailyRoute.page, guards: [_contentReady]),
+    AutoRoute(page: ChaptersRoute.page, guards: [_contentReady]),
+    AutoRoute(page: RecordsRoute.page, guards: [_contentReady]),
+    AutoRoute(page: RivalSelectRoute.page, guards: [_contentReady]),
     AutoRoute(page: SkinDetailRoute.page, guards: [_contentReady]),
-    AutoRoute(page: GameplayRoute.page, guards: [_contentReady]),
+    // The first launch fades into Level 1 (frame 10.8); every other entry
+    // keeps the platform transition, still 300 ms (phase 4 §3.13).
+    CustomRoute<void>(
+      page: GameplayRoute.page,
+      guards: [_contentReady],
+      transitionsBuilder: GameplayTransitions.build,
+      duration: GameplayTransitions.duration,
+      reverseDuration: GameplayTransitions.reverseDuration,
+    ),
   ];
 }
 
@@ -65,11 +83,13 @@ class AppRouter extends RootStackRouter {
 ///
 /// - Before the splash has loaded them (a restored or deep-linked route),
 ///   navigation goes back to the splash, which loads and then opens Home.
-/// - A campaign level that doesn't exist (below 1, or past the last
-///   bundled one) never opens a board: the bloc would have no level to
-///   load. Home and Continue show All Levels Done or Bonus Endless instead
-///   (frame 4.9). Bonus and daily requests are generated, so they always
-///   pass.
+/// - A campaign level or a replay that doesn't exist (below 1, or past
+///   the last bundled one) never opens a board: the bloc would have no
+///   level to load. Home and Continue show All Levels Done or Bonus Endless
+///   instead (frame 4.9); Chapters only offers levels it has. Bonus,
+///   daily and race requests are generated, so they always pass (a race
+///   the save refuses resolves to nothing, and the page's failure card
+///   leads back, m7-design P2.4).
 @lazySingleton
 class ContentReadyGuard extends AutoRouteGuard {
   ContentReadyGuard(this._levels);
@@ -85,7 +105,7 @@ class ContentReadyGuard extends AutoRouteGuard {
     }
     final args = resolver.route.args;
     if (args is GameplayRouteArgs &&
-        args.request is CampaignPlay &&
+        args.request.isBundled &&
         (args.request.number < 1 ||
             _levels.entryAt(args.request.number) == null)) {
       resolver.next(false);

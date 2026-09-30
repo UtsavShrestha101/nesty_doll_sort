@@ -148,6 +148,7 @@ final class FxSpec {
     this.imageLayers = const [],
     this.textLayers = const [],
     this.colorFills = const [],
+    this.scaleNulls = const [],
     this.loops = false,
   }) : assert(frames > 0);
 
@@ -181,7 +182,8 @@ final class FxSpec {
   /// The `travel` null ([FxKind.boardSpace] files).
   final FxTravel? travel;
 
-  /// Roles whose `<role>_size` null the file has (LOTTIE.md "Doll size").
+  /// Roles whose `<role>_size` null the game drives (LOTTIE.md "Doll
+  /// size"). Empty for the intro loops, which author their own doll sizes.
   final List<FxRole> roles;
 
   final List<FxImageLayer> imageLayers;
@@ -192,6 +194,10 @@ final class FxSpec {
 
   /// Named fills the game recolours: `rim_tint`, `tint`.
   final List<String> colorFills;
+
+  /// Other root nulls whose scale the game sets (LOTTIE.md "Case size"):
+  /// `fx_glass_unlock_tall`'s `case_size`, the same h / 150 as `doll_size`.
+  final List<String> scaleNulls;
 
   /// Loops for as long as it is shown (LOTTIE.md "Length": "loop").
   final bool loops;

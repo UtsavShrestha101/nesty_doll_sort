@@ -12,6 +12,7 @@ import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/repository/level_resolver.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/generator/level_generator_service.dart';
+import 'package:nesty_game/core/services/race/race_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -47,12 +48,15 @@ class DefaultLevelResolver implements LevelResolver {
   @override
   Future<PlayEntry?> resolve(PlayRequest request) => switch (request) {
     CampaignPlay(:final order) => Future.value(_campaign(order)),
-    BonusPlay() || DailyPlay() => _ensureGenerated(request),
+    ReplayPlay(:final order) => Future.value(_replay(order)),
+    BonusPlay() || DailyPlay() || RacePlay() => _ensureGenerated(request),
   };
 
   @override
   void prefetch(PlayRequest request) {
-    if (request is CampaignPlay) return;
+    // Bundled boards (campaign, replay) resolve synchronously; generated
+    // ones (bonus, daily, race) start in the isolate.
+    if (!request.isGenerated) return;
     unawaited(_ensureGenerated(request));
   }
 
@@ -64,6 +68,11 @@ class DefaultLevelResolver implements LevelResolver {
           : PlayRequest.bonus(_save.nextBonus),
     BonusPlay(:final number) => PlayRequest.bonus(number + 1),
     DailyPlay() => null,
+    // Continue after a replay goes back to Chapters (m7-design §6).
+    ReplayPlay() => null,
+    // A race's result offers Rematch and New race, never a next level
+    // (m7-design P2.4, P2.5).
+    RacePlay() => null,
   };
 
   @override
@@ -90,6 +99,28 @@ class DefaultLevelResolver implements LevelResolver {
       themeId: chapter?.themeId ?? entry.chapterId,
       chapterId: entry.chapterId,
       completesChapter: _completesChapter(entry),
+      bundleEntry: entry,
+    );
+  }
+
+  /// A replay of won level [order] (m7-design §6): the campaign's board,
+  /// tier, version and theme, paying nothing and completing nothing. Null
+  /// when the bundle doesn't have that exact order (a skipped level
+  /// resolves to its successor for the campaign, never for a replay) or
+  /// the player hasn't won it (`order >= highestLevel`).
+  PlayEntry? _replay(int order) {
+    if (order < 1 || order >= _save.highestLevel) return null;
+    final entry = _levels.entryAt(order);
+    if (entry == null || entry.order != order) return null;
+    final chapter = _catalog.chapter(entry.chapterId);
+    return PlayEntry(
+      request: PlayRequest.replay(order),
+      level: entry.level,
+      tier: entry.tier,
+      levelVersion: entry.version,
+      rewardCoins: 0,
+      themeId: chapter?.themeId ?? entry.chapterId,
+      chapterId: entry.chapterId,
       bundleEntry: entry,
     );
   }
@@ -129,7 +160,9 @@ class DefaultLevelResolver implements LevelResolver {
 
   /// Cached → restored from the saved in-progress board → generated fresh,
   /// with in-flight de-duplication so `prefetch` and `resolve` (or two
-  /// `resolve`s) share one attempt.
+  /// `resolve`s) share one attempt. A race is never saved, so it is only
+  /// ever cached or generated: the cache gives a Rematch the very same
+  /// `Level` at once (m7-design P2.4).
   Future<PlayEntry?> _ensureGenerated(PlayRequest request) {
     final cached = _cache[request];
     if (cached != null) return Future.value(cached);
@@ -161,7 +194,8 @@ class DefaultLevelResolver implements LevelResolver {
       return switch (request) {
         BonusPlay(:final number) => await _bonus(request, number),
         DailyPlay(:final yyyymmdd) => await _daily(request, yyyymmdd),
-        CampaignPlay() => null,
+        RacePlay() => await _race(request),
+        CampaignPlay() || ReplayPlay() => null,
       };
     } on Object catch (error, stack) {
       _log('generation of $request failed', error, stack);
@@ -201,6 +235,48 @@ class DefaultLevelResolver implements LevelResolver {
     );
   }
 
+  /// A vs Computer race (spec-prop §7.7; m7-design P2.4):
+  /// `DifficultyCurve.raceParams` for the rival and raceNo at the stage of
+  /// the highest level won (`RaceRules.stageLevel`), generated in the
+  /// isolate with the deterministic retries, paying `race_reward_<rival>`
+  /// (`RaceRules.rewardCoins`), on the player's current chapter's theme
+  /// (the daily's; the default of an owner question until frame 9.3
+  /// lands), outside the chapters.
+  ///
+  /// Null, with nothing generated, when the mode is still locked
+  /// (`RaceRules.modeUnlocked`), the rival is outside 1–3 or still locked
+  /// in the save, or the raceNo is outside 1–`DifficultyCurve.maxRaceNo`;
+  /// and when every retry failed. The page's failure card then leads back
+  /// to rival select, and the next race (the save already stored this
+  /// raceNo) makes another board.
+  Future<PlayEntry?> _race(RacePlay request) async {
+    final rival = request.rival;
+    final raceNo = request.raceNo;
+    if (rival < 1 || rival > DifficultyCurve.raceRivals) return null;
+    if (raceNo < 1 || raceNo > DifficultyCurve.maxRaceNo) return null;
+    final document = _save.document;
+    if (!RaceRules.modeUnlocked(document.highestLevel, _remoteConfig)) {
+      return null;
+    }
+    if (!document.race.rivals[rival - 1].unlocked) return null;
+    final params = DifficultyCurve.raceParams(
+      rival: rival,
+      raceNo: raceNo,
+      highestWonLevel: RaceRules.stageLevel(document.highestLevel),
+    );
+    final generated = await _generator.generate(params);
+    if (generated == null) return null;
+    return PlayEntry(
+      request: request,
+      level: generated.level,
+      tier: generated.tier,
+      levelVersion: Generator.version,
+      rewardCoins: RaceRules.rewardCoins(rival, _remoteConfig),
+      themeId: _currentChapterThemeId(),
+      expertOnly: generated.expertOnly,
+    );
+  }
+
   /// Rebuilds a generated entry from its saved level JSON (rules 1–7,
   /// `ValidationOptions.loader`, no solver) rather than regenerating it
   /// (m3-design §6.2). Null when anything it needs is missing or invalid,
@@ -228,12 +304,14 @@ class DefaultLevelResolver implements LevelResolver {
       rewardCoins: switch (request) {
         BonusPlay() => winRewardFor(tier, _remoteConfig),
         DailyPlay() => _remoteConfig.value(RemoteConfigKeys.dailyReward),
-        CampaignPlay() => 0,
+        // Never restored: bundled boards load from the bundle, and a race
+        // is never saved (m7-design P2.4).
+        CampaignPlay() || ReplayPlay() || RacePlay() => 0,
       },
       themeId: switch (request) {
         BonusPlay() => _lastChapterThemeId(),
         DailyPlay() => _currentChapterThemeId(),
-        CampaignPlay() => '',
+        CampaignPlay() || ReplayPlay() || RacePlay() => '',
       },
     );
   }

@@ -5,7 +5,7 @@ import 'package:nesty_render/nesty_render.dart';
 /// §5): the level's own slot kinds, so a tower keeps its taller stand and a
 /// lock its case for the whole level (a broken lock and an emptied tower read
 /// back as open slots in core, but the furniture doesn't change under the
-/// dolls), plus the extra slots on the bottom shelf (D22).
+/// dolls), plus the extra slots on the bottom shelf (D22, D172).
 ///
 /// Pure, per event: the game, its tests and the page (which prepares the
 /// level's skin for the same geometry) all call it, so they agree.
@@ -16,11 +16,20 @@ BoardShape boardShapeOf(GameState state) {
     final shelf = level.shelves[r];
     rows.add([
       for (var c = 0; c < shelf.length; c++)
-        SlotShape(SlotId.grid(r, c), switch (shelf[c]) {
-          TowerSlot() => SlotShapeKind.tower,
-          LockedSlot() => SlotShapeKind.locked,
-          OpenSlot() => SlotShapeKind.open,
-        }),
+        SlotShape(
+          SlotId.grid(r, c),
+          switch (shelf[c]) {
+            TowerSlot() => SlotShapeKind.tower,
+            LockedSlot() => SlotShapeKind.locked,
+            OpenSlot() => SlotShapeKind.open,
+          },
+          // A sealed size-5 or size-6 doll gets the tall case (m7-3), so the
+          // layout needs its size (a case sealed at the start keeps it).
+          lockedSize: switch (shelf[c]) {
+            LockedSlot(:final nest) => nest?.outerSize,
+            _ => null,
+          },
+        ),
     ]);
   }
   for (final id in state.slotIds) {

@@ -31,67 +31,75 @@ class FigurineModal extends StatelessWidget {
     final l10n = context.localizations;
     final earned = entry.earned;
     final flavor = l10n.figurineFlavor(entry.figurineId);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        const Scrim(),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: ModalCard(
-              onClose: onClose,
-              closeSemanticLabel: l10n.closeSemantics,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Spotlight(entry: entry),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.figurineName(entry.figurineId),
-                    textAlign: TextAlign.center,
-                    style: AppTextStyleTokens.h2,
-                  ),
-                  if (earned && flavor.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      flavor,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyleTokens.body.copyWith(
-                        fontStyle: FontStyle.italic,
-                        color: AppColors.iconBrown,
-                      ),
-                    ),
-                  ],
-                  if (!earned) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.museumLockedText(entry.chapterNumber),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyleTokens.body.copyWith(
-                        color: AppColors.iconBrown,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 14),
-                  if (earned)
-                    _CollectedChip(collectedOn: entry.collectedOn)
-                  else ...[
-                    _ChapterBar(entry: entry),
+    // Over the cabinet, whose shelves can't be reached while it is up
+    // (review R11); the figurine's name names it.
+    return ModalSemanticsScope(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const Scrim(),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              child: ModalCard(
+                onClose: onClose,
+                closeSemanticLabel: l10n.closeSemantics,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Spotlight(entry: entry),
                     const SizedBox(height: 16),
-                    TactileButton(
-                      label: l10n.playLevel(homeLevelNumber),
-                      onPressed: onPlay,
-                      icon: NestyIcons.playArrow,
-                      size: TactileButtonSize.medium,
+                    Semantics(
+                      header: true,
+                      namesRoute: true,
+                      child: Text(
+                        l10n.figurineName(entry.figurineId),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyleTokens.h2,
+                      ),
                     ),
+                    if (earned && flavor.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        flavor,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyleTokens.body.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.iconBrown,
+                        ),
+                      ),
+                    ],
+                    if (!earned) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.museumLockedText(entry.chapterNumber),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyleTokens.body.copyWith(
+                          color: AppColors.iconBrown,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    if (earned)
+                      _CollectedChip(collectedOn: entry.collectedOn)
+                    else ...[
+                      _ChapterBar(entry: entry),
+                      const SizedBox(height: 16),
+                      TactileButton(
+                        label: l10n.playLevel(homeLevelNumber),
+                        onPressed: onPlay,
+                        icon: NestyIcons.playArrow,
+                        size: TactileButtonSize.medium,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -267,9 +275,11 @@ class _ChapterBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 7),
+        // Named, so it isn't a bare percent (review R37).
         NestyProgressBar(
           value: entry.total == 0 ? 0 : entry.done / entry.total,
           height: 16,
+          semanticLabel: l10n.winChapter(entry.chapterNumber),
         ),
       ],
     );

@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
-import 'package:nesty_game/core/services/audio/audio_service.dart';
-import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/timeline.dart';
@@ -71,7 +70,10 @@ void main() {
   });
 
   group('+1 Slot (frame 3.6, §7, §9.5)', () {
-    test('re-pitch 0–300, the stand pulses from 300, button @0', () {
+    test('re-pitch 0–280 (motion.rowOfFive), the stand pulses from 280, no cue '
+        'of its own '
+        '(the tapped button already played button + the selection haptic; '
+        'BACKLOG "+1 Slot plays button twice")', () {
       final old = h.geometry;
       final batch = h.addExtraSlot();
       final start = only<StartTween>(batch);
@@ -80,23 +82,33 @@ void main() {
       expect(repitch.from, same(old));
       expect(repitch.to, same(h.geometry));
       expect(h.geometry.slotOrNull('x0'), isNotNull);
-      expect(only<EndTween>(batch).atMs, at(300));
+      expect(only<EndTween>(batch).atMs, at(280));
 
       final pulse = startOf(batch, FxClipPurpose.extraSlot);
       final stand = h.geometry.slot('x0');
-      expect(pulse.atMs, at(300));
+      expect(pulse.atMs, at(280));
       expect(pulse.clip.fx, FxId.uiExtraSlot);
       expect(pulse.segment, const FxSegment(0, 96, loop: true));
       expect(pulse.clip.placement.x, stand.centerX);
       expect(pulse.clip.placement.y, stand.standCenterY);
       expect(pulse.clip.placement.scale, stand.furnitureScale);
+      // It opens on the file's `rest` marker, frame 0, which is the static
+      // pad's own pose since m7-3 (E.21, D184): no phase offset, no pop.
+      expect(FxTiming.extraSlotRestFrame, 0);
+      expect(pulse.segment.from, FxTiming.extraSlotRestFrame);
+      expect(pulse.phaseMs, 0);
 
-      expect(batch.cues, [
-        isCue(0, sound: SoundEffect.button, haptic: HapticPattern.button),
-      ]);
-      expect(batch.globalLockMs, at(300));
+      expect(
+        batch.cues,
+        isEmpty,
+        reason:
+            'the button that triggered this already played its own '
+            'button sound and selection haptic (TactileSurface); a cue '
+            'here would play them twice',
+      );
+      expect(batch.globalLockMs, at(280));
       expect(h.timeline.inputLocked, isTrue);
-      h.run(299);
+      h.run(279);
       expect(repitch.progress, greaterThan(0.99));
       expect(h.timeline.inputLocked, isTrue);
       h.run(1);
@@ -104,14 +116,14 @@ void main() {
       expect(repitch.progress, 1);
     });
 
-    test('the selection and the hint move onto the new layout at 300', () {
+    test('the selection and the hint move onto the new layout at 280', () {
       final lift = h.select('r1c1'); // red1, on the bottom shelf
       final pick = startOf(lift, FxClipPurpose.selection).clip;
       final glow = startOf(lift, FxClipPurpose.selectionGlow).clip;
       final batch = h.addExtraSlot();
       final places = batch.commandsOf<PlaceClip>().toList();
       expect(places.map((c) => c.clip), [pick, glow]);
-      expect(places.map((c) => c.atMs), [at(300), at(300)]);
+      expect(places.map((c) => c.atMs), [at(280), at(280)]);
       final slot = h.geometry.slot('r1c1');
       expect(places[0].placement.x, slot.centerX);
       expect(places[0].placement.y, slot.surfaceY);
@@ -149,17 +161,17 @@ void main() {
       final second = h.addExtraSlot();
       final start = only<StartTween>(second);
       final repitch = start.tween as RepitchTween;
-      // 120 ms in: it starts at the first one's end (300), from its layout.
-      expect(start.atMs, at(180));
+      // 120 ms in: it starts at the first one's end (280), from its layout.
+      expect(start.atMs, at(160));
       expect(repitch.from, same(firstRepitch.to));
       expect(repitch.to, same(h.geometry));
-      expect(only<EndTween>(second).atMs, at(480));
-      expect(startOf(second, FxClipPurpose.extraSlot).atMs, at(480));
-      expect(second.globalLockMs, at(480));
+      expect(only<EndTween>(second).atMs, at(440));
+      expect(startOf(second, FxClipPurpose.extraSlot).atMs, at(440));
+      expect(second.globalLockMs, at(440));
 
       // The first finishes before the second begins, and the board stays
       // locked through both.
-      h.run(179);
+      h.run(159);
       expect(firstRepitch.progress, greaterThan(0.99));
       expect(repitch.progress, 0);
       expect(h.timeline.inputLocked, isTrue);
@@ -172,12 +184,12 @@ void main() {
       expect(h.timeline.inputLocked, isFalse);
     });
 
-    test('reduced motion re-pitches in 150 ms', () {
+    test('reduced motion re-pitches in 140 ms', () {
       h = TimelineHarness(tutorial, motion: MotionSpec.reduced)..start();
       final batch = h.addExtraSlot();
-      expect(only<EndTween>(batch).atMs, at(150));
+      expect(only<EndTween>(batch).atMs, at(140));
       expect(startOf(batch, FxClipPurpose.extraSlot).segment.speed, 1);
-      expect(batch.globalLockMs, at(150));
+      expect(batch.globalLockMs, at(140));
     });
   });
 

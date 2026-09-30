@@ -13,7 +13,8 @@ import 'package:nesty_game/features/shop/cubit/skin_detail_cubit.dart';
 import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
 import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
-import 'package:nesty_game/features/shop/widgets/shop_colors.dart';
+import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
+import 'package:nesty_game/features/shop/widgets/shop_look.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -82,11 +83,13 @@ class SkinDetailView extends StatefulWidget {
   final VoidCallback onBack;
 
   /// Awaited: [PurchaseOutcome.bought] shows the twinkle,
-  /// [PurchaseOutcome.needsCoins] calls [onNeedCoins].
+  /// [PurchaseOutcome.needsCoins] opens `NotEnoughCoinsDialog`, whose "Go to
+  /// Shop" calls [onNeedCoins].
   final Future<PurchaseOutcome> Function() onBuy;
 
-  /// Opens the Shop's Coins tab: a Buy the balance can't cover (the price
-  /// is orange whatever the balance, frames 7.3/7.4/7.7; FIDELITY-7).
+  /// Opens the Shop's Coins tab, from `NotEnoughCoinsDialog`'s "Go to Shop"
+  /// (D112: a Buy the balance can't cover, frames 7.3/7.4/7.7, shows that
+  /// dialog first instead of jumping straight there).
   final VoidCallback onNeedCoins;
   final Future<bool> Function() onEquip;
 
@@ -161,7 +164,7 @@ class _SkinDetailViewState extends State<SkinDetailView> {
     );
   }
 
-  Future<void> _buy() async {
+  Future<void> _buy(SkinDetailState data) async {
     if (_buying) return;
     setState(() => _buying = true);
     final outcome = await widget.onBuy();
@@ -169,9 +172,17 @@ class _SkinDetailViewState extends State<SkinDetailView> {
     setState(() => _buying = false);
     switch (outcome) {
       case PurchaseOutcome.bought:
-        PurchaseTwinkleBurst.showOver(context);
+        PurchaseTwinkleBurst.celebrate(context);
       case PurchaseOutcome.needsCoins:
-        widget.onNeedCoins();
+        unawaited(
+          NotEnoughCoinsDialog.show(
+            context,
+            price: data.skin.priceCoins,
+            balance: data.coins,
+            itemName: context.localizations.skinNameOf(data.skin.id),
+            onGoToShop: widget.onNeedCoins,
+          ),
+        );
       case PurchaseOutcome.unavailable:
         break;
     }
@@ -226,7 +237,7 @@ class _SkinDetailViewState extends State<SkinDetailView> {
     final l10n = context.localizations;
     final library = context.read<FxLibrary>();
     final symbols = context.read<DatabaseService>().symbolsMode.dollSymbols;
-    final description = l10n.skinDescription(data.skin.id);
+    final description = l10n.skinDescriptionOf(data.skin.id);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -284,8 +295,11 @@ class _SkinDetailViewState extends State<SkinDetailView> {
           ),
           const SizedBox(height: 24),
           Text(
-            l10n.skinName(data.skin.id),
-            style: AppTextStyles.display.copyWith(fontSize: 30),
+            l10n.skinNameOf(data.skin.id),
+            style: AppTextStyles.display.copyWith(
+              fontSize: 38,
+              color: AppColorTokens.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           if (description.isNotEmpty) ...[
@@ -327,9 +341,17 @@ class _SkinDetailViewState extends State<SkinDetailView> {
         variant: TactileButtonVariant.secondary,
       );
     }
-    return _BuyButton(
-      price: data.skin.priceCoins,
-      onPressed: _buying ? null : _buy,
+    return Padding(
+      // left/right 24 in the frame; the page already pads 16.
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: ShopBuyButton(
+        price: data.skin.priceCoins,
+        label: l10n.shopBuy,
+        onPressed: _buying ? null : () => _buy(data),
+        height: 62,
+        radius: 22,
+        edge: 6,
+      ),
     );
   }
 }
@@ -354,20 +376,21 @@ class _ColourPanel extends StatelessWidget {
   final DollSymbols symbols;
   final FxLibrary library;
 
-  static const _radius = BorderRadius.all(Radius.circular(26));
+  static const _radius = BorderRadius.all(
+    Radius.circular(ShopTokens.detailPanelRadius),
+  );
 
   @override
   Widget build(BuildContext context) {
     return NestySurface(
       style: SurfaceStyle(
-        gradient: SkinShopColors.cardBackground(skinId),
-        shadows: const [
+        gradient: ShopLook.panel(skinId),
+        shadows: [
+          ...ShopTokens.detailPanelHighlight,
           NestyShadow(
-            color: SkinShopColors.detailPanelHighlight,
-            inset: true,
-            dy: 2,
+            color: ShopLook.edge(skinId),
+            dy: ShopTokens.detailPanelEdgeWidth,
           ),
-          NestyShadow(color: SkinShopColors.detailPanelEdge, dy: 6),
         ],
       ),
       radius: _radius,
@@ -393,9 +416,9 @@ class _ColourPanel extends StatelessWidget {
               left: 12,
               top: 12,
               child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: SkinShopColors.detailCaptionFace,
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                decoration: BoxDecoration(
+                  color: ShopLook.captionFace(skinId),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -404,10 +427,8 @@ class _ColourPanel extends StatelessWidget {
                   ),
                   child: Text(
                     caption,
-                    style: AppTextStyleTokens.button.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: SkinShopColors.detailCaptionText,
+                    style: ShopTokens.detailPanelTagText.copyWith(
+                      color: ShopLook.caption(skinId),
                     ),
                   ),
                 ),
@@ -443,86 +464,6 @@ class _ColourPanel extends StatelessWidget {
             skin: art,
             symbols: symbols,
             library: library,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Frame 7.4's Buy button: "Buy" and a translucent coin chip with the
-/// price trailing it (the Daily Play button's layout, frame 5.1), read as
-/// one label. [TactileButton] has no trailing slot, so this composes
-/// [TactileSurface] directly.
-class _BuyButton extends StatelessWidget {
-  const _BuyButton({required this.price, required this.onPressed});
-
-  final int price;
-  final VoidCallback? onPressed;
-
-  static const _variant = TactileButtonVariant.primary;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.localizations;
-    final enabled = onPressed != null;
-    final foreground = enabled ? _variant.foreground : AppColors.disabledText;
-    final textShadow = enabled ? _variant.textShadow : null;
-    return Padding(
-      // left/right 24 in the frame; the page already pads 16.
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: TactileSurface(
-        style: _variant.surface(6),
-        disabledStyle: SurfaceStyles.disabled,
-        radius: const BorderRadius.all(Radius.circular(22)),
-        onPressed: onPressed,
-        width: double.infinity,
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        semanticLabel: l10n.shopBuySemantics(price),
-        excludeChildSemantics: true,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.shopBuy,
-                style: AppTextStyleTokens.button.copyWith(
-                  fontSize: 22,
-                  color: foreground,
-                  shadows: textShadow == null
-                      ? null
-                      : [Shadow(color: textShadow, offset: const Offset(0, 2))],
-                ),
-                maxLines: 1,
-                softWrap: false,
-              ),
-              const SizedBox(width: 10),
-              DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: SkinShopColors.buyChipFace,
-                  borderRadius: BorderRadius.all(Radius.circular(14)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(6, 6, 10, 6),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CoinIcon(size: 22, disabled: !enabled),
-                      const SizedBox(width: 6),
-                      NestyNumberText(
-                        price,
-                        style: AppTextStyleTokens.number.copyWith(
-                          fontSize: 19,
-                          color: foreground,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),

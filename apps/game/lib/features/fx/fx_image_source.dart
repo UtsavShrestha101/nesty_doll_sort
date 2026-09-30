@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/ui/art/ui_art.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 /// Which doll of a clip an image slot or `<role>_size` null belongs to
@@ -15,13 +16,27 @@ enum FxRole {
 
   /// The doll it lands on (or is rejected by).
   target,
+
+  /// `ui_intro_towers`: the doll revealed under the moving top nest. The
+  /// intro loops author their own doll sizes (their `<role>_size` nulls
+  /// animate), so the game only colours these roles.
+  revealed,
+
+  /// `ui_intro_glass`, `ui_intro_ice`: the family that completes.
+  family,
+
+  /// `ui_intro_ice`: the second family (`family_2_*`).
+  family2,
+
+  /// `ui_intro_glass`, `ui_intro_ice`: the doll freed from the case or ice.
+  freed,
 }
 
 /// Which part of a doll a slot shows (docs/plans/m2-lottie-design.md §4:
 /// the hard split at art y 400).
 enum FxDollPart { lid, body, silhouette }
 
-/// Every image asset id in the 29 files (LOTTIE.md "Image slots"). The game
+/// Every image asset id in the 35 files (LOTTIE.md "Image slots"). The game
 /// fills each one with its own raster; the placeholder PNGs in
 /// `design/lottie/images/` are never shipped or decoded (PROGRESS D50).
 ///
@@ -80,7 +95,78 @@ enum FxImageSlot {
   ice1('ice_1', 288, 480, piece: BoardSprite.ice1),
   ice2('ice_2', 288, 480, piece: BoardSprite.ice2),
   ice3('ice_3', 288, 480, piece: BoardSprite.ice3),
-  iceShatter('ice_shatter', 288, 480, piece: BoardSprite.iceShatter);
+  iceShatter('ice_shatter', 288, 480, piece: BoardSprite.iceShatter),
+
+  // m7-3 (LOTTIE.md "Image slots"). The tall glass case frames, 93×152 at
+  // 3×, in `fx_glass_unlock_tall` (phase 4 architecture §2.3).
+  glassCaseTall0(
+    'glass_case_tall_0',
+    279,
+    456,
+    piece: BoardSprite.glassCaseTall0,
+  ),
+  glassCaseTall1(
+    'glass_case_tall_1',
+    279,
+    456,
+    piece: BoardSprite.glassCaseTall1,
+  ),
+  glassCaseTall2(
+    'glass_case_tall_2',
+    279,
+    456,
+    piece: BoardSprite.glassCaseTall2,
+  ),
+
+  /// `ui_stars`: the stars at 44×44 (the glow 73.3), UI art at 3×, filled by
+  /// `UiArtImageSource` (§3.4).
+  starFilled('star_filled', 132, 132, art: UiArt.starFilled),
+  starEmpty('star_empty', 132, 132, art: UiArt.starEmpty),
+  starGlow('star_glow', 220, 220, art: UiArt.starGlow),
+
+  /// `ui_chest`: the chest at 130×108.3, UI art at 3×.
+  chestClosed('chest_closed', 390, 325, art: UiArt.chestClosed),
+  chestOpen('chest_open', 390, 325, art: UiArt.chestOpen),
+
+  /// The intro loops' dolls (512×768 artboards).
+  revealedLid(
+    'revealed_lid',
+    512,
+    768,
+    role: FxRole.revealed,
+    part: FxDollPart.lid,
+  ),
+  revealedBody(
+    'revealed_body',
+    512,
+    768,
+    role: FxRole.revealed,
+    part: FxDollPart.body,
+  ),
+  familyLid('family_lid', 512, 768, role: FxRole.family, part: FxDollPart.lid),
+  familyBody(
+    'family_body',
+    512,
+    768,
+    role: FxRole.family,
+    part: FxDollPart.body,
+  ),
+  family2Lid(
+    'family_2_lid',
+    512,
+    768,
+    role: FxRole.family2,
+    part: FxDollPart.lid,
+  ),
+  family2Body(
+    'family_2_body',
+    512,
+    768,
+    role: FxRole.family2,
+    part: FxDollPart.body,
+  ),
+  freedLid('freed_lid', 512, 768, role: FxRole.freed, part: FxDollPart.lid),
+  freedBody('freed_body', 512, 768, role: FxRole.freed, part: FxDollPart.body);
 
   const FxImageSlot(
     this.assetId,
@@ -89,6 +175,7 @@ enum FxImageSlot {
     this.role,
     this.part,
     this.piece,
+    this.art,
   });
 
   /// Asset px per box unit of the board pieces and the unlock symbol
@@ -102,8 +189,8 @@ enum FxImageSlot {
   final double assetWidth;
   final double assetHeight;
 
-  /// Asset px per box unit: [pieceDensity] for the board pieces and the
-  /// unlock symbol, 1 for the doll slots.
+  /// Asset px per box unit: [pieceDensity] for the board pieces, the UI art
+  /// and the unlock symbol, 1 for the doll slots.
   double get density => isDoll ? 1 : pieceDensity;
 
   /// The box the slot's art fills, in the units of [FxRaster.scale] and
@@ -120,6 +207,12 @@ enum FxImageSlot {
 
   /// The board sprite that fills it, for board pieces.
   final BoardSprite? piece;
+
+  /// The UI illustration that fills it (`ui_stars`, `ui_chest`: m7-3, phase
+  /// 4 architecture §3.4), declared at [pieceDensity] like the board pieces.
+  /// The board's `LevelSkinImages` leaves these null; `UiArtImageSource`
+  /// fills them.
+  final UiArt? art;
 
   bool get isDoll => role != null;
 
@@ -175,6 +268,13 @@ final class FxImageRequest {
   /// Colour of the [FxRole.target] slots; null draws nothing there.
   DollColor? target;
 
+  /// Colours of the intro loops' roles ([FxRole.revealed], [FxRole.family],
+  /// [FxRole.family2], [FxRole.freed]); null draws nothing there.
+  DollColor? revealed;
+  DollColor? family;
+  DollColor? family2;
+  DollColor? freed;
+
   /// Draws the [FxRole.doll] slots empty although [doll] is set: the doll of
   /// an iced composition while its slot is also locked (the glass
   /// composition draws it), or while a sprite draws it.
@@ -200,6 +300,10 @@ final class FxImageRequest {
     FxRole.doll => hideDoll ? null : doll,
     FxRole.mover => hideMover ? null : mover,
     FxRole.target => hideTarget ? null : target,
+    FxRole.revealed => revealed,
+    FxRole.family => family,
+    FxRole.family2 => family2,
+    FxRole.freed => freed,
   };
 
   /// Back to the defaults, for a clip returned to its pool.
@@ -207,6 +311,10 @@ final class FxImageRequest {
     doll = null;
     mover = null;
     target = null;
+    revealed = null;
+    family = null;
+    family2 = null;
+    freed = null;
     hideDoll = false;
     hideMover = false;
     hideTarget = false;

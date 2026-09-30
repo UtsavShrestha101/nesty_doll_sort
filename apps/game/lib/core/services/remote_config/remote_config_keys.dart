@@ -13,7 +13,8 @@ final class RemoteConfigKey<T extends Object> {
   String toString() => 'RemoteConfigKey<$T>($name = $defaultValue)';
 }
 
-/// Every Remote Config key of spec §9.4, with exactly its default.
+/// Every Remote Config key of spec §9.4 (and spec-prop §9.4's M7 keys),
+/// with exactly its default.
 ///
 /// This is the single place defaults live. Add a key here (and to [all]),
 /// never inline a default at a call site.
@@ -89,6 +90,46 @@ abstract final class RemoteConfigKeys {
     15,
   );
 
+  // The milestone chest — spec-prop §7.3, §9.4 (M7 E5, Q76;
+  // docs/plans/m7-design.md §5, §9).
+  static const chestCoins = RemoteConfigKey<int>._('chest_coins', 100);
+  static const chestHints = RemoteConfigKey<int>._('chest_hints', 1);
+
+  // vs Computer — spec-prop §7.7, §9.4 (M7 phase 2, D93, Q77–Q80;
+  // m7-design §5). Declared with the phase-1 contracts so the Home tile
+  // can name its unlock level.
+  /// The race unlocks once this level is won.
+  static const raceUnlockLevel = RemoteConfigKey<int>._(
+    'race_unlock_level',
+    20,
+  );
+
+  /// Rival 1–3's milliseconds per move.
+  static const racePaceMs1 = RemoteConfigKey<int>._('race_pace_ms_1', 3000);
+  static const racePaceMs2 = RemoteConfigKey<int>._('race_pace_ms_2', 2400);
+  static const racePaceMs3 = RemoteConfigKey<int>._('race_pace_ms_3', 1600);
+
+  /// Each interval varies by up to this percentage, from the race's seeded
+  /// PRNG.
+  static const racePaceJitterPct = RemoteConfigKey<int>._(
+    'race_pace_jitter_pct',
+    20,
+  );
+
+  /// Coins a win against rival 1–3 pays.
+  static const raceReward1 = RemoteConfigKey<int>._('race_reward_1', 20);
+  static const raceReward2 = RemoteConfigKey<int>._('race_reward_2', 30);
+  static const raceReward3 = RemoteConfigKey<int>._('race_reward_3', 40);
+
+  // The star rating — spec-prop §7.10, §9.4 (M7 phase 3, D125;
+  // docs/plans/m7-design.md P3.3). Readers clamp both into
+  // `0..StarRating.maxSlackPct` (`StarRules.slackOf`).
+  /// 3 stars at moves ≤ par + ⌈par × this ÷ 100⌉.
+  static const star3SlackPct = RemoteConfigKey<int>._('star3_slack_pct', 20);
+
+  /// 2 stars at moves ≤ par + ⌈par × this ÷ 100⌉.
+  static const star2SlackPct = RemoteConfigKey<int>._('star2_slack_pct', 60);
+
   /// Every key, e.g. for pushing defaults into Firebase Remote Config (M4).
   static const List<RemoteConfigKey<Object>> all = [
     interstitialFirstLevel,
@@ -110,6 +151,18 @@ abstract final class RemoteConfigKeys {
     streak7Reward,
     removeAdsOfferAfterInterstitials,
     ratePromptLevel,
+    chestCoins,
+    chestHints,
+    raceUnlockLevel,
+    racePaceMs1,
+    racePaceMs2,
+    racePaceMs3,
+    racePaceJitterPct,
+    raceReward1,
+    raceReward2,
+    raceReward3,
+    star3SlackPct,
+    star2SlackPct,
   ];
 
   /// `{name: default}` for every key.

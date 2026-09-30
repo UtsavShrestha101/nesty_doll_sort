@@ -1,35 +1,47 @@
+import 'dart:async';
+
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/repository/catalog_models.dart';
+import 'package:nesty_game/core/ui/art/theme_thumbnail_loader.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
+import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
 import 'package:nesty_render/nesty_render.dart' show ChapterTheme;
 
-/// One Themes-tab tile (frame 7.7): the chapter's colour, its name, then In
-/// use (green ring) / Use / a locked "Ch N" price.
-///
-/// TODO(design): the tile shows the chapter's flat fallback colour, not its
-/// scenic background art. `SkinService.background` is one shared
-/// full-screen rasterizer (one theme at a time); showing six thumbnails at
-/// once needs its own small-preview cache, which no frame or m3-design
-/// section asks for. Flagged for the integrator/a later milestone.
+/// One Themes-tab tile (frame 7.7; menus spec 8.2): the chapter's own crop
+/// of its background art (158×74, radius 16, `ThemeThumbnail`), its name,
+/// then In use (green ring) / Use / a locked "lock · Ch N" chip on the crop
+/// with the price button (the buy coin chip) below. A locked crop stays in
+/// full colour here, unlike Chapters' greyed rows.
 class ThemeGridCard extends StatelessWidget {
   const ThemeGridCard({
     required this.theme,
     required this.owned,
     required this.inUse,
+    required this.coins,
     required this.onUse,
     required this.onBuy,
+    required this.onGoToCoins,
     super.key,
   });
 
   final ThemeInfo theme;
   final bool owned;
   final bool inUse;
+
+  /// The player's balance, for `NotEnoughCoinsDialog` (D112).
+  final int coins;
   final VoidCallback onUse;
 
   /// Awaited by the caller, which shows the purchase celebration on
-  /// success.
-  final Future<bool> Function() onBuy;
+  /// [PurchaseOutcome.bought] and, on [PurchaseOutcome.needsCoins], opens
+  /// `NotEnoughCoinsDialog` (D112).
+  final Future<PurchaseOutcome> Function() onBuy;
+
+  /// `NotEnoughCoinsDialog`'s "Go to Shop": switches the already-open Shop
+  /// to its Coins tab.
+  final VoidCallback onGoToCoins;
 
   static const double thumbnailHeight = 74;
 
@@ -45,21 +57,19 @@ class ThemeGridCard extends StatelessWidget {
           if (ring != null) NestyShadow(color: ring, spread: 3),
         ],
       ),
-      radius: const BorderRadius.all(Radius.circular(20)),
+      radius: const BorderRadius.all(Radius.circular(26)),
       padding: const EdgeInsets.all(8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(13)),
-            child: Stack(
+          LayoutBuilder(
+            builder: (context, constraints) => Stack(
               children: [
-                Container(
-                  height: thumbnailHeight,
-                  color:
-                      ChapterTheme.byId(theme.id)?.fallbackColor ??
-                      AppColorTokens.surfaceSunk,
+                ThemeThumbnail(
+                  theme: ChapterTheme.byId(theme.id) ?? ChapterTheme.ch01,
+                  size: Size(constraints.maxWidth, thumbnailHeight),
+                  radius: 16,
                 ),
                 if (!owned)
                   PositionedDirectional(
@@ -73,21 +83,42 @@ class ThemeGridCard extends StatelessWidget {
           const SizedBox(height: 7),
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 2),
-            child: Text(
-              l10n.chapterName(theme.id),
-              style: AppTextStyles.cardTitle.copyWith(fontSize: 14),
-              maxLines: 1,
-              softWrap: false,
-              overflow: TextOverflow.ellipsis,
+            // Scales down rather than cut (m7-design §15's shared rule;
+            // "Rainy Café Corner" at 1.3× on 360 dp, review R29).
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                l10n.chapterName(theme.id),
+                style: AppTextStyles.cardTitle.copyWith(
+                  fontSize: 19,
+                  color: AppColorTokens.textPrimary,
+                ),
+                maxLines: 1,
+                softWrap: false,
+              ),
             ),
           ),
           const SizedBox(height: 7),
+          // Frame 7.7 draws Use at 30 and the price at 38 in a fixed-height
+          // cell: each answers across 48 dp over the gap above it and the
+          // card's padding below instead of growing the card (review R19).
           if (inUse)
             _InUsePill(label: l10n.themeInUse)
           else if (owned)
-            _UseButton(label: l10n.themeUse, onTap: onUse)
+            TouchSlop(
+              child: _UseButton(label: l10n.themeUse, onTap: onUse),
+            )
           else
-            _LockedBuyButton(price: theme.priceCoins, onTap: onBuy),
+            TouchSlop(
+              child: _LockedBuyButton(
+                themeId: theme.id,
+                price: theme.priceCoins,
+                coins: coins,
+                onTap: onBuy,
+                onGoToCoins: onGoToCoins,
+              ),
+            ),
         ],
       ),
     );
@@ -100,8 +131,9 @@ class _LockChip extends StatelessWidget {
 
   final int number;
 
-  static const _face = Color(0xB82D190A);
-  static const _text = Color(0xFFFFEFD6);
+  // Frame 7.7: `rgba(60,30,10,.7)` with white Fredoka 700 12.
+  static const _face = Color(0xB33C1E0A);
+  static const _text = Color(0xFFFFFFFF);
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -119,7 +151,7 @@ class _LockChip extends StatelessWidget {
           Text(
             context.localizations.themeChapterLock(number),
             style: AppTextStyleTokens.button.copyWith(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               color: _text,
             ),
@@ -135,14 +167,12 @@ class _InUsePill extends StatelessWidget {
 
   final String label;
 
-  static const _face = Color(0xFFDDF3E2);
-
   @override
   Widget build(BuildContext context) => NestySurface(
     style: const SurfaceStyle(
-      color: _face,
+      color: AppColorTokens.successTint,
       shadows: [
-        NestyShadow(color: AppColorTokens.success, inset: true, spread: 2),
+        NestyShadow(color: AppColorTokens.successRing, inset: true, spread: 2),
       ],
     ),
     radius: const BorderRadius.all(Radius.circular(12)),
@@ -153,7 +183,7 @@ class _InUsePill extends StatelessWidget {
       style: AppTextStyleTokens.button.copyWith(
         fontSize: 13,
         fontWeight: FontWeight.w700,
-        color: AppColorTokens.success,
+        color: AppColorTokens.successEdge,
       ),
     ),
   );
@@ -184,10 +214,19 @@ class _UseButton extends StatelessWidget {
 }
 
 class _LockedBuyButton extends StatefulWidget {
-  const _LockedBuyButton({required this.price, required this.onTap});
+  const _LockedBuyButton({
+    required this.themeId,
+    required this.price,
+    required this.coins,
+    required this.onTap,
+    required this.onGoToCoins,
+  });
 
+  final String themeId;
   final int price;
-  final Future<bool> Function() onTap;
+  final int coins;
+  final Future<PurchaseOutcome> Function() onTap;
+  final VoidCallback onGoToCoins;
 
   @override
   State<_LockedBuyButton> createState() => _LockedBuyButtonState();
@@ -199,18 +238,33 @@ class _LockedBuyButtonState extends State<_LockedBuyButton> {
   Future<void> _tap() async {
     if (_buying) return;
     setState(() => _buying = true);
-    final ok = await widget.onTap();
+    final outcome = await widget.onTap();
     if (!mounted) return;
     setState(() => _buying = false);
-    if (ok) PurchaseTwinkleBurst.showOver(context);
+    switch (outcome) {
+      case PurchaseOutcome.bought:
+        PurchaseTwinkleBurst.celebrate(context);
+      case PurchaseOutcome.needsCoins:
+        unawaited(
+          NotEnoughCoinsDialog.show(
+            context,
+            price: widget.price,
+            balance: widget.coins,
+            itemName: context.localizations.chapterName(widget.themeId),
+            onGoToShop: widget.onGoToCoins,
+          ),
+        );
+      case PurchaseOutcome.unavailable:
+        break;
+    }
   }
 
   @override
-  Widget build(BuildContext context) => TactileButton(
-    label: context.localizations.coinPrice(widget.price),
+  Widget build(BuildContext context) => ShopBuyButton(
+    price: widget.price,
     onPressed: _buying ? null : _tap,
-    variant: TactileButtonVariant.primary,
-    size: TactileButtonSize.compact,
-    leading: const CoinIcon(size: 18),
+    height: 38,
+    radius: 14,
+    edge: 4,
   );
 }

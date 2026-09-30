@@ -1,3 +1,5 @@
+import 'package:nesty_game/core/models/reduce_motion_mode.dart';
+import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 
 /// Local storage: device settings (spec §13.3 `"settings"`) and the raw
@@ -38,6 +40,46 @@ abstract interface class DatabaseService {
   /// under it.
   Stream<SymbolsMode> get symbolsModeChanges;
 
+  /// Relaxed mode (E6, spec-prop §8; m7-design §10): undo is free and
+  /// unlimited in every mode. Off by default.
+  bool get relaxedMode;
+  Future<void> setRelaxedMode(bool enabled);
+
+  /// Emits the Relaxed mode setting every time the stored value changes,
+  /// including a rollback or deletion back to the default. Each emission
+  /// equals what [relaxedMode] reads at that point. The gameplay bloc
+  /// follows it, so a toggle made from Pause → Settings applies to the
+  /// level in play.
+  Stream<bool> get relaxedModeChanges;
+
+  /// The in-app reduce-motion override (E14, spec-prop §16; m7-design
+  /// §14). `ReduceMotionMode.system` by default.
+  ReduceMotionMode get reduceMotion;
+  Future<void> setReduceMotion(ReduceMotionMode mode);
+
+  /// Emits the reduce-motion override every time the stored value changes,
+  /// including a rollback or deletion back to the default. Each emission
+  /// equals what [reduceMotion] reads at that point. The app root follows
+  /// it (`MediaQuery.disableAnimations`).
+  Stream<ReduceMotionMode> get reduceMotionChanges;
+
+  /// The opt-in daily reminder (E4, spec-prop §7.9; m7-design P3.10):
+  /// `SettingsDefaults.reminder` (off, 19:00, not offered) on a fresh
+  /// install. A stored value of the wrong type, or a time outside 0–23 /
+  /// 0–59, reads as its default.
+  ReminderSettings get reminder;
+
+  /// Stores all four reminder keys in one write (Hive: one `putAll`).
+  Future<void> setReminder(ReminderSettings reminder);
+
+  /// Emits the reminder settings after any of its four keys changes,
+  /// including a rollback or deletion back to the default. Only a value
+  /// that differs from the last one (from what was stored when the stream
+  /// was taken) is emitted, so one [setReminder] emits once and a write of
+  /// the same settings emits nothing. Each emission equals what [reminder]
+  /// reads at that point. `DailyReminder` follows it and reschedules.
+  Stream<ReminderSettings> get reminderChanges;
+
   /// Persisted locale code, e.g. `en` or `pt_BR`.
   String get languageCode;
   Future<void> setLanguage(String languageCode);
@@ -68,3 +110,15 @@ abstract interface class DatabaseService {
   /// Flushes and closes the underlying storage. Called on DI reset.
   Future<void> close();
 }
+
+/// A [DatabaseService] that lives only as long as the process, in place of
+/// the device's storage: the real env's fallback when Hive can't open
+/// (`HiveDatabaseService.openOrFallback`). Its reads are the defaults, not
+/// the player's choices, so a caller that mirrors a setting into the OS
+/// (`DailyReminder`: never cancel a reminder an earlier session scheduled)
+/// or does something only once (the reminder offer) checks
+/// `is SessionOnlyDatabase` first (M7 review R30).
+///
+/// A marker rather than a getter on [DatabaseService], so no other
+/// implementation or test double has to change.
+abstract interface class SessionOnlyDatabase implements DatabaseService {}

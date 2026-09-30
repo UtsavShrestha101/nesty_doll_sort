@@ -38,8 +38,10 @@ class RibbonTitle extends StatelessWidget {
         NestyShadow(color: edgeColor, dy: 4),
       ],
     );
+    // A modal's title: it names the overlay's route (ModalSemanticsScope).
     return Semantics(
       header: true,
+      namesRoute: true,
       child: NestySurface(
         style: style,
         radius: const BorderRadius.all(Radius.circular(16)),

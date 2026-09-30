@@ -22,7 +22,11 @@ import '../../helpers/test_dependencies.dart';
 /// (CORRECTNESS-6).
 void main() {
   setUpAll(loadBundledFonts);
-  setUp(configureTestDependencies);
+  setUp(() async {
+    await configureTestDependencies();
+    // These start at Home: a fresh save opens Level 1 (E9).
+    await seedSavePastFirstLevel();
+  });
   tearDown(resetDependencies);
 
   Finder navLabel(String label) => find.descendant(
@@ -118,8 +122,11 @@ void main() {
     expect(shopTab(tester), ShopTab.themes);
   });
 
-  testWidgets('an unaffordable Buy on a skin detail returns to the Shop on '
-      'its Coins tab (FIDELITY-7)', (tester) async {
+  testWidgets('an unaffordable Buy on a skin detail opens '
+      'NotEnoughCoinsDialog first; its Go to Shop returns to the Shop on '
+      'its Coins tab (D112, replaces the FIDELITY-7 direct jump)', (
+    tester,
+  ) async {
     await boot(tester); // A fresh save: 0 coins.
     await tester.tap(navLabel('Shop'));
     await pumpFor(tester, const Duration(seconds: 1));
@@ -130,6 +137,14 @@ void main() {
     await tester.tap(find.text('Buy'));
     await pumpFor(tester, const Duration(seconds: 1));
 
+    // The dialog opens first: the skin detail page is still underneath.
+    expect(find.byType(NotEnoughCoinsDialog), findsOneWidget);
+    expect(find.byType(SkinDetailPage), findsOneWidget);
+
+    await tester.tap(find.text('Go to Shop'));
+    await pumpFor(tester, const Duration(seconds: 1));
+
+    expect(find.byType(NotEnoughCoinsDialog), findsNothing);
     expect(find.byType(SkinDetailPage), findsNothing);
     expect(find.byType(ShopPage), findsOneWidget);
     expect(shopTab(tester), ShopTab.coins);

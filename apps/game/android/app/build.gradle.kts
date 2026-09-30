@@ -13,6 +13,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // flutter_local_notifications (the daily reminder, M7 E4) uses
+        // java.time on API 24–25, which needs core-library desugaring.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -76,4 +79,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // The desugared java.time for flutter_local_notifications (see
+    // compileOptions above); 2.1.4 is the version its README names.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

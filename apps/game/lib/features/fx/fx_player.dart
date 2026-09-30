@@ -75,6 +75,11 @@ abstract final class FxMotionPolicy {
     FxId.dollWinDance ||
     FxId.dollWinHop ||
     FxId.fxTwinkle => FxMotionClass.ambient,
+    // The intro card's loops rest still on frame 0 under reduced motion
+    // (LOTTIE.md "Mechanic intro card"; phase 4 architecture §0.1 D).
+    FxId.uiIntroTowers ||
+    FxId.uiIntroGlass ||
+    FxId.uiIntroIce => FxMotionClass.ambient,
     FxId.dollPick when segment == 'wobble' => FxMotionClass.ambient,
     FxId.fxSelectGlow when segment == 'pulse' => FxMotionClass.informational,
     FxId.uiHintArrow ||

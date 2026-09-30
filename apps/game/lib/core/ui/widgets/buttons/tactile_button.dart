@@ -24,6 +24,7 @@ class TactileButton extends StatelessWidget {
     this.leading,
     this.expand = true,
     this.semanticLabel,
+    this.minTouchSize,
     super.key,
   });
 
@@ -43,6 +44,11 @@ class TactileButton extends StatelessWidget {
 
   /// Overrides the label read by screen readers.
   final String? semanticLabel;
+
+  /// Grows the touch area and screen-reader node around a shorter face
+  /// ([TactileSurface.minTouchSize]): a compact (38) button standing alone
+  /// passes 48 dp (spec §10.3).
+  final Size? minTouchSize;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +86,7 @@ class TactileButton extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: size.padding),
       semanticLabel: semanticLabel ?? label,
       excludeChildSemantics: true,
+      minTouchSize: minTouchSize,
       child: FittedBox(fit: BoxFit.scaleDown, child: content),
     );
   }

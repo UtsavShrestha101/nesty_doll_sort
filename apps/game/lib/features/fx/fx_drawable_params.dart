@@ -33,10 +33,44 @@ final class FxDrawableParams {
 
   /// Sets `<role>_size` to [k] (1 = a 150-unit doll); null restores the
   /// authored scale. `FxLayout.applyDollHeights` computes the factors.
-  void setSize(FxRole role, double? k) {
-    _sizes[role.index] = k == null ? null : Offset(k, k);
+  /// [stretchY] compensates a host that stretches the whole composition
+  /// vertically (the tall ice, 1.05): the height factor is `k / stretchY`,
+  /// so the doll keeps its proportions.
+  void setSize(FxRole role, double? k, {double stretchY = 1}) {
+    _sizes[role.index] = k == null ? null : Offset(k, k / stretchY);
     _revision++;
   }
+
+  /// `fx_glass_unlock_tall`'s `case_size` null (`FxSpec.scaleNulls`; m7-3
+  /// LOTTIE.md "= the case_size null"): the tall case scales with the sealed
+  /// doll, `h / (150 · fs)` like `doll_size` (phase 4 architecture §2.3).
+  /// Null keeps the authored scale. Lane B's delegate reads it.
+  double? get caseScale => _caseScale;
+  set caseScale(double? value) {
+    if (value == _caseScale) return;
+    _caseScale = value;
+    _caseScaleOffset = value == null ? null : Offset(value, value);
+    _revision++;
+  }
+
+  double? _caseScale;
+  Offset? _caseScaleOffset;
+
+  /// [caseScale] as the delegate's value (built once when it is set).
+  Offset? get caseScaleOffset => _caseScaleOffset;
+
+  /// The padlock's ping (E.13): the unlock symbol's scale (its image layer's,
+  /// about its own anchor) is multiplied by this while a tap on a sealed case
+  /// plays (1 = as authored, up to 1.15 and back over 160 ms). The golden
+  /// lock is part of the case's art, so it stays.
+  double get padlockPing => _padlockPing;
+  set padlockPing(double value) {
+    if (value == _padlockPing) return;
+    _padlockPing = value;
+    _revision++;
+  }
+
+  double _padlockPing = 1;
 
   // ── Fills (LOTTIE.md "Doll size, rim and tint"). ──
 
@@ -139,6 +173,9 @@ final class FxDrawableParams {
     _travelDst = null;
     _targetPos = null;
     _revealDropUnits = null;
+    _caseScale = null;
+    _caseScaleOffset = null;
+    _padlockPing = 1;
     trailPoint = null;
     textNullPosition = Offset.zero;
     textNullScale = 1;

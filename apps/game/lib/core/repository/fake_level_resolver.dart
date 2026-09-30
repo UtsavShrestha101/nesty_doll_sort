@@ -10,8 +10,10 @@ import 'package:nesty_game/features/gameplay/bloc/win_reward.dart';
 
 /// A scriptable [LevelResolver] for tests: campaign requests come from
 /// [LevelRepository] (paid `winRewardFor(tier)`, in their chapter; no
-/// chapter is ever complete), generated requests from [generated], which a
-/// test fills (unknown ones resolve to null).
+/// chapter is ever complete), replays too for a won order (paid 0, as
+/// `DefaultLevelResolver`, m7-design §6), generated requests (bonus, daily
+/// and race, m7-design P2.4) from [generated], which a test fills (unknown
+/// ones resolve to null).
 ///
 /// Not bound by DI: `DefaultLevelResolver` (m3-design §6.2) serves both
 /// environments; this class is a hand-scripted double for tests only.
@@ -27,7 +29,7 @@ class FakeLevelResolver implements LevelResolver {
   final SaveService _save;
   final RemoteConfigService _remoteConfig;
 
-  /// Bonus and daily entries a test provides.
+  /// Bonus, daily and race entries a test provides.
   final Map<PlayRequest, PlayEntry> generated;
 
   /// Requests [prefetch] was asked for, oldest first.
@@ -36,8 +38,19 @@ class FakeLevelResolver implements LevelResolver {
   @override
   Future<PlayEntry?> resolve(PlayRequest request) async => switch (request) {
     CampaignPlay(:final order) => _campaign(order),
-    BonusPlay() || DailyPlay() => generated[request],
+    ReplayPlay(:final order) => _replay(order),
+    BonusPlay() || DailyPlay() || RacePlay() => generated[request],
   };
+
+  PlayEntry? _replay(int order) {
+    if (order < 1 || order >= _save.highestLevel) return null;
+    final entry = _levels.entryAt(order);
+    if (entry == null || entry.order != order) return null;
+    return campaignEntry(
+      entry,
+      0,
+    ).copyWith(request: PlayRequest.replay(entry.order));
+  }
 
   PlayEntry? _campaign(int order) {
     if (order < 1) return null;
@@ -74,7 +87,7 @@ class FakeLevelResolver implements LevelResolver {
           ? PlayRequest.campaign(order + 1)
           : PlayRequest.bonus(_save.nextBonus),
     BonusPlay(:final number) => PlayRequest.bonus(number + 1),
-    DailyPlay() => null,
+    DailyPlay() || ReplayPlay() || RacePlay() => null,
   };
 
   @override

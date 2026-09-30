@@ -1,7 +1,7 @@
 // GENERATED — do not edit; run dart run nesty_tools:gen_design_tokens
 //
-// Source: design/tokens.json (tokens v1).
-// Nesty: Doll Sort design tokens v1. Source of truth for colors, type,
+// Source: design/tokens.json (tokens v3).
+// Nesty: Doll Sort design tokens v3. Source of truth for colors, type,
 // spacing, radii, shadows, layout, motion, sound and haptics. Keys under
 // dollColor match nesty_core DollColor ids.
 
@@ -12,7 +12,7 @@ import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 /// Which design/tokens.json these UI tokens were generated from.
 abstract final class UiTokensInfo {
   /// tokens.json `meta.version`.
-  static const version = 1;
+  static const version = 3;
 }
 
 /// App colors (tokens.json `color`).
@@ -226,6 +226,63 @@ abstract final class AppColorTokens {
 
   /// `#120B06`.
   static const island = Color(0xFF120B06);
+
+  /// `#4E5FD9`.
+  static const versus = Color(0xFF4E5FD9);
+
+  /// `#7B8BEF`.
+  static const versusTop = Color(0xFF7B8BEF);
+
+  /// `#3242A8`.
+  static const versusEdge = Color(0xFF3242A8);
+
+  /// `#E6E9FC`.
+  static const versusTint = Color(0xFFE6E9FC);
+
+  /// `#FFFDF7`.
+  static const computerTag = Color(0xFFFFFDF7);
+
+  /// `#D8B07A`.
+  static const computerTagEdge = Color(0xFFD8B07A);
+
+  /// `#6E4526`.
+  static const computerTagText = Color(0xFF6E4526);
+
+  /// `#4E5FD9`.
+  static const rivalDot = Color(0xFF4E5FD9);
+
+  /// `#EAD3B0`.
+  static const rivalDotEmpty = Color(0xFFEAD3B0);
+
+  /// `#F2893B`.
+  static const notificationAccent = Color(0xFFF2893B);
+
+  /// `#DCC6A4`.
+  static const streakPaused = Color(0xFFDCC6A4);
+
+  /// `#F1E3CC`.
+  static const streakPausedTop = Color(0xFFF1E3CC);
+
+  /// `#B99A7A`.
+  static const streakPausedEdge = Color(0xFFB99A7A);
+
+  /// `#9A6A44`.
+  static const streakPausedGlyph = Color(0xFF9A6A44);
+
+  /// `rgba(255,205,80,.55)`.
+  static const relitGlow = Color(0x8CFFCD50);
+
+  /// `#E5484D`.
+  static const tierEdgeHard = Color(0xFFE5484D);
+
+  /// `#8E4EC6`.
+  static const tierEdgeSuperHard = Color(0xFF8E4EC6);
+
+  /// `#FFF7E0`.
+  static const badgeToast = Color(0xFFFFF7E0);
+
+  /// `#E6C36A`.
+  static const badgeToastEdge = Color(0xFFE6C36A);
 }
 
 /// Gradients (tokens.json `gradient`). CSS angles map to Alignment so the
@@ -366,6 +423,13 @@ abstract final class AppGradientTokens {
       Color(0xFF8C5E12),
     ],
     stops: [0.0, 0.35, 0.5, 0.7, 1.0],
+  );
+
+  /// `linear-gradient(180deg, #7B8BEF, #4E5FD9)`.
+  static const versus = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF7B8BEF), Color(0xFF4E5FD9)],
   );
 }
 
@@ -708,6 +772,24 @@ abstract final class HudTokens {
   static const familyCounterTop = 116.0;
 
   static const familyCounterHeight = 26.0;
+
+  static const familyCounterLabelMinWidth = 30.0;
+
+  /// Inside the counter pill.
+  static const familyCounterPadding = EdgeInsets.symmetric(
+    vertical: 7.0,
+    horizontal: 10.0,
+  );
+
+  static const familyCounterIconSize = Size(12.0, 18.0);
+
+  static const familyCounterGap = 5.0;
+
+  /// The design's counter widths by label, for the layout test.
+  static const Map<String, double> familyCounterWidthExamples = {
+    '4 / 4': 64.0,
+    '12 / 12': 78.0,
+  };
 }
 
 /// Booster bar (tokens.json `layout.boosterBar`).
@@ -837,12 +919,40 @@ abstract final class SoundTokens {
   /// `jingle_oom`: a jingle (OGG, in [jingleFiles]; the bus is [jingleBus]).
   static const outOfMoves = SoundCue(['jingle_oom']);
 
+  /// `star_1`.
+  static const star1 = SoundCue(['star_1']);
+
+  /// `star_2`.
+  static const star2 = SoundCue(['star_2']);
+
+  /// `star_3`.
+  static const star3 = SoundCue(['star_3']);
+
+  /// `chest_wiggle`.
+  static const chestWiggle = SoundCue(['chest_wiggle']);
+
+  /// `chest_open`.
+  static const chestOpen = SoundCue(['chest_open']);
+
+  /// `rival_complete`.
+  static const rivalComplete = SoundCue(['rival_complete']);
+
+  /// `jingle_versus_win`: a jingle (OGG, in [jingleFiles]; the bus is
+  /// [jingleBus]).
+  static const raceWon = SoundCue(['jingle_versus_win']);
+
+  /// `jingle_versus_lose`: a jingle (OGG, in [jingleFiles]; the bus is
+  /// [jingleBus]).
+  static const raceLost = SoundCue(['jingle_versus_lose']);
+
   /// Every SFX file base name the events use, sorted (for preloading and the
   /// asset manifest test): `assets/audio/<name>.wav`. The jingles are
   /// [jingleFiles] and the music loops [musicFiles].
   static const List<String> allFiles = [
     'bonk',
     'button',
+    'chest_open',
+    'chest_wiggle',
     'clack_1',
     'clack_2',
     'clack_3',
@@ -855,6 +965,10 @@ abstract final class SoundTokens {
     'ice_crack',
     'ice_shatter',
     'pick',
+    'rival_complete',
+    'star_1',
+    'star_2',
+    'star_3',
     'unlock_glass',
     'whoosh',
     'win',
@@ -867,6 +981,8 @@ abstract final class SoundTokens {
     'jingle_chapter',
     'jingle_oom',
     'jingle_reward',
+    'jingle_versus_lose',
+    'jingle_versus_win',
   ];
 
   /// Clack pitch per doll size: playbackRate = 2^(-2 × (size − 3.5) / 12).
@@ -972,6 +1088,10 @@ abstract final class SoundTokens {
   /// `sound.musicDuck.pause`).
   static const musicDuckPause = 0.5;
 
+  /// Music volume × this while ducked for raceResult (tokens.json
+  /// `sound.musicDuck.raceResult`).
+  static const musicDuckRaceResult = 0.3;
+
   /// Every duck factor by reason (the `sound.musicDuck` keys). Ducks don't
   /// stack: the lowest active factor wins (AUDIO.md).
   static const Map<String, double> musicDuckFactors = {
@@ -979,6 +1099,7 @@ abstract final class SoundTokens {
     'outOfMoves': 0.4,
     'reward': 0.4,
     'pause': 0.5,
+    'raceResult': 0.3,
   };
 
   static const sfxVolumeDefault = 0.8;
@@ -991,4 +1112,1060 @@ abstract final class SoundTokens {
   /// follows the Sound toggle and the SFX volume, `music` the Music ones. The
   /// codegen accepts only these two.
   static const jingleBus = 'sfx';
+}
+
+/// tokens.json `layout.rivalStrip` (vs Computer HUD top row; replaces the
+/// level pill and the coin pill. Family counter stays at top 116.), in dp on
+/// the 390×844 reference unless a member says otherwise.
+abstract final class RivalStripTokens {
+  static const left = 76.0;
+
+  static const right = 16.0;
+
+  static const top = 62.0;
+
+  static const height = 48.0;
+
+  static const radius = 18.0;
+
+  static const padding = EdgeInsets.fromLTRB(5.0, 0.0, 12.0, 0.0);
+
+  static const gap = 9.0;
+
+  static const portrait = 38.0;
+
+  /// `2px #FFFDF7`.
+  static const portraitRing = TokenStroke(width: 2.0, color: Color(0xFFFFFDF7));
+
+  /// `Fredoka 700 16 #5B3A21`.
+  static const name = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFF5B3A21),
+  );
+
+  static const tagHeight = 20.0;
+
+  static const tagRadius = 10.0;
+
+  static const tagPadding = EdgeInsets.fromLTRB(5.0, 0.0, 7.0, 0.0);
+
+  /// `1.5px #D8B07A`.
+  static const tagRing = TokenStroke(width: 1.5, color: Color(0xFFD8B07A));
+
+  /// `#FFFDF7`.
+  static const tagFill = Color(0xFFFFFDF7);
+
+  /// `Nunito 800 11 #6E4526, sentence case`.
+  static const tagText = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF6E4526),
+  );
+
+  /// The `computer` glyph (`NestyIcons`).
+  static const tagGlyph = 'computer';
+
+  static const tagGlyphSize = 14.0;
+
+  /// `Nunito 700 12 #8A5B3A; thinking = three 3 px dots, 1.2 s, 200 ms
+  /// stagger`.
+  static const state = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// Thinking… dots.
+  static const stateThinkingDots = 3;
+
+  /// Each dot, dp.
+  static const stateThinkingDotSize = 3.0;
+
+  /// One cycle of the dots.
+  static const stateThinkingPeriodMs = 1200;
+
+  /// Between dots.
+  static const stateThinkingStaggerMs = 200;
+
+  /// `Fredoka 700 17 #3242A8 tabular`.
+  static const count = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 17.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFF3242A8),
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  static const dotsSize = 8.0;
+
+  static const dotsGap = 3.0;
+
+  /// A filled dot.
+  static const dotsFilled = Color(0xFF4E5FD9);
+
+  /// Its ring.
+  static const dotsFilledRing = TokenStroke(
+    width: 1.5,
+    color: Color(0xFFFFFDF7),
+  );
+
+  /// An empty dot, drawn sunk (`AppShadowTokens.sunk`).
+  static const dotsEmpty = Color(0xFFEAD3B0);
+
+  static const narrowTagGlyphOnlyBelowWidth = 360.0;
+
+  static const narrowStateHiddenBelowWidth = 340.0;
+}
+
+/// tokens.json `layout.raceBar` (booster bar during a race: Undo (unlimited)
+/// in slot 1, Restart in slot 4, Hint and +1 Slot hidden. Before the start, a
+/// Start button covers slots 2-3 and the other slots are hidden.), in dp on
+/// the 390×844 reference unless a member says otherwise.
+abstract final class RaceBarTokens {
+  static const startX = 111.0;
+
+  static const startY = 746.0;
+
+  static const startWidth = 168.0;
+
+  static const startHeight = 58.0;
+
+  static const startRadius = 18.0;
+
+  /// `versus`.
+  static const startGradient = AppGradientTokens.versus;
+
+  /// `6px #3242A8`.
+  static const startEdge = TokenStroke(width: 6.0, color: Color(0xFF3242A8));
+
+  /// `Fredoka 700 21 white`.
+  static const startLabel = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 21.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFFFFFFFF),
+  );
+
+  static const undoSlot = 1;
+
+  static const restartSlot = 4;
+
+  static const List<int> hiddenSlots = [2, 3];
+
+  /// The `all_inclusive` glyph (`NestyIcons`).
+  static const undoBadge = 'all_inclusive';
+}
+
+/// tokens.json `layout.short169` (16:9 phones (390x693 logical). Everything
+/// else in layout.* keeps its 844 values; the board is scaled once.), in dp
+/// on the 390×693 (16:9) reference unless a member says otherwise.
+abstract final class Short169Tokens {
+  static const screen = Size(390.0, 693.0);
+
+  static const statusBar = 20.0;
+
+  static const hudShiftY = -32.0;
+
+  static const boardScale = 0.796;
+
+  static const boardOrigin = Offset(195.0, 150.0);
+
+  static const boardShiftY = -32.0;
+
+  static const boosterBarTop = 583.0;
+}
+
+/// tokens.json `layout.winStars` (2.8 with stars on 390×844 (11.2)), in dp on
+/// the 390×844 reference unless a member says otherwise.
+abstract final class WinStarsTokens {
+  static const ribbonTop = 118.0;
+
+  static const starsCanvasSize = Size(240.0, 110.0);
+
+  static const starsCanvasLeft = 75.0;
+
+  static const starsCanvasTop = 176.0;
+
+  static const plankTop = 366.0;
+
+  static const hopDollHeight = 88.0;
+
+  static const coinRowTop = 420.0;
+
+  static const coinRowGap = 10.0;
+
+  static const movesChipHeight = 58.0;
+
+  static const movesChipRadius = 26.0;
+
+  static const movesChipIconDisc = 38.0;
+
+  /// The `route` glyph (`NestyIcons`).
+  static const movesChipIcon = 'route';
+
+  /// `Nunito 800 15 #7A5234`.
+  static const movesChipText = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF7A5234),
+  );
+
+  static const newBestChipHeight = 26.0;
+
+  static const newBestChipRadius = 13.0;
+
+  /// `gradient.success`.
+  static const newBestChipFill = AppGradientTokens.success;
+
+  /// `3px #2F7A3E`.
+  static const newBestChipEdge = TokenStroke(
+    width: 3.0,
+    color: Color(0xFF2F7A3E),
+  );
+
+  /// `2px #FFF6E6`.
+  static const newBestChipRing = TokenStroke(
+    width: 2.0,
+    color: Color(0xFFFFF6E6),
+  );
+
+  /// Centred on the moves chip, its top this far from the chip's.
+  static const newBestChipTopOffset = -16.0;
+
+  static const progressTop = 500.0;
+
+  static const notePillTop = 602.0;
+
+  /// `rgba(40,20,8,.66)`.
+  static const notePillFill = Color(0xA8281408);
+
+  static const notePillRadius = 14.0;
+
+  static const notePillPadding = EdgeInsets.symmetric(
+    vertical: 7.0,
+    horizontal: 14.0,
+  );
+
+  /// `Nunito 700 13 #FFF1DC`.
+  static const notePillText = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFFFFF1DC),
+  );
+
+  static const buttonsTop = 646.0;
+
+  static const buttonsGap = 14.0;
+}
+
+/// tokens.json `layout.winStarsShort` (2.8 with stars on 390×693 (11.2d)), in
+/// dp on the 390×693 (16:9) reference unless a member says otherwise.
+abstract final class WinStarsShortTokens {
+  static const ribbonTop = 70.0;
+
+  static const starsCanvasTop = 128.0;
+
+  static const plankTop = 300.0;
+
+  static const hopDollHeight = 72.0;
+
+  static const coinRowTop = 342.0;
+
+  static const progressTop = 414.0;
+
+  static const buttonsTop = 522.0;
+
+  static const buttonsGap = 10.0;
+}
+
+/// tokens.json `layout.chestCard` (milestone chest (10.5, 10.6) and the day-7
+/// chest (5.6) share it), in dp on the 390×844 reference unless a member says
+/// otherwise.
+abstract final class ChestCardTokens {
+  static const cardLeft = 28.0;
+
+  static const cardRight = 28.0;
+
+  static const cardTop = 214.0;
+
+  static const cardRadius = 32.0;
+
+  static const lottieSize = Size(200.0, 200.0);
+
+  static const contentsChipHeight = 44.0;
+
+  static const contentsChipRadius = 22.0;
+
+  static const contentsGap = 10.0;
+
+  static const contentsIcon = 30.0;
+}
+
+/// tokens.json `layout.home` (Home 2.1 from m7 (J.1)), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class HomeTokens {
+  static const topRow = 66.0;
+
+  static const chapterCardTop = 124.0;
+
+  static const chapterCardLeft = 16.0;
+
+  static const chapterCardRight = 88.0;
+
+  static const chapterCardHeight = 60.0;
+
+  static const chapterCardRadius = 22.0;
+
+  static const chapterCardIcon = 44.0;
+
+  static const recordsButtonTop = 124.0;
+
+  static const recordsButtonRight = 16.0;
+
+  static const recordsButtonSize = Size(62.0, 60.0);
+
+  static const recordsButtonRadius = 20.0;
+
+  /// The `military_tech` glyph (`NestyIcons`).
+  static const recordsButtonGlyph = 'military_tech';
+
+  static const plankTop = 372.0;
+
+  static const playButtonTop = 446.0;
+
+  static const playButtonHeight = 96.0;
+
+  static const tilesTop = 584.0;
+
+  static const tilesHeight = 132.0;
+
+  static const tilesColumns = 3;
+
+  static const tilesColumnsAdsRemoved = 2;
+
+  static const bottomNav = 738.0;
+}
+
+/// tokens.json `layout.homeShort` (Home on 390×693 (2.1b, E.1 approved):
+/// tiles stay 12 dp above the nav, the hero scales), in dp on the 390×693
+/// (16:9) reference unless a member says otherwise.
+abstract final class HomeShortTokens {
+  static const statusBar = 20.0;
+
+  static const topRow = 28.0;
+
+  static const chapterCard = 84.0;
+
+  static const plankTop = 262.0;
+
+  static const plankHeight = 34.0;
+
+  static const dollScale = 0.82;
+
+  static const playButtonTop = 312.0;
+
+  static const playButtonHeight = 88.0;
+
+  static const tilesTop = 463.0;
+
+  static const tilesHeight = 112.0;
+
+  static const bottomNav = 587.0;
+}
+
+/// tokens.json `layout.chapters` (Chapters (10.4)), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class ChaptersTokens {
+  static const progressLineTop = 118.0;
+
+  static const progressLineBar = 12.0;
+
+  static const listTop = 166.0;
+
+  static const gap = 8.0;
+
+  static const foldedRowHeight = 56.0;
+
+  static const foldedRowRadius = 20.0;
+
+  static const foldedRowThumb = Size(84.0, 42.0);
+
+  static const foldedRowFigurine = Size(34.0, 40.0);
+
+  static const foldedRowStarsChip = 28.0;
+
+  /// The open chapter's ring, in its palette's `accentTop`.
+  static const currentRingWidth = 3.0;
+
+  static const currentHeaderHeight = 92.0;
+
+  /// The header shows the theme's thumb crop scaled to this width.
+  static const currentHeaderCropWidth = 358.0;
+
+  /// `linear-gradient(180deg,rgba(20,40,70,0) 25%,rgba(20,40,70,.62))`.
+  static const currentHeaderScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0x00142846), Color(0x9E142846)],
+    stops: [0.25, 1.0],
+  );
+
+  static const currentGridColumns = 5;
+
+  static const currentGridGap = 7.0;
+
+  static const currentGridTileHeight = 62.0;
+
+  static const currentGridTileRadius = 14.0;
+
+  static const currentGridMiniStar = 11.0;
+
+  /// `Nunito 800 9.5 #9A6A44`.
+  static const currentGridBest = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 9.5,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF9A6A44),
+  );
+
+  /// The current level's tile.
+  static const currentTileFill = AppGradientTokens.primary;
+
+  /// `gradient.primary, 4px edge #C4631E, 4px ring rgba(242,137,59,.28)`.
+  static const currentTileEdge = TokenStroke(
+    width: 4.0,
+    color: Color(0xFFC4631E),
+  );
+
+  /// `gradient.primary, 4px edge #C4631E, 4px ring rgba(242,137,59,.28)`.
+  static const currentTileRing = TokenStroke(
+    width: 4.0,
+    color: Color(0x47F2893B),
+  );
+
+  /// A hard or super hard tile's inset edge, on won or current tiles.
+  static const currentTierEdgeWidth = 2.0;
+
+  /// A 3-star chapter chip's inset line.
+  static const perfectChipInset = TokenStroke(
+    width: 1.5,
+    color: Color(0xFFF2C230),
+  );
+
+  /// `inset 1.5px #F2C230 + 3px rgba(245,197,24,.35) ring`.
+  static const perfectChipRing = TokenStroke(
+    width: 3.0,
+    color: Color(0x59F5C518),
+  );
+}
+
+/// tokens.json `layout.museum` (Museum (6.1, J.2)), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class MuseumTokens {
+  static const introTop = 114.0;
+
+  /// `Nunito 600 13`.
+  static const introText = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w600,
+  );
+
+  static const nextCardTop = 160.0;
+
+  static const nextCardHeight = 150.0;
+
+  static const nextCardRadius = 26.0;
+
+  static const nextCardArt = Size(118.0, 132.0);
+
+  static const cabinetTop = 324.0;
+
+  static const cabinetHeight = 402.0;
+
+  static const cabinetColumns = 2;
+
+  static const cabinetRows = 5;
+
+  static const cabinetGap = 6.0;
+
+  static const cabinetRadius = 26.0;
+
+  static const cabinetArt = 62.0;
+
+  static const cabinetLockedOpacity = 0.45;
+
+  /// `Fredoka 700 11.5 #4A3008 on a brass gradient`.
+  static const cabinetNamePlate = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 11.5,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFF4A3008),
+  );
+
+  /// A locked figurine's two lines ("Chapter 4" / "Levels 61–80").
+  static const cabinetLockedLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w800,
+  );
+
+  /// A collected figurine bobs this far, dp.
+  static const cabinetCollectedIdleBob = 3.0;
+
+  /// Its period, varied between this and the max per figurine.
+  static const cabinetCollectedIdleMinPeriodMs = 2600;
+
+  /// `bob 3 dp, 2.6–3.4 s`.
+  static const cabinetCollectedIdleMaxPeriodMs = 3400;
+}
+
+/// tokens.json `layout.records` (Records (10.6)), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class RecordsTokens {
+  static const statsGridColumns = 2;
+
+  static const statsGridGap = 10.0;
+
+  /// `radius 18, icon 36`.
+  static const statsGridCellRadius = 18.0;
+
+  /// `radius 18, icon 36`.
+  static const statsGridCellIcon = 36.0;
+
+  static const racesCardRowHeight = 56.0;
+
+  static const racesCardPortrait = 40.0;
+
+  static const badgeGridColumns = 3;
+
+  static const badgeGridGap = 10.0;
+
+  static const badgeGridArt = 56.0;
+
+  static const badgeGridRadius = 20.0;
+}
+
+/// tokens.json `layout.rivalSelect` (9.2), in dp on the 390×844 reference
+/// unless a member says otherwise.
+abstract final class RivalSelectTokens {
+  static const portrait = 96.0;
+
+  static const cardRadius = 24.0;
+
+  /// `3px #4E5FD9`.
+  static const selectedRing = TokenStroke(width: 3.0, color: Color(0xFF4E5FD9));
+
+  /// The "New" chip.
+  static const newChipFill = AppGradientTokens.success;
+
+  /// `gradient.success, Fredoka 700 12`.
+  static const newChipText = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w700,
+  );
+
+  static const startBottom = 44.0;
+
+  static const startHeight = 60.0;
+}
+
+/// tokens.json `layout.replayCard` (replay win (10.5, 11.4)), in dp on the
+/// 390×844 reference unless a member says otherwise.
+abstract final class ReplayCardTokens {
+  static const movesRowTop = 420.0;
+
+  static const cardTop = 494.0;
+
+  static const cardLeft = 28.0;
+
+  static const cardRight = 28.0;
+
+  static const cardRadius = 22.0;
+
+  /// `rgba(255,249,236,.97)`.
+  static const cardFill = Color(0xF7FFF9EC);
+
+  /// `5px #D8B07A`.
+  static const cardEdge = TokenStroke(width: 5.0, color: Color(0xFFD8B07A));
+
+  /// `Nunito 700 14 #7A5234 with the replay glyph`.
+  static const reason = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 14.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFF7A5234),
+  );
+
+  /// Under a dashed divider: an empty star, then the target.
+  static const targetRowStarSize = 22.0;
+
+  /// `dashed divider, empty star 22, Fredoka 700 15 #8C5E12`.
+  static const targetRowText = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFF8C5E12),
+  );
+
+  static const tipTop = 612.0;
+
+  static const buttonTop = 668.0;
+
+  /// The card ends above the booster bar (`BoosterBarTokens.top`).
+  static const bottomLimit = 734.0;
+}
+
+/// tokens.json `layout.hintMiddle` (E.20, frame 3.1b), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class HintMiddleTokens {
+  /// The hint arrow over the top shelf's slot at this cx …
+  static const slotCenterX = 195.0;
+
+  /// … with its top above this y fades the family counter (3.1b).
+  static const arrowTopAboveY = 150.0;
+
+  static const familyCounterFadeOutMs = 150;
+
+  static const familyCounterFadeInMs = 150;
+
+  static const fadeBackAfterHintMs = 0;
+}
+
+/// tokens.json `layout.winTwinkles` (E.17: fx_twinkle above the scrim, behind
+/// the ribbon), in dp on the 390×844 reference unless a member says
+/// otherwise.
+abstract final class WinTwinklesTokens {
+  static const List<Offset> points = [
+    Offset(52.0, 112.0),
+    Offset(338.0, 128.0),
+    Offset(292.0, 396.0),
+  ];
+
+  static const List<double> periodS = [2.0, 2.4];
+}
+
+/// tokens.json `layout.generating` (E.5), in dp on the 390×844 reference
+/// unless a member says otherwise.
+abstract final class GeneratingTokens {
+  static const cardWidth = 236.0;
+
+  static const cardTop = 360.0;
+
+  static const cardRadius = 26.0;
+
+  /// `ui_spinner`, dp.
+  static const spinnerSize = 44.0;
+
+  /// `rgba(60,30,10,.28)`.
+  static const dim = Color(0x473C1E0A);
+}
+
+/// tokens.json `shop` (F.1), in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class ShopTokens {
+  /// `rgba(255,255,255,.22)`.
+  static const buyCoinChipFace = Color(0x38FFFFFF);
+
+  /// `gradient.coinFace`.
+  static const buyCoinChipCoin = AppGradientTokens.coinFace;
+
+  static const buyCoinChipCoinSize = 22.0;
+
+  static const buyCoinChipRadius = 14.0;
+
+  static const buyCoinChipPadding = EdgeInsets.fromLTRB(6.0, 6.0, 10.0, 6.0);
+
+  /// `Fredoka 700 19 white`.
+  static const buyCoinChipText = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 19.0,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFFFFFFFF),
+  );
+
+  /// `inset 0 2px 0 rgba(255,255,255,.6)`.
+  static const List<NestyShadow> detailPanelHighlight = [
+    NestyShadow(color: Color(0x99FFFFFF), inset: true, dy: 2.0),
+  ];
+
+  static const detailPanelEdgeWidth = 6.0;
+
+  static const detailPanelRadius = 26.0;
+
+  /// The detail panel's tag chip.
+  static const detailPanelTagFill = Color(0xD9FFFFFF);
+
+  /// `rgba(255,255,255,.85) chip, Fredoka 700 12`.
+  static const detailPanelTagText = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w700,
+  );
+
+  /// Each skin's Shop card and detail panel colours, by catalog skin id
+  /// (tokens.json `shop.skins`).
+  static const Map<String, ShopSkinColors> skins = {
+    'classic': ShopSkinColors(
+      card: [Color(0xFFFCEBCB), Color(0xFFF3D4A0)],
+      panel: [Color(0xFFFCEBCB), Color(0xFFF3D4A0)],
+      edge: Color(0xFFD8B07A),
+      caption: Color(0xFF7A4A1E),
+    ),
+    'space': ShopSkinColors(
+      card: [Color(0xFF3B3470), Color(0xFF232650)],
+      panel: [Color(0xFF3B3470), Color(0xFF232650)],
+      edge: Color(0xFF15163A),
+      caption: Color(0xFFE6E3FF),
+    ),
+    'ocean': ShopSkinColors(
+      card: [Color(0xFFDDF2F6), Color(0xFFA9D8E4)],
+      panel: [Color(0xFFDDF2F6), Color(0xFFA9D8E4)],
+      edge: Color(0xFF7FB6C6),
+      caption: Color(0xFF1F5E6E),
+    ),
+    'sweets': ShopSkinColors(
+      card: [Color(0xFFFFE6EF), Color(0xFFF9C6D8)],
+      panel: [Color(0xFFFFE6EF), Color(0xFFF9C6D8)],
+      edge: Color(0xFFE29DB6),
+      caption: Color(0xFF8A2E55),
+    ),
+    'forest': ShopSkinColors(
+      card: [Color(0xFFE3F1D4), Color(0xFFC4DFAA)],
+      panel: [Color(0xFFE3F1D4), Color(0xFFC4DFAA)],
+      edge: Color(0xFF93BF76),
+      caption: Color(0xFF2F5A1E),
+    ),
+    'forest-bear': ShopSkinColors(
+      card: [Color(0xFFF3E6D0), Color(0xFFDCC39D)],
+      panel: [Color(0xFFF3E6D0), Color(0xFFDCC39D)],
+      edge: Color(0xFFB89868),
+      caption: Color(0xFF6B4A22),
+    ),
+    'winter': ShopSkinColors(
+      card: [Color(0xFFEEF4FA), Color(0xFFD3E2F0)],
+      panel: [Color(0xFFEEF4FA), Color(0xFFD3E2F0)],
+      edge: Color(0xFFA6BFD8),
+      caption: Color(0xFF2B4E73),
+    ),
+  };
+}
+
+/// tokens.json `chestModal` (F.2, the day-7 and milestone chest cards), in dp
+/// on the 390×844 reference unless a member says otherwise.
+abstract final class ChestModalTokens {
+  /// A lit ray.
+  static const glowRayColor = Color(0x8CFFC85A);
+
+  /// Each ray's width, degrees …
+  static const glowRayLitDeg = 9.0;
+
+  /// … of every this many (`repeating-conic-gradient(rgba(255,200,90,.55) 0deg
+  /// 9deg, rgba(255,200,90,0) 9deg 24deg)`).
+  static const glowRayPeriodDeg = 24.0;
+
+  static const glowSize = 270.0;
+
+  /// The rays' radial mask: solid to this fraction of the radius …
+  static const glowMaskSolid = 0.2;
+
+  /// … and clear from this one.
+  static const glowMaskClear = 0.68;
+
+  /// `inset 0 2px 0 #FFFFFF, 0 7px 0 #D8B07A, 0 24px 48px rgba(60,25,5,.35)`.
+  static const List<NestyShadow> shadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 7.0),
+    NestyShadow(color: Color(0x593C1905), dy: 24.0, blur: 48.0),
+  ];
+
+  static const radius = 32.0;
+}
+
+/// tokens.json `settings` (F.3), in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class SettingsTokens {
+  static const colorSymbolCardsRadius = 18.0;
+
+  /// `#FFF1E4`.
+  static const colorSymbolCardsSelectedFace = Color(0xFFFFF1E4);
+
+  /// `inset 0 0 0 3px #F2893B`.
+  static const List<NestyShadow> colorSymbolCardsSelectedRing = [
+    NestyShadow(color: Color(0xFFF2893B), inset: true, spread: 3.0),
+  ];
+
+  /// `#FFFDF7`.
+  static const colorSymbolCardsIdleFace = Color(0xFFFFFDF7);
+
+  /// `inset 0 0 0 2px #E2C9A3`.
+  static const List<NestyShadow> colorSymbolCardsIdleRing = [
+    NestyShadow(color: Color(0xFFE2C9A3), inset: true, spread: 2.0),
+  ];
+}
+
+/// tokens.json `textLink` (F.4, e.g. Back to Home on 4.9), in dp on the
+/// 390×844 reference unless a member says otherwise.
+abstract final class TextLinkTokens {
+  /// `Fredoka 700 16`.
+  static const font = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w700,
+  );
+
+  /// `#8A5B3A`.
+  static const color = Color(0xFF8A5B3A);
+
+  /// `#6E4526`.
+  static const pressed = Color(0xFF6E4526);
+
+  static const underline = false;
+}
+
+/// The win card's star reveal, `ui_stars` (tokens.json `motion.stars`). It
+/// starts when the coin count-up ends; haptics: light per star, success after
+/// the flourish. Reduce motion: show the last frame of star_n at once, no
+/// flourish; one star sound (the highest earned) and one light haptic.
+abstract final class StarMotionTokens {
+  /// tokens.json `motion.stars.startMs`.
+  static const startMs = 1300;
+
+  /// tokens.json `motion.stars.segmentFrames`.
+  static const segmentFrames = 20;
+
+  /// tokens.json `motion.stars.perStarMs`.
+  static const perStarMs = 333;
+
+  /// tokens.json `motion.stars.popScale`.
+  static const popScale = 1.18;
+
+  /// `ui_stars`'s `flourish` segment (a test pins it to the marker).
+  static const flourishStartFrame = 60;
+
+  static const flourishEndFrame = 120;
+}
+
+/// The chest moment, `ui_chest` and its flights (tokens.json `motion.chest`).
+/// Its segments are the file's markers (`fxSpecOf(FxId.uiChest)`). Reduce
+/// motion: 200 ms crossfade closed → open, no wiggle, no flights; the chips
+/// appear together.
+abstract final class ChestMotionTokens {
+  /// tokens.json `motion.chest.arriveMs`.
+  static const arriveMs = 600;
+
+  /// The idle breath …
+  static const idleScaleFrom = 1.0;
+
+  /// … between these scales.
+  static const idleScaleTo = 1.03;
+
+  /// tokens.json `motion.chest.idle.periodMs`.
+  static const idlePeriodMs = 3000;
+
+  /// tokens.json `motion.chest.idle.lockGlintEveryMs`.
+  static const idleLockGlintEveryMs = 2400;
+
+  /// tokens.json `motion.chest.wiggleMs`.
+  static const wiggleMs = 483;
+
+  /// tokens.json `motion.chest.burstMs`.
+  static const burstMs = 750;
+
+  /// tokens.json `motion.chest.chipStaggerMs`.
+  static const chipStaggerMs = 150;
+
+  /// tokens.json `motion.chest.rewardJingleAfterOpenMs`.
+  static const rewardJingleAfterOpenMs = 250;
+
+  /// tokens.json `motion.chest.collect.coinFlightMs`.
+  static const collectCoinFlightMs = 700;
+
+  /// tokens.json `motion.chest.collect.coinStaggerMs`.
+  static const collectCoinStaggerMs = 60;
+
+  /// tokens.json `motion.chest.collect.coins`.
+  static const collectCoins = 6;
+
+  /// tokens.json `motion.chest.collect.hintFlightMs`.
+  static const collectHintFlightMs = 650;
+
+  /// tokens.json `motion.chest.collect.targetBump`.
+  static const collectTargetBump = 1.3;
+
+  /// tokens.json `motion.chest.collect.targetBumpMs`.
+  static const collectTargetBumpMs = 240;
+}
+
+/// The rival strip (tokens.json `motion.rivalDot`, `motion.rivalMove`): a dot
+/// fills when the computer completes a family, and its portrait beats once
+/// per move (one beat per rival move; no sound, no haptic). Reduce motion:
+/// none beat.
+abstract final class RivalMotionTokens {
+  /// tokens.json `motion.rivalDot.fillMs`.
+  static const dotFillMs = 240;
+
+  /// tokens.json `motion.rivalDot.bump`.
+  static const dotBump = 1.3;
+
+  /// `cubic-bezier(.34,1.56,.64,1)`.
+  static const dotCurve = Cubic(0.34, 1.56, 0.64, 1.0);
+
+  /// tokens.json `motion.rivalMove.portraitScale`.
+  static const movePortraitScale = 1.06;
+
+  /// tokens.json `motion.rivalMove.ms`.
+  static const moveMs = 160;
+}
+
+/// The toast queue (tokens.json `motion.toast`, F.5; Q122, Q136): one at a
+/// time.
+abstract final class ToastTokens {
+  /// tokens.json `motion.toast.autoDismissMs`.
+  static const autoDismissMs = 2500;
+
+  /// "one at a time, the next waits 300 ms after the first leaves".
+  static const gapMs = 300;
+
+  /// A result card's toasts leave with it.
+  static const leavesWithCard = true;
+
+  /// tokens.json `motion.toast.badgeToastTop`.
+  static const badgeToastTop = 60.0;
+}
+
+/// Chapters' rows fade in one after another (tokens.json
+/// `motion.chaptersFadeIn`). Reduce motion: none.
+abstract final class ChaptersMotionTokens {
+  /// tokens.json `motion.chaptersFadeIn.staggerMs`.
+  static const staggerMs = 40;
+
+  /// tokens.json `motion.chaptersFadeIn.durationMs`.
+  static const durationMs = 220;
+}
+
+/// A Shop purchase (tokens.json `motion.purchase`, F.5, 7.2): the card comes
+/// in, `jingle_reward` plays at 0 and the balance counts up; the header
+/// balance updates with the count-up.
+abstract final class PurchaseMotionTokens {
+  /// tokens.json `motion.purchase.cardInMs`.
+  static const cardInMs = 240;
+
+  /// tokens.json `motion.purchase.coinBurstAtMs`.
+  static const coinBurstAtMs = 300;
+
+  /// tokens.json `motion.purchase.countUpDelayMs`.
+  static const countUpDelayMs = 400;
+
+  /// tokens.json `motion.purchase.countUpMs`.
+  static const countUpMs = 900;
+}
+
+/// The glyph each M7 icon use draws (tokens.json `icons`: Material Symbols
+/// Rounded, FILL 1, weight 600 (I.10, C.8). ui/icons/ is empty: every use has
+/// a glyph.). Every glyph is in the bundled font (`NestyIcons.byName`; a test
+/// pins them); `IconUses` maps each use to its `IconData`.
+abstract final class IconTokens {
+  /// The `auto_stories` glyph.
+  static const chapters = 'auto_stories';
+
+  /// The `military_tech` glyph.
+  static const records = 'military_tech';
+
+  /// The `share` glyph.
+  static const share = 'share';
+
+  /// The `ios_share` glyph.
+  static const shareIOS = 'ios_share';
+
+  /// The `notifications` glyph.
+  static const reminder = 'notifications';
+
+  /// The `notifications_off` glyph.
+  static const reminderOff = 'notifications_off';
+
+  /// The `schedule` glyph.
+  static const reminderTime = 'schedule';
+
+  /// The `spa` glyph.
+  static const relaxedMode = 'spa';
+
+  /// The `motion_photos_off` glyph.
+  static const reduceMotion = 'motion_photos_off';
+
+  /// The `route` glyph.
+  static const bestMoves = 'route';
+
+  /// The `flag` glyph.
+  static const chapterFinale = 'flag';
+
+  /// The `computer` glyph.
+  static const computerTag = 'computer';
+
+  /// The `all_inclusive` glyph.
+  static const undoUnlimited = 'all_inclusive';
+
+  /// The `redeem` glyph.
+  static const chest = 'redeem';
+
+  /// The `replay` glyph.
+  static const replay = 'replay';
+
+  /// The `logout` glyph.
+  static const leaveRace = 'logout';
+
+  /// The `refresh` glyph.
+  static const retry = 'refresh';
+
+  /// The `open_in_new` glyph.
+  static const openSettings = 'open_in_new';
+
+  /// The `check_circle` glyph.
+  static const levelsWon = 'check_circle';
+
+  /// The `museum` glyph.
+  static const familiesHome = 'museum';
+
+  /// The `layers` glyph.
+  static const dollsNested = 'layers';
+
+  /// The `extension` glyph.
+  static const dailiesSolved = 'extension';
+
+  /// The `local_fire_department` glyph.
+  static const longestStreak = 'local_fire_department';
+
+  /// Every glyph use, by its tokens.json key.
+  static const Map<String, String> glyphs = {
+    'chapters': chapters,
+    'records': records,
+    'share': share,
+    'shareIOS': shareIOS,
+    'reminder': reminder,
+    'reminderOff': reminderOff,
+    'reminderTime': reminderTime,
+    'relaxedMode': relaxedMode,
+    'reduceMotion': reduceMotion,
+    'bestMoves': bestMoves,
+    'chapterFinale': chapterFinale,
+    'computerTag': computerTag,
+    'undoUnlimited': undoUnlimited,
+    'chest': chest,
+    'replay': replay,
+    'leaveRace': leaveRace,
+    'retry': retry,
+    'openSettings': openSettings,
+    'levelsWon': levelsWon,
+    'familiesHome': familiesHome,
+    'dollsNested': dollsNested,
+    'dailiesSolved': dailiesSolved,
+    'longestStreak': longestStreak,
+  };
 }

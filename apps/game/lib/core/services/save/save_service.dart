@@ -1,12 +1,14 @@
 import 'package:nesty_game/core/models/booster.dart';
 import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 
 export 'package:nesty_game/core/models/booster.dart'
     show BoosterKind, BoosterSource, BoosterType;
 
-/// The player's save document (spec §13.3; docs/plans/m3-design.md §3).
+/// The player's save document (spec §13.3; docs/plans/m3-design.md §3;
+/// schema 2, docs/plans/m7-design.md §3).
 ///
 /// The real implementation, `HiveSaveService`, keeps one JSON document under
 /// `doc` in the Hive box `save`, through `DatabaseService` (D63): read once
@@ -23,7 +25,9 @@ abstract interface class SaveService {
   /// Loads the save into memory (spec §10.2 #1). The splash calls it; later
   /// calls return the same future. A missing save is not an error: it is a
   /// fresh install. Never throws: an unreadable document is backed up and
-  /// replaced by the defaults (m3-design §3.2).
+  /// replaced by the defaults (m3-design §3.2). The badges the document
+  /// already implies (`BadgeRules.derivable`) are granted here, silently:
+  /// no toast (m7-design §12).
   Future<void> load();
 
   /// The whole document as it is now. Mutate it only through the methods
@@ -90,12 +94,89 @@ abstract interface class SaveService {
   /// [rewardCoins] (the M2 call, kept).
   void recordWin({required int levelOrder, required int rewardCoins});
 
-  /// One won level in one document update: the coins, the progress
-  /// (`currentLevel` past a campaign order, never back; `bonus.next` past a
-  /// bonus number; the daily's streak), `stats.wins` and `stats.moves`, a
-  /// completed chapter's figurine and reward (only the first time), and
-  /// the level's in-progress board cleared.
-  void recordLevelWin(LevelWinRecord win);
+  /// One won level in one document update (m3-design §3.5, m7-design §7):
+  /// the coins, the progress (`currentLevel` past a campaign order, never
+  /// back; `bonus.next` past a bonus number; the daily's streak, with
+  /// `records.dailies` and `records.longestRun`), `stats.wins` and
+  /// `stats.moves`, a completed chapter's figurine and reward (only the
+  /// first time), the level's in-progress board cleared, and M7's parts:
+  /// the milestone chest ([LevelWinRecord.chest], once per level number),
+  /// the best moves ([LevelWinRecord.bestKey]), `records.families` and
+  /// `records.dolls`, and the badges earned.
+  ///
+  /// A replay (`PlayRequest.replay`) pays nothing, moves no progress and
+  /// opens no chest or figurine, whatever the record says; it still counts
+  /// in `stats`, the best moves, the best stars and the records (spec-prop
+  /// §7.1, §7.10).
+  ///
+  /// The star rating (spec-prop §7.10; m7-design P3.4), bundled boards
+  /// only: with a [LevelWinRecord.starsKey] and [LevelWinRecord.stars] of
+  /// 1–3, `levelStars[starsKey]` becomes the higher of the old and the new
+  /// (never lowered), reported as [LevelWinOutcome.stars] and
+  /// [LevelWinOutcome.previousStars]. [LevelWinOutcome.showStarTip] is set
+  /// while the tip was never shown, the win is below 3 stars and its stars
+  /// weren't capped by a hint or an extra slot
+  /// ([LevelWinRecord.starsCapped]): the win card shows it only when it has
+  /// room, then calls [markStarTipShown] (phase 4 architecture §3.6), so
+  /// `starTipShown` is no longer written here.
+  /// Stars change no coins, chest, progress or badge. A daily solved for
+  /// the first time on its date keeps `daily.lastSolve` (the Share text
+  /// and the reminder offer's hour, m7-design P3.4).
+  ///
+  /// A race (`PlayRequest.race`) records nothing here and returns an empty
+  /// outcome: its win goes through [recordRaceWin] (m7-design P2.7).
+  ///
+  /// Returns what the update did, for the win card, the chest modal and
+  /// the badge toasts.
+  LevelWinOutcome recordLevelWin(LevelWinRecord win);
+
+  // --- vs Computer (spec-prop §7.7; m7-design P2.7) -----------------------
+
+  /// Rival [rival] (1–3) was chosen, from rival select or New race: its
+  /// `race.rivals` `raceNo` goes up by 1 (at most
+  /// `DifficultyCurve.maxRaceNo`, where it stays: New race then replays the
+  /// last board, an owner question's default) in one update, and the new
+  /// raceNo is returned for `PlayRequest.race`. Null, with nothing written,
+  /// for a rival outside 1–3 or one still locked (spec-prop §7.7 "Three
+  /// rivals unlock in turn").
+  ///
+  /// It is written when the race is chosen, not at its result, so a quit
+  /// or a kill never hands the same board back as a new race (spec-prop
+  /// §7.7 "leaving it ends it with no reward"). Rematch doesn't call it.
+  int? beginRace(int rival);
+
+  /// One won race in one document update (spec-prop §7.7, §7.8; m7-design
+  /// P2.7): coins += `max(0, rewardCoins)`; the rival's `wins` += 1; the
+  /// next rival unlocks if it was locked (1 → 2 → 3, reported as
+  /// [RaceWinOutcome.unlockedRival]); `stats.wins` += 1 and `stats.moves`
+  /// += moves; `records.families` and `records.dolls`; and the badges
+  /// earned (the board's, plus `first_race` and `all_rivals`, derivable from
+  /// `race.rivals`). Nothing is in progress to clear: a race is never saved.
+  /// Throws a [RangeError] for a rival outside 1–3, a raceNo outside
+  /// 1–`DifficultyCurve.maxRaceNo` or a negative reward. A loss writes
+  /// nothing, so it has no call.
+  RaceWinOutcome recordRaceWin(RaceWinRecord win);
+
+  /// The star rating's load-time backfill (Q120; m7-design P3.4), silent
+  /// and idempotent: every won campaign order (order < [highestLevel])
+  /// that [levels] has at exactly that order, with a par and no
+  /// `levelStars` entry for its level id, gets `StarRules.backfill` (the
+  /// stars the best moves of its current version earn, as if no hint was
+  /// used; 1 star without a best), all in one update. It never lowers or
+  /// replaces an entry and never shows anything (no toast, no tip). The
+  /// splash calls it once the save and the bundle are loaded. Returns how
+  /// many levels it gave stars. Never throws (rule 3): a failure gives 0.
+  int backfillLevelStars(LevelRepository levels);
+
+  /// The one-time star tip was shown (Q119; phase 4 architecture §3.6,
+  /// §6.5): sets `starTipShown` in one update. Idempotent (a second call
+  /// writes nothing) and never throws (rule 3).
+  void markStarTipShown();
+
+  /// The fewest moves of the bundled level with key [levelKey]
+  /// (`LevelBests.key`, `L0024@2`), or null when it has never been won
+  /// (spec-prop §7.1, m7-design §11).
+  int? bestMovesFor(String levelKey);
 
   // --- The board in progress (spec §13.3, m3-design §3.4) -----------------
 
@@ -104,7 +185,9 @@ abstract interface class SaveService {
   InProgressLevel? inProgressFor(PlayKind kind);
 
   /// Saves [level] in its kind's slot, replacing what was there. The bloc
-  /// calls it after every applied move, undo, restart and +1 Slot.
+  /// calls it after every applied move, undo, restart and +1 Slot. A
+  /// replay's or a race's board is never saved (m7-design §6, P2.4): the
+  /// call does nothing.
   void saveInProgress(InProgressLevel level);
 
   /// Clears [kind]'s slot (a campaign clear leaves a bonus board alone,

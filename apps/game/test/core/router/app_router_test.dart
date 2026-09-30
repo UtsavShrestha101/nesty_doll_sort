@@ -10,6 +10,9 @@ import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fixture_levels.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/ui/theme/app_theme.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_page.dart';
@@ -39,6 +42,13 @@ void main() {
     // Before the router (and its guard) is first built.
     await get.unregister<LevelRepository>();
     get.registerSingleton<LevelRepository>(_UnloadedLevels());
+    // Every test here plays Home, not the first-launch Level 1 (E9,
+    // m7-design §13): a level already won leaves `opensFirstLevel` false.
+    // `currentLevel` stays the default 1, so "Play level 1" still shows.
+    await get.unregister<SaveService>();
+    get.registerSingleton<SaveService>(
+      FakeSaveService(initial: const SaveDocument(highestLevel: 2)),
+    );
   });
   tearDown(resetDependencies);
 
@@ -76,6 +86,30 @@ void main() {
     await pumpFor(tester, const Duration(seconds: 1));
     expect(find.byType(SplashPage), findsNothing);
     expect(find.byType(HomePage), findsOneWidget);
+  });
+
+  // E9 (m7-design §13; spec-prop §10.1): a save with no level won goes from
+  // the splash straight into Level 1's tutorial, with no Home underneath.
+  // (A kill during L1 lands here too: `highestLevel` is still 1, and the
+  // splash cubit's tests cover that reading.)
+  testWidgets('a fresh save: the splash opens Level 1, with no Home '
+      'underneath', (tester) async {
+    await get.unregister<SaveService>();
+    get.registerSingleton<SaveService>(FakeSaveService());
+
+    final router = await pumpApp(tester);
+    expect(find.byType(SplashPage), findsOneWidget);
+    await pumpFor(tester, const Duration(seconds: 1));
+
+    expect(find.byType(SplashPage), findsNothing);
+    expect(find.byType(HomePage), findsNothing);
+    expect(find.byType(GameplayPage), findsOneWidget);
+    expect(find.text('Level 1'), findsOneWidget);
+    expect(router.stack.map((route) => route.name), [GameplayRoute.name]);
+    expect(
+      router.stack.single.routeData.argsAs<GameplayRouteArgs>().request,
+      const PlayRequest.campaign(1),
+    );
   });
 
   testWidgets('Home before the levels have loaded goes through the splash', (

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/lottie/lottie_text_overlay.dart';
+import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart' show HudTokens;
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
@@ -18,6 +19,11 @@ import 'package:nesty_game/features/gameplay/game/timeline/fx_placement.dart';
 /// swap frame, and an `fx_sparkle` [sparkleScale]× the trail's bursts over
 /// the counter (LOTTIE.md "Completed"; a one-shot, at 2× under reduced
 /// motion). A lower count (undo, restart, a new level) changes at once.
+///
+/// It hugs its text (E.18; `layout.hud.familyCounter`): the pill is
+/// [hugWidth] wide (padding 10 + doll icon 12 + gap 5 + the label + padding
+/// 10: 64 for "4 / 4", 78 for "12 / 12"), so the file's 70 dp pill is scaled
+/// evenly to that width, within [minHug]–[maxHug].
 ///
 /// The widget is the file's 120×60 canvas; the counter's centre is the
 /// canvas centre (LOTTIE.md: (60, 30) = (195, 129) on the reference
@@ -44,6 +50,37 @@ class FamilyCounter extends StatefulWidget {
 
   /// The file's canvas (`LottieLabelStyles.familyCounter.canvas`).
   static const Size canvas = Size(120, 60);
+
+  /// The file's own pill width (`FamilyCounterPillPainter`: 70×26).
+  static const double filePillWidth = 70;
+
+  /// How far the file's pill scales to hug a label.
+  static const double minHug = 0.9;
+  static const double maxHug = 1.2;
+
+  /// The label's text style for measuring (`LottieLabelStyles.familyCounter`:
+  /// Fredoka 700 13).
+  static TextStyle get _labelStyle =>
+      LottieLabelStyles.familyCounter.textStyle();
+
+  /// The pill's width around [label] (tokens `hud.familyCounter`): the
+  /// horizontal padding, the doll icon, the gap and the label's own width.
+  static double hugWidth(
+    String label, {
+    TextScaler scaler = TextScaler.noScaling,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: _labelStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: scaler,
+    )..layout();
+    final textWidth = painter.width;
+    painter.dispose();
+    return HudTokens.familyCounterPadding.horizontal +
+        HudTokens.familyCounterIconSize.width +
+        HudTokens.familyCounterGap +
+        textWidth;
+  }
 
   /// LOTTIE.md "Completed": "a 1.5× `fx_sparkle` @1250".
   static const double defaultSparkleScale = LottieGeometry.counterSparkleScale;
@@ -112,6 +149,8 @@ class _FamilyCounterState extends State<FamilyCounter> {
     final l10n = context.localizations;
     final label = l10n.familyCounter(widget.done, widget.total);
     final previous = _previous;
+    final hug = (FamilyCounter.hugWidth(label) / FamilyCounter.filePillWidth)
+        .clamp(FamilyCounter.minHug, FamilyCounter.maxHug);
     final counter = LottieTextOverlay(
       label: label,
       style: LottieLabelStyles.familyCounter,
@@ -137,7 +176,9 @@ class _FamilyCounterState extends State<FamilyCounter> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        counter,
+        // The pill hugs its label; the sparkle stays 1.5× the trail's, on
+        // the counter's centre.
+        Transform.scale(scale: hug, child: counter),
         if (_sparkling)
           Positioned(
             left: center.dx - spec.anchor.dx * scale,

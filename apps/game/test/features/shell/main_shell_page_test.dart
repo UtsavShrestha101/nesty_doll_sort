@@ -16,7 +16,11 @@ import '../../helpers/test_dependencies.dart';
 /// Home instead of leaving the shell (`AutoTabsRouter.homeIndex`).
 void main() {
   setUpAll(loadBundledFonts);
-  setUp(configureTestDependencies);
+  setUp(() async {
+    await configureTestDependencies();
+    // These start at Home: a fresh save opens Level 1 (E9).
+    await seedSavePastFirstLevel();
+  });
   tearDown(resetDependencies);
 
   Future<void> pumpFor(WidgetTester tester, Duration duration) async {

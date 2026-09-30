@@ -38,6 +38,7 @@ class SheetRow extends StatelessWidget {
     this.onTap,
     this.tone = SheetRowTone.neutral,
     this.highlighted = false,
+    this.selected,
     super.key,
   });
 
@@ -48,6 +49,11 @@ class SheetRow extends StatelessWidget {
   final VoidCallback? onTap;
   final SheetRowTone tone;
   final bool highlighted;
+
+  /// In a pick-one sheet (Reduce motion), whether this row is the active
+  /// choice, for a screen reader; its look is the caller's [trailing].
+  /// Null exposes no selected state.
+  final bool? selected;
 
   /// The Restart row's trailing chevron.
   static const Widget chevron = Icon(
@@ -118,6 +124,7 @@ class SheetRow extends StatelessWidget {
       padding: padding,
       width: double.infinity,
       alignment: AlignmentDirectional.centerStart,
+      selected: selected,
       child: content,
     );
   }
@@ -149,6 +156,11 @@ class SheetRowTag extends StatelessWidget {
 
   final String label;
 
+  /// The widest a tag gets: copy.md m7-3's relaxed-mode tag ("Free, as
+  /// often as you like") is long, so at 1.3× text on a 360 dp phone it
+  /// scales down inside this instead of pushing the row past the sheet.
+  static const double maxWidth = 150;
+
   static const _style = SurfaceStyle(
     color: AppColorTokens.successTint,
     shadows: [
@@ -157,18 +169,24 @@ class SheetRowTag extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) => NestySurface(
-    style: _style,
-    radius: const BorderRadius.all(Radius.circular(AppRadii.md)),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    child: Text(
-      label,
-      style: AppTextStyleTokens.buttonSmall.copyWith(
-        fontSize: 14,
-        color: AppColorTokens.successEdge,
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: maxWidth),
+    child: NestySurface(
+      style: _style,
+      radius: const BorderRadius.all(Radius.circular(AppRadii.md)),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          style: AppTextStyleTokens.buttonSmall.copyWith(
+            fontSize: 14,
+            color: AppColorTokens.successEdge,
+          ),
+          maxLines: 1,
+          softWrap: false,
+        ),
       ),
-      maxLines: 1,
-      softWrap: false,
     ),
   );
 }

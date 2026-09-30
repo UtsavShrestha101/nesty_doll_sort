@@ -9,6 +9,8 @@ import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/music/fake_music_service.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/music/soloud_music_service.dart';
+import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_page.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
@@ -180,7 +182,11 @@ void main() {
 
   group('in the app (fake DI)', () {
     setUpAll(loadBundledFonts);
-    setUp(configureTestDependencies);
+    setUp(() async {
+      await configureTestDependencies();
+      // These start at Home: a fresh save opens Level 1 (E9).
+      await seedSavePastFirstLevel();
+    });
     tearDown(resetDependencies);
 
     Future<void> pumpFor(WidgetTester tester, Duration duration) async {
@@ -232,6 +238,29 @@ void main() {
         const MusicCall.playHome(),
         const MusicCall.unduck(DuckReason.pause),
       ]);
+      expect(tester.takeException(), isNull);
+    });
+
+    // E9 (m7-design §13): with no level won the splash opens Level 1, so
+    // the first loop a new player hears is the level's, never Home's.
+    testWidgets('a fresh save: the silent splash, then Level 1 with game '
+        'music and no home loop first', (tester) async {
+      tester.view
+        ..physicalSize = const Size(390, 844)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await get.unregister<SaveService>();
+      get.registerSingleton<SaveService>(FakeSaveService());
+      final music = get<MusicService>() as FakeMusicService;
+
+      await tester.pumpWidget(App(router: get<AppRouter>()));
+      await tester.pump();
+      expect(music.calls, isEmpty, reason: 'the splash is silent');
+
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.byType(GameplayPage), findsOneWidget);
+      expect(find.byType(HomePage), findsNothing);
+      expect(music.calls, [const MusicCall.playGame()]);
       expect(tester.takeException(), isNull);
     });
   });

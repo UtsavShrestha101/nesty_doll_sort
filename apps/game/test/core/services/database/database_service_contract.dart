@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/models/reduce_motion_mode.dart';
+import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/hive_boxes.dart';
@@ -37,6 +39,16 @@ void runDatabaseServiceContract(
       expect(database.hapticsEnabled, SettingsDefaults.haptics);
       expect(database.symbolsMode, SettingsDefaults.symbols);
       expect(database.languageCode, 'en');
+      // M7 (m7-design §4): relaxed mode off, reduce motion follows the OS.
+      expect(database.relaxedMode, isFalse);
+      expect(database.reduceMotion, ReduceMotionMode.system);
+      // M7 phase 3 (m7-design P3.10): the reminder is off, at 19:00, and
+      // was never offered (spec-prop §7.9 "off until the player accepts").
+      expect(database.reminder, const ReminderSettings());
+      expect(database.reminder.on, isFalse);
+      expect(database.reminder.hour, 19);
+      expect(database.reminder.minute, 0);
+      expect(database.reminder.offered, isFalse);
     });
 
     test('every setting reads back what was written', () async {
@@ -45,7 +57,11 @@ void runDatabaseServiceContract(
       await database.setHapticsEnabled(false);
       await database.setSymbolsMode(SymbolsMode.large);
       await database.setLanguage('pt_BR');
+      await database.setRelaxedMode(true);
+      await database.setReduceMotion(ReduceMotionMode.on);
 
+      expect(database.relaxedMode, isTrue);
+      expect(database.reduceMotion, ReduceMotionMode.on);
       expect(database.soundEnabled, isFalse);
       expect(database.musicEnabled, isFalse);
       expect(database.hapticsEnabled, isFalse);
@@ -113,6 +129,78 @@ void runDatabaseServiceContract(
       await database.setLanguage('fr');
       await pumpEventQueue();
       expect(seen, isEmpty);
+    });
+
+    test(
+      'relaxedModeChanges emits each stored Relaxed mode, as relaxedMode '
+      'then reads it (the gameplay bloc follows it, m7-design §10)',
+      () async {
+        final seen = <(bool, bool)>[];
+        final subscription = database.relaxedModeChanges.listen(
+          (value) => seen.add((value, database.relaxedMode)),
+        );
+        addTearDown(subscription.cancel);
+        await database.setRelaxedMode(true);
+        await database.setRelaxedMode(false);
+        await pumpEventQueue();
+        expect(seen, [(true, true), (false, false)]);
+      },
+    );
+
+    test('reduceMotionChanges emits each stored override, as reduceMotion '
+        'then reads it (the app root follows it, m7-design §14)', () async {
+      final seen = <(ReduceMotionMode, ReduceMotionMode)>[];
+      final subscription = database.reduceMotionChanges.listen(
+        (mode) => seen.add((mode, database.reduceMotion)),
+      );
+      addTearDown(subscription.cancel);
+      await database.setReduceMotion(ReduceMotionMode.off);
+      await database.setReduceMotion(ReduceMotionMode.system);
+      await pumpEventQueue();
+      expect(seen, [
+        (ReduceMotionMode.off, ReduceMotionMode.off),
+        (ReduceMotionMode.system, ReduceMotionMode.system),
+      ]);
+    });
+
+    test('the reminder reads back what was written, and reminderChanges '
+        'emits once per change, as reminder then reads it (m7-design '
+        'P3.10)', () async {
+      final seen = <(ReminderSettings, ReminderSettings)>[];
+      final subscription = database.reminderChanges.listen(
+        (value) => seen.add((value, database.reminder)),
+      );
+      addTearDown(subscription.cancel);
+      const on = ReminderSettings(on: true, hour: 8, minute: 30, offered: true);
+      await database.setReminder(on);
+      await pumpEventQueue();
+      await database.setReminder(on);
+      await pumpEventQueue();
+      const off = ReminderSettings(hour: 8, minute: 30, offered: true);
+      await database.setReminder(off);
+      await pumpEventQueue();
+      expect(database.reminder, off);
+      expect(seen, [(on, on), (off, off)]);
+    });
+
+    test('the other settings leave the M7 streams quiet', () async {
+      final relaxed = <bool>[];
+      final motion = <ReduceMotionMode>[];
+      final reminder = <ReminderSettings>[];
+      final a = database.relaxedModeChanges.listen(relaxed.add);
+      final b = database.reduceMotionChanges.listen(motion.add);
+      final c = database.reminderChanges.listen(reminder.add);
+      addTearDown(a.cancel);
+      addTearDown(b.cancel);
+      addTearDown(c.cancel);
+      await database.setSoundEnabled(false);
+      await database.setMusicEnabled(false);
+      await database.setSymbolsMode(SymbolsMode.subtle);
+      await database.setLanguage('fr');
+      await pumpEventQueue();
+      expect(relaxed, isEmpty);
+      expect(motion, isEmpty);
+      expect(reminder, isEmpty);
     });
   });
 }

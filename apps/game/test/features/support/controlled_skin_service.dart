@@ -50,7 +50,13 @@ final class ControlledSkinService implements SkinService {
   Future<void> load() async {}
 
   @override
-  void dispose() {}
+  void dispose() => unawaited(_selectedSkinChanges.close());
+
+  final StreamController<String> _selectedSkinChanges =
+      StreamController<String>.broadcast();
+
+  @override
+  Stream<String> get selectedSkinChanges => _selectedSkinChanges.stream;
 
   @override
   Future<LevelSkin> prepareForLevel(
@@ -85,7 +91,11 @@ final class ControlledSkinService implements SkinService {
 
   @override
   Future<bool> selectSkin(String skinId) async {
+    final changed = skinId != selectedSkinId;
     selectedSkinId = skinId;
+    if (changed && !_selectedSkinChanges.isClosed) {
+      _selectedSkinChanges.add(skinId);
+    }
     return true;
   }
 

@@ -14,8 +14,8 @@ import 'package:nesty_game/core/ui/widgets/wood/plank_strip.dart';
 /// plank, text 16/600, 'Got it'"; docs/plans/m3-design.md §10.4).
 ///
 /// [illustration] is the mechanic's art (towers, glass, ice), drawn over the
-/// plank inside the 302×230 slot; it is a `TODO(design)` gap until the
-/// gameplay-screens lane composes it (no loop is designed yet).
+/// plank inside the 302×230 slot: the mechanic's intro loop (`ui_intro_*`,
+/// m7-3's D) or, without its file or skin, the still picture.
 class IntroCard extends StatelessWidget {
   const IntroCard({
     required this.badgeLabel,

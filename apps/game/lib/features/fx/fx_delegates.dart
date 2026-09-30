@@ -59,7 +59,7 @@ abstract final class FxDelegates {
     final values = <ValueDelegate<Object?>>[];
 
     for (final layer in spec.imageLayers) {
-      final hook = _Compensation(layer, images);
+      final hook = _Compensation(layer, images, params);
       values
         ..add(
           ValueDelegate.transformScale(
@@ -80,6 +80,17 @@ abstract final class FxDelegates {
       values.add(
         ValueDelegate.transformScale([
           '${role.name}_size',
+        ], callback: (f) => hook.scale(f.startValue)),
+      );
+    }
+
+    // The scale nulls a whole piece hangs from (`fx_glass_unlock_tall`'s
+    // `case_size`): the clip's factor, or the authored scale.
+    for (final name in spec.scaleNulls) {
+      final hook = _CaseSize(params);
+      values.add(
+        ValueDelegate.transformScale([
+          name,
         ], callback: (f) => hook.scale(f.startValue)),
       );
     }
@@ -209,14 +220,20 @@ const _white = Color(0xFFFFFFFF);
 /// The layer's own transform is static (LOTTIE.md v3), so both are
 /// recomputed only when the slot's raster changes.
 final class _Compensation {
-  _Compensation(this.layer, this.images)
+  _Compensation(this.layer, this.images, this.params)
     : _density = layer.slot.density,
       _scale = layer.scale,
-      _anchor = layer.anchor;
+      _anchor = layer.anchor,
+      _pings = layer.slot == FxImageSlot.unlockSymbol;
 
   final FxImageLayer layer;
   final FxImages images;
+  final FxDrawableParams params;
   final double _density;
+
+  /// The padlock's symbol pings when its slot is tapped (E.13): its scale is
+  /// multiplied by `FxDrawableParams.padlockPing` about its own anchor.
+  final bool _pings;
 
   FxRaster? _raster;
   bool _synced = false;
@@ -225,6 +242,10 @@ final class _Compensation {
 
   Offset scale() {
     _sync(images.rasterFor(layer.slot));
+    if (_pings) {
+      final ping = params.padlockPing;
+      if (ping != 1) return Offset(_scale.dx * ping, _scale.dy * ping);
+    }
     return _scale;
   }
 
@@ -266,6 +287,17 @@ final class _Size {
 
   Offset scale(Offset? authored) =>
       params.sizeOf(role) ?? authored ?? _unitScale;
+}
+
+/// A scale null the clip sizes as a whole (`case_size`): its factor, or the
+/// authored scale.
+final class _CaseSize {
+  _CaseSize(this.params);
+
+  final FxDrawableParams params;
+
+  Offset scale(Offset? authored) =>
+      params.caseScaleOffset ?? authored ?? _unitScale;
 }
 
 /// A named fill (`rim_tint`, `tint`): the clip's colour, or the authored.

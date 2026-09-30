@@ -4,7 +4,6 @@ import 'package:nesty_game/core/ui/colors/app_colors.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_styles.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_surface.dart';
-import 'package:nesty_game/core/ui/widgets/tactile/touch_target.dart';
 
 /// "Close button: 36–38 circle `#F6E2C2` with a 3px inner bottom shadow"
 /// (design/README.md "Components"; NestyOverlay buy and pause cards).
@@ -33,20 +32,21 @@ class NestyCloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TouchTarget(
-      child: TactileSurface(
-        style: SurfaceStyles.closeButton,
-        radius: BorderRadius.circular(diameter / 2),
-        onPressed: onPressed,
-        width: diameter,
-        height: diameter,
-        semanticLabel: semanticLabel ?? context.localizations.closeSemantics,
-        excludeChildSemantics: true,
-        child: Icon(
-          NestyIcons.close,
-          size: diameter * 22 / 36,
-          color: AppColors.iconBrown,
-        ),
+    // The target is inside the button's node, so a screen reader's focus
+    // box is 48 dp too, not just the circle (review R24).
+    return TactileSurface(
+      style: SurfaceStyles.closeButton,
+      radius: BorderRadius.circular(diameter / 2),
+      onPressed: onPressed,
+      width: diameter,
+      height: diameter,
+      semanticLabel: semanticLabel ?? context.localizations.closeSemantics,
+      excludeChildSemantics: true,
+      minTouchSize: const Size.square(48),
+      child: Icon(
+        NestyIcons.close,
+        size: diameter * 22 / 36,
+        color: AppColors.iconBrown,
       ),
     );
   }

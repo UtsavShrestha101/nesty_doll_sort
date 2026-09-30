@@ -75,7 +75,6 @@ void main() {
     'dailyBackToDaily',
     // Museum
     'museumTitle',
-    'museumCollection',
     'museumCount',
     'museumNextLine',
     'museumAllHome',
@@ -115,10 +114,10 @@ void main() {
     'buyUndoText',
     'buyHintText',
     'buySlotText',
-    'tutorialStep1Chip',
+    // copy.md m7-3's one chip for the three steps (E `tut_step_chip`).
+    'tutorialStepChip',
     'tutorialStep1Title',
     'tutorialStep1Text',
-    'tutorialStep2Chip',
     'tutorialStep2Title',
     'tutorialStep2Text',
     'tutorialStep3Title',

@@ -56,4 +56,10 @@ abstract class PlayEntry with _$PlayEntry {
   const PlayEntry._();
 
   PlayKind get kind => request.kind;
+
+  /// The star rating's par (spec-prop §7.10; m7-design P3.5): the bundle
+  /// entry's `LevelBundleEntry.par` for a bundled board (a campaign level
+  /// or a replay), else null, so the daily, Bonus Endless and race boards
+  /// compute no stars. Null too for an entry the bundle has no par for.
+  int? get par => request.isBundled ? bundleEntry?.par : null;
 }

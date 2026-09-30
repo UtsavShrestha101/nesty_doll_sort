@@ -185,6 +185,75 @@ abstract final class NestyIcons {
   /// `shuffle`
   static const IconData shuffle = IconData(0xe043, fontFamily: fontFamily);
 
+  /// `auto_stories`
+  static const IconData autoStories = IconData(0xe666, fontFamily: fontFamily);
+
+  /// `military_tech`
+  static const IconData militaryTech = IconData(0xea3f, fontFamily: fontFamily);
+
+  /// `share`
+  static const IconData share = IconData(0xe80d, fontFamily: fontFamily);
+
+  /// `ios_share`
+  static const IconData iosShare = IconData(0xe6b8, fontFamily: fontFamily);
+
+  /// `notifications`
+  static const IconData notifications = IconData(
+    0xe7f5,
+    fontFamily: fontFamily,
+  );
+
+  /// `notifications_off`
+  static const IconData notificationsOff = IconData(
+    0xe7f6,
+    fontFamily: fontFamily,
+  );
+
+  /// `schedule`
+  static const IconData schedule = IconData(0xefd6, fontFamily: fontFamily);
+
+  /// `spa`
+  static const IconData spa = IconData(0xeb4c, fontFamily: fontFamily);
+
+  /// `motion_photos_off`
+  static const IconData motionPhotosOff = IconData(
+    0xe9c0,
+    fontFamily: fontFamily,
+  );
+
+  /// `route`
+  static const IconData route = IconData(0xeacd, fontFamily: fontFamily);
+
+  /// `flag`
+  static const IconData flag = IconData(0xf0c6, fontFamily: fontFamily);
+
+  /// `computer`
+  static const IconData computer = IconData(0xe31e, fontFamily: fontFamily);
+
+  /// `all_inclusive`
+  static const IconData allInclusive = IconData(0xeb3d, fontFamily: fontFamily);
+
+  /// `replay`
+  static const IconData replay = IconData(0xe042, fontFamily: fontFamily);
+
+  /// `logout`
+  static const IconData logout = IconData(0xe9ba, fontFamily: fontFamily);
+
+  /// `refresh`
+  static const IconData refresh = IconData(0xe5d5, fontFamily: fontFamily);
+
+  /// `open_in_new`
+  static const IconData openInNew = IconData(0xe89e, fontFamily: fontFamily);
+
+  /// `layers`
+  static const IconData layers = IconData(0xe53b, fontFamily: fontFamily);
+
+  /// `sd_card_alert`
+  static const IconData sdCardAlert = IconData(0xf057, fontFamily: fontFamily);
+
+  /// `inventory_2`
+  static const IconData inventory2 = IconData(0xe1a1, fontFamily: fontFamily);
+
   /// Every glyph by its upstream name, for tests and tooling.
   static const Map<String, IconData> byName = {
     'pause': pause,
@@ -235,5 +304,25 @@ abstract final class NestyIcons {
     'download': download,
     'casino': casino,
     'shuffle': shuffle,
+    'auto_stories': autoStories,
+    'military_tech': militaryTech,
+    'share': share,
+    'ios_share': iosShare,
+    'notifications': notifications,
+    'notifications_off': notificationsOff,
+    'schedule': schedule,
+    'spa': spa,
+    'motion_photos_off': motionPhotosOff,
+    'route': route,
+    'flag': flag,
+    'computer': computer,
+    'all_inclusive': allInclusive,
+    'replay': replay,
+    'logout': logout,
+    'refresh': refresh,
+    'open_in_new': openInNew,
+    'layers': layers,
+    'sd_card_alert': sdCardAlert,
+    'inventory_2': inventory2,
   };
 }

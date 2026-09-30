@@ -12,6 +12,9 @@ class ChestRow extends StatelessWidget {
   final DailyStatus status;
   final int chestCoins;
 
+  /// The chest art's box in the row (ui-spec-menus §6.6: 58×48).
+  static const double chestArtWidth = 58;
+
   static const _style = SurfaceStyle(
     color: Color(0xE5FFF9EC), // rgba(255,249,236,.9)
     shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 3)],
@@ -31,7 +34,7 @@ class ChestRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          const ChestIcon(),
+          const ChestIcon(size: chestArtWidth),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

@@ -203,6 +203,11 @@ const _roleColors = {
   FxRole.doll: Color(0xFFE53935),
   FxRole.mover: Color(0xFF1E88E5),
   FxRole.target: Color(0xFF43A047),
+  // The intro loops' roles (m7-3).
+  FxRole.revealed: Color(0xFF8E24AA),
+  FxRole.family: Color(0xFFFB8C00),
+  FxRole.family2: Color(0xFF00897B),
+  FxRole.freed: Color(0xFFD81B60),
 };
 
 /// An [FxImageSource] of [blobArt] rasters at [factor] × every doll slot's

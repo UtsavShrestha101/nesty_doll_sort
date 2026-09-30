@@ -2,6 +2,8 @@
 // `MAIN()`, frame 2.2; docs/plans/m2-lottie-design.md §8, §16 "Flame
 // board"): the layers, one SlotComponent per slot with its rest sprite, the
 // paused glass and ice compositions, and their rule-3 stand-ins.
+import 'dart:ui' show TextDirection;
+
 import 'package:flame/components.dart' hide Snapshot;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
@@ -17,6 +19,7 @@ import 'package:nesty_game/features/gameplay/game/components/hint_layer.dart';
 import 'package:nesty_game/features/gameplay/game/components/nest_component.dart';
 import 'package:nesty_game/features/gameplay/game/components/shelf_layer.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_component.dart';
+import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -118,7 +121,32 @@ void main() {
       expect(tower.view.buried, [1]);
       expect(tower.view.buriedAtStart, 1);
       expect(tower.decor.tagLabel, '+1');
+      expect(tower.decor.tagDirection, TextDirection.ltr);
       expect(h.board.slots['r1c0']!.nest.isDrawn, isTrue);
+    });
+
+    test('boardLabels reaches SlotDecor: a locale hand-off after the board '
+        'is built relabels the tag and badge at once (ARB '
+        'boardTowerHidden/boardIceCount, spec §16)', () {
+      final tower = h.board.scene.slot('r1c0')!;
+      final iced = h.board.scene.slot('r2c1')!;
+      expect(tower.decor.tagLabel, '+1');
+      expect(iced.decor.badgeLabel, '2');
+
+      // A stand-in for a locale's own `AppLocalizations` methods: proves
+      // the label text and direction the page hands over reach the tag and
+      // badge already on screen, not just new ones (`BoardComponent.labels`
+      // relabels every existing slot).
+      h.game.boardLabels = BoardLabels(
+        towerTag: (count) => 'buried:$count',
+        iceBadge: (count) => 'ice:$count',
+        textDirection: TextDirection.rtl,
+      );
+
+      expect(tower.decor.tagLabel, 'buried:1');
+      expect(iced.decor.badgeLabel, 'ice:2');
+      expect(tower.decor.tagDirection, TextDirection.rtl);
+      expect(iced.decor.badgeDirection, TextDirection.rtl);
     });
 
     test('rest sprites everywhere else; none on the empty slot', () {
@@ -247,6 +275,29 @@ void main() {
     expect(before!.isMounted, isFalse);
     expect(h.layouts, hasLength(2));
   });
+
+  test(
+    'boardLabels at mount: a level built with a locale already in hand '
+    'lays out its tag and badge from it, never the English fallback',
+    () async {
+      final h = await GameHarness.mount(
+        mainLevel,
+        fx: await libraryWith(boardFiles),
+        labels: BoardLabels(
+          towerTag: (count) => 'buried:$count',
+          iceBadge: (count) => 'ice:$count',
+          textDirection: TextDirection.rtl,
+        ),
+      );
+      await h.start();
+      final tower = h.board.scene.slot('r1c0')!;
+      final iced = h.board.scene.slot('r2c1')!;
+      expect(tower.decor.tagLabel, 'buried:1');
+      expect(iced.decor.badgeLabel, 'ice:2');
+      expect(tower.decor.tagDirection, TextDirection.rtl);
+      expect(iced.decor.badgeDirection, TextDirection.rtl);
+    },
+  );
 
   test('components render within the board size', () {
     final board = BoardComponent(

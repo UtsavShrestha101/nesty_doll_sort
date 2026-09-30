@@ -1,14 +1,15 @@
 import 'dart:async' show unawaited;
 import 'dart:convert';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
+import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
+import 'package:nesty_game/features/splash/pages/splash_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
@@ -50,10 +51,15 @@ void main() {
       app.main();
       final board = Board(tester);
 
+      // Past the splash: Home, or Level 1 on a fresh install (E9,
+      // m7-design §13; `nesty-test` runs this after a fresh install).
       await tester.pumpUntil(
-        () => find.byType(HomePage).evaluate().isNotEmpty,
+        () =>
+            find.byType(SplashPage).evaluate().isEmpty &&
+            (find.byType(HomePage).evaluate().isNotEmpty ||
+                find.byType(GameplayView).evaluate().isNotEmpty),
         timeout: const Duration(seconds: 60),
-        reason: 'Home',
+        reason: 'past the splash',
       );
       await tester.pumpFor(const Duration(milliseconds: 500));
 
@@ -69,9 +75,30 @@ void main() {
       // The app's own clock follows the define (`SystemClock`), so this is
       // the request Daily's Play would open today.
       expect(get<DailyService>().todayRequest, const PlayRequest.daily(date));
-      final home = tester.element(find.byType(HomePage));
+      // On a fresh install the splash opens level 1 on a `GameplayRoute` of
+      // its own (E9). A `replaceAll` with the daily's `GameplayRoute` would
+      // keep that page (the router reuses a page of the same route, and the
+      // page keeps the bloc it started with: the device run timed out on
+      // level 1), so Home comes first, as for a returning player.
+      if (find.byType(GameplayView).evaluate().isNotEmpty) {
+        unawaited(
+          get<AppRouter>().replaceAll([
+            const MainShellRoute(children: [HomeRoute()]),
+          ]),
+        );
+        await tester.pumpUntil(
+          () =>
+              find.byType(GameplayView).evaluate().isEmpty &&
+              find.byType(HomePage).evaluate().isNotEmpty,
+          reason: 'Home instead of level 1',
+        );
+        await tester.pumpFor(const Duration(milliseconds: 500));
+      }
+      // replaceAll, so the daily is the only board up.
       unawaited(
-        home.router.push(GameplayRoute(request: const PlayRequest.daily(date))),
+        get<AppRouter>().replaceAll([
+          GameplayRoute(request: const PlayRequest.daily(date)),
+        ]),
       );
       await board.waitForLevel(date, settle: const Duration(milliseconds: 500));
 

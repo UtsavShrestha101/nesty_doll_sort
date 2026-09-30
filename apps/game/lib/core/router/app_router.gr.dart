@@ -11,6 +11,22 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [ChaptersPage]
+class ChaptersRoute extends PageRouteInfo<void> {
+  const ChaptersRoute({List<PageRouteInfo>? children})
+    : super(ChaptersRoute.name, initialChildren: children);
+
+  static const String name = 'ChaptersRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return WrappedRoute(child: const ChaptersPage());
+    },
+  );
+}
+
+/// generated route for
 /// [DailyPage]
 class DailyRoute extends PageRouteInfo<void> {
   const DailyRoute({List<PageRouteInfo>? children})
@@ -31,11 +47,16 @@ class DailyRoute extends PageRouteInfo<void> {
 class GameplayRoute extends PageRouteInfo<GameplayRouteArgs> {
   GameplayRoute({
     required PlayRequest request,
+    GameplayEntrance entrance = GameplayEntrance.push,
     Key? key,
     List<PageRouteInfo>? children,
   }) : super(
          GameplayRoute.name,
-         args: GameplayRouteArgs(request: request, key: key),
+         args: GameplayRouteArgs(
+           request: request,
+           entrance: entrance,
+           key: key,
+         ),
          initialChildren: children,
        );
 
@@ -46,33 +67,45 @@ class GameplayRoute extends PageRouteInfo<GameplayRouteArgs> {
     builder: (data) {
       final args = data.argsAs<GameplayRouteArgs>();
       return WrappedRoute(
-        child: GameplayPage(request: args.request, key: args.key),
+        child: GameplayPage(
+          request: args.request,
+          entrance: args.entrance,
+          key: args.key,
+        ),
       );
     },
   );
 }
 
 class GameplayRouteArgs {
-  const GameplayRouteArgs({required this.request, this.key});
+  const GameplayRouteArgs({
+    required this.request,
+    this.entrance = GameplayEntrance.push,
+    this.key,
+  });
 
   final PlayRequest request;
+
+  final GameplayEntrance entrance;
 
   final Key? key;
 
   @override
   String toString() {
-    return 'GameplayRouteArgs{request: $request, key: $key}';
+    return 'GameplayRouteArgs{request: $request, entrance: $entrance, key: $key}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! GameplayRouteArgs) return false;
-    return request == other.request && key == other.key;
+    return request == other.request &&
+        entrance == other.entrance &&
+        key == other.key;
   }
 
   @override
-  int get hashCode => request.hashCode ^ key.hashCode;
+  int get hashCode => request.hashCode ^ entrance.hashCode ^ key.hashCode;
 }
 
 /// generated route for
@@ -119,6 +152,38 @@ class MuseumRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return WrappedRoute(child: const MuseumPage());
+    },
+  );
+}
+
+/// generated route for
+/// [RecordsPage]
+class RecordsRoute extends PageRouteInfo<void> {
+  const RecordsRoute({List<PageRouteInfo>? children})
+    : super(RecordsRoute.name, initialChildren: children);
+
+  static const String name = 'RecordsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return WrappedRoute(child: const RecordsPage());
+    },
+  );
+}
+
+/// generated route for
+/// [RivalSelectPage]
+class RivalSelectRoute extends PageRouteInfo<void> {
+  const RivalSelectRoute({List<PageRouteInfo>? children})
+    : super(RivalSelectRoute.name, initialChildren: children);
+
+  static const String name = 'RivalSelectRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return WrappedRoute(child: const RivalSelectPage());
     },
   );
 }

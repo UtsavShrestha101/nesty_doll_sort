@@ -5,6 +5,7 @@ import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
@@ -12,6 +13,7 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
+import 'package:nesty_game/features/gameplay/pages/gameplay_entrance.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/gameplay/widgets/theme_background_view.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
@@ -22,7 +24,8 @@ import 'package:nesty_render/nesty_render.dart';
 /// with its cherry doll, the "DOLL SORT" chip, three cherry dolls idling on
 /// a plank (`doll_idle`) and `ui_splash_loader` following the real load
 /// (the Lottie files, the skin and shelf dolls, the save and levels, the
-/// sounds), captioned "Dusting the shelves…". Then Home.
+/// sounds), captioned "Dusting the shelves…". Then Home, or Level 1 on a
+/// save with no level won (E9, m7-design §13).
 @RoutePage()
 class SplashPage extends StatelessWidget implements AutoRouteWrapper {
   const SplashPage({super.key});
@@ -56,12 +59,24 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
   Widget build(BuildContext context) {
     return BlocConsumer<SplashCubit, AsyncValue<SplashState>>(
       listenWhen: (previous, current) => !previous.hasData && current.hasData,
-      // replaceAll: Splash must not stay underneath Home on the back stack.
-      // Home is the shell's middle tab (m3-design §10.1).
-      listener: (context, _) => unawaited(
-        context.router.replaceAll([
-          const MainShellRoute(children: [HomeRoute()]),
-        ]),
+      // replaceAll: Splash must not stay underneath on the back stack. A save
+      // with no level won opens Level 1's tutorial with nothing under it or
+      // in between (E9, m7-design §13; spec-prop §10.1); its first win's
+      // Continue goes Home. Otherwise Home, the shell's middle tab
+      // (m3-design §10.1).
+      listener: (context, state) => unawaited(
+        context.router.replaceAll(
+          state.data?.opensFirstLevel ?? false
+              ? [
+                  GameplayRoute(
+                    request: const PlayRequest.campaign(1),
+                    entrance: GameplayEntrance.fromSplash,
+                  ),
+                ]
+              : [
+                  const MainShellRoute(children: [HomeRoute()]),
+                ],
+        ),
       ),
       builder: (context, state) => SplashView(
         progress: state.data?.progress ?? 0,
@@ -106,6 +121,11 @@ class SplashView extends StatefulWidget {
   /// The Color symbols mode of the placeholder dolls. The art bakes in its
   /// own (`ShowcaseDolls`), so this shows only when that can't load.
   final DollSymbols symbols;
+
+  /// The art's dim behind an error card: `rgba(60,30,10,.35)` (frames
+  /// 12.10, 12.11; frame-only, no token).
+  // TODO(design): add the splash error dim to tokens.json `color`.
+  static const Color errorDim = Color(0x593C1E0A);
 
   /// Design y 240 → 750.
   static const double blockHeight = 510;
@@ -174,14 +194,30 @@ class _SplashViewState extends State<SplashView> {
               ),
             ),
           ),
-          if (error != null)
+          LayoutBuilder(builder: _block),
+          // Frames 12.10, 12.11: the art dims, the loader and caption hide,
+          // and one card says what to do (top 470, left/right 28).
+          if (error != null) ...[
+            const ColoredBox(color: SplashView.errorDim),
+            // A screen too short for that lifts the card, and a taller one
+            // scrolls, rather than shrinking its button under 48 dp.
             SafeArea(
-              child: Center(
-                child: RetryView(exception: error, onRetry: widget.onRetry),
+              child: CustomSingleChildLayout(
+                delegate: const _CardTop(top: 470 - 59, side: 28),
+                child: SingleChildScrollView(
+                  child: ErrorCard(
+                    icon: error.errorIcon,
+                    title: error.errorTitle(context.localizations),
+                    body: error.errorBody(context.localizations),
+                    primaryLabel: context.localizations.retry,
+                    onPrimary: widget.onRetry,
+                    compact: true,
+                    namesRoute: true,
+                  ),
+                ),
               ),
-            )
-          else
-            LayoutBuilder(builder: _block),
+            ),
+          ],
         ],
       ),
     );
@@ -282,44 +318,46 @@ class _SplashViewState extends State<SplashView> {
               ),
             ),
           ),
-        Positioned(
-          left: (width - loaderWidth) / 2,
-          width: loaderWidth,
-          top: loaderTop,
-          child: Semantics(
-            label: l10n.splashLoading,
-            value: l10n.progressPercent(widget.progress.clamp(0.0, 1.0)),
-            child: ExcludeSemantics(
-              child: SizedBox(
-                height: 22,
-                child: LottieFxView(
-                  id: FxId.uiSplashLoader,
-                  controller: _loader,
-                  library: widget.library,
-                  fallback: NestyProgressBar(
-                    value: widget.progress,
-                    striped: true,
-                    tone: NestyProgressTone.orange,
+        if (widget.error == null)
+          Positioned(
+            left: (width - loaderWidth) / 2,
+            width: loaderWidth,
+            top: loaderTop,
+            child: Semantics(
+              label: l10n.splashLoading,
+              value: l10n.progressPercent(widget.progress.clamp(0.0, 1.0)),
+              child: ExcludeSemantics(
+                child: SizedBox(
+                  height: 22,
+                  child: LottieFxView(
+                    id: FxId.uiSplashLoader,
+                    controller: _loader,
+                    library: widget.library,
+                    fallback: NestyProgressBar(
+                      value: widget.progress,
+                      striped: true,
+                      tone: NestyProgressTone.orange,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          left: 16,
-          right: 16,
-          top: loaderTop + 22 + 12,
-          child: Text(
-            l10n.splashCaption,
-            textAlign: TextAlign.center,
-            style: AppTextStyleTokens.cardTitle.copyWith(
-              fontSize: 15,
-              height: 1,
-              color: AppColors.textBrown,
+        if (widget.error == null)
+          Positioned(
+            left: 16,
+            right: 16,
+            top: loaderTop + 22 + 12,
+            child: Text(
+              l10n.splashCaption,
+              textAlign: TextAlign.center,
+              style: AppTextStyleTokens.cardTitle.copyWith(
+                fontSize: 15,
+                height: 1,
+                color: AppColors.textBrown,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -354,4 +392,37 @@ class _DollSortChip extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Puts the error card [top] below the safe area's top and [side] in from
+/// each edge (frames 12.10, 12.11: y 470 of the design), lifting it when the
+/// screen is too short for that so its bottom keeps a margin; a card taller
+/// than the screen scrolls (`SingleChildScrollView` inside).
+class _CardTop extends SingleChildLayoutDelegate {
+  const _CardTop({required this.top, required this.side});
+
+  final double top;
+  final double side;
+
+  static const double _margin = 16;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      BoxConstraints(
+        minWidth: math.max(0, constraints.maxWidth - 2 * side),
+        maxWidth: math.max(0, constraints.maxWidth - 2 * side),
+        maxHeight: math.max(0, constraints.maxHeight - 2 * _margin),
+      );
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) => Offset(
+    side,
+    math
+        .max(_margin, math.min(top, size.height - childSize.height - _margin))
+        .toDouble(),
+  );
+
+  @override
+  bool shouldRelayout(_CardTop oldDelegate) =>
+      oldDelegate.top != top || oldDelegate.side != side;
 }

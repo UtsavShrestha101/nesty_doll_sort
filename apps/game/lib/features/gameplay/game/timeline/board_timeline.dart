@@ -9,6 +9,8 @@ import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_spec.dart';
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
+import 'package:nesty_game/features/gameplay/bloc/tap_policy.dart'
+    show SlotNudgeKind;
 import 'package:nesty_game/features/gameplay/game/timeline/combo_tracker.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/fx_clip.dart';
@@ -40,8 +42,8 @@ abstract final class TimelinePools {
     FxId.dollInvalid: 2,
     // A source and a destination reveal in one batch.
     FxId.dollReveal: 2,
-    // The selection, the hint's target and one fading out.
-    FxId.fxSelectGlow: 3,
+    // The selection, the hint's target, the drag hover and one fading out.
+    FxId.fxSelectGlow: 4,
     FxId.fxDustPuff: 4,
     // A 60 ms cadence of 267 ms sparkles: at most 5 live, plus margin.
     FxId.fxSparkle: 9,
@@ -160,7 +162,12 @@ final class BoardTimeline {
   /// stops them so two clips never draw one doll.
   final Map<String, _Selection> _settling = {};
   _Hint? _hint;
+  _Hover? _hover;
   final Map<String, _Track> _extraPulses = {};
+
+  /// When each live `ui_extra_slot` loop began, in timeline time: the loop's
+  /// phase at a landing (E.16), so it settles from the frame it is on.
+  final Map<String, double> _pulseStartMs = {};
 
   /// Timeline time in ms: the sum of every [advance].
   double get nowMs => _now;
@@ -312,9 +319,32 @@ final class BoardTimeline {
         _planHintCleared(batch);
       case ExtraSlotAddedEffect():
         _planExtraSlot(batch, effect, board, previousGeometry);
+      case SlotNudgeEffect():
+        _planNudge(batch, effect);
     }
     return _commit(batch);
   }
+
+  /// The stand a dragged doll hovers over (E.14): it gets the dimmed glow;
+  /// null (or a stand that isn't a legal target) removes it. The board calls
+  /// it when the stand under the finger changes.
+  void hover(String? slotId) {
+    if (slotId == _hover?.slotId) return;
+    final batch = _Batch(
+      id: _nextBatchId++,
+      effect: const HintClearedEffect(),
+      startMs: _now,
+      scale: motion.durationScale,
+    );
+    _planHover(batch, slotId);
+    for (final item in batch.items) {
+      _enqueue(item);
+    }
+    _dispatchDue();
+  }
+
+  /// The slot whose stand carries the drag hover's glow, if any.
+  String? get hoverSlotId => _hover?.slotId;
 
   /// Swaps the layout without a re-pitch (the viewport changed) and moves
   /// the lasting clips (selection, hint, extra-slot stands) onto it now.
@@ -381,7 +411,9 @@ final class BoardTimeline {
     _selection = null;
     _settling.clear();
     _hint = null;
+    _hover = null;
     _extraPulses.clear();
+    _pulseStartMs.clear();
     _reservations.clear();
     _won = false;
     _repitchUntil = _now;
@@ -499,6 +531,15 @@ final class _Hint {
   final int size;
   final _Track arrow;
   final _Track glow;
+}
+
+/// The drag hover on screen: its slot and its dimmed glow.
+final class _Hover {
+  _Hover({required this.slotId, required this.glow, required this.params});
+
+  final String slotId;
+  final _Track glow;
+  final FxClipParams params;
 }
 
 /// A batch being planned: times are real ms from its start.

@@ -18,11 +18,11 @@ abstract final class FxPoolSizes {
     FxId.dollInvalid ||
     FxId.dollReveal ||
     FxId.uiExtraSlot => 2,
-    FxId.fxSelectGlow => 3,
+    FxId.fxSelectGlow => 4,
     FxId.fxDustPuff => 4,
     FxId.fxSparkle => 9,
     FxId.uiHintArrow => 1,
-    FxId.fxGlassUnlock || FxId.fxIce => perSlot,
+    FxId.fxGlassUnlock || FxId.fxGlassUnlockTall || FxId.fxIce => perSlot,
     // Widget files: one view each where they're shown.
     _ => 1,
   };

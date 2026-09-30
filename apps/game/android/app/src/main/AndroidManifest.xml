@@ -5,12 +5,46 @@
          appCategory="game" (API 26+, ignored below): from targetSdk 36 Android
          ignores screenOrientation on large screens, except for games. It keeps the
          portrait lock below working on tablets and foldables. Spec §0: portrait only. -->
+    <!-- The opt-in daily reminder (E4, spec-prop §7.9; docs/plans/m7-design.md
+         P3.10): flutter_local_notifications' own manifest already asks
+         POST_NOTIFICATIONS and VIBRATE; RECEIVE_BOOT_COMPLETED lets its
+         receiver re-register the schedule after a reboot. Notifications
+         schedule inexact (AndroidScheduleMode.inexactAllowWhileIdle), so no
+         exact-alarm permission is requested; if a merged manifest from a
+         future plugin version ever adds one, remove it here. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.USE_EXACT_ALARM"
+        tools:node="remove" />
+
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:appCategory="game"
         tools:targetApi="26">
+        <!-- flutter_local_notifications: redelivers a scheduled notification
+             and re-registers the daily reminder's schedule after a reboot or
+             an app update (P3.10; the plugin's own README "AndroidManifest.xml
+             setup"). Neither is exported: only the OS and the plugin call
+             them. -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+            android:exported="false" />
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".MainActivity"
             android:exported="true"

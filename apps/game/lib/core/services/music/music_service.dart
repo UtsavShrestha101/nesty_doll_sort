@@ -29,7 +29,11 @@ enum DuckReason {
   reward,
 
   /// The Pause dialog (3.9), 0.5.
-  pause;
+  pause,
+
+  /// A race's result card (9.4, 9.5), 0.3 (tokens.json
+  /// `sound.musicDuck.raceResult`; phase 4 architecture §3.11).
+  raceResult;
 
   /// Music volume × this while ducked (`SoundTokens.musicDuckFactors`,
   /// keyed by the enum name; `music_mix_test` checks they match).

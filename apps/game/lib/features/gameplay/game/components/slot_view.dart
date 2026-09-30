@@ -15,6 +15,7 @@ final class SlotView {
     this.innerSize = 0,
     this.buried = const [],
     this.buriedAtStart = 0,
+    this.towerSizeAtStart = 0,
     this.unlockColor,
     this.ice = 0,
     this.iceInitial = 0,
@@ -43,6 +44,7 @@ final class SlotView {
       innerSize: top?.innerSize ?? 0,
       buried: List.unmodifiable(buried),
       buriedAtStart: initial is TowerSlot ? initial.hiddenCount : 0,
+      towerSizeAtStart: initial is TowerSlot ? _tallest(initial) : 0,
       unlockColor: slot is LockedSlot ? slot.unlockColor : null,
       ice: slot.ice,
       iceInitial: initialIce < slot.ice ? slot.ice : initialIce,
@@ -50,6 +52,15 @@ final class SlotView {
   }
 
   static const empty = SlotView();
+
+  /// The biggest outer size among a tower's nests at the start of the level.
+  static int _tallest(TowerSlot tower) {
+    var size = 0;
+    for (final nest in tower.stack) {
+      if (nest.outerSize > size) size = nest.outerSize;
+    }
+    return size;
+  }
 
   /// The top nest's colour; null for an empty slot.
   final DollColor? color;
@@ -67,6 +78,12 @@ final class SlotView {
   /// spacing (`SlotGeometry.buriedBaseY(depth, buried:)`) stays put as it
   /// empties (review RENDER-4).
   final int buriedAtStart;
+
+  /// The tallest outer size among the nests the tower held when the level
+  /// started (0 for a slot that isn't a tower): the tower stack's `topSize`
+  /// (`SlotGeometry.towerStack`), so the silhouette step stays put as the
+  /// tower empties and never lets a revealed taller nest reach the limit.
+  final int towerSizeAtStart;
 
   /// Set while the slot is still a `LockedSlot`: its doll stands on the
   /// case floor and the padlock shows this colour's symbol.
@@ -95,6 +112,7 @@ final class SlotView {
       other.innerSize == innerSize &&
       listEquals(other.buried, buried) &&
       other.buriedAtStart == buriedAtStart &&
+      other.towerSizeAtStart == towerSizeAtStart &&
       other.unlockColor == unlockColor &&
       other.ice == ice &&
       other.iceInitial == iceInitial;
@@ -106,6 +124,7 @@ final class SlotView {
     innerSize,
     Object.hashAll(buried),
     buriedAtStart,
+    towerSizeAtStart,
     unlockColor,
     ice,
     iceInitial,

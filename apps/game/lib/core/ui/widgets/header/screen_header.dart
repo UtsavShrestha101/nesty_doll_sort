@@ -6,7 +6,8 @@ import 'package:nesty_game/core/ui/widgets/buttons/icon_tactile_button.dart';
 import 'package:nesty_game/core/ui/widgets/coins/coin_pill.dart';
 
 /// A screen's top row (design/README.md "08 Settings & system", "05 Daily";
-/// frames 8.1, 5.1): a 46 px back/close button, a centred 26/700 heading,
+/// frames 8.1, 5.1): a 46 px back/close button (in a 48 dp target), a
+/// centred 26/700 heading that scales down rather than cut,
 /// and an optional coin pill. Settings closes (pops); Daily goes back; the
 /// shell's Shop/Museum tabs have neither and just show the heading and
 /// coins.
@@ -19,6 +20,7 @@ class ScreenHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onBack,
     this.onClose,
     this.coins,
+    this.coinPillKey,
     super.key,
   }) : assert(
          onBack == null || onClose == null,
@@ -36,8 +38,17 @@ class ScreenHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Shows a read-only [CoinPill] (Daily, Shop, Museum).
   final int? coins;
 
+  /// Keys the [CoinPill], so a reward can fly its coins to it (the day-7
+  /// chest on Daily, as `GameplayHud.coinPillKey` does for the milestone
+  /// chest). Ignored without [coins].
+  final GlobalKey? coinPillKey;
+
   static const double height = 48;
   static const double _leadingSize = 46;
+
+  /// The leading button's box: its 46 px face in a 48 dp target (spec
+  /// §10.3, review R17), which the trailing spacer matches.
+  static const double _leadingBox = 48;
 
   @override
   Size get preferredSize => const Size.fromHeight(height);
@@ -71,9 +82,9 @@ class ScreenHeader extends StatelessWidget implements PreferredSizeWidget {
     final coins = this.coins;
     final Widget trailing;
     if (coins != null) {
-      trailing = CoinPill(coins: coins);
+      trailing = CoinPill(key: coinPillKey, coins: coins);
     } else if (hasLeading) {
-      trailing = const SizedBox(width: _leadingSize);
+      trailing = const SizedBox(width: _leadingBox);
     } else {
       trailing = const SizedBox.shrink();
     }
@@ -83,14 +94,19 @@ class ScreenHeader extends StatelessWidget implements PreferredSizeWidget {
         children: [
           leading,
           Expanded(
+            // One line that scales down instead of cutting (m7-design §15's
+            // shared rule; "Chapters" at 1.3× on 360 dp, review R29).
             child: Semantics(
               header: true,
-              child: Text(
-                title,
-                style: AppTextStyles.screenTitle,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  style: AppTextStyles.screenTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
               ),
             ),
           ),

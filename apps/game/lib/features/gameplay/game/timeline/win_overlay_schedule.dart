@@ -1,7 +1,11 @@
+import 'package:nesty_core/nesty_core.dart' show StarRating;
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart'
+    show StarMotionTokens;
 import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/fx_spec.dart' show FxSpec;
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/board_timeline.dart'
     show FxSpecLookup;
@@ -25,17 +29,25 @@ final class WinOverlaySchedule {
     required this.countUpStartMs,
     required this.countUpEndMs,
     required this.twinkle,
+    required this.starsStartMs,
+    required this.starCues,
+    required this.starFlourishCue,
   });
 
-  /// For [families] completed families hopping on the plank.
+  /// For [families] completed families hopping on the plank, and [stars]
+  /// (1–3) this win earned; null for a board with no stars (daily, bonus,
+  /// race, or a level without a par, m7-design P3.7).
   factory WinOverlaySchedule.of(
     MotionSpec motion, {
     required int families,
+    int? stars,
     FxSpecLookup specOf = fxSpecOf,
   }) {
     final oneShot = motion.oneShotSpeed;
     final coinsAt = motion.ms(FxTiming.winCoinsMs);
     final ribbon = FxSegment.whole(specOf(FxId.uiWinRibbon), speed: oneShot);
+    final starsStart = motion.ms(FxTiming.winCoinsMs + winCountUpMs);
+    final starCues = _starCues(motion, starsStart, stars ?? 0);
     return WinOverlaySchedule._(
       cues: [
         const FxCue(atMs: 0, sound: SoundEffect.win, haptic: HapticPattern.win),
@@ -59,18 +71,65 @@ final class WinOverlaySchedule {
       coinBurstAtMs: coinsAt,
       coinBurst: FxSegment.whole(specOf(FxId.fxCoinBurst), speed: oneShot),
       countUpStartMs: coinsAt,
-      countUpEndMs: motion.ms(FxTiming.winCoinsMs + winCountUpMs),
+      countUpEndMs: starsStart,
       twinkle: FxSegment.whole(
         specOf(FxId.fxTwinkle),
         loop: true,
         speed: motion.ambientLoopSpeed,
       ),
+      starsStartMs: starsStart,
+      starCues: starCues,
+      starFlourishCue: stars == StarRating.maxStars && !motion.isReduced
+          ? FxCue(
+              atMs: starsStart + starSegmentMs * stars! + starFlourishMs,
+              haptic: HapticPattern.complete,
+            )
+          : null,
     );
   }
 
   /// The "+N" count-up's length at 1× (§9.7, hand-coded, easeOut).
   // TODO(M7): tune by feel (BACKLOG "Animation polish").
   static const winCountUpMs = 600.0;
+
+  /// One `ui_stars` star segment (`star_1…star_3`, 20 frames) at 1×, the
+  /// gap between two stars' cues (tokens.json `motion.stars.perStarMs`).
+  static final double starSegmentMs = FxSpec.msOf(
+    StarMotionTokens.segmentFrames.toDouble(),
+  );
+
+  /// The 3-star `flourish` segment (frames 60–120), so the success haptic
+  /// lands after it (frame 11.3).
+  static final double starFlourishMs = FxSpec.msOf(
+    (StarMotionTokens.flourishEndFrame - StarMotionTokens.flourishStartFrame)
+        .toDouble(),
+  );
+
+  /// The cue of each star (1-based) this win earned: `star_1…star_3`'s
+  /// sound and a light haptic at each segment's start, [starSegmentMs]
+  /// apart. Under reduced motion (Q146, D191) only the highest star's, at
+  /// [start], with one light haptic.
+  static List<FxCue> _starCues(MotionSpec motion, double start, int stars) {
+    if (stars < 1) return const [];
+    SoundEffect soundOf(int star) => switch (star) {
+      1 => SoundEffect.star1,
+      2 => SoundEffect.star2,
+      _ => SoundEffect.star3,
+    };
+    if (motion.isReduced) {
+      return [
+        FxCue(atMs: start, sound: soundOf(stars), haptic: HapticPattern.pick),
+      ];
+    }
+    return [
+      for (var i = 0; i < stars; i++)
+        FxCue(
+          atMs: start + starSegmentMs * i,
+          sound: soundOf(i + 1),
+          haptic: HapticPattern.pick,
+        ),
+    ];
+  }
 
   /// `win` + the win haptic at the open, `coins` with the coin burst.
   final List<FxCue> cues;
@@ -98,4 +157,22 @@ final class WinOverlaySchedule {
 
   /// `fx_twinkle`, ambient.
   final FxSegment twinkle;
+
+  /// [StarRow.reveal]'s `delay` (m7-design P3.7, D149): after both `win`'s
+  /// and `coins`' loud parts and the count-up, so the rising clacks are
+  /// never masked — the ui-spec's 300 ms sat in `win`'s loudest part, the
+  /// architecture's 1,000 ms in the coin burst. 1,300 ms at 1×, 650 ms
+  /// under reduced motion (D48).
+  final double starsStartMs;
+
+  /// One [FxCue] per star this win earned (empty without stars): `star_n`'s
+  /// sound and a light haptic, [starSegmentMs] apart. Under reduced motion
+  /// one cue, the highest star's (Q146, D191). `StarRow.reveal`'s `onStar`
+  /// fires them as each star starts.
+  final List<FxCue> starCues;
+
+  /// The 3-star success haptic (`HapticPattern.complete`, no sound), after
+  /// the flourish; null below 3 stars and under reduced motion (no
+  /// flourish). Fired by `StarRow.reveal`'s `onFlourishEnd`.
+  final FxCue? starFlourishCue;
 }

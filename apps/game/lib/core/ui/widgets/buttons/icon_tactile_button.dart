@@ -17,6 +17,7 @@ class IconTactileButton extends StatelessWidget {
     this.size = 48,
     this.iconSize = 28,
     this.iconColor = AppColors.iconBrown,
+    this.minTouchSize = const Size.square(48),
     super.key,
   });
 
@@ -27,6 +28,11 @@ class IconTactileButton extends StatelessWidget {
   final double size;
   final double iconSize;
   final Color iconColor;
+
+  /// The touch area and screen-reader node around a smaller face: 48 dp by
+  /// default (spec §10.3), so the 46 px header back and Home gear still
+  /// take a full target (review R17, R18). Null keeps the face's own size.
+  final Size? minTouchSize;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +46,7 @@ class IconTactileButton extends StatelessWidget {
       height: size,
       semanticLabel: semanticLabel,
       excludeChildSemantics: true,
+      minTouchSize: minTouchSize,
       child: Icon(
         icon,
         size: iconSize,

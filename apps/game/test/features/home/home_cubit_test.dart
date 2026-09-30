@@ -16,6 +16,7 @@ import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/ui/widgets/home/streak_look.dart';
 import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 
 import '../../helpers/level_fixtures.dart';
@@ -45,6 +46,7 @@ HomeCubit _cubit({
     FakeLevelResolver(theLevels, save, FakeRemoteConfigService()),
     daily ?? FakeDailyService(FakeClock()),
     catalog ?? FakeCatalogRepository(),
+    FakeRemoteConfigService(),
   );
 }
 
@@ -89,6 +91,10 @@ void main() {
       AsyncValue<HomeState>.data(
         data: HomeState(
           playRequest: PlayRequest.bonus(1),
+          // The chapter card names the last chapter, for its palette.
+          chapterNumber: 2,
+          chapterId: 'ch02',
+          isBonus: true,
           // DifficultyCurve.tierForLevel(3 + 1): still an early, easy level.
           themeId: 'ch02',
           dailyUnlocked: true,
@@ -133,6 +139,9 @@ void main() {
       AsyncValue<HomeState>.data(
         data: HomeState(
           playRequest: PlayRequest.bonus(1),
+          chapterNumber: 2,
+          chapterId: 'ch02',
+          isBonus: true,
           themeId: 'ch02',
           dailyUnlocked: true,
           museumFigurineId: 'classic',
@@ -249,5 +258,118 @@ void main() {
     save.addCoins(5);
     await Future<void>.delayed(Duration.zero);
     expect(cubit.state.data?.coins, 0);
+  });
+
+  group('phase 4: the chapter card and the Daily badge (frames 2.1, 12.2)', () {
+    /// 45 levels with a par: chapters 1 and 2 full, chapter 3 partly.
+    FakeLevelRepository parLevels() {
+      final level = levelFrom(tutorialLevelJson);
+      return FakeLevelRepository(
+        entries: [
+          for (var order = 1; order <= 45; order++)
+            entryFor(
+              level,
+              order: order,
+              par: 5,
+              chapterId: 'ch0${(order - 1) ~/ 20 + 1}',
+            ),
+        ],
+      );
+    }
+
+    test('the card is the PLAY level\'s chapter with its stars of 3 per '
+        'level', () async {
+      final level = levelFrom(tutorialLevelJson);
+      final save = FakeSaveService(
+        initial: SaveDocument(
+          currentLevel: 25,
+          highestLevel: 25,
+          // The fixture shares one level id, so every won level of the
+          // chapter reads the same 2 stars.
+          levelStars: {level.id: 2},
+        ),
+      );
+      final cubit = _cubit(save: save, levels: parLevels());
+      addTearDown(cubit.close);
+      await cubit.load();
+      final data = cubit.state.data!;
+
+      expect(data.chapterNumber, 2);
+      expect(data.chapterId, 'ch02');
+      expect(data.isBonus, isFalse);
+      // 20 levels with a par: 60 to earn, and the chapter's cells read the
+      // shared 2 stars each.
+      expect(data.chapterStarsPossible, 60);
+      expect(data.chapterStars, 40);
+    });
+
+    test('Bonus Endless shows the whole campaign\'s stars of 3 x the '
+        'levels with a par', () async {
+      final level = levelFrom(tutorialLevelJson);
+      final save = FakeSaveService(
+        initial: SaveDocument(
+          currentLevel: 46,
+          highestLevel: 46,
+          levelStars: {level.id: 3},
+        ),
+      );
+      final cubit = _cubit(save: save, levels: parLevels());
+      addTearDown(cubit.close);
+      await cubit.load();
+      final data = cubit.state.data!;
+
+      expect(data.isBonus, isTrue);
+      expect(data.chapterStarsPossible, 135, reason: '3 x 45 levels');
+      // levelStars is keyed by level id, one id in this fixture.
+      expect(data.chapterStars, 3);
+    });
+
+    test('a streak of 0 is the unlit flame; a lit streak, lit; a resting '
+        'one, paused; never a lost streak', () async {
+      final daily = FakeDailyService(FakeClock());
+      final cubit = _cubit(save: FakeSaveService(), daily: daily);
+      addTearDown(cubit.close);
+      await cubit.load();
+      expect(cubit.state.data!.streakLook, StreakLook.zero);
+
+      daily.status = daily.status.copyWith(streak: 4, lit: true);
+      await pumpEventQueue();
+      expect(cubit.state.data!.streakLook, StreakLook.lit);
+
+      daily.status = daily.status.copyWith(lit: false);
+      await pumpEventQueue();
+      expect(cubit.state.data!.streakLook, StreakLook.paused);
+      expect(cubit.state.data!.dailyStreak, 4, reason: 'the number stays');
+    });
+
+    test('a solve that lights a resting flame reads relit once, until the '
+        'next refresh', () async {
+      final save = FakeSaveService();
+      final daily = FakeDailyService(FakeClock());
+      daily.status = daily.status.copyWith(streak: 4, lit: false);
+      final cubit = _cubit(save: save, daily: daily);
+      addTearDown(cubit.close);
+      await cubit.load();
+      expect(cubit.state.data!.streakLook, StreakLook.paused);
+
+      daily.status = daily.status.copyWith(lit: true);
+      await pumpEventQueue();
+      expect(cubit.state.data!.streakLook, StreakLook.relit);
+
+      save.addCoins(5);
+      await pumpEventQueue();
+      expect(cubit.state.data!.streakLook, StreakLook.lit);
+    });
+
+    test('a first solve (nothing was resting) is lit, not relit', () async {
+      final daily = FakeDailyService(FakeClock());
+      final cubit = _cubit(save: FakeSaveService(), daily: daily);
+      addTearDown(cubit.close);
+      await cubit.load();
+
+      daily.status = daily.status.copyWith(streak: 1, lit: true);
+      await pumpEventQueue();
+      expect(cubit.state.data!.streakLook, StreakLook.lit);
+    });
   });
 }

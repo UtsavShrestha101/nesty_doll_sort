@@ -61,6 +61,7 @@ void main() {
       HintShownEffect() => 'hint',
       HintClearedEffect() => 'hintCleared',
       ExtraSlotAddedEffect() => 'extraSlot',
+      SlotNudgeEffect() => 'nudge',
     };
     expect(kind(const HintClearedEffect()), 'hintCleared');
   });

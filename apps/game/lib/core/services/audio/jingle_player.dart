@@ -1,5 +1,5 @@
-/// The three jingles (AUDIO.md "Jingles"; tokens.json `sound.events`
-/// `chapterComplete`, `reward`, `outOfMoves`).
+/// The five jingles (AUDIO.md "Jingles"; tokens.json `sound.events`
+/// `chapterComplete`, `reward`, `outOfMoves`, `raceWon`, `raceLost`).
 enum Jingle {
   /// `jingle_chapter` (4.9 s): the Chapter complete overlay (4.6) opens.
   /// It is the only jingle there (owner, audio plan Q40).
@@ -11,6 +11,15 @@ enum Jingle {
 
   /// `jingle_oom` (4.4 s): the Out of moves sheet opens (3.5, 3.7).
   outOfMoves,
+
+  /// `jingle_versus_win`: a race's win card (9.4) opens, in place of the
+  /// level's `win` (tokens.json `sound.events.raceWon`; README's "9.5" is a
+  /// typo for 9.4, DELIVERY).
+  versusWin,
+
+  /// `jingle_versus_lose`: a race's loss card (9.5) opens
+  /// (`sound.events.raceLost`).
+  versusLose,
 }
 
 /// Plays the jingles: one-shots on the SFX bus, so they follow the Sound

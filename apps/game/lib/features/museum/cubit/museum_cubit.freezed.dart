@@ -22,7 +22,9 @@ mixin _$MuseumEntry {
 /// §12.4).
  String get themeId;/// `classic` … `explorer`: `FigurineImage`, `figurineName`,
 /// `figurineShortName`, `figurineFlavor`.
- String get figurineId;/// The chapter is in the save's `museum` (frame 6.1's colour art).
+ String get figurineId;/// The chapter is in the save's `museum`, or (D111 fix) its 20 levels
+/// are all won even though `museum` hasn't caught up yet — never
+/// "soon" once [done] reaches [total] (frame 6.1's colour art).
  bool get earned;/// The first not-[earned] chapter, in chapter order (frame 6.1's
 /// "15/20" chip; only one entry is ever true).
  bool get isNext;/// This chapter's own levels already won, 0 when
@@ -245,7 +247,9 @@ class _MuseumEntry implements MuseumEntry {
 /// `classic` … `explorer`: `FigurineImage`, `figurineName`,
 /// `figurineShortName`, `figurineFlavor`.
 @override final  String figurineId;
-/// The chapter is in the save's `museum` (frame 6.1's colour art).
+/// The chapter is in the save's `museum`, or (D111 fix) its 20 levels
+/// are all won even though `museum` hasn't caught up yet — never
+/// "soon" once [done] reaches [total] (frame 6.1's colour art).
 @override final  bool earned;
 /// The first not-[earned] chapter, in chapter order (frame 6.1's
 /// "15/20" chip; only one entry is ever true).
@@ -328,7 +332,10 @@ as LocalDate?,
 mixin _$MuseumState {
 
 /// The header's coin pill (`SaveService.coins`).
- int get coins;/// The collection card's "N / 10" (`museumCount`).
+ int get coins;/// The collection card's "N / 10" (`museumCount`): how many [entries]
+/// are [MuseumEntry.earned], not the save's raw `museum` list length
+/// (D111 fix — they can differ until a fully-won chapter's figurine is
+/// durably granted).
  int get collectedCount;/// The catalog's chapter count (`CatalogRepository.chapters.length`).
  int get totalChapters;/// The cabinet, one per chapter, chapter order.
  List<MuseumEntry> get entries;/// The locked/next modal's "▶ Play Level N" (`LevelResolver.homeRequest`,
@@ -545,7 +552,10 @@ class _MuseumState extends MuseumState {
 
 /// The header's coin pill (`SaveService.coins`).
 @override final  int coins;
-/// The collection card's "N / 10" (`museumCount`).
+/// The collection card's "N / 10" (`museumCount`): how many [entries]
+/// are [MuseumEntry.earned], not the save's raw `museum` list length
+/// (D111 fix — they can differ until a fully-won chapter's figurine is
+/// durably granted).
 @override final  int collectedCount;
 /// The catalog's chapter count (`CatalogRepository.chapters.length`).
 @override final  int totalChapters;

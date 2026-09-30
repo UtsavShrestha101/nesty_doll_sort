@@ -1,4 +1,6 @@
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/features/gameplay/bloc/tap_policy.dart'
+    show SlotNudgeKind;
 
 /// What the board must show for one bloc transition: the Flame board plays
 /// it through the board timeline, then settles on `GameplayState.board`
@@ -189,8 +191,11 @@ final class HintClearedEffect extends BoardEffect {
 }
 
 /// +1 Slot (frame 3.6): the bottom row re-pitches over 300 ms and the new
-/// stand starts pulsing (`ui_extra_slot`); `button` sound, selection
-/// haptic.
+/// stand starts pulsing (`ui_extra_slot`). No cue of its own: whatever
+/// button the player tapped (the booster bar, the buy popup's confirm)
+/// already played `button` + the selection haptic when it activated
+/// (`TactileSurface`), so the timeline doesn't repeat it (BACKLOG "+1 Slot
+/// plays button twice"; review fix pass, m2-lottie-design §7).
 final class ExtraSlotAddedEffect extends BoardEffect {
   const ExtraSlotAddedEffect(this.result);
 
@@ -206,4 +211,25 @@ final class ExtraSlotAddedEffect extends BoardEffect {
 
   @override
   String toString() => 'ExtraSlotAddedEffect(${result.slotId})';
+}
+
+/// A tap on an unpickable slot with nothing lifted (E.13; frame 12.13;
+/// `TapPolicy.tap`'s `NudgeSlot`): the board plays [kind]'s nudge on
+/// [slotId] (the empty stand's dip, the padlock's ping or the ice counter's
+/// bump; lane B), never the invalid shake. Nothing else changes.
+final class SlotNudgeEffect extends BoardEffect {
+  const SlotNudgeEffect(this.slotId, this.kind);
+
+  final String slotId;
+  final SlotNudgeKind kind;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SlotNudgeEffect && other.slotId == slotId && other.kind == kind;
+
+  @override
+  int get hashCode => Object.hash(SlotNudgeEffect, slotId, kind);
+
+  @override
+  String toString() => 'SlotNudgeEffect($slotId, ${kind.name})';
 }

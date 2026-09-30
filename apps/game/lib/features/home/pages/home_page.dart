@@ -10,6 +10,7 @@ import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/home/streak_look.dart';
 import 'package:nesty_game/features/dev/level_picker_sheet.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
@@ -17,7 +18,8 @@ import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/gameplay/widgets/theme_background_view.dart';
 import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
-import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
+import 'package:nesty_game/features/home/widgets/home_chapter_card.dart';
+import 'package:nesty_game/features/home/widgets/home_layout.dart';
 import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
@@ -27,8 +29,10 @@ import 'package:nesty_render/nesty_render.dart';
 /// coin pill, the small wordmark and the settings gear, five dolls idling
 /// on a plank (`doll_idle`, seeded 0.8–1.2 speeds and phases) under
 /// twinkles (`fx_twinkle`), PLAY with "Level N" (or "Bonus Level N" past
-/// the bundle, m3-design §7.4) and its tier badge, and the Daily / Museum /
-/// Remove Ads tiles (§10.3). The dev flavor adds a level picker.
+/// the bundle, m3-design §7.4) and its tier or BONUS badge, the chapter card
+/// with its star total and the Records button beside it (J.1, frames 2.1,
+/// 12.1-12.3), and the Daily / vs Computer / Remove Ads tiles (frame 9.1).
+/// The dev flavor adds a level picker.
 @RoutePage()
 class HomePage extends StatelessWidget implements AutoRouteWrapper {
   const HomePage({super.key});
@@ -65,6 +69,12 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
         onDaily: () => unawaited(context.router.root.push(const DailyRoute())),
         onMuseum: () =>
             context.tabsRouter.setActiveIndex(MainShellPage.museumIndex),
+        onChapters: () =>
+            unawaited(context.router.root.push(const ChaptersRoute())),
+        onRecords: () =>
+            unawaited(context.router.root.push(const RecordsRoute())),
+        onVsComputer: () =>
+            unawaited(context.router.root.push(const RivalSelectRoute())),
         onShop: (tab) => unawaited(
           context.router.root.navigate(
             MainShellRoute(children: [ShopRoute(initialTab: tab)]),
@@ -82,9 +92,14 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
   }
 }
 
+/// [HomeView]'s default for [HomeView.onChapters]/[HomeView.onRecords].
+void _doNothing() {}
+
 /// Frame 2.1 for a [state]. [onPlay] opens a level (the play button, the
 /// dev picker); [onDaily], [onMuseum], [onShop] and [onSettings] are the
-/// tiles, the coin pill's "+" and the gear.
+/// tiles, the coin pill's "+" and the gear. [onChapters] and [onRecords]
+/// (m7-design §15.8) default to doing nothing, so a caller that doesn't
+/// care about them (an older test) still compiles.
 class HomeView extends StatefulWidget {
   const HomeView({
     required this.state,
@@ -94,6 +109,9 @@ class HomeView extends StatefulWidget {
     required this.onMuseum,
     required this.onShop,
     required this.onSettings,
+    this.onChapters = _doNothing,
+    this.onRecords = _doNothing,
+    this.onVsComputer = _doNothing,
     this.background,
     this.library,
     this.showcase,
@@ -109,6 +127,12 @@ class HomeView extends StatefulWidget {
   final VoidCallback onMuseum;
   final ValueChanged<ShopTab> onShop;
   final VoidCallback onSettings;
+  final VoidCallback onChapters;
+  final VoidCallback onRecords;
+
+  /// Opens rival select once `raceUnlocked` (E10 phase 2; m7-design P2.10).
+  /// A locked tile ignores it (`HomeTile.locked`).
+  final VoidCallback onVsComputer;
   final ThemeBackground? background;
   final FxLibrary? library;
   final ShowcaseDolls? showcase;
@@ -117,23 +141,11 @@ class HomeView extends StatefulWidget {
   final LevelRepository? levels;
   final DollSymbols symbols;
 
-  /// The hero block: design y 180 (the twinkles) to 560 (under PLAY).
-  static const double heroTop = 180;
-  static const double heroHeight = 380;
-
-  /// The tiles row: design y 584, 132 tall (frame 2.1; m3-design §10.3).
-  static const double tilesTop = 584;
+  /// The tiles row's side margin (frame 2.1: 22 dp).
   static const double tilesSide = 22;
 
   /// The gap the hero keeps above the tiles (design 560 to 584).
-  static const double heroTilesGap = tilesTop - heroTop - heroHeight;
-
-  /// The least room under the tiles on a screen too short for the frame's
-  /// y (a 16:9 Android phone's body is about 630 tall): the tiles then sit
-  /// this far above the body's bottom (the nav) and the hero scales down
-  /// into what is left above them.
-  // TODO(design): frame 2.1 has no short-screen variant; 12 is a guess.
-  static const double tilesBottomGap = 12;
+  static const double heroTilesGap = 24;
 
   /// NestyMenus `idle`: tangerine, leaf, cherry, sky and grape on the
   /// plank, x 58/128/206/284/348, heights 104/70/128/88/60.
@@ -158,6 +170,9 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  /// Frame 2.1's y where the twinkles' coordinates start.
+  static const double _designHeroTop = 180;
+
   /// Seeded, so Home looks the same on every visit (and in tests).
   static final _idle = () {
     final random = math.Random(21);
@@ -212,6 +227,15 @@ class _HomeViewState extends State<HomeView> {
         context,
         levels: levels,
         onPick: (order) => widget.onPlay(PlayRequest.campaign(order)),
+        // Scrolls the sheet to where the player already is (owner-fixes
+        // lane, 2026-09-28): Home's own PLAY request is a campaign level
+        // whenever the dev picker's button even shows (`levels != null`
+        // above already gates the whole button on the dev flavor), so this
+        // is the level it would otherwise open next.
+        currentOrder: switch (widget.state.data?.playRequest) {
+          CampaignPlay(:final order) => order,
+          _ => null,
+        },
       ),
     );
   }
@@ -250,15 +274,16 @@ class _HomeViewState extends State<HomeView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final top = padding.top + HomeView.heroTop - 59;
-        final tilesTop = math.min(
-          padding.top + HomeView.tilesTop - 59,
-          constraints.maxHeight -
-              padding.bottom -
-              HomeView.tilesBottomGap -
-              HomeTile.height,
-        );
+        // Every number is measured from the safe area's top, then blended
+        // between the tall frame (2.1) and the short one (2.1b) on the
+        // body's height.
+        final body = constraints.maxHeight - padding.top;
+        final layout = HomeLayout.forBody(body);
+        final top = padding.top + layout.heroTop;
+        final tilesTop = padding.top + layout.tilesTopIn(body);
         final room = tilesTop - HomeView.heroTilesGap - top;
+        final blockHeight = layout.heroBottom - layout.heroTop;
+        final cardTop = padding.top + layout.chapterCardTop;
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -266,37 +291,52 @@ class _HomeViewState extends State<HomeView> {
               left: 0,
               right: 0,
               top: top,
-              height: math.max(0.0, math.min(HomeView.heroHeight, room)),
+              height: math.max(0.0, math.min(blockHeight, room)),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.topCenter,
                 child: SizedBox(
                   width: width,
-                  height: HomeView.heroHeight,
-                  child: _heroBlock(context, home, skin, width),
+                  height: blockHeight,
+                  child: _heroBlock(context, home, skin, width, layout),
                 ),
               ),
             ),
             Positioned(
               left: 16,
               right: 16,
-              top: padding.top + 5,
+              // The row is 48 (its targets, review R18), 1 px over the
+              // frame's 46 on each side, so the faces stay where they were.
+              top: padding.top + 5 - 1,
               child: _Header(
                 coins: home.coins,
                 onAdd: () => widget.onShop(ShopTab.coins),
                 onSettings: widget.onSettings,
               ),
             ),
+            Positioned(
+              left: HomeTokens.chapterCardLeft,
+              right: HomeTokens.recordsButtonRight,
+              top: cardTop,
+              child: _CardRow(
+                home: home,
+                onChapters: widget.onChapters,
+                onRecords: widget.onRecords,
+              ),
+            ),
             if (LevelPickerSheet.isAvailable && widget.levels != null)
               Positioned(
                 left: 16,
-                top: padding.top + 5 + 46 + 14,
+                // Under the chapter card; the compact face's 48 dp target
+                // reaches 5 px above it (review R38).
+                top: cardTop + HomeChapterCard.minHeight + 8,
                 child: TactileButton(
                   label: context.localizations.devLevelPickerTitle,
                   icon: NestyIcons.shuffle,
                   variant: TactileButtonVariant.secondary,
                   size: TactileButtonSize.compact,
                   expand: false,
+                  minTouchSize: const Size.square(48),
                   onPressed: _openPicker,
                 ),
               ),
@@ -306,9 +346,10 @@ class _HomeViewState extends State<HomeView> {
               top: tilesTop,
               child: _TilesRow(
                 home: home,
+                height: layout.tilesHeight,
                 onDaily: widget.onDaily,
-                onMuseum: widget.onMuseum,
                 onRemoveAds: () => widget.onShop(ShopTab.noAds),
+                onVsComputer: widget.onVsComputer,
               ),
             ),
           ],
@@ -322,12 +363,14 @@ class _HomeViewState extends State<HomeView> {
     HomeState home,
     LevelSkin? skin,
     double width,
+    HomeLayout layout,
   ) {
     final center = width / 2;
-    // Design y − 180.
-    const plankTop = 372 - HomeView.heroTop;
-    const base = 384 - HomeView.heroTop;
-    const playTop = 446 - HomeView.heroTop;
+    // The block's origin is `layout.heroTop`: the plank sits 192 dp below
+    // it (frame 2.1's 372 - 180) whatever the screen.
+    const plankTop = 192.0;
+    const base = plankTop + 12;
+    final playTop = plankTop + (layout.playTop - layout.plankTop);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -341,12 +384,12 @@ class _HomeViewState extends State<HomeView> {
         ),
         for (var i = 0; i < HomeView.dolls.length; i++)
           LottieDoll.positioned(
-            centerX: center + HomeView.dolls[i].dx,
+            centerX: center + HomeView.dolls[i].dx * layout.dollScale,
             baseY: base,
             doll: LottieDoll(
               id: FxId.dollIdle,
               color: HomeView.dolls[i].color,
-              height: HomeView.dolls[i].height,
+              height: HomeView.dolls[i].height * layout.dollScale,
               images: skin?.images,
               renderer: skin?.restRenderer,
               symbols: widget.symbols,
@@ -362,6 +405,7 @@ class _HomeViewState extends State<HomeView> {
           child: _PlayButtonFor(
             request: home.playRequest,
             tier: home.tier,
+            height: layout.playHeight,
             onPressed: () => widget.onPlay(home.playRequest),
           ),
         ),
@@ -378,7 +422,7 @@ class _HomeViewState extends State<HomeView> {
     // centred where the design's glyph sits.
     final box = t.size * 2;
     final cx = center + t.x + t.size / 2 - 195;
-    final cy = t.y + t.size / 2 - HomeView.heroTop;
+    final cy = t.y + t.size / 2 - _designHeroTop;
     return Positioned(
       left: cx - box / 2,
       top: cy - box / 2,
@@ -398,11 +442,13 @@ class _PlayButtonFor extends StatelessWidget {
   const _PlayButtonFor({
     required this.request,
     required this.tier,
+    required this.height,
     required this.onPressed,
   });
 
   final PlayRequest request;
   final Tier tier;
+  final double height;
   final VoidCallback onPressed;
 
   @override
@@ -412,6 +458,8 @@ class _PlayButtonFor extends StatelessWidget {
     return PlayButton(
       level: number,
       tier: tier,
+      height: height,
+      bonus: request is BonusPlay,
       title: request is BonusPlay ? l10n.bonusLevelTitle(number) : null,
       onPressed: onPressed,
     );
@@ -420,7 +468,8 @@ class _PlayButtonFor extends StatelessWidget {
 
 /// Home's header (NestyMenus: top 64 on a 59 safe area): the coin pill (its
 /// "+" opens the Shop's Coins tab), the 30 px wordmark and the 46 px
-/// settings gear.
+/// settings gear. The row is 48 tall so both controls get a 48 dp target
+/// (spec §10.3, review R18); their faces keep the frame's sizes.
 class _Header extends StatelessWidget {
   const _Header({
     required this.coins,
@@ -439,16 +488,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 46,
+      height: 48,
       child: Row(
         children: [
           Flexible(
             child: Align(
               alignment: AlignmentDirectional.centerStart,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: CoinPill(coins: coins, onAdd: onAdd),
-              ),
+              child: _CoinPillTarget(coins: coins, onAdd: onAdd),
             ),
           ),
           const SizedBox(width: _gap),
@@ -472,33 +518,117 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// The Daily / Museum / Remove Ads tiles (frame 2.1; m3-design §10.3): 132
-/// tall, radius 24, gap 12; Remove Ads hides once `adsRemoved` and the other
-/// two widen to share its width.
-class _TilesRow extends StatelessWidget {
-  const _TilesRow({
+/// The Home coin pill (its "+" opens the Shop) inside a 48 dp target that
+/// stays 48 however far the `FittedBox` shrinks a huge balance at 1.3×
+/// text: the target and the button's screen-reader node sit outside the
+/// scale, and a touch anywhere in it presses the pill (review R18).
+class _CoinPillTarget extends StatelessWidget {
+  const _CoinPillTarget({required this.coins, required this.onAdd});
+
+  final int coins;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    void activate() {
+      TactileFeedback.of(context)?.activate();
+      onAdd();
+    }
+
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: true,
+      label: context.localizations.coinPillShopSemantics(coins),
+      onTap: activate,
+      child: ExcludeSemantics(
+        child: TouchTarget(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: CoinPill(coins: coins, onAdd: onAdd),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The chapter card and the Records button (frame 2.1): the card fills the
+/// row, the button is 62 wide beside it, both as tall as the taller.
+class _CardRow extends StatelessWidget {
+  const _CardRow({
     required this.home,
-    required this.onDaily,
-    required this.onMuseum,
-    required this.onRemoveAds,
+    required this.onChapters,
+    required this.onRecords,
   });
 
   final HomeState home;
+  final VoidCallback onChapters;
+  final VoidCallback onRecords;
+
+  @override
+  Widget build(BuildContext context) => IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: HomeChapterCard(
+            chapterNumber: home.chapterNumber,
+            chapterId: home.chapterId,
+            stars: home.chapterStars,
+            starsPossible: home.chapterStarsPossible,
+            bonus: home.isBonus,
+            onTap: onChapters,
+          ),
+        ),
+        // Frame 2.1: the card ends 88 from the edge, the button starts 78.
+        const SizedBox(width: 10),
+        HomeRecordsButton(
+          label: context.localizations.homeRecordsButton,
+          onTap: onRecords,
+        ),
+      ],
+    ),
+  );
+}
+
+/// The Daily / vs Computer / Remove Ads tiles (frames 2.1, 9.1; m3-design
+/// §10.3, m7-design §15.8): 132 tall (112 on a short screen), radius 24,
+/// gap 12; Remove Ads hides once `adsRemoved`, and the two others widen.
+///
+/// D111 (the owner's simulator review, 2026-09-28): Home has no Museum tile:
+/// the bottom nav's Museum tab covers it, so [HomeView.onMuseum] stays on
+/// `HomeView`'s own public constructor (a caller may still pass it) but
+/// nothing here reads it.
+class _TilesRow extends StatelessWidget {
+  const _TilesRow({
+    required this.home,
+    required this.height,
+    required this.onDaily,
+    required this.onRemoveAds,
+    required this.onVsComputer,
+  });
+
+  final HomeState home;
+  final double height;
   final VoidCallback onDaily;
-  final VoidCallback onMuseum;
 
   /// Opens the Shop's No Ads tab (m3-design §10.3).
   final VoidCallback onRemoveAds;
+  final VoidCallback onVsComputer;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     final locked = !home.dailyUnlocked;
+    final streak = home.dailyStreak;
+    final look = home.streakLook;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: HomeTile(
+            tileHeight: height,
             leading: const HomeTileIcon(
               gradient: AppGradientTokens.daily,
               edgeColor: AppColorTokens.dailyEdge,
@@ -513,26 +643,37 @@ class _TilesRow extends StatelessWidget {
             footer: locked
                 ? Text(l10n.homeDailyLocked, style: _footerStyle)
                 : null,
-            badge: home.dailyStreak > 0
-                ? StreakBadge(days: home.dailyStreak)
-                : null,
+            // Frame 12.2: a streak of 0 still draws its unlit flame.
+            badge: StreakBadge(days: streak, look: look),
             locked: locked,
+            // The footer says why it is locked; the tile's node reads it
+            // too (review R15). An open tile reads its streak.
+            semanticValue: locked
+                ? l10n.homeDailyLocked
+                : switch (look) {
+                    StreakLook.zero => null,
+                    StreakLook.paused => l10n.streakBadgeSemanticsPaused(
+                      streak,
+                    ),
+                    StreakLook.lit ||
+                    StreakLook.relit => l10n.streakBadgeSemantics(streak),
+                  },
             onTap: onDaily,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: HomeTile(
-            leading: _MuseumArt(state: home),
-            label: l10n.homeMuseumTile,
-            footer: _MuseumFooter(state: home),
-            onTap: onMuseum,
+          child: _VsComputerTile(
+            home: home,
+            height: height,
+            onTap: onVsComputer,
           ),
         ),
         if (!home.adsRemoved) ...[
           const SizedBox(width: 12),
           Expanded(
             child: HomeTile(
+              tileHeight: height,
               leading: HomeTileIcon(
                 gradient: AppGradientTokens.ad,
                 edgeColor: AppColorTokens.adEdge,
@@ -548,72 +689,117 @@ class _TilesRow extends StatelessWidget {
   }
 
   static final _footerStyle = AppTextStyleTokens.cardTitle.copyWith(
-    fontSize: 12,
+    fontSize: 13,
     height: 1,
-    color: AppColors.textBrown,
+    fontWeight: FontWeight.w700,
+    color: AppColorTokens.textSecondary,
   );
 }
 
-/// The next uncollected figurine's locked art (`FigurineImage`, shared with
-/// the Museum cabinet and its modal), or the museum glyph once
-/// [HomeState.museumAllCollected] (`TODO(design)`, m3-design §10.6).
-class _MuseumArt extends StatelessWidget {
-  const _MuseumArt({required this.state});
+/// The "vs Computer" tile (frames 9.1 locked, 2.1 open; menus spec 1.1):
+/// rival 1's portrait in a 62 dp disc, the label, and the Computer tag under
+/// it (spec-prop §1.1 rule 5: a computer is always labelled one). Locked
+/// until `raceUnlockLevel`: the locked portrait with a lock chip and "After
+/// Level 20", dimmed and inert, no shake and no haptic; unlocked, a tap opens
+/// rival select (9.2) on the root router.
+class _VsComputerTile extends StatelessWidget {
+  const _VsComputerTile({
+    required this.home,
+    required this.height,
+    required this.onTap,
+  });
 
-  final HomeState state;
-
-  @override
-  Widget build(BuildContext context) {
-    final figurineId = state.museumFigurineId;
-    if (figurineId == null) {
-      return const Icon(
-        NestyIcons.museum,
-        size: 40,
-        color: AppColors.iconBrown,
-      );
-    }
-    return FigurineImage(figurineId: figurineId, locked: true, size: 62);
-  }
-}
-
-/// The "15/20" bar of the current chapter, or a plain collection count in
-/// Bonus Endless (`TODO(design)`, m3-design §10.3, §10.6).
-class _MuseumFooter extends StatelessWidget {
-  const _MuseumFooter({required this.state});
-
-  final HomeState state;
+  final HomeState home;
+  final double height;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    final done = state.museumAllCollected
-        ? state.museumCollectedCount
-        : state.museumDone;
-    final total = state.museumAllCollected
-        ? state.museumCollectedTotal
-        : state.museumTotal;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 44,
-          height: 8,
-          child: NestyProgressBar(
-            value: total == 0 ? 0 : done / total,
-            height: 8,
-          ),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          l10n.homeMuseumProgress(done, total),
-          style: AppTextStyleTokens.cardTitle.copyWith(
-            fontSize: 12,
-            height: 1,
-            color: AppColors.textBrown,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
+    final locked = !home.raceUnlocked;
+    final lockedLine = l10n.homeVsComputerLocked(home.raceUnlockLevel);
+    return HomeTile(
+      tileHeight: height,
+      leading: _VersusPortrait(locked: locked),
+      label: l10n.homeVsComputerTile,
+      footer: locked
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                lockedLine,
+                style: _TilesRow._footerStyle,
+                maxLines: 1,
+                softWrap: false,
+              ),
+            )
+          : const FittedBox(fit: BoxFit.scaleDown, child: ComputerTag()),
+      locked: locked,
+      semanticLabel: l10n.homeVsComputerSemantics,
+      semanticValue: locked ? lockedLine : null,
+      onTap: onTap,
     );
   }
+}
+
+/// vs Computer's 62 dp portrait disc (frame 2.1): rival 1's art on a cream
+/// disc with a 2 dp white ring; locked, the locked portrait plus a 24 dp lock
+/// chip at its bottom-right (frame 9.1).
+class _VersusPortrait extends StatelessWidget {
+  const _VersusPortrait({required this.locked});
+
+  final bool locked;
+
+  static const double size = 62;
+
+  static const _ring = SurfaceStyle(
+    color: AppColorTokens.surfaceWhite,
+    shadows: [
+      NestyShadow(color: AppColorTokens.surfaceWhite, spread: 2),
+      NestyShadow(color: Color(0x1F5A3214), dy: 2, blur: 4),
+    ],
+  );
+
+  static const _chip = SurfaceStyle(
+    color: AppColorTokens.textSecondary,
+    shadows: [NestyShadow(color: AppColorTokens.surfaceWhite, spread: 2)],
+  );
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: size,
+    height: size,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        NestySurface(
+          style: _ring,
+          radius: BorderRadius.circular(size / 2),
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          child: UiArtImage.square(
+            UiArt.rival(locked ? null : 1),
+            extent: size - 4,
+          ),
+        ),
+        if (locked)
+          PositionedDirectional(
+            end: -2,
+            bottom: -2,
+            child: NestySurface(
+              style: _chip,
+              radius: BorderRadius.circular(12),
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              child: const Icon(
+                NestyIcons.lock,
+                size: 14,
+                color: Color(0xFFFFFFFF),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
 }

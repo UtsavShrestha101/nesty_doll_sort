@@ -276,7 +276,11 @@ void main() {
     test(
       'a failed glass file draws the static case and swaps its frames',
       () async {
-        final files = [...boardFiles]..remove(FxId.fxGlassUnlock);
+        // The sealed doll of the combo level is size 3 on two shelves (140 dp:
+        // a tall case), so both glass files fail.
+        final files = [...boardFiles]
+          ..remove(FxId.fxGlassUnlock)
+          ..remove(FxId.fxGlassUnlockTall);
         final h = await GameHarness.mount(
           tl.comboLevel,
           fx: await libraryWith(files),

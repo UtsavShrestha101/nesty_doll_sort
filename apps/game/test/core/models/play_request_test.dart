@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/models/reduce_motion_mode.dart';
 
 import '../../helpers/level_fixtures.dart';
 
@@ -27,6 +28,50 @@ void main() {
     expect(PlayRequest.tryCreate(PlayKind.daily, 7), isNull);
     expect(PlayKind.tryFromId('daily'), PlayKind.daily);
     expect(PlayKind.tryFromId('weekly'), isNull);
+  });
+
+  test('a replay is a bundled level of its own kind, never generated '
+      '(m7-design §6)', () {
+    const replay = PlayRequest.replay(12);
+    expect(replay.kind, PlayKind.replay);
+    expect(replay.number, 12);
+    expect(replay.isReplay, isTrue);
+    expect(replay.isBundled, isTrue);
+    expect(replay.isGenerated, isFalse);
+    expect(replay, isNot(const PlayRequest.campaign(12)));
+    expect(const PlayRequest.campaign(12).isBundled, isTrue);
+    expect(const PlayRequest.bonus(1).isBundled, isFalse);
+    expect(PlayRequest.tryCreate(PlayKind.replay, 12), replay);
+    expect(PlayRequest.tryCreate(PlayKind.replay, 0), isNull);
+    expect(PlayKind.tryFromId('replay'), PlayKind.replay);
+  });
+
+  test('reduce motion resolves against the system flag and reads '
+      'leniently (m7-design §14)', () {
+    for (final system in [true, false]) {
+      expect(
+        ReduceMotionMode.system.resolve(systemDisablesAnimations: system),
+        system,
+      );
+      expect(
+        ReduceMotionMode.on.resolve(systemDisablesAnimations: system),
+        isTrue,
+      );
+      expect(
+        ReduceMotionMode.off.resolve(systemDisablesAnimations: system),
+        isFalse,
+      );
+    }
+    expect(
+      ReduceMotionMode.fromStorage('on', fallback: ReduceMotionMode.system),
+      ReduceMotionMode.on,
+    );
+    for (final junk in [null, 'sometimes', 3]) {
+      expect(
+        ReduceMotionMode.fromStorage(junk, fallback: ReduceMotionMode.system),
+        ReduceMotionMode.system,
+      );
+    }
   });
 
   test('intro mechanics are read off the board, in card order', () {

@@ -118,7 +118,31 @@ abstract class AppLocalizations {
   /// **'Something went wrong.'**
   String get genericLoadFailed;
 
-  /// Button that retries a failed load.
+  /// The splash's storage error title (frame 12.10). copy.md E `splash_storage_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone is nearly full'**
+  String get splashStorageTitle;
+
+  /// The splash's storage error line (frame 12.10). {megabytes} is `SplashCopy.storageMegabytes` (60, copy.md's number; Q157 asks the owner to confirm it). copy.md E `splash_storage_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty needs about {megabytes} MB to set up the shelves. Free some space, then try again.'**
+  String splashStorageBody(int megabytes);
+
+  /// The splash's content error title (frame 12.11). copy.md E `splash_content_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'The shelves didn’t unpack'**
+  String get splashContentTitle;
+
+  /// The splash's content error line (frame 12.11). copy.md E `splash_content_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while loading. Try again, or restart Nesty.'**
+  String get splashContentBody;
+
+  /// Try again: every failed-load card (the splash's two error views 12.10 and 12.11, a level or a race that didn't set up 12.6 and 9.3f, Continue's retry card). copy.md G.5 `race_failed_retry`, E `gen_failed_retry`, `splash_retry`.
   ///
   /// In en, this message translates to:
   /// **'Try again'**
@@ -256,11 +280,11 @@ abstract class AppLocalizations {
   /// **'Daily puzzle, {date}'**
   String levelDailySemantics(String date);
 
-  /// The level pill on a device-generated Bonus Endless level (frame 4.10, spec §7.1). Stub until bonus levels ship.
+  /// A Bonus Endless level's name: the level pill, Home's Play button and the win card (frames 4.10, 12.2, 12.4). copy.md E `bonus_win_label`.
   ///
   /// In en, this message translates to:
-  /// **'Bonus Level {number}'**
-  String bonusLevelTitle(int number);
+  /// **'Bonus Level {level}'**
+  String bonusLevelTitle(int level);
 
   /// Screen-reader label of the round close button on cards and popups (frames 3.2, 3.9).
   ///
@@ -304,7 +328,7 @@ abstract class AppLocalizations {
   /// **'Try Undo? You can keep playing too.'**
   String get softStuckBody;
 
-  /// Second line of the soft-stuck banner when nothing can be undone (a completed family cleared the undo history, or the free undos are used up); its button restarts the level, which is always free (frame 3.4's banner, spec §2.3, §2.4). No frame shows this state.
+  /// The soft-stuck banner's line when nothing can be undone; Restart glows (frame 12.7). copy.md E `stuck_restart`.
   ///
   /// In en, this message translates to:
   /// **'Try Restart? You can keep playing too.'**
@@ -454,7 +478,7 @@ abstract class AppLocalizations {
   /// **'Chapter complete! Your prize is next.'**
   String get winChapterDone;
 
-  /// A museum figurine family's name (spec §7.2, frames 1.5, 2.8, 4.6; m3 §9.3). {figurine} is the museum item id; ids without a design name are empty and their line is hidden. astronaut/gardener/snow/circus/musician/royal/explorer are placeholder title-cased names pending the owner's figurine names 4-10 (Q73); update them, not the id list, once the owner answers.
+  /// A museum figurine family's name (spec §7.2, frames 1.5, 2.8, 4.6, 6.1; m3 §9.3). {figurine} is the museum item id; ids without a name are empty and their line is hidden. Final English (copy.md G.1 `01_classic`…`10_explorer`; Q73).
   ///
   /// In en, this message translates to:
   /// **'{figurine, select, classic{The Classic Family} sailor{The Sailor Family} baker{The Baker Family} astronaut{The Astronaut Family} gardener{The Gardener Family} snow{The Snow Family} circus{The Circus Family} musician{The Musician Family} royal{The Royal Family} explorer{The Explorer Family} other{}}'**
@@ -466,10 +490,10 @@ abstract class AppLocalizations {
   /// **'CHAPTER {number} · {name}'**
   String chapterRibbon(int number, String name);
 
-  /// A chapter's name, which is its board theme's name (spec §7.1, §12.4; frames 4.6, 4.7, 7.7). {theme} is the theme id.
+  /// A chapter's name, which is its board theme's name (spec §7.1, §12.4; frames 4.6, 4.7, 7.7, 10.4). {theme} is the theme id. ch07–ch10 are copy.md G.4 `7`…`10`; tokens.json `theme.chapters.N.name` repeats them (checked by design_tokens_codegen_test).
   ///
   /// In en, this message translates to:
-  /// **'{theme, select, ch01{Sunny Toy Shop} ch02{Rainy Café Corner} ch03{Seaside Market} ch04{Snowy Cabin} ch05{Night Carnival} ch06{Spring Garden Shed} other{}}'**
+  /// **'{theme, select, ch01{Sunny Toy Shop} ch02{Rainy Café Corner} ch03{Seaside Market} ch04{Snowy Cabin} ch05{Night Carnival} ch06{Spring Garden Shed} ch07{Puppet Theater} ch08{Autumn Bandstand} ch09{Castle Library} ch10{Sunrise Lookout} other{}}'**
   String chapterName(String theme);
 
   /// The pause card's ribbon title (frame 3.9, spec §10.2 #14).
@@ -538,17 +562,35 @@ abstract class AppLocalizations {
   /// **'Back to Home'**
   String get allLevelsBackHome;
 
-  /// Text link under 'Try again' on the card shown over the win overlay when Continue's next level (a generated Bonus Endless level) couldn't be made (spec §7.1; no frame yet, review CORRECTNESS-3). Leaves the level for Home.
+  /// The failure card's text link back Home (frame 12.6). copy.md E `gen_failed_home`.
   ///
   /// In en, this message translates to:
   /// **'Back to Home'**
   String get nextLevelFailedHome;
+
+  /// The card when a level couldn't be set up (frame 12.6). copy.md E `gen_failed_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'The shelves need a moment'**
+  String get gameplayFailedTitle;
+
+  /// The line under gameplayFailedTitle (frame 12.6). copy.md E `gen_failed_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'This level didn’t set up. Try again, or head back home.'**
+  String get gameplayFailedBody;
 
   /// Title of the dev-flavor level picker sheet (dev builds only; plan P4).
   ///
   /// In en, this message translates to:
   /// **'Jump to a level'**
   String get devLevelPickerTitle;
+
+  /// Section header grouping the dev-flavor level picker's tiles by chapter, so a 200-level bundle scrolls in bounded sections instead of one long grid (dev builds only; owner 2026-09-28 simulator review).
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {number} · Levels {start}–{end}'**
+  String devLevelPickerChapterHeader(int number, int start, int end);
 
   /// The shell's bottom-nav Shop tab label (frame 2.1; m3 §10.1, §10.9).
   ///
@@ -586,11 +628,29 @@ abstract class AppLocalizations {
   /// **'{done}/{total}'**
   String homeMuseumProgress(int done, int total);
 
-  /// Home's Daily Puzzle tile before Level 2, replacing homeDailyTile while the tile is locked (m3 §10.3, Q67; a design gap, no frame shows this state).
+  /// Home's Daily tile before Level 2 (frame 12.3); "2" is the daily's fixed unlock level (Q67). copy.md E `daily_locked`.
   ///
   /// In en, this message translates to:
   /// **'After Level 2'**
   String get homeDailyLocked;
+
+  /// Home's Play button badge on a bonus level (frame 12.2). copy.md E `home_bonus_badge`.
+  ///
+  /// In en, this message translates to:
+  /// **'BONUS'**
+  String get homeBonusBadge;
+
+  /// Home's chapter card kicker once every campaign level is won (frame 12.2). copy.md E `home_bonus_kicker`.
+  ///
+  /// In en, this message translates to:
+  /// **'BONUS ENDLESS'**
+  String get homeBonusKicker;
+
+  /// Home's chapter card name once every campaign level is won (frame 12.2). copy.md E `home_bonus_name`.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus levels'**
+  String get homeBonusName;
 
   /// Screen-reader label of the Daily Puzzle tile's flame streak badge (frame 2.1; m3 §10.9).
   ///
@@ -688,40 +748,40 @@ abstract class AppLocalizations {
   /// **'{autonym}, {detail}'**
   String languageRowSemantics(String autonym, String detail);
 
-  /// The Daily streak card's big number (frame 5.1: "4 days"; m3 §10.5).
+  /// The Daily streak card's big number (frames 5.1, 10.7). copy.md G.9 `streak_days`.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 day} other{{count} days}}'**
   String dailyStreakDays(int count);
 
-  /// The Daily streak card's subtitle while today isn't solved yet, streak > 0 (frame 5.1).
+  /// The Daily streak card's line while a lit streak waits for today's solve. Not in copy.md m7-3: M7 phase 1's value-framed line, kept.
   ///
   /// In en, this message translates to:
-  /// **'Play today to keep your streak'**
+  /// **'Play today to add to your streak'**
   String get dailyStreakKeep;
 
-  /// The Daily streak card's subtitle before any streak has started (streak = 0; m3 §10.5, a design gap).
+  /// The Daily streak card's line before any streak (streak 0). copy.md G.9 `streak_zero`.
   ///
   /// In en, this message translates to:
-  /// **'Play today to start a streak'**
+  /// **'Solve today’s puzzle to light your first flame.'**
   String get dailyStreakStart;
 
-  /// The Daily streak card's subtitle once today's puzzle is solved (frame 5.5: dailyDone scene).
+  /// The Daily streak card's line once today's puzzle is solved (frames 5.5, 10.7). copy.md G.9 `streak_lit`.
   ///
   /// In en, this message translates to:
-  /// **'Done for today. See you tomorrow!'**
+  /// **'Your flame is lit. See you tomorrow.'**
   String get dailyStreakDone;
 
-  /// The Daily streak card's subtitle on the streak's 7th day, once the chest is reached (frame 5.6: dailyChest scene).
+  /// The Daily streak card's line on a 7-day week. Not in copy.md m7-3: M3's line, kept.
   ///
   /// In en, this message translates to:
   /// **'A full week!'**
   String get dailyStreakWeek;
 
-  /// The Daily streak card's freeze chip (frame 5.1; m3 §8, D76: freeze cap 1 per ISO week).
+  /// The Daily streak card's freeze count. Not in copy.md m7-3: M3's line, kept.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{0 left} =1{1 freeze} other{{count} freezes}}'**
+  /// **'{count, plural, =0{No freeze} =1{1 freeze} other{{count} freezes}}'**
   String dailyFreezes(int count);
 
   /// Prefix on the 7-day strip's day-7 chest label (frame 5.1).
@@ -814,43 +874,43 @@ abstract class AppLocalizations {
   /// **'{hours}h {minutes}m'**
   String dailyCountdown(int hours, int minutes);
 
-  /// The Daily solved state's button back to the campaign (frame 5.5). {level} is the campaign level number.
+  /// Play Level N: the Daily solved state's button back to the campaign (frame 5.5) and the Museum's next-family card (frame 6.1). copy.md G.10 `museum_play`.
   ///
   /// In en, this message translates to:
   /// **'Play Level {level}'**
   String playLevel(int level);
 
-  /// The "streak saved" info toast's title, shown once after a freeze covers a missed day (frame 5.2).
+  /// The freeze notice's title, shown once after a freeze covers a missed day (frame 5.2). copy.md G.9 `streak_freeze_used`.
   ///
   /// In en, this message translates to:
-  /// **'Streak saved!'**
+  /// **'A freeze kept your flame lit.'**
   String get dailySavedTitle;
 
-  /// The "streak saved" toast's body (frame 5.2).
+  /// The freeze notice's line (frame 5.2). Not in copy.md m7-3: M3's line, kept.
   ///
   /// In en, this message translates to:
   /// **'A freeze covered {weekday}. You\'ll earn a new one next week.'**
   String dailySavedBody(String weekday);
 
-  /// The Day 7 chest modal's ribbon title (frame 5.6).
+  /// The day-7 chest card's ribbon title (frame 5.6). copy.md G.9 `chest_streak_title`.
   ///
   /// In en, this message translates to:
   /// **'7-day streak!'**
   String get dailyChestTitle;
 
-  /// The Day 7 chest modal's body (frame 5.6).
+  /// The day-7 chest card's line (frame 5.6); "Seven" is spec-prop §7.5's fixed day-7 cadence, not a number the app fills. copy.md G.9 `chest_streak_body`.
   ///
   /// In en, this message translates to:
-  /// **'A full week of puzzles. Your chest is open.'**
+  /// **'Seven days in a row. Here’s what’s inside.'**
   String get dailyChestBody;
 
-  /// The Day 7 chest modal's rewarded-ad button; hidden until M6 (frame 5.6, TODO(M6)).
+  /// The day-7 chest's Double it (a rewarded ad, M6; frame 5.6b). copy.md G.9 `chest_double`.
   ///
   /// In en, this message translates to:
   /// **'Double it'**
   String get dailyChestDouble;
 
-  /// The Day 7 chest modal's main button (frame 5.6).
+  /// A chest card's Collect button once open: the rewards fly to the coin pill and Hint (frames 10.3d, 5.6b). copy.md G.9 `chest_collect`.
   ///
   /// In en, this message translates to:
   /// **'Collect'**
@@ -886,29 +946,29 @@ abstract class AppLocalizations {
   /// **'Museum'**
   String get museumTitle;
 
-  /// The Museum screen's collection card label (frame 6.1).
-  ///
-  /// In en, this message translates to:
-  /// **'Collection'**
-  String get museumCollection;
-
   /// The Museum screen's collection card count, e.g. "2 / 10" (frame 6.1). Distinct from homeMuseumProgress, which has no spaces.
   ///
   /// In en, this message translates to:
   /// **'{done} / {total}'**
   String museumCount(int done, int total);
 
-  /// The Museum screen's collection card line naming the next figurine (frame 6.1). {name} is figurineName.
+  /// The Museum's next-family line: the chapter and the levels left (frame 6.1; Q115). copy.md G.10 `museum_next_line`.
   ///
   /// In en, this message translates to:
-  /// **'Chapter {number}: {done} of {total} levels to {name}'**
-  String museumNextLine(int number, int done, int total, String name);
+  /// **'{count, plural, =1{Chapter {chapter} · 1 level to go} other{Chapter {chapter} · {count} levels to go}}'**
+  String museumNextLine(int chapter, int count);
 
-  /// The Museum screen's collection card once all ten figurines are collected, replacing museumNextLine (m3 §10.6, a design gap: no frame shows this state).
+  /// The Museum's line once every family is home (frame 6.1c). copy.md G.10 `museum_all_home`.
   ///
   /// In en, this message translates to:
   /// **'Every family is home.'**
   String get museumAllHome;
+
+  /// The Museum's next-family card's kicker (frame 6.1). copy.md G.10 `museum_next`.
+  ///
+  /// In en, this message translates to:
+  /// **'Next family'**
+  String get museumNextFamily;
 
   /// A figurine's cabinet label once earned, e.g. "Classic Family" (frame 6.1). {name} is figurineShortName.
   ///
@@ -928,10 +988,10 @@ abstract class AppLocalizations {
   /// **'{figurine, select, classic{Classic} sailor{Sailor} baker{Baker} astronaut{Astronaut} gardener{Gardener} snow{Snow} circus{Circus} musician{Musician} royal{Royal} explorer{Explorer} other{}}'**
   String figurineShortName(String figurine);
 
-  /// A figurine's italic flavor text in its detail modal; ids without one are empty and the line is hidden (frame 6.2; Q73 asks the owner for the other nine). {figurine} is the museum item id.
+  /// A figurine's italic flavor text in its detail modal (frame 6.2); an id without one is empty and the line is hidden. {figurine} is the museum item id (copy.md G.2 `01_classic`…`10_explorer`).
   ///
   /// In en, this message translates to:
-  /// **'{figurine, select, sailor{“They keep a seashell in the smallest doll, just in case.”} other{}}'**
+  /// **'{figurine, select, classic{“The smallest one wins every game of hide-and-seek.”} sailor{“They keep a seashell in the smallest doll, just in case.”} baker{“They bake every loaf in four sizes, so nobody has to share.”} astronaut{“They count down from the biggest to the smallest before every trip to the moon.”} gardener{“Each hat hides a seed they’re saving for spring.”} snow{“When nobody is looking, they stack up into a snowman.”} circus{“Their best act is climbing inside each other, to great applause.”} musician{“They play one song in four sizes. The smallest takes the high notes.”} royal{“Every crown fits inside the next one, which saves a lot of room.”} explorer{“They’ve mapped every shelf in the shop, and they’re not done yet.”} other{}}'**
   String figurineFlavor(String figurine);
 
   /// The figurine detail modal's chapter chip (frame 6.2). {name} is chapterName.
@@ -957,6 +1017,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Finish Chapter {number} to bring this family home.'**
   String museumLockedText(int number);
+
+  /// The Museum's one-line explainer (frame 6.1). {levels} is a chapter's level count (20 in the bundle; the app fills it). copy.md G.10 `museum_intro`.
+  ///
+  /// In en, this message translates to:
+  /// **'Every chapter has a doll family. Win all {levels} of its levels to bring that family home.'**
+  String museumIntro(int levels);
+
+  /// The Museum's next-family card: the levels left in its chapter (frame 6.1). copy.md G.10 `museum_next_to_go`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 level to go} other{{count} levels to go}}'**
+  String museumLevelsToGo(int count);
+
+  /// A locked cabinet shelf's one-line label: its chapter and level range (frame 6.1). copy.md G.10 `museum_locked_shelf`.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {chapter} · Levels {first}–{last}'**
+  String museumLockedShelfLabel(int chapter, int first, int last);
+
+  /// A locked shelf's label where one line is too narrow. copy.md G.10 `museum_locked_shelf_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Ch {chapter} · {first}–{last}'**
+  String museumLockedShelfShort(int chapter, int first, int last);
+
+  /// A locked shelf's two-line 11 px label, first line (frame 6.1; Q123). copy.md G.10 `museum_locked_line_1`.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {chapter}'**
+  String museumLockedLine1(int chapter);
+
+  /// A locked shelf's two-line label, second line (frame 6.1). copy.md G.10 `museum_locked_line_2`.
+  ///
+  /// In en, this message translates to:
+  /// **'Levels {first}–{last}'**
+  String museumLockedLine2(int first, int last);
 
   /// The Shop screen's header title (frame 7.3).
   ///
@@ -1000,16 +1096,22 @@ abstract class AppLocalizations {
   /// **'Equip'**
   String get shopEquip;
 
-  /// A skin's display name (frame 7.3, 7.4). {skin} is the SkinService/catalog skin id; forest-bear ships unsold and unnamed here (D75).
+  /// A Shop card's Owned state. Not in copy.md m7-3 (TODO(design): ask for it in the next copy request).
   ///
   /// In en, this message translates to:
-  /// **'{skin, select, classic{Classic} space{Space} ocean{Ocean} sweets{Sweets} forest{Forest Friends} winter{Winter} other{}}'**
+  /// **'Owned'**
+  String get shopOwned;
+
+  /// A skin's display name (frames 7.3, 7.4, 7.4b). {skin} is the catalog skin id with `-` as `_` (an ICU select key can't hold `-`: `forest-bear` is `forest_bear`; `CatalogL10n.skinNameOf` maps it). Forest Bear is copy.md H `forest_bear_name`; the others are M3's names.
+  ///
+  /// In en, this message translates to:
+  /// **'{skin, select, classic{Classic} space{Space} ocean{Ocean} sweets{Sweets} forest{Forest Friends} winter{Winter} forest_bear{Forest Bear} other{}}'**
   String skinName(String skin);
 
-  /// A skin's detail-page description; ids without one are empty and the line is hidden (frame 7.4; Q73 asks the owner for the other five). {skin} is the skin id.
+  /// A skin's Shop card and detail-page description (frames 7.3, 7.4); an id without one is empty and the line is hidden. {skin} is the skin id with `-` as `_` (`CatalogL10n.skinDescriptionOf`). copy.md G.3 `classic`…`winter` and H `forest_bear_description`.
   ///
   /// In en, this message translates to:
-  /// **'{skin, select, ocean{Sailor collars, tiny anchors and wave trims.} other{}}'**
+  /// **'{skin, select, classic{Painted flowers, gold dots and a little bow.} ocean{Sailor collars, tiny anchors and wave trims.} space{Round helmets, tiny antennas and ringed planets.} sweets{Frosting drips, sprinkles and candy stripes.} forest{Pointy ears, pearl-trimmed hoods and falling leaves.} winter{Pompom hats, snowflakes and pearly trims.} forest_bear{Round bear ears, cozy hoods and acorns in the leaves.} other{}}'**
   String skinDescription(String skin);
 
   /// The skin detail screen's header title (frame 7.4).
@@ -1047,6 +1149,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{You have 1 coin} other{You have {count} coins}}'**
   String balanceLine(int count);
+
+  /// NotEnoughCoinsDialog's title (frames 7.3b, 7.4c; D112). copy.md G.10 `coins_needed_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'A few more coins'**
+  String get notEnoughCoinsTitle;
+
+  /// NotEnoughCoinsDialog's line: how many more coins the balance is short. copy.md G.10 `coins_needed_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You need 1 more coin} other{You need {count} more coins}}'**
+  String notEnoughCoinsNeeded(int count);
+
+  /// NotEnoughCoinsDialog's line naming where coins come from. copy.md G.10 `coins_needed_where`.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins come from winning levels, the daily puzzle and chests.'**
+  String get notEnoughCoinsSource;
+
+  /// NotEnoughCoinsDialog's Go to Shop button. copy.md G.10 `coins_needed_shop`.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Shop'**
+  String get notEnoughCoinsGoToShop;
+
+  /// A dialog's Not now (NotEnoughCoinsDialog). copy.md G.10 `coins_needed_later`.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
 
   /// A skin card's downloading state; built for M4 and unreachable while every skin is bundled (frame 7.5).
   ///
@@ -1114,29 +1246,23 @@ abstract class AppLocalizations {
   /// **'Adds one empty stand for this level.'**
   String get buySlotText;
 
-  /// L1's tutorial step 1 chip (frame 1.3; m3 §10.4).
-  ///
-  /// In en, this message translates to:
-  /// **'STEP 1 OF 2'**
-  String get tutorialStep1Chip;
-
   /// L1's tutorial step 1 title (frame 1.3).
   ///
   /// In en, this message translates to:
   /// **'Tap the small doll'**
   String get tutorialStep1Title;
 
+  /// The chip on Level 1's three tutorial steps (frames 1.3, 1.4, 10.8b; lead note 6: copy.md is newer than the frames' "OF 2"). {total} is the script's step count (3). copy.md E `tut_step_chip`.
+  ///
+  /// In en, this message translates to:
+  /// **'STEP {step} OF {total}'**
+  String tutorialStepChip(int step, int total);
+
   /// L1's tutorial step 1 body (frame 1.3).
   ///
   /// In en, this message translates to:
   /// **'Dolls nest into the same color, one size bigger.'**
   String get tutorialStep1Text;
-
-  /// L1's tutorial step 2 chip (frame 1.4).
-  ///
-  /// In en, this message translates to:
-  /// **'STEP 2 OF 2'**
-  String get tutorialStep2Chip;
 
   /// L1's tutorial step 2 title (frame 1.4).
   ///
@@ -1150,16 +1276,16 @@ abstract class AppLocalizations {
   /// **'The small doll drops inside with a clack.'**
   String get tutorialStep2Text;
 
-  /// L1's tutorial step 3 title; no frame or chip (m3 §10.4, a design gap).
+  /// Level 1's tutorial step 3 title (frame 10.8b). copy.md E `tut_step_3_title`.
   ///
   /// In en, this message translates to:
   /// **'Finish the family'**
   String get tutorialStep3Title;
 
-  /// L1's tutorial step 3 body; no frame or chip (m3 §10.4, a design gap).
+  /// Level 1's tutorial step 3 line (frame 10.8b). copy.md E `tut_step_3_body`.
   ///
   /// In en, this message translates to:
-  /// **'Tap the smallest doll, then the family.'**
+  /// **'Put the last doll in. A family is done when every size is nested.'**
   String get tutorialStep3Text;
 
   /// L2's tutorial swallow-move chip (frame 1.6).
@@ -1264,11 +1390,1000 @@ abstract class AppLocalizations {
   /// **'Next: Chapter {number} · {name}'**
   String chapterCompleteNext(int number, String name);
 
-  /// The generating-board state's caption over the old board's ui_spinner while a bonus level generates (m3 §10.8, a design gap: no frame shows this state).
+  /// The generating card's line under `ui_spinner` while a level is made (frame 12.5). Not in copy.md m7-3: frame 12.5's own text (ui-spec C8; TODO(design): ask for its id).
   ///
   /// In en, this message translates to:
   /// **'Setting up the shelves…'**
   String get gameplayGenerating;
+
+  /// The Daily streak card's line while the flame is paused: a missed day no freeze covered, streak > 0, today unsolved (spec-prop §7.5; frame 10.7). A missed day never lowers the number. copy.md G.9 `streak_paused`.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {count}-day streak is resting. Solve today’s puzzle to light it again.'**
+  String dailyStreakPaused(int count);
+
+  /// The Daily streak card's chip while the flame is paused (frame 10.7). copy.md G.9 `streak_paused_chip`.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get dailyStreakPausedChip;
+
+  /// The daily win card's title when the solve relit a paused streak (frame 10.7b). copy.md G.9 `streak_relit_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak relit!'**
+  String get dailyStreakRelitTitle;
+
+  /// The daily win card's line when the solve relit a paused streak (frame 10.7b). {count} is the streak after the solve. copy.md G.9 `streak_relit_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {count}-day streak is glowing again.'**
+  String dailyStreakRelitBody(int count);
+
+  /// Home's streak badge's screen-reader label while paused (spec §16). Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-day streak, paused} other{{count}-day streak, paused}}'**
+  String streakBadgeSemanticsPaused(int count);
+
+  /// The Chapters screen's title (frame 10.4). copy.md G.10 `chapters_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get chaptersTitle;
+
+  /// The Chapters header's overall line and its bar's semantics: the current campaign level over every catalog level (frame 10.4). copy.md G.10 `chapters_progress`.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level} of {total}'**
+  String chaptersOverallProgress(int level, int total);
+
+  /// A folded chapter row's levels won (frame 10.4). copy.md G.10 `chapters_won`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} won'**
+  String chaptersWonCount(int count);
+
+  /// The level card's and a won cell's best moves (frames 10.4, 10.4b). copy.md G.11 `level_best`.
+  ///
+  /// In en, this message translates to:
+  /// **'Best {best}'**
+  String chaptersBestMoves(int best);
+
+  /// The Chapters level card's Play button (frame 10.4b). copy.md G.11 `level_play`.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get chaptersLevelPlay;
+
+  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'{moves, plural, =1{Level {level}, won, best 1 move} other{Level {level}, won, best {moves} moves}}'**
+  String chaptersLevelSemanticsWon(int level, int moves);
+
+  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, won'**
+  String chaptersLevelSemanticsWonNoBest(int level);
+
+  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, play next'**
+  String chaptersLevelSemanticsCurrent(int level);
+
+  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, locked'**
+  String chaptersLevelSemanticsLocked(int level);
+
+  /// The Records screen's title (frame 10.6). copy.md G.10 `records_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Records'**
+  String get recordsTitle;
+
+  /// Home's Records button's label (frame 2.1). Not in copy.md m7-3: a label for the button.
+  ///
+  /// In en, this message translates to:
+  /// **'Records'**
+  String get homeRecordsButton;
+
+  /// Records' Levels won cell. copy.md G.10 `records_levels_won`.
+  ///
+  /// In en, this message translates to:
+  /// **'Levels won'**
+  String get recordsLevelsWon;
+
+  /// Records' families cell label (frame 10.6), under the count of every family completed (`records.families`, spec-prop §7.9 "families completed"). copy.md G.10 `records_families` reads "Families home" with the value `records_families_value` "{count} of 10", which counts the Museum's figurines; the rule counts every family a won board completed (212 in spec-prop's example), so "of 10" read "2 of 10" after two wins with the Museum empty (the phase-4 device run, 2026-09-30). The rule's words until the owner settles it (Q159).
+  ///
+  /// In en, this message translates to:
+  /// **'Families completed'**
+  String get recordsFamilies;
+
+  /// Records' races card header, with a row per rival: portrait, name and the Computer tag (frame 10.6). copy.md G.10 `records_races`.
+  ///
+  /// In en, this message translates to:
+  /// **'Races won'**
+  String get recordsRacesHeader;
+
+  /// Records' Dolls nested cell. copy.md G.10 `records_dolls_nested`.
+  ///
+  /// In en, this message translates to:
+  /// **'Dolls nested'**
+  String get recordsDolls;
+
+  /// Records' Daily puzzles solved cell (frame 10.6). copy.md G.10 `records_dailies`.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily puzzles solved'**
+  String get recordsDailies;
+
+  /// Records' Longest streak cell. copy.md G.10 `records_longest_streak`.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get recordsLongestStreak;
+
+  /// Records' link to the Chapters screen's best moves, with the `route` glyph (frame 10.6). copy.md G.10 `records_best_moves`.
+  ///
+  /// In en, this message translates to:
+  /// **'Best moves by level'**
+  String get recordsBestMovesLink;
+
+  /// Records' badge grid header (frame 10.6). copy.md G.8 `records_badges`.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get recordsBadgesHeader;
+
+  /// A badge's name on Records and its toast (spec-prop §7.8; frame 10.6). {badge} is BadgeId.id. copy.md G.8 `<id>`.
+  ///
+  /// In en, this message translates to:
+  /// **'{badge, select, first_family{Snug as a Doll} glass_breaker{Glass Act} ice_melter{Ice Breaker} tall_order{Tall Order} grand_nest{Grand Nest} level_100{Halfway Home} level_200{Top Shelf} dailies_7{Puzzle Pal} dailies_30{Old Friend} first_race{First Past the Shelf} all_rivals{Rival Round-Up} museum_full{Full House} other{}}'**
+  String badgeName(String badge);
+
+  /// An earned badge's one-liner on its Records card: how it was earned (frame 10.6b). {badge} is BadgeId.id. copy.md G.8 `<id>_line`.
+  ///
+  /// In en, this message translates to:
+  /// **'{badge, select, first_family{You nested your first family.} glass_breaker{You opened your first glass case.} ice_melter{You freed a doll from the ice.} tall_order{You won a level with size-5 dolls.} grand_nest{You won a level with size-6 dolls.} level_100{You won level 100.} level_200{You won level 200, the very last one.} dailies_7{You solved 7 daily puzzles.} dailies_30{You solved 30 daily puzzles.} first_race{You beat the computer in a race.} all_rivals{You beat every computer rival.} museum_full{Every family is home in your Museum.} other{}}'**
+  String badgeLine(String badge);
+
+  /// A locked badge's screen-reader hint: how to earn it, in a few words (spec §16). {badge} is BadgeId.id. Not in copy.md m7-3: the visible locked line is badgeLockedLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{badge, select, first_family{Complete a family} glass_breaker{Open a glass case} ice_melter{Melt the ice on a stand} tall_order{Win a level with size-5 dolls} grand_nest{Win a level with size-6 dolls} level_100{Win Level 100} level_200{Win Level 200} dailies_7{Solve 7 daily puzzles} dailies_30{Solve 30 daily puzzles} first_race{Win a race against the computer} all_rivals{Beat every computer rival} museum_full{Bring every Museum family home} other{}}'**
+  String badgeHint(String badge);
+
+  /// An earned badge's screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, earned'**
+  String badgeSemanticsEarned(String name);
+
+  /// A locked badge's screen-reader label with badgeHint. Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, not earned yet. {hint}'**
+  String badgeSemanticsLocked(String name, String hint);
+
+  /// The toast when a win earns a badge, at top 60 over the result card, one at a time (Q122, Q136; frame 10.6). {badge} is badgeName. copy.md G.8 `badge_earned_toast`.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge earned · {badge}'**
+  String badgeEarnedToastTitle(String badge);
+
+  /// A locked badge's line on its Records card (frame 10.6). copy.md G.8 `badge_locked_line`.
+  ///
+  /// In en, this message translates to:
+  /// **'Not earned yet'**
+  String get badgeLockedLine;
+
+  /// The win card's moves chip on a campaign level or a replay: this win's moves and the level's best after it (frame 11.2). copy.md G.11 `moves_line`.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves {moves} · Best {best}'**
+  String winMovesBest(int moves, int best);
+
+  /// The win card's moves chip on a first win and on a board that keeps no best (daily, bonus, race). copy.md G.11 `moves_line_first`.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves {moves}'**
+  String winMovesOnly(int moves);
+
+  /// The win card's chest row: the levels to the next milestone chest (frame 10.3). copy.md G.9 `chest_progress`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 level to the chest} other{{count} levels to the chest}}'**
+  String winChestCountdown(int count);
+
+  /// The replay win card's reason line with the `replay` glyph (frame 10.5). copy.md G.11 `replay_reason`.
+  ///
+  /// In en, this message translates to:
+  /// **'A replay for fun: coins come from new levels.'**
+  String get winReplayReason;
+
+  /// The replay win card's button back to Chapters (frame 10.5). copy.md G.11 `replay_back`.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Chapters'**
+  String get winBackToChapters;
+
+  /// The milestone chest card's ribbon title (spec-prop §7.3; frame 10.3b). copy.md G.9 `chest_milestone_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone chest'**
+  String get chestMilestoneTitle;
+
+  /// The milestone chest card's line after a campaign chapter's level 10 (frame 10.3b); its contents show before it opens (spec-prop §1.1 rule 2). copy.md G.9 `chest_milestone_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'A chest for reaching level {level}. Here’s what’s inside.'**
+  String chestMilestoneBody(int level);
+
+  /// The milestone chest card's line after every 10th Bonus Endless level (frame 12.4). copy.md G.9 `chest_bonus_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'A chest for bonus level {level}. Here’s what’s inside.'**
+  String chestMilestoneBodyBonus(int level);
+
+  /// A chest's coin chip, shown with its promised amount from the start, with no count-up (spec-prop §1.1 rule 2; frame 10.3b). copy.md G.9 `chest_coins`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 coin} other{+{count} coins}}'**
+  String chestContentsCoins(int count);
+
+  /// A chest's hint chip, shown from the start (frame 10.3b). copy.md G.9 `chest_hints`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 hint} other{+{count} hints}}'**
+  String chestContentsHint(int count);
+
+  /// A chest's contents as one screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'{coins, plural, =1{1 coin} other{{coins} coins}} and {hints, plural, =1{1 hint} other{{hints} hints}}'**
+  String chestContentsSemantics(int coins, int hints);
+
+  /// A chest card's Open button (frames 10.3b, 5.6). copy.md G.9 `chest_open`.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get chestOpen;
+
+  /// Settings' Relaxed mode toggle (frame 10.2e). copy.md G.9 `relaxed_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed mode'**
+  String get settingRelaxedMode;
+
+  /// Relaxed mode's subtitle. copy.md G.9 `relaxed_sub`.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited free undo'**
+  String get settingRelaxedModeSubtitle;
+
+  /// The toast when Relaxed mode is on at a level's start (frame 10.9). copy.md G.9 `relaxed_on`.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed mode is on. Undo as often as you like.'**
+  String get relaxedModeOn;
+
+  /// Settings' Reduce motion row with its Off · On · System control (frame 10.2e). copy.md G.7 `settings_reduce_motion`.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce motion'**
+  String get settingReduceMotion;
+
+  /// Reduce motion's System segment (the default: the phone's setting). copy.md G.7 `settings_reduce_motion_system`.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get reduceMotionSystem;
+
+  /// Reduce motion's On segment. copy.md G.7 `settings_reduce_motion_on`.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get reduceMotionOn;
+
+  /// Reduce motion's Off segment. copy.md G.7 `settings_reduce_motion_off`.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get reduceMotionOff;
+
+  /// The Out of moves sheet's Undo row with Relaxed mode on, or in a race (frame 10.9b). copy.md G.9 `relaxed_undo_row`.
+  ///
+  /// In en, this message translates to:
+  /// **'Free, as often as you like'**
+  String get oomUndoFreeUnlimited;
+
+  /// The Out of moves sheet's Undo row once the free undos are spent (frame 12.8). {count} is free_undos_per_level (2 by default; the app fills it). copy.md E `oom_undo_spent`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Your 1 free undo is used} other{Your {count} free undos are used}}'**
+  String oomUndoSpent(int count);
+
+  /// The toast when the level's last +1 Slot lands (frame 12.9). {count} is LayoutLimits.maxExtraSlots (2). copy.md E `slot_limit`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{One extra slot is the most for one level.} =2{Two extra slots is the most for one level.} other{{count} extra slots is the most for one level.}}'**
+  String extraSlotLimitToast(int count);
+
+  /// Screen-reader label of the Undo booster with Relaxed mode on (its badge shows the `all_inclusive` glyph; spec §16). {booster} is boosterUndo. copy.md G.9 `a11y_undo_unlimited`.
+  ///
+  /// In en, this message translates to:
+  /// **'{booster}, unlimited'**
+  String boosterUndoUnlimitedSemantics(String booster);
+
+  /// The chip on the Out of Moves sheet's Undo row in Relaxed mode: the `all_inclusive` glyph and this word (frame 10.9b). Not in copy.md m7-3: the frame's text; the row's own line is oomUndoFreeUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get oomUndoFreeChip;
+
+  /// Screen-reader label of the +1 Slot booster at its limit: its sunk face shows "2/2" (frame 12.9; spec §16). Not in copy.md m7-3: the frame's badge said aloud.
+  ///
+  /// In en, this message translates to:
+  /// **'{booster}, {used} of {total} used'**
+  String boosterLimitSemantics(String booster, int used, int total);
+
+  /// The green tag over the Hint booster as a chest's hint sprite lands on it (frame 10.3d). Not in copy.md m7-3: the frame's text.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count}'**
+  String hintGainedTag(int count);
+
+  /// Screen-reader hint on the Restart booster while it glows because the level looks stuck with nothing to undo (frame 12.7: Restart's label gains this hint). Not in copy.md m7-3: ui-spec-game 12.7.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get restartSuggestedHint;
+
+  /// Home's vs Computer tile (frames 2.1, 9.1). copy.md G.5 `home_tile_versus`.
+  ///
+  /// In en, this message translates to:
+  /// **'vs Computer'**
+  String get homeVsComputerTile;
+
+  /// Home's vs Computer tile while it is locked (frame 9.1b): {level} is race_unlock_level (20 by default; the copy's "20" is the Remote Config value, so the app fills it). copy.md G.5 `rival_locked_mode`.
+  ///
+  /// In en, this message translates to:
+  /// **'After Level {level}'**
+  String homeVsComputerLocked(int level);
+
+  /// The Flame board's tag on a tower: the nests hidden below its top (frame 2.2; spec §3.2). Through ARB for the locale's digits and direction (spec §16; m7 §18, the marker in slot_decor.dart).
+  ///
+  /// In en, this message translates to:
+  /// **'+{count}'**
+  String boardTowerHidden(int count);
+
+  /// The ice badge's counter on a frozen slot: the sets still to complete (frame 2.4; spec §3.4). Through ARB for the locale's digits (spec §16; m7 §18).
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String boardIceCount(int count);
+
+  /// Rival select's title (frame 9.2). copy.md G.5 `mode_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'vs Computer'**
+  String get raceSelectTitle;
+
+  /// Rival select's line under the title (frame 9.2). copy.md G.5 `mode_sub`.
+  ///
+  /// In en, this message translates to:
+  /// **'Race a computer on the same puzzle'**
+  String get raceSelectSubtitle;
+
+  /// The Computer tag beside every computer rival's name, with the `computer` glyph: select, the strip, the results, Pause and Records (spec-prop §1.1 rule 5; frames 9.2–9.7b). copy.md G.5 `tag_computer`.
+  ///
+  /// In en, this message translates to:
+  /// **'Computer'**
+  String get raceComputerTag;
+
+  /// A computer rival's name by number 1-3, on select, the strip, the results, Pause and Records. Always shown with the Computer tag (Q-P4-7's decision; spec-prop §1.1 rule 5). copy.md G.5 `rival_1_name`…`rival_3_name`.
+  ///
+  /// In en, this message translates to:
+  /// **'{number, plural, =1{Pebble} =2{Button} other{Comet}}'**
+  String raceRivalName(int number);
+
+  /// A computer rival's one-line personality on its select card, by rival number 1-3 (frame 9.2). It describes the computer, never the player: respect_copy_test exempts rival 3's "Quick" for this key only (phase 4 decision on Q-P4-2). copy.md G.5 `rival_n_personality`.
+  ///
+  /// In en, this message translates to:
+  /// **'{number, plural, =1{Takes its time and enjoys every doll along the way.} =2{Checks each move twice before it makes it.} other{Quick, tidy and hard to catch.}}'**
+  String raceRivalBlurb(int number);
+
+  /// A computer rival's skill label on its select card, by rival number 1-3: rival 1 plays like the casual bot at 3 s a move, rival 2 the smart bot at 2.4 s, rival 3 the smart bot at 1.6 s (spec-prop §7.7; frame 9.2). It describes the computer's pace: respect_copy_test exempts "Slow" and "Quick" for this key only (Q-P4-2's decision). copy.md G.5 `rival_n_skill`.
+  ///
+  /// In en, this message translates to:
+  /// **'{number, plural, =1{Relaxed · Slow} =2{Careful · Slow} other{Careful · Quick}}'**
+  String raceRivalSkill(int number);
+
+  /// What a win against a rival pays, shown on its select card before the race (race_reward_n; spec-prop §1.1 rule 2, §7.7; frame 9.2). copy.md G.5 `rival_reward` ({count} is {coins} here).
+  ///
+  /// In en, this message translates to:
+  /// **'{coins, plural, =1{Win 1 coin} other{Win {coins} coins}}'**
+  String raceRivalReward(int coins);
+
+  /// A locked rival's select card: the rival before it, whose first win unlocks it (spec-prop §7.7 'Three rivals unlock in turn'; frame 9.2). {rival} is that rival's raceRivalName. copy.md G.5 `rival_locked`.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat {rival} to unlock'**
+  String raceRivalLocked(String rival);
+
+  /// The chip on a rival card that is unlocked and not raced yet (rival 2 or 3; frame 9.2). copy.md G.5 `rival_new`.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get raceRivalNew;
+
+  /// A rival card's and the results' screen-reader name, which says "Computer" (spec-prop §1.1 rule 5; the visible name sits beside the tag). Not in copy.md m7-3: a screen-reader label the app composes.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, Computer'**
+  String raceRivalSemantics(String name);
+
+  /// The Start button, on rival select (one Start for the selected rival) and on the race board in the booster bar's middle slots: both sides rest until it is tapped, with no countdown (vs-computer rule 4; frames 9.2, 9.3). copy.md G.5 `race_start`.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get raceStart;
+
+  /// Rival select's bottom line above Start (frame 9.2). copy.md G.5 `race_start_hint`.
+  ///
+  /// In en, this message translates to:
+  /// **'Same puzzle, two boards. Complete every family first.'**
+  String get raceStartHint;
+
+  /// The rival strip's state line before Start (frame 9.3). Not in copy.md m7-3: frame 9.3's own text (ui-spec C7; TODO(design): ask Claude Design for its id).
+  ///
+  /// In en, this message translates to:
+  /// **'Ready when you are'**
+  String get raceStripReady;
+
+  /// The rival strip's state line while the computer plays (frame 9.3b). copy.md G.5 `strip_thinking`.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get raceStripThinking;
+
+  /// The rival strip's state line while the computer restarts its board (frame 9.3c). copy.md G.5 `strip_starting_over`.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting over'**
+  String get raceStripStartingOver;
+
+  /// The rival strip's state line once the computer has completed every family (frame 9.3d). copy.md G.5 `strip_finished`.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get raceStripFinished;
+
+  /// The rival strip's state line once the player has won the race (frame 9.3e). copy.md G.5 `strip_after_you_won`.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished first'**
+  String get raceStripPlayerFinished;
+
+  /// The rival strip's family counter: the families the computer has completed of the board's (frame 9.3). copy.md G.5 `strip_families` ({count} is {done} here).
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total}'**
+  String raceStripFamilies(int done, int total);
+
+  /// The rival strip's screen-reader label, which says "Computer" (spec-prop §1.1 rule 5). Not in copy.md m7-3: a screen-reader label the app composes.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, =1{{name}, Computer: {done} of 1 family} other{{name}, Computer: {done} of {total} families}}'**
+  String raceStripSemantics(String name, int done, int total);
+
+  /// The rival strip's live screen-reader announcement when the computer completes a family, rate-limited (spec §16). copy.md G.5 `a11y_rival_family` ({count} is {done} here).
+  ///
+  /// In en, this message translates to:
+  /// **'The computer completed a family: {done} of {total}'**
+  String raceAnnounceFamily(int done, int total);
+
+  /// The live screen-reader announcement when Start is tapped (spec §16). Says "computer" (spec-prop §1.1 rule 5). copy.md G.5 `a11y_race_start`.
+  ///
+  /// In en, this message translates to:
+  /// **'Race started against {rival}, a computer player.'**
+  String raceAnnounceStart(String rival);
+
+  /// The rival strip's live announcement when the computer restarts (spec §16). copy.md G.5 `a11y_rival_starting_over`.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer is starting over.'**
+  String get raceAnnounceStartingOver;
+
+  /// The rival strip's live announcement when the computer finishes (spec §16). copy.md G.5 `a11y_rival_finished`.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer completed every family.'**
+  String get raceAnnounceFinished;
+
+  /// The live announcement as the race win card opens (spec §16). copy.md G.5 `a11y_race_won`.
+  ///
+  /// In en, this message translates to:
+  /// **'You won the race.'**
+  String get raceAnnounceWon;
+
+  /// The live announcement as the race loss card opens (spec §16). copy.md G.5 `a11y_race_lost`.
+  ///
+  /// In en, this message translates to:
+  /// **'The computer finished first.'**
+  String get raceAnnounceLost;
+
+  /// The race win card's ribbon title (frame 9.4). copy.md G.5 `race_win_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'You won the race!'**
+  String get raceWinTitle;
+
+  /// The race win card's line under the title (frame 9.4). {rival} is raceRivalName. It names the computer's pace, never a player's: respect_copy_test exempts "before" for this key only (Q-P4-2's decision). copy.md G.5 `race_win_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'You completed every family before {rival}.'**
+  String raceWinBody(String rival);
+
+  /// The race win card's coin chip: the rival's race_reward_n, counted up (frame 9.4). copy.md G.5 `race_win_coins`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 coin} other{+{count} coins}}'**
+  String raceWinCoins(int count);
+
+  /// The race loss card's ribbon title (frame 9.5). Warm, never a taunt (vs-computer rule 10). copy.md G.5 `race_lose_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'So close! Rematch?'**
+  String get raceLossTitle;
+
+  /// The race loss card's line under the title (frame 9.5). {rival} is raceRivalName. No loss or streak wording. copy.md G.5 `race_lose_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'{rival} finished first this time. A rematch costs nothing.'**
+  String raceLossBody(String rival);
+
+  /// The card after 9.4 when the win unlocked the next rival, once per rival (frame 9.6; Q131). copy.md G.5 `rival_unlocked_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'New rival unlocked!'**
+  String get raceRivalUnlockedTitle;
+
+  /// The line under raceRivalUnlockedTitle naming the rival just unlocked (frame 9.6). {rival} is raceRivalName; the card shows the Computer tag beside it. copy.md G.5 `rival_unlocked_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'{rival} is ready to race.'**
+  String raceRivalUnlockedBody(String rival);
+
+  /// The confirm card when Pause's Leave race is tapped (frame 9.7b; Q133). copy.md G.5 `race_quit_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this race?'**
+  String get raceLeaveTitle;
+
+  /// The confirm card's line (frame 9.7b): nothing is lost by leaving (spec-prop §7.7). respect_copy_test exempts "ends" and "lost" for this key only: they reassure, they don't threaten (Q-P4-2's decision). copy.md G.5 `race_quit_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'The race ends here. No coins, and nothing lost.'**
+  String get raceLeaveBody;
+
+  /// The confirm card's button back to the race (frame 9.7b). copy.md G.5 `race_quit_no`.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep racing'**
+  String get raceLeaveKeep;
+
+  /// The race results' Rematch button: the same board again (frames 9.4, 9.5). copy.md G.5 `race_rematch`.
+  ///
+  /// In en, this message translates to:
+  /// **'Rematch'**
+  String get raceRematch;
+
+  /// The race results' New race button: a new board against the same rival (frames 9.4, 9.5). copy.md G.5 `race_new`.
+  ///
+  /// In en, this message translates to:
+  /// **'New race'**
+  String get raceNewRace;
+
+  /// The text link back to rival select: the race failure card (frame 9.3f). copy.md G.5 `race_failed_back`.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to races'**
+  String get raceBackToRivals;
+
+  /// The card when a race board couldn't be made (frame 9.3f). copy.md G.5 `race_failed_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'The shelves need a moment'**
+  String get raceFailedTitle;
+
+  /// The line under raceFailedTitle (frame 9.3f). copy.md G.5 `race_failed_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'This race didn’t set up. Try again, or pick another race.'**
+  String get raceFailedBody;
+
+  /// The Pause dialog's line during a race, under racePauseHeader (frame 9.7). {rival} is raceRivalName. copy.md G.5 `race_pause_rival`.
+  ///
+  /// In en, this message translates to:
+  /// **'{rival} is paused too.'**
+  String racePauseSubtitle(String rival);
+
+  /// The Pause dialog's header in a race, beside the rival's portrait and Computer tag (frame 9.7). {rival} is raceRivalName. Not in copy.md m7-3: frame 9.7's own text (TODO(design): ask for its id).
+  ///
+  /// In en, this message translates to:
+  /// **'vs Computer · {rival}'**
+  String racePauseHeader(String rival);
+
+  /// Rival select's screen-reader word for a rival the player has beaten (the check on its portrait, frame 9.2b). Not in copy.md m7-3: a label the app composes.
+  ///
+  /// In en, this message translates to:
+  /// **'Beaten'**
+  String get raceRivalBeaten;
+
+  /// Rival select's Start button label for a screen reader, naming the selected computer rival (frame 9.2). Not in copy.md m7-3: a label the app composes.
+  ///
+  /// In en, this message translates to:
+  /// **'Start race against {rival}'**
+  String raceStartFor(String rival);
+
+  /// Pause's Leave race button during a race, and the confirm card's own (frames 9.7, 9.7b). copy.md G.5 `race_pause_leave`, `race_quit_yes`.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave race'**
+  String get raceQuit;
+
+  /// The screen-reader label of every star row: a level's stars out of 3 (StarRating.maxStars, a rule constant; spec-prop §7.10). copy.md G.11 `a11y_stars`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 of 3 stars} other{{count} of 3 stars}}'**
+  String starsSemantics(int count);
+
+  /// The win card's star row's screen-reader label on a new best (frame 11.4b). copy.md G.11 `a11y_stars_new_best`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{New best, 1 of 3 stars} other{New best, {count} of 3 stars}}'**
+  String starsNewBestSemantics(int count);
+
+  /// The replay win card's target row below 3 stars: the moves that earn 3 stars (par + the 3-star slack; par is at least 2, so no singular). Information, never 'try again' (frame 11.4). copy.md G.11 `replay_target`.
+  ///
+  /// In en, this message translates to:
+  /// **'3 stars at {moves} moves or fewer'**
+  String winStarsTarget(int moves);
+
+  /// The chip on the win card's moves chip on a new best (frame 11.4b). copy.md G.11 `new_best`.
+  ///
+  /// In en, this message translates to:
+  /// **'New best!'**
+  String get winStarsNewBest;
+
+  /// The one-time tip on a first win below 3 stars; it waits for a card with room for it (frame 11.2c). copy.md G.11 `stars_tip`.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer moves earn more stars. Replay any level from Chapters.'**
+  String get starsFirstTip;
+
+  /// The win card's note pill when a hint or +1 Slot capped the stars (Q145; frame 11.2d); it takes the tip's place. copy.md G.11 `stars_helper_note`.
+  ///
+  /// In en, this message translates to:
+  /// **'Wins with a hint or an extra slot earn up to 2 stars.'**
+  String get starsHelperNote;
+
+  /// Stars earned out of the stars possible: a chapter's card and folded row in Chapters, Home's chapter card (frame 11.5). copy.md G.11 `chapter_stars_total` ({count} is {earned}, the copy's "60" is {total}).
+  ///
+  /// In en, this message translates to:
+  /// **'{earned}/{total}'**
+  String chaptersStarsTotal(int earned, int total);
+
+  /// A chapter's line once all 20 levels have 3 stars (frame 11.5). copy.md G.11 `chapter_all_three_stars`.
+  ///
+  /// In en, this message translates to:
+  /// **'Every level at 3 stars'**
+  String get chaptersAllThreeStars;
+
+  /// A chapter's stars as a screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned, plural, =1{1 of {total} stars} other{{earned} of {total} stars}}'**
+  String chaptersStarsSemantics(int earned, int total);
+
+  /// Records' Stars cell (frame 11.5). copy.md G.11 `records_stars`.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars'**
+  String get recordsStars;
+
+  /// Records' Stars value: the stars earned of every level's 3 (600 for 200 levels with a par; the app fills {total}). copy.md G.11 `records_stars_value`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total}'**
+  String recordsStarsValue(int count, int total);
+
+  /// The daily win card's Share button, above Back to Daily (frame 10.1; phase 4 decision on Q-P4-1). copy.md G.6 `share_button`.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get dailyShare;
+
+  /// One family's glyph in the daily share text: its DollColor id's belly symbol as an emoji, so no two families look alike and nothing depends on colour (phase 4 architecture §3.10). {color} is `DollColor.id`; `other` is a defensive nesting doll. copy.md G.6 `glyph_<color>`.
+  ///
+  /// In en, this message translates to:
+  /// **'{color, select, red{❤️} orange{🌼} yellow{☀️} green{🍃} teal{🌊} blue{💧} purple{⭐} pink{🎀} navy{🌙} brown{🌰} gold{👑} other{🪆}}'**
+  String dailyShareGlyph(String color);
+
+  /// The Share button's screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **'Share today\'s result'**
+  String get dailyShareSemantics;
+
+  /// The text the daily win card's Share hands the share sheet while the streak is lit (spec-prop §10.2 #11; frame 10.1): the date, one dailyShareGlyph per family in board order (at most 12), the moves and the streak day. Spoiler-free: never the board or a move. copy.md G.6 `share_line_1`…`share_line_3`.
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty Daily · {date}\n{glyphs}\n{moves, plural, =1{Solved in 1 move · Day {day} 🔥} other{Solved in {moves} moves · Day {day} 🔥}}'**
+  String dailyShareText(String date, String glyphs, int moves, int day);
+
+  /// The daily share text when the streak is 0 or paused (frame 10.1c): no day or flame. copy.md G.6 `share_line_1`, `share_line_2`, `share_line_3_no_streak`.
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty Daily · {date}\n{glyphs}\n{moves, plural, =1{Solved in 1 move} other{Solved in {moves} moves}}'**
+  String dailyShareTextNoStreak(String date, String glyphs, int moves);
+
+  /// The one-time reminder offer's question on the Daily solved screen (spec-prop §7.9; frame 10.2). copy.md G.7 `reminder_offer_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Want a note when tomorrow’s puzzle is ready?'**
+  String get reminderOfferTitle;
+
+  /// The offer's line under the question (frame 10.2). copy.md G.7 `reminder_offer_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'One quiet note a day, at a time you pick. You can turn it off in Settings.'**
+  String get reminderOfferBody;
+
+  /// The offer's time chip: the reminder's local time, the hour of the first solve by default (Q81; frame 10.2). copy.md G.7 `reminder_time_chip`.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day at {time}'**
+  String reminderOfferTime(String time);
+
+  /// The offer's Change time link: the phone's time picker (frame 10.2b). copy.md G.7 `reminder_change_time`.
+  ///
+  /// In en, this message translates to:
+  /// **'Change time'**
+  String get reminderOfferChangeTime;
+
+  /// The offer's Yes button: asks the phone for notifications, then turns the reminder on (spec-prop §1.1 rule 7). copy.md G.7 `reminder_yes`.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, remind me'**
+  String get reminderOfferYes;
+
+  /// The offer's No thanks: the offer never shows again (spec-prop §7.9). copy.md G.7 `reminder_no`.
+  ///
+  /// In en, this message translates to:
+  /// **'No thanks'**
+  String get reminderOfferNo;
+
+  /// The toast once the phone allowed notifications and the reminder is on (frame 10.2c). copy.md G.7 `reminder_set`.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder set for {time}.'**
+  String reminderOfferDone(String time);
+
+  /// The offer's denied step's title when the phone refused notifications (frame 10.2d). copy.md G.7 `reminder_denied_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off for Nesty'**
+  String get reminderOfferDeniedTitle;
+
+  /// The denied step's line, with Open phone settings under it (frame 10.2d; Q140). The reminder stays on and blocked, so the note does arrive once the phone allows it (phase 4 decision on Q-P4-4). copy.md G.7 `reminder_denied_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn them on in your phone’s settings, and your note will arrive at {time}.'**
+  String reminderOfferDenied(String time);
+
+  /// The daily reminder notification's title (spec-prop §7.9; frame 10.2g). copy.md G.7 `notification_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty'**
+  String get reminderNotificationTitle;
+
+  /// The notification's first body line; the three lines rotate by the next fire date at each re-plan (phase 4 decision on Q-P4-5). Never mentions a streak (spec-prop §7.9). copy.md G.7 `notification_1`.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s puzzle is on the shelf.'**
+  String get reminderNotificationBody;
+
+  /// The notification's second body line (rotation as reminderNotificationBody). copy.md G.7 `notification_2`.
+  ///
+  /// In en, this message translates to:
+  /// **'A fresh daily puzzle is ready when you are.'**
+  String get reminderNotificationBody2;
+
+  /// The notification's third body line (rotation as reminderNotificationBody). copy.md G.7 `notification_3`.
+  ///
+  /// In en, this message translates to:
+  /// **'New dolls are waiting to be nested. Today’s puzzle is ready.'**
+  String get reminderNotificationBody3;
+
+  /// The Android notification channel's name in the phone's settings. Not in copy.md m7-3: an OS label.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reminder'**
+  String get reminderChannelName;
+
+  /// The Android notification channel's description in the phone's settings. Not in copy.md m7-3: an OS label.
+  ///
+  /// In en, this message translates to:
+  /// **'One note a day when the daily puzzle is ready'**
+  String get reminderChannelDescription;
+
+  /// Settings' Daily reminder toggle (frame 10.2e). copy.md G.7 `settings_reminder`.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reminder'**
+  String get settingReminder;
+
+  /// Settings' reminder time row under the toggle, with the time and a chevron (frame 10.2e). copy.md G.7 `settings_reminder_time`.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get settingReminderTime;
+
+  /// The Daily reminder row's value while it is on (frame 10.2e). copy.md G.7 `settings_reminder_on`.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day at {time}'**
+  String settingReminderOn(String time);
+
+  /// The Daily reminder row's value while it is off. copy.md G.7 `settings_reminder_off`.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get settingReminderOff;
+
+  /// The Daily reminder row's value while the phone blocks notifications (frame 10.2f). copy.md G.7 `settings_reminder_blocked`.
+  ///
+  /// In en, this message translates to:
+  /// **'Off in your phone’s settings'**
+  String get settingReminderBlocked;
+
+  /// The button to the phone's notification settings, on the offer's denied step and Settings' blocked row (frames 10.2d, 10.2f; Q140). copy.md G.7 `settings_open_phone_settings`.
+  ///
+  /// In en, this message translates to:
+  /// **'Open phone settings'**
+  String get settingOpenPhoneSettings;
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: the kicker over the chapter name on Home's chapter card (frame 2.1). copy.md draws it as a fixed uppercase line; the number is the PLAY level's chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAPTER {number}'**
+  String homeChapterKicker(int number);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's chapter card (menus spec 1.1): the chapter, its name, its stars and where a tap goes.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {number}, {name}, {earned} of {total} stars. Opens chapters.'**
+  String homeChapterCardSemantics(
+    int number,
+    String name,
+    int earned,
+    int total,
+  );
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's chapter card in Bonus Endless (frame 12.2): the whole campaign's stars.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus levels, {earned} of {total} stars. Opens chapters.'**
+  String homeBonusCardSemantics(int earned, int total);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's vs Computer tile (frame 9.1, spec-prop §1.1 rule 5: a computer is always called one). A locked tile adds its unlock line as the value.
+  ///
+  /// In en, this message translates to:
+  /// **'vs Computer, computer player'**
+  String get homeVsComputerSemantics;
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: a Chapters row's and the open chapter header's kicker (frames 10.4, 11.5). A fixed uppercase line.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAPTER {number} · LEVELS {first}–{last}'**
+  String chaptersKicker(int number, int first, int last);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Chapters row (menus spec 3, Semantics). The row adds its expanded or collapsed state.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {number}, {name}, levels {first} to {last}, {earned} of {total} stars'**
+  String chaptersRowSemantics(
+    int number,
+    String name,
+    int first,
+    int last,
+    int earned,
+    int total,
+  );
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a locked Chapters row (frame 10.4).
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {number}, {name}, levels {first} to {last}, locked'**
+  String chaptersRowLockedSemantics(
+    int number,
+    String name,
+    int first,
+    int last,
+  );
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: appended to the screen-reader label of a Chapters cell that is the chapter's 10th level (frame 10.4).
+  ///
+  /// In en, this message translates to:
+  /// **'has a milestone chest'**
+  String get chaptersLevelChestSemantics;
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: appended to the screen-reader label of a Chapters cell that is the chapter's last level (frame 10.4).
+  ///
+  /// In en, this message translates to:
+  /// **'last level of the chapter'**
+  String get chaptersLevelFinaleSemantics;
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a collected family's niche in the Museum cabinet (frame 6.1). {name} is figurineName ("The Baker Family").
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, collected'**
+  String museumNicheCollectedSemantics(String name);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of the next family's niche (frame 6.1).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{name}, next, chapter {chapter}, 1 level to go} other{{name}, next, chapter {chapter}, {count} levels to go}}'**
+  String museumNicheNextSemantics(String name, int chapter, int count);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a locked family's niche (frame 6.1).
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {chapter}, levels {first} to {last}, locked'**
+  String museumNicheLockedSemantics(int chapter, int first, int last);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of the Museum's count chip (frame 6.1, "3 / 10").
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} families home'**
+  String museumCountSemantics(int done, int total);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: the Museum's celebration card sub line once every family is home (frame 6.1c). copy.md has `museum_full` ("Full House") but no id for the rest; {count} is the number of families.
+  ///
+  /// In en, this message translates to:
+  /// **'Full House · all {count} families'**
+  String museumFullSub(int count);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records races row (frame 10.6, spec-prop §1.1 rule 5: a computer is always called one). A rival with no wins reads 0.
+  ///
+  /// In en, this message translates to:
+  /// **'{rival}, computer player, races won: {count}'**
+  String recordsRaceSemantics(String rival, int count);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records races row for a rival the player has not unlocked (frame 10.6).
+  ///
+  /// In en, this message translates to:
+  /// **'{rival}, computer player, not unlocked yet'**
+  String recordsRaceLockedSemantics(String rival);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records stat cell: its label, then its value ("Levels won, 55", menus spec 5).
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, {value}'**
+  String recordsStatSemantics(String label, String value);
+
+  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: the Records badge heading's count (frame 10.6, "5/12"); numbers only.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned}/{total}'**
+  String recordsBadgesCount(int earned, int total);
 }
 
 class _AppLocalizationsDelegate

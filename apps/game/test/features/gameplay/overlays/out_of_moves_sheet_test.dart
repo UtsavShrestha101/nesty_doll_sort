@@ -20,6 +20,7 @@ void main() {
     int slotPrice = 150,
     int extraSlotsLeft = 0,
     bool unlimitedBoosters = false,
+    bool relaxed = false,
   }) => OutOfMovesSheet(
     freeUndosLeft: freeUndosLeft,
     showFreeUndos: showFreeUndos,
@@ -31,6 +32,7 @@ void main() {
     slotPrice: slotPrice,
     extraSlotsLeft: extraSlotsLeft,
     unlimitedBoosters: unlimitedBoosters,
+    relaxed: relaxed,
   );
 
   testWidgets('frame 3.5: title, Undo (free · 1 left), +1 Slot, Restart', (
@@ -122,6 +124,85 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('150'), findsNothing);
+    });
+
+    testWidgets(
+      'relaxed mode: "Free, as often as you like", no count and no price (E6; '
+      'm7-design §10, §15.6)',
+      (tester) async {
+        await pumpScreen(
+          tester,
+          sheet(
+            onUndo: () {},
+            onExtraSlot: () {},
+            freeUndosLeft: 0,
+            undoPrice: 20,
+            relaxed: true,
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('Free, as often as you like'), findsOneWidget);
+        expect(find.text('Free · 1 left'), findsNothing);
+        expect(find.text('20'), findsNothing);
+      },
+    );
+
+    testWidgets('relaxed (frame 10.9b): a green ring round the row, the '
+        'all_inclusive glyph and "Free", never a price or a chevron', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        sheet(onUndo: () {}, freeUndosLeft: 0, undoPrice: 20, relaxed: true),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      final undoRow = tester.widget<SheetRow>(find.byType(SheetRow).first);
+      expect(undoRow.highlighted, isTrue);
+      expect(find.byIcon(IconUses.undoUnlimited), findsOneWidget);
+      expect(find.text('Free'), findsOneWidget);
+      expect(find.byType(CoinIcon), findsNothing);
+    });
+
+    testWidgets('the undos spent (frame 12.8): "Your 2 free undos are '
+        'used", the price chip, no ring', (tester) async {
+      await pumpScreen(
+        tester,
+        sheet(
+          onUndo: () {},
+          freeUndosLeft: 0,
+          undoPrice: 20,
+          slotPrice: 150,
+          onExtraSlot: () {},
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Your 2 free undos are used'), findsOneWidget);
+      expect(find.text('Take back your last move'), findsNothing);
+      expect(find.text('20'), findsOneWidget);
+      expect(
+        tester.widget<SheetRow>(find.byType(SheetRow).first).highlighted,
+        isFalse,
+      );
+    });
+
+    testWidgets('the spent line follows the free-undo count it is given', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        OutOfMovesSheet(
+          freeUndosLeft: 0,
+          freeUndosTotal: 1,
+          showFreeUndos: true,
+          onUndo: () {},
+          onExtraSlot: null,
+          onRestart: () {},
+          onDismiss: () {},
+          undoPrice: 20,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Your 1 free undo is used'), findsOneWidget);
     });
 
     testWidgets('the dev flavor never shows a coin price', (tester) async {

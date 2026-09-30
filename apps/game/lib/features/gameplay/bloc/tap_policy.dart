@@ -63,6 +63,41 @@ final class AttemptMove extends TouchAction {
   String toString() => 'AttemptMove($move)';
 }
 
+/// Why a slot can't be picked, for its tap feedback (frame 12.13; tokens
+/// `motion.tapFeedback`; phase 4 architecture §2.6 E.13). Read from core's
+/// slot view, never decided here.
+enum SlotNudgeKind {
+  /// No nest to pick: the stand dips 2 dp for 80 ms, with a light haptic.
+  emptyStand,
+
+  /// A sealed glass case: its padlock pings 1.15× for 160 ms.
+  lockedCase,
+
+  /// Iced: its ice counter bumps 1.2× for 160 ms.
+  iced,
+}
+
+/// A tap on a slot that can't be picked, with nothing lifted: the board
+/// nudges it (never the invalid shake) so the tap is acknowledged (E.13,
+/// Q39's design answer). No move is attempted and the bloc's state is
+/// unchanged but for the effect.
+final class NudgeSlot extends TouchAction {
+  const NudgeSlot(this.slotId, this.kind);
+
+  final String slotId;
+  final SlotNudgeKind kind;
+
+  @override
+  bool operator ==(Object other) =>
+      other is NudgeSlot && other.slotId == slotId && other.kind == kind;
+
+  @override
+  int get hashCode => Object.hash(NudgeSlot, slotId, kind);
+
+  @override
+  String toString() => 'NudgeSlot($slotId, ${kind.name})';
+}
+
 /// Nothing happens.
 final class IgnoreTouch extends TouchAction {
   const IgnoreTouch();
@@ -82,8 +117,9 @@ final class IgnoreTouch extends TouchAction {
 abstract final class TapPolicy {
   /// A tap on [tapped] while [selected] is lifted (or nothing is):
   /// - nothing lifted and `Rules.canPick` → [SelectSlot];
-  /// - nothing lifted and not pickable (empty, locked or iced) →
-  ///   [IgnoreTouch];
+  /// - nothing lifted and not pickable → [NudgeSlot], its kind from core's
+  ///   slot view (a sealed case, then ice, else an empty stand; frame
+  ///   12.13); an id the board doesn't have → [IgnoreTouch];
   /// - the lifted slot → [CancelSelection];
   /// - any other slot → [AttemptMove]: a legal target moves, anything else
   ///   is invalid with core's reason.
@@ -93,16 +129,23 @@ abstract final class TapPolicy {
     required String tapped,
   }) {
     if (selected == null) {
-      // TODO(design): frame 2.6 doesn't cover a tap on an unpickable slot
-      // with nothing lifted; ignored until the owner decides (it could
-      // shake the slot instead).
-      return Rules.canPick(board, tapped)
-          ? SelectSlot(tapped)
-          : const IgnoreTouch();
+      if (Rules.canPick(board, tapped)) return SelectSlot(tapped);
+      // An id the board doesn't have (a stale touch) is no slot to nudge.
+      if (!board.slotIds.contains(tapped)) return const IgnoreTouch();
+      return NudgeSlot(tapped, nudgeKindOf(board.slot(tapped)));
     }
     if (tapped == selected) return CancelSelection(selected);
     return AttemptMove(Move(selected, tapped));
   }
+
+  /// Why [slot] (core's view of an unpickable slot) can't be picked: a
+  /// sealed case first (its padlock is on top), then ice, else an empty
+  /// stand.
+  static SlotNudgeKind nudgeKindOf(Slot slot) => switch (slot) {
+    LockedSlot() => SlotNudgeKind.lockedCase,
+    _ when slot.isFrozen => SlotNudgeKind.iced,
+    _ => SlotNudgeKind.emptyStand,
+  };
 
   /// A drag that starts on [slotId] lifts it when it can be picked, whatever
   /// was lifted before (the drag is an explicit pick); otherwise the drag

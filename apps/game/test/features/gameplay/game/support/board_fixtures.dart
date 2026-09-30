@@ -14,6 +14,7 @@ import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/game/components/board_component.dart';
 import 'package:nesty_game/features/gameplay/game/components/fx_layer.dart';
+import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/nesty_game.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/timeline.dart';
 import 'package:nesty_render/nesty_render.dart';
@@ -53,7 +54,12 @@ final Level mainLevel = levelFrom('''
 final Level tutorial = levelFrom(tutorialLevelJson);
 
 /// The board files the game pools, plus the slot compositions.
-const boardFiles = [...FxLayer.pooled, FxId.fxGlassUnlock, FxId.fxIce];
+const boardFiles = [
+  ...FxLayer.pooled,
+  FxId.fxGlassUnlock,
+  FxId.fxGlassUnlockTall,
+  FxId.fxIce,
+];
 
 /// A fake library holding the shipped compositions of [ids], with a blank.
 Future<FakeFxLibrary> libraryWith(Iterable<FxId> ids) async {
@@ -79,6 +85,7 @@ final class GameHarness {
     BoardViewport viewport = BoardViewport.reference,
     bool reduceMotion = false,
     LevelSkin? skin,
+    BoardLabels labels = BoardLabels.fallback,
   }) async {
     late final GameHarness harness;
     final cues = <FxCue>[];
@@ -93,6 +100,7 @@ final class GameHarness {
       onLayout: (geometry) => harness.layouts.add(geometry),
       padding: viewport.padding,
       reduceMotion: reduceMotion,
+      boardLabels: labels,
     );
     harness = GameHarness._(GameSession(level), game).._cues = cues;
     game.onGameResize(Vector2(viewport.size.width, viewport.size.height));

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/ui/colors/app_colors.dart';
+import 'package:nesty_game/core/ui/icons/icon_uses.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/buttons/ad_play_glyph.dart';
@@ -12,7 +13,12 @@ import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 /// button"; NestyBoard `bst`):
 /// * [BoosterBadge.count]: how many are left, a 22 px pink bubble;
 /// * [BoosterBadge.ad]: none left, a ▶ box (a rewarded ad gets one);
-/// * [BoosterBadge.coin]: none left, the coin price ("20").
+/// * [BoosterBadge.coin]: none left, the coin price ("20");
+/// * [BoosterBadge.infinite]: Undo in relaxed mode, the `all_inclusive`
+///   glyph in the pink count bubble (E6; frame 10.9; docs/plans/
+///   m7-design.md §10, §15.6);
+/// * [BoosterBadge.limit]: +1 Slot at its limit, "2/2" on the sunk face
+///   (frame 12.9).
 @immutable
 sealed class BoosterBadge {
   const BoosterBadge();
@@ -20,6 +26,8 @@ sealed class BoosterBadge {
   const factory BoosterBadge.count(int count) = BoosterCountBadge;
   const factory BoosterBadge.ad() = BoosterAdBadge;
   const factory BoosterBadge.coin(int price) = BoosterCoinBadge;
+  const factory BoosterBadge.infinite() = BoosterInfiniteBadge;
+  const factory BoosterBadge.limit(int used, int total) = BoosterLimitBadge;
 
   /// Where the badge's top-right corner sits relative to the button's
   /// (NestyBoard: count `right:-6; top:-7`, ad `-7, -8`, coin `-9, -9`).
@@ -72,6 +80,39 @@ final class BoosterCoinBadge extends BoosterBadge {
   int get hashCode => price.hashCode;
 }
 
+/// Relaxed mode's Undo: free and unlimited, so the count never runs out
+/// (E6; m7-design §10, §15.6).
+final class BoosterInfiniteBadge extends BoosterBadge {
+  const BoosterInfiniteBadge();
+
+  @override
+  Offset get cornerOffset => const Offset(6, -7);
+
+  @override
+  bool operator ==(Object other) => other is BoosterInfiniteBadge;
+
+  @override
+  int get hashCode => (BoosterInfiniteBadge).hashCode;
+}
+
+/// +1 Slot at the level's limit: "[used]/[total]" (frame 12.9).
+final class BoosterLimitBadge extends BoosterBadge {
+  const BoosterLimitBadge(this.used, this.total);
+
+  final int used;
+  final int total;
+
+  @override
+  Offset get cornerOffset => const Offset(6, -7);
+
+  @override
+  bool operator ==(Object other) =>
+      other is BoosterLimitBadge && other.used == used && other.total == total;
+
+  @override
+  int get hashCode => Object.hash(used, total);
+}
+
 /// Draws a [BoosterBadge]. Every badge has a 2 px `#FFF4E0` ring and a
 /// 2 px solid bottom edge.
 class BoosterBadgeView extends StatelessWidget {
@@ -107,6 +148,14 @@ class BoosterBadgeView extends StatelessWidget {
       NestyShadow(color: AppColors.coinChipEdge, dy: 2),
       _ring,
     ],
+  );
+
+  /// The sunk face's badge: `#F3E6D2` with a 2 dp `#FFF4E0` ring (frame
+  /// 12.9; frame-only colours).
+  // TODO(design): add the disabled booster's colours to tokens.json.
+  static const _limitStyle = SurfaceStyle(
+    color: Color(0xFFF3E6D2),
+    shadows: [_ring],
   );
 
   @override
@@ -160,6 +209,36 @@ class BoosterBadgeView extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+        BoosterInfiniteBadge() => ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 22),
+          child: const NestySurface(
+            style: _countStyle,
+            radius: BorderRadius.all(Radius.circular(11)),
+            height: 22,
+            padding: EdgeInsets.symmetric(horizontal: 3),
+            alignment: Alignment.center,
+            child: Icon(
+              IconUses.undoUnlimited,
+              size: 17,
+              color: Color(0xFFFFFFFF),
+            ),
+          ),
+        ),
+        BoosterLimitBadge(:final used, :final total) => NestySurface(
+          style: _limitStyle,
+          radius: const BorderRadius.all(Radius.circular(11)),
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 7),
+          alignment: Alignment.center,
+          child: Text(
+            '$used/$total',
+            style: AppTextStyleTokens.number.copyWith(
+              fontSize: 12,
+              height: 1,
+              color: const Color(0xFF8A6A4E),
+            ),
           ),
         ),
       },

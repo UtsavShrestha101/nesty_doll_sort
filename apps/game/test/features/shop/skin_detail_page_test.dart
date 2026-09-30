@@ -16,7 +16,7 @@ import 'package:nesty_game/features/shop/cubit/skin_detail_cubit.dart';
 import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/pages/skin_detail_page.dart';
 import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
-import 'package:nesty_game/features/shop/widgets/shop_colors.dart';
+import 'package:nesty_game/features/shop/widgets/shop_look.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
 
 import '../../core/ui/support/ui_harness.dart';
@@ -189,7 +189,7 @@ void main() {
     );
     expect(
       tester.widget<NestySurface>(panel).style.gradient,
-      SkinShopColors.cardBackground('space'),
+      ShopLook.card('space'),
     );
     final top = tester.getRect(panel).top;
     final planks = tester
@@ -226,8 +226,10 @@ void main() {
   });
 
   testWidgets('unaffordable: Buy stays orange (frames 7.3/7.7 draw every '
-      'price that way) and a tap that needs coins opens the Coins tab '
-      '(FIDELITY-7)', (tester) async {
+      'price that way) and a tap that needs coins opens '
+      'NotEnoughCoinsDialog first (D112, replaces the FIDELITY-7 jump)', (
+    tester,
+  ) async {
     var buys = 0;
     var needCoins = 0;
     await pumpDetail(
@@ -254,8 +256,45 @@ void main() {
     await tester.tap(buyButton());
     await tester.pump(const Duration(milliseconds: 200));
     expect(buys, 1);
-    expect(needCoins, 1);
+    expect(needCoins, 0, reason: 'the dialog, not the jump, opens first');
     expect(find.byType(PurchaseTwinkleBurst), findsNothing);
+
+    expect(find.byType(NotEnoughCoinsDialog), findsOneWidget);
+    expect(find.text('You need 790 more coins'), findsOneWidget);
+
+    await tester.tap(find.text('Not now'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotEnoughCoinsDialog), findsNothing);
+    expect(needCoins, 0, reason: 'Not now stays put');
+  });
+
+  testWidgets("NotEnoughCoinsDialog's Go to Shop calls onNeedCoins (the "
+      'page then opens the Shop on its Coins tab)', (tester) async {
+    var needCoins = 0;
+    await pumpDetail(
+      tester,
+      state: const AsyncValue.data(
+        data: SkinDetailState(
+          skin: SkinInfo(
+            id: 'ocean',
+            priceCoins: 800,
+            previewColors: [DollColor.teal, DollColor.blue, DollColor.navy],
+          ),
+          owned: false,
+          equipped: false,
+          coins: 10,
+        ),
+      ),
+      onBuy: () async => PurchaseOutcome.needsCoins,
+      onNeedCoins: () => needCoins++,
+    );
+    await tester.tap(buyButton());
+    await tester.pump(const Duration(milliseconds: 200));
+
+    await tester.tap(find.text('Go to Shop'));
+    await tester.pumpAndSettle();
+    expect(find.byType(NotEnoughCoinsDialog), findsNothing);
+    expect(needCoins, 1);
   });
 
   testWidgets('affordable: tapping Buy calls onBuy', (tester) async {
@@ -273,7 +312,7 @@ void main() {
     expect(buys, 1);
     // Lets the purchase twinkle burst's own timer finish and remove
     // itself, so no timer is left pending when the test tears down.
-    await tester.pump(const Duration(milliseconds: 2300));
+    await tester.pump(const Duration(milliseconds: 2600));
   });
 
   testWidgets('owned, unequipped: Equip calls onEquip', (tester) async {

@@ -89,10 +89,12 @@ class _NavItemView extends StatelessWidget {
         UiMotionTokens.tabLiftMs *
         (reduced ? UiMotionTokens.reducedMotionDurationScale : 1);
     final duration = Duration(milliseconds: ms.round());
+    // The label is read once: the visible Text is excluded (review R13).
     return Semantics(
       button: true,
       selected: selected,
       label: item.label,
+      excludeSemantics: true,
       onTap: () => _handleTap(context),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

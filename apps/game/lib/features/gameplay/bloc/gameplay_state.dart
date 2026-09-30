@@ -84,6 +84,13 @@ abstract class GameplayState with _$GameplayState {
 
     /// The lifted nest's slot, if any.
     String? selectedSlotId,
+
+    /// While a nest is lifted ([selectedSlotId]): the slots core would accept
+    /// it on (`Rules.legalTargets`, computed once on the pick; empty
+    /// otherwise). The board glows a legal target under a drag with it
+    /// (frame 12.13, E.14; phase 4 architecture §2.6); it never decides a
+    /// move (rule 2).
+    @Default(<String>{}) Set<String> dropTargets,
     @Default(GameplayStatus.playing) GameplayStatus status,
     @Default(false) bool paused,
 
@@ -124,6 +131,18 @@ abstract class GameplayState with _$GameplayState {
     /// The dev flavor (`SaveService.unlimitedBoosters`): boosters never run
     /// out, so the badges may show no count.
     @Default(false) bool unlimitedBoosters,
+
+    /// Relaxed mode is on (E6, spec-prop §8; docs/plans/m7-design.md §10),
+    /// read live from Settings (`DatabaseService.relaxedModeChanges`): undo
+    /// is free and unlimited, the Undo badge shows "∞", and no price, popup
+    /// or ad row shows for it. Hint and +1 Slot are unchanged.
+    @Default(false) bool relaxed,
+
+    /// A race's board takes the player's input (vs Computer, spec-prop
+    /// §7.7; m7-design P2.6): set by [RaceGateChanged], true only while the
+    /// race runs (after Start, before a result). Always false outside a
+    /// race, where it is never read.
+    @Default(false) bool raceLive,
 
     /// The player's coins (the HUD coin pill, spec §7.3).
     @Default(0) int coins,
@@ -169,6 +188,71 @@ abstract class GameplayState with _$GameplayState {
     /// Once a daily is won: the streak after the solve (frame 5.4).
     int? dailyStreak,
 
+    /// Once a daily is won: the solve relit a paused streak
+    /// (`DailyProgress.relitOn`; m7-design §8): the win card's streak line
+    /// says so.
+    @Default(false) bool dailyRelit,
+
+    /// Once won: the moves the win took (`GameState.moveCount`), for the
+    /// win card's "Moves 18 · Best 16" or "Moves 18" (m7-design §11). Null
+    /// before the win.
+    int? winMoves,
+
+    /// Once won: the level's best moves after this win
+    /// (`LevelWinOutcome.bestMoves`), for a campaign level or a replay; null
+    /// for boards that keep no best (bonus, daily, race), whose card shows
+    /// the moves only.
+    int? bestMoves,
+
+    /// Once won: the best before this win (`LevelWinOutcome.previousBest`),
+    /// null for a first win of the level.
+    int? previousBest,
+
+    /// Once won: the levels left to the next milestone chest when it is
+    /// nearer than the figurine (`MilestoneChest.levelsToNext`): the win
+    /// card shows its countdown instead of the figurine bar (m7-design §9).
+    /// Null for a replay, a daily, or when the figurine is nearer.
+    int? chestLevelsLeft,
+
+    /// Once won: the milestone chest this win opened and paid
+    /// (`LevelWinOutcome.chestPaid`): Continue opens its modal before
+    /// Chapter complete and the next level (m7-design §9). The modal only
+    /// shows it: the coins and hints are already in the save.
+    ChestGrant? chest,
+
+    /// Once won: the badges this win earned, in `BadgeId` order
+    /// (`LevelWinOutcome.newBadges`): one toast each (m7-design §12).
+    @Default(<BadgeId>[]) List<BadgeId> newBadges,
+
+    /// Once won: the player's first win ever (E9; m7-design §13): Continue
+    /// goes to Home instead of the next level.
+    @Default(false) bool firstWin,
+
+    /// Once won: this win's stars, 1–3 (`StarRating.starsForWin`; spec-prop
+    /// §7.10, m7-design P3.6); null for the daily, Bonus Endless, a race,
+    /// or an entry without a par. Nothing about stars shows during play.
+    int? stars,
+
+    /// Once won: the level's best stars before this win
+    /// (`LevelWinOutcome.previousStars`); null when it had none.
+    int? previousStars,
+
+    /// Once won: the 3-star threshold (`StarRules.targetFor`) for the replay
+    /// card's "3 stars at N moves or fewer": only on a replay below 3 stars
+    /// whose moves were over it (Q118); null otherwise.
+    int? starTarget,
+
+    /// Once won: the one-time star tip may show
+    /// (`LevelWinOutcome.showStarTip`: never shown, below 3 stars, not
+    /// capped; Q119). The card shows it when it has room and then calls
+    /// `SaveService.markStarTipShown` (phase 4 architecture §3.6).
+    @Default(false) bool starTip,
+
+    /// Once won: a hint or an extra slot capped [stars] (the uncapped rule
+    /// would have given 3; spec-prop §7.10): the card's helper note "Wins
+    /// with a hint or an extra slot earn up to 2 stars." (Q145).
+    @Default(false) bool starsCapped,
+
     /// Once won: what Continue plays (`LevelResolver.next`). The page
     /// prefetches its art; a bonus request after a campaign level shows All
     /// Levels Done first (frame 4.9); null after a daily ("Back to Daily").
@@ -183,16 +267,33 @@ abstract class GameplayState with _$GameplayState {
   /// 1-based global play order (spec §7.1).
   int get levelNumber => entry.order;
 
+  /// A replay from Chapters (m7-design §6): no coins, chest or figurine,
+  /// no tutorial or intro card, and Continue goes back to Chapters.
+  bool get isReplay => play.request.isReplay;
+
+  /// A vs Computer race (m7-design P2.6): the bloc's race mode (undo free,
+  /// Hint and +1 Slot off, no level record), input gated by [raceLive].
+  bool get isRace => play.request.isRace;
+
+  /// Once won: a replay raised the level's best stars (the card's "New
+  /// best!", m7-design P3.7). Never on a level's first win.
+  bool get starsNewBest =>
+      isReplay &&
+      stars != null &&
+      previousStars != null &&
+      stars! > previousStars!;
+
   /// The family counter "setsCompleted / totalSets" (frame 2.2).
   int get setsCompleted => board.completedSets;
 
   int get totalSets => entry.level.totalSets;
 
   /// Board input (taps, drags) is accepted: not paused, no popup or intro
-  /// card up, and in play.
+  /// card up, in play, and in a race only while it runs ([raceLive]).
   bool get acceptsInput =>
       !paused &&
       offer == null &&
       intro == null &&
+      (!isRace || raceLive) &&
       (status == GameplayStatus.playing || status == GameplayStatus.outOfMoves);
 }

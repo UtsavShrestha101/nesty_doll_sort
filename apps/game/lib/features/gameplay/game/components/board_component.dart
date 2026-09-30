@@ -17,6 +17,7 @@ import 'package:nesty_game/features/gameplay/game/components/fx_layer.dart';
 import 'package:nesty_game/features/gameplay/game/components/hint_layer.dart';
 import 'package:nesty_game/features/gameplay/game/components/shelf_layer.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_component.dart';
+import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_view.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/timeline.dart';
 import 'package:nesty_render/nesty_render.dart';
@@ -124,6 +125,21 @@ class BoardComponent extends PositionComponent
   late final Component _unmounted;
 
   BoardTimeline? _timeline;
+
+  /// The legal drop targets of the lifted nest, from the bloc
+  /// (`GameplayState.dropTargets`, core's `Rules.legalTargets` on the pick):
+  /// while a doll is dragged, the legal stand under the finger glows
+  /// (E.14). The board only reads it, and never decides legality.
+  Set<String> dropTargets = const {};
+
+  /// The stand the drag hover's glow is on now.
+  String? _hoverId;
+
+  /// Whether the hint's arrow rises into the family counter's place (frame
+  /// 3.1b, E.20): `SlotGeometry.hintNeedsCounter` for the hinted source. The
+  /// HUD fades the counter out while it is true and back when the hint ends.
+  final ValueNotifier<bool> familyCounterYield = ValueNotifier(false);
+
   BoardViewport? _viewport;
   BoardShape? _shape;
   GameState? _latestBoard;
@@ -196,6 +212,20 @@ class BoardComponent extends PositionComponent
 
   /// Belly symbols of the placeholder dolls (the part rasters bake theirs).
   set symbols(DollSymbols value) => scene.symbols = value;
+
+  /// The board's localized "+N" tower tag and ice badge text and direction
+  /// (ARB `boardTowerHidden`/`boardIceCount`, spec §16): the page hands
+  /// this over at build and again whenever the locale can have changed.
+  /// Every slot already on the board relabels at once; new ones pick up
+  /// [scene]'s copy when they're built (`_addSlot`).
+  BoardLabels get labels => scene.labels;
+  set labels(BoardLabels value) {
+    if (identical(scene.labels, value)) return;
+    scene.labels = value;
+    for (final slot in _slotList) {
+      slot.slot.setLabels(value);
+    }
+  }
 
   /// The level's art (`SkinService.prepareForLevel`), owned from here: a new
   /// one replaces and disposes the previous one (§4).
@@ -421,15 +451,29 @@ class BoardComponent extends PositionComponent
     final sprites = scene.sprites;
     if (sprites == null || !sprites.isPrepared) return;
     for (final command in batch.commandsOf<PlaySlotFx>()) {
-      if (command.fx != FxId.fxGlassUnlock) continue;
+      if (command.fx != FxId.fxGlassUnlock &&
+          command.fx != FxId.fxGlassUnlockTall) {
+        continue;
+      }
       final slot = scene.slot(command.slotId);
       if (slot == null) continue;
       final scale = slot.geometry.furnitureScale;
+      final tall = slot.geometry.usesTallCase;
       unawaited(
-        sprites.ensure(BoardSprite.glassCase1, scale).catchError(_ignore),
+        sprites
+            .ensure(
+              tall ? BoardSprite.glassCaseTall1 : BoardSprite.glassCase1,
+              scale,
+            )
+            .catchError(_ignore),
       );
       unawaited(
-        sprites.ensure(BoardSprite.glassCase2, scale).catchError(_ignore),
+        sprites
+            .ensure(
+              tall ? BoardSprite.glassCaseTall2 : BoardSprite.glassCase2,
+              scale,
+            )
+            .catchError(_ignore),
       );
     }
   }
@@ -443,7 +487,12 @@ class BoardComponent extends PositionComponent
       if (!slot.view.locked) continue;
       unawaited(
         sprites
-            .ensure(BoardSprite.glassCase0, slot.geometry.furnitureScale)
+            .ensure(
+              slot.geometry.usesTallCase
+                  ? BoardSprite.glassCaseTall0
+                  : BoardSprite.glassCase0,
+              slot.geometry.furnitureScale,
+            )
             .catchError(_ignore),
       );
     }
@@ -478,7 +527,10 @@ class BoardComponent extends PositionComponent
         );
       case ReleaseSlotFx(:final slotId):
         _slots[slotId]?.releaseComposition(command.fx);
-        if (command.fx == FxId.fxGlassUnlock) _releaseGlassIfDone();
+        if (command.fx == FxId.fxGlassUnlock ||
+            command.fx == FxId.fxGlassUnlockTall) {
+          _releaseGlassIfDone();
+        }
       case SyncSlot(:final slotId, :final state):
         scene.slot(slotId)?.setView(SlotView.of(state, slotId));
       case StartTween(:final tween):
@@ -488,6 +540,7 @@ class BoardComponent extends PositionComponent
       case SetHintArc(:final move):
         scene.hint = move;
         hint.show(move);
+        _syncCounterYield();
       case FamilyLanded():
         onFamilyLanded?.call(
           command.setsCompleted,
@@ -513,6 +566,9 @@ class BoardComponent extends PositionComponent
       BoardSprite.glassCase0,
       BoardSprite.glassCase1,
       BoardSprite.glassCase2,
+      BoardSprite.glassCaseTall0,
+      BoardSprite.glassCaseTall1,
+      BoardSprite.glassCaseTall2,
     ]);
   }
 
@@ -522,6 +578,10 @@ class BoardComponent extends PositionComponent
         scene.slot(slotId ?? '')?.reveal = tween;
       case ShakeTween(:final slotId):
         scene.slot(slotId ?? '')?.shake = tween;
+      case NudgeTween(:final slotId):
+        scene.slot(slotId ?? '')?.nudge = tween;
+      case TagPopTween(:final slotId):
+        scene.slot(slotId ?? '')?.tagPop = tween;
       case RepitchTween(:final from, :final to):
         // A re-pitch queued behind another (a double +1 Slot) that a resize
         // overtook: its layouts are the old screen's, and the resize has
@@ -555,6 +615,12 @@ class BoardComponent extends PositionComponent
       case ShakeTween(:final slotId):
         final slot = scene.slot(slotId ?? '');
         if (identical(slot?.shake, tween)) slot?.shake = null;
+      case NudgeTween(:final slotId):
+        final slot = scene.slot(slotId ?? '');
+        if (identical(slot?.nudge, tween)) slot?.nudge = null;
+      case TagPopTween(:final slotId):
+        final slot = scene.slot(slotId ?? '');
+        if (identical(slot?.tagPop, tween)) slot?.tagPop = null;
       case RepitchTween(:final to):
         // Only the re-pitch still on screen commits: a later one, a resize
         // (which committed its own layout) or a reset superseded it.
@@ -589,7 +655,9 @@ class BoardComponent extends PositionComponent
       ..dragSlotId = null;
     _dragPointer = null;
     _dropBase = null;
+    _hoverId = null;
     hint.show(null);
+    _syncCounterYield();
     final reuse = identical(scene.geometry, layout);
     if (!reuse) {
       // A new level: the last one's slots stop drawing in this very frame
@@ -616,6 +684,8 @@ class BoardComponent extends PositionComponent
         ..pulses = 0
         ..shake = null
         ..reveal = null
+        ..nudge = null
+        ..tagPop = null
         ..from = null;
       if (reuse) slot.setView(SlotView.of(snapshot, slot.id));
     }
@@ -630,7 +700,9 @@ class BoardComponent extends PositionComponent
   /// Adds the slot of [g] showing [view], with its glass or ice composition
   /// on its rest frame (§8).
   void _addSlot(SlotGeometry g, SlotView view) {
-    final state = SlotState(g.id, g)..setView(view);
+    final state = SlotState(g.id, g)
+      ..setLabels(scene.labels)
+      ..setView(view);
     scene.addSlot(state);
     final component = SlotComponent(
       scene,
@@ -663,6 +735,7 @@ class BoardComponent extends PositionComponent
     scene.sortSlots();
     shelf.relayout();
     hint.rebuild();
+    _syncCounterYield();
   }
 
   /// The viewport changed under a level: move everything onto [layout] now
@@ -673,6 +746,22 @@ class BoardComponent extends PositionComponent
     _commit(layout);
     _timeline?.relayout(layout);
     onLayout?.call(layout);
+  }
+
+  void _syncCounterYield() {
+    final move = scene.hint;
+    final g = scene.geometry;
+    var needs = false;
+    if (move != null && g != null) {
+      final slot = g.slotOrNull(move.from);
+      final view = scene.slot(move.from)?.view;
+      if (slot != null) {
+        needs = slot.hintNeedsCounter(
+          view != null && view.hasNest ? view.outerSize : g.shape.maxSize,
+        );
+      }
+    }
+    familyCounterYield.value = needs;
   }
 
   /// Everything scheduled has played: every slot must show what core says
@@ -809,6 +898,27 @@ class BoardComponent extends PositionComponent
     scene
       ..dragBaseX = bx
       ..dragBaseY = by;
+    _hover(x, y);
+  }
+
+  /// E.14: the stand under the finger at ([x], [y]) glows when it is a legal
+  /// target of the dragged nest, and only then (the legal targets came from
+  /// the bloc). The glow follows the stand, not the column, and changes only
+  /// when the finger crosses to another stand.
+  void _hover(double x, double y) {
+    final g = scene.geometry;
+    if (g == null) return;
+    final index = g.slotIndexAt(x, y);
+    String? id;
+    if (index >= 0) {
+      final candidate = g.slots[index].id;
+      if (candidate != scene.dragSlotId && dropTargets.contains(candidate)) {
+        id = candidate;
+      }
+    }
+    if (id == _hoverId) return;
+    _hoverId = id;
+    _timeline?.hover(id);
   }
 
   // ── End of hot path. ──
@@ -824,6 +934,8 @@ class BoardComponent extends PositionComponent
     if (target != null && !_accepts(target)) target = null;
     _dropBase = Offset(scene.dragBaseX, scene.dragBaseY);
     scene.dragSlotId = null;
+    _hoverId = null;
+    _timeline?.hover(null);
     onIntent?.call(SlotDragDropped(target));
     return target;
   }

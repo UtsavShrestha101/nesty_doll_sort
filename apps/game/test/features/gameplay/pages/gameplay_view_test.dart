@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show SemanticsAction, SemanticsNode;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
@@ -22,6 +24,7 @@ import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
+import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -30,6 +33,7 @@ import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
 import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
+import 'package:nesty_game/features/gameplay/overlays/milestone_chest_modal.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
 import 'package:nesty_game/features/gameplay/overlays/tutorial_overlay.dart';
@@ -38,7 +42,10 @@ import 'package:nesty_game/features/gameplay/pages/gameplay_services.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/booster_bar.dart';
 import 'package:nesty_game/features/gameplay/widgets/chapter_ribbon.dart';
+import 'package:nesty_game/features/gameplay/widgets/gameplay_hud.dart';
 import 'package:nesty_game/features/gameplay/widgets/soft_stuck_banner.dart';
+import 'package:nesty_game/l10n/app_localizations.dart';
+import 'package:nesty_game/l10n/app_localizations_en.dart';
 import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
 import '../../../core/ui/support/ui_harness.dart';
@@ -52,6 +59,45 @@ import '../bloc/support/scripted_solver_service.dart';
 /// Half the chapter ribbon's width at rest on its canvas: 380 dp (LOTTIE.md
 /// v3 "Ribbons": 336 band + 22 dp tails each side).
 const double _ribbonRestHalfWidth = 190;
+
+/// A stand-in for a locale Nesty doesn't ship yet (l10n.md: "English only
+/// today"): every key it doesn't override still reads the real English ARB
+/// text (inherited from [AppLocalizationsEn]), so the rest of the screen
+/// renders normally. Only the board's two tags are replaced with a marker
+/// that is never the ARB's own English pattern ("+3", "2") and never
+/// [BoardLabels.fallback]'s identical-looking pattern, so a test can tell
+/// "the board reads `context.localizations`" apart from "the board is still
+/// on its pre-hand-off default" (they'd otherwise print the same digits).
+final class _MarkerBoardLocalizations extends AppLocalizationsEn {
+  _MarkerBoardLocalizations() : super('mk');
+
+  @override
+  String boardTowerHidden(int count) => 'tow:$count';
+
+  @override
+  String boardIceCount(int count) => 'ice:$count';
+}
+
+/// Hands out [_MarkerBoardLocalizations] without touching the app's own
+/// resolved locale (`Localizations.override` keeps the ambient 'en', spec
+/// `l10n.md`): inserted ahead of `AppLocalizations.delegate` in the merged
+/// list, so it is the one `_loadAll` picks for the `AppLocalizations` type
+/// (`Localizations` loads the first delegate of a given type and skips the
+/// rest, framework `localizations.dart`).
+final class _MarkerBoardLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _MarkerBoardLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<AppLocalizations> load(Locale locale) =>
+      SynchronousFuture(_MarkerBoardLocalizations());
+
+  @override
+  bool shouldReload(_MarkerBoardLocalizationsDelegate old) => false;
+}
 
 /// The page on a real bloc over fakes, with a recording board in place of
 /// Flame: the test plays the board's side (its layouts and reports).
@@ -104,6 +150,9 @@ Future<_Screen> _pump(
   double textScale = 1,
   bool reduceMotion = false,
   Future<void> Function(FakeDatabaseService database)? onSettings,
+  List<LocalizationsDelegate<dynamic>>? localizationOverrides,
+  FakeDatabaseService? settings,
+  VoidCallback? onShop,
 }) async {
   // The board shape only (id T0001, never gated by the M3 tutorial script,
   // which keys on the real L0001/L0002 ids, m3-design §10.4): tests that
@@ -118,38 +167,58 @@ Future<_Screen> _pump(
     config: config,
     save: save,
     resolver: resolver,
+    settings: settings,
   );
   addTearDown(bloc.close);
   final factory = FakeBoardFactory(drivesOutcomes: drivesOutcomes);
-  final database = FakeDatabaseService();
+  final database = settings ?? FakeDatabaseService();
   final homes = <int>[];
   final music = FakeMusicService();
   final jingles = FakeAudioService();
   final jingleCues = JingleCues(music, jingles);
   addTearDown(jingleCues.dispose);
+  Widget screen = BlocProvider.value(
+    value: bloc..add(GameplayStarted(usedRequest)),
+    child: GameplayView(
+      request: usedRequest,
+      services: GameplayServices(
+        skins: skins ?? FakeSkinService(),
+        levels: FakeLevelRepository(entries: used),
+        resolver: resolverOf(bloc),
+        save: saveOf(bloc),
+        database: database,
+        fx: FakeFxLibrary(),
+        feedback: RecordingCues(),
+        music: music,
+        jingles: jingles,
+        jingleCues: jingleCues,
+        share: FakeShareService(),
+        uiArt: FakeUiArtLibrary(),
+      ),
+      onHome: () => homes.add(1),
+      onSettings: () async => onSettings?.call(database),
+      onShop: onShop,
+      boardFactory: factory.call,
+    ),
+  );
+  // A subtree-only l10n swap (`Localizations.override`, the ambient 'en'
+  // locale unchanged) for the one test that must prove the board's tags
+  // come from `context.localizations` and not `BoardLabels.fallback`: the
+  // fallback happens to print the exact same digits as the real ARB
+  // pattern, so a plain English pump can't tell the two apart.
+  if (localizationOverrides != null) {
+    final content = screen;
+    screen = Builder(
+      builder: (context) => Localizations.override(
+        context: context,
+        delegates: localizationOverrides,
+        child: content,
+      ),
+    );
+  }
   await pumpScreen(
     tester,
-    BlocProvider.value(
-      value: bloc..add(GameplayStarted(usedRequest)),
-      child: GameplayView(
-        request: usedRequest,
-        services: GameplayServices(
-          skins: skins ?? FakeSkinService(),
-          levels: FakeLevelRepository(entries: used),
-          resolver: resolverOf(bloc),
-          save: saveOf(bloc),
-          database: database,
-          fx: FakeFxLibrary(),
-          feedback: RecordingCues(),
-          music: music,
-          jingles: jingles,
-          jingleCues: jingleCues,
-        ),
-        onHome: () => homes.add(1),
-        onSettings: () async => onSettings?.call(database),
-        boardFactory: factory.call,
-      ),
-    ),
+    screen,
     size: size,
     textScale: textScale,
     reduceMotion: reduceMotion,
@@ -171,6 +240,26 @@ Future<void> _win(WidgetTester tester, _Screen screen) async {
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 400));
+}
+
+/// A save that has already won something, with `first_family` already
+/// recorded (E8, E9; m7-design §12, §13): a win in these tests is never
+/// `GameplayState.firstWin` (whose Continue would divert to Home instead
+/// of whatever the test is actually exercising) and never shows a badge
+/// toast with its own 3 s auto-dismiss timer (which these tests don't
+/// otherwise wait out). The dedicated "first-ever win" test below uses a
+/// genuinely fresh `FakeSaveService()` instead.
+FakeSaveService _pastFirstWin() => FakeSaveService(
+  initial: const SaveDocument(
+    stats: SaveStats(wins: 1),
+    records: SaveRecords(badges: ['first_family']),
+  ),
+);
+
+Future<FakeDatabaseService> _relaxedSettings() async {
+  final settings = FakeDatabaseService();
+  await settings.setRelaxedMode(true);
+  return settings;
 }
 
 void main() {
@@ -216,6 +305,18 @@ void main() {
     expect(screen.board.applied.last, isA<MoveAppliedEffect>());
   });
 
+  testWidgets('the board gets core\'s legal drop targets with the pick and '
+      'loses them with the drop (E.14, D185)', (tester) async {
+    final screen = await _pump(tester);
+    expect(screen.board.dropTargets, isEmpty);
+    await screen.tap(tester, red2);
+    expect(screen.state.dropTargets, isNotEmpty);
+    expect(screen.board.dropTargets, screen.state.dropTargets);
+    expect(screen.board.dropTargets, contains(red3));
+    await screen.tap(tester, red3);
+    expect(screen.board.dropTargets, isEmpty);
+  });
+
   testWidgets('win: the counter bumps when the family lands, the overlay '
       'opens when the board has played it, Continue loads the next level', (
     tester,
@@ -224,6 +325,7 @@ void main() {
     final screen = await _pump(
       tester,
       entries: [entryFor(defaultLevel), entryFor(second, order: 2)],
+      save: _pastFirstWin(),
     );
     await _win(tester, screen);
     // The bloc has won, but the board is still playing the batch.
@@ -282,6 +384,7 @@ void main() {
         tester,
         entries: [entryFor(defaultLevel), entryFor(redBlue, order: 2)],
         skins: skins,
+        save: _pastFirstWin(),
       );
       screen.board.layOut(screen.state.board);
       skins.complete(0);
@@ -371,6 +474,7 @@ void main() {
     final screen = await _pump(
       tester,
       entries: [entryFor(defaultLevel), entryFor(second, order: 2)],
+      save: _pastFirstWin(),
     );
     int hudCoins() => tester.widget<CoinPill>(find.byType(CoinPill)).coins;
     final before = screen.state.coins;
@@ -398,8 +502,9 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
   });
 
-  testWidgets('soft stuck with nothing to undo suggests Restart, and Undo '
-      'doesn\'t glow (review FIDELITY-6)', (tester) async {
+  testWidgets('soft stuck with nothing to undo is frame 12.7: a toast with '
+      'no button, Restart glowing in the bar and Undo not (review '
+      'FIDELITY-6)', (tester) async {
     // `canUndo` only means "there is a move in history" (`session.canUndo`,
     // m3-design §7.3): under the M3 coin-offer economy it stays true with 0
     // free undos (the press opens the offer instead), so the only way
@@ -441,13 +546,20 @@ void main() {
       reason: 'the completing move cleared the history (spec §2.4)',
     );
     expect(find.text('Try Restart? You can keep playing too.'), findsOneWidget);
-    expect(find.byType(BoosterGlow), findsNothing);
-    await tester.tap(
+    expect(
       find.descendant(
         of: find.byType(SoftStuckBanner),
-        matching: find.text('Restart'),
+        matching: find.byType(TactileButton),
       ),
+      findsNothing,
     );
+    // The one glow is behind Restart, the bar's last button.
+    expect(find.byType(BoosterGlow), findsOneWidget);
+    expect(
+      tester.getCenter(find.byType(BoosterGlow)),
+      tester.getCenter(find.byType(BoosterButton).last),
+    );
+    await tester.tap(find.text('Restart'));
     await _settle(tester);
     expect(
       (screen.board.applied.last as BoardResetEffect).reason,
@@ -460,7 +572,7 @@ void main() {
   testWidgets('Continue after the last level shows All Levels Done (4.9)', (
     tester,
   ) async {
-    final screen = await _pump(tester);
+    final screen = await _pump(tester, save: _pastFirstWin());
     await _win(tester, screen);
     screen.board.callbacks.onWon();
     await tester.pump(const Duration(milliseconds: 300));
@@ -512,7 +624,8 @@ void main() {
       await tester.tap(find.text('Continue'));
       await _settle(tester);
       expect(screen.bloc.state, isA<AsyncValueError<GameplayState>>());
-      expect(inFailure('Something went wrong.'), findsOneWidget);
+      // copy.md E `gen_failed_title` (frame 12.6), not the exception.
+      expect(inFailure('The shelves need a moment'), findsOneWidget);
       expect(inFailure('Try again'), findsOneWidget);
       expect(inFailure('Back to Home'), findsOneWidget);
 
@@ -576,6 +689,7 @@ void main() {
         tester,
         request: const PlayRequest.bonus(1),
         resolver: failingBonus(),
+        save: _pastFirstWin(),
       );
       await _win(tester, screen);
       screen.board.callbacks.onWon();
@@ -595,10 +709,17 @@ void main() {
   testWidgets('a board without a timeline: outcomes follow the bloc', (
     tester,
   ) async {
-    final screen = await _pump(tester, drivesOutcomes: false);
+    final screen = await _pump(
+      tester,
+      drivesOutcomes: false,
+      save: _pastFirstWin(),
+    );
     await _win(tester, screen);
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.bySemanticsLabel('1 of 1 family done'), findsOneWidget);
+    // The counter follows the bloc. It is read from the HUD itself: the
+    // win overlay is modal, so a screen reader no longer reaches the HUD
+    // behind it (review R11).
+    expect(tester.widget<GameplayHud>(find.byType(GameplayHud)).setsDone, 1);
     expect(find.bySemanticsLabel('Level Complete!'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
@@ -667,6 +788,7 @@ void main() {
       final screen = await _pump(
         tester,
         entries: [entryFor(defaultLevel), entryFor(second, order: 2)],
+        save: _pastFirstWin(),
       );
       await _win(tester, screen);
       expect(screen.music.ducking, isEmpty, reason: 'the set still flies');
@@ -937,7 +1059,7 @@ void main() {
     testWidgets('a board saved won opens the win overlay with its reward', (
       tester,
     ) async {
-      final save = FakeSaveService();
+      final save = _pastFirstWin();
       final won = GameSession(defaultLevel)
         ..move(red1, red2)
         ..move(red2, red3);
@@ -1105,10 +1227,50 @@ void main() {
     expect(find.byType(ChapterRibbon), findsNothing);
   });
 
+  // Frame 4.7 names a chapter on its first level. A daily or a bonus board
+  // wears a chapter's theme (the current one, the last one) but starts no
+  // chapter: the device playthrough showed "CHAPTER 2 · Rainy Café Corner"
+  // over the daily and "CHAPTER 4 · Snowy Cabin" over Bonus Level 1, after
+  // chapter 10 (whose placeholder theme is ch04).
+  for (final (request, themeId) in const [
+    (PlayRequest.daily(20260926), 'ch02'),
+    (PlayRequest.bonus(1), 'ch04'),
+  ]) {
+    testWidgets('a ${request.kind.name} board in a later chapter theme opens '
+        'without a chapter ribbon', (tester) async {
+      await _pump(
+        tester,
+        request: request,
+        resolver: ScriptedLevelResolver(
+          entries: {
+            request: playEntryFor(request, defaultLevel, themeId: themeId),
+          },
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(GameplayView), findsOneWidget);
+      expect(find.byType(ChapterRibbon), findsNothing);
+      await tester.pump(const Duration(seconds: 3));
+    });
+  }
+
   testWidgets('reduced motion reaches the board (D48)', (tester) async {
     final screen = await _pump(tester, reduceMotion: true);
     expect(screen.board.reduceMotion, isTrue);
   });
+
+  testWidgets(
+    'a non-English board label reaches the board (BoardLabels, m7 §18)',
+    (tester) async {
+      final screen = await _pump(
+        tester,
+        localizationOverrides: const [_MarkerBoardLocalizationsDelegate()],
+      );
+      expect(screen.board.boardLabels.towerTag(3), 'tow:3');
+      expect(screen.board.boardLabels.iceBadge(2), 'ice:2');
+      expect(screen.board.boardLabels.textDirection, TextDirection.ltr);
+    },
+  );
 
   group('Chapter complete (4.6) and the daily win variant (5.4)', () {
     testWidgets('a win that completes its chapter opens Chapter complete after '
@@ -1317,4 +1479,627 @@ void main() {
       });
     }
   }
+
+  group('winContinueActionFor (m7-design §6, §9, §13)', () {
+    GameplayState stateFor(
+      PlayRequest request, {
+      int? dailyStreak,
+      bool firstWin = false,
+      ChestGrant? chest,
+      String? completedChapterId,
+    }) => GameplayState(
+      play: playEntryFor(request, defaultLevel),
+      entry: entryFor(defaultLevel),
+      board: GameState.initial(defaultLevel),
+      dailyStreak: dailyStreak,
+      firstWin: firstWin,
+      chest: chest,
+      completedChapterId: completedChapterId,
+    );
+
+    const someChest = ChestGrant(
+      source: ChestSource.campaign,
+      number: 10,
+      coins: 100,
+      hints: 1,
+    );
+
+    test('a replay always goes to Chapters, over every other flag', () {
+      final state = stateFor(
+        const PlayRequest.replay(1),
+        dailyStreak: 3,
+        chest: someChest,
+        completedChapterId: 'ch01',
+        firstWin: true,
+      );
+      expect(winContinueActionFor(state), WinContinueAction.chapters);
+    });
+
+    test('a daily win goes back to Daily', () {
+      final state = stateFor(const PlayRequest.daily(20260926), dailyStreak: 1);
+      expect(winContinueActionFor(state), WinContinueAction.daily);
+    });
+
+    test('a milestone chest opens before Chapter complete', () {
+      final state = stateFor(
+        const PlayRequest.campaign(10),
+        chest: someChest,
+        completedChapterId: 'ch01',
+      );
+      expect(winContinueActionFor(state), WinContinueAction.chest);
+    });
+
+    test('a completed chapter opens Chapter complete', () {
+      final state = stateFor(
+        const PlayRequest.campaign(20),
+        completedChapterId: 'ch01',
+      );
+      expect(winContinueActionFor(state), WinContinueAction.chapterComplete);
+    });
+
+    test("the player's first-ever win goes Home, never the next level", () {
+      final state = stateFor(const PlayRequest.campaign(1), firstWin: true);
+      expect(winContinueActionFor(state), WinContinueAction.home);
+    });
+
+    test('otherwise, the next level', () {
+      final state = stateFor(const PlayRequest.campaign(5));
+      expect(winContinueActionFor(state), WinContinueAction.next);
+    });
+  });
+
+  group('a replay (E7; m7-design §6, §11)', () {
+    testWidgets('plays like the campaign but pays no coins, and shows '
+        '"Back to Chapters" instead of Continue', (tester) async {
+      final save = FakeSaveService(
+        initial: const SaveDocument(
+          currentLevel: 2,
+          highestLevel: 2,
+          // Replays also record a win (m7-design §7): past first_family
+          // already, so this one shows no badge toast to wait out.
+          stats: SaveStats(wins: 1),
+          records: SaveRecords(badges: ['first_family']),
+        ),
+      );
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(defaultLevel)],
+        request: const PlayRequest.replay(1),
+        save: save,
+      );
+      expect(screen.state.isReplay, isTrue);
+      // No "Replay" tag on the board: it only said what the win card says
+      // ("A replay for fun…") and looked like a button that did nothing
+      // (owner, 2026-09-29, D170).
+      expect(find.text('Replay'), findsNothing);
+      // No tutorial or intro on a replay (m7-design §6), whatever
+      // `seenIntros`/`tutorialDone` say for a fresh save.
+      expect(screen.state.intro, isNull);
+      expect(screen.state.tutorial, isNull);
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('Continue'), findsNothing);
+      expect(find.text('Back to Chapters'), findsOneWidget);
+      expect(
+        find.text('A replay for fun: coins come from new levels.'),
+        findsOneWidget,
+      );
+      // The win card says it's a replay; the board's pill has no tag (D170).
+      expect(find.text('Replay'), findsNothing);
+      await tester.pump(const Duration(seconds: 2));
+    });
+  });
+
+  testWidgets('the first-ever win (E9; m7-design §13) sets firstWin, whose '
+      'Continue would go Home rather than the next level', (tester) async {
+    final save = FakeSaveService(); // a fresh install: stats.wins == 0
+    final screen = await _pump(
+      tester,
+      entries: [
+        entryFor(defaultLevel),
+        entryFor(levelFrom(defaultLevelJson), order: 2),
+      ],
+      save: save,
+    );
+    await _win(tester, screen);
+    screen.board.callbacks.onWon();
+    await _settle(tester);
+    expect(screen.state.firstWin, isTrue);
+    expect(winContinueActionFor(screen.state), WinContinueAction.home);
+    // Lets the fresh save's `first_family` badge toast show (900 ms after
+    // the overlay opens) and finish its own 3 s auto-dismiss timer, in two
+    // steps so both fire inside the pumped window.
+    await tester.pump(const Duration(milliseconds: 900));
+    await tester.pump(const Duration(seconds: 4));
+  });
+
+  group('the milestone chest (E5; m7-design §9, §15.4)', () {
+    testWidgets('opens after Continue with its contents shown, grants '
+        'nothing itself, then the next level', (tester) async {
+      final screen = await _pump(
+        tester,
+        entries: [
+          entryFor(defaultLevel, order: 10, chapterId: 'ch01'),
+          entryFor(levelFrom(defaultLevelJson), order: 11, chapterId: 'ch01'),
+        ],
+        request: const PlayRequest.campaign(10),
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      expect(screen.state.chest, isNotNull);
+      await tester.pump(const Duration(seconds: 2));
+      final coinsAtWin = screen.state.coins;
+
+      await tester.tap(find.text('Continue'));
+      await _settle(tester);
+      // Clears the chest sequence's own arrival (~600 ms; `_settle` only
+      // covers overlay entrances, ≤ 280 ms) before Open is live.
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(MilestoneChestModal), findsOneWidget);
+      expect(find.text('Milestone chest'), findsOneWidget);
+      expect(
+        find.text('A chest for reaching level 10. Here’s what’s inside.'),
+        findsOneWidget,
+      );
+      expect(screen.state.coins, coinsAtWin);
+
+      await tester.tap(find.text('Open'));
+      // wiggle 483 ms + open 750 ms; the rays turn forever, so no
+      // `pumpAndSettle` until Collect.
+      await tester.pump(const Duration(milliseconds: 1400));
+      expect(find.text('Collect'), findsOneWidget);
+      // Nothing is granted by the modal (m7-design §9): the save's coins
+      // are exactly what they were the instant it won, unchanged by
+      // opening it.
+      expect(screen.state.coins, coinsAtWin);
+
+      int hudCoins() => tester.widget<CoinPill>(find.byType(CoinPill)).coins;
+      final chest = screen.state.chest!;
+      final heldBack = coinsAtWin - screen.state.winReward - chest.coins;
+      expect(
+        hudCoins(),
+        heldBack,
+        reason:
+            "the HUD holds both the win reward and the chest's coins "
+            'until Collect (m7-design §9)',
+      );
+
+      await tester.tap(find.text('Collect'));
+      // Mid-flight (each coin sprite flies 700 ms, 60 ms apart): some, not
+      // all, of the chest's coins have landed, so the HUD has ticked up
+      // past the fully-held amount but not yet to the full total (the win
+      // reward is still held; that only lets go once the next level
+      // starts).
+      await tester.pump(const Duration(milliseconds: 800));
+      expect(hudCoins(), greaterThan(heldBack));
+      expect(hudCoins(), lessThan(coinsAtWin));
+      expect(
+        screen.state.coins,
+        coinsAtWin,
+        reason: 'still nothing granted by the modal, mid-flight',
+      );
+
+      await tester.pump(const Duration(milliseconds: 1200));
+      await tester.pumpAndSettle();
+      // Lets the level-load chain `onCollect` kicks off settle too (not
+      // itself tied to an animation ticker).
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.byType(MilestoneChestModal), findsNothing);
+      expect(screen.state.levelNumber, 11);
+      expect(
+        hudCoins(),
+        screen.state.coins,
+        reason: "the HUD's coins end at the saved total after Collect",
+      );
+      // Lets the reward jingle's own unduck timer finish.
+      await tester.pump(const Duration(seconds: 4));
+    });
+  });
+
+  group('All Levels Done\'s bonus retry (review CORRECTNESS-3 follow-up, '
+      'TODO(M7))', () {
+    testWidgets('a bonus that can\'t be generated gets the same retry card '
+        'as Continue\'s, not a stuck button', (tester) async {
+      final resolver = ScriptedLevelResolver(
+        entries: {
+          const PlayRequest.campaign(1): playEntryFor(
+            const PlayRequest.campaign(1),
+            defaultLevel,
+          ),
+        },
+        nextOf: (request) => switch (request) {
+          CampaignPlay() => const PlayRequest.bonus(1),
+          _ => null,
+        },
+      );
+      Finder inFailure(String text) => find.descendant(
+        of: find.byKey(const ValueKey(GameplayOverlay.continueFailed)),
+        matching: find.text(text),
+      );
+
+      final screen = await _pump(
+        tester,
+        resolver: resolver,
+        save: _pastFirstWin(),
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(screen.state.status, GameplayStatus.allLevelsDone);
+
+      await tester.tap(find.text('Play Bonus Level 1'));
+      await _settle(tester);
+      expect(inFailure('Try again'), findsOneWidget);
+      expect(inFailure('Back to Home'), findsOneWidget);
+      expect(find.text("You've finished all levels!"), findsNothing);
+
+      // Still failing: Try again asks for bonus 1 again, not the next
+      // level (the state is `allLevelsDone`, not `won`).
+      await tester.tap(inFailure('Try again'));
+      await _settle(tester);
+      expect(inFailure('Try again'), findsOneWidget);
+
+      // The generator recovers.
+      resolver.entries[const PlayRequest.bonus(1)] = playEntryFor(
+        const PlayRequest.bonus(1),
+        levelFrom(defaultLevelJson),
+      );
+      await tester.tap(inFailure('Try again'));
+      await _settle(tester);
+      expect(screen.state.play.request, const PlayRequest.bonus(1));
+      expect(screen.state.status, GameplayStatus.playing);
+      expect(
+        find.byKey(const ValueKey(GameplayOverlay.continueFailed)),
+        findsNothing,
+      );
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('Back to Home leaves from the bonus retry\'s failure card '
+        'too', (tester) async {
+      final resolver = ScriptedLevelResolver(
+        entries: {
+          const PlayRequest.campaign(1): playEntryFor(
+            const PlayRequest.campaign(1),
+            defaultLevel,
+          ),
+        },
+        nextOf: (request) => switch (request) {
+          CampaignPlay() => const PlayRequest.bonus(1),
+          _ => null,
+        },
+      );
+      final screen = await _pump(
+        tester,
+        resolver: resolver,
+        save: _pastFirstWin(),
+      );
+      await _win(tester, screen);
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.tap(find.text('Continue'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Play Bonus Level 1'));
+      await _settle(tester);
+      await tester.tap(find.text('Back to Home'));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(screen.homes, hasLength(1));
+    });
+  });
+
+  group('a restored out-of-moves board whose intro card was never '
+      'dismissed (review CORRECTNESS-1 follow-up, TODO(M7))', () {
+    testWidgets('the sheet waits behind the card; "Got it" reveals it '
+        'only then', (tester) async {
+      final save = FakeSaveService(); // fresh: towers unseen
+      final stuck = GameSession(outOfMovesLevel)..move('r0c0', 'r0c3');
+      save.saveInProgress(
+        InProgressLevel(
+          request: const PlayRequest.campaign(1),
+          levelId: outOfMovesLevel.id,
+          levelVersion: 1,
+          session: GameSessionCodec.encode(stuck),
+        ),
+      );
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        save: save,
+      );
+      await _settle(tester);
+      expect(screen.state.status, GameplayStatus.outOfMoves);
+      expect(screen.state.intro, isNotNull);
+      expect(find.byType(IntroMechanicCard), findsOneWidget);
+      expect(find.text('Towers!'), findsOneWidget);
+      // The sheet has not opened yet: it waits behind the card.
+      expect(find.text('No moves left!'), findsNothing);
+      expect(screen.board.overlayOpen, isFalse);
+
+      await tester.tap(find.text('Got it'));
+      await _settle(tester);
+      expect(find.byType(IntroMechanicCard), findsNothing);
+      expect(screen.state.intro, isNull);
+      expect(find.text('No moves left!'), findsOneWidget);
+      expect(screen.board.overlayOpen, isTrue);
+
+      // Its rows still work.
+      await tester.tap(find.text('Take back your last move'));
+      await _settle(tester);
+      expect(find.text('No moves left!'), findsNothing);
+      expect(screen.state.status, GameplayStatus.playing);
+    });
+
+    testWidgets('a restored board already clear of its intro opens the '
+        'sheet immediately, as before', (tester) async {
+      final save = saveWithIntrosSeen();
+      final stuck = GameSession(outOfMovesLevel)..move('r0c0', 'r0c3');
+      save.saveInProgress(
+        InProgressLevel(
+          request: const PlayRequest.campaign(1),
+          levelId: outOfMovesLevel.id,
+          levelVersion: 1,
+          session: GameSessionCodec.encode(stuck),
+        ),
+      );
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        save: save,
+      );
+      await _settle(tester);
+      expect(screen.state.intro, isNull);
+      expect(find.text('No moves left!'), findsOneWidget);
+      expect(screen.board.overlayOpen, isTrue);
+    });
+  });
+
+  group('relaxed mode (E6; m7-design §10, §15.6)', () {
+    testWidgets('the booster bar shows the all_inclusive glyph for Undo once '
+        'relaxed mode is live-toggled on', (tester) async {
+      final screen = await _pump(tester);
+      expect(find.byIcon(IconUses.undoUnlimited), findsNothing);
+      screen.bloc.add(const RelaxedModeChanged(relaxed: true));
+      await tester.pump(const Duration(milliseconds: 20));
+      expect(screen.state.relaxed, isTrue);
+      expect(find.byIcon(IconUses.undoUnlimited), findsOneWidget);
+
+      screen.bloc.add(const RelaxedModeChanged(relaxed: false));
+      await tester.pump(const Duration(milliseconds: 20));
+      expect(find.byIcon(IconUses.undoUnlimited), findsNothing);
+    });
+
+    testWidgets('the out-of-moves sheet shows "Free, as often as you like" '
+        'for Undo, no '
+        'count or price', (tester) async {
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        save: saveWithIntrosSeen(),
+      );
+      screen.bloc.add(const RelaxedModeChanged(relaxed: true));
+      await tester.pump(const Duration(milliseconds: 20));
+      await screen.move(tester, 'r0c0', 'r0c3');
+      screen.board.callbacks.onOutOfMoves();
+      await _settle(tester);
+      expect(find.text('Free, as often as you like'), findsOneWidget);
+      expect(find.textContaining('Free ·'), findsNothing);
+    });
+  });
+  group('screen readers: an overlay is a route of its own over the level '
+      '(review R11)', () {
+    /// Every node in the live semantics tree.
+    List<SemanticsNode> nodes(WidgetTester tester) {
+      final out = <SemanticsNode>[];
+      bool visit(SemanticsNode node) {
+        out.add(node);
+        node.visitChildren(visit);
+        return true;
+      }
+
+      visit(
+        tester
+            .binding
+            .renderViews
+            .first
+            .owner!
+            .semanticsOwner!
+            .rootSemanticsNode!,
+      );
+      return out;
+    }
+
+    /// The route scope the overlay titled [title] opens (the nearest
+    /// `scopesRoute` above its `namesRoute` title).
+    SemanticsNode scopeNamed(WidgetTester tester, String title) {
+      final named = nodes(tester).where((node) {
+        final data = node.getSemanticsData();
+        return data.label == title && data.flagsCollection.namesRoute;
+      }).toList();
+      expect(named, hasLength(1), reason: 'one title names the overlay');
+      SemanticsNode? scope = named.single.parent;
+      while (scope != null &&
+          !scope.getSemanticsData().flagsCollection.scopesRoute) {
+        scope = scope.parent;
+      }
+      expect(scope, isNotNull);
+      return scope!;
+    }
+
+    bool isUnder(SemanticsNode node, SemanticsNode ancestor) {
+      for (var n = node.parent; n != null; n = n.parent) {
+        if (n == ancestor) return true;
+      }
+      return false;
+    }
+
+    /// Every actionable node outside [scope]: none may be left while an
+    /// overlay is up.
+    List<String> actionableOutside(WidgetTester tester, SemanticsNode scope) =>
+        [
+          for (final node in nodes(tester))
+            if (!node.isMergedIntoParent &&
+                node.getSemanticsData().hasAction(SemanticsAction.tap) &&
+                !isUnder(node, scope))
+              node.getSemanticsData().label,
+        ];
+
+    testWidgets("out of moves: the booster bar behind the sheet can't be "
+        'reached or activated', (tester) async {
+      final handle = tester.ensureSemantics();
+      final screen = await _pump(
+        tester,
+        entries: [entryFor(outOfMovesLevel)],
+        save: saveWithIntrosSeen(),
+      );
+      await screen.move(tester, 'r0c0', 'r0c3');
+      expect(
+        find.semantics.byLabel(RegExp(r'^Undo, ')),
+        findsOne,
+        reason: 'the booster reads "Undo, N left" before the sheet',
+      );
+      screen.board.callbacks.onOutOfMoves();
+      await _settle(tester);
+
+      final scope = scopeNamed(tester, 'No moves left!');
+      expect(actionableOutside(tester, scope), isEmpty);
+      expect(find.semantics.byLabel(RegExp(r'^Undo, ')), findsNothing);
+      handle.dispose();
+    });
+
+    testWidgets("Pause: the dialog is named and the HUD and boosters can't "
+        'be reached', (tester) async {
+      final handle = tester.ensureSemantics();
+      await _pump(tester);
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      final scope = scopeNamed(tester, 'Paused');
+      expect(actionableOutside(tester, scope), isEmpty);
+      expect(find.semantics.byLabel('Pause'), findsNothing);
+      handle.dispose();
+    });
+  });
+
+  group('board toasts and the popup\'s way to the Shop (phase 4 lane O)', () {
+    testWidgets('relaxed mode\'s toast shows once per launch, on the first '
+        'level entered with it on (frame 10.9)', (tester) async {
+      GameplayView.resetLaunchToasts();
+      await _pump(tester, settings: await _relaxedSettings());
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(
+        find.text('Relaxed mode is on. Undo as often as you like.'),
+        findsOneWidget,
+      );
+      // Past its 2.5 s and the fade.
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(
+        find.text('Relaxed mode is on. Undo as often as you like.'),
+        findsNothing,
+      );
+      // A second level in the same launch shows none.
+      await _pump(tester, settings: await _relaxedSettings());
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(
+        find.text('Relaxed mode is on. Undo as often as you like.'),
+        findsNothing,
+      );
+      GameplayView.resetLaunchToasts();
+    });
+
+    testWidgets('no toast with relaxed mode off', (tester) async {
+      GameplayView.resetLaunchToasts();
+      await _pump(tester);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.textContaining('Relaxed mode is on'), findsNothing);
+    });
+
+    testWidgets('a tap on the sunk +1 Slot says why, once per level '
+        '(frame 12.9)', (tester) async {
+      final screen = await _pump(tester);
+      // Two extra slots go in through the bar (the tutorial level's own
+      // inventory holds two).
+      for (var i = 0; i < 2; i++) {
+        await tester.tap(find.text('+Slot'));
+        await tester.pump(const Duration(milliseconds: 200));
+      }
+      expect(screen.state.board.extraSlotCount, 2);
+      expect(find.text('2/2'), findsOneWidget);
+
+      await tester.tap(find.text('+Slot'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(
+        find.text('Two extra slots is the most for one level.'),
+        findsOneWidget,
+      );
+      expect(screen.state.board.extraSlotCount, 2, reason: 'nothing added');
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.textContaining('extra slots is the most'), findsNothing);
+
+      // Once per level: a second tap shows none.
+      await tester.tap(find.text('+Slot'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.textContaining('extra slots is the most'), findsNothing);
+    });
+
+    testWidgets('an unaffordable booster: the coin button opens Not enough '
+        'coins, and Go to Shop closes the popup, pauses the level and opens '
+        'the Shop (D195)', (tester) async {
+      var shops = 0;
+      final screen = await _pump(
+        tester,
+        save: FakeSaveService(
+          initial: const SaveDocument(inventory: BoosterInventory(hint: 0)),
+        ),
+        onShop: () => shops++,
+      );
+      await tester.tap(find.text('Hint'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(BoosterBuyPopup), findsOneWidget);
+      // The coin button is enabled although the balance can't cover it.
+      await tester.tap(find.byType(CoinPriceButton));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('A few more coins'), findsOneWidget);
+
+      await tester.tap(find.text('Go to Shop'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(shops, 1);
+      expect(find.byType(BoosterBuyPopup), findsNothing);
+      expect(screen.state.offer, isNull);
+      expect(screen.state.paused, isTrue);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('Not now closes the dialog and keeps the popup', (
+      tester,
+    ) async {
+      var shops = 0;
+      await _pump(
+        tester,
+        save: FakeSaveService(
+          initial: const SaveDocument(inventory: BoosterInventory(hint: 0)),
+        ),
+        onShop: () => shops++,
+      );
+      await tester.tap(find.text('Hint'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.byType(CoinPriceButton));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text('Not now'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('A few more coins'), findsNothing);
+      expect(find.byType(BoosterBuyPopup), findsOneWidget);
+      expect(shops, 0);
+    });
+  });
 }

@@ -8,9 +8,11 @@ import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 import 'package:nesty_game/features/daily/widgets/chest_row.dart';
+import 'package:nesty_game/features/daily/widgets/daily_background_loader.dart';
 import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
 import 'package:nesty_game/features/daily/widgets/day_strip.dart';
 import 'package:nesty_game/features/daily/widgets/puzzle_card.dart';
+import 'package:nesty_game/features/daily/widgets/reminder_offer_dialog.dart';
 import 'package:nesty_game/features/daily/widgets/streak_card.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 
@@ -28,12 +30,17 @@ class DailyPage extends StatelessWidget implements AutoRouteWrapper {
       RepositoryProvider.value(value: get<SkinService>()),
       RepositoryProvider.value(value: get<DatabaseService>()),
       RepositoryProvider.value(value: get<FxLibrary>()),
+      // The puzzle card's small theme background (m7-design §18).
+      RepositoryProvider<DailyBackgroundLoader>.value(
+        value: const AssetDailyBackgroundLoader(),
+      ),
     ],
     child: BlocProvider(create: (_) => get<DailyCubit>()..load(), child: this),
   );
 
   @override
-  Widget build(BuildContext context) => const DailyView();
+  Widget build(BuildContext context) =>
+      DailyView(reminderOffer: ReminderOfferDialog.provided());
 }
 
 /// The Daily screen's body over a `DailyCubit` ancestor (docs/plans/
@@ -41,36 +48,99 @@ class DailyPage extends StatelessWidget implements AutoRouteWrapper {
 /// (5.2) and the day-7 chest modal (5.6). Public so a test can pump it over
 /// a real [DailyCubit] built from fakes (`BlocProvider.value`), the same
 /// pattern as `GameplayView`.
+///
+/// [reminderOffer] is the one-time reminder offer (E4; m7-design P3.10;
+/// frames 10.2–10.2d), a card over the screen that shows itself only while
+/// today is solved and the offer is due. The page passes
+/// `ReminderOfferDialog.provided()`; a test of the view alone leaves it null
+/// and needs no offer cubit. Its "Reminder set" toast sits at
+/// [ToastHost.reminderTop], under the header row.
 class DailyView extends StatefulWidget {
-  const DailyView({super.key});
+  const DailyView({this.reminderOffer, super.key});
+
+  final Widget? reminderOffer;
 
   @override
   State<DailyView> createState() => _DailyViewState();
 }
 
 class _DailyViewState extends State<DailyView> {
+  /// The header's coin pill: the day-7 chest's coins fly to it on Collect
+  /// (the owner's chest request, design request I.3), as the milestone
+  /// chest's fly to the HUD's.
+  final _coinPillKey = GlobalKey();
+
+  /// The day-7 chest's coins already landed on the pill. The chest pays in
+  /// `collectChest`, after its flights, so until then the pill shows the
+  /// balance plus what has landed, one landing at a time.
+  int _chestCoinsRevealed = 0;
+
+  Rect? _coinPillRect() {
+    final box = _coinPillKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset.zero) & box.size;
+  }
+
+  void _onChestCoinsRevealed(int revealed) {
+    if (!mounted) return;
+    setState(() => _chestCoinsRevealed = revealed);
+  }
+
   @override
   Widget build(BuildContext context) {
+    return ToastHost(
+      top: ToastHost.reminderTop,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _scaffold(context),
+          // The offer covers the whole screen, status bar and home
+          // indicator included, so it sits outside the Scaffold's SafeArea.
+          if (widget.reminderOffer case final offer?)
+            BlocSelector<DailyCubit, AsyncValue<DailyState>, bool>(
+              selector: (value) {
+                final status = value.data?.status;
+                return status != null &&
+                    status.solvedToday &&
+                    !status.chestPending;
+              },
+              builder: (context, due) => due ? offer : const SizedBox.shrink(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _scaffold(BuildContext context) {
+    // The SafeArea wraps the screen's content, not the whole body: the
+    // day-7 chest's scrim covers the status bar and the home indicator too
+    // (frame 5.6), and its card places itself below the real top inset. A
+    // SafeArea around it left both bands undimmed (the device run,
+    // 2026-09-30).
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: BlocConsumer<DailyCubit, AsyncValue<DailyState>>(
-          listenWhen: (previous, current) =>
-              current.data?.status.freezeNotice != null &&
-              previous.data?.status.freezeNotice !=
-                  current.data?.status.freezeNotice,
-          listener: _onFreezeNotice,
-          builder: (context, value) => switch (value) {
-            AsyncValueData<DailyState>(:final data) => _body(context, data),
-            AsyncValueLoading<DailyState>(:final data) when data != null =>
-              _body(context, data),
-            AsyncValueError<DailyState>(:final exception) => RetryView(
+      body: BlocConsumer<DailyCubit, AsyncValue<DailyState>>(
+        listenWhen: (previous, current) =>
+            current.data?.status.freezeNotice != null &&
+            previous.data?.status.freezeNotice !=
+                current.data?.status.freezeNotice,
+        listener: _onFreezeNotice,
+        builder: (context, value) => switch (value) {
+          AsyncValueData<DailyState>(:final data) => _body(context, data),
+          AsyncValueLoading<DailyState>(:final data) when data != null => _body(
+            context,
+            data,
+          ),
+          AsyncValueError<DailyState>(:final exception) => SafeArea(
+            child: RetryView(
               exception: exception,
               onRetry: () => context.read<DailyCubit>().load(),
             ),
-            _ => const Center(child: CircularProgressIndicator()),
-          },
-        ),
+          ),
+          _ => const SafeArea(
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        },
       ),
     );
   }
@@ -96,29 +166,39 @@ class _DailyViewState extends State<DailyView> {
     final l10n = context.localizations;
     return Stack(
       children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ScreenHeader(
-                title: l10n.levelDaily,
-                onBack: () => context.router.maybePop(),
-                coins: state.coins,
+        SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ScreenHeader(
+                  title: l10n.levelDaily,
+                  onBack: () => context.router.maybePop(),
+                  coins:
+                      state.coins +
+                      (state.status.chestPending ? _chestCoinsRevealed : 0),
+                  coinPillKey: _coinPillKey,
+                ),
               ),
-            ),
-            Expanded(
-              child: state.status.unlocked
-                  ? _unlocked(context, state)
-                  : _locked(context),
-            ),
-          ],
+              Expanded(
+                child: state.status.unlocked
+                    ? _unlocked(context, state)
+                    : _locked(context),
+              ),
+            ],
+          ),
         ),
         if (state.status.chestPending)
+          // Full screen, outside the content's SafeArea (see _scaffold).
           DailyChestModal(
             coins: state.chestCoins,
+            coinTarget: _coinPillRect,
+            onCoinsRevealed: _onChestCoinsRevealed,
             onCollect: () {
               final collected = context.read<DailyCubit>().collectChest();
               if (collected) context.read<JingleCues>().reward();
+              // The paid balance takes over from the landed count.
+              setState(() => _chestCoinsRevealed = 0);
             },
           ),
       ],
@@ -141,6 +221,8 @@ class _DailyViewState extends State<DailyView> {
             state: state,
             onPlay: () => _playDaily(context),
             onPlayCampaign: () => _playCampaign(context, state),
+            // Share lives on the daily win card (frame 10.1, D188): the
+            // solved card (5.5) has none.
           ),
         ],
       ),

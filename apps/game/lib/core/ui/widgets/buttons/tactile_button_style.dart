@@ -8,10 +8,10 @@ import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 /// "Components", NestyOverlay/NestyMenus).
 ///
 /// Primary and ad use their tokens.json `shadow.primaryButton` /
-/// `shadow.adButton` drop. Success, danger and teal have no shadow token:
-/// they take the same drop geometry in their own hue.
-/// TODO(design): confirm the success/danger/teal drops (and a danger
-/// button at all: no frame shows one; its colours come from the Hard pill).
+/// `shadow.adButton` drop. Success, danger, teal and versus have no shadow
+/// token: they take the same drop geometry in their own hue. Danger (frame
+/// 12.12) and versus (section 09) are tokens v3's gradients and edges
+/// (phase 4 architecture §6.4).
 enum TactileButtonVariant {
   /// Tangerine: Continue, Resume, Got it.
   primary(
@@ -54,14 +54,32 @@ enum TactileButtonVariant {
     textShadow: Color(0x4D145023),
   ),
 
-  /// Red, in the Hard pill's colours.
+  /// Red (frame 12.12's danger button): `color.dangerTop` → `color.danger`,
+  /// edge `color.dangerEdge`. The shared variant; no M7 screen uses it yet.
   danger(
-    face: AppGradientTokens.hard,
+    face: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [AppColorTokens.dangerTop, AppColorTokens.danger],
+    ),
     edgeColor: AppColorTokens.dangerEdge,
     highlight: Color(0x59FFFFFF),
     drop: Color(0x40961E1E),
     foreground: Color(0xFFFFFFFF),
     textShadow: Color(0x4D781419),
+  ),
+
+  /// vs Computer's indigo (section 09: Start, New race, Keep racing, a
+  /// race's Try again): `gradient.versus`, edge `color.versusEdge`, the
+  /// label's `0 2 0 rgba(30,30,110,.35)` shadow (ui-spec-game §1
+  /// "VersusButton").
+  versus(
+    face: AppGradientTokens.versus,
+    edgeColor: AppColorTokens.versusEdge,
+    highlight: Color(0x59FFFFFF),
+    drop: Color(0x403242A8),
+    foreground: Color(0xFFFFFFFF),
+    textShadow: Color(0x591E1E6E),
   ),
 
   /// Bonus teal: "Play Bonus Level 1" (frame 4.9).

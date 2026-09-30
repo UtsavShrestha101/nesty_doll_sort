@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
-import 'package:nesty_game/core/ui/lottie/lottie_text_overlay.dart';
+import 'package:nesty_game/core/services/records/badge.dart';
+import 'package:nesty_game/core/services/share/fake_share_service.dart';
+import 'package:nesty_game/core/services/share/share_service.dart';
+import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
+import 'package:nesty_game/features/gameplay/overlays/win_result_chips.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 
@@ -32,8 +38,44 @@ Widget _overlay({
   ChapterProgress chapter = _chapter,
   RecordingCues? feedback,
   VoidCallback? onContinue,
+  int? dailyStreak,
+  bool dailyRelit = false,
+  int? winMoves,
+  int? bestMoves,
+  int? chestLevelsLeft,
+  bool isReplay = false,
+  List<BadgeId> newBadges = const [],
+  int? stars,
+  bool starsNewBest = false,
+  int? starTarget,
+  bool starTip = false,
+  bool starsCapped = false,
+  int? bonusNumber,
+  LocalDate? dailyDate,
+  ShareService? share,
+  VoidCallback? onTipShown,
 }) => WinOverlay(
-  summary: WinSummary(reward: reward, families: families, chapter: chapter),
+  summary: WinSummary(
+    reward: reward,
+    families: families,
+    chapter: chapter,
+    dailyStreak: dailyStreak,
+    dailyRelit: dailyRelit,
+    winMoves: winMoves,
+    bestMoves: bestMoves,
+    chestLevelsLeft: chestLevelsLeft,
+    isReplay: isReplay,
+    newBadges: newBadges,
+    stars: stars,
+    starsNewBest: starsNewBest,
+    starTarget: starTarget,
+    starTip: starTip,
+    starsCapped: starsCapped,
+    bonusNumber: bonusNumber,
+    dailyDate: dailyDate,
+  ),
+  share: share,
+  onTipShown: onTipShown,
   feedback: feedback,
   library: FakeFxLibrary(),
   onContinue: onContinue ?? () {},
@@ -118,6 +160,161 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
   });
 
+  group('the moves caption (E7; m7-design §11, §15.3)', () {
+    testWidgets('a kept best: "Moves N · Best M"', (tester) async {
+      await pumpScreen(tester, _overlay(winMoves: 18, bestMoves: 16));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Moves 18 · Best 16'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('no kept best (daily, bonus, race): "Moves N" alone', (
+      tester,
+    ) async {
+      await pumpScreen(tester, _overlay(winMoves: 9));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Moves 9'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('neither set (an older caller): no caption at all', (
+      tester,
+    ) async {
+      await pumpScreen(tester, _overlay());
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.textContaining('Moves'), findsNothing);
+      await tester.pump(const Duration(seconds: 2));
+    });
+  });
+
+  group('a replay (E7; m7-design §6, §11)', () {
+    testWidgets('no coin pill, count-up or coins sound; the reason line; '
+        '"Back to Chapters"', (tester) async {
+      final feedback = RecordingCues();
+      await pumpScreen(
+        tester,
+        _overlay(
+          isReplay: true,
+          winMoves: 12,
+          bestMoves: 9,
+          feedback: feedback,
+        ),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.textContaining('+'), findsNothing);
+      expect(
+        find.text('A replay for fun: coins come from new levels.'),
+        findsOneWidget,
+      );
+      expect(find.text('Moves 12 · Best 9'), findsOneWidget);
+      expect(find.text('Back to Chapters'), findsOneWidget);
+      expect(find.text('Continue'), findsNothing);
+      // Only the open's `win` cue: never `coins` (no reward to count up).
+      expect(feedback.played, hasLength(1));
+      expect(feedback.played.single.sound, SoundEffect.win);
+    });
+
+    // Frame 11.4: the reason sits in its own cream card under the moves
+    // chip, and no coin chip shows.
+    testWidgets('the reason is a cream card under the moves chip, with no '
+        'coin chip', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(isReplay: true, stars: 2, winMoves: 18, bestMoves: 16),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      final reason = find.text('A replay for fun: coins come from new levels.');
+      expect(
+        find.ancestor(of: reason, matching: find.byType(ReplayReasonCard)),
+        findsOneWidget,
+      );
+      expect(find.byType(WinCoinPill), findsNothing);
+      expect(
+        tester.getBottomLeft(find.byType(WinMovesChip)).dy,
+        lessThan(tester.getTopLeft(find.byType(ReplayReasonCard)).dy),
+      );
+      expect(
+        tester.getTopLeft(find.byType(StarRow)).dy,
+        lessThan(tester.getTopLeft(find.byType(WinMovesChip)).dy),
+      );
+    });
+
+    testWidgets('below 3 stars the target row shows; at 3 it does not', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        _overlay(isReplay: true, stars: 2, starTarget: 15),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('3 stars at 15 moves or fewer'), findsOneWidget);
+      await pumpScreen(tester, _overlay(isReplay: true, stars: 3));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.textContaining('3 stars at'), findsNothing);
+    });
+
+    testWidgets('a new best puts "New best!" on the moves chip', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        _overlay(
+          isReplay: true,
+          stars: 3,
+          starsNewBest: true,
+          winMoves: 12,
+          bestMoves: 12,
+        ),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      final chip = tester.getRect(find.byType(WinMovesChip));
+      final best = tester.getRect(find.byKey(WinMovesChip.newBestKey));
+      expect(find.text('New best!'), findsOneWidget);
+      expect(best.center.dx, closeTo(chip.center.dx, 0.5));
+      expect(best.top, lessThan(chip.top), reason: 'on its top edge');
+      expect(find.bySemanticsLabel('New best, 3 of 3 stars'), findsOneWidget);
+    });
+
+    testWidgets('the chapter card hides "Next up" even on a mid-chapter '
+        'level', (tester) async {
+      await pumpScreen(tester, _overlay(isReplay: true));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.textContaining('Next up:'), findsNothing);
+    });
+  });
+
+  group('badge toasts (E8; m7-design §12)', () {
+    testWidgets('one per newBadges, staggered, after the overlay opens', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        _overlay(newBadges: const [BadgeId.firstFamily, BadgeId.glassBreaker]),
+      );
+      // copy.md G.8: "Badge earned · {name}", then the badge's line.
+      await tester.pump(const Duration(milliseconds: 899));
+      expect(find.textContaining('Badge earned'), findsNothing);
+      await tester.pump(const Duration(milliseconds: 2));
+      expect(find.text('Badge earned · Snug as a Doll'), findsOneWidget);
+      expect(find.text('You nested your first family.'), findsOneWidget);
+      expect(find.text('Badge earned · Glass Act'), findsNothing);
+      // One at a time: the first fades out after 2.5 s, the next waits
+      // 300 ms after that (Q136).
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.text('Badge earned · Glass Act'), findsOneWidget);
+      expect(find.text('Badge earned · Snug as a Doll'), findsNothing);
+      await tester.pump(const Duration(seconds: 4));
+    });
+
+    testWidgets('none with an empty list', (tester) async {
+      await pumpScreen(tester, _overlay());
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.textContaining('Badge earned'), findsNothing);
+    });
+  });
+
   for (final size in screenSizes) {
     testWidgets('the ribbon: its 410 × 110 canvas at min(1, W / 390), '
         'centred, the anchor (205, 55) on the screen\'s centre line, '
@@ -180,6 +377,454 @@ void main() {
       });
     }
   }
+
+  group('stars (m7-design P3.7)', () {
+    testWidgets('no stars, no daily/bonus/race win: no StarRow at all', (
+      tester,
+    ) async {
+      await pumpScreen(tester, _overlay());
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(StarRow), findsNothing);
+    });
+
+    testWidgets('none on the daily card, even with stars set by mistake', (
+      tester,
+    ) async {
+      await pumpScreen(tester, _overlay(dailyStreak: 5, stars: 3));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(StarRow), findsNothing);
+    });
+
+    testWidgets('the ui_stars canvas sits at (75, 176) of the design screen '
+        '(top 117 below the safe area), 240 × 110, above the plank and '
+        'the card', (tester) async {
+      await pumpScreen(tester, _overlay(stars: 2));
+      await tester.pump(const Duration(seconds: 2));
+      final row = tester.getRect(find.byType(StarRow));
+      expect(row.size, const Size(240, 110));
+      expect(row.left, closeTo(75, 0.01));
+      // The design's y 176, on this harness' 59 dp safe area.
+      expect(row.top, closeTo(176, 0.01));
+      expect(
+        row.bottom,
+        lessThan(tester.getTopLeft(find.byType(WinChapterCard)).dy),
+      );
+    });
+
+    testWidgets('a replay below 3 stars shows too (only daily/bonus/race '
+        'have none)', (tester) async {
+      await pumpScreen(tester, _overlay(isReplay: true, stars: 2));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(StarRow), findsOneWidget);
+    });
+
+    testWidgets('each star\'s cue starts its segment: star_1, star_2, star_3 '
+        '333 ms apart from 1,300 ms, a light haptic each', (tester) async {
+      final feedback = RecordingCues();
+      await pumpScreen(tester, _overlay(stars: 3, feedback: feedback));
+      await tester.pump(const Duration(milliseconds: 1299));
+      final before = feedback.played.length;
+
+      await tester.pump(const Duration(milliseconds: 2));
+      expect(feedback.played.length, before + 1);
+      expect(feedback.played.last.sound, SoundEffect.star1);
+      expect(feedback.played.last.haptic, HapticPattern.pick);
+
+      await tester.pump(const Duration(milliseconds: 333));
+      expect(feedback.played.last.sound, SoundEffect.star2);
+      await tester.pump(const Duration(milliseconds: 333));
+      expect(feedback.played.last.sound, SoundEffect.star3);
+      expect(
+        feedback.played.where((c) => c.haptic == HapticPattern.complete),
+        isEmpty,
+        reason: 'the success haptic waits for the flourish to end',
+      );
+      // star_3's segment ends at 2,300 ms, then the flourish (1,000 ms), then
+      // the success haptic at 3,300 ms.
+      await tester.pump(const Duration(milliseconds: 1300));
+      expect(feedback.played.last.sound, SoundEffect.star3);
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(feedback.played.last.haptic, HapticPattern.complete);
+      expect(feedback.played.last.sound, isNull);
+      await tester.pump(const Duration(seconds: 1));
+    });
+
+    testWidgets('below 3 stars: no flourish cue', (tester) async {
+      final feedback = RecordingCues();
+      await pumpScreen(tester, _overlay(stars: 2, feedback: feedback));
+      await tester.pump(const Duration(seconds: 4));
+      expect(
+        feedback.played.where((cue) => cue.haptic == HapticPattern.complete),
+        isEmpty,
+      );
+      expect(
+        feedback.played.map((c) => c.sound).whereType<SoundEffect>(),
+        containsAllInOrder([SoundEffect.star1, SoundEffect.star2]),
+      );
+      expect(
+        feedback.played.where((c) => c.sound == SoundEffect.star3),
+        isEmpty,
+      );
+    });
+
+    testWidgets('reduced motion (Q146): one cue for the highest star and one '
+        'light haptic, no flourish', (tester) async {
+      final feedback = RecordingCues();
+      await pumpScreen(
+        tester,
+        _overlay(stars: 3, feedback: feedback),
+        reduceMotion: true,
+      );
+      await tester.pump(const Duration(seconds: 4));
+      final starCues = feedback.played.where(
+        (c) =>
+            c.sound == SoundEffect.star1 ||
+            c.sound == SoundEffect.star2 ||
+            c.sound == SoundEffect.star3,
+      );
+      expect(starCues, hasLength(1));
+      expect(starCues.single.sound, SoundEffect.star3);
+      expect(starCues.single.haptic, HapticPattern.pick);
+      expect(
+        feedback.played.where((c) => c.haptic == HapticPattern.complete),
+        isEmpty,
+      );
+    });
+  });
+
+  group('the win card\'s layout (frames 11.2, 11.4, 10.1, 12.4)', () {
+    testWidgets('the campaign card: chips at 420, the progress card at 500, '
+        'Continue at 646', (tester) async {
+      await pumpScreen(tester, _overlay(stars: 3, winMoves: 13));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(WinCoinPill), findsOneWidget);
+      expect(find.byType(WinMovesChip), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.byType(WinMovesChip)).dy,
+        closeTo(420, 0.5),
+      );
+      expect(
+        tester.getTopLeft(find.byType(WinChapterCard)).dy,
+        closeTo(500, 0.5),
+      );
+      expect(
+        tester.getTopLeft(find.widgetWithText(TactileButton, 'Continue')).dy,
+        closeTo(646, 0.5),
+      );
+    });
+
+    testWidgets('the chest line keeps the chapter\'s bar and count; only the '
+        'next line and the tile change (C2)', (tester) async {
+      await pumpScreen(tester, _overlay(stars: 2, chestLevelsLeft: 3));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('Chapter 3'), findsOneWidget);
+      expect(find.text('16 / 20'), findsOneWidget);
+      expect(find.text('3 levels to the chest'), findsOneWidget);
+      expect(find.textContaining('Next up'), findsNothing);
+    });
+
+    testWidgets('Bonus Endless: "Bonus Level 7", "7 / 10" and the chest line, '
+        'no stars', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(bonusNumber: 7, chestLevelsLeft: 3, winMoves: 18, reward: 25),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('Bonus Level 7'), findsOneWidget);
+      expect(find.text('7 / 10'), findsOneWidget);
+      expect(find.text('3 levels to the chest'), findsOneWidget);
+      expect(find.text('Moves 18'), findsOneWidget);
+      expect(find.byType(StarRow), findsNothing);
+    });
+
+    testWidgets('the 16:9 card (winStarsShort): stars at 128, buttons at 522, '
+        'and neither the note nor the tip (C11)', (tester) async {
+      var tipShown = 0;
+      await pumpScreen(
+        tester,
+        _overlay(
+          stars: 2,
+          starTip: true,
+          starsCapped: true,
+          onTipShown: () => tipShown++,
+        ),
+        size: const Size(390, 693),
+        padding: const EdgeInsets.only(top: 59, bottom: 34),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.getTopLeft(find.byType(StarRow)).dy, closeTo(128, 0.5));
+      expect(find.byKey(WinOverlay.noteKey), findsNothing);
+      expect(tipShown, 0, reason: 'the tip waits for a card that can show it');
+      expect(
+        tester.getTopLeft(find.widgetWithText(TactileButton, 'Continue')).dy,
+        closeTo(522, 0.5),
+      );
+    });
+  });
+
+  group('the note and the tip (Q145, D191)', () {
+    testWidgets('a capped win shows the helper note, and the tip is not '
+        'recorded', (tester) async {
+      var tipShown = 0;
+      await pumpScreen(
+        tester,
+        _overlay(
+          stars: 2,
+          starsCapped: true,
+          starTip: true,
+          onTipShown: () => tipShown++,
+        ),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(
+        find.text('Wins with a hint or an extra slot earn up to 2 stars.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Fewer moves earn more stars'), findsNothing);
+      expect(tipShown, 0);
+      expect(
+        tester.getTopLeft(find.byKey(WinOverlay.noteKey)).dy,
+        closeTo(602, 1),
+      );
+    });
+
+    testWidgets('the tip shows once and is recorded the moment it shows', (
+      tester,
+    ) async {
+      var tipShown = 0;
+      await pumpScreen(
+        tester,
+        _overlay(stars: 2, starTip: true, onTipShown: () => tipShown++),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(
+        find.text(
+          'Fewer moves earn more stars. Replay any level from Chapters.',
+        ),
+        findsOneWidget,
+      );
+      expect(tipShown, 1);
+    });
+
+    testWidgets('neither shows without either flag', (tester) async {
+      await pumpScreen(tester, _overlay(stars: 2));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byKey(WinOverlay.noteKey), findsNothing);
+    });
+
+    testWidgets('a replay shows the tip at 612, not the helper note '
+        'alongside it', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(isReplay: true, stars: 2, starTip: true, starTarget: 15),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byKey(WinOverlay.noteKey), findsOneWidget);
+      expect(
+        tester
+            .getTopLeft(find.widgetWithText(TactileButton, 'Back to Chapters'))
+            .dy,
+        closeTo(668, 0.5),
+      );
+    });
+  });
+
+  group('the daily card\'s Share (frame 10.1; D188)', () {
+    testWidgets('Share sits above Back to Daily and hands the OS sheet '
+        'G.6\'s text with the families in board order', (tester) async {
+      final share = FakeShareService();
+      await pumpScreen(
+        tester,
+        _overlay(
+          dailyStreak: 5,
+          winMoves: 18,
+          families: const [DollColor.purple, DollColor.yellow],
+          dailyDate: LocalDate(2026, 9, 26),
+          share: share,
+        ),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      final shareButton = find.byKey(WinOverlay.shareKey);
+      final back = find.widgetWithText(TactileButton, 'Back to Daily');
+      expect(shareButton, findsOneWidget);
+      expect(
+        tester.getBottomLeft(shareButton).dy,
+        lessThan(tester.getTopLeft(back).dy),
+      );
+      expect(find.bySemanticsLabel("Share today's result"), findsOneWidget);
+      await tester.tap(shareButton);
+      await tester.pump();
+      expect(share.shared.single, startsWith('Nesty Daily · Sep 26\n'));
+      expect(share.shared.single, contains('⭐ ☀️'));
+      expect(share.shared.single, endsWith('Solved in 18 moves · Day 5 🔥'));
+      expect(share.origins.single, isNotNull);
+    });
+
+    testWidgets('a campaign win has no Share', (tester) async {
+      await pumpScreen(tester, _overlay(stars: 2, share: FakeShareService()));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byKey(WinOverlay.shareKey), findsNothing);
+    });
+
+    testWidgets('the daily card keeps the chips and shows the moves there, '
+        'not on the streak card', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(dailyStreak: 5, winMoves: 18, share: FakeShareService()),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(WinMovesChip), findsOneWidget);
+      expect(find.text('Moves 18'), findsOneWidget);
+      expect(find.text('5-day streak'), findsOneWidget);
+    });
+  });
+
+  group('twinkles and toasts', () {
+    testWidgets('three fx_twinkle points on the campaign card (E.17)', (
+      tester,
+    ) async {
+      await pumpScreen(tester, _overlay(stars: 2));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(LottieTwinkle), findsNWidgets(3));
+      final positions = [
+        for (final t in tester.widgetList(find.byType(LottieTwinkle)))
+          tester.getCenter(find.byWidget(t)),
+      ];
+      expect(positions[0].dx, closeTo(52, 0.5));
+      expect(positions[0].dy, closeTo(112, 0.5));
+      expect(positions[1].dx, closeTo(338, 0.5));
+      expect(positions[2].dy, closeTo(396, 0.5));
+    });
+
+    testWidgets('the badge toasts sit at the design y 60 on the card\'s own '
+        'host', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(stars: 2, newBadges: const [BadgeId.firstFamily]),
+      );
+      await tester.pump(const Duration(milliseconds: 1200));
+      final toast = find.text('Badge earned · Snug as a Doll');
+      expect(toast, findsOneWidget);
+      // ToastHost.badgeTop 60 on the 59 dp safe area: 1 dp below its top.
+      expect(
+        tester
+            .getTopLeft(
+              find.ancestor(of: toast, matching: find.byType(Padding)).first,
+            )
+            .dy,
+        lessThan(120),
+      );
+      await tester.pump(const Duration(seconds: 4));
+    });
+  });
+
+  // The device run after the M7 review: on the 16:9 emulator (411 × 731 dp)
+  // the block above the button scales down, and since R23 the button kept
+  // its full width, so it stood ~10 dp wider than the card on each side.
+  // Frame 2.8 draws the card and Continue at one width: the button keeps
+  // its height (R23's 48 dp) and takes the scaled card's width.
+  group('the button under a scaled block (review R23; the device run '
+      'after the review)', () {
+    Future<void> expectButtonUnderCard(
+      WidgetTester tester, {
+      required Size size,
+      required String label,
+      required bool scaled,
+    }) async {
+      final card = tester.getRect(
+        find.byWidgetPredicate(
+          (w) => w is WinChapterCard || w is ReplayReasonCard,
+        ),
+      );
+      final button = tester.getRect(find.widgetWithText(TactileButton, label));
+      if (scaled) {
+        expect(
+          card.width,
+          lessThan(size.width - 56 - 1),
+          reason: 'the block scales down on this screen',
+        );
+      } else {
+        expect(card.width, closeTo(size.width - 56, 0.01));
+        // Unchanged where it fits: 28 from each edge.
+        expect(button.top, greaterThanOrEqualTo(card.bottom));
+      }
+      expect(button.left, closeTo(card.left, 0.5));
+      expect(button.right, closeTo(card.right, 0.5));
+      expect(button.height, greaterThanOrEqualTo(48));
+      expect(button.top, greaterThanOrEqualTo(card.bottom));
+      expect(button.bottom, lessThanOrEqualTo(size.height));
+      expectNoLayoutErrors(tester);
+    }
+
+    testWidgets('411 × 731 (the API 35 emulator): the short card fits '
+        'without scaling', (tester) async {
+      const size = Size(411, 731);
+      await pumpScreen(
+        tester,
+        _overlay(
+          reward: 1240,
+          families: const [
+            DollColor.red,
+            DollColor.blue,
+            DollColor.green,
+            DollColor.purple,
+            DollColor.orange,
+          ],
+          winMoves: 35,
+          bestMoves: 35,
+          stars: 2,
+        ),
+        size: size,
+        padding: const EdgeInsets.only(top: 24),
+      );
+      await tester.pump(const Duration(seconds: 3));
+      await expectButtonUnderCard(
+        tester,
+        size: size,
+        label: 'Continue',
+        scaled: false,
+      );
+    });
+
+    testWidgets('360 × 640 at 1.3× (the tallest replay card): Back to '
+        'Chapters keeps 48 dp and the card\'s width', (tester) async {
+      const size = Size(360, 640);
+      await pumpScreen(
+        tester,
+        _overlay(
+          winMoves: 12,
+          bestMoves: 12,
+          isReplay: true,
+          stars: 2,
+          starsNewBest: true,
+          starTarget: 10,
+          starTip: true,
+        ),
+        size: size,
+        textScale: 1.3,
+      );
+      await tester.pump(const Duration(seconds: 3));
+      await expectButtonUnderCard(
+        tester,
+        size: size,
+        label: 'Back to Chapters',
+        scaled: true,
+      );
+    });
+
+    testWidgets('390 × 844, where it fits: nothing scales and Continue '
+        'sits at 646', (tester) async {
+      const size = Size(390, 844);
+      await pumpScreen(tester, _overlay(winMoves: 7, bestMoves: 7, stars: 2));
+      await tester.pump(const Duration(seconds: 3));
+      await expectButtonUnderCard(
+        tester,
+        size: size,
+        label: 'Continue',
+        scaled: false,
+      );
+    });
+  });
 
   group('WinSummary.familiesOf', () {
     test('one per completed colour, in first-seen board order', () {

@@ -20,8 +20,9 @@ void main() {
       expect(chapter.figurine.number, i + 1);
       expect(catalog.chapterNumbered(i + 1), chapter);
       expect(catalog.chapter(chapter.id), chapter);
-      // Chapters 7+ cycle ch01–ch06 until their art arrives (Q38).
+      // Each launch chapter has its own theme (m7-3's ch07–ch10, D171).
       expect(chapter.themeId, ChapterTheme.forChapter(i + 1).id);
+      expect(chapter.themeId, chapter.id);
     }
     expect(catalog.chapter('ch11'), isNull);
     expect(catalog.chapterNumbered(0), isNull);
@@ -41,7 +42,8 @@ void main() {
     }
   });
 
-  test('skins: the frame 7.3 prices, Space by default, forest-bear unsold', () {
+  test('skins: the frame 7.3 prices, Space by default, Forest Bear sold at '
+      "copy.md H's 2,500 (Q72)", () {
     final prices = {for (final s in catalog.skins) s.id: s.priceCoins};
     expect(prices, {
       'classic': 0,
@@ -50,9 +52,9 @@ void main() {
       'sweets': 1500,
       'forest': 2000,
       'winter': 3000,
-      'forest-bear': 0,
+      'forest-bear': 2500,
     });
-    expect(catalog.skin('forest-bear')?.sold, isFalse);
+    expect(catalog.skin('forest-bear')?.sold, isTrue);
     for (final skin in catalog.skins) {
       expect(skin.previewColors, hasLength(3), reason: skin.id);
       expect(Directory('../../design/skins/${skin.id}').existsSync(), isTrue);
@@ -68,6 +70,11 @@ void main() {
       'ch04': 1200,
       'ch05': 1500,
       'ch06': 2000,
+      // No source prices chapters 7–10 (Q156's default).
+      'ch07': 2000,
+      'ch08': 2000,
+      'ch09': 2000,
+      'ch10': 2000,
     });
     final ch04 = catalog.theme('ch04')!;
     expect(

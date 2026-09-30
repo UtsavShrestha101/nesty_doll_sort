@@ -16,14 +16,15 @@ void main() {
       );
     });
 
-    test('with nothing lifted, an empty, iced or unknown slot is ignored', () {
+    test('with nothing lifted, an empty or iced slot is nudged (E.13, frame '
+        '12.13; Q39) and an unknown one ignored', () {
       expect(
         TapPolicy.tap(board, selected: null, tapped: emptyTop),
-        const IgnoreTouch(),
+        const NudgeSlot(emptyTop, SlotNudgeKind.emptyStand),
       );
       expect(
         TapPolicy.tap(iced, selected: null, tapped: red2),
-        const IgnoreTouch(),
+        const NudgeSlot(red2, SlotNudgeKind.iced),
       );
       expect(
         TapPolicy.tap(board, selected: null, tapped: 'r9c9'),

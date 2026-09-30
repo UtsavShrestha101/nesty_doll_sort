@@ -4,8 +4,8 @@ import 'package:nesty_game/features/fx/fx_id.dart';
 import 'support/design_lottie.dart';
 
 void main() {
-  test('one FxId per design/lottie file: 29, not the 28 LOTTIE.md says', () {
-    expect(FxId.values, hasLength(29));
+  test('one FxId per design/lottie file: 35 since m7-3', () {
+    expect(FxId.values, hasLength(35));
     expect(
       FxId.values.map((id) => id.fileName).toList()..sort(),
       designLottieNames(),
@@ -26,8 +26,8 @@ void main() {
     }
   });
 
-  test('board clips are the doll, glow, glass, ice, dust, sparkle, hint and '
-      'extra-slot files; everything else is a widget', () {
+  test('board clips are the doll, glow, glass (both cases), ice, dust, '
+      'sparkle, hint and extra-slot files; everything else is a widget', () {
     final board = FxId.values.where((id) => id.host == FxHost.board).toSet();
     expect(board, {
       FxId.dollPick,
@@ -39,6 +39,7 @@ void main() {
       FxId.dollReveal,
       FxId.fxSelectGlow,
       FxId.fxGlassUnlock,
+      FxId.fxGlassUnlockTall,
       FxId.fxIce,
       FxId.fxDustPuff,
       FxId.fxSparkle,

@@ -12,15 +12,15 @@ import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_surface.dart';
 
-/// Home's big PLAY button (frame 2.1; NestyMenus): 96 tall, radius 32, an
-/// 8 px edge, a cream play disc, "PLAY" over "Level 56", and the tier badge
-/// tilted 8° on the top-right corner for Hard and Super Hard levels.
+/// Home's big PLAY button (frame 2.1; NestyMenus): [height] tall (96, and 88
+/// on a short screen: `HomeShortTokens`), radius 32, an 8 px edge, a cream
+/// play disc, "PLAY" over "Level 56", and a badge tilted 8° on the top-right
+/// corner: HARD or SUPER HARD for those tiers (frames 2.1, 12.1), or BONUS
+/// for a Bonus Endless board ([bonus], frame 12.2, which wins over a tier).
 ///
 /// Once every bundled level is won ([allLevelsDone]) it reads "PLAY" over
 /// "All done!" with no badge, never a level that doesn't exist, and opens
 /// All Levels Done (frame 4.9; review FIDELITY-5).
-/// TODO(design): no frame shows Home past the last level; M3's Bonus
-/// Endless shows the bonus level here (spec §7.1).
 ///
 /// The caller gives it its width (left/right 36 on Home).
 class PlayButton extends StatelessWidget {
@@ -29,7 +29,9 @@ class PlayButton extends StatelessWidget {
     required this.tier,
     required this.onPressed,
     this.allLevelsDone = false,
+    this.bonus = false,
     this.title,
+    this.height = defaultHeight,
     super.key,
   });
 
@@ -46,7 +48,14 @@ class PlayButton extends StatelessWidget {
   /// semantics.
   final String? title;
 
-  static const double height = 96;
+  /// A Bonus Endless board: the BONUS badge (frame 12.2).
+  final bool bonus;
+
+  /// The button's height on this screen.
+  final double height;
+
+  /// `layout.home.playButton.height`.
+  static const double defaultHeight = HomeTokens.playButtonHeight;
 
   static const _style = SurfaceStyle(
     gradient: AppGradientTokens.playButton,
@@ -61,10 +70,11 @@ class PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    final badge = !allLevelsDone && TierChip.shows(tier);
+    final tierBadge = !allLevelsDone && !bonus && TierChip.shows(tier);
+    final badge = tierBadge || (!allLevelsDone && bonus);
     final semantics = allLevelsDone
         ? l10n.allLevelsTitle
-        : badge
+        : tierBadge
         ? l10n.playLevelSemantics(level, l10n.tierName(tier.id))
         : l10n.playSemantics(level);
     final content = Row(
@@ -129,7 +139,7 @@ class PlayButton extends StatelessWidget {
               top: -14,
               child: Transform.rotate(
                 angle: 8 * math.pi / 180,
-                child: _TierBadge(tier: tier),
+                child: _TierBadge(tier: tier, bonus: bonus),
               ),
             ),
         ],
@@ -183,26 +193,30 @@ final class _TrianglePainter extends CustomPainter {
 }
 
 /// The Home badge: bigger than the HUD chip, on the tier's own gradient
-/// with a 3 px cream ring (NestyMenus "HARD").
-/// TODO(design): Home shows only HARD; SUPER HARD reuses its shape on the
-/// purple gradient with the bolt glyph (Design System chip).
+/// with a 3 px cream ring (NestyMenus "HARD"; frames 12.1 SUPER HARD with the
+/// bolt, 12.2 BONUS with the star on `gradient.bonus`).
 class _TierBadge extends StatelessWidget {
-  const _TierBadge({required this.tier});
+  const _TierBadge({required this.tier, required this.bonus});
 
   final Tier tier;
+  final bool bonus;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    final superHard = tier == Tier.superhard;
+    final superHard = !bonus && tier == Tier.superhard;
     final style = SurfaceStyle(
-      gradient: superHard
+      gradient: bonus
+          ? AppGradientTokens.bonus
+          : superHard
           ? AppGradientTokens.superHard
           : AppGradientTokens.hard,
       shadows: [
         const NestyShadow(color: Color(0x59FFFFFF), inset: true, dy: 2),
         NestyShadow(
-          color: superHard
+          color: bonus
+              ? AppColorTokens.bonusEdge
+              : superHard
               ? AppColorTokens.superHardEdge
               : AppColorTokens.dangerEdge,
           dy: 4,
@@ -218,13 +232,21 @@ class _TierBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            superHard ? NestyIcons.bolt : NestyIcons.localFireDepartment,
+            bonus
+                ? NestyIcons.star
+                : superHard
+                ? NestyIcons.bolt
+                : NestyIcons.localFireDepartment,
             size: 16,
             color: const Color(0xFFFFFFFF),
           ),
           const SizedBox(width: 3),
           Text(
-            superHard ? l10n.tierSuperHard : l10n.tierHard,
+            bonus
+                ? l10n.homeBonusBadge
+                : superHard
+                ? l10n.tierSuperHard
+                : l10n.tierHard,
             style: AppTextStyleTokens.tierChip.copyWith(
               fontSize: 13,
               letterSpacing: 13 * 0.06,

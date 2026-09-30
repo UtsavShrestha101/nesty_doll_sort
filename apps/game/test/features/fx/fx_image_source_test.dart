@@ -53,12 +53,20 @@ void main() {
           (piece.designSize.width, piece.designSize.height),
           reason: slot.assetId,
         );
+      } else if (slot.art != null) {
+        // m7-3's UI art (`ui_stars`, `ui_chest`): at 3× like the pieces, its
+        // box the file's own (44 stars, the 73.3 glow, the 130×108.3 chest).
+        expect(slot.density, 3, reason: slot.assetId);
       } else {
         expect(slot, FxImageSlot.unlockSymbol);
         expect(slot.density, 3);
         expect((slot.declaredWidth, slot.declaredHeight), (12.0, 12.0));
       }
     }
+    expect(FxImageSlot.starFilled.declaredWidth, 44);
+    expect(FxImageSlot.starGlow.declaredWidth, closeTo(73.33, 0.01));
+    expect(FxImageSlot.chestOpen.declaredWidth, 130);
+    expect(FxImageSlot.chestOpen.declaredHeight, closeTo(108.33, 0.01));
     expect(
       (FxImageSlot.glowRing.assetWidth, FxImageSlot.glowRing.declaredWidth),
       (348, 116),
@@ -92,15 +100,23 @@ void main() {
     expect(k / r, closeTo(1 / 2.4, 1e-12));
   });
 
-  test('doll slots name their role and part; board pieces their sprite', () {
+  test('doll slots name their role and part; board pieces their sprite; UI '
+      'art its UiArt', () {
     for (final slot in FxImageSlot.values) {
       expect(slot.isDoll, slot.part != null);
       if (slot == FxImageSlot.unlockSymbol) {
         expect(slot.piece, isNull);
+        expect(slot.art, isNull);
       } else {
-        expect(slot.isDoll || slot.piece != null, isTrue, reason: slot.name);
+        // Exactly one source per slot.
+        expect(
+          [slot.isDoll, slot.piece != null, slot.art != null].where((b) => b),
+          hasLength(1),
+          reason: slot.name,
+        );
       }
     }
+    expect(FxImageSlot.glassCaseTall1.piece, BoardSprite.glassCaseTall1);
     expect(FxImageSlot.moverBody.role, FxRole.mover);
     expect(FxImageSlot.moverBody.part, FxDollPart.body);
     expect(FxImageSlot.dollSilhouette.part, FxDollPart.silhouette);

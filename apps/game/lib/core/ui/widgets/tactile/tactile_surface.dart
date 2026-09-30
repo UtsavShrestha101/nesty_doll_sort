@@ -1,8 +1,10 @@
+import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_painter.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
+import 'package:nesty_game/core/ui/widgets/tactile/touch_target.dart';
 
 /// Every pressable control of the design (design/README.md "Tactile
 /// depth"): a gradient face with a 2 px white inner top highlight, a solid
@@ -29,7 +31,11 @@ class TactileSurface extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.alignment = Alignment.center,
     this.semanticLabel,
+    this.semanticValue,
+    this.selected,
+    this.customSemanticsActions,
     this.excludeChildSemantics = false,
+    this.minTouchSize,
     this.feedback = true,
     super.key,
   });
@@ -50,8 +56,25 @@ class TactileSurface extends StatefulWidget {
   /// The screen-reader label. Icon-only controls must set it.
   final String? semanticLabel;
 
+  /// The control's state, read after its label ("Equipped", "After
+  /// Level 2"), so the label stays the control's name.
+  final String? semanticValue;
+
+  /// Whether this is the chosen option of a group (a sheet's active row).
+  /// Null (the default) exposes no selected state at all.
+  final bool? selected;
+
+  /// Extra actions a screen reader offers on this control (the Skins
+  /// card's Equip and Buy, whose own buttons its label covers).
+  final Map<CustomSemanticsAction, VoidCallback>? customSemanticsActions;
+
   /// Hides [child]'s own semantics (when [semanticLabel] says it all).
   final bool excludeChildSemantics;
+
+  /// Grows the touch area and the screen-reader node to at least this size
+  /// ([TouchTarget], 48 dp by spec §10.3) around a smaller face, which
+  /// stays centred and keeps its look. The widget's box grows with it.
+  final Size? minTouchSize;
 
   /// False skips the sound and haptic (a control that plays its own).
   final bool feedback;
@@ -161,37 +184,47 @@ class _TactileSurfaceState extends State<TactileSurface>
         child: widget.child,
       ),
     );
+    Widget face = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTapDown: enabled ? _handleDown : null,
+      onTapUp: enabled ? _handleUp : null,
+      onTapCancel: enabled ? _release : null,
+      onTap: enabled ? _activate : null,
+      child: SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: CustomPaint(
+          painter: _painter,
+          child: AnimatedBuilder(
+            animation: _press,
+            child: content,
+            builder: (context, child) => Transform.translate(
+              offset: Offset(0, travel * _press.value),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+    // Inside the node, so a screen reader's focus box is the touch area
+    // too, not just the face (review R24).
+    final minTouchSize = widget.minTouchSize;
+    if (minTouchSize != null) {
+      face = TouchTarget(minSize: minTouchSize, child: face);
+    }
     // Its own node: the child's text merges into the button's label.
     return Semantics(
       container: true,
       button: true,
       enabled: enabled,
+      selected: widget.selected,
       label: widget.semanticLabel,
+      value: widget.semanticValue,
       excludeSemantics: widget.excludeChildSemantics,
+      customSemanticsActions: widget.customSemanticsActions,
       onTap: enabled ? _activate : null,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        excludeFromSemantics: true,
-        onTapDown: enabled ? _handleDown : null,
-        onTapUp: enabled ? _handleUp : null,
-        onTapCancel: enabled ? _release : null,
-        onTap: enabled ? _activate : null,
-        child: SizedBox(
-          width: widget.width,
-          height: widget.height,
-          child: CustomPaint(
-            painter: _painter,
-            child: AnimatedBuilder(
-              animation: _press,
-              child: content,
-              builder: (context, child) => Transform.translate(
-                offset: Offset(0, travel * _press.value),
-                child: child,
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: face,
     );
   }
 }

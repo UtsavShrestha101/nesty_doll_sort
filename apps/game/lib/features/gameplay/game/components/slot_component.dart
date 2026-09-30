@@ -19,13 +19,16 @@ import 'package:nesty_game/features/gameplay/game/timeline/fx_segment.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 /// Everything one slot draws above its stand (docs/plans/m2-lottie-design.md
-/// §8): its rest sprite ([nest]), its paused `fx_glass_unlock` or `fx_ice`
-/// composition, and the ice badge on top.
+/// §8): its rest sprite ([nest]), its paused `fx_glass_unlock` (or
+/// `fx_glass_unlock_tall`) or `fx_ice` composition, and the ice badge on top.
 ///
-/// - A locked slot owns one `fx_glass_unlock` drawable and an iced slot one
-///   `fx_ice`, built when the board is (`ResetBoard`) and always drawn: they
-///   are the rest look, the doll inside included, so [nest] draws nothing
-///   for them. While paused each replays a recorded `Picture`
+/// - A locked slot owns one `fx_glass_unlock` drawable (the tall one for a
+///   sealed size-5 or size-6 doll, `SlotGeometry.usesTallCase`) and an iced
+///   slot one `fx_ice`, built when the board is (`ResetBoard`) and always
+///   drawn: they are the rest look, the doll inside included, so [nest]
+///   draws nothing for them. The exception is an iced tower: its stand is
+///   taller than the composition's, so the composition hides its doll and
+///   [nest] draws it under the ice (m7-3 `iceTower`). While paused each replays a recorded `Picture`
 ///   (`LottieFxComponent.cacheRest`), re-recorded when its frame, params or
 ///   rasters change. Glass rests on frame 0 (the unlock symbol shows: v3's
 ///   `padlock_ping` starts at frame 1), ice on the `rest_n` marker of stage
@@ -66,8 +69,8 @@ class SlotComponent extends PositionComponent {
   /// Dropped by the board (a new level): draws nothing from now on.
   bool get retired => _retired;
 
-  /// The paused `fx_glass_unlock` composition, while the slot is locked or
-  /// unlocking.
+  /// The paused `fx_glass_unlock` (or `_tall`) composition, while the slot is
+  /// locked or unlocking.
   LottieFxComponent? get glass => _glass;
   LottieFxComponent? _glass;
 
@@ -80,7 +83,12 @@ class SlotComponent extends PositionComponent {
   // would only draw once Flame mounts it, a frame late, and the doll would
   // vanish for that frame.
   LottieFxComponent? _spareGlass;
+  LottieFxComponent? _spareGlassTall;
   LottieFxComponent? _spareIce;
+
+  /// The library the last [buildCompositions] used, for a composition the
+  /// re-pitch swaps ([relayout]).
+  FxLibrary? _library;
 
   /// Rule-3 stand-ins: frame bookkeeping for a missing file's frame swap.
   FxPlayer? _glassSwap;
@@ -100,8 +108,12 @@ class SlotComponent extends PositionComponent {
       _iceSwap != null || (_ice != null && !_draws(_ice));
 
   /// Whether a composition draws the slot's rest look (its doll included)
-  /// this frame: then [nest] draws no sprite (§8).
-  bool get compositionDraws => _draws(_glass) || _draws(_ice);
+  /// this frame: then [nest] draws no sprite (§8). An ice composition that
+  /// hides its doll (an iced tower) leaves the doll to [nest].
+  bool get compositionDraws =>
+      _draws(_glass) || (_draws(_ice) && !_iceHidesDoll);
+
+  bool get _iceHidesDoll => _ice?.drawable.images.request.hideDoll ?? false;
 
   /// Flame renders [component] this frame: it is mounted, or this slot
   /// isn't yet (the board draws it, and every child added to an unmounted
@@ -125,15 +137,19 @@ class SlotComponent extends PositionComponent {
   /// restart, an undo): glass on frame 0 while locked, ice on its stage while
   /// frozen. A file [library] doesn't hold gets the static stand-in.
   void buildCompositions(FxLibrary library, {required bool reducedMotion}) {
+    _library = library;
     final view = slot.view;
     // A composition the slot already has is re-rested, not rebuilt: a new
     // component would only draw once mounted, a frame late (an undo).
     if (view.locked) {
       _glassSwap = null;
-      final glass =
-          _glass ?? _compose(library, FxId.fxGlassUnlock, reducedMotion);
+      final id = _glassIdOf(slot.geometry);
+      // The other file (the row re-pitched into or out of the tall case).
+      final held = _glass;
+      if (held != null && held.id != id) releaseComposition(held.id);
+      final glass = _glass ?? _compose(library, id, reducedMotion);
       if (glass == null) {
-        _glassSwap = FxPlayer.forSpec(fxSpecOf(FxId.fxGlassUnlock))..rest(0);
+        _glassSwap = FxPlayer.forSpec(fxSpecOf(id))..rest(0);
       } else {
         _glass = glass;
         _configure(glass, reducedMotion: reducedMotion);
@@ -162,14 +178,28 @@ class SlotComponent extends PositionComponent {
     place();
   }
 
+  /// The glass file of this slot's case: the tall one for a sealed size-5 or
+  /// size-6 doll (m7-3 `layout.board.glassCaseTall`).
+  static FxId _glassIdOf(SlotGeometry g) =>
+      g.usesTallCase ? FxId.fxGlassUnlockTall : FxId.fxGlassUnlock;
+
+  static bool _isGlass(FxId id) =>
+      id == FxId.fxGlassUnlock || id == FxId.fxGlassUnlockTall;
+
   LottieFxComponent? _compose(FxLibrary library, FxId id, bool reducedMotion) {
-    final glass = id == FxId.fxGlassUnlock;
-    final spare = glass ? _spareGlass : _spareIce;
+    final spare = switch (id) {
+      FxId.fxGlassUnlock => _spareGlass,
+      FxId.fxGlassUnlockTall => _spareGlassTall,
+      _ => _spareIce,
+    };
     if (spare != null) {
-      if (glass) {
-        _spareGlass = null;
-      } else {
-        _spareIce = null;
+      switch (id) {
+        case FxId.fxGlassUnlock:
+          _spareGlass = null;
+        case FxId.fxGlassUnlockTall:
+          _spareGlassTall = null;
+        default:
+          _spareIce = null;
       }
       return spare;
     }
@@ -190,14 +220,22 @@ class SlotComponent extends PositionComponent {
       ..request.doll = view.color
       ..request.unlockColor = view.unlockColor
       ..request.furnitureScale = g.furnitureScale
-      // Locked and iced: the glass composition draws the doll (§8).
-      ..request.hideDoll = component.id == FxId.fxIce && _glass != null;
+      // Locked and iced: the glass composition draws the doll (§8). An iced
+      // tower's stand is taller than the composition's, so the slot's own
+      // sprite draws the doll under the ice.
+      ..request.hideDoll =
+          component.id == FxId.fxIce &&
+          (_glass != null || g.kind == SlotShapeKind.tower);
     drawable.params.reducedMotion = reducedMotion;
     FxLayout.applyDollHeights(
       drawable.params,
       drawable.spec,
       compositionScale: g.furnitureScale,
       doll: view.hasNest ? g.dollHeight(view.outerSize) : null,
+      // The tall preset plays fx_ice stretched: the doll is compensated.
+      stretchY: component.id == FxId.fxIce ? g.iceFxScaleY : 1,
+      // A tall case in a narrow column is the case of a smaller doll.
+      caseHeight: g.tallCaseHeight,
     );
   }
 
@@ -210,9 +248,9 @@ class SlotComponent extends PositionComponent {
     double lateMs, {
     required bool shake,
   }) {
-    final component = fx == FxId.fxGlassUnlock ? _glass : _ice;
+    final component = _isGlass(fx) ? _glass : _ice;
     if (component == null) {
-      final swap = fx == FxId.fxGlassUnlock ? _glassSwap : _iceSwap;
+      final swap = _isGlass(fx) ? _glassSwap : _iceSwap;
       swap?.start(_planOf(segment), startMs: lateMs);
       return;
     }
@@ -236,14 +274,18 @@ class SlotComponent extends PositionComponent {
   /// The [fx] composition is done (unlocked or shattered): from now on the
   /// sprite draws the doll.
   void releaseComposition(FxId fx) {
-    if (fx == FxId.fxGlassUnlock) {
+    if (_isGlass(fx)) {
       _glassSwap = null;
       final glass = _glass;
       _glass = null;
       if (glass != null) {
         // Inactive: draws nothing from this frame on; its picture is freed.
         glass.deactivate();
-        _spareGlass = glass;
+        if (glass.id == FxId.fxGlassUnlockTall) {
+          _spareGlassTall = glass;
+        } else {
+          _spareGlass = glass;
+        }
         // Locked and iced: the ice composition draws the doll now (§8).
         final ice = _ice;
         if (ice != null) {
@@ -268,6 +310,7 @@ class SlotComponent extends PositionComponent {
     _glass?.deactivate();
     _ice?.deactivate();
     _spareGlass?.deactivate();
+    _spareGlassTall?.deactivate();
     _spareIce?.deactivate();
   }
 
@@ -284,7 +327,18 @@ class SlotComponent extends PositionComponent {
         _glass?.drawable.params.reducedMotion ??
         _ice?.drawable.params.reducedMotion ??
         false;
-    final glass = _glass;
+    final library = _library;
+    var glass = _glass;
+    // A re-pitch can change the case a sealed doll needs (a row of 5's
+    // smaller stands make a size-4 doll tall for its case): swap the file,
+    // resting on frame 0 as it is (a locked slot rests there between events).
+    if (glass != null &&
+        library != null &&
+        glass.id != _glassIdOf(slot.geometry) &&
+        slot.view.locked) {
+      buildCompositions(library, reducedMotion: reduced);
+      glass = _glass;
+    }
     if (glass != null) _configure(glass, reducedMotion: reduced);
     final ice = _ice;
     if (ice != null) _configure(ice, reducedMotion: reduced);
@@ -303,14 +357,21 @@ class SlotComponent extends PositionComponent {
   }
 
   /// Puts the compositions on the slot's (re-pitching) layout: glass's doll
-  /// base (90, 163) on the case floor, ice's (90, 170.8) on the stand
-  /// surface, at the furniture scale (§8).
+  /// base (90, 163) on the case floor (the tall glass's stand surface
+  /// (100, 212) on the stand surface), ice's ice bottom (90, 200) on the
+  /// overlay's bottom, stretched on the tall preset, at the furniture scale
+  /// (§8).
   void place() {
     final r = scene.repitch;
     final x = slot.centerX(r);
     final fs = slot.furnitureScale(r);
     _glass?.placeAt(x, slot.lockedDollBaseY(r), fs);
-    _ice?.placeAt(x, slot.surfaceY(r), fs);
+    _ice?.placeAt(
+      x,
+      slot.iceDollBaseY(r),
+      fs,
+      stretchY: slot.geometry.iceFxScaleY,
+    );
   }
 
   @override
@@ -322,6 +383,9 @@ class SlotComponent extends PositionComponent {
   void update(double dt) {
     position.x = slot.shakeX;
     if (scene.repitch != null) place();
+    // E.13: a tap on the sealed case pings its padlock (the composition's
+    // `padlock_ping` null is scaled while it plays).
+    _glass?.drawable.params.padlockPing = slot.padlockPing;
   }
 
   @override
@@ -419,7 +483,9 @@ class _SlotOverlay extends Component {
     final sprites = scene.sprites;
     if (owner.drawsGlassFallback) {
       final sprite = sprites?.forSlot(
-        BoardSprite.glassCase(owner._glassFrame),
+        g.usesTallCase
+            ? BoardSprite.glassCaseTall(owner._glassFrame)
+            : BoardSprite.glassCase(owner._glassFrame),
         g,
       );
       final rect = g.glassCaseRect;
@@ -460,7 +526,12 @@ class _SlotOverlay extends Component {
       }
     }
     if (slot.decor.hasBadge) {
-      slot.decor.paintBadge(canvas, slot.badgeX(r), slot.badgeY(r));
+      slot.decor.paintBadge(
+        canvas,
+        slot.badgeX(r),
+        slot.badgeY(r),
+        slot.badgeBump,
+      );
     }
   }
 
@@ -487,9 +558,13 @@ class _SlotOverlay extends Component {
       FxImageSlot.unlockSymbol,
       request,
     );
+    // E.13: the padlock's ping scales the symbol about its centre.
+    final ping = owner.slot.padlockPing;
     canvas
       ..save()
-      ..translate(center.dx + dx - side / 2, center.dy - side / 2);
+      ..translate(center.dx + dx, center.dy)
+      ..scale(ping)
+      ..translate(-side / 2, -side / 2);
     if (raster == null) {
       _inkDot.color = DollPalette.of(color).ink;
       canvas

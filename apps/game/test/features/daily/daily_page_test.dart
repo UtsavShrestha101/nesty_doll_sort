@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,15 +19,36 @@ import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
+import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
+import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
+import 'package:nesty_game/features/daily/widgets/daily_background_loader.dart';
+import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
+import 'package:nesty_game/features/fx/chest/chest_reward_sequence.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_render/nesty_render.dart' show ChapterTheme;
 
 import '../../core/ui/support/ui_harness.dart';
 import '../support/screen_harness.dart';
+
+/// No art (this file's tests never check the background; `puzzle_card_test
+/// .dart` covers the fix directly), so nothing here touches a real SVG
+/// decode.
+class _NoDailyBackground implements DailyBackgroundLoader {
+  const _NoDailyBackground();
+
+  @override
+  Future<ui.Image?> rasterize(
+    ChapterTheme theme, {
+    required Size box,
+    required double devicePixelRatio,
+  }) async => null;
+}
 
 /// The Daily screen (frames 5.1–5.6; docs/plans/m3-design.md §8.4, §10.5)
 /// over a real [DailyCubit] built from a scripted [FakeDailyService] and
@@ -33,6 +56,22 @@ import '../support/screen_harness.dart';
 /// `GameplayView`: [DailyView] reads the cubit from its `BlocProvider`
 /// ancestor, so a test can drive real state transitions (the stream from
 /// `FakeDailyService.status =`) instead of only literal states.
+/// A [FakeDailyService] whose [collectChest] also pays the save, as
+/// `StreakDailyService` does, so the header's handover from the landed
+/// count to the paid balance can be checked.
+final class _PayingDailyService extends FakeDailyService {
+  _PayingDailyService(this._save, {super.status}) : super(FakeClock());
+
+  final SaveService _save;
+
+  @override
+  int collectChest() {
+    final paid = super.collectChest();
+    if (paid > 0) _save.addCoins(paid);
+    return paid;
+  }
+}
+
 void main() {
   setUpAll(loadBundledFonts);
 
@@ -41,39 +80,58 @@ void main() {
   DailyStatus status({
     bool unlocked = true,
     int streak = 4,
+    // The frame's base case is lit ("orange gradient", design/README.md
+    // "05 Daily" 5.1): every call below keeps the flame lit unless a test
+    // is specifically about the paused look (m7-design §8, §15.7).
+    bool lit = true,
     int freezes = 1,
     bool solvedToday = false,
     int cycleDone = 4,
     bool chestPending = false,
     LocalDate? freezeNotice,
     bool inProgress = false,
+    DailySolve? solve,
   }) => DailyStatus(
     today: today,
     tier: Tier.hard,
     colors: 5,
     unlocked: unlocked,
     streak: streak,
+    lit: lit,
+    run: lit ? streak : 0,
     freezes: freezes,
     solvedToday: solvedToday,
     cycleDone: cycleDone,
     chestPending: chestPending,
     freezeNotice: freezeNotice,
     inProgress: inProgress,
+    solve: solve,
   );
 
-  ({DailyCubit cubit, FakeDailyService daily, FakeAudioService jingles}) build({
-    DailyStatus? status,
-    int coins = 140,
-  }) {
+  ({
+    DailyCubit cubit,
+    FakeDailyService daily,
+    FakeAudioService jingles,
+    FakeShareService share,
+  })
+  build({DailyStatus? status, int coins = 140}) {
     final save = FakeSaveService(initial: SaveDocument(coins: coins));
     final levels = FakeLevelRepository();
     final resolver = FakeLevelResolver(levels, save, FakeRemoteConfigService());
     final daily = FakeDailyService(FakeClock(), status: status);
     final jingles = FakeAudioService();
+    final share = FakeShareService();
     return (
-      cubit: DailyCubit(daily, resolver, save, FakeRemoteConfigService()),
+      cubit: DailyCubit(
+        daily,
+        resolver,
+        save,
+        FakeRemoteConfigService(),
+        share,
+      ),
       daily: daily,
       jingles: jingles,
+      share: share,
     );
   }
 
@@ -83,6 +141,7 @@ void main() {
     FakeAudioService jingles, {
     Size size = const Size(390, 844),
     double textScale = 1,
+    Widget? reminderOffer,
   }) async {
     // `addTearDown` fires after flutter_test's own pending-timer invariant
     // check, so every test below closes the cubit itself (cancelling its
@@ -101,8 +160,13 @@ void main() {
               value: FakeDatabaseService(),
             ),
             RepositoryProvider<FxLibrary>.value(value: FakeFxLibrary()),
+            RepositoryProvider<DailyBackgroundLoader>.value(
+              value: const _NoDailyBackground(),
+            ),
           ],
-          child: const DailyPage(),
+          // The view without the page's reminder offer (m7-design P3.10):
+          // the offer card needs its DI-built cubit; its own tests cover it.
+          child: DailyView(reminderOffer: reminderOffer),
         ),
       ),
       size: size,
@@ -113,6 +177,35 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
+  /// The day-7 chest opens closed (owner-chest's `ChestRewardSequence`):
+  /// past its arrival, Open plays the wiggle and the burst, then Collect is
+  /// live. The idle breath loops until Open, so this never `pumpAndSettle`s
+  /// before the tap.
+  Future<void> openDay7Chest(WidgetTester tester) async {
+    await tester.pump(
+      const Duration(milliseconds: ChestRewardSequence.arrivalMs + 50),
+    );
+    await tester.tap(find.text('Open'));
+    // The open state's gold rays turn until the card leaves, so this pumps
+    // the wiggle and the burst instead of settling.
+    await tester.pump(
+      const Duration(
+        milliseconds:
+            ChestRewardSequence.wiggleMs + ChestRewardSequence.burstMs + 100,
+      ),
+    );
+  }
+
+  /// Collect: the coins land (or burst in place) and the card fades out.
+  Future<void> collectDay7Chest(WidgetTester tester) async {
+    await tester.tap(find.text('Collect'));
+    // The flights, then the fade, then the card leaves (up to a few s).
+    for (var ms = 0; ms < 5000; ms += 50) {
+      await tester.pump(const Duration(milliseconds: 50));
+      if (find.text('7-day streak!').evaluate().isEmpty) break;
+    }
+  }
+
   testWidgets('frame 5.1: the streak card, the freeze chip, the 7-day '
       'strip and the chest row', (tester) async {
     final built = build(status: status());
@@ -121,12 +214,31 @@ void main() {
     expect(find.text('Daily'), findsOneWidget);
     expect(find.text('140'), findsOneWidget);
     expect(find.text('4 days'), findsOneWidget);
-    expect(find.text('Play today to keep your streak'), findsOneWidget);
+    // Value-framed since M7 (D92; m7-design §8, §16).
+    expect(find.text('Play today to add to your streak'), findsOneWidget);
     expect(find.text('1 freeze'), findsOneWidget);
     expect(find.text('Day 7 chest · 300 coins'), findsOneWidget);
     expect(find.text('3 days to go, counting today'), findsOneWidget);
     // Day strip: 4 done, day 5 raised "Today", days 6 locked, day 7 the chest.
     expect(find.text('Today'), findsOneWidget);
+    await built.cubit.close();
+  });
+
+  // E2 the gentle streak's paused look (m7-design §8, §15.7): a missed day
+  // no freeze covered, streak unchanged, never red (Q96).
+  testWidgets('a paused streak: the value-framed subline, not the keep-'
+      'streak copy', (tester) async {
+    final built = build(status: status(lit: false, streak: 6));
+    await pumpDaily(tester, built.cubit, built.jingles);
+
+    expect(find.text('6 days'), findsOneWidget);
+    expect(
+      find.text(
+        'Your 6-day streak is resting. Solve today’s puzzle to light it again.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Play today to add to your streak'), findsNothing);
     await built.cubit.close();
   });
 
@@ -147,11 +259,45 @@ void main() {
     final built = build(status: status(solvedToday: true, cycleDone: 5));
     await pumpDaily(tester, built.cubit, built.jingles);
 
-    expect(find.text('Done for today. See you tomorrow!'), findsOneWidget);
+    expect(find.text('Your flame is lit. See you tomorrow.'), findsOneWidget);
     expect(find.text('Solved · +50'), findsOneWidget);
     expect(find.textContaining('Next puzzle in'), findsOneWidget);
     expect(find.text('Play Level 1'), findsOneWidget);
+    // Share is on the daily win card (frame 10.1), never here (D188).
+    expect(find.bySemanticsLabel("Share today's result"), findsNothing);
     await built.cubit.close();
+  });
+
+  group('E3: Share left the solved card (frame 5.5; phase 4, D188)', () {
+    DailySolve solve() =>
+        DailySolve(date: today, moves: 18, families: 5, minuteOfDay: 1150);
+
+    // Share sits on the daily win card now (frame 10.1): only the win knows
+    // the families' colours G.6's glyphs need. The solved card (5.5) keeps
+    // its chip, countdown and Play Level N, and shares nothing.
+    testWidgets('a solved day with a known solve shows no Share button', (
+      tester,
+    ) async {
+      final built = build(
+        status: status(
+          solvedToday: true,
+          cycleDone: 5,
+          streak: 4,
+          solve: solve(),
+        ),
+      );
+      await pumpDaily(tester, built.cubit, built.jingles);
+      expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+      expect(built.share.shared, isEmpty);
+      await built.cubit.close();
+    });
+
+    testWidgets('hidden before today is solved', (tester) async {
+      final built = build(status: status());
+      await pumpDaily(tester, built.cubit, built.jingles);
+      expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+      await built.cubit.close();
+    });
   });
 
   testWidgets('a full week shows "A full week!"', (tester) async {
@@ -191,17 +337,59 @@ void main() {
     await built.cubit.close();
   });
 
+  testWidgets('the day-7 chest is modal to a screen reader: the Daily '
+      "screen's Back and Play behind it can't be reached (review R11)", (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    final open = build(status: status());
+    await pumpDaily(tester, open.cubit, open.jingles);
+    expect(find.semantics.byLabel('Back'), findsOne);
+    expect(find.semantics.byLabel(RegExp('^Play, ')), findsOne);
+    await open.cubit.close();
+
+    final built = build(status: status(chestPending: true));
+    await pumpDaily(tester, built.cubit, built.jingles);
+    expect(find.text('7-day streak!'), findsOneWidget);
+    // The live tree (a dropped node can stay cached on its render object).
+    expect(find.semantics.byLabel('Back'), findsNothing);
+    expect(find.semantics.byLabel(RegExp('^Play, ')), findsNothing);
+    handle.dispose();
+    await built.cubit.close();
+  });
+
+  testWidgets('the day-7 chest dims the whole screen, status bar and home '
+      'indicator included (frame 5.6)', (tester) async {
+    // The device run (2026-09-30) found both safe-area bands undimmed: the
+    // chest sat inside the page's SafeArea.
+    final built = build(status: status(chestPending: true));
+    await pumpDaily(tester, built.cubit, built.jingles);
+    expect(find.text('7-day streak!'), findsOneWidget);
+    final safe = safeAreaOf(const Size(390, 844));
+    expect(safe.top, greaterThan(0), reason: 'a phone with insets');
+    expect(
+      tester.getRect(find.byType(Scrim)),
+      Offset.zero & const Size(390, 844),
+    );
+    // The screen's own content still keeps clear of the insets.
+    expect(tester.getRect(find.text('Daily')).top, greaterThan(safe.top));
+    await built.cubit.close();
+  });
+
   testWidgets('the day-7 chest modal: Collect pays the coins and plays the '
       'reward jingle once', (tester) async {
     final built = build(status: status(chestPending: true));
     await pumpDaily(tester, built.cubit, built.jingles);
 
     expect(find.text('7-day streak!'), findsOneWidget);
-    expect(find.text('+300'), findsOneWidget);
+    expect(find.text('+300 coins'), findsOneWidget);
     expect(built.jingles.jingles, isEmpty);
 
-    await tester.tap(find.text('Collect'));
-    await tester.pump(const Duration(milliseconds: 300));
+    // The chest opens closed (owner-chest): past its arrival, Open plays
+    // the wiggle and the burst, then Collect is live.
+    await openDay7Chest(tester);
+    expect(built.jingles.jingles, isEmpty, reason: 'nothing paid on Open');
+    await collectDay7Chest(tester);
 
     expect(find.text('7-day streak!'), findsNothing);
     expect(built.jingles.jingles, [Jingle.reward]);
@@ -210,6 +398,74 @@ void main() {
     // length) fire before the test ends, so no timer outlives the tree.
     await tester.pump(const Duration(seconds: 4));
     await built.cubit.close();
+  });
+
+  // The owner's chest request (design request I.3): Collect flies the coins
+  // to the screen's own coin pill, which counts up as each one lands, then
+  // shows the paid balance.
+  testWidgets('the day-7 chest flies its coins to the header coin pill, '
+      'which ticks up as they land', (tester) async {
+    final save = FakeSaveService(initial: const SaveDocument(coins: 140));
+    final daily = _PayingDailyService(save, status: status(chestPending: true));
+    final jingles = FakeAudioService();
+    final cubit = DailyCubit(
+      daily,
+      FakeLevelResolver(FakeLevelRepository(), save, FakeRemoteConfigService()),
+      save,
+      FakeRemoteConfigService(),
+      FakeShareService(),
+    );
+    await pumpDaily(tester, cubit, jingles);
+    int pill() => tester
+        .widget<CoinPill>(
+          find.descendant(
+            of: find.byType(ScreenHeader),
+            matching: find.byType(CoinPill),
+          ),
+        )
+        .coins;
+    expect(pill(), 140);
+
+    final modal = tester.widget<DailyChestModal>(find.byType(DailyChestModal));
+    expect(
+      modal.coinTarget?.call(),
+      tester.getRect(
+        find.descendant(
+          of: find.byType(ScreenHeader),
+          matching: find.byType(CoinPill),
+        ),
+      ),
+      reason: 'the coins fly to the header pill',
+    );
+
+    await openDay7Chest(tester);
+    await tester.tap(find.text('Collect'));
+    // Frame by frame until the first coins have landed while the last are
+    // still in the air (the sprites leave 40 ms apart, each flies 520 ms).
+    const firstLandings =
+        ChestRewardSequence.collectFlightMs +
+        2 * ChestRewardSequence.collectStaggerMs;
+    for (var ms = 0; ms < firstLandings; ms += 16) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(pill(), inExclusiveRange(140, 440));
+    expect(save.coins, 140, reason: 'paid only once the flights land');
+
+    await tester.pump(
+      const Duration(
+        milliseconds:
+            ChestRewardSequence.collectFlightMs +
+            ChestRewardSequence.coinSpriteCount *
+                ChestRewardSequence.collectStaggerMs +
+            ChestRewardSequence.exitFadeMs +
+            400,
+      ),
+    );
+    expect(save.coins, 440);
+    expect(pill(), 440);
+    expect(cubit.state.data!.status.chestPending, isFalse);
+    await tester.pump(const Duration(seconds: 4));
+    await cubit.close();
   });
 
   testWidgets('collectChest with nothing pending never plays the jingle', (
@@ -222,13 +478,16 @@ void main() {
     await built.cubit.close();
   });
 
-  testWidgets('frame 5.2: "Streak saved!" shows once and acknowledges the '
-      'notice', (tester) async {
+  testWidgets('frame 5.2: the freeze notice ("Freeze used", M7\'s rewrite of '
+      '"Streak saved!") shows once and acknowledges the notice', (
+    tester,
+  ) async {
     final frozen = LocalDate(2026, 9, 25);
     final built = build(status: status(freezeNotice: frozen));
     await pumpDaily(tester, built.cubit, built.jingles);
 
-    expect(find.text('Streak saved!'), findsOneWidget);
+    // copy.md G.9 `streak_freeze_used`.
+    expect(find.text('A freeze kept your flame lit.'), findsOneWidget);
     expect(
       find.text("A freeze covered Friday. You'll earn a new one next week."),
       findsOneWidget,
@@ -279,6 +538,54 @@ void main() {
       expect(find.bySemanticsLabel('Play, 50 coins'), findsOneWidget);
       await built.cubit.close();
       handle.dispose();
+    });
+  });
+
+  group('the reminder offer slot (frame 10.2; phase 4 lane D)', () {
+    const marker = Text('OFFER-MARKER');
+
+    testWidgets('is not shown before today is solved', (tester) async {
+      final built = build(status: status());
+      await pumpDaily(
+        tester,
+        built.cubit,
+        built.jingles,
+        reminderOffer: marker,
+      );
+      expect(find.text('OFFER-MARKER'), findsNothing);
+      await built.cubit.close();
+    });
+
+    testWidgets('is shown over the whole screen once today is solved', (
+      tester,
+    ) async {
+      final built = build(status: status(solvedToday: true, cycleDone: 2));
+      await pumpDaily(
+        tester,
+        built.cubit,
+        built.jingles,
+        reminderOffer: marker,
+      );
+      expect(find.text('OFFER-MARKER'), findsOneWidget);
+      await built.cubit.close();
+    });
+
+    testWidgets('waits for the day-7 chest: the chest is collected first', (
+      tester,
+    ) async {
+      final built = build(
+        status: status(solvedToday: true, cycleDone: 7, chestPending: true),
+      );
+      await pumpDaily(
+        tester,
+        built.cubit,
+        built.jingles,
+        reminderOffer: marker,
+      );
+      expect(find.text('7-day streak!'), findsOneWidget);
+      expect(find.text('OFFER-MARKER'), findsNothing);
+      await built.cubit.close();
+      await tester.pump(const Duration(seconds: 4));
     });
   });
 }

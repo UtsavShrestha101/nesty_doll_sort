@@ -141,7 +141,7 @@ class FxLayer extends Component {
     if (component == null) return;
     _configure(component, clip.fx, clip.params, clip.slotId, geometry);
     _place(component, clip.placement, geometry);
-    _play(component, command.segment, lateMs);
+    _play(component, command.segment, lateMs + command.phaseMs);
     final live = _LiveClip(clip, component, pool);
     _live.add(live);
     _byClip[clip.id] = live;
@@ -240,6 +240,12 @@ class FxLayer extends Component {
         FxRole.doll => p.dollScale,
         FxRole.mover => p.moverScale,
         FxRole.target => p.targetScale,
+        // The intro loops' roles author their own sizes (their FxSpec lists
+        // no roles), and never play on the board.
+        FxRole.revealed ||
+        FxRole.family ||
+        FxRole.family2 ||
+        FxRole.freed => null,
       });
     }
     if (drawable.spec.travel != null) {
@@ -255,6 +261,8 @@ class FxLayer extends Component {
       ..revealDropUnits = p.revealDrop
       // Reduced motion holds doll_invalid's target shake (§13).
       ..reducedMotion = !p.shake;
+    // The drag hover's glow is dimmed (E.14).
+    component.opacity = p.opacity;
   }
 
   void _place(

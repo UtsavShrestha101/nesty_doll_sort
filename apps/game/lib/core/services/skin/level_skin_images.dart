@@ -96,6 +96,8 @@ final class LevelSkinImages implements FxImageSource {
     }
     final piece = slot.piece;
     if (piece != null) return _piece(piece, request.furnitureScale);
+    // The UI-art slots (`ui_stars`, `ui_chest`) are `UiArtImageSource`'s.
+    if (slot.art != null) return null;
     final unlock = request.unlockColor;
     return unlock == null ? null : _unlock(unlock, request.furnitureScale);
   }

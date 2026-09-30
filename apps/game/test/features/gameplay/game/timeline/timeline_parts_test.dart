@@ -248,6 +248,78 @@ void main() {
       expect(s.coinBurstAtMs, 350);
       expect(s.countUpEndMs, 650);
     });
+
+    group('stars (m7-design P3.7, D149)', () {
+      test('no stars: starsStartMs still set, no cues, no flourish', () {
+        final s = WinOverlaySchedule.of(MotionSpec.standard, families: 0);
+        expect(s.starsStartMs, 1300);
+        expect(s.starCues, isEmpty);
+        expect(s.starFlourishCue, isNull);
+      });
+
+      test('3 stars: star_1…star_3 cues 333 ms apart from 1,300 ms with a '
+          'light haptic each, then the success haptic after the flourish', () {
+        final s = WinOverlaySchedule.of(
+          MotionSpec.standard,
+          families: 0,
+          stars: 3,
+        );
+        expect(s.starCues.map((c) => c.sound), [
+          SoundEffect.star1,
+          SoundEffect.star2,
+          SoundEffect.star3,
+        ]);
+        expect(s.starCues.map((c) => c.atMs), [
+          closeTo(1300, 0.01),
+          closeTo(1633.3, 0.1),
+          closeTo(1966.7, 0.1),
+        ]);
+        expect(
+          s.starCues.map((c) => c.haptic),
+          everyElement(HapticPattern.pick),
+        );
+        // Three segments (20 f each), then the 60 f flourish.
+        expect(s.starFlourishCue!.atMs, closeTo(1300 + 1000 + 1000, 0.1));
+        expect(s.starFlourishCue!.haptic, HapticPattern.complete);
+        expect(s.starFlourishCue!.sound, isNull);
+      });
+
+      test('1 or 2 stars: their own cues, no flourish', () {
+        for (final stars in [1, 2]) {
+          final s = WinOverlaySchedule.of(
+            MotionSpec.standard,
+            families: 0,
+            stars: stars,
+          );
+          expect(s.starCues, hasLength(stars));
+          expect(s.starFlourishCue, isNull, reason: '$stars stars');
+        }
+      });
+
+      test('reduced motion (Q146, D191): starsStartMs halves, and one cue '
+          'plays for the highest star, with no flourish', () {
+        final s = WinOverlaySchedule.of(
+          MotionSpec.reduced,
+          families: 0,
+          stars: 3,
+        );
+        expect(s.starsStartMs, 650);
+        expect(s.starCues, [
+          const FxCue(
+            atMs: 650,
+            sound: SoundEffect.star3,
+            haptic: HapticPattern.pick,
+          ),
+        ]);
+        expect(s.starFlourishCue, isNull);
+        final two = WinOverlaySchedule.of(
+          MotionSpec.reduced,
+          families: 0,
+          stars: 2,
+        );
+        expect(two.starCues.single.sound, SoundEffect.star2);
+      });
+    });
   });
 }
 

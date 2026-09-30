@@ -6,7 +6,9 @@ import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
+import 'package:nesty_game/core/services/share/share_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
+import 'package:nesty_game/core/ui/art/ui_art_library.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
 
@@ -26,6 +28,8 @@ final class GameplayServices {
     required this.music,
     required this.jingles,
     required this.jingleCues,
+    required this.share,
+    required this.uiArt,
   });
 
   /// The level's art and the chapter background (lottie §4).
@@ -62,4 +66,12 @@ final class GameplayServices {
   /// The Chapter complete overlay's music/jingle sequence (AUDIO.md
   /// "Jingles", m3-design §9.3).
   final JingleCues jingleCues;
+
+  /// The daily win card's Share (frame 10.1; phase 4 architecture §3.10):
+  /// the OS share sheet with `DailyShareText.of`'s text.
+  final ShareService share;
+
+  /// The UI art's rasters for the win card's `ui_stars` and the chest's
+  /// `ui_chest` (`UiArtImageSource`; §3.4).
+  final UiArtLibrary uiArt;
 }

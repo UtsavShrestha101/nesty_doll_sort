@@ -8,6 +8,7 @@ import 'package:nesty_game/app/app.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
 import 'package:nesty_game/core/services/save/save_lifecycle_flusher.dart';
 
 /// Debug builds can opt into all-fake services with
@@ -50,6 +51,12 @@ void bootstrap() {
       // here, not resolved lazily on first use, so it is listening before
       // the app can ever go to the background.
       get<SaveLifecycleFlusher>().start();
+
+      // The opt-in daily reminder (E4; m7-design P3.10) follows its
+      // settings from here: it re-syncs the OS schedule on resume and on a
+      // settings or language change. It never asks for the permission and
+      // never schedules on a fresh install (the reminder is off).
+      get<DailyReminder>().start();
 
       runApp(App(router: get<AppRouter>()));
     },

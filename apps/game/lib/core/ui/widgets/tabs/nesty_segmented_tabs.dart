@@ -9,7 +9,8 @@ import 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
 /// "Tabs (segmented): track height 44–46, radius 23, `#EAD3B0` with a sunk
 /// shadow, padding 4. Active segment is a surface gradient with a 3px edge"
 /// (design/README.md "Components"; NestyShop's Coins · Skins · Themes ·
-/// No Ads, frame 7.3).
+/// No Ads, frame 7.3). The widget is [touchHeight] (48) tall around the 46
+/// track, so every segment is a full 48 dp target.
 ///
 /// [labels] are already localized. Tapping the selected label is a no-op (no
 /// feedback, no [onChanged] call); every other tap plays the `button` sound
@@ -27,7 +28,14 @@ class NestySegmentedTabs extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onChanged;
 
+  /// The track's height (design/README.md "Tabs (segmented)").
   static const double height = 46;
+
+  /// The widget's box: the 46 px track centred in a 48 dp row, so each
+  /// segment's touch area and screen-reader node spans the full 48 dp
+  /// (spec §10.3, review R19) while its 38 px face keeps the frame's look.
+  static const double touchHeight = 48;
+
   static const double _padding = 4;
   static const double _segmentRadius = 19;
 
@@ -38,25 +46,38 @@ class NestySegmentedTabs extends StatelessWidget {
         UiMotionTokens.tabLiftMs *
         (reduced ? UiMotionTokens.reducedMotionDurationScale : 1);
     final duration = Duration(milliseconds: ms.round());
-    return NestySurface(
-      style: SurfaceStyles.progressTrack,
-      radius: const BorderRadius.all(Radius.circular(23)),
-      height: height,
+    return SizedBox(
+      height: touchHeight,
       width: double.infinity,
-      padding: const EdgeInsets.all(_padding),
-      child: Row(
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          for (var i = 0; i < labels.length; i++) ...[
-            if (i > 0) const SizedBox(width: _padding),
-            Expanded(
-              child: _Segment(
-                label: labels[i],
-                selected: i == selectedIndex,
-                duration: duration,
-                onTap: () => onChanged(i),
-              ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: (touchHeight - height) / 2),
+            child: NestySurface(
+              style: SurfaceStyles.progressTrack,
+              radius: BorderRadius.all(Radius.circular(23)),
             ),
-          ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: _padding),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < labels.length; i++) ...[
+                  if (i > 0) const SizedBox(width: _padding),
+                  Expanded(
+                    child: _Segment(
+                      label: labels[i],
+                      selected: i == selectedIndex,
+                      duration: duration,
+                      onTap: () => onChanged(i),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -92,17 +113,26 @@ class _Segment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The label is read once: the visible Text is excluded (review R13).
     return Semantics(
       button: true,
       selected: selected,
       label: label,
+      excludeSemantics: true,
       onTap: () => _handleTap(context),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         excludeFromSemantics: true,
         onTap: () => _handleTap(context),
-        child: SizedBox(
-          height: NestySegmentedTabs.height - NestySegmentedTabs._padding * 2,
+        child: Padding(
+          // The 38 px face, centred in the 48 dp touch row: the track's
+          // 1 px margin plus its 4 px padding above and below.
+          padding: const EdgeInsets.symmetric(
+            vertical:
+                (NestySegmentedTabs.touchHeight - NestySegmentedTabs.height) /
+                    2 +
+                NestySegmentedTabs._padding,
+          ),
           child: Stack(
             fit: StackFit.expand,
             children: [

@@ -7,10 +7,10 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 /// 'Tmrw' when solved; later days locked; day 7 is the chest, open gold
 /// when done."
 ///
-/// Every cell is the same height: the frame lifts "Today" by 8 dp and
-/// raises it above its neighbours (`NestyMenus` `d.hgt`/`d.lift`), which
-/// this keeps flat instead, so the row stays simple to lay out at every
-/// width and text scale (`TODO(design)`: no lift, no wobble).
+/// Every cell is the same height; "Today" is lifted 4 dp (ui-spec-menus
+/// §6.6, a paint-only shift, so the row's layout never changes at any width
+/// or text scale) on the primary gradient with white text, and the 34 dp
+/// discs carry the state (a check, a lock, the `redeem` chest).
 class DayStrip extends StatelessWidget {
   const DayStrip({required this.status, super.key});
 
@@ -30,6 +30,9 @@ class DayStrip extends StatelessWidget {
 }
 
 class _DayCell extends StatelessWidget {
+  /// Today's lift (ui-spec-menus §6.6).
+  static const double liftToday = 4;
+
   const _DayCell({required this.day, required this.status});
 
   final int day;
@@ -114,37 +117,42 @@ class _DayCell extends StatelessWidget {
     return Semantics(
       label: l10n.dailyDaySemantics(semanticsState, day),
       excludeSemantics: true,
-      child: NestySurface(
-        style: style,
-        radius: const BorderRadius.all(Radius.circular(16)),
-        height: 96,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: AppTextStyleTokens.tierChip.copyWith(
-                fontSize: 10.5,
-                color: textColor,
+      child: Transform.translate(
+        offset: Offset(0, isToday ? -liftToday : 0),
+        child: NestySurface(
+          style: style,
+          radius: const BorderRadius.all(Radius.circular(18)),
+          height: 96,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Scales down at a large text scale, never cut ("Today" at 1.3×
+              // on a 360 dp phone).
+              ShrinkToFitText(
+                label,
+                maxLines: 1,
+                style: AppTextStyleTokens.tierChip.copyWith(
+                  fontSize: 11,
+                  color: textColor,
+                ),
               ),
-              maxLines: 1,
-            ),
-            SizedBox.square(
-              dimension: 28,
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
-                child: Icon(glyph, size: 19, color: icon),
+              SizedBox.square(
+                dimension: 34,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+                  child: Icon(glyph, size: 22, color: icon),
+                ),
               ),
-            ),
-            Text(
-              '$day',
-              style: AppTextStyleTokens.tierChip.copyWith(
-                fontSize: 13,
-                color: textColor,
+              Text(
+                '$day',
+                style: AppTextStyleTokens.tierChip.copyWith(
+                  fontSize: 15,
+                  color: textColor,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

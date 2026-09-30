@@ -97,6 +97,25 @@ final class PauseChanged extends GameplayEvent {
   final bool paused;
 }
 
+/// Relaxed mode was switched in Settings (E6; docs/plans/m7-design.md §10):
+/// the bloc follows `DatabaseService.relaxedModeChanges` itself, so a toggle
+/// made from Pause → Settings applies to the level in play.
+final class RelaxedModeChanged extends GameplayEvent {
+  const RelaxedModeChanged({required this.relaxed});
+
+  final bool relaxed;
+}
+
+/// A race's board opened or closed for the player's input (spec-prop §7.7;
+/// docs/plans/m7-design.md P2.6): the page sends it from the `RaceCubit`'s
+/// phase, [open] only while the race is running. Both sides rest until
+/// Start, and a finished race takes no more moves. Ignored outside a race.
+final class RaceGateChanged extends GameplayEvent {
+  const RaceGateChanged({required this.open});
+
+  final bool open;
+}
+
 /// The soft-stuck debounce (300 ms after the move with [moveSeq]) elapsed.
 final class SoftStuckCheckDue extends GameplayEvent {
   const SoftStuckCheckDue(this.moveSeq);

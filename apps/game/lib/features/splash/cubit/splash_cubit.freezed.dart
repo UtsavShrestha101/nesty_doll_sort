@@ -16,7 +16,11 @@ mixin _$SplashState implements DiagnosticableTreeMixin {
 
 /// 0–1, the loader bar (`ui_splash_loader`'s frame = progress %).
  double get progress;/// Levels available offline after loading.
- int get levelCount;
+ int get levelCount;/// No level has been won yet (E9, spec-prop §10.1; docs/plans/
+/// m7-design.md §13): the splash opens Level 1 (its tutorial, or the
+/// board a kill left) instead of Home. The gameplay-bloc lane sets it
+/// from the save and the splash page follows it.
+ bool get opensFirstLevel;
 /// Create a copy of SplashState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,21 +32,21 @@ $SplashStateCopyWith<SplashState> get copyWith => _$SplashStateCopyWithImpl<Spla
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'SplashState'))
-    ..add(DiagnosticsProperty('progress', progress))..add(DiagnosticsProperty('levelCount', levelCount));
+    ..add(DiagnosticsProperty('progress', progress))..add(DiagnosticsProperty('levelCount', levelCount))..add(DiagnosticsProperty('opensFirstLevel', opensFirstLevel));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SplashState&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SplashState&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.opensFirstLevel, opensFirstLevel) || other.opensFirstLevel == opensFirstLevel));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,progress,levelCount);
+int get hashCode => Object.hash(runtimeType,progress,levelCount,opensFirstLevel);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'SplashState(progress: $progress, levelCount: $levelCount)';
+  return 'SplashState(progress: $progress, levelCount: $levelCount, opensFirstLevel: $opensFirstLevel)';
 }
 
 
@@ -53,7 +57,7 @@ abstract mixin class $SplashStateCopyWith<$Res>  {
   factory $SplashStateCopyWith(SplashState value, $Res Function(SplashState) _then) = _$SplashStateCopyWithImpl;
 @useResult
 $Res call({
- double progress, int levelCount
+ double progress, int levelCount, bool opensFirstLevel
 });
 
 
@@ -70,11 +74,12 @@ class _$SplashStateCopyWithImpl<$Res>
 
 /// Create a copy of SplashState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? progress = null,Object? levelCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? progress = null,Object? levelCount = null,Object? opensFirstLevel = null,}) {
   return _then(_self.copyWith(
 progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as double,levelCount: null == levelCount ? _self.levelCount : levelCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,opensFirstLevel: null == opensFirstLevel ? _self.opensFirstLevel : opensFirstLevel // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -159,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double progress,  int levelCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double progress,  int levelCount,  bool opensFirstLevel)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SplashState() when $default != null:
-return $default(_that.progress,_that.levelCount);case _:
+return $default(_that.progress,_that.levelCount,_that.opensFirstLevel);case _:
   return orElse();
 
 }
@@ -180,10 +185,10 @@ return $default(_that.progress,_that.levelCount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double progress,  int levelCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double progress,  int levelCount,  bool opensFirstLevel)  $default,) {final _that = this;
 switch (_that) {
 case _SplashState():
-return $default(_that.progress,_that.levelCount);case _:
+return $default(_that.progress,_that.levelCount,_that.opensFirstLevel);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +205,10 @@ return $default(_that.progress,_that.levelCount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double progress,  int levelCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double progress,  int levelCount,  bool opensFirstLevel)?  $default,) {final _that = this;
 switch (_that) {
 case _SplashState() when $default != null:
-return $default(_that.progress,_that.levelCount);case _:
+return $default(_that.progress,_that.levelCount,_that.opensFirstLevel);case _:
   return null;
 
 }
@@ -215,13 +220,18 @@ return $default(_that.progress,_that.levelCount);case _:
 
 
 class _SplashState with DiagnosticableTreeMixin implements SplashState {
-  const _SplashState({this.progress = 0, this.levelCount = 0});
+  const _SplashState({this.progress = 0, this.levelCount = 0, this.opensFirstLevel = false});
   
 
 /// 0–1, the loader bar (`ui_splash_loader`'s frame = progress %).
 @override@JsonKey() final  double progress;
 /// Levels available offline after loading.
 @override@JsonKey() final  int levelCount;
+/// No level has been won yet (E9, spec-prop §10.1; docs/plans/
+/// m7-design.md §13): the splash opens Level 1 (its tutorial, or the
+/// board a kill left) instead of Home. The gameplay-bloc lane sets it
+/// from the save and the splash page follows it.
+@override@JsonKey() final  bool opensFirstLevel;
 
 /// Create a copy of SplashState
 /// with the given fields replaced by the non-null parameter values.
@@ -234,21 +244,21 @@ _$SplashStateCopyWith<_SplashState> get copyWith => __$SplashStateCopyWithImpl<_
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'SplashState'))
-    ..add(DiagnosticsProperty('progress', progress))..add(DiagnosticsProperty('levelCount', levelCount));
+    ..add(DiagnosticsProperty('progress', progress))..add(DiagnosticsProperty('levelCount', levelCount))..add(DiagnosticsProperty('opensFirstLevel', opensFirstLevel));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SplashState&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SplashState&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.opensFirstLevel, opensFirstLevel) || other.opensFirstLevel == opensFirstLevel));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,progress,levelCount);
+int get hashCode => Object.hash(runtimeType,progress,levelCount,opensFirstLevel);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'SplashState(progress: $progress, levelCount: $levelCount)';
+  return 'SplashState(progress: $progress, levelCount: $levelCount, opensFirstLevel: $opensFirstLevel)';
 }
 
 
@@ -259,7 +269,7 @@ abstract mixin class _$SplashStateCopyWith<$Res> implements $SplashStateCopyWith
   factory _$SplashStateCopyWith(_SplashState value, $Res Function(_SplashState) _then) = __$SplashStateCopyWithImpl;
 @override @useResult
 $Res call({
- double progress, int levelCount
+ double progress, int levelCount, bool opensFirstLevel
 });
 
 
@@ -276,11 +286,12 @@ class __$SplashStateCopyWithImpl<$Res>
 
 /// Create a copy of SplashState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? progress = null,Object? levelCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? progress = null,Object? levelCount = null,Object? opensFirstLevel = null,}) {
   return _then(_SplashState(
 progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as double,levelCount: null == levelCount ? _self.levelCount : levelCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,opensFirstLevel: null == opensFirstLevel ? _self.opensFirstLevel : opensFirstLevel // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

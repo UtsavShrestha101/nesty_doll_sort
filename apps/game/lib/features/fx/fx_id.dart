@@ -9,12 +9,13 @@ enum FxHost {
   widget,
 }
 
-/// The 29 Lottie files of `design/lottie/` (LOTTIE.md "Files"), shipped as
+/// The 35 Lottie files of `design/lottie/` (LOTTIE.md "Files"), shipped as
 /// `apps/game/assets/lottie/<fileName>.json` (owner decision 2026-09-26:
 /// every animation in the design ships as Lottie, PROGRESS D40).
 ///
-/// LOTTIE.md says 28; the folder and its own table hold 29 (10 doll, 8 fx,
-/// 11 ui). Declared in the LOTTIE.md table order. Timing, markers, canvas and
+/// The 29 of v3 plus m7-3's six (`fx_glass_unlock_tall`, `ui_stars`,
+/// `ui_chest` and the three intro loops). Declared in the LOTTIE.md table
+/// order. Timing, markers, canvas and
 /// anchors live in each file's `FxSpec` (`fx_spec.gen.dart`, generated from
 /// the JSON by `nesty_tools`), never here.
 enum FxId {
@@ -38,6 +39,10 @@ enum FxId {
   /// One paused composition per locked slot (its rest look), played once on
   /// `Unlocked`.
   fxGlassUnlock('fx_glass_unlock', FxHost.board),
+
+  /// The tall case of a sealed size-5 or size-6 doll (m7-1): like
+  /// [fxGlassUnlock], plus the `case_size` null (`FxSpec.scaleNulls`).
+  fxGlassUnlockTall('fx_glass_unlock_tall', FxHost.board),
 
   /// One paused composition per iced slot (its rest look), with a segment
   /// per crack stage and the shatter.
@@ -68,7 +73,18 @@ enum FxId {
 
   /// Level 2 tutorial (frame 1.6), M3. Board space, but drawn above the
   /// tutorial scrim, so it is a widget placed through `BoardFit`.
-  uiDragHand('ui_drag_hand', FxHost.widget);
+  uiDragHand('ui_drag_hand', FxHost.widget),
+
+  /// The win card's star rating (m7-2, frames 11.2, 11.3).
+  uiStars('ui_stars', FxHost.widget),
+
+  /// The milestone and day-7 chest (m7-2, frames 10.3b, 10.3c, 5.6).
+  uiChest('ui_chest', FxHost.widget),
+
+  /// The mechanic intro cards' loops (m7-3, frames 4.1–4.3).
+  uiIntroTowers('ui_intro_towers', FxHost.widget),
+  uiIntroGlass('ui_intro_glass', FxHost.widget),
+  uiIntroIce('ui_intro_ice', FxHost.widget);
 
   const FxId(this.fileName, this.host);
 

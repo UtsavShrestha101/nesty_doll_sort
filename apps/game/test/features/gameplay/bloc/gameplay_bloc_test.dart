@@ -8,7 +8,11 @@ import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/analytics/analytics_service.dart';
 import 'package:nesty_game/core/services/clock/fake_clock.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/fake_daily_service.dart';
+import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
+import 'package:nesty_game/core/services/records/record_rules.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
@@ -16,6 +20,7 @@ import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
+import 'package:nesty_game/features/gameplay/bloc/tap_policy.dart';
 
 import '../../../helpers/level_fixtures.dart';
 import 'support/bloc_fixtures.dart';
@@ -23,6 +28,18 @@ import 'support/scripted_level_resolver.dart';
 import 'support/scripted_solver_service.dart';
 
 class _MockAnalytics extends Mock implements AnalyticsService {}
+
+/// A [FakeDailyService] whose [progressAfterSolve] always relights a
+/// paused streak that already had days (`DailyProgress.relitOn`), so a
+/// `dailyRelit` test never depends on the real gentle-streak algorithm
+/// (`StreakDailyService`, the meta-services lane's).
+final class _RelitDaily extends FakeDailyService {
+  _RelitDaily(super.clock);
+
+  @override
+  DailyProgress progressAfterSolve(LocalDate date) =>
+      DailyProgress(streak: 5, run: 1, lastDate: date, done: [date]);
+}
 
 /// A [FakeSaveService] that keeps every in-progress board it was asked to
 /// save, oldest first (review CORRECTNESS-1).
@@ -480,20 +497,27 @@ void main() {
     );
 
     blocTest<GameplayBloc, _State>(
-      'with nothing selected, a tap on an empty slot is ignored',
+      'with nothing selected, a tap on an empty slot nudges it and moves '
+      'nothing (E.13, Q39)',
       build: buildBloc,
       act: (bloc) => _startThen(bloc, [const SlotTapped(emptyTop)]),
       skip: 1,
-      expect: () => const <_State>[],
+      expect: () => [
+        effectIs(const SlotNudgeEffect(emptyTop, SlotNudgeKind.emptyStand)),
+      ],
+      verify: (bloc) {
+        expect(dataOf(bloc).moveSeq, 0);
+        expect(dataOf(bloc).selectedSlotId, isNull);
+      },
     );
 
     blocTest<GameplayBloc, _State>(
-      'with nothing selected, a tap on an iced nest is ignored',
+      'with nothing selected, a tap on an iced nest bumps its ice (E.13)',
       build: () =>
           buildBloc(entries: [entryFor(icedLevel)], save: saveWithIntrosSeen()),
       act: (bloc) => _startThen(bloc, [const SlotTapped(red2)]),
       skip: 1,
-      expect: () => const <_State>[],
+      expect: () => [effectIs(const SlotNudgeEffect(red2, SlotNudgeKind.iced))],
     );
 
     blocTest<GameplayBloc, _State>(
@@ -1092,7 +1116,11 @@ void main() {
         bloc.add(const SlotTapped(emptyTop));
       },
       skip: 2,
-      expect: () => [effectIs(const HintClearedEffect())],
+      // The tap clears the hint first, then nudges the empty stand (E.13).
+      expect: () => [
+        effectIs(const HintClearedEffect()),
+        effectIs(const SlotNudgeEffect(emptyTop, SlotNudgeKind.emptyStand)),
+      ],
     );
 
     blocTest<GameplayBloc, _State>(
@@ -1471,6 +1499,102 @@ void main() {
     });
   });
 
+  group('relaxed mode (m7-design §10)', () {
+    List<GameplayEvent> undoCycles(int count) => [
+      for (var i = 0; i < count; i++) ...[
+        ..._tapMove(red1, emptyTop),
+        const UndoPressed(),
+      ],
+    ];
+
+    blocTest<GameplayBloc, _State>(
+      'undo is free and unlimited, never an offer or a spend, past the '
+      'usual free-undo limit',
+      build: () =>
+          buildBloc(settings: FakeDatabaseService()..setRelaxedMode(true)),
+      act: (bloc) => _startThen(bloc, undoCycles(5)),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.relaxed, isTrue);
+        expect(data.offer, isNull);
+        expect(data.board, start);
+        expect(saveOf(bloc).coins, 0);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'the free-undo budget keeps counting while relaxed, with nothing '
+      'shown for it',
+      build: () =>
+          buildBloc(settings: FakeDatabaseService()..setRelaxedMode(true)),
+      act: (bloc) => _startThen(bloc, undoCycles(3)),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.freeUndosLeft, 0, reason: 'the 2 free undos were spent');
+        expect(data.offer, isNull, reason: 'relaxed never shows the count');
+        expect(saveOf(bloc).coins, 0);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a toggle made mid-level (Pause -> Settings) applies to the level '
+      'in play: it closes a pending undo offer, and undo turns free '
+      '(read live, D104)',
+      build: buildBloc,
+      act: (bloc) {
+        _startThen(bloc, [...undoCycles(2), ..._tapMove(red1, emptyTop)]);
+        bloc
+          ..add(const UndoPressed()) // 0 free undos left: the coin offer
+          ..add(const RelaxedModeChanged(relaxed: true))
+          ..add(const UndoPressed());
+      },
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.relaxed, isTrue);
+        expect(data.offer, isNull);
+        expect(data.board, start, reason: 'the pending move was undone free');
+        expect(saveOf(bloc).coins, 0, reason: 'never spent');
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'toggling relaxed off mid-level restores the normal coin offer once '
+      'the free undos are gone',
+      build: () =>
+          buildBloc(settings: FakeDatabaseService()..setRelaxedMode(true)),
+      act: (bloc) {
+        _startThen(bloc, [...undoCycles(2), ..._tapMove(red1, emptyTop)]);
+        bloc
+          ..add(const RelaxedModeChanged(relaxed: false))
+          ..add(const UndoPressed());
+      },
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.relaxed, isFalse);
+        expect(
+          data.offer,
+          const BoosterOffer(type: BoosterType.undo, price: 20),
+        );
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'hint and +1 Slot are unchanged: still gated by the inventory',
+      build: () => buildBloc(
+        settings: FakeDatabaseService()..setRelaxedMode(true),
+        save: saveWith(hints: 0, extraSlots: 0),
+        solver: ScriptedSolverService(),
+      ),
+      act: (bloc) =>
+          _startThen(bloc, [const HintPressed(), const ExtraSlotPressed()]),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.offer?.type, BoosterType.hint, reason: 'asked first');
+        expect(scriptedSolverOf(bloc).hintRequests, isEmpty);
+      },
+    );
+  });
+
   group('soft stuck (spec §2.3)', () {
     ScriptedSolverService stuckSolver({bool hold = false}) =>
         ScriptedSolverService(
@@ -1801,6 +1925,542 @@ void main() {
         expect(save.coins, 50);
         expect(save.document.daily.streak, 1);
         expect(save.document.daily.inProgress, isNull);
+      },
+    );
+
+    // M7 review R6: only today's date counts toward the streak (m3-design
+    // §8.2, D76, Q70). Thursday's daily, started at 23:55 on a run of 3 and
+    // won at 00:03 on Friday, pays its coins and adds to `done` only.
+    late FakeClock midnightClock;
+    blocTest<GameplayBloc, _State>(
+      'a daily won after midnight pays but neither extends nor relights '
+      'the streak',
+      build: () {
+        var run = const DailyProgress();
+        for (final day in [21, 22, 23]) {
+          run = StreakDailyService.solveForTest(run, LocalDate(2026, 9, day));
+        }
+        final clock = midnightClock = FakeClock(
+          now: DateTime(2026, 9, 24, 23, 55),
+        );
+        final config = FakeRemoteConfigService();
+        final save = FakeSaveService(
+          initial: SaveDocument(currentLevel: 5, highestLevel: 5, daily: run),
+          remoteConfig: config,
+        );
+        return buildBloc(
+          resolver: ScriptedLevelResolver(
+            entries: {
+              const PlayRequest.daily(20260924): playEntryFor(
+                const PlayRequest.daily(20260924),
+                defaultLevel,
+                rewardCoins: 50,
+              ),
+            },
+          ),
+          config: config,
+          save: save,
+          daily: StreakDailyService(save, clock, config),
+          clock: clock,
+        );
+      },
+      act: (bloc) async {
+        bloc.add(const GameplayStarted(PlayRequest.daily(20260924)));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        midnightClock.set(DateTime(2026, 9, 25, 0, 3));
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.status, GameplayStatus.won);
+        expect(data.winReward, 50);
+        expect(data.dailyStreak, 3);
+        expect(data.dailyRelit, isFalse);
+        final daily = saveOf(bloc).document.daily;
+        expect(saveOf(bloc).coins, 50);
+        expect(daily.streak, 3);
+        expect(daily.run, 3);
+        expect(daily.lastDate, LocalDate(2026, 9, 23));
+        expect(daily.done, contains(LocalDate(2026, 9, 24)));
+        expect(daily.inProgress, isNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a daily win that relit a paused streak sets dailyRelit '
+      '(m7-design §8)',
+      build: () {
+        final clock = FakeClock();
+        return buildBloc(
+          resolver: ScriptedLevelResolver(
+            entries: {
+              const PlayRequest.daily(20260926): playEntryFor(
+                const PlayRequest.daily(20260926),
+                defaultLevel,
+              ),
+            },
+          ),
+          daily: _RelitDaily(clock),
+          clock: clock,
+        );
+      },
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.daily(20260926)));
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) => expect(dataOf(bloc).dailyRelit, isTrue),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'records the moves and the level\'s first best (m7-design §11)',
+      build: buildBloc,
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 2);
+        expect(data.bestMoves, 2);
+        expect(data.previousBest, isNull);
+        expect(
+          saveOf(bloc).bestMovesFor(LevelBests.key(defaultLevel.id, 1)),
+          2,
+        );
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "keeps the lower of the level's previous best and this win's moves "
+      '(m7-design §11)',
+      build: () => buildBloc(
+        save: FakeSaveService(
+          initial: SaveDocument(
+            levelBests: {LevelBests.key(defaultLevel.id, 1): 1},
+          ),
+        ),
+      ),
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 2);
+        expect(data.bestMoves, 1, reason: 'the old best of 1 stands');
+        expect(data.previousBest, 1);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "opens the chapter's milestone chest at level 10; from here on the "
+      'figurine is the nearer goal (m7-design §9)',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, order: 10)]),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.campaign(10)));
+        winning.forEach(bloc.add);
+      },
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(
+          data.chest,
+          const ChestGrant(
+            source: ChestSource.campaign,
+            number: 10,
+            coins: 100,
+            hints: 1,
+          ),
+        );
+        expect(data.chestLevelsLeft, isNull);
+        expect(saveOf(bloc).document.chests.opened, [10]);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "a bonus win's chest counts down to the next one, 10 right after "
+      'this one (m7-design §9)',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.bonus(10): playEntryFor(
+              const PlayRequest.bonus(10),
+              defaultLevel,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.bonus(10)));
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(
+          data.chest,
+          const ChestGrant(
+            source: ChestSource.bonus,
+            number: 10,
+            coins: 100,
+            hints: 1,
+          ),
+        );
+        expect(data.chestLevelsLeft, 10);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "adds the won board's records and reports the outcome's new badges "
+      '(m7-design §12)',
+      build: buildBloc,
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) {
+        expect(saveOf(bloc).document.records.families, 1);
+        expect(saveOf(bloc).document.records.dolls, 2);
+        expect(dataOf(bloc).newBadges, contains(BadgeId.firstFamily));
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "the player's first win ever sets firstWin (E9, m7-design §13)",
+      build: buildBloc,
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) => expect(dataOf(bloc).firstWin, isTrue),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'firstWin stays false once the player has already won a level',
+      build: () => buildBloc(
+        save: FakeSaveService(
+          initial: const SaveDocument(stats: SaveStats(wins: 1)),
+        ),
+      ),
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) => expect(dataOf(bloc).firstWin, isFalse),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'firstWin is only ever true for a campaign win (m7-design §13)',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.bonus(1): playEntryFor(
+              const PlayRequest.bonus(1),
+              defaultLevel,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.bonus(1)));
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) => expect(dataOf(bloc).firstWin, isFalse),
+    );
+  });
+
+  group('stars (spec-prop §7.10; m7-design P3.6)', () {
+    // The optimal solve of `defaultLevel` (par 2): red1 into red2, then the
+    // pair into red3.
+    final winning = [..._tapMove(red1, red2), ..._tapMove(red2, red3)];
+
+    // The same win, but with a pointless shuffle first (red1 to the empty
+    // slot beside it, then on): a legal, one-move-over-par solve.
+    final winningOverPar = [
+      ..._tapMove(red1, emptyBottom),
+      ..._tapMove(emptyBottom, red2),
+      ..._tapMove(red2, red3),
+    ];
+
+    blocTest<GameplayBloc, _State>(
+      'an optimal win earns 3 stars; nothing shows on a first win',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 2);
+        expect(data.stars, 3);
+        expect(data.previousStars, isNull);
+        expect(data.starsNewBest, isFalse, reason: 'not a replay');
+        expect(data.starTarget, isNull, reason: 'never on a first win (Q118)');
+        expect(data.starTip, isFalse);
+        expect(saveOf(bloc).document.levelStars, {defaultLevel.id: 3});
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a daily, bonus and race win compute no stars (they have no par)',
+      build: () => buildBloc(
+        resolver: ScriptedLevelResolver(
+          entries: {
+            const PlayRequest.bonus(1): playEntryFor(
+              const PlayRequest.bonus(1),
+              defaultLevel,
+            ),
+          },
+        ),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.bonus(1)));
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.stars, isNull);
+        expect(data.previousStars, isNull);
+        expect(data.starTarget, isNull);
+        expect(data.starTip, isFalse);
+        expect(saveOf(bloc).document.levelStars, isEmpty);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'moves over par earn fewer stars at a tighter Remote Config slack',
+      build: () => buildBloc(
+        entries: [entryFor(defaultLevel, par: 2)],
+        config: FakeRemoteConfigService()
+          ..setOverride(RemoteConfigKeys.star3SlackPct, 0)
+          ..setOverride(RemoteConfigKeys.star2SlackPct, 60),
+      ),
+      act: (bloc) => _startThen(bloc, winningOverPar),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 3);
+        // threshold(2, 0) = 2 (below 3 moves); threshold(2, 60) = 4 (at or
+        // above): 2 stars.
+        expect(data.stars, 2);
+        expect(data.starTip, isTrue, reason: 'the first win below 3 stars');
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'moves further over par at an even tighter slack earn 1 star, never '
+      'fewer',
+      build: () => buildBloc(
+        entries: [entryFor(defaultLevel, par: 2)],
+        config: FakeRemoteConfigService()
+          ..setOverride(RemoteConfigKeys.star3SlackPct, 0)
+          ..setOverride(RemoteConfigKeys.star2SlackPct, 0),
+      ),
+      act: (bloc) => _startThen(bloc, winningOverPar),
+      verify: (bloc) => expect(dataOf(bloc).stars, 1),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a hint since the last Restart caps an otherwise-perfect win at 2 '
+      'stars (Q116)',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) async {
+        _startThen(bloc, [const HintPressed()]);
+        await settle();
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) => expect(dataOf(bloc).stars, 2),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "a hint, then Restart, then a win doesn't cap the stars",
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) async {
+        _startThen(bloc, [const HintPressed()]);
+        await settle();
+        bloc.add(const RestartPressed());
+        winning.forEach(bloc.add);
+      },
+      wait: const Duration(milliseconds: 20),
+      verify: (bloc) => expect(dataOf(bloc).stars, 3),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a hint, a kill and a restore still cap the stars (Q116, across '
+      'InProgressLevel.hinted)',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) async {
+        _startThen(bloc, [const HintPressed()]);
+        await settle();
+      },
+      verify: (bloc) async {
+        // The hint persisted the in-progress board (m7-design P3.6): a
+        // fresh bloc over the same save restores it with `hinted` still
+        // set, even though the board itself hasn't changed.
+        final revived = buildBloc(
+          entries: [entryFor(defaultLevel, par: 2)],
+          save: saveOf(bloc),
+        );
+        addTearDown(revived.close);
+        revived.add(const GameplayStarted(PlayRequest.campaign(1)));
+        winning.forEach(revived.add);
+        await settle();
+        expect(dataOf(revived).stars, 2);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'an extra slot on the board caps the stars, including after Restart '
+      '(Q116: extra slots survive undo and restart, D22)',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) => _startThen(bloc, [
+        const ExtraSlotPressed(),
+        const RestartPressed(),
+        ...winning,
+      ]),
+      verify: (bloc) => expect(dataOf(bloc).stars, 2),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      "relaxed mode's undo never caps the stars: undoing and redoing a "
+      'move nets out to the same moves at the win',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) => _startThen(bloc, [
+        const RelaxedModeChanged(relaxed: true),
+        ..._tapMove(red1, red2),
+        const UndoPressed(),
+        ..._tapMove(red1, red2),
+        ..._tapMove(red2, red3),
+      ]),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 2);
+        expect(data.stars, 3);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a replay that raises the stars reports the new best and the target '
+      'only below 3 stars over it (Q118)',
+      build: () => buildBloc(
+        entries: [entryFor(defaultLevel, order: 1, par: 2)],
+        save: FakeSaveService(
+          initial: SaveDocument(
+            highestLevel: 2,
+            levelStars: {defaultLevel.id: 1},
+          ),
+        ),
+        config: FakeRemoteConfigService()
+          ..setOverride(RemoteConfigKeys.star3SlackPct, 0)
+          ..setOverride(RemoteConfigKeys.star2SlackPct, 60),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.replay(1)));
+        winningOverPar.forEach(bloc.add);
+      },
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 3);
+        expect(data.stars, 2);
+        expect(data.previousStars, 1);
+        expect(data.starsNewBest, isTrue);
+        // threshold(2, 0) = 2: the replay's 3 moves were over it.
+        expect(data.starTarget, 2);
+        expect(saveOf(bloc).document.levelStars, {defaultLevel.id: 2});
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'an assisted replay at or under the 3-star target shows no target '
+      'line, whatever it earns',
+      build: () => buildBloc(
+        entries: [entryFor(defaultLevel, order: 1, par: 2)],
+        save: FakeSaveService(initial: const SaveDocument(highestLevel: 2)),
+      ),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.replay(1)));
+        bloc.add(const ExtraSlotPressed());
+        winning.forEach(bloc.add);
+      },
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        expect(data.winMoves, 2, reason: 'still the par solve');
+        expect(data.stars, 2, reason: 'capped by the extra slot');
+        expect(data.starTarget, isNull, reason: 'moves were not over t3');
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'stars change no coins, chest, progress or badge',
+      build: () => buildBloc(entries: [entryFor(defaultLevel, par: 2)]),
+      act: (bloc) => _startThen(bloc, winning),
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        final save = saveOf(bloc);
+        expect(data.stars, 3);
+        expect(data.winReward, Tier.easy.defaultRewardCoins);
+        expect(save.coins, data.winReward);
+        expect(save.currentLevel, 2);
+        expect(save.document.chests.opened, isEmpty);
+        expect(save.document.records.badges, contains(BadgeId.firstFamily.id));
+      },
+    );
+  });
+
+  group('replay (m7-design §6)', () {
+    /// A save that has already won order 1, so `PlayRequest.replay(1)`
+    /// resolves (`SaveService.highestLevel` must be past the order).
+    FakeSaveService pastLevel1() =>
+        FakeSaveService(initial: const SaveDocument(highestLevel: 2));
+
+    final winning = [..._tapMove(red1, red2), ..._tapMove(red2, red3)];
+
+    blocTest<GameplayBloc, _State>(
+      'never saves the board in progress, even after a move',
+      build: () {
+        final save = CountingSaveService()..currentLevel = 2;
+        return buildBloc(save: save);
+      },
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.replay(1)));
+        _tapMove(red1, red2).forEach(bloc.add);
+      },
+      verify: (bloc) {
+        final save = saveOf(bloc) as CountingSaveService;
+        expect(save.saveInProgressCalls, 0);
+        expect(save.inProgressFor(PlayKind.campaign), isNull);
+      },
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'shows no tutorial cue, whatever tutorialDone says',
+      build: () => buildBloc(
+        entries: [entryFor(tutorialLevel, order: 1)],
+        save: pastLevel1(),
+      ),
+      act: (bloc) => bloc.add(const GameplayStarted(PlayRequest.replay(1))),
+      verify: (bloc) => expect(dataOf(bloc).tutorial, isNull),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'shows no intro card, whatever seenIntros says',
+      build: () => buildBloc(
+        entries: [entryFor(icedLevel, order: 1)],
+        save: pastLevel1(),
+      ),
+      act: (bloc) => bloc.add(const GameplayStarted(PlayRequest.replay(1))),
+      verify: (bloc) => expect(dataOf(bloc).intro, isNull),
+    );
+
+    blocTest<GameplayBloc, _State>(
+      'a win pays no coins, opens no chest and moves nothing, but still '
+      'records the best moves and counts in the records; Continue has '
+      'nothing to play (back to Chapters)',
+      build: () => buildBloc(save: pastLevel1()),
+      act: (bloc) {
+        bloc.add(const GameplayStarted(PlayRequest.replay(1)));
+        winning.forEach(bloc.add);
+      },
+      verify: (bloc) {
+        final data = dataOf(bloc);
+        final save = saveOf(bloc);
+        expect(data.isReplay, isTrue);
+        expect(data.winReward, 0);
+        expect(data.chest, isNull);
+        expect(data.chestLevelsLeft, isNull);
+        expect(data.winMoves, 2);
+        expect(data.bestMoves, 2);
+        expect(data.nextRequest, isNull);
+        expect(save.coins, 0);
+        expect(save.currentLevel, 1, reason: 'a replay never advances it');
+        expect(save.document.museum, isEmpty);
+        expect(save.document.stats.wins, 1, reason: 'still counts in stats');
+        expect(save.bestMovesFor(LevelBests.key(defaultLevel.id, 1)), 2);
       },
     );
   });

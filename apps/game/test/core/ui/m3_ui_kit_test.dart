@@ -221,6 +221,63 @@ void main() {
       await tester.pump();
       expect(find.text('Purchases restored'), findsNothing);
     });
+
+    // The dismiss timer belongs to the toast: a tree torn down before it
+    // fires (a win overlay closing over its badge toasts, a screen popped
+    // while "Freeze used" shows) must cancel it. Without that, flutter_test
+    // fails this test with "A Timer is still pending even after the widget
+    // tree was disposed", and at runtime a dead timer outlives its toast.
+    testWidgets('a NestyToast torn down before it dismisses leaves no timer '
+        'behind', (tester) async {
+      await pumpUi(tester, Builder(builder: (context) => const SizedBox()));
+      final context = tester.element(find.byType(SizedBox));
+      NestyToast.show(
+        context,
+        tone: NestyBannerTone.success,
+        icon: NestyIcons.star,
+        title: 'Badge earned!',
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: UiMotionTokens.modalInMs));
+      expect(find.text('Badge earned!'), findsOneWidget);
+
+      // Well inside the default 3 s: the whole tree, overlay and toast
+      // included, goes away.
+      await tester.pumpWidget(const SizedBox());
+      expect(find.text('Badge earned!'), findsNothing);
+    });
+
+    // The toast is an entry in the navigator's Overlay, outside every
+    // page's Material, so its text inherits MaterialApp's fallback style
+    // unless the toast sets its own: the device run (device3, M7 phase 3)
+    // showed "Badge earned!" and "First Family" with that style's yellow
+    // double underline on every win that earns a badge.
+    testWidgets('a NestyToast shown by show() over a page draws its text '
+        "without MaterialApp's fallback underline", (tester) async {
+      await pumpUi(tester, Builder(builder: (context) => const SizedBox()));
+      final context = tester.element(find.byType(SizedBox));
+      NestyToast.show(
+        context,
+        tone: NestyBannerTone.success,
+        icon: NestyIcons.star,
+        title: 'Badge earned!',
+        message: 'First Family',
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: UiMotionTokens.modalInMs));
+      for (final text in ['Badge earned!', 'First Family']) {
+        final rich = tester.widget<RichText>(
+          find.descendant(of: find.text(text), matching: find.byType(RichText)),
+        );
+        final style = rich.text.style;
+        expect(
+          style?.decoration ?? TextDecoration.none,
+          TextDecoration.none,
+          reason: '"$text" inherits $style',
+        );
+      }
+      await tester.pumpWidget(const SizedBox());
+    });
   });
 
   group('tokens', () {

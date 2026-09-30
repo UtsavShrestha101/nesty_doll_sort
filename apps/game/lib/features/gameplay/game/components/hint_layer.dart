@@ -8,29 +8,24 @@ import 'package:nesty_game/features/gameplay/game/components/board_scene.dart';
 import 'package:nesty_game/features/gameplay/game/components/slot_decor.dart';
 import 'package:nesty_render/nesty_render.dart';
 
-/// The hint's dashed guide arc from the source nest to the target (frame
-/// 3.1, NestyBoard:19, :206–208; docs/plans/m2-lottie-design.md §7
+/// The hint's dashed guide arc from the source nest to the target (tokens
+/// v3 `layout.hintArc`, E.15; docs/plans/m2-lottie-design.md §7
 /// `HintShownEffect`). The arrow over the source and the target's glow are
 /// Lottie clips in the `FxLayer`; this is the static path between them.
 ///
-/// The design's hint frame draws `curve([s.cx − 16, s.dt + 66], [352, 480],
-/// [t.cx + 48, t.dt + 6])`: from over the source doll's upper body, 66
-/// below its top (two thirds of that 99 dp doll; never lower than two
-/// thirds of a smaller one), to beside the target doll's head on the side
-/// the arc comes from,
-/// the quadratic's control point 0.4 × the chord off its middle toward that
-/// side, so the arrowhead (NestyBoard:185 `head`, along the last tangent)
-/// points into the target's head. Generalized here:
-/// - the arc arrives on the source's side of the target (from its right
-///   when the source is right of it); for a move within one column, from
-///   the board's middle, where there is room;
-/// - an empty target ends beside the head of the doll that will stand
-///   there (the moving nest), not the tallest size's;
-/// - a mostly horizontal chord bulges up, over the dolls.
+/// A cubic from 8 dp above the source doll's top (where the arrow's tip is)
+/// to 8 dp above the target doll's top, both handles rising 42 dp above the
+/// higher end (56 dp when the two are on different shelves), so it arches
+/// over the dolls between them and the arrowhead drops into the target's
+/// head. Generalized where the design draws no frame:
+/// - a move within one column (no sideways travel) bows to the side the
+///   design's 3.1 arc arrives from, so the arch doesn't fold onto itself;
+/// - an empty target ends over the head of the doll that will stand there
+///   (the moving nest), not the tallest size's.
 ///
-/// Its dashes (`2 10`, round caps, a cream underlay under `#F2893B`) and the
-/// arrowhead are built into paths once per hint ([show]); every frame only
-/// draws them (CLAUDE.md rule 8).
+/// Its dashes (6 dp on, 6 dp off, 3 dp wide, `#F2893B`, on a cream
+/// underlay) and the arrowhead are built into paths once per hint ([show])
+/// and layout; every frame only draws them (CLAUDE.md rule 8).
 ///
 /// Without `ui_hint_arrow` (a failed load, rule 3) it also draws the static
 /// hint-arrow sprite over the source.
@@ -39,32 +34,23 @@ class HintLayer extends Component {
 
   final BoardScene scene;
 
-  /// `ARC.guide` (NestyBoard:246): `#F2893B` 4 dp over a
-  /// `rgba(255,250,240,.95)` 8 dp underlay, dashes `2 10`.
-  static const arcColor = Color(0xFFF2893B);
+  /// `layout.hintArc`: `#F2893B` 3 dp over a `rgba(255,250,240,.95)`
+  /// underlay, dashes 6 on and 6 off.
+  static const arcColor = HintArcTokens.color;
   static const arcUnderlay = Color.fromRGBO(255, 250, 240, 0.95);
-  static const arcWidth = 4.0;
-  static const arcUnderlayWidth = 8.0;
-  static const dash = 2.0;
-  static const gap = 10.0;
+  static const arcWidth = HintArcTokens.width;
 
-  /// How far the control point sits off the chord's middle, per chord
-  /// length (the design's hint frame: 135 of 341).
-  // TODO(design): frame 3.1 shows one arc (r0c3 → r2c0); the curve for
-  // other moves (same shelf, one column, upward, the extra slots) is
-  // generalized from it here and needs a design check (BACKLOG "Design
-  // gaps").
-  static const bulge = 0.4;
+  /// The underlay is 3 dp wider than the line (frame 3.1's cream ring).
+  static const arcUnderlayWidth = arcWidth + 3;
 
-  /// The design's offsets, in reference units at board scale 1: the start
-  /// sits 16 toward the target from the source's centre and 66 below its
-  /// doll's top, but no deeper than two thirds of the doll (a small doll);
-  /// the end 48 beside the target's centre and 6 below its doll's top.
-  static const startInset = 16.0;
-  static const startBelowTop = 66.0;
-  static const startDepth = 2 / 3;
-  static const endBeside = 48.0;
-  static const endBelowTop = 6.0;
+  /// The dashes are drawn with round caps, which add half a line width at
+  /// each end: the path's dash is shortened and its gap lengthened by the
+  /// width, so the pattern reads 6 on and 6 off.
+  static const dash = HintArcTokens.dashOn - arcWidth;
+  static const gap = HintArcTokens.dashOff + arcWidth;
+
+  /// How far a same-column arc bows sideways, in reference units.
+  static const columnBow = 24.0;
 
   Move? _move;
   Path? _dashes;
@@ -93,9 +79,10 @@ class HintLayer extends Component {
   int get builds => _builds;
   int _builds = 0;
 
-  /// The arc's end points and control point, for tests.
+  /// The arc's end points and control points, for tests.
   Offset? start;
-  Offset? control;
+  Offset? control1;
+  Offset? control2;
   Offset? end;
 
   /// Shows [move]'s arc (null hides it): `SetHintArc`.
@@ -109,7 +96,7 @@ class HintLayer extends Component {
   void rebuild() {
     _dashes = null;
     _head = null;
-    start = control = end = null;
+    start = control1 = control2 = end = null;
     final move = _move;
     final geometry = scene.geometry;
     if (move == null || geometry == null) return;
@@ -120,43 +107,36 @@ class HintLayer extends Component {
     final moverSize = _sizeOn(move.from, geometry);
     // An empty target: the head of the nest that will stand there.
     final targetSize = _sizeOn(move.to, geometry, empty: moverSize);
-    // +1: the arc arrives from the target's right (NestyBoard:208, the
-    // source is right of the target), −1 from its left.
-    final side = arrivalSide(
-      sourceX: source.centerX,
-      targetX: target.centerX,
-      middleX: geometry.fit.x(BoardLayoutConstants.centerX),
-    );
-    final a = Offset(
-      source.centerX - startInset * s * side,
-      source.dollTopY(moverSize) +
-          math.min(
-            startBelowTop * s,
-            source.dollHeight(moverSize) * startDepth,
-          ),
-    );
-    final e = Offset(
-      target.centerX + endBeside * s * side,
-      target.dollTopY(targetSize) + endBelowTop * s,
-    );
-    final chord = e - a;
-    final length = chord.distance;
-    if (length <= 0) return;
-    // The normal toward the arrival side (a mostly horizontal chord bulges
-    // up), so the last tangent heads into the target's head.
-    var normal = Offset(chord.dy, -chord.dx) / length;
-    final preference = Offset(side * chord.dy.abs(), -chord.dx.abs());
-    if (normal.dx * preference.dx + normal.dy * preference.dy < 0) {
-      normal = -normal;
-    }
-    final c = (a + e) / 2 + normal * (bulge * length);
+    const above = HintArcTokens.endOffsetAboveDoll;
+    final a = Offset(source.centerX, source.dollTopY(moverSize) - above * s);
+    final e = Offset(target.centerX, target.dollTopY(targetSize) - above * s);
+    // Both handles rise above the higher end: 42, or 56 across shelves.
+    final lift =
+        (source.row == target.row
+            ? HintArcTokens.handleLift
+            : HintArcTokens.handleLiftCrossRow) *
+        s;
+    final top = math.min(a.dy, e.dy) - lift;
+    // One column: bow toward the side the arc arrives from.
+    final bow = (a.dx - e.dx).abs() < 2 * s
+        ? columnBow *
+              s *
+              arrivalSide(
+                sourceX: source.centerX,
+                targetX: target.centerX,
+                middleX: geometry.fit.x(BoardLayoutConstants.centerX),
+              )
+        : 0.0;
+    final c1 = Offset(a.dx + bow, top);
+    final c2 = Offset(e.dx + bow, top);
     start = a;
-    control = c;
+    control1 = c1;
+    control2 = c2;
     end = e;
 
     final arc = Path()
       ..moveTo(a.dx, a.dy)
-      ..quadraticBezierTo(c.dx, c.dy, e.dx, e.dy);
+      ..cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, e.dx, e.dy);
     final dashes = Path();
     for (final metric in arc.computeMetrics()) {
       for (var d = 0.0; d < metric.length; d += (dash + gap) * s) {
@@ -167,7 +147,7 @@ class HintLayer extends Component {
       }
     }
     // The arrowhead along the last tangent (NestyBoard:185 `head`).
-    final tangent = e - c;
+    final tangent = e - c2;
     final unit = tangent / (tangent.distance == 0 ? 1 : tangent.distance);
     final perp = Offset(-unit.dy, unit.dx);
     final tip = e + unit * (12 * s);

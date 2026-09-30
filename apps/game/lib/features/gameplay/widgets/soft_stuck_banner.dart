@@ -13,26 +13,22 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 /// (`tokens.motion.ui`, halved under reduced motion).
 ///
 /// With nothing to undo ([onUndo] null: a completing move cleared the
-/// history, spec §2.4, or the free undos are spent) it suggests Restart,
-/// always free, with [onRestart] instead of a dead Undo (review
-/// FIDELITY-6). What it suggests is fixed while it shows and while it
-/// slides out, so its copy never changes under the player's eyes.
-/// TODO(design): no frame shows soft stuck without an undo.
+/// history, spec §2.4) it is frame 12.7's warn toast: "Try Restart? You can
+/// keep playing too." with no button of its own, since Restart glows in the
+/// booster bar (`BoosterBarModel.restartGlow`) instead of a dead Undo
+/// (review FIDELITY-6). What it suggests is fixed while it shows and while
+/// it slides out, so its copy never changes under the player's eyes.
 class SoftStuckBanner extends StatefulWidget {
   const SoftStuckBanner({
     required this.visible,
     required this.onUndo,
-    this.onRestart,
     super.key,
   });
 
   final bool visible;
 
-  /// Null when there is nothing to undo.
+  /// Null when there is nothing to undo: the toast then suggests Restart.
   final VoidCallback? onUndo;
-
-  /// Restarts the level: the suggestion when [onUndo] is null.
-  final VoidCallback? onRestart;
 
   /// The banner's top below the safe-area top (152 − 59).
   static const double top = 93;
@@ -68,13 +64,9 @@ class _SoftStuckBannerState extends State<SoftStuckBanner>
   /// The button's action, followed while the banner shows and kept while
   /// it slides out (it takes no touch then), so the button doesn't grey out
   /// on its way out either.
-  late VoidCallback? _action = _actionOf(widget);
+  late VoidCallback? _action = widget.onUndo;
 
-  static bool _suggestsRestart(SoftStuckBanner banner) =>
-      banner.onUndo == null && banner.onRestart != null;
-
-  VoidCallback? _actionOf(SoftStuckBanner banner) =>
-      _restart ? banner.onRestart : banner.onUndo;
+  static bool _suggestsRestart(SoftStuckBanner banner) => banner.onUndo == null;
 
   @override
   void didChangeDependencies() {
@@ -89,7 +81,7 @@ class _SoftStuckBannerState extends State<SoftStuckBanner>
       if (!oldWidget.visible || _controller.isDismissed) {
         _restart = _suggestsRestart(widget);
       }
-      _action = _actionOf(widget);
+      _action = widget.onUndo;
     }
     if (widget.visible != oldWidget.visible) {
       if (widget.visible) {
@@ -122,13 +114,17 @@ class _SoftStuckBannerState extends State<SoftStuckBanner>
             icon: NestyIcons.sentimentNeutral,
             title: l10n.softStuckTitle,
             message: _restart ? l10n.softStuckBodyRestart : l10n.softStuckBody,
-            action: TactileButton(
-              label: _restart ? l10n.restart : l10n.softStuckAction,
-              icon: _restart ? NestyIcons.restartAlt : NestyIcons.undo,
-              size: TactileButtonSize.compact,
-              expand: false,
-              onPressed: _action,
-            ),
+            action: _restart
+                ? null
+                : TactileButton(
+                    label: l10n.softStuckAction,
+                    icon: NestyIcons.undo,
+                    size: TactileButtonSize.compact,
+                    expand: false,
+                    // The compact face in a full 48 dp target (review R20).
+                    minTouchSize: const Size.square(48),
+                    onPressed: _action,
+                  ),
           ),
         ),
       ),

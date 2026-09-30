@@ -59,15 +59,20 @@ abstract final class FixtureLevels {
 }
 ''';
 
-  /// (level JSON, tier) in play order, as the bundle lists them.
+  /// (level JSON, tier, par) in play order, as the bundle lists them. Par is
+  /// the solver's optimal solution length from the level's start
+  /// (spec-prop §7.10, D125; m7-design P3.6): `fixture_levels_test` checks
+  /// each against `Solver.solve`, so the JSON and its par never drift apart
+  /// unnoticed.
   static const _levels = [
-    (_l0001, Tier.easy),
-    (_l0002, Tier.easy),
-    (_l0003, Tier.medium),
+    (_l0001, Tier.easy, 2),
+    (_l0002, Tier.easy, 3),
+    (_l0003, Tier.medium, 5),
   ];
 
   /// The three entries at orders 1–3 of chapter `ch01`, paying their tier's
-  /// default reward.
+  /// default reward and carrying their solver par, so the fake env's wins
+  /// earn stars like the real bundle's.
   static List<LevelBundleEntry> entries() => [
     for (var i = 0; i < _levels.length; i++)
       LevelBundleEntry(
@@ -77,6 +82,7 @@ abstract final class FixtureLevels {
         version: 1,
         rewardCoins: _levels[i].$2.defaultRewardCoins,
         level: _decode(_levels[i].$1),
+        par: _levels[i].$3,
       ),
   ];
 

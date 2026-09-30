@@ -89,6 +89,7 @@ class AllLevelsDone extends StatelessWidget {
             const SizedBox(height: 18),
             Semantics(
               header: true,
+              namesRoute: true,
               child: Text(
                 l10n.allLevelsTitle,
                 textAlign: TextAlign.center,

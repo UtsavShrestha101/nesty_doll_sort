@@ -49,8 +49,8 @@ void main() {
     final library = AssetFxLibrary(bundle: bundle, yieldToFrames: () async {});
     await library.load();
     expect(bundle.loads.first, FxId.uiSplashLoader.assetPath);
-    expect(bundle.loads.toSet().length, 29);
-    expect(bundle.loads.length, 29);
+    expect(bundle.loads.toSet().length, FxId.values.length);
+    expect(bundle.loads.length, FxId.values.length);
     expect(AssetFxLibrary.loadOrder.toSet(), FxId.values.toSet());
   });
 
@@ -101,14 +101,14 @@ void main() {
     final b = library.load(onProgress: second.add);
     expect(identical(a, b), isTrue);
     await a;
-    expect(first.length, 29);
+    expect(first.length, FxId.values.length);
     expect(first.last, 1);
     for (var i = 1; i < first.length; i++) {
       expect(first[i], greaterThan(first[i - 1]));
     }
     expect(second, first);
     // Spread over the event loop: a turn between files.
-    expect(yields, 28);
+    expect(yields, FxId.values.length - 1);
 
     final late = <double>[];
     await library.load(onProgress: late.add);

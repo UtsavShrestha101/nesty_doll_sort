@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:nesty_game/features/fx/fx_cue.dart';
+import 'package:nesty_game/features/gameplay/bloc/tap_policy.dart'
+    show SlotNudgeKind;
 import 'package:nesty_render/nesty_render.dart';
 
 /// A motion no Lottie file covers, computed by the board timeline
@@ -64,6 +68,63 @@ sealed class HandTween {
   // ── End of hot path. ──
 }
 
+/// E.13 (tokens `motion.tapFeedback`, frame 12.13): the acknowledgement of a
+/// tap on a slot that can't be picked, with nothing lifted: never the invalid
+/// shake. The stand of an empty slot dips 2 dp for 80 ms (with a light
+/// haptic), a sealed case's padlock pings 1.15× for 160 ms and an iced slot's
+/// counter bumps 1.2× for 160 ms. Each is one out-and-back, [wave] going 0 →
+/// 1 → 0 (`sin πt`); the board applies the [kind]'s amount to its own piece.
+/// Under reduced motion the durations halve (the batch's speed).
+final class NudgeTween extends HandTween {
+  NudgeTween({
+    required String super.slotId,
+    required this.kind,
+    required super.durationMs,
+  });
+
+  final SlotNudgeKind kind;
+
+  double _wave = 0;
+
+  /// 0 at both ends, 1 in the middle.
+  double get wave => _wave;
+
+  @override
+  double get progress => _wave;
+
+  // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──
+
+  @override
+  void _changed() => _wave = math.sin(math.pi * t);
+
+  // ── End of hot path. ──
+}
+
+/// B.7 (tokens `motion.tagPop`): the "+N" tag of a tower that was under ice
+/// pops in when `fx_ice` plays `shatter` (frame 48, 0 ms into the segment):
+/// 240 ms from 60 % scale, `easeOutBack`, so it overshoots a little.
+final class TagPopTween extends HandTween {
+  TagPopTween({required String super.slotId, required super.durationMs});
+
+  double _scale = MotionTokens.tagPopFrom;
+
+  /// The tag's scale now, [MotionTokens.tagPopFrom] → 1.
+  double get scale => _scale;
+
+  @override
+  double get progress => _scale;
+
+  // ── Hot path: runs every frame. No allocation (CLAUDE.md rule 8). ──
+
+  @override
+  void _changed() {
+    const from = MotionTokens.tagPopFrom;
+    _scale = from + (1 - from) * MotionTokens.tagPopCurve.transform(t);
+  }
+
+  // ── End of hot path. ──
+}
+
 /// §9.1: while `doll_reveal`'s `drop` null lowers a tower's new top from
 /// its buried step onto the stand (frames 0–7, `FxTiming.revealDropEndFrame`),
 /// the nests still buried shift one step down with it, each keeping its
@@ -79,14 +140,26 @@ final class RevealDropTween extends HandTween {
     required this.slot,
     required this.buried,
     required super.durationMs,
-  }) : super(slotId: slot.id);
+    this.topSize,
+    this.iced = false,
+  }) : super(slotId: slot.id) {
+    final stack = slot.towerStack(topSize ?? slot.pipCount, buried, iced: iced);
+    _step = stack.step;
+  }
 
   final SlotGeometry slot;
 
   /// The nests the tower buried at the start of the level, for
-  /// `SlotGeometry.buriedBaseY`'s spacing.
+  /// `SlotGeometry.towerStack`'s spacing.
   final int buried;
 
+  /// The tallest size the tower held at the start of the level (null: the
+  /// level's biggest), and whether it started iced: the rest of the stack's
+  /// inputs.
+  final int? topSize;
+  final bool iced;
+
+  double _step = 0;
   double _progress = 0;
 
   /// easeOut, the `drop` null's own curve (tokens `motion.easing.easeOut`),
@@ -101,11 +174,8 @@ final class RevealDropTween extends HandTween {
 
   /// The base of the buried nest at new [depth] (≥ 1): from its old depth
   /// `depth + 1` to [depth].
-  double buriedBaseY(int depth) {
-    final from = slot.buriedBaseY(depth + 1, buried: buried);
-    final to = slot.buriedBaseY(depth, buried: buried);
-    return from + (to - from) * _progress;
-  }
+  double buriedBaseY(int depth) =>
+      slot.surfaceY - (depth + 1 - _progress) * _step;
 
   // ── End of hot path. ──
 }

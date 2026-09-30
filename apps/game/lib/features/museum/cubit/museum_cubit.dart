@@ -50,24 +50,31 @@ class MuseumCubit extends BaseAsyncCubit<MuseumState> {
     final collected = document.museum;
     final collectedDates = document.museumCollected;
     var foundNext = false;
+    var earnedCount = 0;
     final entries = <MuseumEntry>[];
     for (final chapter in _catalog.chapters) {
-      final isNext = !collected.contains(chapter.id) && !foundNext;
-      if (isNext) foundNext = true;
-      entries.add(
-        _entryFor(
-          chapter,
-          document: document,
-          collected: collected,
-          collectedDates: collectedDates,
-          isNext: isNext,
-        ),
+      final entry = _entryFor(
+        chapter,
+        document: document,
+        collected: collected,
+        collectedDates: collectedDates,
+        isNext: !foundNext,
       );
+      if (entry.earned) {
+        earnedCount++;
+      } else {
+        foundNext = true;
+      }
+      entries.add(entry);
     }
 
     return MuseumState(
       coins: _save.coins,
-      collectedCount: collected.length,
+      // Derived from the entries below, not `collected.length`: a chapter
+      // that reads `earned` because its levels are all won (the D111 fix)
+      // must also count here, so the collection card's "N / 10" and
+      // progress bar never disagree with the cabinet under it.
+      collectedCount: earnedCount,
       totalChapters: _catalog.chapters.length,
       entries: entries,
       homeRequest: _resolver.homeRequest,
@@ -75,6 +82,9 @@ class MuseumCubit extends BaseAsyncCubit<MuseumState> {
     );
   }
 
+  /// [isNext] is only a candidate here (the first entry `_read`'s loop
+  /// hasn't already marked earned); the entry's own [MuseumEntry.earned]
+  /// decides whether it actually is (below).
   MuseumEntry _entryFor(
     ChapterInfo chapter, {
     required SaveDocument document,
@@ -82,16 +92,28 @@ class MuseumCubit extends BaseAsyncCubit<MuseumState> {
     required Map<String, LocalDate> collectedDates,
     required bool isNext,
   }) {
-    final earned = collected.contains(chapter.id);
     final start = (chapter.number - 1) * chapter.levels + 1;
     final done = (document.currentLevel - start).clamp(0, chapter.levels);
+    // D111 (the owner's simulator review, 2026-09-28): the dev "Jump to a
+    // level" sheet (and anything else that moves `currentLevel`/
+    // `highestLevel` without going through a normal win) never appends to
+    // `document.museum`, so a chapter whose 20 levels are all won could
+    // read `earned: false` — "soon" with a full progress chip, seen as
+    // "Classic · soon" with a 20/20 badge. A chapter this done is always
+    // shown as ready, never "soon": `earned` is derived (`done >=
+    // chapter.levels`) as well as read from the save. This is the
+    // "show it as ready" option (the durable "award it" alternative — a
+    // silent catch-up like the badges', backfilling `museum`/
+    // `museumCollected` on load or win — belongs in `SaveService`,
+    // `core/services/save/**`, outside this lane; see the lane report).
+    final earned = collected.contains(chapter.id) || done >= chapter.levels;
     return MuseumEntry(
       chapterId: chapter.id,
       chapterNumber: chapter.number,
       themeId: chapter.themeId,
       figurineId: chapter.figurine.id,
       earned: earned,
-      isNext: isNext,
+      isNext: isNext && !earned,
       done: done,
       total: chapter.levels,
       collectedOn: collectedDates[chapter.id],

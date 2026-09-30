@@ -90,6 +90,8 @@ class AssetSkinService implements SkinService {
   BoardSpriteLibrary? _board;
   ThemeBackground? _background;
   bool _disposed = false;
+  final StreamController<String> _selectedSkinChanges =
+      StreamController.broadcast();
 
   late final UnlockSymbolRasterizer _symbolRasterizer =
       _unlockSymbols ?? BundledUnlockSymbolRasterizer(_bundle);
@@ -168,8 +170,12 @@ class AssetSkinService implements SkinService {
     _skin = next;
     _skinId = skinId;
     if (previous != null) _rememberOther(previousId, previous);
+    if (!_selectedSkinChanges.isClosed) _selectedSkinChanges.add(skinId);
     return true;
   }
+
+  @override
+  Stream<String> get selectedSkinChanges => _selectedSkinChanges.stream;
 
   /// Caches [skinId]'s rasterizer as most-recently-used, evicting the
   /// oldest past [_cachedOtherSkins] (m3-design §9.2).
@@ -499,6 +505,7 @@ class AssetSkinService implements SkinService {
   void dispose() {
     if (_disposed) return;
     _disposed = true;
+    unawaited(_selectedSkinChanges.close());
     _parts.dispose();
     _skin?.dispose();
     for (final rasterizer in _otherSkins.values) {

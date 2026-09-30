@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/models/booster.dart' show BoosterType;
@@ -14,7 +16,16 @@ import 'package:nesty_game/l10n/app_localizations.dart';
 ///
 /// M3 has no ads (D73): the ▶ "Watch ad" option and the offline "Connect to
 /// watch an ad" copy are `TODO(M6)`, so this always shows the coin button
-/// only, enabled when the price is affordable.
+/// only.
+///
+/// A price the balance can't cover (D195, phase 4 architecture §3.7): the
+/// coin button is still enabled when [onNeedCoins] is given, and a tap opens
+/// `NotEnoughCoinsDialog` ("You need N more coins", where they come from)
+/// whose "Go to Shop" calls [onNeedCoins]. It only ever opens from the
+/// player's own tap.
+// TODO(M6): with a real `AdsService`, an ad ready keeps this path and an
+// offline one shows frame 3.8's disabled button with "Connect to watch an
+// ad" (`BuyPopupBody.offline`).
 class BoosterBuyPopup extends StatelessWidget {
   const BoosterBuyPopup({
     required this.type,
@@ -23,6 +34,7 @@ class BoosterBuyPopup extends StatelessWidget {
     required this.freeUndosPerLevel,
     required this.onBuy,
     required this.onDismiss,
+    this.onNeedCoins,
     super.key,
   });
 
@@ -36,9 +48,14 @@ class BoosterBuyPopup extends StatelessWidget {
   /// free undos are used." Unused by the Hint and +1 Slot popups.
   final int freeUndosPerLevel;
 
-  /// Null while it can't be afforded: the coin button shows disabled.
+  /// Null while it can't be afforded: the coin button then opens the Not
+  /// enough coins dialog ([onNeedCoins]), or shows disabled without one.
   final VoidCallback? onBuy;
   final VoidCallback onDismiss;
+
+  /// "Go to Shop" in the Not enough coins dialog: the caller closes the
+  /// popup, pauses the level and opens the Shop's Coins tab.
+  final VoidCallback? onNeedCoins;
 
   /// NestyOverlay `isBuy`: the card sits 32 from each side, its top at 226
   /// on a 59 safe area.
@@ -74,11 +91,25 @@ class BoosterBuyPopup extends StatelessWidget {
           benefitText: spec.benefitText,
           price: price,
           balanceLabel: l10n.balanceLine(coins),
-          onBuy: onBuy,
+          onBuy:
+              onBuy ??
+              (onNeedCoins == null ? null : () => _needCoins(context, spec)),
         ),
       ),
     );
   }
+}
+
+extension on BoosterBuyPopup {
+  void _needCoins(BuildContext context, _BoosterSpec spec) => unawaited(
+    NotEnoughCoinsDialog.show(
+      context,
+      price: price,
+      balance: coins,
+      itemName: spec.title,
+      onGoToShop: onNeedCoins!,
+    ),
+  );
 }
 
 /// Each booster's icon, colours and copy (NestyOverlay `BUY`: `buyHint`,

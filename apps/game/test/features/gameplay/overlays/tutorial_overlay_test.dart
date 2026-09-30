@@ -78,6 +78,76 @@ void main() {
     expect(find.byType(TutorialOverlay), findsOneWidget);
   });
 
+  group('Level 1\'s three steps all wear "STEP n OF 3" (copy.md E; lead note '
+      '6)', () {
+    for (final (step, chip, title) in [
+      (1, 'STEP 1 OF 3', 'Tap the small doll'),
+      (2, 'STEP 2 OF 3', 'Now tap the big one'),
+      (3, 'STEP 3 OF 3', 'Finish the family'),
+    ]) {
+      testWidgets('step $step: "$chip" over "$title"', (tester) async {
+        final board = GameState.initial(defaultLevel);
+        await pumpScreen(
+          tester,
+          TutorialOverlay(
+            cue: TutorialCue(
+              step: step,
+              kind: TutorialCueKind.tapSource,
+              from: red2,
+              to: red3,
+            ),
+            board: board,
+            geometry: _geometryFor(board),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text(chip), findsOneWidget);
+        expect(find.text(title), findsOneWidget);
+      });
+    }
+
+    testWidgets('step 3 says an unfinished family is done when every size '
+        'is nested', (tester) async {
+      final board = GameState.initial(defaultLevel);
+      await pumpScreen(
+        tester,
+        TutorialOverlay(
+          cue: const TutorialCue(
+            step: 3,
+            kind: TutorialCueKind.tapSource,
+            from: red2,
+            to: red3,
+          ),
+          board: board,
+          geometry: _geometryFor(board),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.text(
+          'Put the last doll in. A family is done when every size is '
+          'nested.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Level 2\'s swallow keeps "NEW MOVE"', (tester) async {
+      final board = GameState.initial(defaultLevel);
+      await pumpScreen(
+        tester,
+        TutorialOverlay(
+          cue: _drag,
+          board: board,
+          geometry: _geometryFor(board),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('NEW MOVE'), findsOneWidget);
+      expect(find.textContaining('OF 3'), findsNothing);
+    });
+  });
+
   // The hand per LOTTIE.md: `ui_tap_hand` is a 128×144 canvas with its
   // fingertip (48, 32) on the target; `ui_drag_hand` is board space
   // (390×844) with a `travel` null remapped from the tap point on the big
@@ -104,6 +174,51 @@ void main() {
 
     Finder handOf(FxId id) =>
         find.byWidgetPredicate((w) => w is LottieFxView && w.id == id);
+
+    testWidgets('reduce motion: neither hand loops, both rest on frame 0 '
+        '(ui-spec-game §2.4)', (tester) async {
+      for (final (cue, id) in [
+        (_tapSource, FxId.uiTapHand),
+        (_drag, FxId.uiDragHand),
+      ]) {
+        final library = await libraryWith(tester, id);
+        await pumpScreen(
+          tester,
+          TutorialOverlay(
+            cue: cue,
+            board: board,
+            geometry: geometry,
+            library: library,
+          ),
+          reduceMotion: true,
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        final controller = tester.widget<LottieFxView>(handOf(id)).controller!;
+        expect(controller.isPlaying, isFalse, reason: id.fileName);
+        expect(controller.player.frame, 0, reason: id.fileName);
+      }
+    });
+
+    testWidgets('with motion the hands play', (tester) async {
+      final library = await libraryWith(tester, FxId.uiTapHand);
+      await pumpScreen(
+        tester,
+        TutorialOverlay(
+          cue: _tapSource,
+          board: board,
+          geometry: geometry,
+          library: library,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        tester
+            .widget<LottieFxView>(handOf(FxId.uiTapHand))
+            .controller!
+            .isPlaying,
+        isTrue,
+      );
+    });
 
     testWidgets('a drag step (1.6): ui_drag_hand over the whole board, its '
         'travel from the tap point to 0.4 of the target up its height', (

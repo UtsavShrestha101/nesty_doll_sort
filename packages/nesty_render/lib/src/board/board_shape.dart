@@ -23,22 +23,34 @@ enum SlotShapeKind {
 /// One slot as the layout sees it: the nesty_core slot id and its look.
 @immutable
 final class SlotShape {
-  const SlotShape(this.id, this.kind);
+  const SlotShape(this.id, this.kind, {this.lockedSize});
 
   /// The nesty_core slot id (`"r0c1"`, `"x0"`), used to look geometry up.
   final String id;
 
   final SlotShapeKind kind;
 
+  /// The size of the doll sealed in a [SlotShapeKind.locked] slot's case, or
+  /// null (every other kind, or a caller that doesn't know it). The layout
+  /// uses it to pick the tall glass case (m7-3 `layout.board.glassCaseTall`:
+  /// a sealed doll taller than `GlassCaseTallTokens.minDollHeight`; phase 4
+  /// architecture §2.3). Null keeps the normal case.
+  final int? lockedSize;
+
   @override
   bool operator ==(Object other) =>
-      other is SlotShape && other.id == id && other.kind == kind;
+      other is SlotShape &&
+      other.id == id &&
+      other.kind == kind &&
+      other.lockedSize == lockedSize;
 
   @override
-  int get hashCode => Object.hash(id, kind);
+  int get hashCode => Object.hash(id, kind, lockedSize);
 
   @override
-  String toString() => 'SlotShape($id, ${kind.name})';
+  String toString() => lockedSize == null
+      ? 'SlotShape($id, ${kind.name})'
+      : 'SlotShape($id, ${kind.name}, lockedSize: $lockedSize)';
 }
 
 /// The board's shape: shelves top to bottom, slots left to right, plus the

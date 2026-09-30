@@ -144,42 +144,51 @@ void main() {
       expect(arrow.size, const Size(40, 50));
     });
 
-    test('buried tower nests keep their true size, raised 18 per depth', () {
+    test('buried tower nests keep their true size, raised one step per depth '
+        '(m7-3 layout.towerStack)', () {
       final s = g.slot('r1c0');
-      expect(s.buriedBaseY(1), closeTo(480.3 - 18, tol));
-      expect(s.buriedBaseY(3), closeTo(480.3 - 54, tol));
-      final r = s.buriedSilhouetteRect(1, 4);
+      // Middle shelf, a size-1 top (63) with 3 buried: room for the full 18
+      // ("Every existing tower keeps its 18 dp step").
+      expect(s.buriedBaseY(1, buried: 3, topSize: 1), closeTo(480.3 - 18, tol));
+      expect(s.buriedBaseY(3, buried: 3, topSize: 1), closeTo(480.3 - 54, tol));
+      final r = s.buriedSilhouetteRect(1, 4, buried: 3, topSize: 1);
       expect(r.height, closeTo(117, tol));
       expect(r.width, closeTo(78, tol));
       expect(r.left, closeTo(16.5, tol));
       expect(r.top, closeTo(462.3 - 117 * 742 / 768, tol));
-      // The default assumes the deepest tower (3 buried, spec §3.2); a row
-      // below the top has room for all of them at 18.
-      expect(s.buriedBaseY(1, buried: 1), s.buriedBaseY(1));
       // A smaller buried nest is drawn smaller, not stretched (D21).
-      expect(s.buriedSilhouetteRect(2, 1).height, closeTo(63, tol));
+      expect(
+        s.buriedSilhouetteRect(2, 1, buried: 3, topSize: 1).height,
+        closeTo(63, tol),
+      );
+      // A size-4 top on the same shelf leaves 13.7 of room for 3: fewer
+      // silhouettes, at the 9 dp step (the design's "below 9" rule).
+      expect(s.towerStack(4, 3).drawn, 1);
+      expect(s.towerStack(4, 3).step, closeTo(9, tol));
     });
 
-    test('a top-shelf tower keeps its silhouettes under the HUD', () {
-      // Review RENDER-4. maxSize 4 on 3 shelves: the tower's surface is
-      // 294.3 (its stand is 39 tall), so the tallest doll's top is 39.3
-      // below the frame top (294.3 − 117 × 742/768 − 142).
+    test('a top-shelf tower keeps its silhouettes under the HUD '
+        '(the design\'s three examples)', () {
+      // maxSize 4 on 3 shelves: the tower's surface is 294.3 (its stand is
+      // 39 tall); hRoom = (294.3 − 150) / 0.9661 = 149.4.
       final top = BoardLayout.compute(
         board(['otoo', 'oooo', 'ooo'], maxSize: 4),
         BoardViewport.reference,
       ).slot('r0c1');
       expect(top.surfaceY, closeTo(294.3, tol));
-      const headroom = 294.3 - 117 * 742 / 768 - 142;
-      // One or two buried nests fit at the designed 18 per depth.
-      expect(top.buriedBaseY(1, buried: 1), closeTo(294.3 - 18, tol));
-      expect(top.buriedBaseY(2, buried: 2), closeTo(294.3 - 36, tol));
-      // Three would reach 14.8 into the HUD: the step shrinks to fit.
-      expect(top.buriedBaseY(1), closeTo(294.3 - headroom / 3, tol));
-      expect(top.buriedBaseY(3), closeTo(294.3 - headroom, tol));
+      // Size-4 top (117), 3 buried: step 10.8.
+      final a = top.towerStack(4, 3);
+      expect(a.step, closeTo(10.8, 0.05));
+      expect(a.drawn, 3);
       expect(
-        top.buriedSilhouetteRect(3, 4).top,
-        greaterThanOrEqualTo(142 - 1e-9),
+        top.buriedBaseY(1, buried: 3, topSize: 4),
+        closeTo(294.3 - a.step, tol),
       );
+      // Size-3 top (99): 16.8.
+      expect(top.towerStack(3, 3).step, closeTo(16.8, 0.05));
+      // Fewer nests keep the designed 18.
+      expect(top.towerStack(4, 1).step, 18);
+      expect(top.towerStack(4, 2).step, closeTo(16.18, 0.05));
     });
 
     test('hit rects span the column and the band between plank bottoms', () {
@@ -215,25 +224,26 @@ void main() {
       expect(g.slot('r0c0').pipCount, 5);
     });
 
-    test('maxSize 6 on 3 shelves clamps the tallest to 93 − 8/3 wide', () {
+    test('maxSize 6 on 3 shelves takes the tall preset: 142.1 tall, k 0.947 '
+        '(D180)', () {
       final g = BoardLayout.compute(
         board(['oooo', 'oooo', 'ooo'], maxSize: 6),
         BoardViewport.reference,
       );
-      const limit = 93 - 8 / 3;
-      expect(g.slot('r0c0').dollWidth(6), closeTo(limit, exact));
-      expect(g.dollHeightScale, closeTo(limit / 100, exact));
+      expect(g.preset, same(ShelfPresets.threeTall));
+      expect([for (final s in g.shelves) s.plankTop], [300, 494, 688]);
+      expect(g.dollHeightScale, closeTo(142.1 / 150, 0.001));
+      expect(g.maxDollHeight, closeTo(142.1, 0.05));
       // One scale for the board: every size shrinks by the same factor.
-      expect(g.dollHeight(1), closeTo(63 * limit / 100, exact));
+      expect(g.dollHeight(1), closeTo(150 * 0.42 * g.dollHeightScale, exact));
     });
 
-    test('maxSize 3 on 4-slot rows (levels 3–9) is clamped the same way', () {
+    test('maxSize 3 on 3 shelves scales size 3 to 1.00 of the fit (135.9)', () {
       final g = BoardLayout.compute(
         board(['oooo', 'oooo', 'ooo'], maxSize: 3),
         BoardViewport.reference,
       );
-      // Unclamped, size 3 would be 150 tall and 100 wide at pitch 93.
-      expect(g.slot('r0c0').dollWidth(3), closeTo(93 - 8 / 3, exact));
+      expect(g.maxDollHeight, closeTo(135.9, 0.05));
       expect(g.dollHeight(1) / g.dollHeight(3), closeTo(0.42 / 0.66, exact));
     });
   });
@@ -273,7 +283,8 @@ void main() {
       expect(after.dollHeights, before.dollHeights);
     });
 
-    test('the second extra makes 5: pitch 74.4, stands and dolls shrink', () {
+    test('the second extra makes a row of 5: pitch 74.4, stands at 0.8, pips '
+        'unscaled (rowOfFive, D181)', () {
       final g = BoardLayout.compute(
         fullBoard.withExtraSlot('x0').withExtraSlot('x1'),
         BoardViewport.reference,
@@ -290,18 +301,28 @@ void main() {
           closeTo(343.8, exact),
         ],
       );
-      const k = 70.4 / 90;
+      const token = BoardPresetTokens.rowOfFive;
       final s = g.slot('x1');
-      expect(s.standRect.width, closeTo(70.4, exact));
-      expect(s.standRect.height, closeTo(34 * k, exact));
+      expect(s.pieceScale, closeTo(token.standScale, exact));
+      expect(s.standRect.width, closeTo(token.stand.width, exact));
+      expect(s.standRect.height, closeTo(token.stand.height, exact));
       expect(s.standRect.bottom, closeTo(693, exact));
-      expect(s.surfaceY, closeTo(693 - 34 * k + 12.3 * k, exact));
-      // The dolls shrink with the row's pieces (70.4 / 90), below the width
-      // limit 74.4 − 8/3 for the tallest (size 4, 78 wide), so a sealed or
-      // frozen doll keeps fitting its case or ice (review RENDER-3).
-      expect(g.dollHeightScale, closeTo(k, exact));
-      expect(s.dollWidth(4), closeTo(78 * k, exact));
-      expect(s.dollWidth(4), lessThan(74.4 - 8 / 3));
+      // The surface sits 9.84 below the scaled stand's top.
+      expect(
+        s.surfaceY - s.standRect.top,
+        closeTo(token.standSurfaceOffset, 0.01),
+      );
+      // Pips stay 6 dp at a 7.8 pitch on the scaled stand.
+      expect(s.pipDiameter, 6);
+      expect(s.pipPitch, 7.8);
+      // maxSize 4 keeps its sizes (the width limit is 119.6).
+      expect(g.dollHeightScale, 1);
+      expect(g.dollHeights, [
+        closeTo(63, tol),
+        closeTo(81, tol),
+        closeTo(99, tol),
+        closeTo(117, tol),
+      ]);
       // The upper shelves keep their pitch and full-size stands.
       expect(g.slot('r0c0').standRect.width, 90);
       expect(g.slot('r1c0').centerX, 99);

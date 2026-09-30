@@ -33,24 +33,29 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('ChapterTheme', () {
-    test('ids, fallback colours (NestyBoard:73) and bundled art', () {
+    test('ids, fallback colours (tokens v3 palette band) and bundled art', () {
       expect(ChapterTheme.values.map((t) => t.id), [
-        'ch01',
-        'ch02',
-        'ch03',
-        'ch04',
-        'ch05',
-        'ch06',
+        for (var n = 1; n <= 10; n++) 'ch${n.toString().padLeft(2, '0')}',
       ]);
+      // m7-3 (phase 4 architecture §3.1): the fallback is the palette's
+      // `band`, so ch01–ch06 leave NestyBoard's BG map too.
       expect(ChapterTheme.values.map((t) => t.fallbackColor), const [
-        ui.Color(0xFFF4D29C),
-        ui.Color(0xFFBFC6CC),
-        ui.Color(0xFFF3E6CF),
-        ui.Color(0xFFE7EDF2),
-        ui.Color(0xFF3B3470),
-        ui.Color(0xFFDCEBC8),
+        ui.Color(0xFFFBEAD0),
+        ui.Color(0xFFE9E6E8),
+        ui.Color(0xFFE6F5F7),
+        ui.Color(0xFFEEF1F5),
+        ui.Color(0xFF2C305F),
+        ui.Color(0xFFEEF6E6),
+        ui.Color(0xFFF7E6D8),
+        ui.Color(0xFFFBEBD5),
+        ui.Color(0xFFEFE9F4),
+        ui.Color(0xFFF8E6DA),
       ]);
       for (final theme in ChapterTheme.values) {
+        expect(theme.token, ChapterThemeTokens.chapters[theme.index]);
+        expect(theme.token.id, theme.id);
+        expect(theme.palette, same(theme.token.palette));
+        expect(theme.fallbackColor, theme.palette.band);
         expect(theme.assetKey(), 'assets/themes/${theme.id}/background.svg');
         expect(
           File('$gameAssetsDir/themes/${theme.id}/background.svg').existsSync(),
@@ -62,12 +67,12 @@ void main() {
       expect(ChapterTheme.byId('ch99'), isNull);
     });
 
-    test('chapter numbers map to themes; 7+ reuse them in order', () {
-      for (var chapter = 1; chapter <= 6; chapter++) {
+    test('chapter numbers map to themes; 11+ cycle the ten in order', () {
+      for (var chapter = 1; chapter <= 10; chapter++) {
         expect(ChapterTheme.forChapter(chapter).chapter, chapter);
       }
-      expect(ChapterTheme.forChapter(7), ChapterTheme.ch01);
-      expect(ChapterTheme.forChapter(10), ChapterTheme.ch04);
+      expect(ChapterTheme.forChapter(11), ChapterTheme.ch01);
+      expect(ChapterTheme.forChapter(20), ChapterTheme.ch10);
       expect(() => ChapterTheme.forChapter(0), throwsArgumentError);
     });
   });
@@ -249,7 +254,8 @@ void main() {
       final painted = await capture(10, 10, (canvas) {
         ThemeBackgroundPainter(background).paint(canvas, const ui.Size(10, 10));
       });
-      expect(await _pixel(painted, 5, 5), [0x3B, 0x34, 0x70, 0xFF]);
+      // ch05's palette band, #2C305F.
+      expect(await _pixel(painted, 5, 5), [0x2C, 0x30, 0x5F, 0xFF]);
     });
 
     test('paints the raster over the colour, scaled to cover', () async {

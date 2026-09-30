@@ -81,37 +81,61 @@ void main() {
   });
 
   group('ShelfPresets', () {
-    test('designed presets come from tokens.json', () {
+    test('every preset is the design\'s (tokens.json layout.boardPresets)', () {
+      for (final (preset, token) in [
+        (ShelfPresets.two, BoardPresetTokens.twoShelves),
+        (ShelfPresets.three, BoardPresetTokens.threeShelves),
+        (ShelfPresets.threeTall, BoardPresetTokens.threeShelvesTall),
+        (ShelfPresets.four, BoardPresetTokens.fourShelves),
+      ]) {
+        expect(preset.plankTops, token.plankTops);
+        expect(preset.maxDollHeight, token.slotMaxDollHeight);
+        expect(preset.designed, isTrue);
+      }
       expect(
         ShelfPresets.three.plankTops,
         BoardTokens.plankTopsByShelfCount[3],
       );
       expect(ShelfPresets.two.plankTops, BoardTokens.plankTopsByShelfCount[2]);
+      expect(ShelfPresets.four.plankTops, BoardTokens.plankTopsByShelfCount[4]);
       expect(
-        ShelfPresets.three.maxDollHeight,
-        BoardTokens.slotMaxDollHeightByShelfCount[3],
+        ShelfPresets.threeTall.plankTops,
+        BoardTokens.plankTopsThreeShelvesTall,
       );
+      expect(ShelfPresets.three.iceHeight, BoardTokens.iceOverlaySize.height);
       expect(
-        ShelfPresets.two.maxDollHeight,
-        BoardTokens.slotMaxDollHeightByShelfCount[2],
+        ShelfPresets.threeTall.iceHeight,
+        BoardTokens.iceOverlayTallSize.height,
       );
-      expect(ShelfPresets.three.designed, isTrue);
-      expect(ShelfPresets.two.designed, isTrue);
-      expect(ShelfPresets.three.pieceScale, 1);
-      expect(ShelfPresets.two.pieceScale, 1);
+      expect(ShelfPresets.threeTall.tall, isTrue);
+      expect(ShelfPresets.three.tall, isFalse);
     });
 
-    test('one preset per shelf count, 1–4', () {
+    test('the preset follows the shelf count and, on 3 shelves, maxSize 6', () {
+      ShelfPreset of(int shelves, int maxSize) => ShelfPresets.forShape(
+        board([for (var r = 0; r < shelves; r++) 'ooo'], maxSize: maxSize),
+      );
+      expect(of(1, 4), same(ShelfPresets.one));
+      expect(of(2, 3), same(ShelfPresets.two));
+      expect(of(2, 6), same(ShelfPresets.two));
+      expect(of(3, 3), same(ShelfPresets.three));
+      expect(of(3, 5), same(ShelfPresets.three));
+      expect(of(3, 6), same(ShelfPresets.threeTall));
+      expect(of(4, 4), same(ShelfPresets.four));
       for (var n = 1; n <= 4; n++) {
-        expect(ShelfPresets.forShelfCount(n).shelfCount, n);
+        expect(of(n, 4).shelfCount, n);
       }
-      expect(() => ShelfPresets.forShelfCount(0), throwsArgumentError);
-      expect(() => ShelfPresets.forShelfCount(5), throwsArgumentError);
     });
 
     test('plank tops run top to bottom and stay above the booster bar', () {
-      for (var n = 1; n <= 4; n++) {
-        final tops = ShelfPresets.forShelfCount(n).plankTops;
+      for (final preset in [
+        ShelfPresets.one,
+        ShelfPresets.two,
+        ShelfPresets.three,
+        ShelfPresets.threeTall,
+        ShelfPresets.four,
+      ]) {
+        final tops = preset.plankTops;
         for (var i = 1; i < tops.length; i++) {
           expect(tops[i], greaterThan(tops[i - 1]));
         }
@@ -153,9 +177,11 @@ void main() {
       expect(_K.frameHeight, 592);
       expect(_K.familyCounterCenterInset, 70);
       expect(_K.centerX, 195);
-      expect(_K.standShrinkPitch, 93);
-      // TUT1's gap: size 3 is 140 tall (93.3 wide) at pitch 96.
-      expect(_K.dollMinGap, closeTo(96 - 140 * 2 / 3, exact));
+      expect(_K.standPitchInset, 2.4);
+      expect(_K.standSurfaceAbovePlank, closeTo(12.7, exact));
+      expect(_K.towerSurfaceAbovePlank, closeTo(17.7, exact));
+      expect(_K.iceBottomBelowStandBottom, 7.5);
+      expect(_K.extraSlotRepitchMs, MotionTokens.rowOfFiveMs);
       expect(_K.padlockCenterBelowCaseTop, closeTo(116.3, 0.05));
     });
   });

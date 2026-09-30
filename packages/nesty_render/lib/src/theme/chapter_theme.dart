@@ -1,34 +1,64 @@
-import 'dart:ui' show Color;
+import 'dart:ui' show Color, Rect;
+
+import 'package:nesty_render/src/tokens/render_token_types.dart';
+import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 
 /// The bundled chapter themes (spec §7.1 "each chapter has its own board
-/// theme", §12.4; D20 bundles ch01–ch06). The enum name is the theme id the
-/// save stores (`ownedThemes`, `selectedTheme`, spec §13.3) and the asset
-/// folder (`assets/themes/<id>/background.svg`).
+/// theme", §12.4; D20 bundled ch01–ch06, m7-3 adds ch07–ch10, D171). The enum
+/// name is the theme id the save stores (`ownedThemes`, `selectedTheme`, spec
+/// §13.3) and the asset folder (`assets/themes/<id>/background.svg`); adding
+/// themes is additive for the save (no schema step).
+///
+/// Each theme carries its tokens v3 palette (`theme.chapters.N.palette`;
+/// phase 4 architecture §3.1): the chapter ribbon, Home's chapter card, the
+/// Chapters header and bar, and the Shop card read it.
 enum ChapterTheme {
   /// Sunny Toy Shop.
-  ch01(Color(0xFFF4D29C)),
+  ch01(ChapterThemeTokens.ch01),
 
-  /// Rainy Cafe Corner.
-  ch02(Color(0xFFBFC6CC)),
+  /// Rainy Café Corner.
+  ch02(ChapterThemeTokens.ch02),
 
   /// Seaside Market.
-  ch03(Color(0xFFF3E6CF)),
+  ch03(ChapterThemeTokens.ch03),
 
   /// Snowy Cabin.
-  ch04(Color(0xFFE7EDF2)),
+  ch04(ChapterThemeTokens.ch04),
 
   /// Night Carnival.
-  ch05(Color(0xFF3B3470)),
+  ch05(ChapterThemeTokens.ch05),
 
   /// Spring Garden Shed.
-  ch06(Color(0xFFDCEBC8));
+  ch06(ChapterThemeTokens.ch06),
 
-  const ChapterTheme(this.fallbackColor);
+  /// Puppet Theater.
+  ch07(ChapterThemeTokens.ch07),
 
-  /// The colour the design sets each background on (NestyBoard:73, the `BG`
-  /// map). It fills the screen behind the art, and alone while the art is
-  /// rasterizing or if it fails to load.
-  final Color fallbackColor;
+  /// Autumn Bandstand.
+  ch08(ChapterThemeTokens.ch08),
+
+  /// Castle Library.
+  ch09(ChapterThemeTokens.ch09),
+
+  /// Sunrise Lookout.
+  ch10(ChapterThemeTokens.ch10);
+
+  const ChapterTheme(this.token);
+
+  /// The theme's tokens v3 entry (`theme.chapters.N`).
+  final ChapterThemeToken token;
+
+  /// The chapter's colours (tokens v3 `theme.chapters.N.palette`).
+  ChapterPalette get palette => token.palette;
+
+  /// The Shop card's crop of the art, in art px (tokens v3
+  /// `theme.chapters.N.thumb`, at `ChapterThemeTokens.thumbBox`'s ratio).
+  Rect get thumb => token.thumb;
+
+  /// The colour behind the art, and alone while it is rasterizing or if it
+  /// fails to load: the palette's `band` (tokens win over the prototype's
+  /// `BG` map, which ch01–ch06 used until m7-3; phase 4 architecture §3.1).
+  Color get fallbackColor => token.palette.band;
 
   /// The theme id, e.g. `ch01`.
   String get id => name;
@@ -48,13 +78,13 @@ enum ChapterTheme {
     return null;
   }
 
-  /// The theme of [chapter] (from 1). Throws [ArgumentError] below 1.
+  /// The theme of [chapter] (from 1): chapters 1–10 have their own, and a
+  /// later chapter (M4's content) cycles the ten in order. Throws
+  /// [ArgumentError] below 1.
   static ChapterTheme forChapter(int chapter) {
     if (chapter < 1) {
       throw ArgumentError.value(chapter, 'chapter', 'chapters start at 1');
     }
-    // TODO(M7): chapters 7–10 have no theme art yet (BACKLOG "Owner inputs
-    // needed"); until it arrives they reuse the six themes in order.
     return values[(chapter - 1) % values.length];
   }
 }

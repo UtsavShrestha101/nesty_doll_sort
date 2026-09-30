@@ -25,7 +25,7 @@ import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 
 typedef _K = BoardLayoutConstants;
 
-/// The 15 board pieces in `apps/game/assets/board/` (the design's
+/// The 18 board pieces in `apps/game/assets/board/` (the design's
 /// `design/board/`, synced by `sync_design_assets`), each with the box it is
 /// drawn in on the 390×844 reference board, in reference px.
 ///
@@ -62,6 +62,16 @@ enum BoardSprite {
   /// Glass case, shattered: the unlock clip's 400 ms frame.
   glassCase2('glass-case-2', BoardTokens.glassCaseSize),
 
+  /// The tall glass case (m7-3, tokens v3 `layout.board.glassCaseTall`):
+  /// over a sealed doll taller than `GlassCaseTallTokens.minDollHeight`
+  /// (sizes 5 and 6), intact, cracked and shattered like [glassCase0]…
+  /// [glassCase2]. Its box is `0.62h × 1.0133h` for the 150-unit reference
+  /// doll: 93×152. `fx_glass_unlock_tall` plays over it (phase 4
+  /// architecture §2.3; lane B places it).
+  glassCaseTall0('glass-case-tall-0', glassCaseTallSize),
+  glassCaseTall1('glass-case-tall-1', glassCaseTallSize),
+  glassCaseTall2('glass-case-tall-2', glassCaseTallSize),
+
   /// Ice frames 0–3 (spec §3.4, `BoardLayout.iceFrame`). NestyBoard:180.
   ice0('ice-0', BoardTokens.iceOverlaySize),
   ice1('ice-1', BoardTokens.iceOverlaySize),
@@ -84,6 +94,12 @@ enum BoardSprite {
 
   const BoardSprite(this.assetName, this.designSize);
 
+  /// The tall case's box on the reference board: `GlassCaseTallTokens`'
+  /// ratios × the 150-unit reference doll, rounded as the tokens' own
+  /// example ("93×152 for h 150"), which is also the tall frames' Lottie
+  /// slot (`glass_case_tall_*` 279×456 at 3×).
+  static const glassCaseTallSize = Size(93, 152);
+
   /// File name in the board asset folder, without `.svg`.
   final String assetName;
 
@@ -97,12 +113,28 @@ enum BoardSprite {
   bool get tiles => this == shelfPlank;
 
   static const _glassFrames = [glassCase0, glassCase1, glassCase2];
+  static const _tallGlassFrames = [
+    glassCaseTall0,
+    glassCaseTall1,
+    glassCaseTall2,
+  ];
   static const _iceFrames = [ice0, ice1, ice2, ice3];
 
   /// The glass case at [frame]: 0 intact, 1 cracked, 2 shattered.
   static BoardSprite glassCase(int frame) {
     RangeError.checkValueInInterval(frame, 0, _glassFrames.length - 1, 'frame');
     return _glassFrames[frame];
+  }
+
+  /// The tall glass case at [frame]: 0 intact, 1 cracked, 2 shattered.
+  static BoardSprite glassCaseTall(int frame) {
+    RangeError.checkValueInInterval(
+      frame,
+      0,
+      _tallGlassFrames.length - 1,
+      'frame',
+    );
+    return _tallGlassFrames[frame];
   }
 
   /// The ice overlay at [frame] 0–3 (`BoardLayout.iceFrame`). The burst
@@ -514,10 +546,11 @@ final class BoardSprites extends ChangeNotifier {
   /// differ only by floating-point noise share one image.
   static const _keyResolution = 1024;
 
-  /// A (sprite, scale key) pair packs into one int (`key × 16 + index`), so
+  /// A (sprite, scale key) pair packs into one int (`key × 32 + index`), so
   /// the pending and failed sets never allocate. It stays far below 2^53, so
-  /// the packing is the same on the web (the admin).
-  static const _codeStride = 16;
+  /// the packing is the same on the web (the admin). 32 since the tall glass
+  /// frames made 18 sprites.
+  static const _codeStride = 32;
 
   static final Paint _plankFallback = Paint()
     // The plank front's mid tone (shelf-plank.svg, gradient `fr` at .45),
@@ -615,7 +648,13 @@ final class BoardSprites extends ChangeNotifier {
       want(BoardSprite.glowRing, scale);
       want(BoardSprite.hintArrow, scale);
       if (slot.kind == SlotShapeKind.locked) {
-        want(BoardSprite.glassCase0, scale);
+        // A case is the normal one or the tall one (m7-3), never both.
+        want(
+          slot.usesTallCase
+              ? BoardSprite.glassCaseTall0
+              : BoardSprite.glassCase0,
+          scale,
+        );
       }
       for (final sprite in extra) {
         want(sprite, scale);

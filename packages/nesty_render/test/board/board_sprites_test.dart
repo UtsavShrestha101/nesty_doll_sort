@@ -49,14 +49,14 @@ void main() {
   tearDownAll(() => library.dispose());
 
   group('BoardSprite', () {
-    test('covers exactly the 15 synced board SVGs', () {
+    test('covers exactly the 18 synced board SVGs', () {
       final files = Directory('$gameAssetsDir/board')
           .listSync()
           .whereType<File>()
           .map((f) => f.uri.pathSegments.last)
           .toSet();
       expect(BoardSprite.values.map((s) => s.fileName).toSet(), files);
-      expect(BoardSprite.values, hasLength(15));
+      expect(BoardSprite.values, hasLength(18));
     });
 
     test('boxes are the NestyBoard sizes', () {
@@ -70,6 +70,10 @@ void main() {
         BoardSprite.glassCase0: ui.Size(86, 143), // :169
         BoardSprite.glassCase1: ui.Size(86, 143),
         BoardSprite.glassCase2: ui.Size(86, 143),
+        // m7-3 `layout.board.glassCaseTall`: 0.62h × 1.0133h at h 150.
+        BoardSprite.glassCaseTall0: ui.Size(93, 152),
+        BoardSprite.glassCaseTall1: ui.Size(93, 152),
+        BoardSprite.glassCaseTall2: ui.Size(93, 152),
         BoardSprite.ice0: ui.Size(96, 160), // :180
         BoardSprite.ice1: ui.Size(96, 160),
         BoardSprite.ice2: ui.Size(96, 160),
@@ -102,6 +106,24 @@ void main() {
           BoardSprite.ice2,
           BoardSprite.ice3,
         ],
+      );
+      expect(
+        [for (var f = 0; f < 3; f++) BoardSprite.glassCaseTall(f)],
+        [
+          BoardSprite.glassCaseTall0,
+          BoardSprite.glassCaseTall1,
+          BoardSprite.glassCaseTall2,
+        ],
+      );
+      expect(() => BoardSprite.glassCaseTall(3), throwsRangeError);
+      // The tall box is the tokens' ratios at the 150-unit reference doll.
+      expect(
+        BoardSprite.glassCaseTallSize.width,
+        closeTo(GlassCaseTallTokens.widthPerHeight * 150, 0.5),
+      );
+      expect(
+        BoardSprite.glassCaseTallSize.height,
+        closeTo(GlassCaseTallTokens.heightPerHeight * 150, 0.5),
       );
       expect(() => BoardSprite.glassCase(3), throwsRangeError);
       expect(() => BoardSprite.ice(-1), throwsRangeError);
@@ -310,7 +332,7 @@ void main() {
       expect(partial.isAvailable(BoardSprite.slotStand), isTrue);
       expect(partial.isAvailable(BoardSprite.glowRing), isFalse);
       expect(partial.failures.keys, contains(BoardSprite.glowRing));
-      expect(partial.failures, hasLength(14));
+      expect(partial.failures, hasLength(BoardSprite.values.length - 1));
       expect(errors, hasLength(1));
       await expectLater(
         partial.rasterize(BoardSprite.glowRing, 1),
@@ -365,6 +387,28 @@ void main() {
         BoardSprite.slotStand,
         reason: 'the glass case stands on a plain stand (NestyBoard:163)',
       );
+    });
+
+    test('a tall case is prepared instead of the normal one (m7-3)', () async {
+      final tall = BoardLayout.compute(
+        board(['oooo', 'oloo', 'oooo'], maxSize: 5, lockedSize: 5),
+        BoardViewport.reference,
+      );
+      expect(tall.slot('r1c1').usesTallCase, isTrue);
+      await sprites.prepare(tall, devicePixelRatio: 3);
+      expect(sprites.imagesOf(BoardSprite.glassCaseTall0), hasLength(1));
+      expect(sprites.imagesOf(BoardSprite.glassCase0), isEmpty);
+      // A sealed size-4 doll keeps the normal case, so the normal frame is
+      // the one prepared.
+      final normal = BoardLayout.compute(
+        board(['oooo', 'oloo', 'oooo'], maxSize: 5, lockedSize: 4),
+        BoardViewport.reference,
+      );
+      final other = BoardSprites(library);
+      addTearDown(other.dispose);
+      await other.prepare(normal, devicePixelRatio: 3);
+      expect(other.imagesOf(BoardSprite.glassCase0), hasLength(1));
+      expect(other.imagesOf(BoardSprite.glassCaseTall0), isEmpty);
     });
 
     test('glass and ice frames are lazy: a miss starts them', () async {
@@ -567,11 +611,24 @@ void main() {
       expect(eager, inInclusiveRange(1 * _mib, 2 * _mib));
 
       // Every lazy frame at once (a level never shows them all together).
+      // A case is normal or tall (m7-3 `glassCaseTall`, by its sealed doll's
+      // size), so the budget counts the normal frames; the tall set is
+      // checked on its own below.
+      const tall = {
+        BoardSprite.glassCaseTall0,
+        BoardSprite.glassCaseTall1,
+        BoardSprite.glassCaseTall2,
+      };
       for (final sprite in BoardSprite.values) {
+        if (tall.contains(sprite)) continue;
         await sprites.ensure(sprite, 1);
       }
       final everything = sprites.byteSize;
       expect(everything, lessThanOrEqualTo(5 * _mib));
+      for (final sprite in tall) {
+        await sprites.ensure(sprite, 1);
+      }
+      expect(sprites.byteSize - everything, lessThanOrEqualTo(2 * _mib));
 
       // The same eager set on the five acceptance screens, at their
       // typical DPR.

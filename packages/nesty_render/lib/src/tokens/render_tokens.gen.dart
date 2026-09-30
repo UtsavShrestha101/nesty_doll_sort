@@ -1,11 +1,11 @@
 // GENERATED — do not edit; run dart run nesty_tools:gen_design_tokens
 //
-// Source: design/tokens.json (tokens v1).
-// Nesty: Doll Sort design tokens v1. Source of truth for colors, type,
+// Source: design/tokens.json (tokens v3).
+// Nesty: Doll Sort design tokens v3. Source of truth for colors, type,
 // spacing, radii, shadows, layout, motion, sound and haptics. Keys under
 // dollColor match nesty_core DollColor ids.
 
-import 'dart:ui' show Color, Offset, Size;
+import 'dart:ui' show Color, Offset, Rect, Size;
 
 import 'package:flutter/animation.dart' show Cubic;
 import 'package:nesty_core/nesty_core.dart' show DollColor;
@@ -14,7 +14,7 @@ import 'package:nesty_render/src/tokens/render_token_types.dart';
 /// Which design/tokens.json these render tokens were generated from.
 abstract final class RenderTokensInfo {
   /// tokens.json `meta.version`.
-  static const version = 1;
+  static const version = 3;
 }
 
 /// Per-`DollColor` design colors (tokens.json `dollColor`). Keyed by the
@@ -284,7 +284,13 @@ abstract final class BoardTokens {
   static const Map<int, List<double>> plankTopsByShelfCount = {
     3: [312.0, 498.0, 684.0],
     2: [430.0, 650.0],
+    4: [253.0, 398.0, 543.0, 688.0],
   };
+
+  /// The size-6 boards' three shelves (tokens.json
+  /// `layout.board.planksY.3shelvesTall`,
+  /// `layout.boardPresets.threeShelvesTall`): 12 dp higher, 6 dp longer pitch.
+  static const List<double> plankTopsThreeShelvesTall = [300.0, 494.0, 688.0];
 
   /// tokens.json `layout.board.plankHeight`.
   static const plankHeight = 40.0;
@@ -303,6 +309,18 @@ abstract final class BoardTokens {
 
   /// tokens.json `layout.board.iceOverlay`.
   static const iceOverlaySize = Size(96.0, 160.0);
+
+  /// The tall ice of `threeShelvesTall` (tokens.json
+  /// `layout.board.iceOverlayTall`).
+  static const iceOverlayTallSize = Size(96.0, 168.0);
+
+  /// An ice overlay's top = plankTop + this − its height (tokens.json
+  /// `layout.board.iceOverlayTop`).
+  static const iceTopFromPlank = 16.5;
+
+  /// On the tall ice, `fx_ice` plays at scale (1, this) from the ice's bottom
+  /// (LOTTIE.md m7-1).
+  static const iceTallFxScaleY = 1.05;
 
   /// Hit area: "whole slot column, min 48".
   static const minHitExtent = 48.0;
@@ -388,6 +406,420 @@ abstract final class BoardTokens {
 
   /// tokens.json `layout.boosterBar.topInset`.
   static const boosterBarTopInset = 12.0;
+}
+
+/// The tall glass case of a sealed size-5 or size-6 doll (tokens v3
+/// `layout.board.glassCaseTall`, m7-1): its geometry as fractions of the doll
+/// height h, so it grows with the doll. `fx_glass_unlock_tall` unlocks it.
+abstract final class GlassCaseTallTokens {
+  /// The art's viewBox (`board/glass-case-tall-{0,1,2}.svg`).
+  static const viewBox = Size(186.0, 304.0);
+
+  /// Case width ÷ h (`0.62h × 1.0133h (93×152 for h 150)`).
+  static const widthPerHeight = 0.62;
+
+  /// Case height ÷ h.
+  static const heightPerHeight = 1.0133;
+
+  /// The case bottom sits this × h below the stand surface.
+  static const bottomPerHeight = 0.02667;
+
+  /// The sealed doll stands on the stand surface (no plinth lift), so the
+  /// unlock needs no settle.
+  static const dollBaseOnSurface = true;
+
+  /// The padlock's symbol, in the unlock colour's ink, dp at q = 1.
+  static const lockSymbolSize = 12.0;
+
+  /// The symbol's centre: caseTop + this × caseHeight.
+  static const lockCenter = 0.898;
+
+  /// A case whose doll is taller than this (dp at 390×844, sizes 5 and 6) is
+  /// the tall one; smaller dolls keep `BoardTokens.glassCaseSize`.
+  static const minDollHeight = 117.5;
+}
+
+/// The board fit (tokens v3 `layout.boardFit`), which replaces the h·2/3
+/// clamp: one factor k per level, `min(1, min(vertical, hud, horizontal) /
+/// heightOf(maxSize))`, applied to every doll (the formulas are hand-written
+/// in BoardLayout and pinned to `BoardPresetTokens` by board_fit_test).
+///
+/// Replaces the stand-in clamp (h·2/3 ≤ minPitch − 8/3). One factor k per
+/// level, computed in 390×844 dp before the board scales to the screen,
+/// applied to every doll so the sizes keep their ratios. Checked against
+/// every skin: the art box above the base (742/768 of the art) covers each
+/// skin's topper, and the widest painted part is 411 of 512 art px.
+abstract final class BoardFitTokens {
+  /// The drawn doll above its base ÷ its height (742/768 of the art box).
+  static const drawnHeight = 0.9661;
+
+  /// The widest painted part ÷ the doll height (411 of 512).
+  static const bodyWidth = 0.5353;
+
+  /// The top shelf's dolls stay below this y (dp at 390×844).
+  static const hudClearY = 150.0;
+
+  /// Gap under the plank above, dp.
+  static const headroom = 2.0;
+
+  /// Gap between neighbouring dolls, dp.
+  static const neighbourGap = 8.0;
+
+  /// Stand width = `min(this, pitch − standPitchInset)`.
+  static const standMaxWidth = 90.0;
+
+  static const standPitchInset = 2.4;
+}
+
+/// The NestyBoard presets (tokens v3 `layout.boardPresets`), with the
+/// design's own board fit results for 4 slots per row. The preset follows the
+/// shelf count and maxSize (phase 4 architecture §2.1).
+///
+/// NestyBoard presets (prototypes/NestyBoard.dc.html scenes in brackets).
+/// Measurements in dp at 390×844. dollHeights are per maxSize after
+/// layout.boardFit; limits are its three limits for 4 slots per row.
+abstract final class BoardPresetTokens {
+  /// `layout.boardPresets.twoShelves`.
+  static const twoShelves = BoardPresetToken(
+    plankTops: [430.0, 650.0],
+    slotMaxDollHeight: 140.0,
+    maxSlotsPerRow: 4,
+    limits: BoardFitLimits(vertical: 171.1, hud: 276.7, horizontal: 153.2),
+    dollHeights: {
+      3: [89.1, 114.5, 140.0],
+      4: [58.8, 75.6, 92.4, 109.2],
+      5: [58.8, 75.6, 92.4, 109.2, 124.6],
+      6: [58.8, 75.6, 92.4, 109.2, 124.6, 140.0],
+    },
+  );
+
+  /// `layout.boardPresets.threeShelves`.
+  static const threeShelves = BoardPresetToken(
+    plankTops: [312.0, 498.0, 684.0],
+    slotMaxDollHeight: 150.0,
+    maxSlotsPerRow: 4,
+    limits: BoardFitLimits(vertical: 135.9, hud: 154.5, horizontal: 153.2),
+    dollHeights: {
+      3: [86.5, 111.2, 135.9],
+      4: [63.0, 81.0, 99.0, 117.0],
+      5: [63.0, 81.0, 99.0, 117.0, 133.5],
+      6: [57.1, 73.4, 89.7, 106.0, 121.0, 135.9],
+    },
+  );
+
+  /// `layout.boardPresets.threeShelvesTall`.
+  static const threeShelvesTall = BoardPresetToken(
+    plankTops: [300.0, 494.0, 688.0],
+    slotMaxDollHeight: 150.0,
+    maxSlotsPerRow: 4,
+    limits: BoardFitLimits(vertical: 144.2, hud: 142.1, horizontal: 153.2),
+    dollHeights: {
+      6: [59.7, 76.7, 93.8, 110.8, 126.5, 142.1],
+    },
+    iceOverlay: Size(96.0, 168.0),
+  );
+
+  /// `layout.boardPresets.fourShelves`.
+  static const fourShelves = BoardPresetToken(
+    plankTops: [253.0, 398.0, 543.0, 688.0],
+    slotMaxDollHeight: 150.0,
+    maxSlotsPerRow: 4,
+    limits: BoardFitLimits(vertical: 93.5, hud: 93.5, horizontal: 153.2),
+    dollHeights: {
+      3: [59.5, 76.5, 93.5],
+      4: [50.3, 64.7, 79.1, 93.5],
+    },
+    optional: true,
+  );
+
+  /// `layout.boardPresets.rowOfFive`.
+  static const rowOfFive = RowOfFiveToken(
+    pitch: 74.4,
+    stand: Size(72.0, 27.2),
+    towerStand: Size(72.0, 31.2),
+    standScale: 0.8,
+    standSurfaceOffset: 9.84,
+    pipsScaled: false,
+    limits: BoardFitLimits(vertical: 135.9, hud: 154.5, horizontal: 119.6),
+    dollHeights: {
+      4: [63.0, 81.0, 99.0, 117.0],
+      5: [56.4, 72.6, 88.7, 104.8, 119.6],
+    },
+    optional: true,
+  );
+}
+
+/// Buried-nest silhouettes that stay clear of the HUD and the plank above
+/// (tokens v3 `layout.towerStack`). `SlotGeometry.towerStack` hand-codes the
+/// rule below; its test re-derives the design's three examples.
+///
+/// Rule: step = min(18, (hRoom − topHeight) / N), hRoom = (towerSurface −
+/// limit) / drawnHeight, towerSurface = plankTop − 17.7, limit = hudClearY on
+/// the top shelf, else the plank above's top + 40 + headroom; if step < 9,
+/// draw max(1, floor((hRoom − topHeight) / 9)) silhouettes at step 9
+abstract final class TowerStackTokens {
+  /// The full step, dp (as before).
+  static const step = 18.0;
+
+  /// Below this step fewer silhouettes are drawn, at this step.
+  static const minStep = 9.0;
+}
+
+/// A tower under ice (tokens v3 `layout.icedTower`). Its +N tag is hidden
+/// while the ice is on; pops in (motion.tagPop) when fx_ice plays shatter.
+abstract final class IcedTowerTokens {
+  /// The silhouettes stay inside the ice: limit = max(limit, iceTop + this).
+  static const iceTopGap = 8.0;
+}
+
+/// The dashed hint arc from the hinted doll to its target (tokens v3
+/// `layout.hintArc`, E.15).
+abstract final class HintArcTokens {
+  /// The arc ends this far above the target doll.
+  static const endOffsetAboveDoll = 8.0;
+
+  /// The control points' lift on the same shelf.
+  static const handleLift = 42.0;
+
+  /// The control points' lift across shelves.
+  static const handleLiftCrossRow = 56.0;
+
+  static const dashOn = 6.0;
+
+  static const dashOff = 6.0;
+
+  /// Stroke width.
+  static const width = 3.0;
+
+  static const color = Color(0xFFF2893B);
+}
+
+/// The procedural doll drawn when a skin can't load (tokens v3
+/// `layout.fallbackDoll`, E.19, drawn in code; spec §12.5). Sizes are
+/// fractions of the doll height h (w: its width).
+abstract final class FallbackDollTokens {
+  /// The head circle (`circle, 0.36 h, base color, 3 dp darker bottom`).
+  static const headSize = 0.36;
+
+  /// Its darker bottom band, dp.
+  static const headShade = 3.0;
+
+  /// The face disc.
+  static const faceSize = 0.19;
+
+  static const faceColor = Color(0xFFFFF3E0);
+
+  /// The rounded body (`rounded 0.48 h × 0.52 w, base color, darker bottom`).
+  static const bodyHeight = 0.48;
+
+  /// Its width ÷ the doll width.
+  static const bodyWidth = 0.52;
+
+  /// The belly disc, the face colour, with the symbol in ink.
+  static const bellySize = 0.2;
+
+  /// No painted details or shine.
+  static const noDetails = true;
+}
+
+/// Chapter themes (tokens v3 `theme`, spec §12.4): the art's size and safe
+/// area, the Shop card crop box, and per chapter its palette and crop. Names
+/// and ribbons are copy (the ARB's `chapterName`).
+///
+/// Chapter themes (spec §12.4). art: portrait SVG, 1290×2796, important
+/// content inside the centred 1080×1920 safeArea; the app draws it at the
+/// screen width, top-aligned. palette: this chapter's UI accents. accentTop →
+/// accent is the vertical gradient of chapter-coloured surfaces (the chapter
+/// ribbon 4.7, the Chapters card header and progress fill), accentEdge is
+/// their solid bottom edge and text shadow (0 2px 0), onAccent is the Fredoka
+/// text on them, soft + ink are a tinted chip and its text (7:1 or better),
+/// band is the art's flat top band (behind the HUD and status bar, and the
+/// fill shown while the art loads). thumb: the Shop theme card crop (7.7) in
+/// art px, at the card's 158:74 ratio; cut it from the art and draw it at
+/// 158×74 dp. figurine: the family the chapter awards (museum/).
+abstract final class ChapterThemeTokens {
+  /// The art's px size.
+  static const artSize = Size(1290.0, 2796.0);
+
+  /// Important content stays inside this, in art px.
+  static const safeArea = Rect.fromLTWH(105.0, 438.0, 1080.0, 1920.0);
+
+  /// The Shop theme card, dp; every `thumb` crop has its ratio.
+  static const thumbBox = Size(158.0, 74.0);
+
+  /// Chapter 1, "Sunny Toy Shop" (`theme.chapters.1`).
+  static const ch01 = ChapterThemeToken(
+    chapter: 1,
+    id: 'ch01',
+    palette: ChapterPalette(
+      band: Color(0xFFFBEAD0),
+      accentTop: Color(0xFFDA942C),
+      accent: Color(0xFFBC7D1B),
+      accentEdge: Color(0xFF8A5B0F),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFFCECD9),
+      ink: Color(0xFF6A4405),
+    ),
+    thumb: Rect.fromLTWH(105.0, 700.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 2, "Rainy Café Corner" (`theme.chapters.2`).
+  static const ch02 = ChapterThemeToken(
+    chapter: 2,
+    id: 'ch02',
+    palette: ChapterPalette(
+      band: Color(0xFFE9E6E8),
+      accentTop: Color(0xFF7B95B0),
+      accent: Color(0xFF647D97),
+      accentEdge: Color(0xFF41586F),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFE7F0F8),
+      ink: Color(0xFF3C4F62),
+    ),
+    thumb: Rect.fromLTWH(105.0, 640.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 3, "Seaside Market" (`theme.chapters.3`).
+  static const ch03 = ChapterThemeToken(
+    chapter: 3,
+    id: 'ch03',
+    palette: ChapterPalette(
+      band: Color(0xFFE6F5F7),
+      accentTop: Color(0xFF21A3BC),
+      accent: Color(0xFF0789A0),
+      accentEdge: Color(0xFF0F5F6F),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFD9F4FB),
+      ink: Color(0xFF105664),
+    ),
+    thumb: Rect.fromLTWH(105.0, 560.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 4, "Snowy Cabin" (`theme.chapters.4`).
+  static const ch04 = ChapterThemeToken(
+    chapter: 4,
+    id: 'ch04',
+    palette: ChapterPalette(
+      band: Color(0xFFEEF1F5),
+      accentTop: Color(0xFF6FA8DC),
+      accent: Color(0xFF3E7FC0),
+      accentEdge: Color(0xFF2B5E93),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFDCEBFA),
+      ink: Color(0xFF194F81),
+    ),
+    thumb: Rect.fromLTWH(105.0, 700.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 5, "Night Carnival" (`theme.chapters.5`).
+  static const ch05 = ChapterThemeToken(
+    chapter: 5,
+    id: 'ch05',
+    palette: ChapterPalette(
+      band: Color(0xFF2C305F),
+      accentTop: Color(0xFF8E7CD4),
+      accent: Color(0xFF7764BA),
+      accentEdge: Color(0xFF533F8D),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFEEECFF),
+      ink: Color(0xFF4F4080),
+    ),
+    thumb: Rect.fromLTWH(105.0, 560.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 6, "Spring Garden Shed" (`theme.chapters.6`).
+  static const ch06 = ChapterThemeToken(
+    chapter: 6,
+    id: 'ch06',
+    palette: ChapterPalette(
+      band: Color(0xFFEEF6E6),
+      accentTop: Color(0xFF67AC5F),
+      accent: Color(0xFF4E9347),
+      accentEdge: Color(0xFF2A6B25),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFE4F4E1),
+      ink: Color(0xFF275B22),
+    ),
+    thumb: Rect.fromLTWH(105.0, 700.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 7, "Puppet Theater" (`theme.chapters.7`).
+  static const ch07 = ChapterThemeToken(
+    chapter: 7,
+    id: 'ch07',
+    palette: ChapterPalette(
+      band: Color(0xFFF7E6D8),
+      accentTop: Color(0xFFDE6676),
+      accent: Color(0xFFC24D5F),
+      accentEdge: Color(0xFF93283D),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFFFE8E9),
+      ink: Color(0xFF812A39),
+    ),
+    thumb: Rect.fromLTWH(105.0, 600.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 8, "Autumn Bandstand" (`theme.chapters.8`).
+  static const ch08 = ChapterThemeToken(
+    chapter: 8,
+    id: 'ch08',
+    palette: ChapterPalette(
+      band: Color(0xFFFBEBD5),
+      accentTop: Color(0xFFDC7A44),
+      accent: Color(0xFFC16229),
+      accentEdge: Color(0xFF90410A),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFFFEADF),
+      ink: Color(0xFF7C3503),
+    ),
+    thumb: Rect.fromLTWH(105.0, 680.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 9, "Castle Library" (`theme.chapters.9`).
+  static const ch09 = ChapterThemeToken(
+    chapter: 9,
+    id: 'ch09',
+    palette: ChapterPalette(
+      band: Color(0xFFEFE9F4),
+      accentTop: Color(0xFFAD6EB1),
+      accent: Color(0xFF945798),
+      accentEdge: Color(0xFF6B346F),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFF9E8FA),
+      ink: Color(0xFF67396A),
+    ),
+    thumb: Rect.fromLTWH(105.0, 620.0, 1080.0, 506.0),
+  );
+
+  /// Chapter 10, "Sunrise Lookout" (`theme.chapters.10`).
+  static const ch10 = ChapterThemeToken(
+    chapter: 10,
+    id: 'ch10',
+    palette: ChapterPalette(
+      band: Color(0xFFF8E6DA),
+      accentTop: Color(0xFF3AA697),
+      accent: Color(0xFF148D7F),
+      accentEdge: Color(0xFF016359),
+      onAccent: Color(0xFFFFFFFF),
+      soft: Color(0xFFDAF6F0),
+      ink: Color(0xFF055A50),
+    ),
+    thumb: Rect.fromLTWH(105.0, 720.0, 1080.0, 506.0),
+  );
+
+  /// Every chapter theme, in chapter order.
+  static const List<ChapterThemeToken> chapters = [
+    ch01,
+    ch02,
+    ch03,
+    ch04,
+    ch05,
+    ch06,
+    ch07,
+    ch08,
+    ch09,
+    ch10,
+  ];
 }
 
 /// Game-feel timings (tokens.json `motion`, spec §11.1). Durations are
@@ -595,4 +1027,46 @@ abstract final class MotionTokens {
 
   /// tokens.json `motion.reducedMotion.wobble`.
   static const reducedMotionWobble = false;
+
+  /// tokens.json `motion.tagPop.duration`.
+  static const tagPopMs = 240;
+
+  /// tokens.json `motion.tagPop.from`.
+  static const tagPopFrom = 0.6;
+
+  /// tokens.json `motion.tagPop.easing`.
+  static const Cubic tagPopCurve = curveEaseOutBack;
+
+  /// tokens.json `motion.rowOfFive.duration`.
+  static const rowOfFiveMs = 280;
+
+  /// tokens.json `motion.rowOfFive.easing`.
+  static const Cubic rowOfFiveCurve = curveEaseInOut;
+
+  /// tokens.json `motion.tapFeedback.emptyStand.dip`.
+  static const tapDip = 2.0;
+
+  /// tokens.json `motion.tapFeedback.emptyStand.ms`.
+  static const tapDipMs = 80;
+
+  /// tokens.json `motion.tapFeedback.lockedCase.padlockScale`.
+  static const padlockPingScale = 1.15;
+
+  /// tokens.json `motion.tapFeedback.lockedCase.ms`.
+  static const padlockPingMs = 160;
+
+  /// tokens.json `motion.tapFeedback.iced.counterScale`.
+  static const iceBumpScale = 1.2;
+
+  /// tokens.json `motion.tapFeedback.iced.ms`.
+  static const iceBumpMs = 160;
+
+  /// A valid drop target under a drag: "fx_select_glow at 60 %".
+  static const dragHoverGlowOpacity = 0.6;
+
+  /// tokens.json `motion.extraSlot.stopUnderDollMs`.
+  static const extraSlotStopUnderDollMs = 150;
+
+  /// tokens.json `motion.extraSlot.restFrame`.
+  static const extraSlotRestFrame = 0;
 }

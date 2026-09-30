@@ -1,8 +1,10 @@
+import 'dart:math' as math;
 import 'dart:ui' show Offset, Rect;
 
 import 'package:nesty_render/src/board/board_layout_constants.dart';
 import 'package:nesty_render/src/board/board_shape.dart';
 import 'package:nesty_render/src/board/shelf_presets.dart';
+import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 
 typedef _K = BoardLayoutConstants;
 
@@ -123,6 +125,9 @@ final class SlotGeometry {
     required BoardFit fit,
     required List<double> dollHeights,
     required HudClearance hud,
+    double? plankAboveRef,
+    double iceHeightRef = _K.iceHeight,
+    bool tallIce = false,
   }) {
     final q = pieceScale;
     final tower = shape.kind == SlotShapeKind.tower;
@@ -130,8 +135,39 @@ final class SlotGeometry {
     final standTopRef =
         standBottomRef - (tower ? _K.towerStandHeight : _K.standHeight) * q;
     final surfaceRef = standTopRef + _K.standSurfaceOffset * q;
+    // The ice's bottom is 16.5 below the plank's top on every stand (the
+    // design's `it = pt + 16.5 − height`, a tower's too), its top the
+    // preset's height above.
+    final iceBottomRef = standBottomRef + _K.iceBottomBelowStandBottom * q;
+    final iceTopRef = iceBottomRef - iceHeightRef * q;
+
+    // The tall glass case (m7-3 `layout.board.glassCaseTall`): a sealed
+    // size-5 or size-6 doll, taller than a normal case was drawn for
+    // (117.5 dp at the design's scale), gets a case that follows its own
+    // height, and stands on the stand instead of the plinth.
+    final sealedSize = shape.lockedSize;
+    final sealedHeight =
+        shape.kind == SlotShapeKind.locked &&
+            sealedSize != null &&
+            sealedSize >= 1 &&
+            sealedSize <= dollHeights.length
+        ? dollHeights[sealedSize - 1]
+        : null;
+    final tallCase =
+        sealedHeight != null &&
+        sealedHeight / fit.scale > GlassCaseTallTokens.minDollHeight * q;
+    // The case follows the doll's height h, but never grows wider than its
+    // column less 2 dp (a row of 5 or 6: TODO(design), the design draws no
+    // tall case there): then it is the case of a doll of `caseHeight`, and
+    // the composition's `case_size` follows it (the doll itself stays h).
+    final caseHeight = tallCase
+        ? math.min(
+            sealedHeight,
+            (fit.length(pitchRef) - 2 * fit.scale) /
+                GlassCaseTallTokens.widthPerHeight,
+          )
+        : 0.0;
     final caseTopRef = surfaceRef - _K.glassCaseTopAboveSurface * q;
-    final iceTopRef = standBottomRef - _K.iceTopAboveStandBottom * q;
     final lockedBaseRef = caseTopRef + _K.lockedDollBaseBelowCaseTop * q;
 
     final pitch = fit.length(pitchRef);
@@ -175,8 +211,8 @@ final class SlotGeometry {
         standTopRef +
             (tower ? _K.towerPipCenterOffset : _K.pipCenterOffset) * q,
       ),
-      pipDiameter: fit.length(_K.pipDiameter * q),
-      pipPitch: fit.length(_K.pipPitch * q),
+      pipDiameter: fit.length(_K.pipDiameter),
+      pipPitch: fit.length(_K.pipPitch),
       glowRingRect: box(
         centerXRef + _K.glowRingOffsetX * q,
         surfaceRef + _K.glowRingOffsetY * q,
@@ -187,23 +223,32 @@ final class SlotGeometry {
         fit.x(centerXRef + _K.towerTagOffsetX * q),
         fit.y(standTopRef + _K.towerTagOffsetY * q),
       ),
-      glassCaseRect: box(
-        centerXRef - _K.glassCaseWidth / 2 * q,
-        caseTopRef,
-        _K.glassCaseWidth * q,
-        _K.glassCaseHeight * q,
-      ),
-      lockedDollBaseY: fit.y(lockedBaseRef),
+      usesTallCase: tallCase,
+      tallCaseHeight: tallCase ? caseHeight : null,
+      glassCaseRect: tallCase
+          ? _tallCaseRect(centerX, fit.y(surfaceRef), caseHeight)
+          : box(
+              centerXRef - _K.glassCaseWidth / 2 * q,
+              caseTopRef,
+              _K.glassCaseWidth * q,
+              _K.glassCaseHeight * q,
+            ),
+      lockedDollBaseY: tallCase ? fit.y(surfaceRef) : fit.y(lockedBaseRef),
       padlockSymbolCenter: Offset(
         centerX,
-        fit.y(caseTopRef + _K.padlockCenterBelowCaseTop * q),
+        tallCase
+            ? _tallCaseRect(centerX, fit.y(surfaceRef), caseHeight).top +
+                  GlassCaseTallTokens.lockCenter *
+                      GlassCaseTallTokens.heightPerHeight *
+                      caseHeight
+            : fit.y(caseTopRef + _K.padlockCenterBelowCaseTop * q),
       ),
       padlockSymbolSize: fit.length(_K.padlockSymbolSize * q),
       iceRect: box(
         centerXRef - _K.iceWidth / 2 * q,
         iceTopRef,
         _K.iceWidth * q,
-        _K.iceHeight * q,
+        iceHeightRef * q,
       ),
       iceBadgeRect: box(
         centerXRef + _K.iceBadgeOffsetX * q,
@@ -217,24 +262,78 @@ final class SlotGeometry {
         centerX + hitHalfWidth,
         hitBottom,
       ),
-      glassCompositionOrigin: Offset(
-        centerX - glassCompositionAnchor.dx * fit.scale * q,
-        fit.y(lockedBaseRef) - glassCompositionAnchor.dy * fit.scale * q,
-      ),
+      glassCompositionOrigin: tallCase
+          ? Offset(
+              centerX - glassTallCompositionAnchor.dx * fit.scale * q,
+              fit.y(surfaceRef) - glassTallCompositionAnchor.dy * fit.scale * q,
+            )
+          : Offset(
+              centerX - glassCompositionAnchor.dx * fit.scale * q,
+              fit.y(lockedBaseRef) - glassCompositionAnchor.dy * fit.scale * q,
+            ),
       iceCompositionOrigin: Offset(
         centerX - iceCompositionAnchor.dx * fit.scale * q,
-        fit.y(surfaceRef) - iceCompositionAnchor.dy * fit.scale * q,
+        fit.y(iceBottomRef) -
+            iceCompositionAnchor.dy *
+                fit.scale *
+                q *
+                (tallIce ? BoardTokens.iceTallFxScaleY : 1),
       ),
-      towerRaise: fit.length(_K.towerDepthRaise * q),
-      // Room above the tallest doll for its tower's silhouettes before they
-      // reach the HUD over the board frame (review RENDER-4).
-      buriedHeadroom:
-          fit.y(surfaceRef) -
-          dollHeights.last * _K.dollArtBaseY / _K.dollArtHeight -
-          fit.y(_K.frameTop),
+      iceFxScaleY: tallIce ? BoardTokens.iceTallFxScaleY : 1,
+      iceDollBaseY:
+          fit.y(iceBottomRef) -
+          _iceDollAboveBottom *
+              fit.scale *
+              q *
+              (tallIce ? BoardTokens.iceTallFxScaleY : 1),
+      pipScale: fit.scale,
+      // The tower stack (m7-3 `layout.towerStack`), in reference units: the
+      // room between the tower stand's surface and the limit above it, the
+      // ice's top (+ 8) lifting the limit of an iced tower.
+      towerRoomRef: _roomRef(
+        plankTopRef: plankTopRef,
+        plankAboveRef: plankAboveRef,
+        q: q,
+        iceTopRef: iceTopRef,
+      ),
+      towerRoomIcedRef: _roomRef(
+        plankTopRef: plankTopRef,
+        plankAboveRef: plankAboveRef,
+        q: q,
+        iceTopRef: iceTopRef,
+        iced: true,
+      ),
       dollHeights: dollHeights,
       hud: hud,
     );
+  }
+
+  /// The tall case's box for a sealed doll [h] tall standing on [surfaceY]:
+  /// `0.62h × 1.0133h`, centred, its bottom at surface + 0.02667h.
+  static Rect _tallCaseRect(double centerX, double surfaceY, double h) {
+    final width = GlassCaseTallTokens.widthPerHeight * h;
+    final height = GlassCaseTallTokens.heightPerHeight * h;
+    final bottom = surfaceY + GlassCaseTallTokens.bottomPerHeight * h;
+    return Rect.fromLTWH(centerX - width / 2, bottom - height, width, height);
+  }
+
+  /// `hRoom = (towerSurface − limit) / drawnHeight` for the tower stack:
+  /// `towerSurface = plankTop − 17.7 q`, `limit` = 150 on the top shelf,
+  /// else the plank above's top + 40 + 2; an iced tower's limit is at least
+  /// the ice's top + 8 (`layout.icedTower`).
+  static double _roomRef({
+    required double plankTopRef,
+    required double? plankAboveRef,
+    required double q,
+    required double iceTopRef,
+    bool iced = false,
+  }) {
+    var limit = plankAboveRef == null
+        ? BoardFitTokens.hudClearY
+        : plankAboveRef + _K.plankHeight + BoardFitTokens.headroom;
+    if (iced) limit = math.max(limit, iceTopRef + IcedTowerTokens.iceTopGap);
+    final surface = plankTopRef - _K.towerSurfaceAbovePlank * q;
+    return (surface - limit) / BoardFitTokens.drawnHeight;
   }
 
   SlotGeometry._({
@@ -254,6 +353,8 @@ final class SlotGeometry {
     required this.pipPitch,
     required this.glowRingRect,
     required this.towerTagOrigin,
+    required this.usesTallCase,
+    required this.tallCaseHeight,
     required this.glassCaseRect,
     required this.lockedDollBaseY,
     required this.padlockSymbolCenter,
@@ -263,12 +364,15 @@ final class SlotGeometry {
     required this.hitRect,
     required this.glassCompositionOrigin,
     required this.iceCompositionOrigin,
-    required double towerRaise,
-    required double buriedHeadroom,
+    required this.iceFxScaleY,
+    required this.iceDollBaseY,
+    required this.pipScale,
+    required double towerRoomRef,
+    required double towerRoomIcedRef,
     required List<double> dollHeights,
     required HudClearance hud,
-  }) : _towerRaise = towerRaise,
-       _buriedHeadroom = buriedHeadroom,
+  }) : _towerRoomRef = towerRoomRef,
+       _towerRoomIcedRef = towerRoomIcedRef,
        _dollHeights = dollHeights,
        _hud = hud;
 
@@ -332,10 +436,24 @@ final class SlotGeometry {
   /// Top-left of the walnut "+N" tower tag.
   final Offset towerTagOrigin;
 
+  /// Whether this slot's case is the tall one (m7-3
+  /// `layout.board.glassCaseTall`): its sealed doll is taller than a normal
+  /// case was drawn for, so the case (`BoardSprite.glassCaseTall0..2`,
+  /// `fx_glass_unlock_tall`) follows the doll's height and the doll stands
+  /// on the stand ([lockedDollBaseY] = [surfaceY]).
+  final bool usesTallCase;
+
+  /// For a tall case: the height h (logical px) of the doll the case is
+  /// drawn for, the sealed doll's own height, or less where the column is
+  /// too narrow for `0.62 h` (a row of 5 or 6). `fx_glass_unlock_tall`'s
+  /// `case_size` follows it. Null for a normal case.
+  final double? tallCaseHeight;
+
   /// The glass case sprite box (spec §3.3).
   final Rect glassCaseRect;
 
-  /// Base of the doll sealed inside a glass case.
+  /// Base of the doll sealed inside a glass case: the case floor, or the
+  /// stand surface itself in a tall case.
   final double lockedDollBaseY;
 
   /// Centre of the unlock colour's symbol on the padlock.
@@ -357,28 +475,58 @@ final class SlotGeometry {
   /// "Files"). Its case's top-left is at (47, 40).
   static const glassCompositionAnchor = Offset(90, 163);
 
-  /// `fx_ice`'s doll base in its 180×240 canvas (LOTTIE.md "Files"). Its
-  /// ice's top-left is at (42, 40).
-  static const iceCompositionAnchor = Offset(90, 170.8);
+  /// `fx_ice`'s ice bottom in its 180×240 canvas (LOTTIE.md "Files"): the
+  /// point placed on (the stand's centre, the ice's bottom). Its ice's
+  /// top-left is at (42, 40) and its doll base at (90, 170.8), 29.2 above.
+  static const iceCompositionAnchor = Offset(90, 200);
 
-  /// Top-left of this slot's paused `fx_glass_unlock` composition, drawn at
-  /// [furnitureScale] (m2-lottie-design §8): its doll base
+  /// `fx_ice`'s doll base above its ice bottom in its canvas: 200 − 170.8.
+  static const _iceDollAboveBottom = 29.2;
+
+  /// `fx_glass_unlock_tall`'s stand surface in its 200×280 canvas (the
+  /// `case_size` null; LOTTIE.md m7-3): the doll base rests on it, and the
+  /// case's top-left is at (53.5, 64) at 100 %.
+  static const glassTallCompositionAnchor = Offset(100, 212);
+
+  /// Top-left of this slot's paused glass composition, drawn at
+  /// [furnitureScale] (m2-lottie-design §8): `fx_glass_unlock`'s doll base
   /// ([glassCompositionAnchor]) on ([centerX], [lockedDollBaseY]), which
-  /// puts its case on [glassCaseRect] (`glassCaseRect.topLeft − (47, 40)·fs`).
+  /// puts its case on [glassCaseRect]; for a tall case
+  /// `fx_glass_unlock_tall`'s stand surface ([glassTallCompositionAnchor])
+  /// on ([centerX], [surfaceY]), its `case_size` and `doll_size` following
+  /// the doll's height (`FxLayout`).
   final Offset glassCompositionOrigin;
 
-  /// Top-left of this slot's paused `fx_ice` composition, drawn at
-  /// [furnitureScale] (m2-lottie-design §8): its doll base
-  /// ([iceCompositionAnchor]) on ([centerX], [surfaceY]), which puts its
-  /// ice on [iceRect] (`iceRect.topLeft − (42, 40)·fs`) on an open stand.
-  // TODO(design): an iced tower has no frame. Its stand is 5·q taller, so
-  // the composition, anchored on the doll, draws its ice 5·fs above the
-  // static `iceRect` fallback, which stays on the stand's bottom.
+  /// Top-left of this slot's paused `fx_ice` composition at
+  /// [furnitureScale] (m2-lottie-design §8): its ice bottom
+  /// ([iceCompositionAnchor]) on ([centerX], [iceRect]`.bottom`), which puts
+  /// its ice on [iceRect] (`iceRect.topLeft − (42, 40)·fs`) and, on an open
+  /// stand, its doll base on the surface. On a tower stand (5·fs higher) the
+  /// composition's own doll would sink into the stand, so the slot hides it
+  /// and draws the doll itself under the ice. On the tall preset the
+  /// composition is stretched by [iceFxScaleY] from the ice bottom and this
+  /// is where its top-left lands.
   final Offset iceCompositionOrigin;
 
-  final double _towerRaise;
+  /// Where `fx_ice`'s own anchor, its doll base (90, 170.8), goes so that its
+  /// ice bottom (90, 200) lands on [iceRect]'s bottom: the game places the
+  /// composition on ([centerX], this) at [furnitureScale], stretched by
+  /// [iceFxScaleY]. On an open stand that is [surfaceY] (1.5 dp above it on
+  /// the tall preset, where the doll inside is compensated).
+  final double iceDollBaseY;
 
-  final double _buriedHeadroom;
+  /// 1, or `BoardTokens.iceTallFxScaleY` (1.05) on `threeShelvesTall`, where
+  /// `fx_ice` plays at scale (1, 1.05) from the ice bottom to fill the 96×168
+  /// overlay; the doll inside is compensated by dividing its height factor.
+  final double iceFxScaleY;
+
+  /// Logical px per design px for the pips: they stay 6 dp at a 7.8 pitch on
+  /// a crowded row (`rowOfFive.pips`), so this is the board scale alone.
+  final double pipScale;
+
+  final double _towerRoomRef;
+
+  final double _towerRoomIcedRef;
 
   final List<double> _dollHeights;
 
@@ -422,23 +570,44 @@ final class SlotGeometry {
 
   /// Centre y of [hintArrowRect] for a resting doll of [size],
   /// `dollTop − 33·fs`: where `ui_hint_arrow`'s anchor (30, 45) goes. Where
-  /// the top of the arrow's bob would reach the HUD (a tall top-row doll)
-  /// it moves down to clear it, by at most `16·fs`, so it never covers the
-  /// doll's face. Under the counter's pill that can leave it tucked under
-  /// the pill (BACKLOG "Design gaps"). Allocation-free.
+  /// the top of the arrow's bob would reach the HUD's button row (a tall
+  /// top-row doll) it moves down to clear it, by at most `16·fs`, so it
+  /// never covers the doll's face. Over the family counter it keeps its
+  /// rest pose instead and the counter yields ([hintNeedsCounter], frame
+  /// 3.1b, E.20). Allocation-free.
   double hintArrowCenterY(int size) {
     final rest =
         dollTopY(size) +
         (_K.hintArrowOffsetY + _K.hintArrowHeight / 2) * furnitureScale;
-    final underCounter =
-        _counterClearance(size).abs() > _K.hintArrowMaxNudge * pitch;
-    final ceiling =
-        (underCounter ? _hud.counterBottom : _hud.rowBottom) +
-        _K.hintArrowHudGap;
+    if (hintNeedsCounter(size)) return rest;
+    final ceiling = _hud.rowBottom + _K.hintArrowHudGap;
     final drop = ceiling - _arrowPeak(size);
     if (drop <= 0) return rest;
     final maxDrop = _K.hintArrowMaxDrop * furnitureScale;
     return rest + (drop < maxDrop ? drop : maxDrop);
+  }
+
+  /// Whether a hint arrow over this slot's resting doll of [size] reaches
+  /// the family counter and can't slide off it (tokens.json
+  /// `layout.hintMiddle`, E.20): a top-shelf column right under the
+  /// counter's pill, the arrow's top above `hudClearY` (the counter's bottom
+  /// + 8). The arrow doesn't move; the HUD fades the counter out while the
+  /// hint shows and back after it ends. Allocation-free.
+  bool hintNeedsCounter(int size) {
+    if (row != 0) return false;
+    final hud = _hud;
+    if (_arrowPeak(size) >= hud.counterBottom + BoardFitTokens.neighbourGap) {
+      return false;
+    }
+    const gap = _K.hintArrowHudGap;
+    final half = _K.hintArrowWidth / 2 * furnitureScale;
+    final left = hud.counterLeft - gap;
+    final right = hud.counterRight + gap;
+    if (centerX + half <= left || centerX - half >= right) return false;
+    final dx = centerX < (left + right) / 2
+        ? left - (centerX + half)
+        : right - (centerX - half);
+    return dx.abs() > _K.hintArrowMaxNudge * pitch;
   }
 
   /// The top of the arrow at the top of its bob, before it clears the HUD.
@@ -493,30 +662,65 @@ final class SlotGeometry {
     );
   }
 
-  /// Base y of the buried tower nest [depth] below the top (1 = directly
-  /// under it), in a tower that buries [buried] nests. D21: each buried nest
-  /// keeps its true size and is raised 18 dp per depth so it peeks out
-  /// behind the top nest.
+  /// The tower stack (tokens.json `layout.towerStack`, m7-3): the step in
+  /// logical px between buried silhouettes and how many are drawn, for a
+  /// tower of [buried] nests under a top of [topSize] (its tallest doll).
   ///
-  /// The step shrinks when the deepest of [buried] silhouettes of the
-  /// level's tallest doll would otherwise rise above the board frame into
-  /// the HUD (the level pill and family counter), which only happens on the
-  /// top shelf (review RENDER-4). Pass the number of nests the tower buried
-  /// at the start of the level, so the spacing stays put as it empties; the
+  /// `step = min(18, (hRoom − topHeight) / N)`, `hRoom = (towerSurface −
+  /// limit) / 0.9661` in reference units; under a step of 9 fewer
+  /// silhouettes are drawn: `drawn = max(1, ⌊(hRoom − topHeight) / 9⌋)`, each
+  /// `min(9, room / drawn)` apart. The "+N" tag keeps the real count. Give
+  /// the tower's starting depth and tallest size, so the spacing stays put
+  /// as it empties. [iced] lifts the limit to the ice's top + 8.
+  /// Allocation-free (a record of two numbers).
+  ({double step, int drawn}) towerStack(
+    int topSize,
+    int buried, {
+    bool iced = false,
+  }) {
+    final size = topSize < 1
+        ? 1
+        : (topSize > _dollHeights.length ? _dollHeights.length : topSize);
+    final scale = furnitureScale / pieceScale;
+    final topHeightRef = _dollHeights[size - 1] / scale;
+    final room = (iced ? _towerRoomIcedRef : _towerRoomRef) - topHeightRef;
+    final n = buried < 1 ? 1 : buried;
+    var stepRef = math.min(TowerStackTokens.step, room / n);
+    var drawn = buried;
+    if (stepRef < TowerStackTokens.minStep) {
+      drawn = math.max(1, (room / TowerStackTokens.minStep).floor());
+      stepRef = math.max(0.0, math.min(TowerStackTokens.minStep, room / drawn));
+    }
+    return (step: stepRef * scale, drawn: drawn);
+  }
+
+  /// Base y of the buried tower nest [depth] below the top (1 = directly
+  /// under it), in a tower that buries [buried] nests, the tallest of them
+  /// [topSize] (default: this level's biggest size). D21: each buried nest
+  /// keeps its true size and its base is raised one [towerStack] step per
+  /// depth so it peeks out behind the top nest.
+  ///
+  /// Pass the number of nests the tower buried at the start of the level,
+  /// and its tallest size, so the spacing stays put as it empties. The
   /// default is the most a tower can bury (spec §3.2).
   ///
   /// Allocation-free.
-  // TODO(design): the design has no top-shelf tower whose buried nests
-  // would reach the HUD; compressing D21's 18 dp step is this layout's
-  // extension (BACKLOG "Design gaps").
-  double buriedBaseY(int depth, {int buried = _K.maxBuriedNests}) {
-    var step = _towerRaise;
-    if (buried > 0) {
-      final room = _buriedHeadroom / buried;
-      if (room < step) step = room > 0 ? room : 0;
-    }
-    return surfaceY - depth * step;
-  }
+  double buriedBaseY(
+    int depth, {
+    int buried = _K.maxBuriedNests,
+    int? topSize,
+    bool iced = false,
+  }) =>
+      surfaceY -
+      depth *
+          towerStack(topSize ?? _dollHeights.length, buried, iced: iced).step;
+
+  /// How many of a tower's [buried] silhouettes are drawn (depths 1 to
+  /// this); see [towerStack].
+  int buriedDrawn(int buried, {int? topSize, bool iced = false}) => math.min(
+    buried,
+    towerStack(topSize ?? _dollHeights.length, buried, iced: iced).drawn,
+  );
 
   /// The wood silhouette rect for the buried nest at [depth] whose outer doll
   /// is [size] (D21, `TowerStackStyle.trueSize`), in a tower that buries
@@ -525,7 +729,12 @@ final class SlotGeometry {
     int depth,
     int size, {
     int buried = _K.maxBuriedNests,
-  }) => dollRect(size, buriedBaseY(depth, buried: buried));
+    int? topSize,
+    bool iced = false,
+  }) => dollRect(
+    size,
+    buriedBaseY(depth, buried: buried, topSize: topSize, iced: iced),
+  );
 
   /// The hint arrow above this slot's resting doll of [size], at rest, on
   /// ([hintArrowCenterX], [hintArrowCenterY]).

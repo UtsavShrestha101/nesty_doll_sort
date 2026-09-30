@@ -225,7 +225,8 @@ void main() {
 
     test('dolls stand on their stands', () {
       final slot = geometry.slot('r0c0');
-      final body = _at(rgba, slot.centerX, slot.surfaceY - 30);
+      // Below the fallback doll's cream belly disc.
+      final body = _at(rgba, slot.centerX, slot.surfaceY - 8);
       expect(body[0], greaterThan(body[1] + 60), reason: 'red doll: $body');
       expect(body[0], greaterThan(body[2] + 60), reason: 'red doll: $body');
       // Above the tallest doll the board is empty (no background given).

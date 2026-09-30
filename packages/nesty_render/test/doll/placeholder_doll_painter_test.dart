@@ -71,13 +71,39 @@ void main() {
       expect(seen, hasLength(DollColor.values.length));
     });
 
-    test('has a white face with dark eyes', () async {
-      final rgba = await draw((p) => p.color = DollColor.navy);
-      final face = px(rgba, 256, 180);
-      expect(face[0], greaterThan(240));
-      expect(face[2], greaterThan(230));
-      final eye = px(rgba, 220, 226);
-      expect(eye[0], lessThan(80));
+    test(
+      'has a cream face disc and belly disc and no painted details',
+      () async {
+        final rgba = await draw((p) => p.color = DollColor.navy);
+        const cream = [0xFF, 0xF3, 0xE0];
+        for (final (x, y) in [
+          (256.0, 270.0), // the face disc's centre
+          (220.0, 226.0), // where the old eyes were
+          (256.0, 590.0), // the belly disc
+        ]) {
+          expect(px(rgba, x, y).sublist(0, 3), cream, reason: '($x, $y)');
+        }
+      },
+    );
+
+    test('is two stacked rounded shapes of the design\'s sizes '
+        '(layout.fallbackDoll)', () async {
+      final rgba = await draw((p) => p.color = DollColor.red);
+      // The head circle is 0.36 h (276 art units) across, centred at
+      // (256, 270): its sides at x 118 and 394.
+      expect(px(rgba, 126, 270)[3], 255);
+      expect(px(rgba, 110, 270)[3], 0);
+      expect(px(rgba, 386, 270)[3], 255);
+      expect(px(rgba, 402, 270)[3], 0);
+      // The body is 0.52 w (266 units) wide: x 123 to 389 at mid height.
+      expect(px(rgba, 132, 600)[3], 255);
+      expect(px(rgba, 112, 600)[3], 0);
+      expect(px(rgba, 380, 600)[3], 255);
+      expect(px(rgba, 400, 600)[3], 0);
+      // It stands on the base (742) with a darker bottom band.
+      final lit = px(rgba, 180, 700);
+      final band = px(rgba, 180, 738);
+      expect(band[0] + band[1] + band[2], lessThan(lit[0] + lit[1] + lit[2]));
     });
 
     test('silhouettes are wood with no face', () async {
@@ -160,34 +186,14 @@ void main() {
       );
     });
 
-    test('the shine stays inside the doll', () async {
+    test('has no shine: the sweep changes nothing', () async {
       final plain = await draw((p) => p.color = DollColor.purple);
       final shiny = await draw(
         (p) => p
           ..color = DollColor.purple
           ..shine = 0.5,
       );
-      bool clearAround(int x, int y) {
-        for (var dy = -1; dy <= 1; dy++) {
-          for (var dx = -1; dx <= 1; dx++) {
-            final nx = x + dx;
-            final ny = y + dy;
-            if (nx < 0 || ny < 0 || nx >= _w || ny >= _h) continue;
-            if (plain[(ny * _w + nx) * 4 + 3] != 0) return false;
-          }
-        }
-        return true;
-      }
-
-      var changed = 0;
-      for (var i = 0; i < plain.length; i += 4) {
-        final x = (i ~/ 4) % _w;
-        final y = (i ~/ 4) ~/ _w;
-        // Off the doll (not just an antialiased edge) nothing appears.
-        if (clearAround(x, y)) expect(shiny[i + 3], 0, reason: '($x, $y)');
-        if (shiny[i] != plain[i]) changed++;
-      }
-      expect(changed, greaterThan(200));
+      expect(shiny, plain);
     });
 
     test('draws symbols once an atlas page is prepared', () async {
@@ -209,10 +215,11 @@ void main() {
       final none = await mode(DollSymbols.none);
       final subtle = await mode(DollSymbols.subtle);
       final large = await mode(DollSymbols.large);
-      // The large disc (r 92 + half its 8-unit ring) bounds every change.
+      // The belly disc (0.2 h across) is there in every mode, so only the
+      // symbol changes, inside it.
       final box = Rect.fromCircle(
         center: SkinTokens.symbolAnchor,
-        radius: SkinTokens.badgeRadius + SkinTokens.badgeStroke,
+        radius: 0.2 * 768 / 2 + 1,
       );
       var inside = 0;
       for (var i = 0; i < none.length; i += 4) {
@@ -224,8 +231,10 @@ void main() {
         inside++;
       }
       expect(inside, greaterThan(100));
-      // Large mode: cream disc at the anchor's edge.
-      expect(px(large, 256 - 80, 590)[0], greaterThan(240));
+      // Every mode: the cream disc at the anchor's edge.
+      for (final mode in [none, subtle, large]) {
+        expect(px(mode, 256 - 66, 590)[0], greaterThan(240));
+      }
     });
 
     testWidgets('DollPainter + placeholder paints without async work', (

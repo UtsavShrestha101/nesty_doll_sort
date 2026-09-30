@@ -27,6 +27,7 @@ void main() {
       'dart:ui',
       'package:flutter/foundation.dart',
       'package:flutter/painting.dart',
+      'package:nesty_render/src/tokens/render_token_types.dart',
       'package:nesty_render/src/tokens/render_tokens.gen.dart',
     };
     final files = Directory('lib/src/board')

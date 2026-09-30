@@ -75,20 +75,10 @@ abstract final class BoardLayoutConstants {
   static const minShelves = 1;
   static const maxShelves = 4;
 
-  /// Stands keep their designed 90 dp width while the pitch is at least 93
-  /// (four slots: 372 / 4); below it they shrink to `pitch − 4` (render §1).
-  static const standShrinkPitch = slotRowWidth / 4;
-
-  /// Gap kept between shrunken stands (render §1: `pitch − 4`).
-  static const slotGap = 4.0;
-
-  /// The smallest gap the design itself leaves between the tallest dolls of
-  /// neighbouring slots: TUT1 (NestyBoard:90, `L2`) puts maxSize-3 dolls of
-  /// 140 dp (93.3 wide) at pitch 96. Render §1 writes the clamp as
-  /// `h·2/3 ≤ minPitch − 4`, which would shrink that designed frame below
-  /// its 140 dp; this gap keeps every designed board unclamped (including
-  /// maxSize 5 at 89 wide on pitch 93) and only bites on undesigned ones.
-  static const dollMinGap = slotPitchMax - 140 * dollAspect;
+  /// A stand is `min(90, pitch − 2.4)` wide (tokens.json `layout.boardFit.
+  /// standWidth`; the design's row of 5 is 72 = 74.4 − 2.4 wide), so it
+  /// keeps its designed size at a pitch of 92.4 or more and shrinks below.
+  static const standPitchInset = BoardFitTokens.standPitchInset;
 
   // ── Plank and stand ───────────────────────────────────────────────────
 
@@ -109,6 +99,16 @@ abstract final class BoardLayoutConstants {
 
   /// Doll base below the stand top. NestyBoard:161 (`surf = top + 12.3`).
   static const standSurfaceOffset = BoardTokens.standSurfaceOffset;
+
+  /// The stand's surface above its plank's top: 34 − 9 − 12.3 = 12.7 (the
+  /// `layout.boardFit` vertical and HUD limits' "standSurfaceOffset").
+  static const standSurfaceAbovePlank =
+      standHeight - standBottomInset - standSurfaceOffset;
+
+  /// A tower stand's surface above its plank's top: 39 − 9 − 12.3 = 17.7
+  /// (`layout.towerStack.rule`, "towerSurface = plankTop − 17.7").
+  static const towerSurfaceAbovePlank =
+      towerStandHeight - standBottomInset - standSurfaceOffset;
 
   // ── Pips (spec §10.3) ─────────────────────────────────────────────────
 
@@ -176,9 +176,14 @@ abstract final class BoardLayoutConstants {
   /// NestyBoard:15 (`width:12px;height:12px`).
   static const padlockSymbolSize = 12.0;
 
-  /// Ice overlay. NestyBoard:180 (`it = pt + 9 − 152.5`, `cx − 48, it, 96,
-  /// 160`). Width/height pinned to [BoardTokens.iceOverlaySize].
-  static const iceTopAboveStandBottom = 152.5;
+  /// Ice overlay. NestyBoard:180 (`it = pt + 16.5 − height`, `cx − 48, it, 96,
+  /// height`): its bottom is 16.5 below the plank's top, i.e. 7.5 below the
+  /// stand's bottom, on every stand (a tower's too, m7-3 `iceTower`). On an
+  /// open stand that is 29.2 below the surface: `fx_ice`'s doll base (90,
+  /// 170.8) to its ice bottom (90, 200), LOTTIE.md. Width/height pinned to
+  /// [BoardTokens.iceOverlaySize].
+  static const iceBottomBelowStandBottom =
+      BoardTokens.iceTopFromPlank - standBottomInset;
   static const iceWidth = 96.0;
   static const iceHeight = 160.0;
 
@@ -234,6 +239,6 @@ abstract final class BoardLayoutConstants {
   // ── Motion owned by the layout ────────────────────────────────────────
 
   /// The bottom row re-pitches over this long when an extra slot is added
-  /// (render §1; tokens.json has no value for it).
-  static const extraSlotRepitchMs = 300;
+  /// (tokens.json `motion.rowOfFive`, 280 ms `easeInOut`; D181).
+  static const extraSlotRepitchMs = MotionTokens.rowOfFiveMs;
 }

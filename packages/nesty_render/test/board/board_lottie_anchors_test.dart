@@ -99,22 +99,29 @@ void main() {
       }
     });
 
-    test('ice: doll base on the surface, ice at (42, 40)', () {
+    test('ice: ice bottom (90, 200) on the overlay, ice at (42, 40)', () {
       for (final MapEntry(key: name, value: viewport) in screens.entries) {
         for (final slot in BoardLayout.compute(mainBoard, viewport).slots) {
           final fs = slot.furnitureScale;
           final o = slot.iceCompositionOrigin;
-          expect(o.dy + 170.8 * fs, closeTo(slot.surfaceY, 1e-9));
           expect(o.dx + 90 * fs, closeTo(slot.centerX, 1e-9));
           expect(o.dx + 42 * fs, closeTo(slot.iceRect.left, 1e-9));
-          // On a tower stand (5 taller) the ice rides 5·fs higher than the
-          // static sprite (TODO(design) in SlotGeometry).
-          final raise = slot.kind == SlotShapeKind.tower ? 5 * fs : 0;
-          expect(
-            o.dy + 40 * fs,
-            closeTo(slot.iceRect.top - raise, 1e-6),
-            reason: '$name ${slot.id}',
-          );
+          expect(o.dy + 40 * fs, closeTo(slot.iceRect.top, 1e-6));
+          expect(o.dy + 200 * fs, closeTo(slot.iceRect.bottom, 1e-6));
+          expect(slot.iceFxScaleY, 1);
+          if (slot.kind == SlotShapeKind.tower) {
+            // The design's iceTower scene: the ice bottom stays 16.5 under
+            // the plank's top on a tower stand (5·fs above its doll's base
+            // + 29.2·fs), so the composition's own doll is hidden there.
+            expect(
+              slot.iceRect.bottom - slot.plankTop,
+              closeTo(16.5 * fs, 1e-6),
+              reason: '$name ${slot.id}',
+            );
+          } else {
+            // On an open stand the composition's doll base is the surface.
+            expect(o.dy + 170.8 * fs, closeTo(slot.surfaceY, 1e-9));
+          }
         }
       }
     });
@@ -220,7 +227,8 @@ void main() {
       );
     });
 
-    test('the middle of an odd row stays centred and drops at most 16·fs', () {
+    test('the middle of an odd row keeps its rest pose and the counter '
+        'yields (frame 3.1b, E.20)', () {
       final g = BoardLayout.compute(
         board(['ooo', 'ooo', 'ooo'], maxSize: 3),
         iPhone16,
@@ -228,12 +236,21 @@ void main() {
       final middle = g.slot('r0c1');
       final fs = middle.furnitureScale;
       expect(middle.hintArrowCenterX(3), middle.centerX);
+      // D62's downward nudge is gone for this case.
       expect(
         middle.hintArrowCenterY(3),
-        closeTo(middle.dollTopY(3) - 33 * fs + 16 * fs, 1e-9),
+        closeTo(middle.dollTopY(3) - 33 * fs, 1e-9),
       );
-      // Still under the pill: the design gap in BACKLOG.
+      expect(middle.hintNeedsCounter(3), isTrue);
+      // Its top reaches the counter's pill, which fades.
       expect(peakOf(middle, 3).top, lessThan(59 + 83));
+      // Its neighbours slide off the pill instead and need nothing.
+      expect(g.slot('r0c0').hintNeedsCounter(3), isFalse);
+      expect(g.slot('r0c2').hintNeedsCounter(3), isFalse);
+      // Only the top shelf sits under the counter.
+      for (final id in ['r1c1', 'r2c1']) {
+        expect(g.slot(id).hintNeedsCounter(3), isFalse, reason: id);
+      }
     });
 
     test('an arrow that clears the HUD is left where the design puts it', () {

@@ -22,7 +22,10 @@ void main() {
       : <File>[];
 
   test('finds the synced game SVGs', () {
-    expect(svgs, hasLength(39), reason: 'run sync_design_assets first');
+    // 7 skins, 11 symbols, 18 board pieces (m7-3's tall glass case), 10
+    // chapter themes and 35 UI art files (m7-3's badges, chests, rivals,
+    // sprites and stars).
+    expect(svgs, hasLength(81), reason: 'run sync_design_assets first');
   });
 
   for (final file in svgs) {

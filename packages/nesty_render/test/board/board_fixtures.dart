@@ -6,7 +6,9 @@ import 'package:nesty_render/nesty_render.dart';
 /// Builds a board from one string per shelf, one letter per slot:
 /// `o` open, `t` tower, `l` locked, `x` extra. Ids follow nesty_core
 /// (`r0c1`, extras `x0`, `x1`).
-BoardShape board(List<String> rows, {required int maxSize}) {
+/// [lockedSize] is the sealed doll's size in every `l` case (null: unknown,
+/// which keeps the normal case).
+BoardShape board(List<String> rows, {required int maxSize, int? lockedSize}) {
   var extras = 0;
   return BoardShape(
     rows: [
@@ -16,7 +18,11 @@ BoardShape board(List<String> rows, {required int maxSize}) {
             switch (rows[r][c]) {
               'o' => SlotShape('r${r}c$c', SlotShapeKind.open),
               't' => SlotShape('r${r}c$c', SlotShapeKind.tower),
-              'l' => SlotShape('r${r}c$c', SlotShapeKind.locked),
+              'l' => SlotShape(
+                'r${r}c$c',
+                SlotShapeKind.locked,
+                lockedSize: lockedSize,
+              ),
               'x' => SlotShape('x${extras++}', SlotShapeKind.extra),
               final other => throw ArgumentError.value(other, 'rows'),
             },

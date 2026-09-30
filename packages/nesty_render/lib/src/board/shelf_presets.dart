@@ -1,39 +1,46 @@
 import 'package:flutter/foundation.dart' show immutable;
+import 'package:nesty_render/src/board/board_shape.dart';
 import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 
-/// Where the shelves sit for one shelf count, in reference units (spec
-/// §10.3, render §1). The 2- and 3-shelf presets are the design's
-/// (tokens.json `layout.board.planksY`, NestyBoard:76); the 1- and 4-shelf
-/// ones extend its system for boards the design never drew (D22).
+/// Where the shelves sit for one board shape, in reference units (spec
+/// §10.3, render §1). The 2- and 3-shelf presets, the tall one for size-6
+/// levels and the 4-shelf one are the design's (tokens.json
+/// `layout.board.planksY` and `layout.boardPresets`, m7-3); the 1-shelf one
+/// extends its system for a board the design never drew (D22).
 @immutable
 final class ShelfPreset {
   const ShelfPreset({
     required this.plankTops,
     required this.maxDollHeight,
     required this.designed,
-    this.pieceScale = 1,
+    this.iceHeight = 160,
+    this.tall = false,
   });
 
   /// Plank top y per shelf, top to bottom, on the 390×844 reference screen.
   final List<double> plankTops;
 
-  /// The slot's maximum doll height ("Hs", spec §10.3): size `maxSize` is
-  /// this tall when `maxSize` is 6, and every size is a fraction of it.
+  /// The slot's maximum doll height ("Hs", spec §10.3): size 6 is this tall
+  /// before the board fit, and every size is a fraction of it.
   final double maxDollHeight;
-
-  /// Scale for every stand-sized piece (stand, pips, glass, ice, tag, glow,
-  /// hint arrow, tower raise) before a crowded row shrinks it further. It is
-  /// 1 on the designed presets; the 4-shelf preset scales its pieces with its
-  /// dolls so a row's glass case and ice stay below the shelf above.
-  final double pieceScale;
 
   /// False when the preset extends the design for an undesigned board (D22).
   final bool designed;
 
+  /// The ice overlay's height: 160, or 168 on [ShelfPresets.threeTall],
+  /// where `fx_ice` plays stretched by `BoardTokens.iceTallFxScaleY`
+  /// (tokens.json `layout.board.iceOverlayTall`).
+  final double iceHeight;
+
+  /// The size-6 preset (`threeShelvesTall`): its taller ice is played
+  /// stretched.
+  final bool tall;
+
   int get shelfCount => plankTops.length;
 }
 
-/// The presets by shelf count.
+/// The presets by shape (tokens.json `layout.boardPresets`, phase 4
+/// architecture §2.1).
 abstract final class ShelfPresets {
   // TODO(design): a 1-shelf board is undesigned (D22, BACKLOG "Design
   // gaps"). The plank sits where the 2-shelf pair is centred, with the
@@ -46,38 +53,48 @@ abstract final class ShelfPresets {
 
   /// Level 1–2 tutorial boards (frames 1.3/1.4, NestyBoard:76 `L2`).
   static final two = ShelfPreset(
-    plankTops: BoardTokens.plankTopsByShelfCount[2]!,
-    maxDollHeight: BoardTokens.slotMaxDollHeightByShelfCount[2]!,
+    plankTops: BoardPresetTokens.twoShelves.plankTops,
+    maxDollHeight: BoardPresetTokens.twoShelves.slotMaxDollHeight,
     designed: true,
   );
 
-  /// The main board (frame 2.2, NestyBoard:76 `L3`).
+  /// The main board (frame 2.2, NestyBoard:76 `L3`), for `maxSize` ≤ 5.
   static final three = ShelfPreset(
-    plankTops: BoardTokens.plankTopsByShelfCount[3]!,
-    maxDollHeight: BoardTokens.slotMaxDollHeightByShelfCount[3]!,
+    plankTops: BoardPresetTokens.threeShelves.plankTops,
+    maxDollHeight: BoardPresetTokens.threeShelves.slotMaxDollHeight,
     designed: true,
   );
 
-  // TODO(design): a 4-shelf board is undesigned (D22, BACKLOG "Design
-  // gaps"). Planks are spread evenly from 250 to the 3-shelf bottom plank
-  // (684), and dolls and pieces are scaled by 104/150 so the tallest doll
-  // (maxSize 6) of the top row still clears the HUD at y 142.
-  static const four = ShelfPreset(
-    plankTops: [250, 395, 539, 684],
-    maxDollHeight: 104,
-    pieceScale: 104 / 150,
-    designed: false,
+  /// The main board for a size-6 level: 12 dp higher with a 194 dp pitch, so
+  /// the size-6 doll keeps 94.7 % of its height (`threeShelvesTall`).
+  static final threeTall = ShelfPreset(
+    plankTops: BoardPresetTokens.threeShelvesTall.plankTops,
+    maxDollHeight: BoardPresetTokens.threeShelvesTall.slotMaxDollHeight,
+    designed: true,
+    iceHeight: BoardPresetTokens.threeShelvesTall.iceOverlay!.height,
+    tall: true,
   );
 
-  /// Throws [ArgumentError] outside 1–4 shelves (spec §2.1).
-  static ShelfPreset forShelfCount(int shelfCount) => switch (shelfCount) {
+  // TODO(design): fourShelves draws no glass or ice; pieces scale with the
+  // dolls (a stand's furniture scale follows its pitch only, so a glass case
+  // or ice on 4 shelves reaches the shelf above; no bundled level uses it).
+  static final four = ShelfPreset(
+    plankTops: BoardPresetTokens.fourShelves.plankTops,
+    maxDollHeight: BoardPresetTokens.fourShelves.slotMaxDollHeight,
+    designed: true,
+  );
+
+  /// The preset for [shape]: the shelf count, and `maxSize` 6 on three
+  /// shelves for the tall one. Throws [ArgumentError] outside 1–4 shelves
+  /// (spec §2.1).
+  static ShelfPreset forShape(BoardShape shape) => switch (shape.shelfCount) {
     1 => one,
     2 => two,
-    3 => three,
+    3 => shape.maxSize == 6 ? threeTall : three,
     4 => four,
     _ => throw ArgumentError.value(
-      shelfCount,
-      'shelfCount',
+      shape.shelfCount,
+      'shape',
       'a board has 1–4 shelves (spec §2.1)',
     ),
   };

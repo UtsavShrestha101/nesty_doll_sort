@@ -7,6 +7,7 @@ import 'package:nesty_render/src/board/board_geometry.dart';
 import 'package:nesty_render/src/board/board_layout_constants.dart';
 import 'package:nesty_render/src/board/board_shape.dart';
 import 'package:nesty_render/src/board/shelf_presets.dart';
+import 'package:nesty_render/src/tokens/render_token_types.dart';
 import 'package:nesty_render/src/tokens/render_tokens.gen.dart';
 
 typedef _K = BoardLayoutConstants;
@@ -62,23 +63,11 @@ abstract final class BoardLayout {
   static BoardGeometry compute(BoardShape shape, BoardViewport viewport) {
     final area = viewport.boardArea;
     final fit = fitFor(viewport);
-    final preset = ShelfPresets.forShelfCount(shape.shelfCount);
-
-    var minPitch = double.infinity;
-    for (final row in shape.rows) {
-      minPitch = math.min(minPitch, rowPitch(row.length));
-    }
-    // How much the most crowded row shrinks its pieces beyond the preset
-    // (1 on designed boards): the dolls follow it, so a sealed doll keeps
-    // fitting its glass case and a frozen one its ice (review RENDER-3).
-    final pieceShrink =
-        math.min(standScaleForPitch(minPitch), preset.pieceScale) /
-        preset.pieceScale;
-
-    final heights = _dollHeights(shape.maxSize, preset, minPitch, pieceShrink);
+    final preset = ShelfPresets.forShape(shape);
+    final result = fitDolls(shape, preset);
     // One shared list: every slot reads the same board-wide heights.
     final dollHeights = List<double>.unmodifiable([
-      for (final h in heights.heights) fit.length(h),
+      for (final h in result.heights) fit.length(h),
     ]);
 
     final hud = HudClearance.of(
@@ -92,10 +81,7 @@ abstract final class BoardLayout {
       final row = shape.rows[r];
       final n = row.length;
       final pitchRef = rowPitch(n);
-      final pieceScale = math.min(
-        standScaleForPitch(pitchRef),
-        preset.pieceScale,
-      );
+      final pieceScale = standScaleForPitch(pitchRef);
       final plankTopRef = preset.plankTops[r];
 
       // Spec §10.3: the whole column is the hit area. Rows split at plank
@@ -126,6 +112,9 @@ abstract final class BoardLayout {
             fit: fit,
             dollHeights: dollHeights,
             hud: hud,
+            plankAboveRef: r == 0 ? null : preset.plankTops[r - 1],
+            iceHeightRef: preset.iceHeight,
+            tallIce: preset.tall,
           ),
       ];
       index += n;
@@ -155,7 +144,7 @@ abstract final class BoardLayout {
       boardArea: area,
       shelves: shelves,
       dollHeights: dollHeights,
-      dollHeightScale: heights.clamp,
+      dollHeightScale: result.k,
       familyCounterTarget: Offset(
         viewport.size.width / 2,
         viewport.padding.top + _K.familyCounterCenterInset,
@@ -185,16 +174,15 @@ abstract final class BoardLayout {
   static double rowPitch(int slotCount) =>
       math.min(_K.slotPitchMax, _K.slotRowWidth / slotCount);
 
-  // TODO(design): rows of 5–6 slots are undesigned (D22, BACKLOG "Design
-  // gaps"); pips, tags, glass and ice shrink with the stand.
+  // TODO(design): a row of 6 (the second +1 Slot on a 4-slot bottom shelf,
+  // D172) extends rowOfFive's formulas: pitch 372 / 6 = 62, stands at
+  // 59.6 / 90 = 0.662; the design draws no row of 6.
 
-  /// Stands keep their designed size while the pitch is ≥ 93 (four slots)
-  /// and then shrink to `pitch − 4` wide, height and surface offset scaled
-  /// with them (render §1, D22).
+  /// A stand's scale on a row of [pitchRef]: `min(90, pitch − 2.4) / 90`
+  /// (tokens.json `layout.boardFit.standWidth`): 1 from a pitch of 92.4 (a
+  /// row of 4 is 93), 0.8 on a row of 5 (74.4) and 0.662 on a row of 6 (62).
   static double standScaleForPitch(double pitchRef) =>
-      pitchRef >= _K.standShrinkPitch
-      ? 1
-      : (pitchRef - _K.slotGap) / _K.standWidth;
+      math.min(_K.standWidth, pitchRef - _K.standPitchInset) / _K.standWidth;
 
   /// The ice sprite for a slot whose counter started at [initial] and is now
   /// [remaining]: `min(3, ⌊3(n0 − n)/n0⌋)` (render §1). Frames 0–2 show while
@@ -213,43 +201,82 @@ abstract final class BoardLayout {
     return frame > MotionTokens.iceStages ? MotionTokens.iceStages : frame;
   }
 
-  /// Reference-unit doll heights for sizes 1…maxSize and the clamp applied.
-  static ({List<double> heights, double clamp}) _dollHeights(
-    int maxSize,
-    ShelfPreset preset,
-    double minPitch,
-    double pieceShrink,
-  ) {
+  /// The board fit (tokens.json `layout.boardFit`, D180): the doll heights
+  /// of [shape] on [preset], in reference units, all times one factor
+  /// `k = min(1, min(V, HUD, H) / heightOf(maxSize))`.
+  ///
+  /// - `V = (pitchY − 40 − 12.7 − 2) / 0.9661`, `pitchY` the smallest step
+  ///   between plank tops (unbounded on one shelf);
+  /// - `HUD = (planks[0] − 12.7 − 150) / 0.9661`;
+  /// - `H = (min(standWidth, pitch) − 8) / 0.5353` on the row with the
+  ///   smallest pitch, `standWidth = min(90, pitch − 2.4)`;
+  /// - `heightOf(size) = Hs × f[size]`, divided by 0.66 when `maxSize` is 3
+  ///   (spec §10.3).
+  ///
+  /// Pure and per layout: [compute] calls it, the tests check every preset
+  /// with it.
+  static BoardFitResult fitDolls(BoardShape shape, ShelfPreset preset) {
+    var minPitch = double.infinity;
+    for (final row in shape.rows) {
+      minPitch = math.min(minPitch, rowPitch(row.length));
+    }
+    var pitchY = double.infinity;
+    for (var i = 1; i < shape.rows.length; i++) {
+      pitchY = math.min(pitchY, preset.plankTops[i] - preset.plankTops[i - 1]);
+    }
+    const drawn = BoardFitTokens.drawnHeight;
+    final standWidth = math.min(_K.standWidth, minPitch - _K.standPitchInset);
+    final limits = BoardFitLimits(
+      vertical:
+          (pitchY - _K.plankHeight - _K.standSurfaceAbovePlank - _headroom) /
+          drawn,
+      hud:
+          (preset.plankTops.first -
+              _K.standSurfaceAbovePlank -
+              BoardFitTokens.hudClearY) /
+          drawn,
+      horizontal:
+          (math.min(standWidth, minPitch) - BoardFitTokens.neighbourGap) /
+          BoardFitTokens.bodyWidth,
+    );
     final fractions = BoardTokens.dollHeightFractions;
     // Spec §10.3: at maxSize 3, scale up so size 3 = 1.00.
-    final divisor = maxSize == 3 ? BoardTokens.maxSize3Divisor : 1.0;
-    final unclamped = [
-      for (var size = 1; size <= maxSize; size++)
+    final divisor = shape.maxSize == 3 ? BoardTokens.maxSize3Divisor : 1.0;
+    final unfitted = [
+      for (var size = 1; size <= shape.maxSize; size++)
         preset.maxDollHeight * fractions[size - 1] / divisor,
     ];
-    // One scale for the whole board, so a size reads the same on every
-    // shelf; it shrinks only when the tallest doll would come closer to its
-    // neighbour on the narrowest shelf than the design ever draws (render
-    // §1, with the design's own minimum gap; see dollMinGap).
-    // TODO(design): maxSize 6 on 3 shelves, maxSize 3 on 3 shelves or on
-    // 4-slot rows (M2 levels 3–9), and rows of 5–6 slots are undesigned
-    // (D22); this clamp is how they fit.
-    final widest = unclamped.last * _K.dollAspect;
-    double clampFor(double pitch) {
-      final limit = pitch - _K.dollMinGap;
-      return widest > limit ? limit / widest : 1.0;
-    }
-
-    var clamp = clampFor(minPitch);
-    // A 5–6-slot row shrinks its stands, glass cases and ice by
-    // [standScaleForPitch]. The dolls shrink at least as much as they would
-    // on the narrowest full-size row (4 slots, pitch 93), times that: a
-    // sealed doll keeps its case's proportions and a frozen one its ice's
-    // (review RENDER-3).
-    if (pieceShrink < 1) {
-      final withPieces = pieceShrink * clampFor(_K.standShrinkPitch);
-      if (withPieces < clamp) clamp = withPieces;
-    }
-    return (heights: [for (final h in unclamped) h * clamp], clamp: clamp);
+    final limit = math.min(
+      limits.vertical,
+      math.min(limits.hud, limits.horizontal),
+    );
+    final k = math.min(1.0, limit / unfitted.last);
+    return BoardFitResult(
+      limits: limits,
+      k: k,
+      heights: [for (final h in unfitted) h * k],
+    );
   }
+
+  static const _headroom = BoardFitTokens.headroom;
+}
+
+/// What [BoardLayout.fitDolls] found: the three limits, the factor and the
+/// doll heights it gives, in reference units.
+@immutable
+final class BoardFitResult {
+  const BoardFitResult({
+    required this.limits,
+    required this.k,
+    required this.heights,
+  });
+
+  /// The largest doll height each limit allows.
+  final BoardFitLimits limits;
+
+  /// ≤ 1: how much every doll shrank (1 on a board that fits).
+  final double k;
+
+  /// Sizes 1…maxSize.
+  final List<double> heights;
 }

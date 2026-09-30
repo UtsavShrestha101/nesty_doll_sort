@@ -95,6 +95,13 @@ dart run nesty_tools:todo_index --check
   `shasum` before and after, and diff them.
 - **Format**: `dart format --output=none --set-exit-if-changed` on the
   hand-written Dart files (CI's list: `.github/workflows/ci.yaml`).
+- **Test coverage** (CLAUDE.md "Testing", D169):
+  - `docs/TEST_COVERAGE.md` has a row for each of the milestone's features.
+  - Each row's device step runs in `tools/scripts/nesty-test`, or says why a
+    simulator can't drive it.
+  - Every open device gap has a BACKLOG item.
+  - `tools/scripts/nesty-test` passes on the iPhone 16 Pro simulator and on
+    the API 35 emulator (`--android`).
 - **Builds**. The game always needs `--flavor <f> -t lib/main_<f>.dart`:
   ```bash
   (cd apps/game  && flutter build apk --debug --flavor dev  -t lib/main_dev.dart)
@@ -167,8 +174,15 @@ Follow the existing structure (the `docs-writer` agent owns this shape):
 - New open questions get the next free `Q<n>` id, plus an item under BACKLOG
   "Owner inputs needed → Decisions".
 
-Never edit `docs/GAME_SPEC.md` or `CLAUDE.md` to make a criterion pass.
-Propose spec changes as open questions.
+### 7. Bring `CLAUDE.md` current (at `--start` too, unless `--check-only`)
+Per its "Keeping this file current" section: "Current state" (the milestone's
+status and the date), plus the layout, Code map and Commands for anything
+this milestone added, removed or renamed. The baseline gate's
+`cd tools && dart test` includes `claude_md_test.dart`, which fails on a
+missing member, folder, script, rule, feature or service interface.
+
+Never edit `docs/GAME_SPEC.md`, or `CLAUDE.md`'s rules, to make a criterion
+pass. Propose spec changes as open questions.
 
 ## Output
 ```

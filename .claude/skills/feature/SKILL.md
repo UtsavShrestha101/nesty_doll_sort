@@ -71,10 +71,21 @@ features, run `/plan` first.
    `test/features/<feature_name>/<feature_name>_cubit_test.dart` (bloc_test,
    fakes) and `test/features/<feature_name>/<feature_name>_page_test.dart`
    (pumps the page on `configureTestDependencies()`).
-9. **Verify:**
+9. **Device coverage** (CLAUDE.md "Testing", D169): for a game feature, add
+   its flow on a device. That is either a step with a screenshot in
+   `apps/game/integration_test/playthrough_test.dart`, or its own
+   `integration_test/<name>_test.dart` that `tools/scripts/nesty-test` drives.
+   Also add its `features/<feature_name>` row to `docs/TEST_COVERAGE.md`. When
+   a simulator can't drive the flow, the row says why and names the host test.
+10. **CLAUDE.md:** add the feature to the Code map ("Other features" for the
+   game, the admin line for the admin), per its "Keeping this file current"
+   section.
+11. **Verify:**
    - `cd apps/<app> && flutter analyze` prints "No issues found!"
    - `flutter test test/features/<feature_name>/` passes
    - `<Pascal>Route` is in `app_router.gr.dart`, and `<Pascal>Cubit` is in `lib/core/dependency_injection/di.config.dart`
+   - `cd tools && dart test test/claude_md_test.dart test/test_coverage_test.dart` passes
+   - the device step passes: `tools/scripts/nesty-test --device-only --only playthrough` (or the step's own `--only` name)
 
 ## Output
 - The file tree created

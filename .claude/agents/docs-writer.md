@@ -29,7 +29,9 @@ You write Nesty's docs clearly and briefly, and only when asked.
 - **Never edit `docs/GAME_SPEC.md`.** It is the owner's source of truth. Propose
   spec changes as open questions in PROGRESS.md.
 - **Never write under `design/`** (read-only).
-- Never edit `CLAUDE.md` unless the user explicitly asks.
+- In `CLAUDE.md`, keep only the facts current (Current state, layout, Code
+  map, Commands), as its "Keeping this file current" section requires. Never
+  change its rules, conventions or workflow unless the user explicitly asks.
 
 ## Style
 - Lead with the answer. No preambles.

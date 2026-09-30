@@ -46,6 +46,7 @@ nesty/
     PROGRESS.md              # milestone status, decisions, package reasons, open questions
     BACKLOG.md               # every remaining item, one section per milestone, plus owner inputs
     TODO_INDEX.md            # generated index of the TODO(<tag>) markers in code
+    TEST_COVERAGE.md         # what `nesty-test` checks for each feature, on the host and on a device
   design/                    # design handoff (owner-managed, read-only): tokens, art, Lottie, SFX, music, prototypes
   packages/
     nesty_core/              # pure Dart: models, rules, solver, generator, simulator, level codec
@@ -82,6 +83,14 @@ Each package has its own README: [game](apps/game/README.md),
   libraries it bundles.
 - For iOS (macOS only): Xcode, CocoaPods and CMake (`brew install cmake`;
   `flutter_soloud`'s pod builds with it). The deployment target is iOS 14.
+  - `Podfile.lock`'s `SPEC CHECKSUMS` are the SHA-1 of each plugin's podspec
+    as CocoaPods stores it in JSON (`Pods/Local Podspecs/`), and Ruby's
+    `json` writes an empty list as `[]` in 2.9.1 (Homebrew's `pod`, on
+    Ruby 3.4) but over three lines in 2.7.1 (a gem-installed `pod` on
+    Ruby 3.3). The owner's machine has both on PATH, so a `pod install`
+    through the other one rewrites every plugin's checksum with no version
+    change. Check `which pod` before reading such a diff as a dependency
+    change (M7 review R5).
 - Only to rebuild the bundled fonts (`tools/fonts/build_fonts.sh`): `python3`
   and `curl`. The script installs fontTools in a throwaway venv.
 - For the admin: Chrome.
@@ -165,7 +174,7 @@ nothing and fails on drift:
 
 ```bash
 dart run nesty_tools:gen_design_tokens    # design/tokens.json → *.gen.dart token files
-dart run nesty_tools:sync_design_assets   # design/ art + SFX → apps/game/assets
+dart run nesty_tools:sync_design_assets   # design/ art, UI art, audio, Lottie → apps/game/assets, + the Android notification icon
 dart run nesty_tools:gen_nesty_icons      # NestyIcons from the bundled icon font
 dart run nesty_tools:todo_index           # docs/TODO_INDEX.md from TODO(<tag>) markers
 tools/fonts/build_fonts.sh [--verify]     # bundled fonts from pinned upstream (network)
@@ -193,19 +202,43 @@ cd tools                 && dart test         # nesty_tools
 ```
 
 **One command for everything:** `tools/scripts/nesty-test` (the owner's
-shell has it as the `nesty-test` alias) runs the host checks (analyze and
-every test suite), then boots an iPhone 16 Pro simulator and shows it,
-installs the app fresh and runs the three on-device checks below: the
-playthrough with its screenshots, the kill-and-resume, and the daily
-fingerprint against nesty_core's own level. It prints a PASS/FAIL summary
+shell has it as the `nesty-test` alias) runs the host checks, then boots an
+iPhone 16 Pro simulator and shows it,
+installs the app fresh and runs the on-device checks below: the
+playthrough with its screenshots, the kill-and-resume, the daily
+fingerprint against nesty_core's own level, and M7 phase 4's five files
+(board layouts, race loss, meta screens, daily states, overlays), each from
+a fresh install. It prints a PASS/FAIL summary
 and exits 1 if any step failed; logs, screenshots and `summary.txt` go to
-`apps/game/build/nesty-test/<timestamp>/` (`latest` links the newest run):
+`apps/game/build/nesty-test/<timestamp>/` (`latest` links the newest run).
+
+The host checks are CI's, except codegen drift, which would rewrite the
+generated files:
+- `dart format` and `flutter analyze --fatal-infos --fatal-warnings`;
+- every test suite;
+- nesty_core's web parity on node, chrome and dart2wasm, each shown as SKIP
+  when node or Chrome isn't installed;
+- the design, asset, FX and TODO-index drift checks;
+- the level bundle and solver fixtures;
+- the admin's web build.
+
+It stops early, with a message, when the disk has less than 8 GB free
+(`NESTY_TEST_MIN_FREE_GB` changes that). A full disk otherwise fails the
+playthrough deep inside `flutter drive`. A step whose log shows "No space
+left on device" says so. Only the newest 5 runs are kept in
+`apps/game/build/nesty-test/` (`NESTY_TEST_KEEP_RUNS`).
+
+[docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md) lists what checks each
+feature, on the host and on a device. Every new feature adds its device step
+and its row there (CLAUDE.md "Testing", D169).
 
 ```bash
 tools/scripts/nesty-test                    # everything, on the iPhone 16 Pro simulator
 tools/scripts/nesty-test --device-only      # skip the host checks
 tools/scripts/nesty-test --android          # the flutter_emulator AVD, with its window
 tools/scripts/nesty-test --device "iPhone 15 Pro Max" --only playthrough
+tools/scripts/nesty-test --device-only --only board,race,meta,daily_states,overlays   # phase 4's files
+tools/scripts/nesty-test --android --only reminder   # the optional Android reminder check
 tools/scripts/nesty-test --help             # every option
 ```
 
@@ -216,25 +249,58 @@ the resume's phase A from a fresh install (`xcrun simctl uninstall <udid>
 com.futrix.nesty.dev` or `adb -s <serial> uninstall com.futrix.nesty.dev`):
 they expect a fresh save.
 
-The playthrough goes Splash → Home → the shell tabs, the Museum and its
-modals, the Shop, Settings and its language sheet → levels 1 and 2 through
-the scripted tutorial → the Daily (5.1, its intro cards, 5.3–5.5) → level 9's
-hint and extra slots → level 16's Hint popup and Out of Moves → Pause →
-Settings and back → level 21's chapter ribbon → level 20's chapter complete
-and the earned Museum → level 30's All Levels Done and the bonus pill. It
-can't listen, so it checks the music through `SoLoudMusicService`'s state
-(the loop on each screen and each overlay's duck), and fails if any sound,
-music or Lottie file didn't load. It saves its screenshots through the
-driver, into `$NESTY_SCREENSHOT_DIR` or
+The playthrough goes Splash → level 1, faded in (frame 10.8), through the
+scripted tutorial's "STEP n OF 3" (a fresh install opens it with no screen
+in between, E9: the run fails if the router stacks any other route on the
+way; E13's times, from `main()` to level 1's first playable frame and until
+it is alone on screen, are printed as `NESTY_E13` and written to
+`playthrough.json` and to `e13.json` beside the screenshots) with its 3
+stars on the win card → Home after the first win → Chapters from Home's
+chapter card (level 1 at 3 stars), its level card and a 4-move replay of
+level 1 (2 stars and "3 stars at 3 moves or fewer", the level keeping its 3)
+and Records with its stats grid → the shell tabs, the Museum and its modals,
+the Shop with its "Not enough coins" dialog and an equip, Settings with its
+language sheet and the inline Reduce motion control → level 2 → level 9's
+hint and two extra slots up to the limit → level 16's towers card, Hint
+popup and Out of Moves → Pause → Settings and back → level 21's chapter
+ribbon → level 20's chapter complete and the earned Museum → vs Computer
+against rival 1 (Home's tile, rival select, the race board before and
+during the race, the solver's moves to "You won the race!" and +20 coins,
+then system back through "New rival unlocked!", the Computer tag on every
+rival screen) → level 30's milestone chest → level 31's glass card and case
+→ the Daily (5.1, 5.3–5.5), whose win card shows Share (never tapped: the
+OS share sheet can't be dismissed from `flutter drive`) and whose solved
+card opens the one-time reminder offer, answered "No thanks" (never "Yes,
+remind me": iOS's permission alert can't be tapped either) → Settings with
+the reminder row off → levels 51 (ice and its card), 71 (size 5) and 130
+(size 6, then its chest) → Chapters at chapter 7 → level 200's chapter
+complete, All Levels Done and the bonus pill. The Daily comes after level
+31 so that levels 16, 31 and 51 each open on their own mechanic's intro
+card, as for a player who skips the daily. It can't listen, so it checks
+the music through `SoLoudMusicService`'s state (the loop on each screen and
+each overlay's duck), and fails if any sound, music or Lottie file didn't
+load: start an Android emulator with audio (no `-no-audio`), or SoLoud
+can't open its output and the run fails at once. It saves its screenshots
+through the driver, into `$NESTY_SCREENSHOT_DIR` or
 `apps/game/build/integration_test/screenshots/`. The fixed date makes the
-daily's board, and so its intro cards, the same on every run:
+daily's board the same on every run and device, and the slowed rival makes
+the race a sure win for the solver's moves:
 
 ```bash
 cd apps/game && NESTY_SCREENSHOT_DIR=/some/dir flutter drive --flavor dev \
   --driver test_driver/integration_test.dart \
   --target integration_test/playthrough_test.dart \
-  --dart-define=NESTY_FAKE_DATE=20260926 -d <device-id>
+  --dart-define=NESTY_FAKE_DATE=20260926 \
+  --dart-define=NESTY_RACE_PACE_MS=600000 -d <device-id>
 ```
+
+`--dart-define=NESTY_RACE_PACE_MS=<ms>` sets every rival's pace to one move
+every `<ms>` milliseconds (± the `race_pace_jitter_pct` jitter) in place of
+`race_pace_ms_<n>` (m7-design P2.5). Like `NESTY_FAKE_DATE`, only a debug
+build of the dev flavor honours it; profile and release builds, and the stg
+and prod flavors, ignore it (`RaceRules.parsePaceOverride`, pinned by
+`test/core/services/race/race_rules_test.dart`). The playthrough fails at the
+race if it isn't set to 600000 (10 minutes a move); `nesty-test` passes it.
 
 The dev flavor's boosters never run out, which hides every coin price. The
 playthrough turns that off with `InMemorySaveService.debugUnlimitedBoosters`
@@ -257,7 +323,8 @@ flutter drive --flavor dev --driver test_driver/integration_test.dart \
   --target integration_test/resume_phase_b_test.dart -d <device-id>
 ```
 
-Phase A wins levels 1 and 2, opens level 3 from Home's PLAY, makes two
+Phase A wins level 1 (the splash opens it on a fresh install) and level 2,
+opens level 3 from Home's PLAY, makes two
 moves, an undo, a +1 Slot and a move onto it; phase B taps Home's PLAY and
 asserts the same board, undos left and extra slots. Each phase writes its
 values (`level`, `freeUndosLeft`, `extraSlotCount` and the session's
@@ -277,6 +344,53 @@ It writes the day's generated level as canonical JSON (`fingerprint` in
 line). Run it on two devices: the two strings must be equal, and their
 Hash64 must match the core's golden for that date
 (`packages/nesty_core/test/generator/golden_test.dart`, `'daily 20260926'`).
+
+M7 phase 4's five device files each seed their own save
+(`integration_test/support/seeded_save.dart`) before `app.main()`, so start
+each from a fresh install; `nesty-test` uninstalls first. Their screenshots
+are prefixed `b_`, `r_`, `meta-`, `d_` and `ov_`:
+
+```bash
+cd apps/game
+T="flutter drive --flavor dev --driver test_driver/integration_test.dart -d <device-id>"
+$T --target integration_test/board_layouts_test.dart   # levels 31-200's layouts
+$T --target integration_test/race_loss_test.dart \
+  --dart-define=NESTY_RACE_SCENARIO=loss --dart-define=NESTY_RACE_PACE_MS=250
+$T --target integration_test/race_loss_test.dart \
+  --dart-define=NESTY_RACE_SCENARIO=oom --dart-define=NESTY_RACE_PACE_MS=600000
+$T --target integration_test/meta_screens_test.dart   # Home, Chapters, Museum, Records, Shop
+$T --target integration_test/daily_states_test.dart \
+  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, settings
+$T --target integration_test/overlays_test.dart   # the win card, chests, 12.5-12.9, intro loops
+```
+
+`board_layouts_test` finds its levels by scanning the bundle (a size-5, the
+tall preset, a tall glass case, a top-shelf tower, an iced tower, two +1
+Slots). `race_loss_test`'s `loss` lets the computer finish first, then
+Rematch, Pause with Settings, Leave race's confirm and New race; `oom`
+seeds rival 1 at race 5, so Start makes race 6 (races 1–5's roomy boards
+reach no dead end), and walks core's shortest line to Out of Moves. `daily_states_test`'s `chest` seeds a
+6-day streak and opens the day-7 chest, `paused` relights a paused flame,
+and `settings` toggles every row and plays a relaxed board.
+
+The daily reminder's optional Android check (M7 phase 3) turns "Daily
+reminder" on in Settings and expects the one pending reminder, then off and
+expects none. `POST_NOTIFICATIONS` is granted before the app first runs, so
+no OS dialog opens; `nesty-test --android --only reminder` does all of it
+(it never runs by default, and iOS skips it: `simctl privacy` can't grant
+notifications, so the owner checks a delivered reminder on a phone):
+
+```bash
+cd apps/game
+adb -s <serial> uninstall com.futrix.nesty.dev
+flutter build apk --debug --flavor dev -t integration_test/reminder_test.dart
+adb -s <serial> install -r build/app/outputs/flutter-apk/app-dev-debug.apk
+adb -s <serial> shell pm grant com.futrix.nesty.dev android.permission.POST_NOTIFICATIONS
+flutter drive --flavor dev --driver test_driver/integration_test.dart \
+  --target integration_test/reminder_test.dart \
+  --use-application-binary build/app/outputs/flutter-apk/app-dev-debug.apk \
+  -d <serial>
+```
 
 Two harness facts for widget tests: `Bloc.close()` never completes inside
 `testWidgets`' fake-async zone, so never await it there (use

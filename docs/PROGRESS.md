@@ -7,7 +7,7 @@ acceptance criteria come from spec §18. The work still to do is tracked in
 [BACKLOG.md](BACKLOG.md), item by item and milestone by milestone. This file
 doesn't copy it.
 
-Last updated: 2026-09-28 (M3 code complete, acceptance pending: the integration, the device checks, the three-lens review and its fix pass; D81–D89).
+Last updated: 2026-09-30 (D209 and Q159: M7 phase 4's device run passed on both platforms, with seven test fixes and six app fixes; phase 5 is next. Before that: D202–D208 and Q158: phase 4 integrated: the lanes' cross-lane edits, E1, `di_test`, `app_flow_test` and the playthrough on m7-3, the five new device files in `nesty-test` and TEST_COVERAGE, the Claude Design follow-up; the device stage is next. Before that: D179–D201 and Q156–Q157: phase 4's contracts stage (C4b): the frozen shapes for Claude Design's m7-3 delivery, copy.md in the ARB, the five lanes; 20 design-answered questions marked answered, with Q72's Forest Bear part and Q73's catalog copy. Before that: D173–D178: phase 4's tooling stage: tokens v3, the 35 Lottie files, the UI art and the generated Android notification icon, the 68-glyph font. Before that: D171–D172: Claude Design's whole M7 delivery checked and copied into `design/` at the owner's request, and the +1 Slot kept on the bottom shelf (D22); phase 4, the integration, is next. Before that: D170: the HUD's "Replay" tag removed. Before that: D169, the owner's rule that `nesty-test` covers every feature: CI's host checks added, docs/TEST_COVERAGE.md and its test. Before that: M7 phase 5, the device run after the review: every device check passes on both platforms, the reminder in Europe/Amsterdam too, and one layout fix to the win card's button, D168. Before that: M7 review pass, round 2: four deep lenses, 33 findings, 32 fixed and one left to the owner, the accessibility audit closed, the pass-and-play proposal, D165–D167 and Q154–Q155. Before that: M7 review pass, round 1: five lenses, five findings, four fixed and one deferred, D163–D164 and Q153. Before that: M7 phase 3 integrated: star ratings, the daily share card and the opt-in reminder, D144–D161 and Q137–Q151; its device run is next. Before that: M7 phase 2 done: vs Computer, D132–D143 and Q124–Q136, passed on both devices. Before that: M7 phase 1 integrated: levels 31–200 and E1, E2, E5–E9, E12–E14 with the owner's simulator review, D113–D124, Q99–Q115; its device run is next. Earlier today: the M7 contracts, D95–D110 and Q88–Q98; D111–D112, the owner's review; D92–D93, the offline-game brainstorm, Q76–Q87; D91, Large color symbols by default; D90, M7 runs before M4–M6. M3 code complete, acceptance pending).
 
 ## Status
 
@@ -17,10 +17,10 @@ Last updated: 2026-09-28 (M3 code complete, acceptance pending: the integration,
 | **M1 — Core (`nesty_core`)** | ✅ Done 2026-09-26 (see [M1](#m1--core-nesty_core--done-2026-09-26)); owner questions Q30–Q38 confirmed 2026-09-26 | All §4 rules unit-tested. Solver fixtures pass. Generator is deterministic. 100 generated levels pass validation and solve. All met |
 | M2 — Playable game (placeholder art; the design art was pulled in, D23) | **Code complete 2026-09-27; acceptance waits on the owner's device check.** Built: the nesty_render foundation, the 30 authored levels and `bundle check` in CI, the phase-4 Lottie contracts (D40–D52), every Lottie lane, the services, the bloc, the UI kit, the Flame board and the screens (D53–D57), then a review fix pass (12 of 13 findings fixed, D58). Every automated gate passes, including the on-device playthrough of L1, L2 and L16. Left: the 60 fps profile on a real mid-range Android (the owner's, steps in [M2 acceptance](#m2-acceptance-spec-18)) and the manual L1–30 pass (see [M2](#m2--playable-game--code-complete-acceptance-pending)). **Post-M2 round 2026-09-27:** Claude Design's v3 Lottie export and the audio delivery (music, jingles, SFX v2) imported and wired in, the owner's Level 9 hint and +1 Slot report fixed, every gate green again (see [Post-M2 round](#post-m2-round-claude-design-v3-and-audio-2026-09-27), D59–D61) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
 | M3 — App shell and meta | **Code complete 2026-09-28; acceptance waits on the owner's two physical-device checks.** Built: the save (Hive, migrations, the board in progress), the economy and boosters' coin path, chapters, the Museum, Bonus Endless, the Daily with its streak, the tutorial and intro cards, the shell, Home, Settings and the Shop (D63–D80). The integration fixed five app bugs (D81, D84, D85); a three-lens review found 23 issues, 22 fixed in its pass and the last in the close-out (D86–D89). Both criteria pass on the iPhone 16 Pro simulator and the API 35 emulator (see [M3 acceptance](#m3-acceptance-spec-18)) | Kill the app mid-level and it resumes exactly where it was. The daily puzzle is identical on two devices on the same date |
-| M4 — Firebase content | Not started | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
-| M5 — Admin panel | Not started | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
-| M6 — Monetization | Not started | Every §9.1 pacing rule is unit-tested with a fake clock. Offline ad buttons fall back to coins correctly |
-| M7 — Art and polish | Not started | Matches the design screens. No layout overflows on 5 test screen sizes (small Android, standard phone, tall phone, small iPhone, iPad portrait) |
+| M4 — Firebase content | Not started; after M7 (D90) | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
+| M5 — Admin panel | Not started; after M7 (D90) | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
+| M6 — Monetization | Not started; after M7 (D90) | Every §9.1 pacing rule is unit-tested with a fake clock. Offline ad buttons fall back to coins correctly |
+| M7 — Art and polish, plus the offline game: content, modes and engagement | **In progress (started 2026-09-28; D90, D92, D93; plan [plans/plan-m7.md](plans/plan-m7.md)).** The owner moved it ahead of M4–M6 and widened it: levels 31–200 on the chapter plan, chapter themes 7–10, the catalog copy, the vs Computer race (approved in principle, D93) and eight engagement features under the respect rules (D92). The rules are in [plans/spec-proposals-m7.md](plans/spec-proposals-m7.md) until the owner pastes them into the spec; the art and copy come from Claude Design ([BACKLOG M7](BACKLOG.md)). Phases 1–3 are done and passed on both devices (2026-09-29, D126–D162); phases 4 (the design delivery) and 5 (the close) are left | Matches the design screens. No layout overflows on 5 test screen sizes (small Android, standard phone, tall phone, small iPhone, iPad portrait) |
 | M8 — Release prep | Not started | Release builds run on real Android and iOS devices with production Firebase |
 
 M0 is not in spec §18. It is the pre-M1 architecture pass the owner asked for:
@@ -987,9 +987,391 @@ were removed with `flutter clean`. The first iOS build updated
 `apps/game/ios/Podfile.lock` for the two new pods. Nothing was committed.
 
 
+## M7 — the offline game — phase 1 integrated (2026-09-28)
+
+Started 2026-09-28 (D90, D92, D93), ahead of M4–M6. The contracts stage wrote
+the authoritative [plans/m7-design.md](plans/m7-design.md) and froze its
+phase-1 contracts (D95–D110, Q88–Q98). Seven parallel lanes built phase 1
+(levels, meta-services, gameplay-bloc, menus, gameplay-ui, board-fx,
+overflow); an H/S level review and its fix pass followed; three owner lanes
+answered the owner's simulator review (D111, D112); the integrator made every
+cross-lane edit and ran the gates. Phases 2 (vs Computer), 3 (share card,
+reminder) and 5 (the close) are next. What is left is in [BACKLOG.md](BACKLOG.md)
+under "M7".
+
+### Done
+
+- **Levels 31–200 (D113–D115):** 170 new levels on the brainstorm §4
+  chapter plan (glass from L31, ice from L51, size 5 from L71, size 6 in the S
+  slots L130–L200), hand-tuned at L31, L51, L71, L130 and the finales (22 → 35
+  moves, strictly rising); 68 easy, 68 medium, 17 hard and 17 super hard; the
+  smart bot wins at least 75 % of runs on every new level; every one solves
+  from its start within the device's 20,000-node budget. The H/S review's
+  fix pass re-picked or re-tuned 23 of them. E12's gates (a layout signature
+  per level, no expert-only level from L31, size 6 only on super hard slots)
+  are in `bundle check`.
+- **Engagement:** E2, the gentle streak (a miss pauses the flame and never
+  lowers the count, D98); E5, the milestone chest at level 10 of every
+  chapter and every 10th bonus level, paid in the win's save update, with
+  an animated opening both chests share (D103, D120); E6, relaxed mode (free
+  unlimited undo, read live, D104); E7, replay from Chapters with best moves
+  per level id and version (D100, D102); E8, Records and the twelve badges
+  with their toast (D105, D106); E9, first launch opens Level 1 and the first
+  win goes Home (D107, D123); E14, reduce motion at the app root (D108); E1,
+  the copy and reward-randomness tests and `/review`'s ethics lens (D110,
+  D124). E13's timing is reported by the playthrough (D123).
+- **The owner's simulator review (D111, D112, D118–D120):** Home's three
+  tiles, the Chapters stand-in v2, the Museum's clarity pass and its "Classic
+  · soon" with 20/20 bug, the Shop's "Equipped" after an equip, the "Not
+  enough coins" dialog, the dev level picker at 200 levels (and `NestySheet`'s
+  clip), and the chest opening.
+- **Board (D116):** +1 Slot plays one button sound, its pad's loop starts at
+  its 100 % scale, and the "+N" tower tag and ice digits come from the ARB.
+- **Integration:** the 200-level repository test; E9's routing in the splash
+  page, with the whole-app widget tests seeded past Level 1; `NestyToast`
+  cancels its timer; the bundle's decode and rules 1–7 on a worker isolate
+  (D122); the day-7 chest's coins fly to the Daily screen's coin pill
+  (D124); the playthrough, resume and daily device tests rewritten for E9,
+  E13 and one segment per new mechanic (not yet run on a device); the
+  Chapters, Daily and chest overflow sweeps widened; the design request's
+  new gaps.
+
+### Decisions
+
+D113–D124 (below, in the Decisions log).
+
+### Open questions
+
+Q99–Q115 (below), each shipped with its default.
+
+### Verification (2026-09-28, phase-1 integration)
+
+| Command | Outcome |
+|---|---|
+| `LANE=integrator codegen.sh all` (gen-l10n, then build_runner through the M7 lock) | exit 0 |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `dart format --output=none --set-exit-if-changed`, CI's exclusions, tracked and untracked files | 840 files, 0 changed |
+| `cd packages/nesty_core && dart test` | 1,506 pass |
+| `cd packages/nesty_render && flutter test` | 530 pass |
+| `cd apps/game && flutter test --timeout 120s` | 2,489 pass |
+| `cd apps/admin && flutter test` | 47 pass |
+| `cd tools && dart test` (with `claude_md_test` and the new level checks) | 330 pass |
+| `nesty_levels bundle check` / `fixtures check` | 200 levels OK / 11 fixtures OK, 0 errors, 0 warnings |
+| `gen_design_tokens`, `gen_nesty_icons`, `sync_design_assets`, `gen_fx_spec` with `--check` | all exit 0, unchanged |
+| `dart run nesty_tools:todo_index`, then `--check` | 111 tagged markers (ten comments in `gameplay_view.dart` that cited fixed bugs as `TODO(M7)` reworded), unchanged on the check |
+
+Not run in this stage: the app builds and the device checks (the next
+stage runs the rewritten `integration_test/` on the iPhone 16 Pro simulator
+and the API 35 emulator).
+
+### Device stage (2026-09-28, phase-1 device run)
+
+Both platforms all PASS from fresh installs. The iPhone 16 Pro simulator (iOS 18.3) and API 35 emulator ran the playthrough (E9, E13, a segment per new mechanic through L200), the kill-and-resume check (phase A = phase B) and the daily fingerprint test. E13 recorded the time from `main()` to L1's first playable frame (iOS 2,349 ms) and to L1 alone on screen (2,609 ms); the Android emulator was too variable. Two app bugs found and fixed with regression tests: the chapter ribbon on daily and bonus boards, and the Museum's locked-shelf labels cut by an ellipsis. Eight deferrals proposed (badge toast, replay reason line, chest coin chip, bonus win card, iced tower tag, Museum label size, `GameplayPage` bloc reuse, optional E9 kill check). Device stage closes with eight findings reviewed, including icon visibility through ice, text rendering and the speed of app startup on the 15 Pro Max (unconfirmed; Q114 asks the owner).
+
+| Command | Platform | Result |
+|---|---|---|
+| `flutter drive … --device-only --device F039555C-…` (iPhone 16 Pro sim) | iOS | All PASS: playthrough 401 s (78 screenshots), E13 2,349/2,609 ms, phase A 65 s, phase B 42 s, daily 47 s |
+| `flutter drive … --android --device-only --device emulator-5554` (API 35 emu) | Android | All PASS: playthrough 448 s (78 screenshots), E13 17,336 ms (swapping), phase A 119 s, phase B 86 s, daily 82 s |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | host | No issues found |
+| `cd apps/game && flutter test --timeout 120s -r failures-only` (after last code edit) | host | +2 new tests, 2,489→2,499 pass (the ribbon and Museum label fixes) |
+
+All files in order: `apps/game/lib/features/gameplay/pages/gameplay_view.dart` (D129, ribbon), `apps/game/lib/features/museum/widgets/museum_cabinet.dart` (D130, label), `test/features/gameplay/` (ribbon regression), `test/features/museum/` (label regression), `integration_test/playthrough_test.dart` (E9/E13 updates, D126–D128), `integration_test/support/board_probe.dart` (timeouts describe errors), `test_driver/integration_test.dart` (`e13.json` output), `tools/scripts/nesty-test` (audio on emulator, D131), `README.md` (playthrough route, E13 outputs).
+
+### Phase 2: vs Computer, integrated (2026-09-28)
+
+The contracts stage froze phase 2 (D132–D139, m7 P2.1–P2.15); race-core
+had built the core ahead of it; race-services, race-bloc and race-ui built
+the rest in parallel; the integrator wired it, fixed what the device would
+have shown (D140, D141) and wrote the rival-1 playthrough segment and E1's
+race test (D142). The race's screens are `TODO(design)` stand-ins until
+Claude Design's section C lands. Owner questions: Q124–Q135, each shipped
+with its default.
+
+- **Built:** `PlayRequest.race`, the resolver's race case, `beginRace` and
+  `recordRaceWin` (no schema step), `RaceRules` and `FrameTicker`;
+  `RaceCubit` (the mirrored rival, the frame clock, the seeded jitter, the
+  holds, the result and the tie) and the bloc's race mode (undo free, Hint
+  and +1 Slot off, no level record or events); Home's tile, rival select,
+  the rival strip, the Start and Undo/Restart bar, 9.4–9.6, Pause and out of
+  moves in a race; "Computer" on every rival surface.
+- **Verification:** see the phase-2 integrator's gate in
+  [plans/m7-design.md](plans/m7-design.md) P2.15. Left: the device run of
+  the rival-1 segment on the iPhone 16 Pro simulator and the API 35
+  emulator.
+
+### Phase 3: star ratings, the share card and the reminder, integrated (2026-09-29)
+
+The contracts stage froze phase 3 (D144–D155, m7 P3.1–P3.15); five lanes
+built it in parallel (stars-core, stars-app, stars-ui, reminder, share;
+D156–D160); the integrator made the cross-lane edits, wrote E1's two phase-3
+tests, `di_test`'s and `app_flow_test`'s checks, the playthrough's star,
+share and offer steps and the optional Android reminder check, fixed the
+phase-2 rival strip item, and ran the gate (D161). Every surface is a
+`TODO(design)` stand-in until Claude Design's sections K, I.1, I.2 and I.10
+land. Owner questions: Q137–Q151, each shipped with its default.
+
+- **Built:** star ratings (spec-prop §7.10, D125): `StarRating` in core
+  and par in the bundle (par 2–35), the schema-2 fields `levelStars`,
+  `starTipShown`, `daily.lastSolve` and `inProgress.hinted` with the silent
+  backfill, the bloc's stars with the hint and +1 Slot cap, and `StarRow`
+  on the win card, Chapters and Records; E3, the Daily's Share button with
+  a spoiler-free text through `share_plus`; E4, the opt-in daily reminder
+  (one inexact repeating notification, the one-time offer on the solved
+  card, Settings' switch and time, the OS asked only after Yes).
+- **Verification:** the integrator's gate is in
+  [plans/m7-design.md](plans/m7-design.md) P3.15. Left: the device run
+  (the playthrough's new steps and the optional Android reminder check),
+  then the owner's phone check of the reminder.
+
+### M7 review pass (2026-09-29)
+
+Phase 5's design-independent part: a review of the whole M7 diff (199
+tracked files, +46.0k/−1.6k, and 266 untracked files since `edc884f`) with a
+fix pass, in two rounds. Round 1 comes first; [round 2](#round-2-2026-09-29)
+follows it. In round 1, five read-only lenses ran in parallel: logic (core and game
+logic), ui (the UI, l10n, rule 8 and the accessibility audit), platform
+(services, platform and offline), security and ethics. Their findings were
+merged and routed by path to three fixers (logic, ui and platform), which
+confirmed each one and then fixed or deferred it. The gate stage applied
+the fixers' docs edits and ran every gate.
+
+- **Counts:** 5 found (0 P0, 1 P1, 4 P2); 4 fixed, 0 needed no change, 1
+  deferred. Security and ethics found nothing. The ethics lens checked
+  every row of m7-design's ethics checklist against the code, not only
+  against its tests, and no answer is contradicted.
+- **Clean by the lenses' own checks:** no rule outside core (rule 2); no
+  `DateTime.now` or unseeded `Random` in core or on a reward path (rule 7);
+  `Generator.version` stays 1 through the `stepRun` refactor, with goldens
+  and parity; the schema 1→2 migration and the Hive contract; the race's
+  tie, 250 ms clamp and single payment; every new platform call fails
+  silently (rule 3); interface, real and fake for each new service, both
+  envs in `di_test` (rule 4); every new Remote Config key has a default
+  (rule 6); the four packages' reasons (rule 9); the dev-only defines
+  gated on debug and dev; both notification receivers `exported=false`;
+  the share text is spoiler-free and carries no personal data; no
+  hardcoded string, and all 316 ARB keys have a description.
+
+| Id | Severity | Lens | File:line | Outcome | Test |
+|---|---|---|---|---|---|
+| R1 | P1 (a11y) | ui | `apps/game/lib/features/gameplay/overlays/race_result_overlay.dart:243`, `:328` | Fixed: the race win and loss cards' rival row never said "Computer" to a screen reader (spec-prop §1.1 rule 5), because `ComputerTag` excludes its own semantics. A private `_RivalIdentity` wraps the row in `Semantics(label: raceRivalSemantics(name))` over `ExcludeSemantics`, as rival select does. No ARB change | `test/features/gameplay/overlays/race_result_overlay_test.dart`, group `the rival row reads "{name}, Computer" to a screen reader`: `RaceWinCard`, `RaceLossCard` (both failed before) |
+| R2 | P2 (correctness) | logic | `apps/game/lib/core/services/daily/streak_daily_service.dart:165` | Fixed (D163): a clock rolled back behind `lastDate` granted a freeze for the older ISO week, one per round trip. `_reconcile` now returns the progress unchanged, which covers both `refresh` and `_solve`. The paused case is Q153 | `test/core/services/daily/streak_daily_service_test.dart`: "reconcile on a date before lastDate (the clock went back) changes nothing, and grants no freeze for the older week"; "a solve on a date before lastDate pays and records it, but grants no freeze for the older week"; "rolling the clock back and forth never mints an extra weekly freeze" (all three failed before) |
+| R3 | P2 (docs) | ui | `apps/game/lib/features/fx/chest/reward_flight.dart:48` | Fixed: the doc said nothing was allocated per frame and named an `Interval` the code doesn't use. It now says what is computed once and that only the sprites' small widget tree rebuilds per tick (Flutter UI, not rule 8's Flame hot path) | none (a comment) |
+| R4 | P2 (design) | platform | `apps/game/lib/core/services/notifications/reminder_notification_details.dart:39` | Deferred to Claude Design's I.2: the Android reminder's stand-in accent (`AppColorTokens.primary`, `TODO(design) I.2`) had no BACKLOG line of its own. BACKLOG M7 now ties the swap to I.2's icon sync | none |
+| R5 | P2 (docs) | platform | `apps/game/ios/Podfile.lock:46` | Fixed (docs): four existing plugins' `SPEC CHECKSUMS` changed with no version change. The cause is two `pod` 1.16.2 installs whose `json` gems write an empty list differently (D154). README "Prerequisites" says so; the lock is left as it is | none |
+
+**The accessibility audit (the ui lens).** It covers the M7 surfaces;
+BACKLOG M7's "Accessibility audit" item stays open for the rest (D164).
+
+| Screen or overlay | Semantics labels | 48 dp targets | Reduce motion | Large symbols | Text scale |
+|---|---|---|---|---|---|
+| Chapters grid (`chapter_level_cell.dart`) | Pass: one label per cell (won, current, locked; stars appended) | Pass: 64 dp cells on `TactileSurface` | n/a (the auto-scroll has no animation) | n/a (no dolls) | Pass (`FittedBox`) |
+| Records (`records_page.dart`, `badge_grid.dart`, `record_stat_row.dart`) | Pass: `MergeSemantics` rows, earned and locked badge labels | n/a (only the reused best-moves `SettingsRow` is tappable) | n/a | n/a | Not checked on its own (overflow test only) |
+| Rival select (`rival_select_page.dart`) | Pass: one container label per card; reward chip and Race read separately | Pass (`TactileButton`) | n/a | n/a | Pass (`Flexible`, `maxLines`) |
+| Race board and rival strip (`rival_strip.dart`) | Pass: one label, plus a live region throttled to 2 s | n/a (`IgnorePointer`) | Pass: the moved beat and counter bump read `context.reduceMotion` | n/a (the strip draws no board; the player's board is the usual pipeline with `symbolsMode`) | Pass: the state line drops below 340 dp, tested |
+| Race action bar (`race_action_bar.dart`) | Pass (`BoosterButton`, `TactileButton`) | Pass | n/a | n/a | Not checked on its own |
+| Race win and loss cards (`race_result_overlay.dart`) | **Failed, fixed (R1):** "Rival N, Computer" | Pass | Pass (`WinOverlaySchedule`, `MotionSpec`) | n/a | Not checked on its own |
+| Milestone and day-7 chests (`chest_reward_sequence.dart`, `milestone_chest_modal.dart`) | Pass: the contents row; Open and Collect | Pass | Pass: a reduced branch in every phase | n/a | Pass (`milestone_chest_modal_overflow_test`) |
+| Star row (`star_row.dart`) | Pass: one `starsSemantics(count)` node | n/a (not tappable) | Pass: half the pop gap, no flourish | n/a | Not checked on its own (fixed canvas sizes) |
+| Reminder offer and Settings rows (`reminder_offer_card.dart`, `reduce_motion_sheet.dart`) | Pass: `TactileButton`, `OverlayTextLink`, `NestyCloseButton`'s "Close" | Pass: the 32 dp close button hits 48 × 48 through `TouchTarget` | Pass (the app-wide `AnimatedSwitcher` halving) | n/a | Pass (`settings_overflow_test`, 5 sizes × 2 scales) |
+| Board decor (`slot_decor.dart`, `board_scene.dart`) | n/a (Flame canvas) | n/a | n/a | n/a | `TextScaler.noScaling` for "+N" and the ice digits, as the board's other text (not a regression) |
+
+Rule 8 (the same lens): `RaceCubit`'s tick does only `Duration` arithmetic
+until a move is due; `SlotDecor`'s labels are recomputed only in
+`_layoutDecor`; `StarRow` caches its paths and paints. No per-frame
+allocation on a Flame hot path.
+
+#### Decisions and questions
+
+D163–D164 (below, in the Decisions log); Q153 (below), shipped with its
+default.
+
+#### Verification (2026-09-29, the review gate)
+
+| Command | Outcome |
+|---|---|
+| `LANE=review-gate codegen.sh all` (gen-l10n, then build_runner, through the M7 lock) | exit 0; `git status` and the diff stat identical before and after |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `dart format --output=none --set-exit-if-changed`, CI's exclusions, tracked and untracked files | 917 files, 0 changed |
+| `cd packages/nesty_core && dart test` | 1,662 pass |
+| `dart test -p node test/parity test/generator/golden_test.dart` | 84 pass |
+| `cd packages/nesty_render && flutter test` | 530 pass |
+| `cd apps/game && flutter test --timeout 120s` | 3,066 pass (+5: R1's two, R2's three) |
+| `cd apps/admin && flutter test` | 47 pass |
+| `cd tools && dart test` (with `claude_md_test`) | 344 pass |
+| `nesty_levels bundle check` / `fixtures check` | 200 levels OK / 11 fixtures OK, 0 errors, 0 warnings |
+| `gen_design_tokens`, `gen_nesty_icons`, `sync_design_assets`, `gen_fx_spec` with `--check` | all exit 0, unchanged |
+| `dart run nesty_tools:todo_index`, then `--check` | 125 tagged markers, unchanged |
+| `flutter build apk --debug --flavor dev -t lib/main_dev.dart`; `flutter build apk --release --flavor prod -t lib/main_prod.dart`; `flutter build ios --no-codesign --flavor dev -t lib/main_dev.dart`; admin `flutter build web -t lib/main_dev.dart` and `-t lib/main_prod.dart` | all build: `app-dev-debug.apk`, `app-prod-release.apk` (79.8 MB), `Runner.app` (31.3 MB) and `build/web`; `Podfile.lock` and every tracked file unchanged by the builds |
+| `cd tools && dart test` and `todo_index --check`, again after the docs and CLAUDE.md edits | 344 pass; unchanged |
+
+Not run in this stage: the device checks. What the close's device run
+should look at is in the gate's report: the race cards' screen-reader
+label (R1) is the one fix a device shows, and only with VoiceOver or
+TalkBack on.
+
+#### Round 2 (2026-09-29)
+
+Round 1 traced the main paths and found them clean, so round 2 went deeper
+and adversarially. Four read-only lenses built concrete sequences meant to
+break the code: orderings, interleavings, lifecycle events, bad or old data
+and platform edge cases. The lenses were the save and player data; the race
+and the bloc's lifecycle; the reminder, share and platform; and the rest of
+the accessibility audit (the pre-M7 screens). Their 34 findings merged to 33
+(R6–R38; the audit's P2 B1 merged into R7) and were routed by path to the
+three fixers, as in round 1. The gate applied the fixers' cross-path edits:
+R7's `app.dart` wiring, R8's view guard and view test, and R30's offer
+check. It then ran every gate (D165).
+
+- **Counts:** 33 found (2 P0, 22 P1, 9 P2).
+  - Outcomes: 32 fixed, 0 needed no change, 1 deferred (R12, an owner decision, Q154).
+  - By lens: save 3, race 3, reminder 4, accessibility 23.
+  - Every fix except four has a regression test that fails without it.
+  - The four: R33, whose allocation no test can see, and R31, R32 and R36, which add tests to code that was already right. R31's tests were mutation-checked.
+- **Tried and held:**
+  - Save: a real schema-1 M3 save; 16 damaged or odd documents (wrong types, huge numbers, stray boards, odd schemas); a kill between the backup write and the document write; every interleaving of the write paths; the once-only paths (chests, badges, `records.dailies`, restored won boards, the replay and race exclusions); and the Hive box names, keys and typeIds against HEAD.
+  - Race: the tie in both directions; the rival finishing on the frame the out-of-moves sheet opens; two board reports; `close()` with the ticker running; the background; Rematch or New race under an overlay; the `raceNo` cap; dead-board restarts; `NESTY_RACE_PACE_MS`; and the router reusing the page.
+  - Reminder: quick toggling; enable during a refresh; revoke then resume; a language change while off; Android 13's denied states; an app update with id 1 pending; and share with a null iPad origin, a dismissed sheet and a double share.
+  - API use matches the pub-cache sources of `flutter_local_notifications` 22.3.1, `timezone`, `flutter_timezone` and `share_plus`.
+
+| Id | Severity | Lens | File:line | Outcome | Test |
+|---|---|---|---|---|---|
+| R6 | P0 (correctness, save) | save | `apps/game/lib/core/services/daily/streak_daily_service.dart:65` | Fixed: a daily won after midnight counted toward the streak. With the Daily screen's countdown reconciling the new day mid-puzzle, it also burned the held freeze, restarted the run at 1 and said "Streak relit!". That broke m3 §8.2, D76, Q70's default and m7 §8. `progressAfterSolve` now solves only today's date; any other date adds to `done` only (it still pays through `recordLevelWin`) | `test/core/services/daily/streak_daily_service_test.dart` "a daily won after midnight pays and records its date only" (4 cases); `test/features/gameplay/bloc/gameplay_bloc_test.dart` "a daily won after midnight pays but neither extends nor relights the streak" (all failed before) |
+| R7 | P0 (a11y) | a11y | `apps/game/lib/app/app.dart:99` | Fixed (D167): iOS's Reduce Motion reaches Flutter only as `AccessibilityFeatures.reduceMotion`, which `MediaQuery` doesn't carry, so the default System never reduced motion on iOS (spec-prop §16). New `core/ui/theme/reduce_motion_override.dart` reads both flags and rebuilds on `didChangeAccessibilityFeatures`. The merged B1 (Android's Remove animations plus the in-app Off still runs controllers at 5 %) is deferred with a `TODO(v1.1)` and a BACKLOG line | `test/core/ui/reduce_motion_override_test.dart` (7); `test/app/app_test.dart` "System follows iOS's Reduce Motion…" (failed before) and "Off keeps full motion under iOS's Reduce Motion too" |
+| R8 | P1 (correctness, a11y) | race | `apps/game/lib/features/race/cubit/race_cubit.dart:158`, `:196` | Fixed: a Pause hold set while a Rematch or New race board was loading was lost when the board landed, so Start ran the rival under Pause. `playerBoardLoaded` keeps `held` from the holds, and `start()` reads the holds. The view's guard (defence in depth) lifts a Pause that 9.5 replaces | `test/features/race/cubit/race_cubit_test.dart` "a hold set while waiting (Rematch\|New race) still holds…" (2); `test/features/gameplay/pages/gameplay_view_race_test.dart` "Pause opened while a Rematch board loads keeps its hold…" (all failed before) |
+| R9 | P1 (platform) | reminder | `apps/game/lib/core/services/notifications/local_notification_service.dart:10` | Fixed (D166): in 132 common zones that `latest_10y` lacks (Europe/Amsterdam, Asia/Calcutta, GMT…), the fallback was named `Nesty/Fixed+HHMM`. Android's `ZoneId.of` refused it, so the reminder was never scheduled. The fallback is now named after the device's own id, else `GMT±HH:MM`. The skip memo keys on name and offset. Q155 asks about `latest_all` | `test/core/services/notifications/local_notification_service_test.dart` group "the zone name the platform receives"; `reminder_notification_details_test.dart` (`fixedOffsetLocation`, `reminderZoneKey`) (both failed before) |
+| R10 | P1 (platform) | reminder | `apps/game/lib/core/services/notifications/reminder_notification_details.dart:41` | Fixed (D166): every iOS reminder was silent, because FLN attaches no sound when `presentSound` is false and `sound` is unset. That contradicts P3.10's "the alert and the sound". `sound: ''` gives the default sound in the background; the foreground stays silent | `local_notification_service_test.dart` "iOS: the reminder carries a sound for the background…" (failed before); `reminder_notification_details_test.dart` "iOS: a sound for the background" |
+| R11 | P1 (a11y) | a11y | `apps/game/lib/features/gameplay/overlays/overlay_entrance.dart:92`, `gameplay_view.dart:1222` | Fixed: no in-page overlay was announced or modal, and behind the out-of-moves sheet the booster bar still undid. New `ModalSemanticsScope` wraps every `OverlayEntrance`, the two chests and the figurine modal; the titles name the route | `gameplay_view_test.dart` group "screen readers: an overlay is a route of its own…"; `daily_page_test.dart`, `museum_page_test.dart` modal cases |
+| R12 | P1 (a11y) | a11y | `apps/game/lib/features/gameplay/pages/gameplay_board.dart:135` | Deferred (Q154): the Flame board has no semantics, so VoiceOver and TalkBack can't play a level. Screen-reader play is not in spec §16 or spec-prop §16. It needs a board input path and about 20 strings from Claude Design, so it is the owner's scope decision. `TODO(v1.1)` at the board, BACKLOG M7 | none |
+| R13 | P1 (a11y) | a11y | `apps/game/lib/core/ui/widgets/tabs/nesty_segmented_tabs.dart:95`, `nav/nesty_bottom_nav.dart:92` | Fixed: the Shop tabs and the bottom nav read each label twice; `excludeSemantics` | `test/core/ui/a11y_kit_test.dart` "labels read once (R13)" (2) |
+| R14 | P1 (a11y) | a11y | `apps/game/lib/features/shop/widgets/skin_grid_card.dart:170` | Fixed: a skin card hid Equipped, Owned, the price and its Equip or Buy. The node's value is the state, and Equip or Buy are its own actions. New key `shopOwned`, a stand-in | `test/features/shop/shop_page_test.dart` "a screen reader hears each card's state…" |
+| R15 | P1 (a11y) | a11y | `apps/game/lib/core/ui/widgets/home/home_tile.dart:91` | Fixed: a locked Home tile never said why; its value is now "After Level N" | `test/features/home/home_page_test.dart` "a locked tile tells a screen reader why…" |
+| R16 | P1 (a11y) | a11y | `apps/game/lib/features/settings/widgets/language_sheet.dart:129`, `reduce_motion_sheet.dart:60` | Fixed: neither sheet exposed the selected row; `selected` on `SheetRow` and the language row | `settings_page_test.dart`, `language_sheet_test.dart`, `a11y_kit_test.dart` selected cases |
+| R17 | P1 (a11y) | a11y | `apps/game/lib/core/ui/widgets/header/screen_header.dart:46` | Fixed: the header's Back or Close was 46 dp on every pushed screen; `IconTactileButton.minTouchSize` 48 | `a11y_kit_test.dart` "ScreenHeader's 46 px back button is a 48 dp target"; the overflow suite's new check |
+| R18 | P1 (a11y) | a11y | `apps/game/lib/features/home/pages/home_page.dart:501`, `core/ui/widgets/coins/coin_pill.dart:45` | Fixed: Home's gear was 46 dp and the coin pill 27.7–42 dp; 48 dp targets outside the pill's `FittedBox` | `test/overflow/home_shell_overflow_test.dart` under `expectAccessibleLayout` |
+| R19 | P1 (a11y) | a11y | `nesty_segmented_tabs.dart:105`, `apps/game/lib/features/shop/widgets/theme_grid_card.dart:191` | Fixed: Shop tabs 38, Use 30, compact price 38; 48 dp segments, and `TouchSlop` in the fixed-height cards | `a11y_kit_test.dart` (tabs, `TouchSlop`); `shop_page_test.dart` "the card's 38 px price answers across 48 dp…" |
+| R20 | P1 (a11y) | a11y | `apps/game/lib/features/gameplay/widgets/soft_stuck_banner.dart:128` | Fixed: the soft-stuck action was 38 dp; a 48 dp target around its 38 dp face | `soft_stuck_banner_overflow_test.dart` under the new check |
+| R21 | P1 (a11y) | a11y | `apps/game/lib/core/ui/widgets/settings/settings_rows.dart:88`, `language_sheet.dart:127` | Fixed: Settings rows 47 dp, language rows 46; a 48 dp minimum | `a11y_kit_test.dart` "SettingsRow is at least 48 dp tall"; `language_sheet_test.dart` |
+| R22 | P1 (a11y) | a11y | `apps/game/lib/features/race/pages/rival_select_page.dart:178`, `daily/widgets/puzzle_card.dart:531` | Fixed: rival select's Race (38) and Daily's Share (46), M7 surfaces round 1 passed | `race_overflow_test.dart`, `daily_overflow_test.dart` under the new check |
+| R23 | P1 (a11y) | a11y | `apps/game/lib/features/gameplay/overlays/win_overlay.dart:329` | Fixed: at 360 × 640 and 1.3× the scaled card shrank Continue to 46 dp and Back to Chapters to 40; only the block above the button scales now | `win_overlay_overflow_test.dart` under the new check |
+| R24 | P1 (a11y) | a11y | `apps/game/lib/core/ui/widgets/buttons/nesty_close_button.dart:36` | Fixed: the Close node was 36 dp (32 on the reminder card) though its hit box was 48; the node is the target now | `a11y_kit_test.dart` "NestyCloseButton's node is its 48 dp target" |
+| R25 | P1 (a11y, text scale) | a11y | `apps/game/lib/features/records/widgets/badge_grid.dart:56` | Fixed: badge names cut at 1.3×, against m7 §15.2; new `ShrinkToFitText` | `a11y_kit_test.dart` "ShrinkToFitText: a badge name fits 2 lines…"; the cut-text check |
+| R26 | P1 (a11y, text scale) | a11y | `apps/game/lib/features/gameplay/overlays/win_chapter_card.dart:196` | Fixed: the chest countdown was cut at 1.3× on every phone | `win_chapter_card_test.dart` "the chest countdown is never cut at 1.3×…" |
+| R27 | P1 (a11y, text scale) | a11y | `apps/game/lib/features/daily/widgets/puzzle_card.dart:71` | Fixed: the puzzle title was cut even at 1.0× on 360 dp; it scales, or the chip moves under it | `daily_overflow_test.dart`'s cut-text check (54 cases cut before) |
+| R28 | P1 (a11y, text scale) | a11y | `rival_select_page.dart:139`, `:170` | Fixed: the rival name and "Ready to race" were cut; they scale down | `race_overflow_test.dart`'s cut-text check |
+| R29 | P1 (a11y, text scale) | a11y | `screen_header.dart:99`, `theme_grid_card.dart:94` | Fixed: "Chapte…" and the theme names at 1.3×; they scale down | `a11y_kit_test.dart` "ScreenHeader: 'Chapters' at 1.3×…"; `shop_overflow_test.dart` |
+| R30 | P2 (offline) | save | `apps/game/lib/core/services/reminder/daily_reminder.dart:128` | Fixed (D166): on the Hive in-memory fallback, the reminder's sync cancelled the player's real OS reminder, and the one-time offer could show again. A `SessionOnlyDatabase` marker: refresh never cancels over it, `disable` still does, and the offer stays hidden | `daily_reminder_test.dart` group "over the in-memory fallback"; `reminder_offer_cubit_test.dart` "hidden over the session fallback…" (both failed before) |
+| R31 | P2 (tests) | save | `apps/game/test/core/services/save/save_document_codec_test.dart:155` | Fixed: bad-value reads of `levelStars`, `starTipShown`, `daily.lastSolve` and `inProgress.hinted`; a mutation of each guard fails them | the four new "schema 2" tests in that file |
+| R32 | P2 (tests) | race | `apps/game/lib/features/gameplay/pages/gameplay_view.dart:332` | Fixed: the view's lifecycle holds and the tie through the real bloc, as m7's race-ui test plan asks | `gameplay_view_race_test.dart` group "the view's lifecycle holds and the tie…" (3) |
+| R33 | P2 (rule 8) | race | `race_cubit.dart:269` | Fixed: the tick allocated a `Duration` each frame, contrary to P2.5's "no allocation"; the clock is int microseconds now, and `RaceRules.maxFrameDeltaMs` is 250 | none (no test sees an allocation); the 58 race tests pin the behaviour |
+| R34 | P2 (platform) | reminder | `reminder_notification_details.dart:88` | Fixed (D166): a 02:xx time scheduled within a day before a spring-forward change became 03:xx and repeated there; `nextDailyOccurrence` skips a day on which the time doesn't exist | `reminder_notification_details_test.dart` group "a time inside the spring-forward gap" (5) |
+| R35 | P2 (correctness) | reminder | `apps/game/lib/features/settings/cubit/settings_cubit.dart:72` | Fixed: a double tap on the toggle during Android 13's prompt showed a false "blocked" toast; a second on while one is in flight is ignored | `settings_cubit_test.dart` "a second on while the OS asks is ignored…" (failed before) |
+| R36 | P2 (tests) | a11y | `apps/game/test/features/support/screen_harness.dart:194` | Fixed: nothing tested targets, labels or cut text. `expectAccessibleLayout` adds Android's tap-target and the labelled-target guidelines and a cut-text sweep; all 58 overflow call sites use it (855 cases) | `test/features/support/screen_harness_test.dart` |
+| R37 | P2 (a11y, clarity) | a11y | `win_chapter_card.dart:149`, `museum/widgets/figurine_modal.dart:270`, `museum_cabinet.dart:141` | Fixed: bare percentages; the bars are named, and the next shelf reads "15/20" | `win_chapter_card_test.dart`, `museum_page_test.dart` |
+| R38 | P2 (a11y, dev only) | a11y | `home_page.dart:335` | Fixed: the dev picker button was 38 dp | `home_shell_overflow_test.dart` (dev) under the new check |
+
+**The accessibility audit, round 2: the pre-M7 screens.** Each cell gives
+what the audit found and, for a failure, the finding that fixed it. Round
+1's table above covers the M7 surfaces. R16, R17, R21, R22, R24–R26, R28
+and R29 also fix M7 surfaces that round 1 passed or didn't check on their
+own.
+
+| Screen or overlay | Semantics labels | 48 dp targets | Reduce motion | Large symbols (D91) | Text scale 1.3× |
+|---|---|---|---|---|---|
+| Splash | Pass | n/a | **Failed on iOS, fixed (R7)**; this holds for every screen below | Pass | Pass |
+| Tab shell, bottom nav | **Failed, fixed (R13):** "Shop" read twice | Pass | Pass | n/a | Pass |
+| Home | **Failed, fixed (R15):** a locked tile's "After Level N" | **Failed, fixed (R18):** gear 46, coin pill ≤ 42 | Pass | Pass | Pass |
+| Gameplay HUD, booster bar | Pass | Pass | Pass | n/a | Pass |
+| Flame board | **Failed, deferred (R12, Q154):** no nodes | Pass for touch (the whole column) | Pass | Pass | n/a (canvas) |
+| Soft-stuck banner | Pass (live region) | **Failed, fixed (R20):** 38 | Pass | n/a | Pass |
+| Pause, out of moves, booster popup | **Failed, fixed (R11):** not announced, not modal; boosters acted behind the sheet | **Popup Close 36, fixed (R24)** | Pass | n/a | Pass |
+| Win card | Labels pass; **fixed (R11, R37):** not announced, the chest bar unlabelled | **Failed, fixed (R23):** 40–46 at 360 × 640 | Pass | Pass | **Failed, fixed (R26):** the chest countdown |
+| Chapter complete, all levels done, intro | Labels pass; **fixed (R11):** not announced | Pass | Pass | Pass | Pass |
+| Tutorial | Readable text; play waits on R12 | n/a | Pass | n/a | Pass |
+| Daily: streak card, calendar | Pass | n/a | n/a | n/a | Pass |
+| Daily: puzzle card | Pass | **Fixed (R17, R22):** Back 46, Share 46 | Pass | Pass | **Failed, fixed (R27):** the title |
+| Daily: day-7 chest | **Failed, fixed (R11):** not modal | Pass | Pass | n/a | Pass |
+| Museum and figurine modal | **Fixed (R11, R37):** not modal; a bare "75%"; "15/20" unread | **Fixed (R17, R24):** Back 46, Close 36 | Pass | n/a | Pass |
+| Shop, skin detail | **Failed, fixed (R13, R14):** tabs read twice; the skin cards hid state and actions | **Failed, fixed (R17, R19):** Back 46, tabs 38, Use 30, price 38 | Pass | Pass | **Failed, fixed (R29):** theme names |
+| Not enough coins | Pass (a real dialog route) | **Close 36, fixed (R24)** | Pass | n/a | Pass |
+| Settings and its sheets | **Failed, fixed (R16):** no "selected" | **Failed, fixed (R17, R21):** Close 46, rows 47 and 46 | Pass | Pass | Pass |
+| Toasts | Pass (live region) | n/a | Pass | n/a | Pass |
+| Dev level picker | Pass | **Fixed (R38):** 38 | n/a | n/a | not in the suite |
+
+The four text-scale checks round 1 didn't run on their own, at 1.3× on the
+five sizes:
+- Records failed (R25, fixed).
+- The race action bar, the race win and loss cards, and `StarRow` pass.
+
+The overflow suite now checks every screen for targets, labels and cut text
+(R36), so a regression fails CI. The audit's two host limits remain: host
+tests prove the semantics tree, not what VoiceOver or TalkBack say, and R12
+is the owner's call. BACKLOG's audit item is ticked, and the device pass is
+a new item.
+
+#### Decisions and questions (round 2)
+
+D165–D167 (below, in the Decisions log); Q154–Q155 (below), each shipped
+with its default.
+
+#### Verification (2026-09-29, the round-2 gate)
+
+| Command | Outcome |
+|---|---|
+| `LANE=review2-gate codegen.sh all` (gen-l10n, then build_runner, through the M7 lock) | exit 0; `git status` and the diff stat identical before and after |
+| `flutter analyze --fatal-infos --fatal-warnings` (root) | No issues found |
+| `dart format --output=none --set-exit-if-changed`, CI's exclusions, tracked and untracked files | 924 files, 0 changed |
+| `cd packages/nesty_core && dart test` | 1,662 pass |
+| `dart test -p node test/parity test/generator/golden_test.dart` | 84 pass |
+| `cd packages/nesty_render && flutter test` | 530 pass |
+| `cd apps/game && flutter test --timeout 120s` | 3,136 pass (+70 over round 1's 3,066) |
+| `cd apps/admin && flutter test` | 47 pass |
+| `cd tools && dart test` (with `claude_md_test`) | 344 pass, after the docs and CLAUDE.md edits |
+| `nesty_levels bundle check` / `fixtures check` | 200 levels OK / 11 fixtures OK, 0 errors, 0 warnings |
+| `gen_design_tokens`, `gen_nesty_icons`, `sync_design_assets`, `gen_fx_spec` with `--check` | all exit 0, unchanged |
+| `dart run nesty_tools:todo_index`, then `--check` | 127 tagged markers (+2 `TODO(v1.1)`: R12 at the board, R7's note); `--check` unchanged |
+| `flutter build apk --debug --flavor dev`; `apk --release --flavor prod`; `ios --no-codesign --flavor dev`; admin `build web` (`main_dev`, `main_prod`) | all build: `app-dev-debug.apk`, `app-prod-release.apk` (79.9 MB), `Runner.app` (31.3 MB) and `build/web` (both entry points); no tracked file changed by the builds |
+
+Not run in this stage: the device checks. What the close's device run
+should look at (R7, R8, R10, R11, R14, R23 and the new 48 dp targets) is in
+the gate's report. That run passed on both platforms, with one fix to R23's
+button (D168).
+
+### Phase 4: Claude Design's m7-3 delivery, integrated (2026-09-30)
+
+Two contracts stages ran first: C4a did the tooling (tokens v3, the 35
+Lottie files, the UI art and the generated Android notification icon, the
+68-glyph font; D173–D178) and C4b froze the shapes and put copy.md in the
+ARB (D179–D201). Five lanes then built on them in parallel: B the board, R
+vs Computer, M the meta screens, D the daily and Settings, O the overlays.
+The integrator made the cross-lane edits, updated E1, `di_test`,
+`app_flow_test` and the playthrough, wired the five new device files into
+`nesty-test` and docs/TEST_COVERAGE.md, wrote the Claude Design follow-up,
+and ran the gate (D202–D208). Owner questions: Q156–Q158, each shipped with
+its default.
+
+- **Built:** m7-3 replaces every M7 stand-in: the fit rule and presets for
+  levels 31–200, the tall glass case, tall ice, the top-shelf tower and the
+  iced tower, rows of 5 and 6 for the +1 Slot (D172), the tap nudge, the
+  drag hover and the hint arcs; section 09's race screens with the Computer
+  tag, portraits, the strip in the HUD, 9.6's card, Leave race's confirm and
+  the race jingles; Home's chapter card and Records button, Chapters and
+  the level card, the Museum, Records, the Shop's theme crops and Forest
+  Bear; the reminder dialog, Settings' tiled rows with the inline Reduce
+  motion and "Open phone settings" (a platform channel), the streak's
+  looks and the day-7 chest; the win card with `ui_stars`, the helper note,
+  the daily win card's Share, the chest moment on `ui_chest`, the splash's
+  fade and error cards, 12.5–12.9, relaxed mode's badge, the tutorial's
+  "STEP n OF 3", the intro loops and the palette-tinted ribbon.
+- **Verification:** the integrator's gate is in the report
+  (`scratchpad/m7/reports/integrator-p4.md`). The device run passed on
+  both platforms (D209): the playthrough, resume, the daily fingerprint and
+  the five new files on the iPhone 16 Pro simulator and the API 35
+  emulator, and `--android --only reminder`, after seven test fixes and six
+  app fixes. Next: phase 5.
+
 ## Decisions log
 
-D1–D13 are dated 2026-09-25, D14–D57 2026-09-26, D58–D80 2026-09-27 and D81–D89 and D91 2026-09-28
+D1–D13 are dated 2026-09-25, D14–D57 2026-09-26, D58–D80 2026-09-27 and D81–D124 2026-09-28
 (D26–D39 are the M1 and render build and review decisions; D40–D52 are the
 M2 Lottie decisions, the owner's of 2026-09-26 and the contracts stage's;
 D53–D57 are the M2 phase-4 lanes' and the integration's; D58 is the M2
@@ -997,8 +1379,11 @@ review fix pass's; D59–D61 are the post-M2 round's, recording the owner's
 calls and deliveries of 2026-09-26; D63–D65 open M3; D66–D80 are the M3
 contracts stage's, recording [plans/m3-design.md](plans/m3-design.md), each
 default flagged with its question; D81–D89 are M3's integration, device
-checks and review fix pass's; D91 is the owner's Color symbols default).
-D1, D8 and D12 were
+checks and review fix pass's; D90 is the owner's reordering and D91 the
+owner's Color symbols default; D92–D93 are the offline-game brainstorm's; D94 is the
+owner's CLAUDE.md rule; D95–D110 are the M7 phase-1 contracts stage's, recording
+[plans/m7-design.md](plans/m7-design.md), each default flagged with its question; D111–D112 are the
+owner's simulator review; D113–D124 are the M7 phase-1 lanes', owner lanes' and integration's). D1, D8 and D12 were
 amended on 2026-09-26. D18–D23 are the owner's decisions for the round that
 covers the design foundation, M1 and M2, copied from its approved plan.
 
@@ -2123,6 +2508,22 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   show `FxSpinner` (`ui_spinner`) while the skin prepares, never a flash of
   the placeholder dolls, which draw only when the art can't be prepared
   (rule 3).
+- **D90. The offline game before any backend (owner, 2026-09-28).** The
+  owner asked to finish everything the game can do without a backend before
+  Firebase: new levels, themes, modes (player vs computer first, player vs
+  player later) and the art polish. So M7 (Art and polish, which needs no
+  backend) runs next, ahead of M4 (Firebase content), M5 (the admin, which
+  needs Firebase) and M6 (ads and purchases, which need their accounts).
+  M7 gains the offline content (levels 31–200 in the bundle on the §3.7 and
+  §6.6 schedule, chapter themes 7–10, the Q73 catalog copy) and the modes.
+  The spec has no competitive mode, so vs Computer starts as a written
+  proposal the owner approves (its rules then go into nesty_core, rule 2);
+  the spec text it needs is proposed for the owner to add, never edited
+  here. Local pass-and-play is a later proposal, online player vs player
+  waits for Firebase. The golden doll (L101, §3.5) stays v1.1. The art and
+  copy come from Claude Design in one request
+  (`docs/plans/claude-design-request-m7.md`). The M2 and M3 device checks
+  stay open for the owner.
 - **D91. Large color symbols by default, and every doll preview follows the
   setting (owner, 2026-09-28).** The owner asked for Large to be selected on
   a fresh install and to show everywhere once chosen. This departs from
@@ -2143,6 +2544,1471 @@ covers the design foundation, M1 and M2, copied from its approved plan.
     old art stays up until the new art lands, except on the Daily card,
     which shows its spinner (D89). The splash's placeholder dolls take the
     stored mode too.
+- **D92. The offline game's engagement: audience, respect rules and eight
+  features (owner, 2026-09-28).** The owner asked for a researched brainstorm
+  of what keeps players coming back, before any backend.
+  - **How it was made:** two read-only research workflows (six web
+    researchers, two code mappers, clustered critics), then the lead checked
+    every claim against the repo. Result and sources:
+    [plans/offline-game-brainstorm.md](plans/offline-game-brainstorm.md).
+  - **Audience:** spec §1 is unchanged: 13+, with an all-ages feel, and not
+    made for or marketed to under-13s. Engagement is still designed as if
+    children may play, because the UK Children's Code judges by who is likely
+    to use a service, not by its rating. So non-essential notifications are
+    off until the player opts in, copy is value-framed and nothing nudges.
+  - **Respect rules (E1):**
+    - no paid or unpaid randomness in rewards;
+    - no lives or energy, and no timers in normal levels;
+    - no countdown, scarcity or fail-triggered offers, and no streak saves;
+    - computer rivals always labelled;
+    - every level winnable from its start with no booster (§5.3 rule 8);
+    - a missed day never takes anything away;
+    - notifications opt-in and at most one a day.
+
+    M6 inherits all of it. Every M7 feature passes the six-question ethics
+    checklist (brainstorm §5).
+  - **Approved in principle:**
+    - the gentle streak (E2);
+    - the daily share card (E3);
+    - the opt-in daily reminder (E4);
+    - the milestone chest (E5);
+    - relaxed mode (E6, moved up from §19);
+    - replay with best moves (E7);
+    - Records and badges (E8);
+    - first launch opens L1 (E9).
+
+    Also the chapter plan for L31–200 (E11), two new `bundle check` gates
+    (E12), a time-to-first-win measure (E13) and an in-app reduce-motion row
+    (E14).
+  - **Rules:** each rule is written for the owner to paste into GAME_SPEC.md
+    in [plans/spec-proposals-m7.md](plans/spec-proposals-m7.md). Claude
+    never edits the spec. Until the owner pastes it, that text as approved
+    here is the rule (Q85), the same way D19–D22 settled deviations. Numbers
+    are defaults behind Remote Config keys (rule 6): Q76–Q87.
+  - **Planned packages** (rule-9 reasons; each gets its row below when it's
+    added):
+    - `share_plus`: the OS share sheet for E3;
+    - `flutter_local_notifications`: local, offline daily scheduling for E4;
+    - `timezone` and `flutter_timezone`: its local-time daily schedule needs
+      them.
+
+    None needs a network.
+  - **Deliberately not in M7 (brainstorm §6, §7):** a home-screen widget, a
+    weekly puzzle, stars and par, a diorama, micro-expressions and time
+    attack. Rejected: lives, loot boxes, streak saves, an expert bot, and
+    alternating turns against the computer.
+  - **Corrections the research needed:** only two bots exist; pitched clacks
+    and combo chimes are already built; the §7.5 streak reset is a rule, not
+    a bug.
+- **D93. vs Computer is a race against three computer rivals (owner,
+  2026-09-28).** Approved in principle; the full rules are in
+  [plans/mode-vs-computer.md](plans/mode-vs-computer.md) (spec-prop §7.7).
+  - **The race:** the player and the rival solve identical copies of one
+    generated board, and whoever completes every family first wins.
+  - **Rivals:**
+    - rival 1: the casual bot, about 3.0 s per move, easy boards;
+    - rival 2: the smart bot, 2.4 s, medium boards;
+    - rival 3: the smart bot, 1.6 s, medium boards.
+
+    They unlock in turn after Level 20. Only spec §6.4's two bots are used:
+    no new policy, so the simulator and `Generator.version` are untouched.
+  - **Fairness:** in a race undo and restart are free, and hint and +1 Slot
+    are off, so a race can't be won with coins or ads. The rival restarts
+    itself when its run dies, and pausing pauses it.
+  - **Results:** a win pays coins (20/30/40). A loss costs nothing. Rematch
+    replays the same board and the same rival moves.
+  - **Saving:** a race never resumes.
+  - **Labelling:** every rival surface says "Computer" (Skillz v. Papaya:
+    bots posing as humans).
+  - **Core:** a public, seeded rival API over `BotPlayer`, with the restart
+    rule and the race board params. The app owns the clock (rule 7).
+  - **Not picked:** a ghost race and alternating turns stay later (the
+    latter is the hot-seat proposal's basis).
+- **D94. CLAUDE.md is kept current in the same change (owner, 2026-09-28).**
+  The owner asked that a session never need to read the whole repo to
+  orient itself, and that CLAUDE.md always stay up to date.
+  - CLAUDE.md gained "Current state", a Code map with a services table, and
+    the missing commands and folders.
+  - Its "Keeping this file current" section says what triggers an update.
+    Any session keeps the facts current (state, layout, Code map, Commands).
+    Its rules change only when the owner asks.
+  - `tools/test/claude_md_test.dart` fails CI when a workspace member,
+    top-level folder, `nesty_tools` script, `.claude/rules` file, game
+    feature folder or DI-bound interface is missing from it.
+  - `/milestone` (step 7) and `/feature` (step 9) include the update.
+  - The docs-writer agent and the M7 kickoff prompt no longer forbid
+    editing CLAUDE.md's facts.
+- **D95. The M7 design and its phase-1 contracts (2026-09-28).**
+  [plans/m7-design.md](plans/m7-design.md) is authoritative for every M7
+  lane (BACKLOG cites it as "m7 §n"; where it and plan-m7 differ, it wins).
+  The phase-1 contracts stage froze, compile-clean and tested: save schema 2
+  with its migration, the settings keys `relaxed` and `reduceMotion`, the ten
+  spec-prop §9.4 Remote Config keys, `PlayRequest.replay` and its resolver
+  case, the records, badge and chest rules, `ChaptersRoute` and
+  `RecordsRoute` with their cubits, the new gameplay, Home, Settings, Daily
+  and splash state fields, the bloc's `DatabaseService` dependency, Home's
+  `RemoteConfigService` one, `SkinService.selectedSkinChanges`,
+  `BadgeToast`, the phase-1 ARB keys and the two E1 tests (m7 §1). The lanes
+  run in parallel on exclusive paths (levels, meta-services, gameplay-bloc,
+  menus, gameplay-ui, board-fx, overflow), every codegen run goes through
+  one lock script, and the integrator does every cross-lane edit (m7 §2,
+  §18). No new service: the meta rules are pure Dart over `SaveService`,
+  like M3's streak.
+- **D96. Save schema 2 (m7 §3; plan-m7 decision 1).** One migration step,
+  1 → 2, carries every M7 field, the race's included, so players migrate
+  once. New keys: `levelBests` (`"<id>@<version>"` → fewest moves),
+  `records` (`families`, `dolls`, `dailies`, `longestRun`, `badges`),
+  `chests` (`opened`, `bonusOpened`), `race.rivals` (three, `unlocked`,
+  `wins`, `raceNo`; rival 1 unlocked on a fresh save), and `daily.lit` and
+  `daily.run`. The step sets `lit = streak > 0`, `run = longestRun =
+  streak`, `dailies` = the distinct dates in `done`, the rest empty; the
+  badges the save implies are granted on load. The raw schema-1 text is
+  backed up under `doc_backup_v1`. Reads stay lenient: a `lit`/`run` pair
+  that disagrees reads as paused, unknown badge ids are kept, there are
+  always three rivals, and a replay board in progress is dropped.
+- **D97. Bonus chests are kept apart (m7 §3.1, §9; default — Q93).**
+  Spec-prop §13.3 shows only `chests.opened`. Bonus chests go in
+  `chests.bonusOpened` (bonus numbers), so a chapter M4 publishes later
+  (L210) can never collide with a bonus number already opened.
+- **D98. The gentle streak's state machine (m7 §8; plan-m7 decision 4;
+  defaults — Q96, Q97).** `streak` counts the days solved on their own
+  date and never drops; `run` is the unbroken run (a frozen day keeps it);
+  `lit == (run > 0)`. A miss a freeze covers keeps the flame lit; a miss
+  without one pauses it (`lit` false, `run` 0, `lastDate` null, the count
+  kept); the next solve relights it (`streak + 1`, `run` 1). The chest stays
+  on every 7th counted day, and `records.longestRun` keeps the longest run.
+  "Relit" is a moment (`DailyProgress.relitOn`: `run == 1 && streak > 1` on
+  that date), shown on the daily win card, never a stored flag or a Daily
+  toast. The paused look recolors the whole card and badge neutral, never
+  red. The worked table in m7 §8 is the meta-services lane's test.
+- **D99. Settings keys `relaxed` and `reduceMotion` (m7 §4; plan-m7
+  decision 2).** In the `settings` box, never renamed or reused: `relaxed`
+  (bool, false) and `reduceMotion` (`system` | `on` | `off`, `system`), with
+  `DatabaseService` getters, setters and change streams in Hive and the
+  fake. They are not save fields, so no schema step. Phase 3 adds the
+  reminder's keys under other names.
+- **D100. Replay is its own request kind and is never saved (m7 §6;
+  plan-m7 decision 5; default — Q90).** `PlayRequest.replay(order)`
+  (`PlayKind.replay`), so no code that means "the campaign" matches a
+  replay by accident. Only a won level replays (`order < highestLevel`);
+  the resolver gives its campaign board paying 0 and completing no chapter,
+  and nothing follows it. The save never stores its board (a kill loses
+  only the replay), the codec drops a stored one, no tutorial cue or intro
+  card shows, and Continue pops back to Chapters. Replays log spec §14.4's
+  level events like their campaign level (`level` = the order, D77's
+  convention), with no new event.
+- **D101. The win path stays one save update and reports what it did (m7
+  §7).** `SaveService.recordLevelWin` now returns a `LevelWinOutcome`
+  (`bestMoves`, `previousBest`, `chestPaid`, `newBadges`). The record gains
+  `bestKey`, `chest`, `families`, `dolls` and `boardBadges`; the bloc fills
+  them from pure rules (`LevelBests`, `MilestoneChest`, `RecordRules`,
+  `BadgeRules`). In the same update the save pays the level's coins (0 for a
+  replay, whatever the record says), moves the progress (none for a
+  replay), pays the chest once, keeps the best, adds the records and grants
+  the badges. `stats.wins` counts every win, replays included.
+- **D102. Best moves per bundled level id and version (m7 §11; plan-m7
+  decision 6; default — Q88).** Campaign levels and replays only, first play
+  or replay, keyed `L0024@2`, so a new version starts a new best. Daily,
+  bonus and race boards keep none; their win card shows "Moves N". Moves are
+  never shown during play.
+- **D103. The milestone chest (m7 §9; plan-m7 decision 7; defaults — Q76,
+  Q89, Q93).** Level 10 of every chapter (`(order − 1) % 20 + 1 == 10`) and
+  every 10th bonus level; `chest_coins` 100 and `chest_hints` 1, fixed and
+  shown before it opens; paid in the win's update, once per level number,
+  never on a replay, a daily or a race. The modal only shows it, after
+  Continue and before Chapter complete. The win card counts down to it
+  while it is the nearer goal (positions 1–9 of a chapter, always in Bonus
+  Endless), otherwise it shows the figurine bar; the HUD's coin hold
+  subtracts its coins.
+- **D104. Relaxed mode is read live (m7 §10; plan-m7 decision 8; Q84).**
+  `GameplayBloc` takes `DatabaseService` (its ninth constructor argument)
+  and follows `relaxedModeChanges` (`RelaxedModeChanged`), so a toggle from
+  Pause → Settings applies at once. With it on, undo is free and unlimited
+  in every mode: no popup, no spend, the badge shows "∞", the Out-of-Moves
+  row says "Always free". Hint and +1 Slot are unchanged.
+- **D105. Records per won board, every mode (m7 §12; plan-m7 decision 10;
+  default — Q91).** Families add each won board's `totalSets`; "dolls
+  nested" (the dolls that go inside another) adds `totalSets × (maxSize −
+  1)`, the dolls that end inside another, so undo, restart and the route
+  never change it. Campaign, replay, bonus, daily and (phase 2) won races
+  count; only won boards add. Levels won is derived (campaign behind
+  `highestLevel` plus bonus levels), dailies count one per date, and the
+  longest streak is the longest run.
+- **D106. The twelve badges (m7 §12; defaults — Q83, Q94).** The brainstorm
+  §3 E8 list with exact triggers. Four come from the won level (a glass
+  case, ice that thaws, `maxSize ≥ 5`, `maxSize 6`) and eight are derivable
+  from the save (`first_family`, level 100 and 200 won, 7 and 30 dailies,
+  a race won, every rival beaten, the ten launch figurines). They are
+  granted only in a win's update (then toasted, one each) and on load
+  (silently). Badges pay nothing and are never taken away.
+- **D107. First launch opens Level 1 (m7 §13; plan-m7 decision 11).** While
+  no level is won (`highestLevel <= 1`) the splash replaces itself with L1's
+  board, with no Home underneath; a kill during L1 comes back to it; the
+  first win's Continue goes to Home. Returning players are unchanged. The
+  router and app-flow widget tests and the device playthroughs that tap
+  Home's PLAY first are rewritten.
+- **D108. Reduce motion at the app root (m7 §14; plan-m7 decision 9).** The
+  app root overrides `MediaQuery.disableAnimations` from `reduceMotion`
+  (system = the OS value), so `context.reduceMotion`, `LottieFxView`, the UI
+  kit and the board's `MotionSpec` follow it unchanged. Sounds and haptics
+  keep their strength.
+- **D109. Entry points (m7 §15.8, §15.9; plan-m7 decision 12; defaults —
+  Q92, Q98; `TODO(design)`).** A row of Chapters and Records buttons under
+  Home's header, a Chapters button on the Museum screen, and a fourth Home
+  tile, "vs Computer": locked with "After Level 20" (`race_unlock_level`)
+  until that level is won, then "Coming soon" until phase 2 ships the race.
+  `SkinService.selectedSkinChanges` is added so Home's shelf follows a skin
+  equip (the M7 fix).
+- **D110. The E1 copy rewrites and respect tests (m7 §8, §16, §17; plan-m7
+  decision 4; default — Q95).** "Play today to keep your streak" → "Play
+  today to add to your streak", "Streak saved!" → "Freeze used", and frame
+  5.2's "0 left" → "No freeze". Two tests guard the rules from now on:
+  every streak, freeze and chest string against a deny-list of loss, guilt,
+  urgency and scarcity wording (phase 3 adds the reminder's), and no reward
+  path reads an unseeded random source or the wall clock (phase 2 adds the
+  race's). All new copy is a placeholder until Claude Design's copy.md.
+- **D111. Home drops the Museum tile (owner, 2026-09-28, simulator
+  review).** The bottom nav's Museum tab is already the way in, so Home's
+  tiles are Daily, Remove Ads (hidden once bought) and vs Computer. This
+  departs from spec §10.2 #2 ("Tiles for Daily …, Museum … and Remove Ads")
+  and frame 2.1; the spec text stays as it is, and the design request asks
+  Claude Design for 2.1 without the tile.
+- **D112. A price the balance can't cover opens a dialog first (owner,
+  2026-09-28, simulator review).** Replaces D86's direct jump to the Shop's
+  Coins tab, on the Shop's skin cards, theme cards and skin detail. The
+  dialog names the price, how many more coins are needed and where coins
+  come from (wins, the daily, chests), with "Go to Shop" (the Coins tab) and
+  "Not now". It opens only on the player's own tap on a price, so it isn't a
+  fail-triggered offer (spec-prop §1.1 rule 4), and its copy is
+  value-framed. The prices stay orange and enabled (frames 7.3, 7.7). The
+  booster popup keeps its disabled coin button (frames 3.2, 3.8) unless
+  Claude Design says otherwise (design request J.3).
+- **D113. Levels 31–200 (M7 phase 1, levels lane; defaults — Q102–Q106).**
+  Generated with `nesty_levels generate` from each order's curve row
+  (±1 colour, another uniform shape, towers ±1, plus the knobs a chapter
+  twist names), seeds `5_000_000 + order × 100 + k`, and picked by a scored
+  search over about 41,700 analysed drafts: valid and solved at the admin
+  budget, the declared tier simulated, smart ≥ 150/300, a signature unlike
+  both neighbours, at least the moves of the level 10 before it and fewer
+  than its finale. Every new level also solves from its start within 20,000
+  nodes (spec §6.3's soft-stuck budget), a selection rule pinned by
+  `repo_levels_test`. The intro levels leave their rows to teach each
+  mechanic alone (L31, L51, L71: no towers, 3–4 colours). Chapter 5 has no
+  empty slot at the start. The finales rise 22 → 35 moves, each the longest
+  of its chapter. Every new level is version 1; `levelsVersion` stays 0
+  until M4's manifest reads it. L1–L30 are byte-identical to what shipped.
+- **D114. E12's `bundle check` gates (levels lane; defaults — Q99–Q101).**
+  A layout signature per level: the slots per shelf, the sorted tower
+  depths, the glass cases, the iced slots, the colour count and `maxSize`
+  (colours, positions and set cuts are a reskin, so they are left out). Two
+  consecutive levels with one signature are an error from L3 (L3–L30
+  already differ, so no warning band). An expert-only level (smart under
+  half) is an error from L31, and `maxSize` 6 on any slot but a super hard
+  one is an error (spec §3.7 "occasional maxSize 6 super hard levels").
+- **D115. The H/S review fix pass (levels-fix; defaults — Q107–Q109).** The
+  review played every hard and super hard level through its solution and a
+  casual run and raised 7 concerns. 23 levels were re-picked or re-tuned: the
+  review's four near duplicates, 17 more found by a measure calibrated on
+  them, L160 (casual 0 → 7/300) and L170 (casual 0 → 27/300, smart 300/300).
+  L200 stays the one level the casual bot never wins (smart 300/300): no
+  single swap keeps it longer than L180 and lets it win. Four side-by-side
+  easy pairs stay alike, since the chapter plan leaves no knob to separate
+  them. Two repo tests pin the result (no near duplicates within two levels
+  but those pairs; from L31 only L200 has casual 0/300); the measure is not
+  a `bundle check` gate.
+- **D116. The board fixes (board-fx; defaults — Q110, Q111).** +1 Slot plays
+  one button sound: the booster's own tactile feedback stays and the
+  timeline's cue for `ExtraSlotAddedEffect` goes, which covers both tap
+  sites (the booster bar and the buy popup). The `ui_extra_slot` loop now
+  starts 24 frames in (`StartClip.phaseMs`, `FxTiming.extraSlotRestFrame`),
+  where its scale is exactly the static pad's 100 %; its opacity is still
+  about 88 % there, a smaller pop than before (design request E.21). The
+  "+N" tower tag and the ice digits come from `boardTowerHidden` and
+  `boardIceCount` with the locale's text direction (`BoardLabels`, handed to
+  the board by `GameplayView`).
+- **D117. The gameplay bloc's M7 details (gameplay-bloc).** `dailyRelit` is
+  read against the daily's own date, the one `progressAfterSolve` was given,
+  not the clock's today. Relaxed mode turning on mid-level closes a pending
+  undo offer, and `_confirmPurchase` never charges for undo while relaxed. A
+  replay shows no tutorial cue and no intro card and skips
+  `_persistProgress`, whatever the save says.
+- **D118. The Museum and Chapters derive "earned" (menus, owner-home; the
+  owner's review; default — Q113, Q115).** A chapter whose levels are all
+  won reads earned (collected, or `done ≥ total`) on the Museum and on the
+  Chapters emblem, so the dev picker (or anything that moves progress
+  without a win) can't leave "Classic · soon" on a 20/20 chapter. Nothing is
+  written to the save; a silent load-time catch-up of `museum` is a BACKLOG
+  item. The Chapters stand-in v2 adds each chapter's emblem (theme colour
+  and its family, collected or a silhouette), its progress bar, the current
+  level's glow and play badge, a finished chapter folded into a compact
+  row, the scroll to the current chapter on open, the chest and finale
+  marks, the hard and super hard edges on won and current cells, "Level N of
+  200" under the header and a staggered fade-in that reduce motion skips.
+  Home keeps `onMuseum` on its constructor, unused since D111; Chapters,
+  Records and the Museum keep their direct router calls, and their tests
+  check the wiring.
+- **D119. The Shop and the dev picker (owner-fixes; D112).** `ShopCubit` and
+  `SkinDetailCubit` also follow `SkinService.selectedSkinChanges`, which
+  fires once an equip has landed (the real `AssetSkinService` rasterizes
+  first), so "Equipped" moves at once. `buySkin`/`buyTheme` return
+  `PurchaseOutcome`, and `needsCoins` opens `NotEnoughCoinsDialog` only from
+  the player's own tap on a price. Its "Not now" is the standalone `notNow`
+  key, outside the respect test's prefixes (its deny-list word "now" targets
+  urgency copy). The picker groups its tiles by chapter, has a close
+  button, and opens at Home's current level (`currentOrder`); `NestySheet`'s
+  scroll area clips, so a scrolled row never paints over the title.
+- **D120. The chest opening (owner-chest).** One `ChestRewardSequence`
+  (`features/fx/chest/`) behind both chests: arrival (600 ms), a looping
+  idle with the contents shown from the start, Open (a 480 ms wiggle, then a
+  750 ms burst with the chips popping and the reward jingle), and Collect,
+  which flies six coin sprites to the HUD's coin pill and the hint to the
+  Hint button, then fades out. It grants nothing (the win or `collectChest`
+  already paid), its buttons are phase-guarded and a second tap skips to the
+  end; reduce motion crossfades with no wiggle or flights. Stand-in choices
+  until Claude Design's I.3: `whoosh` for the lid, six sprites whatever the
+  amount, a glow on the Hint button rather than a count bump, the
+  `complete` haptic, and a private `RibbonTitle` subclass for the drop.
+- **D121. The overflow suite (overflow lane, integrator; default — Q112).**
+  `test/overflow/` pumps every screen and overlay at the five M7 sizes
+  (`overflowScreenSizes`: 360 × 640, 390 × 844, 430 × 932, 375 × 667,
+  768 × 1024) and both text scales with `expectNoLayoutErrors`, over
+  worst-case data. The shell is swept as its chrome (`NestyBottomNav`) and
+  `HomeView` apart. The integration added Chapters late in the game (every
+  won cell's best moves and the tier edges), the paused and long lit Daily
+  streak (the sweep had been all paused, since `DailyStatus.lit` defaults
+  to false) and the day-7 chest's open step.
+- **D122. The splash checks the bundle on a worker isolate (integrator;
+  CLAUDE.md rule 8).** At 200 levels the decode and rules 1–7 took 57–75 ms
+  AOT and 232–354 ms JIT on the dev Mac (6–12 ms for 30), several frames on
+  the splash. `BundledLevelRepository` now hands the asset text to
+  `checkInBackground` (`compute`, isolate `nesty.levels.check`), which runs
+  the pure `checkBundle` (nesty_core's codec and `Validator`, no rule of its
+  own) and returns plain data, and it logs the time and the isolate. The
+  checker is injectable, so a test can prove the work leaves the caller's
+  isolate.
+- **D123. E9 in the splash page, and the device checks' M7 flow
+  (integrator; default — Q114).** The splash replaces itself with
+  `GameplayRoute(PlayRequest.campaign(1))` while `opensFirstLevel`. The
+  whole-app widget tests whose subject starts at Home seed a save past Level
+  1 (`seedSavePastFirstLevel`). The playthrough starts in Level 1, reports
+  E13 as the time from `main()` to Level 1's first playable frame
+  (`NESTY_E13`, `playthrough.json`), and adds Chapters with a replay,
+  Records, the Shop's dialog and an equip, the reduce-motion sheet, the
+  L30 and L130 chests, one segment per new mechanic on the levels lane's
+  teaching orders (checked with `Rules.tryMove`) and L200 into All Levels
+  Done. The fixed date's daily keeps introducing glass, so L31 shows no
+  card; L51 shows ice's. Resume phase A starts in Level 1, and the daily
+  fingerprint works from either Home or Level 1.
+- **D124. E1 and the chests, integration details (integrator).** The
+  reward-randomness test also scans the chest opening (`fx/chest/` and both
+  chest modals), since the amounts it shows and counts up must be the ones
+  paid, and fails if a scanned path disappears. `/review` gains an ethics
+  lens (step 5: spec-prop §1.1 and the six questions; a failing answer is a
+  P0). The day-7 chest's coins fly to the Daily header's coin pill
+  (`ScreenHeader.coinPillKey`), which adds each coin as it lands and hands
+  over to the paid balance at Collect. `NestyToast` cancels its dismiss
+  timer when its tree goes away.
+- **D125. Star ratings: 1 to 3 stars per level (owner, 2026-09-28).** The
+  owner asked for star ratings "like other games, 3 stars the highest". This
+  reverses D92's "stars and par are not in M7" (brainstorm §6), and the owner
+  chose each rule from four options:
+  - stars come from moves against par, with slack: 3★ within par + 20 %,
+    2★ within par + 60 %, and 1★ for any win (`star3_slack_pct`,
+    `star2_slack_pct`);
+  - a hint or an extra slot caps the win at 2★, so stars can't be bought,
+    while undo and restart never count;
+  - stars appear on levels 1–200 and their replays (the win card, Chapters,
+    Records), and the daily, bonus and race boards keep moves only;
+  - stars are cosmetic only: no pay, no unlock, no gate, nothing during
+    play.
+
+  Par is the solver's optimal solution (A*, spec §6.3). It is written into
+  the bundle at build time and checked by `bundle check`, and no level's
+  data or version changes. Each level keeps its best stars. The rule text
+  is spec-prop §7.10 (with lines in §7.8, §9.4, §10.2, §13.3 and §18), and
+  it counts as spec until pasted (Q85). The plan is
+  [plans/star-rating.md](plans/star-rating.md), which also covers keeping a
+  1★ win a win, the swap points and the tests. The art is design request K.
+  It is built in phase 3, and its smaller defaults are Q116–Q120.
+- **D126. The Daily runs after L31 in the playthrough (device stage, M7 phase 1).** The task asks for L31's glass card, which the fixed date's daily showed first; a player who skips the daily meets each card on its schedule level (L16, L31, L51).
+- **D127. E13 reports two times (device stage, M7 phase 1).** The navigator keeps the splash mounted while L1 slides in, so "playable" and "alone on screen" differ (by 2–190 ms here); the owner can pick the headline (question Q121).
+- **D128. The mechanic segments finish with the solver helper after the teaching moves (device stage, M7 phase 1).** The task asks for it, and L31, L51, L71 and L130 are on the owner's re-tune list (Q107), which would break a fully scripted line. `solveWithHints` is called after the teaching moves in the playthrough.
+- **D129. The ribbon shows only on bundled boards (device stage, M7 phase 1).** Design README 4.7 ("on the first level"); replays keep it, since nothing says otherwise. Fix: `_showRibbon = state.play.request.isBundled && chapter.opensWithRibbon`. Regression: `gameplay_view_test.dart` "a daily/bonus board in a later chapter theme opens without a chapter ribbon".
+- **D130. The Museum label scales down instead of wrapping (device stage, M7 phase 1).** The shelf face is a fixed 104 px and a second line would overflow it; m7-design §15's shared rule. Fix: `FittedBox(scaleDown)` inside a 3 dp horizontal inset, with `TODO(design)` for J.2. Regression: `museum_page_test.dart` "every cabinet label shows whole at W × H S".
+- **D131. nesty-test boots the emulator with audio (device stage, M7 phase 1).** The playthrough requires every sound to load. Fixed in `tools/scripts/nesty-test`.
+- **D132. vs Computer's phase-2 design and contracts (M7 phase 2, contracts
+  stage).** [plans/m7-design.md](plans/m7-design.md) "Phase 2" (P2.1–P2.15)
+  is authoritative for the race lanes, and its frozen files compile, are
+  documented and have minimal tests (`test/contracts/m7_phase2_test.dart`).
+  The race core that the race-core lane built ahead of the workflow was
+  reviewed against spec-prop §7.7 and frozen as is (no core change). Lanes:
+  race-services, race-bloc and race-ui in parallel on exclusive paths
+  (P2.13), then the integrator; codegen only through the lock. The
+  architecture proposal was adopted with the departures P2.14 lists.
+- **D133. Plan-m7 decision 14, as built: the race core (m7 P2.3; defaults —
+  Q127).** Core gains a public `RivalBot` over the simulator's run loop
+  (`BotPlayer.stepRun`, which `BotPlayer.play` now repeats), `RivalStep`
+  (`moved`, `finished`, `restarted`) and `SimBot` (exported alone); the
+  engine and `BotPlayer` stay internal. The restart rule is core's: at the
+  250-move cap or with no useful move, a step restarts the run with no
+  move (a restart takes a step of its own). Run seeds are
+  `Prng.derive(raceSeed, 'RVL0' + policy.index, run)`: a departure from
+  decision 14's `Prng.derive(raceSeed, policy, run)`, whose casual run 0
+  would be the generator's attempt 0 of the same seed, often the stream
+  that built the board (accepted by the lead). `Generator.version` stays 1:
+  every existing golden is unchanged. As decision 14 says, the app owns the
+  clock through an injected ticker, the rival steps on the UI isolate (a
+  move step allocates nothing; worst smart step 4.8 µs AOT), and choosing a
+  rival or New race starts `raceNo + 1` while Rematch keeps it.
+- **D134. Race boards (m7 P2.3, P2.4; defaults — Q125, Q126, Q130).**
+  `DifficultyCurve.raceSeed(rival, raceNo)` = `3_000_000 + rival × 100_000
+  + raceNo` for rivals 1–3 and raceNo 1–99,999 (`maxRaceNo`), so each
+  rival's seeds keep their own block; `racePolicy` (1 casual, 2 and 3
+  smart) and `raceTier` (1 easy, 2 and 3 medium, Q80) sit in core with the
+  seed (rule 2); `raceParams(rival:, raceNo:, highestWonLevel:)` is the
+  stage board of the rival's tier with id `race-<rival>-<raceNo>`. The app
+  passes the highest level won (`RaceRules.stageLevel` = `highestLevel − 1`,
+  at least 1). Race-core's sweep generated 1,500 race boards with no
+  failure and every tier on target.
+- **D135. `PlayRequest.race` (m7 P2.4).** A race is its own request kind
+  (`PlayKind.race`, never stored), generated on the device and never saved
+  in progress: the save ignores it, the codec drops one, and
+  `recordLevelWin` records nothing for it. `DefaultLevelResolver._race`
+  refuses a race while the mode or the rival is locked or its numbers are
+  out of range; otherwise it generates `raceParams` in the isolate, paying
+  `race_reward_<rival>`, on the current chapter's theme (Q129), cached so a
+  Rematch gets the same `Level`. Nothing follows a race (`next` is null). A
+  board that can't be made shows the page's failure card, which leads back
+  to rival select.
+- **D136. `RaceCubit` beside the gameplay bloc (m7 P2.5; defaults — Q124,
+  Q127).** The race is the gameplay page with a race request (plan-m7
+  "Rejected: a separate race page and bloc"): the page provides a
+  `RaceCubit` next to the bloc. It mirrors the rival in a second
+  `GameSession` of the player's own `Level`, steps it on an injected
+  `FrameTicker` (a raw Flutter `Ticker`), at most once per frame, with each
+  frame's time clamped to 250 ms, draws the jitter from the race's own
+  `'PACE'` stream (`RaceRules`), stops on any hold (Pause, a sheet or
+  overlay, the app in the background), records the player's win once, and
+  settles a tie by frame order: a player's move lands in its input task,
+  before the next frame's rival step, so on the same frame the player wins.
+  Rematch and New race stay on the page. `NESTY_RACE_PACE_MS` sets the pace
+  in a dev debug build only.
+- **D137. The gameplay bloc's race mode (m7 P2.6; defaults — Q128).** In a
+  race, board input waits for `RaceGateChanged(open: true)` (the page sends
+  it while the race runs); undo is free and unlimited, restart is free, and
+  Hint and +1 Slot give no offer and spend nothing; no tutorial, intro
+  card, restore or in-progress save; the win records nothing through the
+  level path (no best moves, Q88), and no spec §14.4 level event is logged.
+- **D138. The save's race API (m7 P2.7; defaults — Q124, Q126).**
+  `SaveService.beginRace(rival)` stores the next raceNo when the race is
+  chosen, so a quit or a kill never hands the same board back as a new
+  race; `recordRaceWin` pays `race_reward_n`, adds the win, unlocks the next
+  rival (1 → 2 → 3), counts `stats` and the records (Q91) and grants the
+  badges (`first_race`, `all_rivals`) in one update, through the badge step
+  both win paths share. A loss writes nothing. Schema 2's `race.rivals`
+  already holds every field, so there is no schema step and no Hive change.
+- **D139. Rival select, the race stand-ins and E1 (m7 P2.8, P2.10–P2.12;
+  defaults — Q131–Q134).** `RivalSelectRoute` with `RivalSelectCubit` (the
+  three rivals, their rewards shown before the race, wins, locks); the
+  ui-designer's stand-ins adjusted to the frozen names (P2.10); 31 ARB
+  placeholders; "Computer" on every rival surface, pinned by
+  `arb_keys_m7_test`; the respect copy test covers `race*`, and the
+  randomness test the race's paths. Home's vs Computer tile opens rival
+  select once unlocked, and its "Coming soon" footer retires (Q98's
+  default runs its course).
+- **D140. The race page's hand-offs, fixed at integration (m7 P2.4, P2.5,
+  P2.10; integrator).** The lanes' page passed its widget tests but would
+  have failed on a device, where the Flame board reports the win after the
+  winning batch: that report opened 2.8's "Level Complete!" and its
+  Continue over the race. Now a race's won board opens 9.4 (only when the
+  race is the player's; a move landing just after the computer finished
+  keeps 9.5), and the computer's finish opens 9.5 at once over a frozen
+  board. Back to rivals, Quit race and the failure card now `pop` (the
+  page's `PopScope` vetoed `maybePop`, which reopened Pause or did
+  nothing). A race board that can't be made, on the first load or on
+  Rematch or New race, shows the failure card with Try again and Back to
+  rivals (P2.4) instead of a dead page; Rematch and New race ignore a
+  second tap. The HUD's coin pill shows the save's live balance in a race
+  (P2.10 "no coin hold"). The rival strip lets taps through to the board,
+  since it sits in the top shelf's hit band. Regression tests:
+  `gameplay_view_race_test.dart` and `app_flow_test.dart` (i), which runs
+  the tile, rival select, a won race, Back to rivals and Quit race on the
+  real router and the real Flame board.
+- **D141. Race stand-ins brought back to m7-design (P2.9, P2.10;
+  integrator; default — Q135).** 9.4 plays 2.8's celebration as P2.10
+  lists (race-ui's stand-in had dropped it): `fx_confetti` (none with
+  reduce motion), the `win` cue and haptic, then `fx_coin_burst`, the
+  `coins` cue and the count-up, timed by `WinOverlaySchedule`, on 2.8's
+  own pill (`WinCoinPill`, made public). Both results duck the music as
+  2.8 does until C.7's jingles land. The strip's counter bumps once when a
+  rival family lands (`motion.complete.counterBump`), and a separate
+  portrait nudge is its per-move "moved" beat (P2.9); the state line drops
+  below 340 dp (race-ui's call, Q135). Rival select no longer hides its
+  Race button and reward from screen readers: each card is labelled
+  "Rival N, Computer" and its reward, wins and Race button stay readable
+  and actionable.
+- **D142. The rival-1 playthrough segment and E1's race test (m7 P2.12,
+  P2.13; integrator).** `_raceRival1` in `integration_test/playthrough_test.dart`
+  runs after level 20's chapter complete and the Museum visit, where
+  `highestLevel` is 21, so the board is `race-1-1@20` (checked against
+  `Generator.generateWithRetries(raceParams(1, 1, 20))`). A race has no
+  Hint, so the player's moves are `Solver.solve`'s solution, tapped one by
+  one. The test requires `NESTY_RACE_PACE_MS=600000` (one rival move every
+  10 minutes ± 20 %), which `nesty-test` passes and README documents; only
+  a dev debug build honours it (`race_rules_test`). It checks "You win!",
+  +20 coins, rival 2 unlocked, "New rival unlocked!", "Computer" on every
+  rival screen and no Hint or +1 Slot, and takes screenshots 25–25f.
+  `test/ethics/race_respect_test.dart` runs a race through the real bloc
+  and cubit (no offer or spend, coins only rise by the reward, a loss and a
+  quit write nothing, nothing in `RaceState` counts down), and
+  `respect_copy_test` checks every string a race shows, its reused keys
+  included, against the deny-list and a taunt list. `homeVsComputerSoon`
+  is retired.
+
+- **D143. The phase-2 device run (2026-09-28, device stage).** The rival-1
+  segment and every device check pass from fresh installs on the iPhone 16
+  Pro simulator (iOS 18.3; playthrough 430 s, 85 screenshots) and the API 35
+  emulator (420 s). Resume phase A matched phase B in all four runs, and the
+  daily's fingerprint is the same on iOS, Android and in nesty_core
+  (daily-20260926). The screenshots found two stand-in bugs, each fixed with
+  a regression test:
+  - The strip's counter pill drew squashed, about 33×9 dp, because its
+    painter maps the counter's 120×60 canvas onto whatever box it gets. It
+    now draws at 0.8× (`rival_strip_test`).
+  - 9.4's moves line, rival row and actions couldn't be read on the scrim.
+    They now sit on a ModalCard, like 9.5's (`race_result_overlay_test`).
+
+  Left as design gaps and BACKLOG items:
+  - the toasts on 9.4 (Q136);
+  - the strip's state line on screens under 404 dp (Q135);
+  - the strip over the top shelf's tall doll;
+  - "Thinking…" after the player wins;
+  - a race loss run on a device.
+- **D144. Phase 3's design and contracts (M7 phase 3, contracts stage,
+  2026-09-29).** [plans/m7-design.md](plans/m7-design.md) "Phase 3"
+  (P3.1–P3.15) is authoritative for star ratings (D125), the daily share
+  card (E3) and the opt-in reminder (E4), and its frozen files compile,
+  are documented and have minimal tests (`test/contracts/m7_phase3_test.dart`,
+  core's `star_rating_test` and `level_bundle_par_test`). Lanes:
+  stars-core, stars-app, stars-ui, reminder and share in parallel on
+  exclusive paths (P3.13), then the integrator; codegen only through the
+  lock. Phase 2's shapes are unchanged: a race records nothing through
+  `recordLevelWin`, its `_win` branch returns before the star code, and
+  `isBundled` excludes it, so races have no stars. The architecture
+  proposal and the ui-spec were adopted with the lead's notes and the
+  departures P3.14 lists.
+- **D145. The star rule's API (m7 P3.3, P3.5).** `StarRating` in
+  nesty_core (rule 2): `threshold(par, slackPct)` = `par + (par × slackPct
+  + 99) ~/ 100`, `starsFor` (3 at moves ≤ t3, else 2 at ≤ t2, else 1; at
+  most `assistedMaxStars` 2 when assisted; applied literally, so a star2
+  slack below star3 only makes 2★ unreachable) and `starsForWin`, which
+  reads the move count and the extra slots from the board so no caller can
+  forget the extra-slot cap. `maxSlackPct` 1000 is a technical bound that
+  keeps the arithmetic exact everywhere. Remote Config gains
+  `star3_slack_pct` 20 and `star2_slack_pct` 60 (31 keys), clamped into
+  0..1000 by `StarRules.slackOf`.
+- **D146. Par in the bundle (m7 P3.3).** `LevelBundleEntry.par` is
+  written after `rewardCoins` only when present, so a par-less bundle
+  encodes as before, and read leniently: a bad par is one warning
+  (`schema.wrongType` or `schema.valueOutOfRange`) and no par, and the
+  entry is kept, so a bad par never makes a level unplayable. `bundle
+  build` writes the solver's optimum at the admin budget
+  (`build.parUnproven` otherwise), `bundle check` recomputes it from the
+  rule-8 solve it already runs (`bundle.parMismatch`), and `report --stars`
+  prints the bots' star shares (never a gate). No level's data or version
+  moves.
+- **D147. Stars in schema 2, with no schema 3 (m7 P3.4; defaults — Q117,
+  Q119, Q120).** Schema 2 hasn't shipped, so `levelStars` (level id →
+  best, never lowered), `starTipShown`, `daily.lastSolve` (`DailySolve`:
+  date, moves, families, the minute) and `inProgress.hinted` join it with
+  lenient reads; the 1 → 2 step writes nothing new. `recordLevelWin`
+  keeps the highest stars per id in its one update, sets the one-time tip
+  on the first win below 3★, and keeps `lastSolve` on a daily's first
+  solve of its date (only the win path writes it). The splash calls the
+  silent, idempotent `backfillLevelStars` once the save and the bundle
+  are loaded: a level won before stars gets what its best moves earn (1★
+  without a best), and nothing is ever lowered. Stars change no coins,
+  chest, progress, record or badge.
+- **D148. The assisted flag and the win's stars (m7 P3.6; default —
+  Q116, Q118).** A win is assisted after a charged hint shown since the
+  last Restart (a dead-end hint that costs nothing doesn't count), kept
+  across a kill in `inProgress.hinted`, or with an extra slot on the board
+  (read by core). The bloc's state carries `stars`, `previousStars`,
+  `starTarget` (t3, only on a replay below 3★ whose moves were over it)
+  and `starTip`; `starsNewBest` is a replay that raised them. Undo,
+  Restart and relaxed mode reach the rule only through the move count.
+- **D149. `StarRow` and the win card's stars (m7 P3.7; default — Q146).**
+  One widget, `core/ui/widgets/stars/star_row.dart`, is every star
+  surface's swap point for design request K, with the architecture's API
+  and sizes (44, 20, 11). The stand-in is a painted rounded star (the
+  icon subset has no outlined star): coin gold with a darker edge, and an
+  empty star in the ui-spec's warm `surfaceTrack` with a soft
+  `surfaceEdge` outline, never grey or red. On the win card the stars sit
+  directly above the chapter card, and "New best!", the target and the tip
+  go in the card under the moves line. The reveal starts at 1,300 ms, when
+  the coin count-up ends (`win` is loud for its first 600 ms and `coins`
+  from 700 to 1,100 ms; the ui-spec's 300 ms and the proposal's 1,000 ms
+  each fell on one), 120 ms apart, with the clack at rising pitches
+  (sizes 3, 2, 1) and a selection haptic each, then one `fx_twinkle` and
+  the success haptic at 3★. Under reduce motion every star shows at once
+  with no pop or twinkle, and the cues still fire at half the stagger
+  (the owner's D48; the ui-spec's lead note 7 over the proposal's single
+  cue). Stars-ui owns the whole win overlay.
+- **D150. The star totals and Records' icons (m7 P3.5, P3.7; default —
+  Q147).** A total counts only bundled levels with a par: 3 × the
+  chapter's (60) in Chapters, 3 × the bundle's (600) in Records
+  (`RecordsSummary.of(…, starLevels:)`, `StarRules.levelsWithPar`).
+  Records' "Stars" and "Levels with 3 stars" rows use `NestyIcons.star`,
+  so the best-moves link moves to `NestyIcons.extension`.
+- **D151. The share card (m7 P3.8, P3.9; default — Q144).** A Share
+  button on the Daily screen's solved card (frame 5.5), not on the daily
+  win card (5.4): spec-prop §10.2 #11 names the Daily screen. It shares
+  plain text through `ShareService` (share_plus): the date, one 🪆 per
+  family completed (at most 12), the families, the moves and the streak
+  count. No board, colour or move list, so no colour-to-emoji map is
+  needed (the ui-spec's lead note 3 is superseded). Its data comes from
+  `daily.lastSolve` through `DailyStatus.solve`, so a day an older build
+  solved shows no Share. The result shows nothing, it pays nothing and
+  it logs no event. The store link lands in M8.
+- **D152. The reminder's settings keys (m7 P3.10).** `reminderOn`
+  (false), `reminderHour` (19), `reminderMinute` (0) and `reminderOffered`
+  (false), flat in the settings box (spec-prop §13.3 nests them as
+  `reminder`; the box is flat), never renamed or reused, with no schema
+  step. `DatabaseService.reminder`, `setReminder` (one `putAll`) and
+  `reminderChanges` (quiet on an unchanged write) in Hive and the fake,
+  with the shared contract test.
+- **D153. `NotificationService` and `DailyReminder` (m7 P3.10; defaults
+  — Q137–Q143).** One repeating, inexact local reminder a day (id 1, no
+  exact-alarm permission) at the chosen local time, re-synced at launch,
+  on resume, on a settings change and on a language change; no badge;
+  nothing shown while the app is open on iOS; Android's default
+  importance. The permission is asked only after the player's Yes. The
+  one-time offer under the Daily screen's solved card is marked offered at
+  its first appearance, with the solve's hour as the time (Q81), which
+  also becomes the Settings default. Denied from Settings, the toggle
+  stays off with a toast; revoked later while on, the row keeps the
+  "Notifications are off" line and the schedule stays. There is no
+  button to the OS settings in phase 3. `LocalNotificationService` is
+  frozen as a safe stub (never prompts, schedules nothing) because
+  `bootstrap` starts `DailyReminder` in the real env, and the offer is
+  frozen hidden, until the reminder lane builds them.
+- **D154. Phase 3's packages and the Android build (m7 P3.1, P3.10).**
+  `share_plus` 13.3.0, `flutter_local_notifications` 22.3.1, `timezone`
+  0.11.1 and `flutter_timezone` 5.1.0 (reasons under "Package reasons").
+  share_plus 13 needs AGP ≥ 8.12.1, so the Android Gradle plugin goes
+  from 8.11.1 to 8.12.1 (Gradle 8.14 already meets its 8.13 minimum), and
+  flutter_local_notifications needs core-library desugaring
+  (`desugar_jdk_libs` 2.1.4). A dev debug APK and an iOS dev build built
+  right after the bump, so share_plus stays and the native share-channel
+  fallback isn't needed. The lock only gained entries; `pod install`
+  added three pods. Its four existing plugin checksums changed too, with
+  no version change: this `pod install` ran the gem-installed `pod` (Ruby
+  3.3, json 2.7.1), which writes an empty podspec list over three lines
+  where Homebrew's `pod` (Ruby 3.4, json 2.9.1) writes `[]` (README
+  "Prerequisites", M7 review R5).
+- **D155. Phase 3's E1 and copy (m7 P3.11, P3.12).** `respect_copy_test`
+  checks the `reminder`, `settingReminder`, `dailyShare`, `stars`,
+  `winStars`, `chaptersStars`, `recordsStars` and `recordsThreeStar` keys
+  against the deny-list. It also checks the star keys against a
+  star-shaming list ("fail", "try again", "poor", "not enough" and more)
+  and that no reminder string names the streak. `reward_randomness_test`
+  scans `core/ui/widgets/stars`. The 26 ARB keys name the copy.md item
+  that replaces each (G.6, G.7, G.11, I.1). The integrator adds
+  `stars_gate_nothing_test` and `reminder_opt_in_test`.
+- **D156. The share lane's build (m7 P3.13).** `SharePlusShareService`
+  maps `share_plus`'s `ShareResultStatus` to `ShareOutcome` and swallows
+  every failure under `nesty.share` (rule 3); `FakeShareService` records
+  what it was asked to share. `DailyCubit.share` is a pure delegate: no
+  save field, coin or analytics event. The Share button sits in
+  `PuzzleCard`'s `_SolvedFooter`, shown only when `DailyView` builds a
+  non-null `onShare` from `shareDataOf(state.status)` (null unless
+  `solvedToday` and `DailyStatus.solve` is known), and captures its own
+  global rect for the iPad popover origin the same way the day-7 chest's
+  coin flight already does (`GlobalKey` + `findRenderObject`). No glyph
+  for Share exists in the bundled subset (design request I.10): the
+  stand-in is `NestyIcons.download` (`TODO(design)`), the nearest
+  outward-arrow shape already bundled and not otherwise used in this
+  flow.
+- **D157. The stars-core build (m7 P3.3, P3.13).** The contracts'
+  `StarRating` and the bundle codec passed every new test unchanged, so
+  core's `lib/` is untouched. The expected values come from outside the
+  implementation: an independent Python reference
+  (`test/rules/reference/starref.py`, its digests matched on the VM, node,
+  Chrome and dart2wasm) and a breadth-first oracle, which agrees with the
+  solver's par on every solvable fixture (`par_oracle_test`).
+  `LevelAnalysis.par` is the tools' one source of par, so `bundle build`,
+  `bundle check` and `report --stars` can't disagree; `bundle check`
+  reports `bundle.parMismatch` beside `bundle.drift`, and `report --stars`
+  runs `RivalBot`s and never gates. `bundle.json` was rebuilt with only its
+  200 `par` lines added (par 2–35); L1–L30's data digest is pinned, and
+  each tutorial's scripted moves are pinned on an optimal line, so Q148
+  doesn't arise.
+- **D158. The stars-app build (m7 P3.6).** The hint flag is saved as the
+  charged hint arrives, because a hint changes no board: a kill right
+  after one would otherwise lose the cap. `_restoreSession` returns the
+  saved flag with the session, and Restart clears it. `FixtureLevels`
+  carry the solver's pars (2, 3, 5), pinned by a test. The splash runs the
+  backfill right after the save and the bundle load, and never after a
+  failed load.
+- **D159. The stars-ui build (m7 P3.7).** A chapter's and Records' total
+  is `StarsTotal`, a sibling of `StarRow` in its file (one 20 dp star and
+  the numbers), because the frozen API has only `StarRow` and
+  `StarRow.reveal`. The 3★ flourish's glow is painted in the UI kit, which
+  never imports `features/fx`, and its haptic goes through the overlay's
+  cue path. Under reduce motion `onStar` still fires three times, 60 ms
+  apart. The target line, "New best!" and the tip sit under the moves
+  caption, in that order. Chapters' `ListView` builds with a 5,000 dp cache
+  extent: every card now carries a total, which pushed the current chapter
+  past the default cache on a small phone and silently broke D111's scroll
+  to it (a regression test).
+- **D160. The reminder lane's build (m7 P3.10; Q149).** `enable`'s denied
+  branch still stores the chosen time and `offered`; only `on` differs
+  from a grant, so a denial never loses the player's time. `SettingsCubit`
+  applies `DailyReminder.status` right after its own calls, since a
+  broadcast event can land a microtask after the awaited call returns.
+  `didChangeAppLifecycle` is public and `@visibleForTesting`, as in
+  `SaveLifecycleFlusher`. The offer and both Settings rows use
+  `calendarToday` until I.10 names a bell and a clock; the time picker is
+  Flutter's own. The manifest removes any merged exact-alarm permission
+  (`tools:node="remove"`) as a guard; the plugin asks for neither.
+- **D161. Phase 3's integration (m7 P3.12, P3.13).** The E1 tests: a scan
+  of the reward, unlock and gate paths for the star names, plus a
+  behavioural check that twenty 1★ wins and twenty 3★ wins leave the same
+  save apart from the stars; and the reminder's opt-in rules on the fake
+  services, with source checks that the one `requestPermission` call is
+  `DailyReminder.enable` (reached from the offer's Yes and Settings'
+  toggle) and that the real service schedules only `reminderId`. The
+  playthrough's L1 replay line is `r0c2>r0c1 r0c1>r1c2 r1c2>r0c0 r1c1>r0c0`,
+  checked with `Rules.tryMove` before it is played. The real notification
+  service has no request counter, so the playthrough checks "No thanks"
+  as offered, off and nothing pending; the fake-env tests pin the request
+  count. The optional Android check (`nesty-test --android --only
+  reminder`) builds the test APK, installs it, grants
+  `POST_NOTIFICATIONS` with `pm grant` and drives it with
+  `--use-application-binary`; `adb install -r` keeps the grant. It never
+  runs by default, and iOS skips it. The phase-2 rival strip fix: once the
+  race is over and the rival didn't finish, the strip's state line goes
+  blank (`RivalStripData.over`) until design request C.9 says what it shows.
+
+- **D162. The phase-3 device run (2026-09-29, device stage).** The star,
+  share and offer steps and every device check pass from fresh installs on
+  the iPhone 16 Pro simulator (iOS 18.3) and the API 35 emulator. Each took
+  90 screenshots, and the daily's fingerprint is the same on iOS, Android
+  and in core.
+
+  The optional Android reminder check passed on its first run: on gives one
+  pending reminder, off none, and the `pm grant` survives `flutter drive`'s
+  `install -r`. The simulator's log shows no notification authorization
+  request from the app.
+
+  The screenshots found two UI bugs, each fixed with a regression test
+  (`m3_ui_kit_test`, `win_overlay_test`; game suite +3061):
+  - `NestyToast`'s overlay entry sits outside every Material, so its text
+    took MaterialApp's fallback style, a yellow double underline. It now
+    carries the body `DefaultTextStyle`.
+  - The replay card's reason line sat on the scrim and couldn't be read. It
+    now sits on the coin pill's cream surface.
+
+- **D163. A clock that went back grants no freeze (M7 review R2; Q153).**
+  When today is before `daily.lastDate`, `StreakDailyService._reconcile`
+  returns the progress unchanged: nothing is reconciled and no freeze is
+  granted. Before, the missed-day loop was skipped but `grant(d, T)` still
+  ran, and it compares only `freezeWeek == T`'s ISO week. A clock rolled
+  back to an older week granted that week's freeze and moved `freezeWeek`
+  backwards, so the real week granted again: one extra freeze per round
+  trip, past m3 §8.2's once-per-ISO-week cap. The guard is in `_reconcile`,
+  not only in `_solve` as the finding proposed, because Home and Daily
+  call `refresh()` on open, which grants before any solve. An honest
+  clock never sees the change: while `lastDate` is in the future no
+  missed day can be covered, and the equality grant resumes once today
+  passes `lastDate`. The grant isn't made monotonic (`week > freezeWeek`),
+  because after a clock wrongly set far into the future is corrected,
+  that would stop every weekly grant until that week. m7-design §8's
+  `reconcile` pseudocode gains the line. A paused streak has no
+  `lastDate`, so the same rollback still grants there (Q153).
+- **D164. The review pass and the accessibility audit (M7 review,
+  2026-09-29).** The review ran as five read-only lenses whose findings
+  were merged, routed by path to three fixers on disjoint paths, and each
+  confirmed before a fix. A fix needed a test that fails without it,
+  unless it changed only a comment or a doc. The ui lens's accessibility
+  audit covers the M7 surfaces, and R1 fixed its one failure. BACKLOG M7's
+  "Accessibility audit" item stays open, with what is left written under
+  it: the pre-M7 screens, the text-scale checks the audit didn't run on
+  their own, and a VoiceOver and TalkBack pass on a device. The iOS
+  `Podfile.lock` is left as it is (R5): running `pod install` again
+  through the other `pod` would only flip the four checksums back until
+  the next install with the first.
+- **D165. The review pass, round 2, and the audit's close (M7 review,
+  2026-09-29).** Round 2 ran four read-only lenses, deeper than round 1:
+  the save, the race and the bloc's lifecycle, the reminder and platform,
+  and the rest of the accessibility audit. Each built concrete sequences
+  meant to break the code and reported only confirmed failures. The same
+  three fixers confirmed, fixed or deferred each finding. The gate applied
+  their cross-path edits and ran every gate. Two things change how later
+  work is checked:
+  - the overflow suite's `expectAccessibleLayout` (R36) fails a target
+    under 48 dp, an unlabelled tap target and cut text on every screen it
+    lays out, so the audit's measurements are now a CI gate;
+  - BACKLOG M7's "Accessibility audit" item is ticked, because rounds 1
+    and 2 together cover every screen and all their fixes are in but one.
+
+  The exception is R12, screen-reader play on the Flame board. It is not
+  in spec §16 or spec-prop §16, and it needs a board input path and about
+  20 strings from Claude Design, so it is left to the owner (Q154) with its
+  own BACKLOG item. What a host test can't prove, what VoiceOver and
+  TalkBack actually say, is a new item for the close's device stage.
+- **D166. The reminder's platform fixes (M7 review R9, R10, R30, R34;
+  m7 P3.10).** P3.10's text stands; these make it hold on real devices:
+  - **The zone fallback.** When `latest_10y` doesn't know the device's
+    zone id, the fixed-offset location is named after that id, which the
+    platform that reported it can resolve with its own DST rules. With no
+    id, it is named `GMT±HH:MM`. `Nesty/Fixed+HHMM` was refused by
+    Android's `ZoneId.of`, so the reminder was never scheduled in 132
+    common zones (R9). Whether to load `latest_all` instead is Q155.
+  - **The skip memo.** `scheduleDaily`'s skip memo keys the zone on its
+    name and its current offset (`reminderZoneKey`), so a DST change still
+    reschedules a fallback that keeps its name.
+  - **iOS sound.** The iOS details carry `sound: ''`, so the OS plays its
+    default sound in the background. FLN attaches none when `presentSound`
+    is false and no sound is set. Nothing shows or sounds in the foreground,
+    as before (R10).
+  - **The spring-forward gap.** `nextDailyOccurrence` returns the first
+    day, from today, on which the chosen wall-clock time exists. A gap day
+    is skipped instead of firing an hour late; the fall-back overlap keeps
+    its first occurrence (R34).
+  - **The Hive fallback.** The in-memory store is marked
+    `SessionOnlyDatabase`. Over it, `refresh` never cancels the OS
+    schedule, because its "off" is only a default. `disable` still
+    cancels, because that off is the player's own. The one-time offer
+    stays hidden, because "offered" can't be kept (R30; spec-prop §7.9
+    "offered once").
+- **D167. E14's System follows iOS's Reduce Motion too (M7 review R7;
+  spec-prop §16).** On iOS, Flutter reports Reduce Motion only as
+  `AccessibilityFeatures.reduceMotion`, which `MediaQueryData` has no field
+  for. So System, the default, never reduced motion on an iPhone.
+  - `ReduceMotionOverride` (`core/ui/theme/`) resolves System from
+    Android's `disableAnimations` or iOS's `reduceMotion`, read from the
+    view. It rebuilds on `didChangeAccessibilityFeatures`. On and Off are
+    unchanged, and m7-design §14 says so.
+  - One limit is deferred. Under Android's Remove animations, the in-app
+    Off can't restore full motion, because `AnimationController` runs at
+    5 % whenever the platform flag is set. It errs toward less motion, so
+    the fix (`AnimationBehavior.preserve` on the app's controllers) waits,
+    with a `TODO(v1.1)` and a BACKLOG item.
+- **D168. The device run after the review (2026-09-29, phase 5's device
+  stage).** Every device check passes from fresh installs on the iPhone 16
+  Pro simulator (iOS 18.3) and the API 35 emulator, before and after the
+  run's one fix. Each run took 90 screenshots, resume phase A equals phase
+  B, and the daily's fingerprint is the same on iOS, Android and in core.
+  Round 2's semantics changes broke none of the integration tests' finders:
+  R11's modal overlays, R13's single labels and the 48 dp targets.
+
+  `nesty-test --android --only reminder` passes. It passes again with the
+  emulator's zone set to Europe/Amsterdam, which `latest_10y` lacks: the log
+  shows the fallback, and on still gives one pending reminder, so R9's
+  fallback name reaches Android's scheduler.
+
+  Each screenshot was paired by name with its phase-3 twin. Most show only
+  the expected changes:
+  - the back, close and gear faces move 1 dp inside their 48 dp targets;
+  - the rival cards are a few dp taller around Race;
+  - Settings rows are 1 dp taller, and the Language sheet's rows 2 dp, so
+    the sheet rises about 18 dp;
+  - Daily's Share target takes 1 dp from "Play Level N".
+
+  One regression, fixed with three tests in `win_overlay_test` (two failed
+  before; game suite +3139):
+  - Since R23 the win card's button no longer scales with the block above
+    it. So where the block scales down, the button stood wider than the
+    card: about 10 dp on each side on the 16:9 emulator (411 × 731), and
+    51 dp at 360 × 640 at 1.3×. Frame 2.8 draws the card and Continue at
+    one width.
+  - `_BlockOverButton` now lays the button out at the scaled card's width
+    and its own full height, so R23's 48 dp target stays. Where the block
+    fits, as on the iPhone, nothing moves.
+
+  Not covered by this run:
+  - the VoiceOver and TalkBack pass (the simulator has no VoiceOver;
+    TalkBack is installed on the emulator);
+  - iOS Reduce Motion (R7);
+  - R8's Rematch under Pause by hand;
+  - the race-loss segment.
+
+- **D169. `nesty-test` covers every feature (owner, 2026-09-29).** The owner
+  asked whether `nesty-test` covers every feature's tests, and asked for a
+  rule that it covers each new one.
+
+  The host checks already ran every test suite. They now also run CI's other
+  checks except codegen drift, which would rewrite the generated files. That
+  adds about 4 minutes:
+  - `dart format`;
+  - nesty_core's web parity on node, chrome and dart2wasm, recorded as SKIP
+    without the tool;
+  - the design, asset, FX and TODO-index drift checks;
+  - the level bundle and the solver fixtures;
+  - the admin's web build.
+
+  The device checks cover most features' flows. `docs/TEST_COVERAGE.md` now
+  lists each feature's host tests, its device step and screenshots, and what
+  a device run can't drive yet.
+
+  The rule, in CLAUDE.md "Testing": a new or changed feature ships with its
+  host tests, a device step in `nesty-test` and its row in
+  TEST_COVERAGE.md. `tools/test/test_coverage_test.dart` checks the rows,
+  and checks that `nesty-test` runs every integration test. The `/feature`,
+  `/milestone` and `/review` skills apply the rule.
+
+  The owner's first run with the new checks failed in the playthrough.
+  `flutter drive` hit "No space left on device": the data volume was 97 %
+  full. So `nesty-test` now checks the free space at the start and before
+  the device steps, and stops below 8 GB (`NESTY_TEST_MIN_FREE_GB`). A step
+  whose log shows a full disk now says so. Separately, an edit made to the
+  script while a run was reading it broke that run with a bash syntax
+  error; the file itself parses.
+
+  The open device gaps are in BACKLOG M7:
+  - undo on a campaign board, and the soft-stuck banner;
+  - relaxed mode's free undo, and the Color symbols, Sound and Haptics
+    toggles;
+  - using or buying a theme, and the 10th bonus level's chest;
+  - the day-7 chest, and a paused or relit streak;
+  - in a race: a loss, Pause and Quit, Rematch, New race, and Out of Moves.
+
+- **D170. No "Replay" tag on a replay's board (owner, 2026-09-29).** The
+  owner reported that the "Replay" button didn't work. It was the tag on the
+  level pill (`hudReplayChip`, m7-design §11), which was only a label that a
+  replay pays no coins. It was drawn on the raised surface the real buttons
+  use, so it looked tappable. The owner chose "remove the tag if it does
+  nothing". The tag, its ARB key and its `TODO(design)` note are gone, and
+  `arb_keys_m7_test` keeps the key out. The win card still says "A replay
+  for fun: coins come from new levels.", which is what spec-prop §7.1 needs:
+  a replay pays no coins, and no marker during play is required. Regression
+  tests: `gameplay_view_test` (a replay shows no tag) and the playthrough's
+  replay step.
+- **D171. Claude Design's M7 delivery is in `design/` (owner, 2026-09-30).**
+  Claude Design delivered the round in three cumulative parts:
+  `nesty-design-m7-1` (A, B, G), then `nesty-design-m7-3`, which holds every
+  part. The check against the request's "Delivery" format passed:
+  - every item in A–K is there. The two optional ones not delivered say why:
+    C.6's rival reaction Lottie and A.5's per-theme shelf art;
+  - the App Flow has 132 frames, with the new sections 09–12;
+  - every new SVG passes the §12.2 subset, the 36 in `ui/` included;
+  - the 8 new sounds pass the format and `tokens.json` `sound` checks;
+  - `tokens.json` v3 only adds values (722 new, none changed or removed);
+  - all 23 glyphs in its `icons` map exist in the pinned Material Symbols
+    font (17 are new to `nesty_symbols.txt`);
+  - nothing is removed or renamed.
+
+  `design/` is the owner's. At the owner's request ("please do it"), Claude
+  copied m7-3 in once with `rsync -rc`, which adds and overwrites and deletes
+  nothing: 44 new entries and 15 changed files. Afterwards `diff -rq` against
+  the export is empty. This was a one-off, and the rule stands: Claude never
+  creates or edits anything in `design/` on its own.
+
+  Small gaps, none blocking:
+  - `shopOwned` ("Owned") still has no copy;
+  - copy.md's `oom_undo_spent` writes the 2 free undos into the text, so the
+    ARB takes the count as a placeholder (`free_undos_per_level` is a Remote
+    Config key);
+  - DELIVERY.md leaves out one reworded line in the Motion & Sound
+    prototype.
+
+  The integration is phase 4 (m7-design "Phase 4").
+- **D172. The +1 Slot stays on the bottom shelf (owner, 2026-09-30).** The
+  delivery's B.6 moves the extra-slot pad to the lowest shelf with fewer
+  than 4 slots, and makes the bottom shelf a row of 5 only when every shelf
+  holds 4 (`tokens.json` `layout.extraSlot.placement`). That contradicts
+  spec §3.6 ("the right end of the bottom shelf") and D22 ("always appended
+  to the bottom shelf, which re-pitches"). The owner kept D22. The pad
+  always joins the bottom shelf. Its re-pitch uses B.6's row-of-5 numbers
+  (`layout.boardPresets.rowOfFive`, `motion.rowOfFive`), and a second pad
+  extends them to a row of 6 through `BoardLayout`'s scaling, with a
+  `TODO(design)`. The rest of the delivery's `extraSlot` values (the limit
+  of 2, the pop-in) apply as drawn.
+- **D173. Phase 4's tooling: tokens v3 codegen policy (C4a, 2026-09-30).**
+  `gen_design_tokens` reads all 1,218 leaves of tokens.json v3 (722 new):
+  1,021 emitted and 197 documented, each on purpose
+  (`design_tokens_codegen_test` pins the documented set).
+  - Numbers become constants. The shelf keys parse as `Nshelves` or
+    `3shelvesTall` (`BoardTokens.plankTopsThreeShelvesTall`); the board
+    sections get `GlassCaseTallTokens`, `BoardFitTokens`,
+    `BoardPresetTokens` (with the design's own fit results), `TowerStackTokens`,
+    `IcedTowerTokens`, `HintArcTokens`, `FallbackDollTokens` and
+    `ChapterThemeTokens` (ten chapters, `ChapterPalette`, the Shop crop).
+  - A generic emitter (`tools/lib/src/tokens/screen_tokens_codegen.dart`)
+    makes one class per screen section (16 `layout.*`, plus `shop`,
+    `chestModal`, `settings`, `textLink`), typing each leaf by its shape
+    (tools/README "gen_design_tokens"). Prose is read by strict parsers or
+    listed with its reason; an unknown string fails the build.
+  - Rules the design repeats (`versus.*`, `chest.*`,
+    `layout.extraSlot.limitPerLevel`, `settings.reduceMotion.default`) are
+    documentation only, and the game's `rule_tokens_test` pins each to its
+    source (RemoteConfigKeys, MilestoneChest, LayoutLimits,
+    SettingsDefaults): rules never come from tokens. `layout.extraSlot.
+    placement` is documented as contradicting spec §3.6 (D172).
+  - Formulas the hand-written code follows (the fit's limits and rule, the
+    tower stack, the iced tower's tag, the tall glass case's Lottie) are
+    pinned word for word (`TokenReader.documentedExact`): a reworded formula
+    fails until the code is re-read.
+  - Values that repeat another source are cross-checked: a preset's planks
+    against `layout.board.planksY`, the row of 5's stand against the
+    board's × `standScale`, `hudClearY` against the family counter, the
+    theme crops against `thumbBox`, the chapters' 20-level blocks and
+    figurine order, and the star, chest, ice and extra-slot frames against
+    their Lottie markers (the tools test).
+  - `textLink.minTapHeight` (44) is documented, not emitted: text links keep
+    a 48 dp hit box (phase 4 lead note 3). `color.starEmpty` is an art
+    reference (`ui/stars/star_empty.svg`), documented.
+- **D174. The Lottie contract for m7-3 (C4a, 2026-09-30).** Six rows in
+  LOTTIE.md order: `fx_glass_unlock_tall` after `fx_glass_unlock` (anchor
+  (100, 212), the `case_size` null in the new `scaleNulls`, emitted as
+  `FxSpec.scaleNulls`), then `ui_stars` (segmented, placed by its canvas),
+  `ui_chest` (segmented, anchor (100, 186)) and the three `ui_intro_*` loops
+  (in place on the card's 302×230 box, one whole-file `loop` marker).
+  `ui_extra_slot` now has its `rest` marker at frame 0. `LottieRole` gains
+  `revealed`, `family`, `family2` (whose slots and null are `family_2_*`, so
+  roles carry an explicit prefix) and `freed`; `lottieImageSlots` and the
+  game's `FxImageSlot` gain 16 slots (the tall case at 279×456, the stars
+  132 and the glow 220, the chests 390×325, the intro roles' parts).
+  A lone rest marker or a whole-file `loop` doesn't make a file segmented.
+  The game's `FxId` has 35 members; the tall case pools one clip per slot,
+  like `fx_glass_unlock`.
+- **D175. The intro loops author their own doll sizes (C4a, 2026-09-30).**
+  The export animates `mover_size`, `family_size` and `family_2_size` in the
+  three `ui_intro_*` files (the family shrinks into the counter), which
+  LOTTIE.md's "Doll size" rule (the game overrides every `<role>_size`)
+  would reject, and a scale delegate would freeze. The contract marks them
+  `sizesAuthored`: the size nulls must still be exactly the roles, their
+  scale may animate, and their `FxSpec` lists no roles, so the runtime
+  installs no size delegate. The image slots still say which role (colour)
+  each part is (`FxImageRequest.revealed`, `family`, `family2`, `freed`).
+  Claude Design is asked to say so in LOTTIE.md (the follow-up request).
+- **D176. The UI art and the notification icon ship from `design/ui/`
+  (C4a, 2026-09-30).** `sync_design_assets` copies
+  `design/ui/{badges,chest,rivals,sprites,stars}/*.svg` (35) into
+  `apps/game/assets/ui/`, stripped and validated like the board art, and
+  flutter_svg compiles every one (`bundled_svg_render_test`). A file in
+  `design/ui/icons/` or an unknown folder is an issue. The notification
+  icon is a platform output: `tools/lib/src/assets/android_vector.dart`
+  converts `design/ui/notification/ic_notification.svg` into
+  `res/drawable/ic_notification.xml` (the main source set, all flavors),
+  replacing phase 3's traced stand-in; only white-filled paths convert, and
+  `--check` compares the bytes. The themes ch07–ch10, the tall glass case
+  and the 8 new sounds go through the existing families; the pubspec lists
+  the nine new folders.
+- **D177. The icon font has 68 glyphs (C4a, 2026-09-30).** The 18 glyphs
+  tokens.json `icons` adds (D171 counted 17) and the splash errors'
+  `sd_card_alert` and `inventory_2` (phase 4 lead note 2; not yet in
+  `icons`) are appended to `tools/fonts/nesty_symbols.txt`.
+  `build_fonts.sh` ran with the pinned sources (the network was open) and
+  `--verify` reproduces every byte; only the two NestySymbols lines of
+  `SHA256SUMS` changed. The icon tests read design/README's v1 list and its
+  "m7 adds" list, and every glyph tokens.json names is in the font.
+- **D178. m7-3's `ui_extra_slot` curve (C4a note for lane B, 2026-09-30).**
+  The synced file rests on the static pad's pose at frame 0 (100 % → 104 %
+  at 24 → 96 % at 72 → 100 % at 96). Until lane B's §2.5 makes
+  `FxTiming.extraSlotRestFrame` the `rest` marker (0), the game still starts
+  the loop at D116's frame 24, now the 104 % peak, and
+  `board_pieces_l9_test`'s three +1 Slot cases fail: that is expected, and
+  it is B's to close (with E.16's stop under a doll).
+- **D179. Phase 4's design: two contracts stages, five lanes (C4b,
+  2026-09-30).** Claude Design's m7-3 delivery goes in as M7 phase 4 (m7-design
+  "Phase 4", P4.1–P4.10). C4a did the tooling (tokens v3, the Lottie contract,
+  the asset sync, the font; D173–D178). C4b froze the shared shapes (P4.1) and
+  put copy.md in the ARB. Five lanes then run in parallel on exclusive paths:
+  B (the board), R (vs Computer), M (the meta screens), D (the daily and
+  Settings) and O (the overlays), with the integrator owning the cross-lane
+  edits, the device files' wiring, the ethics tests and the docs. Lead note 1
+  folds the architecture's T lane into C4a. Codegen goes through the lock
+  script, and only C4a, C4b and the integrator run the nesty_tools
+  generators. Why: every lane edits `gameplay_view.dart`'s neighbourhood and
+  the ARB, so the shapes and the copy had to exist before any lane started,
+  as in phases 2 and 3.
+- **D180. The design's fit rule and presets replace the h·2/3 clamp (lane B,
+  recorded 2026-09-30).** `layout.boardFit` and `layout.boardPresets`: the
+  preset follows the shelves and maxSize (3 shelves with maxSize 6 take
+  `threeShelvesTall`); one factor
+  `k = min(1, min(V, HUD, H) / heightOf(maxSize))` per level; stands at
+  `min(90, pitch − 2.4)`, pips unscaled; `dollMinGap` and the RENDER-3
+  `pieceShrink` go (m7-design P4.3). `board_fit_test` pins every preset's
+  limits and heights within 0.1 dp, and `bundle_layout_fit_test` checks all
+  200 levels. Why: the design owns doll sizes, and its rule is exact where
+  the clamp was a stand-in.
+- **D181. D172 as built: rows of 5 and 6 on the bottom shelf (lane B).** The
+  +1 Slot stays on the bottom shelf (the owner, D172). 4 → 5 slots is
+  `rowOfFive` (pitch 74.4, stands at 0.8); 5 → 6 uses the same formulas (pitch
+  62, stands at 0.662) with a `TODO(design)`, since the design draws no row of
+  6. The re-pitch takes `motion.rowOfFive` (280 ms `easeInOut`), then the pad
+  pops.
+- **D182. The tall glass case and tall ice (lane B; C4b froze the shapes).** A
+  sealed doll taller than `GlassCaseTallTokens.minDollHeight` (117.5 dp at
+  pieceScale 1, sizes 5 and 6) gets the tall case (`BoardSprite.glassCaseTall*`,
+  93×152) and `fx_glass_unlock_tall`, whose `case_size` null follows the doll
+  through `FxDrawableParams.caseScale`. `SlotShape.lockedSize` carries the
+  sealed size from core's slot view. The tall ice (`threeShelvesTall` only)
+  plays `fx_ice` at (1, 1.05) with its doll compensated. The board sprite
+  cache's key stride went from 16 to 32 (18 sprites), and its memory test
+  counts the normal and tall glass sets apart: a case is one or the other.
+- **D183. The tower stack and the iced tower's tag (lane B).**
+  `layout.towerStack`: a step of up to 18, at least 9, else fewer drawn
+  silhouettes, with the "+N" tag keeping the real count. `layout.icedTower`:
+  the tag is hidden while iced and pops in with the shatter (frame 48).
+- **D184. `ui_extra_slot` rests on frame 0 and stops under a doll (lane B;
+  Q65, Q111 answered).** The loop starts at the `rest` marker (0), which undoes
+  D116's frame 24; it fades to rest over 150 ms when a doll lands on the pad
+  and restarts from frame 0 once the pad is empty (`motion.extraSlot`).
+- **D185. Tap feedback, drag hover, hint arcs and the counter's yield (C4b
+  froze, lane B plays; Q39 answered).** A tap on an unpickable slot with
+  nothing lifted is `TapPolicy`'s `NudgeSlot`, its kind read from core's slot
+  view (a sealed case first, since its padlock is on top, then ice, else an
+  empty stand; an id the board doesn't have stays ignored). The bloc emits a
+  `SlotNudgeEffect` and changes nothing else; the board plays the stand's
+  2 dp dip with a light haptic, the padlock's 1.15× ping or the ice counter's
+  1.2× bump, never the invalid shake. `GameplayState.dropTargets` holds
+  `Rules.legalTargets` for a lifted nest, computed once on the pick in
+  `_withEffect` and cleared once nothing is lifted, for E.14's 60 % glow; it
+  never decides a move (rule 2). Hint arcs become `layout.hintArc`'s cubics.
+  Over the middle top stand the hint keeps its rest pose, and
+  `GameplayBoard.familyCounterYield` fades the counter (3.1b), replacing D62's
+  drop for that case only.
+- **D186. The UI art layer draws through `nesty_render`, with no SVG widget in
+  the game (C4b).** `core/ui/art/`: `UiArt` names each of the 35 `ui/**` files
+  with its viewBox; `UiArtLibrary` rasterizes an art once per (art, logical
+  box, pixel ratio) with `nesty_render`'s `loadSvgPicture` and
+  `Picture.toImageSync` (`AssetUiArtLibrary` real, `FakeUiArtLibrary` fake,
+  a lazy singleton in both envs); `UiArtImage` draws the raster in its box
+  (empty until it lands, labelled or excluded); `UiArtImageSource` fills
+  `ui_stars`' and `ui_chest`'s slots (`FxImageSlot.art`). The architecture
+  sketched `UiArtImage` as a `SvgPicture.asset` wrapper, but `flutter_svg`
+  isn't a game dependency. Adding it would be a new package (rule 9), and it
+  would parse per widget instead of once, so the rasters also serve dense
+  grids without per-frame work (rule 8). `ChestIcon` now draws the chest art.
+- **D187. One toast queue (C4b; Q122 and Q136 answered).** `ToastHost` holds a
+  `ToastQueue`: one toast at a time, 2.5 s each, 300 ms apart
+  (`motion.toast`), no touch, and a fade with no slide under reduce motion.
+  The app root holds one at 58 below the safe top, where frames 5.2 and 8.3
+  put toasts. A result card adds a scoped host (badge and race toasts at top
+  60, above the ribbon), and its toasts leave with it. `NestyToast.show`
+  queues on the nearest host; with none (a bare test page) it inserts its
+  overlay entry as before. `BadgeToast.show` queues "Badge earned · {name}"
+  with the badge's line and its 38 dp art. The four kinds' colours
+  (success, info, badge, warning) are frame-only apart from warning, so they
+  are named constants with a `TODO(design)`.
+- **D188. Share moves to the daily win card, with G.6's text (Q144 and Q151
+  answered; Q-P4-1 settled by lead note 10).** This supersedes D151's
+  placement and text. Frame 10.1 puts Share above Back to Daily, and 5.5
+  has none. The text is three lines: "Nesty Daily · {date}" (`MMMd`), one
+  belly-symbol emoji per family in board order (at most 12, joined by
+  spaces), then "Solved in N moves · Day D 🔥", or the no-streak line when
+  the streak is 0 or paused. `DailyShareData` is
+  `({date, families, moves, streakDay, streakLit})`. C4b removed the solved
+  card's wiring and `shareDataOf` with it: only the win knows the families'
+  colours. Lane O places the button and lane D owns the text. The glyph is
+  `IconUses.shareFor` (`ios_share` on iOS, `share` elsewhere).
+- **D189. "Open phone settings" through a platform channel (C4b froze, lane D
+  builds; Q140 answered).** `SystemSettingsService.openNotificationSettings`,
+  on `MethodChannel('com.futrix.nesty/system_settings')`, never throws and
+  answers false when nothing opened. The native side is lane D's:
+  `MainActivity.kt` (API 26+ the app's notification page, 24–25 its app
+  details) and `AppDelegate.swift` (iOS 16+
+  `openNotificationSettingsURLString`, else `openSettingsURLString`). No
+  package: `app_settings` would be a dependency for about 20 lines (rule 9).
+- **D190. A denied Yes keeps the reminder on and blocked; the three lines
+  rotate (lane D; Q143 answered; Q-P4-4 and Q-P4-5 settled by lead note
+  10).** This supersedes D160's `on: false` after a denied Yes. G.7's denied
+  body promises "your note will arrive at {time}", so the reminder stays on
+  and shows as blocked until the phone allows it. Settings' blocked row
+  offers Open phone settings. The notification title is "Nesty". Its body
+  cycles through G.7's three lines by `epochDay(nextFire) % 3` at each
+  re-plan (launch, resume, a settings change). It is still one repeating
+  trigger with id 1, so a player who never opens the app sees one line.
+- **D191. Stars from `ui_stars`: one reduce-motion cue, the helper note, and
+  the tip marked when shown (C4b froze, lane O builds; Q145 and Q146
+  answered; Q-P4-6 settled by lead note 10).**
+  - The reveal plays `star_1…star_n` from 1,300 ms, with `SoundEffect.starN`
+    and a light haptic each, then the flourish at 3★.
+  - Under reduce motion it shows the last frame at once, with one sound (the
+    highest star) and one haptic. This departs from D48's half-stagger for
+    this cue only: it is the design's own reduce-motion line.
+  - `GameplayState.starsCapped` is set when the same rule, unassisted, would
+    have given more. The card then shows "Wins with a hint or an extra slot
+    earn up to 2 stars."
+  - `LevelWinOutcome.showStarTip` now means: never shown, below 3 stars, and
+    not capped. `recordLevelWin` no longer writes `starTipShown`. The card
+    calls `SaveService.markStarTipShown()` (one idempotent update) once it
+    shows the tip, so a card with no room (16:9, or the note) leaves the tip
+    for the next.
+
+  No schema field changes.
+- **D192. The race per section 09 (lane R; Q131–Q135 answered; Q-P4-7
+  settled by lead note 10).**
+  - The strip sits in the HUD row (C4b's `GameplayHud.raceStrip`: x 76 to
+    W − 16, top 62, 48 tall, in place of the level and coin pills; a taller
+    strip scales down). `LevelPill.race` and `hudRaceChip` are gone, and the
+    soft-stuck banner is back at 152.
+  - 9.6 is a card, once per rival.
+  - Leave race asks once (9.7b).
+  - Settings is reachable from a race's Pause, with the race's hold kept (the
+    integrator wires `onSettings`).
+  - Rival select selects on tap, has one Start, a "New" chip and the beaten
+    rival's check.
+  - The results duck the music to `raceResult` (0.3) in
+    `RaceResultLayer` and play `jingle_versus_win` or `jingle_versus_lose`.
+  - Visible rival names carry no "Computer" in their text. The Computer tag
+    beside every name carries spec-prop §1.1 rule 5, and the screen-reader
+    strings still say "computer" (`arb_keys_m7_test`, R's widget tests).
+- **D193. Home, Chapters, the Museum and Records per J and I.4–I.6 (lane M;
+  Q92, Q113, Q115 and Q123 answered).** Chapters opens from Home's chapter
+  card only. The Museum's Chapters link is gone (C4b removed it with
+  `museumChaptersLink`). Frame 10.4's header crops the theme art
+  (`ThemeThumbnailLoader`, lead note 4). The Museum's next line is
+  "Chapter 4 · 14 levels to go", and a locked shelf's label is two lines at
+  11 px.
+- **D194. The first-launch fade through `GameplayEntrance` (C4b froze, lane O
+  passes it).** `GameplayPage.entrance` (`push` by default, `fromSplash` from
+  the splash) and the gameplay `CustomRoute`: `GameplayTransitions` fades in
+  over 400 ms from the splash, and runs the platform transition on the first
+  75 % otherwise, so a push still ends at 300 ms. It pops over 300 ms. The
+  transition reads the entrance from the route's own `GameplayRouteArgs`.
+- **D195. "Not enough coins" from the booster popup until M6 (lane O calls
+  lane M's dialog).** There is no connectivity service, and "online" in frames
+  3.2 and 3.8 means an ad can be offered, which is M6's `AdsService`. Until
+  then an unaffordable coin button in `BoosterBuyPopup` stays enabled and
+  opens `NotEnoughCoinsDialog`, with a `TODO(M6)` for the offline look.
+  `connectivity_plus` is rejected (rule 9; connectivity isn't ad readiness).
+- **D196. copy.md m7-3 in the ARB (C4b).** Keys keep their names and take
+  copy.md's values, with curly quotes and `·` kept. Every description
+  cites its copy.md id, or says "Not in copy.md m7-3" and why. None says
+  "Placeholder" any more (`arb_keys_m7_test`).
+  - Numbers the app owns became placeholders: `museumIntro(levels)`,
+    `oomUndoSpent(count)`, `extraSlotLimitToast(count)`,
+    `tutorialStepChip(step, total)`, `splashStorageBody(megabytes)`,
+    `recordsFamiliesValue` and `recordsStarsValue`.
+  - Rule constants stay in the text: "3 stars", "Seven days" and "After
+    Level 2".
+  - 53 keys are new and 10 retired (m7-design P4.8), and the retired ones
+    are pinned gone.
+  - Changed shapes: `raceRivalLocked(rival)` takes a name,
+    `raceLossBody(rival)`, `reminderOfferDenied(time)`,
+    `badgeEarnedToastTitle(badge)`, `museumNextLine(chapter, count)` and
+    `dailyShareText(date, glyphs, moves, day)`.
+  - A skin select keys `forest-bear` as `forest_bear`, since ICU select keys
+    can't hold `-`. `CatalogL10n.skinNameOf` and `skinDescriptionOf` map it.
+  - Every call site was updated, including the tutorial's "STEP n OF 3" on
+    all three Level 1 steps (lead note 6).
+  - `SheetRowTag` caps its width at 150 and scales its text down, since
+    "Free, as often as you like" overflowed a 360 dp sheet at 1.3× text.
+  - Frame-only lines keep their keys with a `TODO(design)`:
+    `raceStripReady`, `racePauseHeader` and `gameplayGenerating`.
+- **D197. copy.md's rival lines ship, with scoped exemptions (C4b; Q-P4-2
+  settled by lead note 10).** Four of copy.md's lines use words the E1 lists
+  deny, but about the computer and never the player:
+  - "Slow" and "Quick" in `raceRivalSkill`;
+  - "Quick" and "before" in `raceRivalBlurb` (the architecture missed rival
+    2's "before it makes it");
+  - "ends" and "lost" in `raceLeaveBody` ("nothing lost" reassures);
+  - "before" in `raceWinBody`.
+
+  `respect_copy_test` exempts each for its key and word only, with its
+  reason. A test fails if a word leaves its key, and the same word in any
+  other key still offends. The design owns copy, and none of these lines
+  changes a rule.
+- **D198. The catalog copy is final (Q73 answered; Q-P4-9 settled by lead
+  note 10).** copy.md G.1–G.4 and H are the final English: the figurine
+  names and flavours, the skin descriptions (Forest Bear's included) and
+  the chapter 7–10 names.
+- **D199. Ten theme palettes; `band` is the fallback colour (C4b).**
+  `ChapterTheme` gains ch07–ch10, and each theme carries its tokens v3
+  `theme.chapters.N`: `palette` (band, accentTop, accent, accentEdge,
+  onAccent, soft, ink) and `thumb`. `fallbackColor` becomes `palette.band`,
+  so ch01–ch06 also leave NestyBoard's BG map: tokens win over the
+  prototype. `forChapter` cycles ten themes, the catalog's chapters 7–10 take
+  their own theme, and ch07–ch10 sell at Q156's default. Theme ids are what
+  the save stores, so this is additive, with no schema step.
+- **D200. Forest Bear on sale at 2,500 (C4b; Q72 answered for Forest Bear).**
+  copy.md H prices it, inside spec §7.3's 800–3,000
+  (`BundledCatalogRepository.forestBearPrice`). The Shop's unsold path is
+  still tested, on a catalog of its own.
+- **D201. The lead notes' settled look (C4b records lead notes 3–9).**
+  - Text links keep the tokens' look with a 48 dp hit box. The menus spec's
+    44 is superseded (CLAUDE.md, the overflow harness).
+  - The chapter ribbon stays the one-line `ui_chapter_ribbon`, tinted with
+    the chapter's palette, with a `TODO(design)` asking whether frame 4.7's
+    two-line plate replaces it.
+  - The chest card sits at top 214 with `ui_chest`, and the SVG is the
+    fallback.
+  - Race results show two buttons as drawn, and system back returns to rival
+    select.
+  - "STEP n OF 3" is on all three Level 1 steps.
+  - The font ships 20 glyphs, not 18: the splash errors' `sd_card_alert` and
+    `inventory_2` as `IconUses.storageError` and `contentError`, with a
+    `TODO(design)` asking for them in tokens.json `icons`.
+- **D202. Phase 4's integration (the integrator, 2026-09-30).** Every
+  lane's needs from others is in, and no frozen signature changed:
+  - the view hands core's legal targets to the board with each effect
+    (`_board.dropTargets = state.dropTargets`), so E.14's drag hover shows
+    in the app (`gameplay_view_test`);
+  - `RaceResultLayer` draws the plank's dolls in the level's own skin and
+    the player's Color symbols, as the win card does (rule 3's placeholder
+    until the skin lands; `gameplay_view_race_test`);
+  - Settings is reachable from a race's Pause (Q132's answer, D192). The
+    Pause stays under the pushed Settings, so its pause hold, set when
+    Pause opens and lifted only by Resume, keeps the rival paused
+    throughout (`gameplay_view_race_test`, `app_flow_test` (i));
+  - three ARB keys phase 4's screens stopped reading are retired and
+    pinned gone: `homeChaptersButton` (the chapter card has its own label),
+    `museumCollection` (6.1's header chip) and `recordsThreeStarLevels`
+    (10.6 draws no such cell; copy.md G.11 still lists it, asked in the
+    Claude Design follow-up);
+  - E1's `reminder_opt_in_test` follows D190 (a denied Yes stays on and
+    blocked and is never asked twice), `m7_phase4_test` follows 9.7b's
+    confirm, `di_test` resolves `UiArtLibrary` and `SystemSettingsService`
+    in both envs, and `app_flow_test` gains (j) the chapter card → Chapters
+    → level card → replay, (k) the blocked reminder's Open phone settings,
+    and the daily win card's Share in (g);
+  - the playthrough follows copy.md m7-3 and the new screens, and
+    `nesty-test` drives the five new device files, each from a fresh
+    install, with `--only` names `board`, `race` (scenarios `loss` and
+    `oom`), `meta`, `daily_states` (`chest`, `paused`, `settings`) and
+    `overlays`; docs/TEST_COVERAGE.md has their rows;
+  - the design gaps are collected, paste-ready, in
+    `claude-design-request-m7.md` "Follow-up after m7-3".
+- **D203. E13 with the first-launch fade (lead note 11).** The fade adds
+  up to 400 ms before level 1 is alone on screen. E13 still counts from
+  `main()` to level 1's first playable frame, which the board reaches under
+  the fade (it takes input once it is laid out); the "alone" time now
+  includes the fade's end. `nesty-test` records both and holds neither to
+  a threshold (Q114: the owner's device check notes the seconds), so the
+  fade fails nothing. The playthrough checks the route's entrance is
+  `GameplayEntrance.fromSplash`.
+- **D204. Lane B's board choices (look only; no rule changes).**
+  - E.15's dashed cubic arch from `layout.hintArc` (6 on, 6 off, 3 dp,
+    `#F2893B`) replaces frame 3.1's dotted quadratic arc: tokens win, and
+    frame 12.13 draws the same arch (Q-B1).
+  - An iced tower's ice sits where the design's `iceTower` scene draws it
+    (its bottom 16.5 under the plank's top). The ice composition hides its
+    own doll on a tower stand, which is 5 dp taller, and the slot draws the
+    doll under it (Q-B2).
+  - E.13's padlock ping scales only the unlock symbol: the golden lock is
+    part of the case art (Q-B3). `padlock_ping`'s null, the flash ring, is
+    not driven.
+  - Tower silhouettes keep D21's true sizes with the design's step. The
+    stack's input is the tower's tallest nest at the start, so the spacing
+    never moves as it empties; a stack squeezed to no step hides behind its
+    top doll.
+  - On rows of 5 and 6 the tall case is capped at the pitch − 2 dp, and
+    `case_size` follows the cap (the architecture's fallback, found by
+    `bundle_layout_fit_test`).
+  - The drag hover reads only the bloc's `dropTargets`: no rule call in a
+    component (rule 2).
+- **D205. Lane R's race choices (look and flow; no rule changes).**
+  - 9.7b's Keep racing resumes the race (the whole Pause closes), as the
+    view's back gesture on Pause already does.
+  - 9.6 comes before 9.4's chosen action (any button or system back), once
+    per rival; its New race races the rival it unlocked, through
+    `RaceCubit.chooseNextRival`, so the frozen `onNewRace` stays
+    parameterless. Its Not now does what the player tapped.
+  - 9.4 and 9.5 draw `VersusRibbon`: `ui_win_ribbon` has no tint hook.
+  - The strip's 360 dp (glyph-only tag) and 340 dp (no state line) rules go
+    by screen width, as the tokens name screen widths.
+  - `RivalStrip` resolves the `AudioService` itself for `rival_complete`,
+    since `GameplayServices` carries no audio.
+  - At 1.3× text the strip, the rival cards and the result blocks scale
+    down rather than scroll or cut; the reward chip's and the tag's text
+    scale down rather than ellipsize. A pick on rival select lasts for the
+    visit; 9.5 shows an empty plank when the player completed no family.
+- **D206. Lane M's menus choices (look; no rule changes).**
+  - Home between the 16:9 body (2.1b) and 844 dp (2.1) blends every number
+    linearly, with no jump; the old hero squeeze stays below 2.1b.
+  - Home's relit ring is derived, not stored: `HomeCubit` shows it when a
+    live refresh sees the streak go from paused to lit, and clears it at
+    the next refresh. No save field.
+  - Home's star totals come from `ChapterStarTally`
+    (`features/chapters/cubit/`), so `features/home` never names the star
+    rule and stays in `stars_gate_nothing_test`'s scan.
+  - A folded Chapters row hides its figurine below 380 dp or at 1.3× text,
+    so the name and kicker wrap instead of being cut. A tap on any reached
+    chapter's header toggles it, one open at a time, the current one open
+    by default. The level card's Play replays the level.
+  - `HomeTile.height` stays 132 and each screen passes `tileHeight`;
+    `ChaptersCubit`'s `RemoteConfigService` is optional (the spec defaults);
+    `TextLink` lives in `core/ui/widgets/home/` with a 48 dp box.
+- **D207. Lane D's daily and Settings choices (look and flow; no rule
+  changes).**
+  - The reminder offer is a full-screen dialog at the Daily view, outside
+    the SafeArea, shown while the daily is solved and no chest is pending;
+    `offered` is written when it first builds, so a pending chest never
+    uses it up.
+  - The segmented Reduce motion track is 48 tall (frame 10.2e's 44), so
+    every segment is a 48 dp target.
+  - In the blocked state the toggle is drawn off and a tap opens the
+    phone's settings (10.2f); see Q158.
+  - The offer proposes the solve's hour (Q81); frame 10.2's "7:00 PM" is an
+    example.
+  - The relit twinkles belong to the daily win card, not the Daily screen,
+    and the freeze notice stays 5.2's toast, with no sub line on the card.
+- **D208. Lane O's overlay choices (look; no rule changes).**
+  - The win card is laid out by the design's y values
+    (`CelebrationLayout`: campaign, replay, plain). A screen under 760 dp
+    tall gets `winStarsShort`, with neither the helper note nor the tip;
+    the star count and the cap still apply.
+  - The light haptic is `HapticPattern.pick` and the flourish's success is
+    `complete`, the patterns the game has. The chest plays one medium
+    haptic at 483 ms, as designed, and no success haptic.
+  - The chapter ribbon is tinted by a colour matrix (`RibbonTint`), since
+    `ui_chapter_ribbon` has no named fill.
+  - The family counter hugs its text by scaling the file's 70 dp pill 0.9
+    to 1.2.
+  - The splash's error card is placed by its own delegate (top 470, lifted
+    on short screens); 12.6's failed card keeps the board dimmed behind
+    it.
+  - The relaxed toast shows once per launch and the +1 Slot limit toast
+    once per level, as the design proposed. Go to Shop from the booster
+    popup leaves the level as Pause → Home does (it saves in progress).
+  - Four frame-only strings became ARB keys, each description saying so:
+    `oomUndoFreeChip`, `boosterLimitSemantics`, `restartSuggestedHint`,
+    `hintGainedTag`. Lane R added `raceRivalBeaten` and `raceStartFor`, and
+    lane M 18 screen-reader and label keys, all "Not in copy.md m7-3".
+
+- **D209. Phase 4's device run passed on both platforms (2026-09-30).**
+  Every `nesty-test` device check passes from fresh installs on the final
+  code, on the iPhone 16 Pro simulator (iOS 18.3) and the API 35 emulator:
+  - the playthrough (525 s on iOS with E13 at 3,958 ms; 598 s and 93
+    screenshots on Android), resume A/B (the same board), the daily's
+    fingerprint against core's;
+  - the five phase-4 files: board layouts, the race loss and Out of Moves,
+    the meta screens, the daily states (the day-7 chest, a paused then relit
+    streak, Settings) and the overlays;
+  - `--android --only reminder`: one pending reminder when on, none when off.
+
+  The run needed nine iOS passes and two on Android. Two of the iOS passes
+  were cut short when the simulator was shut down from outside the stage,
+  and one by the owner's pause. The last iOS pass ran every step on the
+  final code.
+
+  Fixes:
+  - Seven bugs in the new device tests. The screenshot data was replaced
+    instead of merged. A finder missed the race board under Settings. Out
+    of Moves in a race needed a race that has a dead end (race 6, found by
+    a breadth-first search). There were timing, scroll and intro-card races
+    in meta, daily_states and overlays. Settings' Language row was below
+    the fold on a 731 dp screen.
+  - Six app bugs, each with a regression test that fails without the fix:
+    - the open chapter card's accent bar drew nothing;
+    - chapter 10's kicker wrapped after the en dash;
+    - Records' families cell put `records.families` over the Museum's 10
+      (Q159);
+    - the reminder offer, the level card and "A few more coins" had the
+      no-Material yellow double underline;
+    - the day-7 chest's scrim left the safe-area bands undimmed.
+
+  Afterwards the analyzer is clean and the game suite passes (3,999 tests).
+  Android's E13 of 18.3 s was the machine's load (load average 17), not
+  the app. The generated notification icon renders as the doll silhouette.
+  Eleven differences from the frames, none a rule, go to the fidelity audit
+  (BACKLOG M7). The screenshots and the side-by-side comparisons are in the
+  scratchpad (`screens-p4/`, `cmp-p4/`), and the report is
+  `scratchpad/m7/reports/device-p4.md`.
 
 ## Package reasons (CLAUDE.md rule 9)
 
@@ -2191,6 +4057,21 @@ stays at 6.3.30 because 6.3.31+ need Flutter 3.44 / Dart 3.12. Removing
 `hive_ce_generator` also dropped `yaml_writer` 2.1.0. iOS picks up the two
 new pods at the next `pod install`.
 
+The M7 phase-3 contracts stage (2026-09-29, D154) added `share_plus`,
+`flutter_local_notifications`, `timezone` and `flutter_timezone` to the
+game. Their new lock entries are `share_plus` 13.3.0,
+`share_plus_platform_interface` 7.2.0, `cross_file` 0.3.5+5, `uuid` 4.6.0,
+`flutter_local_notifications` 22.3.1 and its platform packages (linux
+8.0.1, platform_interface 12.2.0, web 1.0.0, windows 3.1.1), `dbus`
+0.7.15, `timezone` 0.11.1, `flutter_timezone` 5.1.0 and `equatable` 2.1.0;
+no locked version changed. share_plus 13 is the line that accepts the
+locked `win32` 6.4.0 (11.x and 12.x need ^5.5.3) and needs AGP 8.12.1, so
+`android/settings.gradle.kts` moved from 8.11.1; flutter_local_notifications
+needs core-library desugaring (`desugar_jdk_libs` 2.1.4 in
+`android/app/build.gradle.kts`) and compileSdk 36, which is Flutter
+3.41.2's. None is in spec §13.2, and none needs a network. iOS picked
+up three pods at the smoke build's `pod install`.
+
 ### Runtime dependencies
 
 | Package | Locked | Used in | Why | §13.2 |
@@ -2217,6 +4098,10 @@ new pods at the next `pod install`.
 | `path` | 1.9.1 | tools | Repo-relative path handling in the `nesty_tools` CLIs. Already in the lock transitively | — |
 | `package_info_plus` | 10.2.1 | game | The Settings footer's "v1.0.0 (build 42)" (frame 8.1, spec §10.2 #13), behind `AppInfoService` so tests and the fake env never call the platform. Added by the M3 contracts stage (D80); the newest release on Flutter 3.41.2 | — |
 | `url_launcher` | 6.3.2 | game | Settings' Privacy Policy link and Support email (frame 8.1, spec §9.3, §10.2 #13, §17), behind `LinkLauncher`. `launchUrl` only, never `canLaunchUrl`, so no Android `<queries>` or iOS `LSApplicationQueriesSchemes` entries are needed. Added by the M3 contracts stage (D80); `url_launcher_android` resolves to 6.3.30 (6.3.31+ need Flutter 3.44) | — |
+| `share_plus` | 13.3.0 | game | E3, the daily share card (spec-prop §10.2 #11, D92): the OS share sheet for the Daily screen's spoiler-free text, behind `ShareService` (`SharePlusShareService`; plain text, no file or link until M8). 13.x is the line that accepts the locked `win32` 6.4.0; it needs AGP ≥ 8.12.1. Added by the M7 phase-3 contracts stage (D154) | — |
+| `flutter_local_notifications` | 22.3.1 | game | E4, the opt-in daily reminder (spec-prop §7.9, §1.1 rule 7, D92): one local, offline, inexact repeating notification a day, behind `NotificationService` (`LocalNotificationService`); the permission is asked only after the player's Yes. Min API 24 (spec §0), compileSdk 36, core-library desugaring. Added by the M7 phase-3 contracts stage (D154) | — |
+| `timezone` | 0.11.1 | game | The reminder's `zonedSchedule` takes a `TZDateTime` in the device's zone; flutter_local_notifications 22 needs ≥ 0.11.0; the `latest_10y` data. Pure Dart. Added by the M7 phase-3 contracts stage (D154) | — |
+| `flutter_timezone` | 5.1.0 | game | The device's IANA zone for `tz.local`, so the reminder keeps its local time across DST (a fixed offset would drift by an hour). Added by the M7 phase-3 contracts stage (D154) | — |
 
 ### Dev dependencies
 
@@ -2530,10 +4415,11 @@ reused.
   `preserveAspectRatio` meet.
   Resolved 2026-09-26: owner-confirmed. Every listed render default stands
   (D36–D38).
-- [ ] **Q39. A tap on an unpickable slot with nothing selected (M2).** An
+- [x] **Q39. A tap on an unpickable slot with nothing selected (M2).** An
   empty, locked or iced slot tapped with no nest lifted is ignored today
   (`TODO(design)` in `tap_policy.dart`; frame 2.6 doesn't cover it). Should it
   shake the slot like an invalid move?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): a tap on an unpickable slot never shakes: an empty stand dips, a sealed case pings its padlock, an iced slot bumps its ice counter (frame 12.13); D185.**
 - [ ] **Q40. Dragging another nest while one is tap-lifted (M2, D55).** The
   drag start switches the selection (the drag reads as an explicit pick),
   while a tap there is an invalid move (D22). Keep that, or make the drag
@@ -2655,10 +4541,11 @@ reused.
   tall brown3 lands on its upper body. Should it start at the head instead?
   **Resolved 2026-09-27 (owner): keep the design's value**, 66 below the
   top (capped at two thirds), as frame 3.1 draws it.
-- [ ] **Q65. The extra slot's pulse under a doll (M7).** `ui_extra_slot`
+- [x] **Q65. The extra slot's pulse under a doll (M7).** `ui_extra_slot`
   loops until the level resets, also while a doll stands on the slot.
   Frame 3.6 shows only an empty extra slot. Stop the pulse while it is
   occupied?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): the loop stops (a 150 ms fade to its rest frame) while a doll stands on the pad, and restarts at frame 0 once it is empty (`motion.extraSlot`); D184.**
 - [ ] **Q66. A music volume slider (M3).** `MusicService.setVolume` applies
   at once and cancels a running fade (a crossfade too). Fine for a slider;
   should it fade instead? Nothing calls it in M2.
@@ -2686,19 +4573,362 @@ reused.
   the Space skin 1,200 (frame 7.3 shows it owned), the ch02 and ch03 themes
   800 and 1,000 when bought before their chapter; `forest-bear` is not
   sold. All tunable from Firestore in M4.
+  **Forest Bear answered 2026-09-30 by Claude Design's m7-3 (phase 4): sold at 2,500 (copy.md H), D200.** The other defaults (Space 1,200, ch02 800, ch03 1,000) stay open.
 - [ ] **Q73. Catalog content the design doesn't supply (M3, m3 §9.1,
   D75).** Figurine names 4–10 default to "The Astronaut/Gardener/Snow/
   Circus/Musician/Royal/Explorer Family" (Q47); 9 figurine flavor texts,
   5 skin descriptions (only Ocean's exists) and the names of chapters 7–10
   are hidden until supplied; the privacy policy URL and the support email
   hide their Settings rows until supplied.
+  **The catalog copy answered 2026-09-30 by Claude Design's m7-3 (phase 4): copy.md G.1–G.4 and H, every figurine name and flavour text, the six skin descriptions and Forest Bear's, and the chapter 7–10 names, final (Q-P4-9); D198.** The privacy policy URL and the support email stay open.
 - [ ] **Q74. The Settings footer's Player ID (M3, frame 8.1, D79).** The
   spec has no player id. Default: a local random id made on first launch
   and kept in the save (`7F3A-21C9`). Keep it, or drop it from the footer?
 - [ ] **Q75. The Shop's Coins and No Ads tabs before M6 (M3, m3 §10.7,
   D75).** Default: all four tabs show, and those two show a store-closed card
   until the store lands in M6. Or hide them until then?
+- [ ] **Q76. The milestone chest (M7, D92 E5).** Default: 100 coins and 1
+  hint (`chest_coins`, `chest_hints`), at level 10 of every chapter and every
+  10th bonus level, never on a replay.
+- [ ] **Q77. Race rewards (M7, D93).** Default: 20, 30 and 40 coins by rival
+  (`race_reward_1/2/3`), no daily cap.
+- [ ] **Q78. When vs Computer unlocks (M7, D93).** Default: after Level 20
+  (`race_unlock_level`).
+- [ ] **Q79. Rival paces (M7, D93).** Default: 3.0, 2.4 and 1.6 s per move
+  (`race_pace_ms_1/2/3`), each varying by up to ±20 %
+  (`race_pace_jitter_pct`), tuned by playtest.
+- [ ] **Q80. Rival boards (M7, D93).** Default: easy, medium and medium, at
+  the stage of the player's highest level.
+- [ ] **Q81. The reminder's default time (M7, D92 E4).** Default: the hour
+  the player solved their first daily, editable in Settings.
+- [ ] **Q82. Replays (M7, D92 E7).** Default: a replay pays nothing, never
+  moves `currentLevel`, the chest or the Museum, and best moves are kept per
+  level id and version.
+- [ ] **Q83. The badges (M7, D92 E8).** Default: about 12 cosmetic badges
+  with fixed triggers, which Claude Code proposes in the brainstorm doc and
+  Claude Design names and draws.
+- [ ] **Q84. Relaxed mode's undo rows (M7, D92 E6).** Default: with relaxed
+  mode on, the undo price and ad rows are hidden (undo is free).
+- [ ] **Q85. Where the new rules live (M7, D92, D93).** Default: the owner
+  pastes `plans/spec-proposals-m7.md` into GAME_SPEC.md; until then its
+  approved text is the rule. Or keep them recorded here only?
+- [ ] **Q86. Ads for players of unknown age (M6, D92).** Default: decide at
+  M6 between non-personalized ads by default and reading Apple's Declared
+  Age Range API.
+- [ ] **Q87. 4-shelf boards and 5-slot rows (M7, D92).** The confirmed
+  curve (Q34) never uses them. Default: keep the curve's layouts for launch.
+  Or add them to chapters 8–10 for variety? That needs Claude Design B.1–B.2,
+  a curve change and a `Generator.version` bump.
+- [ ] **Q88. Best moves on daily, bonus and race boards (M7, m7 §11,
+  D102).** Default: none; they can't be replayed, so their win card shows
+  "Moves N" only. Keep a best for them too?
+- [ ] **Q89. When the milestone chest pays (M7, m7 §9, D103).** Default: in
+  the win's own save update, so a kill before the modal loses nothing; the
+  modal's buttons only show it. Or pay on the modal's button instead?
+- [ ] **Q90. Replays in progress (M7, m7 §6, D100).** Default: a replay is
+  never saved, so a kill ends it (it pays nothing, so nothing is lost). Or
+  save and resume replays like the campaign?
+- [ ] **Q91. What the records count (M7, m7 §12, D105).** Default: every
+  mode (campaign, replay, bonus, daily, won races), won boards only; "dolls
+  nested" is the dolls that end inside another in each won board,
+  `totalSets × (maxSize − 1)`. Or count the moves as they are made?
+- [x] **Q92. Where Chapters and Records open from (M7, m7 §15.8, D109).**
+  Default: a row of two buttons under Home's header, and a Chapters button
+  on the Museum screen, until Claude Design draws them (request §I.4).
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): Chapters opens from Home's chapter card, Records from the Records button beside it; the Museum has no Chapters link (frames 2.1, 6.1); D193.**
+- [ ] **Q93. Bonus milestone chests (M7, m7 §9, D97, D103).** Default: every
+  10th bonus level, tracked in their own list (`chests.bonusOpened`). OK?
+- [ ] **Q94. The badge triggers (M7, m7 §12, D106, with Q83).** Default: the
+  twelve of m7 §12; `tall_order` counts `maxSize` 5 or more, `grand_nest`
+  6; `museum_full` is the ten launch figurines. Claude Design names and
+  draws them.
+- [ ] **Q95. The freeze chip's "0 left" (M7, frame 5.2, D110).** Default:
+  rewritten "No freeze" (scarcity wording, E1). Keep the frame's copy?
+- [ ] **Q96. The paused streak's look (M7, m7 §15.7, D98).** Default: the
+  whole Daily tile badge and streak card turn neutral (never red), the flame
+  muted. Or only the flame?
+- [ ] **Q97. Where "Streak relit!" shows (M7, m7 §8, D98).** Default: on the
+  daily win card's streak line, not as a toast on the Daily screen.
+- [ ] **Q98. The vs Computer tile before the race ships (M7, m7 §15.8,
+  D109).** Default: locked, "After Level 20" until that level is won, then
+  "Coming soon" until M7 phase 2 lands. Or hide the tile until then?
+- [ ] **Q99. The layout signature (M7, D114, E12).** Default: the slots per
+  shelf, the sorted tower depths, the glass cases, the iced slots, the colour
+  count and `maxSize`; colours, positions and set cuts are ignored (a
+  reskin). Should another feature separate two levels?
+- [ ] **Q100. Expert-only levels past L200 (M7, D114).** The approved text
+  says "an error for L31–200". Default: an error from L31 on, so a level
+  published later (M4) is held to it too.
+- [ ] **Q101. `maxSize` 6 as a `bundle check` gate (M7, D114).** Default: an
+  error on any slot but a super hard one (spec §3.7), so size 6 appears only
+  on L130, L140 … L200.
+- [ ] **Q102. The intro levels leave their curve rows (M7, D113).** Default:
+  L31, L51 and L71 have no towers and 3–4 colours, so each mechanic arrives
+  alone (and L71 with "few colours"). OK?
+- [ ] **Q103. Chapter 5's "fewer empty slots" (M7, D113).** Default: no empty
+  slot at the start, on all 20 of its levels.
+- [ ] **Q104. The 20,000-node start solve (M7, D113).** Default: every new
+  level solves from its start within the device's soft-stuck budget (spec
+  §6.3), a selection rule pinned by a repo test, not a `bundle check` gate
+  (making it one is a "Later" item).
+- [ ] **Q105. Twist knobs beyond ±1 (M7, D113).** Default: towers 4 deep in
+  chapters 5, 8 and 10; no empty slot in chapter 5, chapter 6's hard levels
+  and chapter 10; 2 empty slots on some of chapter 6's easy levels; glass
+  and ice counts 0–2 where a twist names them.
+- [ ] **Q106. `levelsVersion` (M7, D113).** Default: stays 0 until M4's
+  remote manifest reads it.
+- [ ] **Q107. L200, the grand finale (M7, D115).** Default: kept as the only
+  level the casual bot never wins (0/300; smart 300/300, 35 moves; L160 is
+  now 7/300 and L170 27/300). Or re-tune it, which needs two or more swaps
+  or giving up its 35 moves?
+- [ ] **Q108. Four easy pairs that read alike (M7, D115).** L81/L82 and
+  L91/L92 (chapter 5), L141/L142 and L151/L152 (chapter 8) differ only in
+  their shelf count. Default: kept. Or allow another knob in those slots
+  (a glass or ice count, towers ±2)?
+- [ ] **Q109. The near-duplicate measure (M7, D115).** Default: a repo test,
+  calibrated on one review's four pairs; E12's signature (Q99) stays the
+  gate. Or make it a `bundle check` gate?
+- [ ] **Q110. +1 Slot's one sound (M7, D116).** Default: the booster's own
+  tap feedback plays it and the timeline's cue is gone. Or every board sound
+  from the timeline (then the two buttons that lead there go silent)?
+- [x] **Q111. The extra slot's loop at rest (M7, D116).** Default: it starts
+  at frame 24, where its scale matches the static pad but its opacity is
+  about 88 %: a smaller pop than before. Wait for Claude Design's E.21, or
+  crossfade it in now?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): the loop rests on frame 0 (`ui_extra_slot`'s `rest` marker, `motion.extraSlot.restFrame`); D184.**
+- [ ] **Q112. The shell's overflow sweep (M7, D121).** Default: the bottom
+  nav and `HomeView` are swept apart. Also sweep the fully navigated shell
+  (Home under the real router) at the five sizes?
+- [x] **Q113. The Chapters header band (M7, D118).** Your direction asked for
+  a band about 96 dp tall with the chapter's theme art cropped behind a soft
+  scrim. Default: the stand-in keeps a theme-colour emblem with the family,
+  and Claude Design's 10.4 decides. Or build the cropped band now?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): yes: the header crops the chapter's theme art (frame 10.4); D193.**
+- [ ] **Q114. What E13 times (M7, D123).** Default: from Dart's `main()` to
+  Level 1's first playable frame on a fresh install; the native launch
+  before `main()` isn't in it, so your device check adds the seconds from
+  the tap on the icon.
+- [x] **Q115. The Museum's next-family line (M7, D118, design request J.2).**
+  Default: "7 levels to go" under the family's name. Your example read
+  "Chapter 4 · 7 levels to go": add the chapter?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): "Chapter 4 · 14 levels to go" (copy.md G.10 `museum_next_line`); D193.**
+- [ ] **Q116. Which assists cap a win at 2★ (M7, D125).** Default: a hint
+  used since the last Restart, or an extra slot on the board at the win (an
+  extra slot survives undo and Restart, D22).
+- [ ] **Q117. Best stars across level versions (M7, D125).** Default: kept
+  per level id, so a new version (M4 content) keeps them. Best moves stay
+  per version (D102).
+- [ ] **Q118. Where the 3★ target shows (M7, D125).** Default: "3 stars at
+  15 moves or fewer" appears only on a replay's win card below 3★, never on
+  a level's first win.
+- [ ] **Q119. A one-time tip about stars (M7, D125).** Default: the first
+  win below 3★ says once "Fewer moves earn more stars. Replay any level from
+  Chapters."
+- [ ] **Q120. Stars for levels won before stars existed (M7, D125).**
+  Default: the stars their best moves earn, as if no hint was used, or 1★
+  where there is no best.
+- [ ] **Q121. E13's headline: "playable" or "alone on screen" (M7, D127, device stage).** Default: both reported; `nesty-test` prints both; "playable" stays D123's definition.
+- [x] **Q122. Where the badge toast sits over the win card, and whether it closes with the card (M7, device stage).** Default: unchanged (top 58, 3 s), reported above. The toast covers "Level Complete!" and stays over Home's Chapters/Records row after the first win, over chapter 10 complete and over All Levels Done.
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): above the result card's ribbon at y 60, one at a time, and it leaves with the card (`motion.toast`); D187.**
+- [x] **Q123. The Museum's shelf label: scaled to fit (shipped), two lines with a taller shelf, or a shorter form (M7, D130, device stage, design request J.2).** Default: scaled to fit, until J.2.
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): two lines at 11 px, "Chapter N" over "Levels a–b" (frame 6.1; copy.md G.10); D193.**
+- [ ] **Q124. A Rematch after a win pays again (M7, D136, D138).** Default:
+  yes, every win pays `race_reward_n` (spec-prop §7.7 "A win pays"; no cap,
+  Q77). Or pay only a race's first win?
+- [ ] **Q125. The race board's stage (M7, D134).** Spec-prop §7.7 says "at
+  the stage of the player's highest level". Default: the highest campaign
+  level won (`highestLevel − 1`), since the next level's stage may bring a
+  mechanic not met yet. Or the next level's stage?
+- [ ] **Q126. Race seeds and the raceNo cap (M7, D134, D138).** The seed
+  formula can't meet any reachable daily or bonus seed, though bonus levels
+  from 2,100,001 and dailies of the years 310–339 would. Default: keep the
+  formula and cap raceNo at 99,999, where New race replays the last board.
+- [ ] **Q127. A rival's restart takes one pace interval (M7, D133, D136).**
+  Default: yes, the strip says "Starting over" for that interval, and the
+  next interval makes the new run's first move. Or restart and move in the
+  same interval?
+- [ ] **Q128. Leaving a race, and its analytics (M7, D137).** Default: Quit
+  race goes back to rival select with nothing written, the left race's
+  raceNo is used up (the next race is a new board), and a race logs none of
+  spec §14.4's level events until M4 defines race events.
+- [ ] **Q129. A race board's theme (M7, D135).** Default: the player's
+  current chapter's, like the daily, until Claude Design's frame 9.3 lands.
+- [ ] **Q130. `race_unlock_level` below 16 (M7, D134).** Below the tower
+  stage every board simulates easy, so rivals 2 and 3 would get easy
+  boards. Default: no clamp; the default 20 keeps every race at stage 16 or
+  later. Or clamp the race stage to 16 or later?
+- [x] **Q131. "Rival unlocked" (frame 9.6) (M7, D139).** Default: a toast
+  over the win card, after any badge toast. Or a fuller card, like Chapter
+  complete's?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): a card, shown once per rival as 9.4 closes (frame 9.6); D192.**
+- [x] **Q132. Settings in a race's Pause (M7, D139).** Default: no Settings
+  tile, only Restart and Quit race. Or keep Settings reachable mid-race
+  (the race stays paused while it is open)?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): Settings is reachable from a race's Pause (frame 9.7); D192.**
+- [x] **Q133. Quit race in one tap (M7, D139).** Default: one tap with no
+  confirmation, like every Pause tile; a race loses nothing by quitting.
+  Or ask first?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): Leave race asks once (frame 9.7b); D192.**
+- [x] **Q134. The rival strip (M7, D139).** Default: a counter pill ("3/6")
+  with the rival's state, no second board, until frame 9.3 lands. Or a
+  small live board of the rival's copy (a second, read-only board)?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): the family counter plus one dot per family, no second board (frame 9.3); D192.**
+- [x] **Q135. The rival strip on a narrow screen (M7, D141, race-ui).**
+  m7 P2.9 says its state line "drops first below the smallest width" and
+  names no width. Default: below 340 dp the strip shows the portrait, the
+  name with its Computer tag and the counter, without "Thinking…", until
+  frame 9.3 says what gives way (design request C.9). The width is the
+  strip's inner width (the screen − 64 dp), so the line drops on every
+  screen under 404 dp: the iPhone 16 Pro (402 dp) and the design's 390
+  reference hide "Thinking…", and the 411 dp emulator shows it (device
+  stage, D143).
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): the tag goes glyph-only below 360 dp and the state line hides below 340 dp (screen width); D192.**
+- [x] **Q136. Toasts over a result card (M7, D143, device stage).** Toasts
+  on 2.8 and 9.4 stack 350 ms apart at one spot, so a second hides the first
+  (the `first_race` badge toast under 9.6's "New rival unlocked!"; 2.8 with
+  two badges). Default: they stack, as today. Or queue them, each after the
+  previous one closes? Design request I.6 and C.9 ask where they go.
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): queued: one at a time, 2.5 s each, 300 ms apart (`motion.toast`); D187.**
+- [ ] **Q137. The reminder on a day already solved (M7, D153).** Plan
+  decision 15 says "a daily repeating" notification. Default: it still
+  fires on a day already solved. Skipping those days needs one-shot
+  notifications over a rolling window, re-planned at each launch (a
+  repeating iOS trigger can't skip a day), and they would stop if the app
+  isn't opened for the window. Or skip solved days?
+- [ ] **Q138. "Offered once" (M7, D153).** Default: the offer counts as
+  made at its first appearance on the Daily screen, answered or not;
+  Settings keeps the switch. Or show it again until answered?
+- [ ] **Q139. The reminder row before the daily unlocks (M7, D153).**
+  Default: Settings hides "Daily reminder" until Level 2 is won (the
+  daily's own unlock). Or show it from the start?
+- [x] **Q140. A button to the phone's notification settings (M7, D153).**
+  Default: none in phase 3; the denied and blocked lines say where to
+  turn notifications on. A button needs a small platform channel or the
+  `app_settings` package (a rule-9 reason). Add one?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): yes: "Open phone settings" on the denied step and Settings' blocked row (frames 10.2d, 10.2f); D189.**
+- [ ] **Q141. A tap on the reminder (M7, D153).** Default: it opens the
+  app normally (splash, then Home, one tap from Daily). Or deep-link to
+  the Daily screen (later)?
+- [ ] **Q142. The reminder while the app is open (M7, D153).** Default:
+  iOS shows nothing in the foreground; Android posts it at default
+  importance (no heads-up banner). Or show it in the foreground too?
+- [x] **Q143. How many notification lines (M7, D153, design request
+  G.7).** G.7 asks Claude Design for 2–3 lines. Default: one line, the
+  same every day; rotating needs one schedule per weekday. Rotate them?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): three lines (copy.md G.7 `notification_1..3`), rotating at each re-plan (Q-P4-5); D190.**
+- [x] **Q144. The share text (M7, D151, design request G.6).** Default:
+  the date, one 🪆 per family (at most 12), the families, the moves and
+  the streak count, even while the streak is paused; no board, colours or
+  moves. G.6 replaces the wording. Anything to add or drop?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): G.6's text: one belly-symbol emoji per family, "Solved in N moves · Day D 🔥", or the no-streak line; on the daily win card (frame 10.1); D188.**
+- [x] **Q145. The replay's 3-star target line (M7, D148, Q118).**
+  Default: it shows only when the moves were over the 3-star threshold,
+  so an assisted win at or under it shows none, and no line explains the
+  hint or +1 Slot cap until design request K.4 says how. Or say why a
+  2-star win was capped?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): "Wins with a hint or an extra slot earn up to 2 stars." (copy.md G.11 `stars_helper_note`); D191.**
+- [x] **Q146. Reduce motion on the win card's stars (M7, D149, design
+  request K.3).** Default: every star shows at once, with no pop or
+  twinkle; the three pitched clacks and haptics still play at half the
+  stagger (60 ms apart), as D48 does for every cue. Or play them silently?
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): the last frame at once, one sound (the highest star) and one light haptic (`motion.stars`); D191.**
+- [ ] **Q147. The star totals (M7, D150).** Default: a chapter's total is
+  3 × its bundled levels with a par (60), and Records' is 3 × the
+  bundle's levels with a par (600). OK?
+- [ ] **Q148. A tutorial whose scripted moves leave every optimal line
+  (M7, D146).** The stars-core lane checks that L1's and L2's scripted
+  moves lie on an optimal line. Default if one doesn't: accept that its
+  first play can't reach 3★ (a replay can), and report it. Or change the
+  script? (Checked 2026-09-29 by stars-core: L1's script is its whole
+  2-move solve, par 2; L2's scripted swallow `r0c0>r1c0` leaves a 2-move
+  finish, 3 in all, par 3. Both first plays can reach 3 stars, and
+  `repo_levels_test` pins it, so the default is moot. The bots' star
+  shares per chapter are in `tools/levels/README.md` "Par and the star
+  shares", for tuning the two slack keys.)
+- [ ] **Q149. A denied reminder Yes (M7, D160).** When the OS says no,
+  `DailyReminder.enable` still stores the chosen time and `offered`, and
+  only `on` stays false. Default: yes, so a denial never loses the
+  player's time. Or leave the settings untouched?
+- [ ] **Q150. A platform double for the share test (M7, D156).** A true
+  `SharePlatform` double needs `share_plus_platform_interface` and
+  `plugin_platform_interface` as dev dependencies (rule 9). Default: no;
+  a plain-Dart test of the status mapping and a "never throws" test with no
+  platform registered cover it, as `url_link_launcher_test` does. Add
+  them?
+- [x] **Q151. The Share button's glyph until I.10 (M7, D156).** Default:
+  `NestyIcons.download`, unused elsewhere in the app, so it collides with
+  no other meaning. Or another glyph from the subset? On a device the tray-and-arrow
+  glyph is the solved card's only icon-only button, and it reads as
+  "download" or "save" (device stage, D162). I.10 should name the share
+  glyph.
+  **Answered 2026-09-30 by Claude Design's m7-3 (phase 4): `share`, and `ios_share` on iOS (tokens `icons.share`, `shareIOS`); D188.**
+- [ ] **Q152. The reminder offer's time after a night solve (M7, D153, Q81,
+  Q138).** The offer proposes the solve's hour, so a daily solved at 01:59
+  offers "Every day at 1:00 AM" (seen on both devices). Default: keep the
+  solve's hour, because nothing is scheduled until Yes and "Change time" is
+  on the card. Or propose a daytime hour, for example the Settings default
+  19:00, when the solve's hour falls at night (say 22:00–07:59)?
+- [ ] **Q153. A paused streak and a clock rolled back (M7, D163, review
+  R2).** While the daily streak is paused (`lastDate` is null), the save
+  has no latest date. If the player rolls the clock back to an earlier ISO
+  week, that week grants a freeze, and solving that past daily relights
+  the run (m7-design §8's `solve` compares only against `lastDate`).
+  Default: leave it as it is. It needs a deliberate rollback while paused,
+  gives at most one freeze per round trip, and nothing is paid for. Or
+  keep a high-water date in `DailyProgress` (or keep `lastDate` on a
+  pause), so this also counts as "the clock went back"? That changes §8's
+  model and the save (a schema step).
+- [ ] **Q154. Screen-reader play on the board (M7, D165, review R12).**
+  The Flame board has no screen-reader nodes. A VoiceOver or TalkBack
+  player can use every menu, overlay and dialog, but can't pick a slot,
+  so they can't play any level, the daily or a race. Screen-reader play is
+  not in spec §16 or spec-prop §16. Building it means:
+  - one node per slot, from the page's `BoardGeometry`, labelled from
+    core's state;
+  - a tap that goes through the board's own input rules;
+  - the tutorial card as a live region;
+  - about 20 new strings from Claude Design (11 color names, sizes,
+    towers, glass and ice states) in the 9 launch languages;
+  - then a VoiceOver and TalkBack device pass.
 
+  Should blind players be able to play levels in v1? Default: build it in
+  v1.1, and say in the store listing that playing the board needs sight
+  until then.
+- [ ] **Q155. The reminder's time zone data (M7, D166, review R9).**
+  P3.10 loads `timezone`'s `latest_10y`, which lacks 132 backward-link
+  zone ids (Europe/Amsterdam, Asia/Calcutta, GMT and others). Should it
+  load `latest_all` instead? That adds about 380 KB of data and about 3 ms
+  of decode. Default: keep `latest_10y`. Since R9, the platform receives
+  the device's own id and applies its real DST rules. For those ids, the
+  Dart side only lacks R34's gap-day check: a 02:xx reminder scheduled
+  within a day before a spring-forward change. The zone key's offset
+  repairs that at the first refresh after the change.
+
+- [ ] **Q156. Theme prices for chapters 7–10 (M7 phase 4, D199).** No
+  source prices the ch07–ch10 themes. Spec §7.3 gives 500–2,000 and ch06 is
+  2,000. Default: 2,000 each (`BundledCatalogRepository.laterThemePrice`),
+  tunable from Firestore in M4.
+- [ ] **Q157. The splash's "about 60 MB" (M7 phase 4, D196).** copy.md E's
+  `splash_storage_body` says "Nesty needs about 60 MB to set up the
+  shelves." The save itself needs far less, and the prod APK is 79.8 MB.
+  Default: ship copy.md's line, with 60 in `SplashCopy.storageMegabytes`
+  (the ARB's `{megabytes}`) for you to confirm or change.
+- [ ] **Q158. A blocked reminder has no off switch in the app (M7 phase 4,
+  D190, D207).** After a Yes the OS denied, the reminder stays on and
+  blocked (D190). Settings then draws the toggle off, and a tap on it (or
+  on "Open phone settings") opens the phone's settings (frame 10.2f), so
+  nothing in the app turns the reminder off while it is blocked. Nothing
+  is delivered while blocked, but if notifications are allowed later the
+  reminder starts as the player asked. Default: no extra control. The
+  alternative is a "Turn off" link on the blocked row, which needs a new
+  string (asked in the Claude Design follow-up).
+- [ ] **Q159. Records' families cell (M7 phase 4, D209).** copy.md G.10
+  and frame 10.6 read "{count} of 10 Families home", which is the Museum's
+  count. The cell's value is `records.families`, every family a won board
+  completed (spec-prop §7.9), so after two wins it read "2 of 10" with the
+  Museum still empty. Default shipped: the rule's plain count, labelled
+  "Families completed" (`TODO(design)` for its copy and glyph). Or show the
+  Museum's own count ("N of 10 Families home")?
 ### Notes for later milestones (not questions)
 
 Since 2026-09-26 each note below is also an item in [BACKLOG.md](BACKLOG.md),
@@ -2760,17 +4990,57 @@ section only says where to look.
    mid-range Android and an iPhone (gapless loops over 3 cycles, audible
    ducks, no clipping, streaming under 3 MB resident); the `jingle_reward`
    listening check; Q64–Q66.
-3. **M3** is code complete ([M3](#m3--app-shell-and-meta--code-complete-acceptance-pending)):
+3. **Next: M7, the offline game (D90, D92, D93).** It covers:
+   - levels 31–200 on the chapter plan;
+   - chapter themes 7–10 and the catalog copy;
+   - the vs Computer race;
+   - the eight engagement features under the respect rules;
+   - star ratings, 1 to 3 per level (D125,
+     [plans/star-rating.md](plans/star-rating.md));
+   - the art polish.
+
+   All of it comes before any backend, and M4–M6 follow it. Where things are:
+   - the work list is BACKLOG "M7";
+   - the reasoning is `docs/plans/offline-game-brainstorm.md`;
+   - the rules are `docs/plans/spec-proposals-m7.md`, for the owner to paste
+     into the spec (Q85);
+   - the art and copy request is `docs/plans/claude-design-request-m7.md`;
+   - the prompt that starts the work in a fresh Claude Code session is
+     `docs/plans/m7-claude-code-prompt.md`.
+
+   Q76–Q87 have defaults, and none blocks the start.
+
+   **Phases 1–3 are done** (2026-09-29, [M7](#m7--the-offline-game--phase-1-integrated-2026-09-28)):
+   levels 31–200, E1, E2, E5–E9 and E12–E14; then vs Computer; then star
+   ratings, the share card and the reminder. Each passed on the iPhone 16
+   Pro simulator and the API 35 emulator (D126–D131, D143, D162). **Phase 4
+   is integrated** (2026-09-30, [Phase 4](#phase-4-claude-designs-m7-3-delivery-integrated-2026-09-30),
+   D171–D208): Claude Design's `nesty-design-m7-3` replaces every stand-in,
+   and its device run passed on both platforms (D209). The design gaps are
+   in `claude-design-request-m7.md`
+   "Follow-up after m7-3". Then phase 5 (the close), whose review pass is
+   done in two rounds ([M7 review pass](#m7-review-pass-2026-09-29),
+   D163–D167), with the accessibility audit. The device run after the
+   review passed on both platforms (D168). Left in phase 5: the VoiceOver
+   and TalkBack pass on a device, the fidelity audit, the translations and
+   the `/milestone M7` gate, where the fidelity audit starts from D209's
+   eleven differences. Q88–Q159 have defaults; none
+   blocks the next phase. Left with the owner: a real reminder on a phone,
+   tuning the two star slack keys from `nesty_levels report --stars`, Q154
+   (screen-reader play on the board), and the pass-and-play proposal,
+   [plans/pass-and-play-proposal.md](plans/pass-and-play-proposal.md): build
+   it or not, and which rules.
+4. **M3** is code complete ([M3](#m3--app-shell-and-meta--code-complete-acceptance-pending)):
    both criteria pass on the iPhone 16 Pro simulator and the API 35
    emulator. Left for its acceptance (the two items at the top of BACKLOG
    "M3"): the owner swipes the app away mid-level on a physical phone and
    relaunches it, and opens the Daily on two physical phones on the same
-   date. M4 (BACKLOG "M4") starts once M2's and M3's device checks pass.
-4. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
+   date.
+5. **Owner inputs:** BACKLOG's "Owner inputs needed" lists what only the owner
    can supply or decide, with the milestone each one blocks. Due next: Q73's
    content (figurine names 4–10, flavor texts, skin descriptions, the
    privacy URL and support email), which M3 ships hidden or as placeholders,
    and the M3 defaults Q67–Q75.
-5. Owner decisions that block nothing but are cheapest to take early: Q23
+6. Owner decisions that block nothing but are cheapest to take early: Q23
    (SDK upgrade), Q24 (deny globs), Q25 (rule 10 wording) and Q27 (Gradle
    wrapper).

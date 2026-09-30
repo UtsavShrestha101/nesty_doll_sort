@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes nh-idle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(-2deg)}60%{transform:translateY(0) rotate(1.5deg)}}@keyframes nh-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}a{color:#C4631E}a:hover{color:#A94F12}</style></helmet>
+<div style="position:relative;width:390px;height:{{ frameH }}px;border-radius:{{ frameR }};overflow:hidden;background:{{ bg }};box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+
+<sc-if value="{{ hdOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:62px;height:48px;display:flex;align-items:center;gap:12px;z-index:10">
+<div style="width:46px;height:46px;flex:none;border-radius:17px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 8px 12px rgba(90,50,20,.18);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 700">{{ hdIcon }}</div>
+<div style="flex:1;min-width:0;font:700 26px/1 'Fredoka',sans-serif;color:#5B3A21">{{ hdTitle }}</div>
+<sc-if value="{{ hdCoins }}" hint-placeholder-val="{{ false }}"><div style="height:40px;padding:0 14px 0 6px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;display:flex;align-items:center;gap:7px;font:700 17px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums"><div style="width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -2px 0 rgba(120,70,0,.35)"></div>830</div></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:16px;top:{{ topY }}px;height:42px;padding:0 8px 0 6px;border-radius:21px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A,0 8px 12px rgba(90,50,20,.2);display:flex;align-items:center;gap:7px;font:700 17px/1 'Fredoka',sans-serif;color:#5B3A21;font-variant-numeric:tabular-nums;z-index:10"><div style="width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -2px 0 rgba(120,70,0,.35),inset 0 0 0 2px rgba(255,240,180,.6)"></div>{{ hCoins }}<div style="width:24px;height:24px;border-radius:50%;background:#46A758;box-shadow:inset 0 -2px 0 #2F7A3E;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:19px;color:#fff;font-variation-settings:'wght' 700">add</div></div>
+<div style="position:absolute;left:0;right:0;top:{{ wordY }}px;text-align:center;font:700 30px/1 'Fredoka',sans-serif;color:#FFF6E6;text-shadow:2px 0 0 #5B3A21,-2px 0 0 #5B3A21,0 2px 0 #5B3A21,0 -2px 0 #5B3A21,1.5px 1.5px 0 #5B3A21,-1.5px 1.5px 0 #5B3A21,1.5px -1.5px 0 #5B3A21,-1.5px -1.5px 0 #5B3A21,0 4px 0 #5B3A21;pointer-events:none;z-index:10">Nesty</div>
+<div style="position:absolute;right:16px;top:{{ gearY }}px;width:46px;height:46px;border-radius:17px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.22);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:27px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600;z-index:10">settings</div>
+<div style="position:absolute;left:16px;right:88px;top:{{ cardY }}px;height:60px;padding:0 10px 0 8px;border-radius:22px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.18);display:flex;align-items:center;gap:10px;box-sizing:border-box;z-index:6">
+<div style="width:44px;height:44px;flex:none;border-radius:14px;background:{{ chAccent }};box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 3px 0 {{ chEdge }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#fff;font-variation-settings:'FILL' 1,'wght' 600">auto_stories</div>
+<div style="flex:1;min-width:0"><div style="font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.08em;color:{{ chInk }}">{{ chKicker }}</div><div style="margin-top:4px;font:700 17px/1.1 'Fredoka',sans-serif;color:#5B3A21;text-wrap:balance">{{ chName }}</div></div>
+<div style="flex:none;display:flex;align-items:center;gap:4px;height:30px;padding:0 10px 0 6px;border-radius:15px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #EAD3B0;font:700 15px/1 'Fredoka',sans-serif;color:#8C5E12;font-variant-numeric:tabular-nums"><div style="width:20px;height:20px;background:url(ui/stars/star_filled.svg) center/contain no-repeat"></div>{{ chStars }}</div>
+</div>
+<div style="position:absolute;right:16px;top:{{ cardY }}px;width:62px;height:60px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;z-index:6"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#C4631E;font-variation-settings:'FILL' 1,'wght' 600">military_tech</span><span style="font:700 11px/1 'Fredoka',sans-serif;color:#6E4526">Records</span></div>
+<sc-if value="{{ adsGone }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:{{ toastY }}px;display:flex;justify-content:center;z-index:11"><div style="display:flex;align-items:center;gap:10px;padding:8px 18px 8px 8px;border-radius:24px;background:#FFF7E8;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A,0 8px 14px rgba(90,50,20,.2)"><div style="width:32px;height:32px;border-radius:50%;background:#46A758;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:20px;color:#fff;font-variation-settings:'FILL' 1,'wght' 700">check</div><span style="font:700 15px/1.2 'Fredoka',sans-serif">Ads removed. Thank you!</span></div></div></sc-if>
+<div style="position:absolute;left:0;right:0;top:{{ plankY }}px;height:{{ plankH }}px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto {{ plankH }}px"></div>
+<sc-for list="{{ idle }}" as="d" hint-placeholder-count="0"><div style="position:absolute;left:{{ d.x }}px;top:{{ d.y }}px;width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat;transform-origin:50% 96%;animation:nh-idle {{ d.dur }}s ease-in-out {{ d.delay }}s infinite"></div></sc-for>
+<div style="position:absolute;left:36px;right:36px;top:{{ playY }}px;height:{{ playH }}px;border-radius:32px;background:linear-gradient(180deg,#F9A964,#F2893B 60%,#EA7A2A);box-shadow:inset 0 3px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(160,60,10,.18),0 8px 0 #C4631E,0 16px 26px rgba(150,70,20,.35);display:flex;align-items:center;justify-content:center;gap:16px;z-index:5">
+<div style="width:52px;height:52px;border-radius:50%;background:#FFF6E6;box-shadow:inset 0 -3px 0 #F2CFA4,0 3px 0 rgba(150,60,10,.3);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:20px solid #F2893B;border-top:13px solid transparent;border-bottom:13px solid transparent;margin-left:6px"></div></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font:700 14px/1 'Fredoka',sans-serif;color:#FFE9D2;letter-spacing:.14em">PLAY</span><span style="font:700 {{ hLevelFs }}px/1 'Fredoka',sans-serif;color:#FFFFFF;text-shadow:0 3px 0 rgba(150,60,10,.35);white-space:nowrap">{{ hLevel }}</span></div>
+<sc-if value="{{ tierOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-10px;top:-14px;transform:rotate(8deg);display:flex;align-items:center;gap:3px;padding:6px 10px 6px 7px;border-radius:12px;background:{{ tierBg }};box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 {{ tierEdge }},0 0 0 3px #FFF6E6;color:#fff;font:700 {{ tierFs }}px/1 'Fredoka',sans-serif;letter-spacing:.06em;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:16px;font-variation-settings:'FILL' 1">{{ tierIcon }}</span>{{ tierLabel }}</div></sc-if>
+</div>
+<div style="position:absolute;left:22px;right:22px;top:{{ tilesY }}px;display:grid;grid-template-columns:{{ tileCols }};gap:12px;z-index:5">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="3"><div style="position:relative;height:{{ tileH }}px;border-radius:24px;background:{{ t.bg }};box-shadow:{{ t.sh }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+<sc-if value="{{ t.isDaily }}" hint-placeholder-val="{{ false }}"><div style="width:58px;height:58px;border-radius:18px;opacity:{{ t.iconOp }};background:linear-gradient(180deg,#FFE7A0,#F5C518);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 4px 0 #C9960A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:34px;color:#8C5E12;font-variation-settings:'FILL' 1,'wght' 600">extension</div><div style="font:700 15px/1.1 'Fredoka',sans-serif;color:{{ t.labelC }};text-align:center">Daily Puzzle</div><sc-if value="{{ t.lit }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-6px;top:-10px;display:flex;align-items:center;gap:1px;padding:4px 9px 4px 5px;border-radius:14px;background:linear-gradient(180deg,#FFA36B,#F2702B);box-shadow:0 3px 0 #B8501A,0 0 0 2.5px #FFF6E6;color:#fff;font:700 16px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1">local_fire_department</span>{{ t.badge }}</div></sc-if><sc-if value="{{ t.unlit }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-6px;top:-10px;width:32px;height:26px;border-radius:14px;background:linear-gradient(180deg,#F1E3CC,#DCC6A4);box-shadow:0 3px 0 #B99A7A,0 0 0 2.5px #FFF6E6;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px;color:#9A6A44;font-variation-settings:'FILL' 0,'wght' 600">local_fire_department</div></sc-if><sc-if value="{{ t.dLocked }}" hint-placeholder-val="{{ false }}"><div style="font:800 12px/1 'Nunito',sans-serif;color:#8A5B3A">After Level 2</div></sc-if></sc-if>
+<sc-if value="{{ t.isVs }}" hint-placeholder-val="{{ false }}"><div style="position:relative;width:56px;height:56px;border-radius:50%;background:url({{ t.art }}) center/100% 100% no-repeat;box-shadow:0 0 0 3px #FFFDF7,0 3px 6px rgba(60,25,5,.2)"><sc-if value="{{ t.locked }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-6px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:#8A6A4E;box-shadow:0 0 0 2px #FFF6E6;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:15px;color:#FFF6E6;font-variation-settings:'FILL' 1,'wght' 600">lock</div></sc-if></div><div style="font:700 15px/1.1 'Fredoka',sans-serif;color:{{ t.labelC }}">vs Computer</div>
+<sc-if value="{{ t.open }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:3px;height:20px;padding:0 7px 0 5px;border-radius:10px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #D8B07A;color:#6E4526;font:800 11px/1 'Nunito',sans-serif;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1,'wght' 600">computer</span>Computer</div></sc-if>
+<sc-if value="{{ t.locked }}" hint-placeholder-val="{{ false }}"><div style="font:800 12px/1 'Nunito',sans-serif;color:#8A5B3A">After Level 20</div></sc-if></sc-if>
+<sc-if value="{{ t.isAds }}" hint-placeholder-val="{{ false }}"><div style="position:relative;width:58px;height:58px;border-radius:18px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #5530A8;display:flex;align-items:center;justify-content:center;overflow:hidden"><div style="width:30px;height:24px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:10px solid #7C4DDB;border-top:6.5px solid transparent;border-bottom:6.5px solid transparent;margin-left:3px"></div></div><div style="position:absolute;left:50%;top:50%;width:62px;height:6px;margin:-3px 0 0 -31px;border-radius:3px;background:#E5484D;box-shadow:0 0 0 2.5px #FFFFFF;transform:rotate(-40deg)"></div></div><div style="font:700 15px/1.1 'Fredoka',sans-serif;color:#5B3A21;text-align:center">Remove Ads</div></sc-if>
+</div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRivals }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:20px;right:20px;top:124px;font:700 15px/1.3 'Nunito',sans-serif;color:#8A5B3A">Race a computer on the same puzzle</div>
+<div style="position:absolute;left:16px;right:16px;top:156px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ rivals }}" as="r" hint-placeholder-count="3"><div style="position:relative;display:flex;gap:14px;padding:14px 14px 14px 12px;border-radius:24px;background:{{ r.bg }};box-shadow:{{ r.sh }}">
+<div style="position:relative;width:96px;height:96px;flex:none;border-radius:50%;background:url({{ r.art }}) center/100% 100% no-repeat;box-shadow:0 0 0 3px #FFFDF7,0 3px 6px rgba(60,25,5,.2)"><sc-if value="{{ r.beaten }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-2px;bottom:0;width:28px;height:28px;border-radius:50%;background:#46A758;box-shadow:0 0 0 2.5px #FFFDF7;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px;color:#fff;font-variation-settings:'wght' 700">check</div></sc-if></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font:700 20px/1 'Fredoka',sans-serif;color:{{ r.nameC }}">{{ r.name }}</span><div style="display:flex;align-items:center;gap:3px;height:20px;padding:0 7px 0 5px;border-radius:10px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #D8B07A;color:#6E4526;font:800 11px/1 'Nunito',sans-serif;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1,'wght' 600">computer</span>Computer</div><sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"><div style="height:20px;padding:0 8px;border-radius:10px;background:linear-gradient(180deg,#6CC07C,#46A758);box-shadow:0 2px 0 #2F7A3E;color:#fff;font:700 12px/20px 'Fredoka',sans-serif">New</div></sc-if></div>
+<div style="font:800 13px/1 'Nunito',sans-serif;color:{{ r.skillC }}">{{ r.skill }}</div>
+<div style="font:600 14px/1.35 'Nunito',sans-serif;color:#7A5234;text-wrap:pretty">{{ r.line }}</div>
+<sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;margin-top:2px;height:28px;padding:0 10px 0 4px;border-radius:14px;background:linear-gradient(180deg,#FFF1C9,#F9DC8A);box-shadow:0 3px 0 #D4A93A;display:flex;align-items:center;gap:5px;font:700 14px/1 'Fredoka',sans-serif;color:#8C5E12"><div style="width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></div>{{ r.reward }}</div></sc-if>
+<sc-if value="{{ r.locked }}" hint-placeholder-val="{{ false }}"><div style="margin-top:2px;display:flex;align-items:center;gap:5px;font:800 13px/1 'Nunito',sans-serif;color:#8A5B3A"><span style="font-family:'Material Symbols Rounded';font-size:17px;font-variation-settings:'FILL' 1,'wght' 600">lock</span>{{ r.lockLine }}</div></sc-if>
+</div>
+<sc-if value="{{ r.sel }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:50%;background:#4E5FD9;box-shadow:0 2px 0 #3242A8;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:20px;color:#fff;font-variation-settings:'wght' 700">check</div></sc-if>
+</div></sc-for>
+</div>
+<div style="position:absolute;left:24px;right:24px;bottom:44px;display:flex;flex-direction:column;align-items:center;gap:14px">
+<div style="font:700 14px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-align:center">Same puzzle, two boards. Complete every family first.</div>
+<div style="align-self:stretch;height:60px;border-radius:22px;background:linear-gradient(180deg,#7B8BEF,#4E5FD9);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #3242A8,0 12px 20px rgba(50,66,168,.3);display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;font:700 22px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(30,30,110,.35)"><span style="font-family:'Material Symbols Rounded';font-size:26px;font-variation-settings:'FILL' 1,'wght' 600">play_arrow</span>{{ rvStart }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isChapters }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:20px;right:20px;top:118px;display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between;align-items:baseline;font:700 15px/1 'Fredoka',sans-serif;color:#7A5234"><span>Level 67 of 200</span><span style="font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">66 won</span></div><div style="height:12px;border-radius:6px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.3);padding:2px;box-sizing:border-box"><div style="width:33%;height:100%;border-radius:4px;background:linear-gradient(180deg,#7FD08D,#46A758)"></div></div></div>
+<div style="position:absolute;left:16px;right:16px;top:166px;display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ chTop }}" as="c" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:10px;padding:7px 10px 7px 7px;border-radius:20px;background:{{ c.bg }};box-shadow:{{ c.sh }}">
+<div style="width:84px;height:42px;flex:none;border-radius:12px;background:{{ c.thumb }};box-shadow:inset 0 0 0 2px rgba(255,255,255,.55);filter:{{ c.filter }}"></div>
+<div style="flex:1;min-width:0"><div style="font:700 10px/1 'Fredoka',sans-serif;letter-spacing:.08em;color:#9A6A44">{{ c.kicker }}</div><div style="margin-top:3px;font:700 15px/1.1 'Fredoka',sans-serif;color:{{ c.nameC }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div><sc-if value="{{ c.subOn }}" hint-placeholder-val="{{ false }}"><div style="margin-top:3px;font:800 11px/1 'Nunito',sans-serif;color:#2F7A3E">{{ c.sub }}</div></sc-if></div>
+<div style="width:34px;height:40px;flex:none;background:url({{ c.fig }}) center bottom/contain no-repeat;opacity:{{ c.figOp }}"></div>
+<sc-if value="{{ c.starsOn }}" hint-placeholder-val="{{ false }}"><div style="flex:none;display:flex;align-items:center;gap:3px;height:28px;padding:0 9px 0 5px;border-radius:14px;background:#FFF6E6;box-shadow:{{ c.chipSh }};font:700 14px/1 'Fredoka',sans-serif;color:#8C5E12;font-variant-numeric:tabular-nums"><div style="width:18px;height:18px;background:url(ui/stars/star_filled.svg) center/contain no-repeat"></div>{{ c.stars }}</div></sc-if>
+</div></sc-for>
+<div style="border-radius:24px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 0 0 3px #6FA8DC;overflow:hidden">
+<div style="position:relative;height:92px;background:{{ curThumb }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,40,70,0) 25%,rgba(20,40,70,.62))"></div>
+<div style="position:absolute;left:14px;right:14px;bottom:10px;color:#FFFFFF"><div style="font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.08em">CHAPTER 4 · LEVELS 61–80</div><div style="margin-top:4px;font:700 23px/1.05 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(20,40,70,.45)">Snowy Cabin</div></div></div>
+<div style="padding:10px 12px 12px">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:46px;flex:none;background:url(museum/04-astronaut-locked.svg) center bottom/contain no-repeat"></div><div style="flex:1;min-width:0"><div style="font:700 15px/1.1 'Fredoka',sans-serif">The Astronaut Family</div><div style="margin-top:5px;display:flex;align-items:center;gap:8px"><div style="flex:1;height:10px;border-radius:5px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.3);padding:2px;box-sizing:border-box"><div style="width:30%;height:100%;border-radius:3px;background:linear-gradient(180deg,#7FD08D,#46A758)"></div></div><span style="font:800 12px/1 'Nunito',sans-serif;color:#8A5B3A;white-space:nowrap">14 levels to go</span></div></div>
+<div style="flex:none;display:flex;align-items:center;gap:3px;height:28px;padding:0 9px 0 5px;border-radius:14px;background:#FFF6E6;box-shadow:inset 0 0 0 1.5px #EAD3B0;font:700 14px/1 'Fredoka',sans-serif;color:#8C5E12;font-variant-numeric:tabular-nums"><div style="width:18px;height:18px;background:url(ui/stars/star_filled.svg) center/contain no-repeat"></div>14/60</div></div>
+<div style="margin-top:12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px">
+<sc-for list="{{ lv }}" as="l" hint-placeholder-count="20"><div style="position:relative;height:62px;border-radius:14px;background:{{ l.bg }};box-shadow:{{ l.sh }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+<div style="font:700 16px/1 'Fredoka',sans-serif;color:{{ l.c }};font-variant-numeric:tabular-nums">{{ l.n }}</div>
+<sc-if value="{{ l.starsOn }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:1px"><sc-for list="{{ l.st }}" as="s" hint-placeholder-count="3"><div style="width:11px;height:11px;background:url({{ s }}) center/contain no-repeat"></div></sc-for></div><div style="font:800 9.5px/1 'Nunito',sans-serif;color:#9A6A44">{{ l.best }}</div></sc-if>
+<sc-if value="{{ l.playOn }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#FFFFFF;font-variation-settings:'FILL' 1,'wght' 600">play_arrow</span></sc-if>
+<sc-if value="{{ l.lockOn }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Material Symbols Rounded';font-size:13px;color:#C4AE92;font-variation-settings:'FILL' 1">lock</span></sc-if>
+<sc-if value="{{ l.chest }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:2px;top:2px;width:18px;height:15px;background:url(ui/chest/chest_closed.svg) center/contain no-repeat;opacity:{{ l.markOp }}"></div></sc-if>
+<sc-if value="{{ l.flag }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:3px;top:2px;font-family:'Material Symbols Rounded';font-size:14px;color:#C4631E;font-variation-settings:'FILL' 1,'wght' 600;opacity:{{ l.markOp }}">flag</span></sc-if>
+</div></sc-for>
+</div>
+</div></div>
+<sc-for list="{{ chBottom }}" as="c" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:10px;padding:7px 10px 7px 7px;border-radius:20px;background:{{ c.bg }};box-shadow:{{ c.sh }}">
+<div style="width:84px;height:42px;flex:none;border-radius:12px;background:{{ c.thumb }};box-shadow:inset 0 0 0 2px rgba(255,255,255,.55);filter:{{ c.filter }}"></div>
+<div style="flex:1;min-width:0"><div style="font:700 10px/1 'Fredoka',sans-serif;letter-spacing:.08em;color:#9A6A44">{{ c.kicker }}</div><div style="margin-top:3px;font:700 15px/1.1 'Fredoka',sans-serif;color:{{ c.nameC }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div></div>
+<div style="width:34px;height:40px;flex:none;background:url({{ c.fig }}) center bottom/contain no-repeat;opacity:{{ c.figOp }}"></div>
+<span style="flex:none;font-family:'Material Symbols Rounded';font-size:20px;color:#B99A7A;font-variation-settings:'FILL' 1,'wght' 600">lock</span>
+</div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMuseum }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:20px;right:16px;top:62px;height:48px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 26px/1 'Fredoka',sans-serif">Museum</span><div style="height:36px;padding:0 12px 0 8px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;display:flex;align-items:center;gap:6px;font:700 16px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#C4631E;font-variation-settings:'FILL' 1,'wght' 600">museum</span>{{ muCount }}</div></div>
+<div style="position:absolute;left:20px;right:20px;top:114px;font:600 13px/1.4 'Nunito',sans-serif;color:#7A5234;text-wrap:pretty">Every chapter has a doll family. Win all 20 of its levels to bring that family home.</div>
+<sc-if value="{{ muNextOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:160px;height:150px;border-radius:26px;background:radial-gradient(ellipse 55% 90% at 22% 30%,#FFF6DC,#F3D9A8 70%,#E4BF86);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 5px 0 #CFA36A,0 10px 18px rgba(90,50,20,.2);display:flex;align-items:center;gap:12px;padding:0 14px 0 8px;box-sizing:border-box">
+<div style="width:118px;height:132px;flex:none;background:url({{ muNextArt }}) center bottom/contain no-repeat"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px"><div style="font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.08em;color:#9A6A44">NEXT FAMILY</div><div style="font:700 20px/1.1 'Fredoka',sans-serif;text-wrap:balance">{{ muNextName }}</div><div style="font:800 12px/1.2 'Nunito',sans-serif;color:#7A5234">{{ muNextLine }}</div><div style="height:10px;border-radius:5px;background:#EAD3B0;box-shadow:inset 0 2px 3px rgba(90,45,15,.3);padding:2px;box-sizing:border-box"><div style="width:{{ muNextPct }}%;height:100%;border-radius:3px;background:linear-gradient(180deg,#7FD08D,#46A758)"></div></div>
+<div style="align-self:flex-start;margin-top:2px;height:36px;padding:0 14px 0 10px;border-radius:14px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;display:flex;align-items:center;gap:4px;color:#fff;font:700 15px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1">play_arrow</span>{{ muPlay }}</div></div>
+</div></sc-if>
+<sc-if value="{{ muDoneOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:160px;height:150px;border-radius:26px;background:radial-gradient(ellipse 70% 90% at 50% 20%,#FFF6DC,#F3D9A8 70%,#E4BF86);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 5px 0 #CFA36A,0 10px 18px rgba(90,50,20,.2);display:flex;align-items:center;justify-content:center;gap:14px">
+<div style="width:92px;height:92px;flex:none;background:url(ui/badges/museum_full.svg) center/contain no-repeat"></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font:700 24px/1.1 'Fredoka',sans-serif">Every family is home.</div><div style="font:700 13px/1.3 'Nunito',sans-serif;color:#7A5234">Full House · all 10 families</div></div>
+</div></sc-if>
+<div style="position:absolute;left:16px;right:16px;top:324px;height:402px;border-radius:26px;background:linear-gradient(180deg,#8A5530,#6B3E1E);box-shadow:inset 0 3px 0 rgba(255,210,160,.35),inset 0 -4px 0 rgba(40,18,6,.4),0 8px 16px rgba(60,25,5,.3);padding:10px;box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:6px">
+<sc-for list="{{ figs }}" as="f" hint-placeholder-count="10"><div style="position:relative;border-radius:16px;background:{{ f.bg }};box-shadow:inset 0 3px 8px rgba(0,0,0,.35),inset 0 -5px 0 #A56A34{{ f.ring }};display:flex;align-items:center;gap:6px;padding:0 8px 5px 4px;min-width:0;overflow:hidden">
+<div style="width:62px;height:62px;flex:none;background:url({{ f.art }}) center bottom/contain no-repeat;opacity:{{ f.op }};animation:{{ f.anim }}"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px">
+<sc-if value="{{ f.named }}" hint-placeholder-val="{{ false }}"><div style="padding:3px 7px;border-radius:7px;background:linear-gradient(180deg,#F5D98C,#D9AE52);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 0 #8C6420;font:700 11.5px/1.15 'Fredoka',sans-serif;color:#4A3008;text-wrap:balance">{{ f.name }}</div></sc-if>
+<sc-if value="{{ f.lockedOn }}" hint-placeholder-val="{{ false }}"><div style="font:800 11px/1.25 'Nunito',sans-serif;color:rgba(255,236,205,.78)">{{ f.l1 }}</div><div style="font:800 11px/1.25 'Nunito',sans-serif;color:rgba(255,236,205,.6)">{{ f.l2 }}</div></sc-if>
+<sc-if value="{{ f.nextOn }}" hint-placeholder-val="{{ false }}"><div style="font:700 12px/1.15 'Fredoka',sans-serif;color:#FFEFD6">{{ f.name }}</div><div style="height:18px;padding:0 7px;border-radius:9px;background:linear-gradient(180deg,#6CC07C,#46A758);box-shadow:0 2px 0 #2F7A3E;color:#fff;font:700 10.5px/18px 'Fredoka',sans-serif;white-space:nowrap">{{ f.chip }}</div></sc-if>
+</div>
+</div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRecords }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:124px;display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:18px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A">
+<div style="width:36px;height:36px;flex:none;border-radius:12px;background:{{ s.ibg }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px;color:{{ s.ic }};font-variation-settings:'FILL' 1,'wght' 600"><sc-if value="{{ s.starOn }}" hint-placeholder-val="{{ false }}"><div style="width:26px;height:26px;background:url(ui/stars/star_filled.svg) center/contain no-repeat"></div></sc-if>{{ s.icon }}</div>
+<div style="min-width:0"><div style="font:700 20px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.v }}</div><div style="margin-top:3px;font:700 11.5px/1.2 'Nunito',sans-serif;color:#8A5B3A">{{ s.k }}</div></div>
+</div></sc-for>
+</div>
+<div style="border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;padding:4px 14px">
+<div style="padding:10px 0 4px;font:700 16px/1 'Fredoka',sans-serif">Races won</div>
+<sc-for list="{{ races }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;min-height:56px;border-top:{{ r.bt }}"><div style="width:40px;height:40px;flex:none;border-radius:50%;background:url({{ r.art }}) center/100% 100% no-repeat;box-shadow:0 0 0 2px #FFFDF7,0 2px 4px rgba(60,25,5,.2)"></div><div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px"><span style="font:600 16px/1 'Fredoka',sans-serif;color:{{ r.c }}">{{ r.name }}</span><div style="display:flex;align-items:center;gap:3px;height:20px;padding:0 7px 0 5px;border-radius:10px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #D8B07A;color:#6E4526;font:800 11px/1 'Nunito',sans-serif;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1,'wght' 600">computer</span>Computer</div></div><span style="font:700 18px/1 'Fredoka',sans-serif;color:{{ r.c }};font-variant-numeric:tabular-nums">{{ r.v }}</span></div></sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:12px;height:56px;padding:0 12px 0 14px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A"><div style="width:36px;height:36px;flex:none;border-radius:12px;background:#F6E2C2;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600">route</div><div style="flex:1;font:600 16px/1 'Fredoka',sans-serif">Best moves by level</div><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#B98A60">chevron_right</span></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 4px"><span style="font:700 20px/1 'Fredoka',sans-serif">Badges</span><span style="font:700 15px/1 'Fredoka',sans-serif;color:#8A5B3A;font-variant-numeric:tabular-nums">5/12</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{ badges }}" as="g" hint-placeholder-count="12"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px 12px;border-radius:20px;background:{{ g.bg }};box-shadow:{{ g.sh }};text-align:center">
+<div style="width:56px;height:56px;flex:none;background:url({{ g.art }}) center/contain no-repeat"></div>
+<div style="font:700 13px/1.15 'Fredoka',sans-serif;color:{{ g.c }};text-wrap:balance">{{ g.name }}</div>
+<div style="font:700 11px/1.3 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ g.line }}</div>
+</div></sc-for>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:124px;display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ sGroups }}" as="gr" hint-placeholder-count="3"><div style="border-radius:22px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;padding:0 14px">
+<sc-for list="{{ gr.rows }}" as="r" hint-placeholder-count="3"><div style="border-top:{{ r.bt }};padding:{{ r.pad }}">
+<div style="display:flex;align-items:center;gap:12px;min-height:44px">
+<div style="width:36px;height:36px;flex:none;border-radius:12px;background:{{ r.ibg }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px;color:{{ r.ic }};font-variation-settings:'FILL' 1,'wght' 600">{{ r.icon }}</div>
+<div style="flex:1;min-width:0"><div style="font:600 17px/1.15 'Fredoka',sans-serif;color:#5B3A21">{{ r.title }}</div><sc-if value="{{ r.subOn }}" hint-placeholder-val="{{ false }}"><div style="margin-top:3px;font:700 12px/1.3 'Nunito',sans-serif;color:#8A5B3A">{{ r.sub }}</div></sc-if></div>
+<sc-if value="{{ r.tgl }}" hint-placeholder-val="{{ false }}"><div style="position:relative;width:54px;height:30px;flex:none;border-radius:15px;background:{{ r.track }};box-shadow:inset 0 2px 3px rgba(60,30,10,.2)"><div style="position:absolute;top:3px;left:{{ r.knob }}px;width:24px;height:24px;border-radius:50%;background:#FFFDF7;box-shadow:0 2px 3px rgba(60,30,10,.3)"></div></div></sc-if>
+<sc-if value="{{ r.valOn }}" hint-placeholder-val="{{ false }}"><span style="font:700 15px/1 'Nunito',sans-serif;color:#8A5B3A">{{ r.val }}</span></sc-if>
+<sc-if value="{{ r.chev }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#B98A60">chevron_right</span></sc-if>
+</div>
+<sc-if value="{{ r.segOn }}" hint-placeholder-val="{{ false }}"><div style="margin:8px 0 2px 48px;height:40px;border-radius:20px;background:#EAD3B0;box-shadow:inset 0 2px 4px rgba(90,45,15,.25);padding:4px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px"><sc-for list="{{ r.seg }}" as="o" hint-placeholder-count="3"><div style="border-radius:16px;background:{{ o.bg }};box-shadow:{{ o.sh }};display:flex;align-items:center;justify-content:center;font:700 14px/1 'Fredoka',sans-serif;color:{{ o.c }}">{{ o.label }}</div></sc-for></div></sc-if>
+<sc-if value="{{ r.actOn }}" hint-placeholder-val="{{ false }}"><div style="margin:8px 0 4px 48px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 10px;border-radius:14px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;color:#6E4526;font:600 15px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:19px;font-variation-settings:'FILL' 1,'wght' 600">open_in_new</span>{{ r.act }}</div></sc-if>
+</div></sc-for>
+</div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ isSheet }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:20px;right:20px;top:68px;display:flex;flex-direction:column;gap:6px"><div style="font:700 12px/1 'Nunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#9A6A44">{{ shKicker }}</div><div style="font:700 28px/1.05 'Fredoka',sans-serif">{{ shTitle }}</div></div></sc-if>
+
+<sc-if value="{{ isStreak }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:138px;display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{ stTiles }}" as="t" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;align-items:center;gap:8px"><div style="position:relative;width:100%;height:120px;border-radius:22px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px"><div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(180deg,#FFE7A0,#F5C518);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 4px 0 #C9960A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:30px;color:#8C5E12;font-variation-settings:'FILL' 1,'wght' 600">extension</div><div style="font:700 13px/1 'Fredoka',sans-serif">Daily Puzzle</div><div style="position:absolute;right:-6px;top:-10px;display:flex;align-items:center;gap:1px;padding:4px 8px 4px 4px;border-radius:14px;background:{{ t.bg }};box-shadow:{{ t.sh }};color:{{ t.c }};font:700 15px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:17px;font-variation-settings:'FILL' 1">{{ t.glyph }}</span>{{ t.n }}</div></div><div style="font:800 12px/1 'Nunito',sans-serif;color:#8A5B3A">{{ t.label }}</div></div></sc-for>
+</div>
+<sc-for list="{{ stCards }}" as="c" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:6px"><div style="font:800 12px/1 'Nunito',sans-serif;color:#8A5B3A;padding-left:4px">{{ c.label }}</div><div style="display:flex;align-items:center;gap:12px;padding:14px 16px 14px 14px;border-radius:24px;background:{{ c.bg }};box-shadow:{{ c.sh }}">
+<div style="position:relative;width:56px;height:56px;flex:none;border-radius:50%;background:{{ c.fBg }};box-shadow:{{ c.fSh }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:34px;color:{{ c.fC }};font-variation-settings:'FILL' 1">local_fire_department<sc-if value="{{ c.spark }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-8px;top:-8px;font-size:22px;color:#FFE08A;text-shadow:0 0 6px rgba(255,220,120,.9)">auto_awesome</span></sc-if></div>
+<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 24px/1 'Fredoka',sans-serif;color:{{ c.tc }}">{{ c.days }}</span><sc-if value="{{ c.chipOn }}" hint-placeholder-val="{{ false }}"><span style="height:22px;padding:0 9px;border-radius:11px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #D8B07A;color:#7A5234;font:800 11px/22px 'Nunito',sans-serif">{{ c.chip }}</span></sc-if></div><div style="margin-top:5px;font:700 13px/1.35 'Nunito',sans-serif;color:{{ c.sc }};text-wrap:pretty">{{ c.line }}</div></div>
+</div></div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ isStarSheet }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:138px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ ssRows }}" as="r" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:14px;min-height:76px;padding:10px 14px;border-radius:22px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A">
+<div style="position:relative;width:132px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;gap:{{ r.gap }}px"><sc-if value="{{ r.glow }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;top:50%;width:{{ r.gw }}px;height:{{ r.gw }}px;margin:{{ r.gm }};background:url(ui/stars/star_glow.svg) center/contain no-repeat"></div></sc-if><sc-for list="{{ r.stars }}" as="s" hint-placeholder-count="3"><div style="position:relative;width:{{ s.w }}px;height:{{ s.w }}px;background:url({{ s.src }}) center/contain no-repeat"></div></sc-for></div>
+<div style="flex:1;min-width:0"><div style="font:700 16px/1.1 'Fredoka',sans-serif">{{ r.title }}</div><div style="margin-top:4px;font:700 12px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ r.note }}</div></div>
+</div></sc-for>
+<div style="display:flex;align-items:center;gap:14px;min-height:76px;padding:10px 14px;border-radius:22px;background:#F3E6D2;box-shadow:inset 0 2px 4px rgba(90,45,15,.15)">
+<div style="width:132px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;gap:18px"><div style="width:44px;height:44px;background:url(ui/stars/star_filled.svg) center/contain no-repeat"></div><div style="width:40px;height:40px;background:#8E4EC6;-webkit-mask:url(icons/star.svg) center/contain no-repeat;mask:url(icons/star.svg) center/contain no-repeat"></div></div>
+<div style="flex:1;min-width:0"><div style="font:700 16px/1.1 'Fredoka',sans-serif">Not a doll symbol</div><div style="margin-top:4px;font:700 12px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">Gold, rounder and lit from the top left. The Grape dolls' star (right) is flat purple and pointier.</div></div>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ isReveal }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:138px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ rvRows }}" as="r" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:12px;padding:8px 12px 8px 8px;border-radius:20px;background:{{ r.bg }};box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A">
+<div style="position:relative;width:150px;height:70px;flex:none;border-radius:14px;background:rgba(60,30,10,.55);overflow:hidden"><sc-if value="{{ r.glow }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:52px;top:4px;width:46px;height:46px;background:url(ui/stars/star_glow.svg) center/contain no-repeat"></div></sc-if><sc-for list="{{ r.stars }}" as="s" hint-placeholder-count="3"><div style="position:absolute;left:{{ s.x }}px;top:{{ s.y }}px;width:{{ s.w }}px;height:{{ s.w }}px;background:url({{ s.src }}) center/contain no-repeat;transform:scale({{ s.k }})"></div></sc-for></div>
+<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;font:700 15px/1.1 'Fredoka',sans-serif"><span>{{ r.title }}</span><span style="font:800 12px/1.1 'Nunito',sans-serif;color:#9A6A44;white-space:nowrap">{{ r.t }}</span></div><div style="margin-top:4px;font:700 12px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ r.note }}</div></div>
+</div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ isStates }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:138px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ stRows }}" as="r" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A">
+<div style="position:relative;width:118px;height:{{ r.h }}px;flex:none;border-radius:14px;background:{{ r.stage }};display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden">
+<sc-for list="{{ r.els }}" as="e" hint-placeholder-count="1"><div style="position:{{ e.pos }};left:{{ e.x }}px;top:{{ e.y }}px;width:{{ e.w }}px;height:{{ e.hh }}px;border-radius:{{ e.r }};background:{{ e.bg }};box-shadow:{{ e.sh }};opacity:{{ e.o }};display:flex;align-items:center;justify-content:center;gap:3px;color:{{ e.c }};font:{{ e.f }};white-space:nowrap"><sc-if value="{{ e.gOn }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Material Symbols Rounded';font-size:{{ e.gs }}px;font-variation-settings:'FILL' 1,'wght' 600">{{ e.g }}</span></sc-if>{{ e.t }}</div></sc-for>
+</div>
+<div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:6px"><span style="font:800 11px/1 'Nunito',sans-serif;color:#C4631E">{{ r.id }}</span><span style="font:700 15px/1.15 'Fredoka',sans-serif">{{ r.title }}</span></div><div style="margin-top:4px;font:700 12px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ r.note }}</div></div>
+</div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ isMsg }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:#FFFFFF"></div>
+<div style="position:absolute;left:0;right:0;top:54px;height:92px;background:#F6F6F6;border-bottom:1px solid #E0E0E0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:system-ui,-apple-system,sans-serif"><div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(180deg,#B7BCC4,#8E939B);display:flex;align-items:center;justify-content:center;color:#fff;font:600 18px/1 system-ui,-apple-system,sans-serif">S</div><div style="font:400 12px/1 system-ui,-apple-system,sans-serif;color:#1C1C1E">Sam</div></div>
+<div style="position:absolute;left:0;right:0;top:170px;padding:0 14px;display:flex;flex-direction:column;gap:6px;font-family:system-ui,-apple-system,sans-serif">
+<div style="align-self:center;font:500 11px/1 system-ui,-apple-system,sans-serif;color:#8E8E93">Today 7:42 PM</div>
+<div style="align-self:flex-start;max-width:70%;padding:9px 13px;border-radius:18px;background:#E9E9EB;color:#1C1C1E;font:400 16px/1.35 system-ui,-apple-system,sans-serif">Did you get today’s Nesty?</div>
+<div style="align-self:flex-end;max-width:78%;padding:10px 14px;border-radius:18px;background:#0A84FF;color:#FFFFFF;font:400 16px/1.4 system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;gap:2px"><div>Nesty Daily · Sep 30</div><div>⭐ ☀️ ❤️ 🌊 🎀</div><div>Solved in 18 moves · Day 5 🔥</div></div>
+<div style="align-self:flex-end;font:500 11px/1 system-ui,-apple-system,sans-serif;color:#8E8E93">Delivered</div>
+</div>
+<div style="position:absolute;left:14px;right:14px;bottom:44px;font:500 11px/1.45 ui-monospace,Menlo,monospace;color:#8E8E93;text-align:center">System UI · placement only. The text arrives as plain text; the emoji are the families’ belly symbols in board order.</div>
+</sc-if>
+
+<sc-if value="{{ isNotif }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,28,48,.25),rgba(18,18,30,.72)),url(backgrounds/ch3-seaside-market.svg) center top/390px auto no-repeat,#2B3A4A"></div>
+<div style="position:absolute;left:0;right:0;top:90px;text-align:center;color:#FFFFFF"><div style="font:600 19px/1 system-ui,-apple-system,sans-serif">Thursday, October 1</div><div style="margin-top:6px;font:700 88px/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em">7:00</div></div>
+<div style="position:absolute;left:12px;right:12px;top:292px;display:flex;flex-direction:column;gap:8px">
+<div style="padding:0 8px;font:800 11px/1 'Nunito',sans-serif;letter-spacing:.1em;color:rgba(255,255,255,.8)">IOS · APP ICON</div>
+<div style="display:flex;gap:12px;padding:14px;border-radius:22px;background:rgba(246,246,246,.86);box-shadow:0 8px 24px rgba(0,0,0,.25)"><div style="width:38px;height:38px;flex:none;border-radius:9px;background:url(store/app-icon-180.png) center/cover"></div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font:600 15px/1.25 system-ui,-apple-system,sans-serif;color:#1C1C1E"><span>Nesty</span><span style="font:400 13px/1.25 system-ui,-apple-system,sans-serif;color:#6E6E73">now</span></div><div style="font:400 15px/1.3 system-ui,-apple-system,sans-serif;color:#1C1C1E">Today’s puzzle is on the shelf.</div></div></div>
+<div style="margin-top:14px;padding:0 8px;font:800 11px/1 'Nunito',sans-serif;letter-spacing:.1em;color:rgba(255,255,255,.8)">ANDROID · ic_notification, ACCENT #F2893B</div>
+<div style="padding:14px 16px;border-radius:24px;background:#F7F2FA;box-shadow:0 8px 24px rgba(0,0,0,.25)">
+<div style="display:flex;align-items:center;gap:6px;font:500 12px/1 system-ui,-apple-system,sans-serif;color:#49454F"><div style="width:18px;height:18px;background:#F2893B;-webkit-mask:url(ui/notification/ic_notification.svg) center/contain no-repeat;mask:url(ui/notification/ic_notification.svg) center/contain no-repeat"></div><span style="color:#C4631E;font-weight:600">Nesty</span>· now</div>
+<div style="margin-top:8px;font:600 15px/1.25 system-ui,-apple-system,sans-serif;color:#1D1B20">Nesty</div>
+<div style="margin-top:2px;font:400 14px/1.35 system-ui,-apple-system,sans-serif;color:#49454F">A fresh daily puzzle is ready when you are.</div>
+</div>
+<div style="margin-top:6px;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;background:rgba(0,0,0,.35)"><div style="width:24px;height:24px;flex:none;background:url(ui/notification/ic_notification.svg) center/contain no-repeat"></div><span style="font:500 12px/1.3 system-ui,-apple-system,sans-serif;color:#FFFFFF">Status bar: the white silhouette at 24 dp, which Android tints with the accent in the shade</span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ navOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:{{ navY }}px;bottom:0;background:repeating-linear-gradient(90deg,rgba(90,45,15,.06) 0 2px,rgba(0,0,0,0) 2px 30px),linear-gradient(180deg,#D8995A 0,#BD7B40 14px,#A56A34 100%);box-shadow:inset 0 3px 0 rgba(255,225,180,.6),0 -6px 14px rgba(90,45,15,.25);display:flex;justify-content:space-around;align-items:flex-start;padding:10px 30px 0;box-sizing:border-box;z-index:9">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:80px"><div style="width:{{ n.w }}px;height:{{ n.h }}px;border-radius:{{ n.r }}px;background:{{ n.bg }};box-shadow:{{ n.sh }};transform:{{ n.tf }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:{{ n.fs }}px;color:{{ n.c }};font-variation-settings:'FILL' 1,'wght' 600">{{ n.icon }}</div><span style="font:700 12px/1 'Fredoka',sans-serif;color:{{ n.lc }};margin-top:{{ n.mt }}px">{{ n.label }}</span></div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ sbTall }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 34px 0 40px;box-sizing:border-box;font:700 16px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:24px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.7"><div style="width:80%;height:100%;background:currentColor;border-radius:2px"></div></div></div>
+<div style="position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#120B06;z-index:41"></div>
+<div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:42"></div></sc-if>
+<sc-if value="{{ sbShort }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:20px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box;font:700 12px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:20px;height:10px;border:1.2px solid currentColor;border-radius:3px;padding:1.2px;box-sizing:border-box;opacity:.7"><div style="width:80%;height:100%;background:currentColor;border-radius:1.5px"></div></div></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;homeShort&quot;,&quot;homeLocked&quot;,&quot;homeNoAds&quot;,&quot;homeSuper&quot;,&quot;homeBonus&quot;,&quot;homeNew&quot;,&quot;statesA&quot;,&quot;statesB&quot;,&quot;rivals&quot;,&quot;rivalsNew&quot;,&quot;chapters&quot;,&quot;museum0&quot;,&quot;museum3&quot;,&quot;museum10&quot;,&quot;records&quot;,&quot;settings&quot;,&quot;settingsBlocked&quot;,&quot;streakStates&quot;,&quot;starSheet&quot;,&quot;starReveal&quot;,&quot;shareMessage&quot;,&quot;notification&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;sel&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;}}">
+const R = Math.round, P = 'skins/classic/preview/';
+const CREAM = 'linear-gradient(180deg,#FBEAD0,#F4D9AE)';
+const BG = { 10: 'url(backgrounds/ch10-sunrise-lookout.svg) center top/390px auto no-repeat,#F8E6DA', 1: 'url(backgrounds/ch1-sunny-toy-shop.svg) center top/390px auto no-repeat,#F4D29C', 3: 'url(backgrounds/ch3-seaside-market.svg) center top/390px auto no-repeat,#F3E6CF' };
+const doll = (c, cx, base, h) => ({ bgi: `url(${P}doll-${c}.svg)`, w: R(h * 2 / 3), h: R(h), x: R(cx - h / 3), y: R(base - h * 742 / 768) });
+const TH = [['Sunny Toy Shop', 'ch1-sunny-toy-shop', 700], ['Rainy Café Corner', 'ch2-rainy-cafe-corner', 640], ['Seaside Market', 'ch3-seaside-market', 560], ['Snowy Cabin', 'ch4-snowy-cabin', 700], ['Night Carnival', 'ch5-night-carnival', 560], ['Spring Garden Shed', 'ch6-spring-garden-shed', 700], ['Puppet Theater', 'ch7-puppet-theater', 600], ['Autumn Bandstand', 'ch8-autumn-bandstand', 680], ['Castle Library', 'ch9-castle-library', 620], ['Sunrise Lookout', 'ch10-sunrise-lookout', 720]];
+const crop = (i, w) => { const s = w / 1080; return `url(backgrounds/${TH[i][1]}.svg) ${(-105 * s).toFixed(1)}px ${(-TH[i][2] * s).toFixed(1)}px/${(1290 * s).toFixed(1)}px auto no-repeat`; };
+const FIG = ['01-classic', '02-sailor', '03-baker', '04-astronaut', '05-gardener', '06-snow', '07-circus', '08-musician', '09-royal', '10-explorer'];
+const FAM = ['The Classic Family', 'The Sailor Family', 'The Baker Family', 'The Astronaut Family', 'The Gardener Family', 'The Snow Family', 'The Circus Family', 'The Musician Family', 'The Royal Family', 'The Explorer Family'];
+const RIV = [
+  { name: 'Pebble', art: 'ui/rivals/rival_1.svg', skill: 'Relaxed · Slow', line: 'Takes its time and enjoys every doll along the way.', coins: 20 },
+  { name: 'Button', art: 'ui/rivals/rival_2.svg', skill: 'Careful · Slow', line: 'Checks each move twice before it makes it.', coins: 30 },
+  { name: 'Comet', art: 'ui/rivals/rival_3.svg', skill: 'Careful · Quick', line: 'Quick, tidy and hard to catch.', coins: 40 },
+];
+const BADGES = [['first_family', 'Snug as a Doll', 'You nested your first family.', 1], ['glass_breaker', 'Glass Act', 'You opened your first glass case.', 1], ['ice_melter', 'Ice Breaker', 'You freed a doll from the ice.', 1], ['tall_order', 'Tall Order', 'You won a level with size-5 dolls.', 0], ['grand_nest', 'Grand Nest', 'You won a level with size-6 dolls.', 0], ['level_100', 'Halfway Home', 'You won level 100.', 0], ['level_200', 'Top Shelf', 'You won level 200, the very last one.', 0], ['dailies_7', 'Puzzle Pal', 'You solved 7 daily puzzles.', 1], ['dailies_30', 'Old Friend', 'You solved 30 daily puzzles.', 0], ['first_race', 'First Past the Shelf', 'You beat the computer in a race.', 1], ['all_rivals', 'Rival Round-Up', 'You beat every computer rival.', 0], ['museum_full', 'Full House', 'Every family is home in your Museum.', 0]];
+const NAV = active => [['storefront', 'Shop'], ['home', 'Home'], ['museum', 'Museum']].map(([icon, label]) => { const a = label === active; return { icon, label, w: a ? 58 : 48, h: a ? 52 : 48, r: a ? 18 : 16, bg: a ? 'linear-gradient(180deg,#FFF9EE,#FCEBD0)' : 'rgba(255,240,215,.18)', sh: a ? 'inset 0 2px 0 #fff,0 5px 0 #CFA36A' : 'none', tf: a ? 'translateY(-6px)' : 'none', fs: a ? 30 : 27, c: a ? '#C4631E' : '#FFE9C8', lc: a ? '#FFF4E0' : 'rgba(255,236,205,.85)', mt: a ? -4 : 0 }; });
+const SURF = 'linear-gradient(180deg,#FFF9EE,#FCEBD0)', SURF_SH = 'inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 10px 16px rgba(90,50,20,.2)', SUNK = '#F3E6D2', SUNK_SH = 'inset 0 2px 4px rgba(90,45,15,.15)';
+const tile = { daily: (badge, st = 'lit') => ({ isDaily: true, badge, lit: st === 'lit', unlit: st === 'unlit', dLocked: st === 'locked', iconOp: st === 'locked' ? .55 : 1, labelC: st === 'locked' ? '#8A6A4E' : '#5B3A21', bg: st === 'locked' ? SUNK : SURF, sh: st === 'locked' ? SUNK_SH : SURF_SH }), vs: open => ({ isVs: true, open, locked: !open, art: open ? RIV[0].art : 'ui/rivals/rival_locked.svg', labelC: open ? '#5B3A21' : '#8A6A4E', bg: open ? SURF : SUNK, sh: open ? SURF_SH : SUNK_SH }), ads: () => ({ isAds: true, bg: SURF, sh: SURF_SH }) };
+const HOME = {
+  tall: { frameH: 844, topY: 66, wordY: 72, gearY: 64, cardY: 124, plankY: 372, plankH: 40, dollBase: 383, dollK: 1, playY: 446, playH: 96, tilesY: 584, tileH: 132, navY: 738 },
+  short: { frameH: 693, topY: 28, wordY: 34, gearY: 26, cardY: 84, plankY: 262, plankH: 34, dollBase: 271, dollK: .82, playY: 312, playH: 88, tilesY: 463, tileH: 112, navY: 587 },
+};
+const toggle = (icon, title, on, sub, tint) => ({ icon, title, sub: sub || '', subOn: !!sub, tgl: true, track: on ? '#46A758' : '#D9C2A0', knob: on ? 27 : 3, valOn: false, val: '', chev: false, segOn: false, seg: [], actOn: false, act: '', ibg: tint ? tint[0] : '#F6E2C2', ic: tint ? tint[1] : '#6E4526' });
+const link = (icon, title, val, tint) => ({ ...toggle(icon, title, 0, '', tint), tgl: false, valOn: !!val, val: val || '', chev: true });
+const rowsOf = rows => rows.map((r, i) => ({ ...r, bt: i ? '1.5px solid #F0DFC4' : 'none', pad: r.segOn || r.actOn ? '8px 0 10px' : '6px 0' }));
+const seg = sel => ['Off', 'On', 'System'].map(l => ({ label: l, bg: l === sel ? SURF : 'rgba(0,0,0,0)', sh: l === sel ? 'inset 0 2px 0 #fff,0 3px 0 #CFA36A' : 'none', c: l === sel ? '#5B3A21' : '#8A5B3A' }));
+const starsOf = (n, w, big) => [0, 1, 2].map(i => ({ w: big && i === 1 ? w + 8 : w, src: `ui/stars/star_${i < n ? 'filled' : 'empty'}.svg` }));
+const SCENES = ['home', 'homeShort', 'homeLocked', 'homeNoAds', 'homeSuper', 'homeBonus', 'homeNew', 'statesA', 'statesB', 'rivals', 'rivalsNew', 'chapters', 'museum0', 'museum3', 'museum10', 'records', 'settings', 'settingsBlocked', 'streakStates', 'starSheet', 'starReveal', 'shareMessage', 'notification'];
+
+class Component extends DCLogic {
+  renderVals() {
+    const s = SCENES.includes(this.props.scene) ? this.props.scene : 'home';
+    const home = s.startsWith('home'), short = s === 'homeShort', noAds = s === 'homeNoAds', early = s === 'homeLocked' || s === 'homeNew', locked = early;
+    const HL = HOME[short ? 'short' : 'tall'];
+    const out = {
+      frameH: home ? HL.frameH : 844, frameR: short ? '30px' : '46px', bg: CREAM, sbTall: !short, sbShort: short, sbc: s === 'notification' ? '#FFFFFF' : s === 'shareMessage' ? '#1C1C1E' : '#3A2414', hi: home || s.startsWith('museum') ? 'rgba(255,240,215,.85)' : s === 'notification' ? 'rgba(255,255,255,.85)' : 'rgba(40,20,8,.75)',
+      hdOn: ['rivals', 'rivalsNew', 'chapters', 'records', 'settings', 'settingsBlocked'].includes(s), hdIcon: s.startsWith('settings') ? 'close' : 'arrow_back', hdTitle: { rivals: 'vs Computer', rivalsNew: 'vs Computer', chapters: 'Chapters', records: 'Records', settings: 'Settings', settingsBlocked: 'Settings' }[s] || '', hdCoins: s.startsWith('rivals'),
+      isHome: home, isRivals: s.startsWith('rivals'), isChapters: s === 'chapters', isMuseum: s.startsWith('museum'), isRecords: s === 'records', isSettings: s.startsWith('settings'),
+      isSheet: ['streakStates', 'starSheet', 'starReveal', 'statesA', 'statesB'].includes(s), isStates: s === 'statesA' || s === 'statesB', isStreak: s === 'streakStates', isStarSheet: s === 'starSheet', isReveal: s === 'starReveal', isMsg: s === 'shareMessage', isNotif: s === 'notification',
+      shKicker: { streakStates: '10.7 · Gentle streak', starSheet: '11.1 · The star', starReveal: '11.3 · The reveal', statesA: 'E · States', statesB: 'E · Board feedback' }[s] || '', shTitle: { streakStates: 'Lit, paused and relit', starSheet: 'Filled, empty and 3★', starReveal: 'ui_stars on the win card', statesA: 'Components and small states', statesB: 'Taps, hovers and hints' }[s] || '',
+      navOn: home || s.startsWith('museum'), navY: home ? HL.navY : 738, nav: NAV(s.startsWith('museum') ? 'Museum' : 'Home'),
+    };
+    if (s === 'notification') out.bg = '#2B3A4A';
+    if (s === 'shareMessage') out.bg = '#FFFFFF';
+    if (home) {
+      const C1 = { n: 1, accent: 'linear-gradient(180deg,#DA942C,#BC7D1B)', edge: '#8A5B0F', ink: '#6A4405' }, C3 = { n: 3, accent: 'linear-gradient(180deg,#21A3BC,#0789A0)', edge: '#0F5F6F', ink: '#105664' };
+      const CH = { homeLocked: { ...C1, stars: '31/60', lvl: 'Level 14', coins: '180', streak: '2', tier: '' }, homeNew: { ...C1, stars: '3/60', lvl: 'Level 2', coins: '10', streak: '', daily: 'locked', tier: '' }, homeSuper: { ...C3, stars: '43/60', lvl: 'Level 60', coins: '905', streak: '4', tier: 'super' }, homeBonus: { n: 10, accent: 'linear-gradient(180deg,#3AA697,#148D7F)', edge: '#016359', ink: '#055A50', stars: '552/600', kicker: 'BONUS ENDLESS', name: 'Bonus levels', lvl: 'Bonus Level 7', coins: '6,420', streak: '', daily: 'unlit', tier: 'bonus', bg: 'url(backgrounds/ch10-sunrise-lookout.svg) center top/390px auto no-repeat,#F8E6DA' } };
+      const ch = CH[s] || { ...C3, stars: '39/60', lvl: 'Level 56', coins: '830', streak: '4', tier: 'hard' };
+      const TIER = { hard: ['linear-gradient(180deg,#F07377,#E5484D)', '#A92C33', 'local_fire_department', 'HARD', 13], super: ['linear-gradient(180deg,#A06AE0,#7A3FB8)', '#522783', 'bolt', 'SUPER HARD', 11], bonus: ['linear-gradient(180deg,#3FC6B4,#12A594)', '#0B7568', 'star', 'BONUS', 13] }[ch.tier];
+      Object.assign(out, HL, { bg: ch.bg || BG[ch.n], hCoins: ch.coins, hLevel: ch.lvl, hLevelFs: ch.lvl.length > 9 ? 28 : 36, tierOn: !!TIER, tierBg: TIER ? TIER[0] : '', tierEdge: TIER ? TIER[1] : '', tierIcon: TIER ? TIER[2] : '', tierLabel: TIER ? TIER[3] : '', tierFs: TIER ? TIER[4] : 13, chAccent: ch.accent, chEdge: ch.edge, chInk: ch.ink, chKicker: ch.kicker || `CHAPTER ${ch.n}`, chName: ch.name || TH[ch.n - 1][0], chStars: ch.stars, adsGone: noAds, toastY: HL.cardY + 74,
+        idle: [['cherry', 84], ['sky', 100], ['sunflower', 116], ['leaf', 100], ['grape', 84]].map(([c, h], i) => ({ ...doll(c, 195 + (i - 2) * 70 * HL.dollK, HL.dollBase, h * HL.dollK), dur: [3.2, 2.6, 3.6, 2.9, 3.4][i], delay: [0, .4, .9, .2, .6][i] })),
+        tiles: noAds ? [tile.daily(ch.streak), tile.vs(true)] : [tile.daily(ch.streak, ch.daily), tile.vs(!locked), tile.ads()], tileCols: noAds ? 'repeat(2,minmax(0,1fr))' : 'repeat(3,minmax(0,1fr))' });
+      out.frameH = HL.frameH;
+    }
+    if (out.isRivals) {
+      const nw = s === 'rivalsNew';
+      out.rvStart = 'Start';
+      out.rivals = RIV.map((r, i) => { const open = nw ? i < 2 : i === 0, sel = nw ? i === 1 : i === 0; return { name: r.name, skill: r.skill, line: r.line, art: open ? r.art : 'ui/rivals/rival_locked.svg', open, locked: !open, sel, beaten: nw && i === 0, isNew: nw && i === 1, reward: `Win ${r.coins} coins`, lockLine: i ? `Beat ${RIV[i - 1].name} to unlock` : '', bg: open ? '#FFFDF7' : SUNK, sh: open ? 'inset 0 2px 0 #fff,0 5px 0 #D8B07A' + (sel ? ',0 0 0 3px #4E5FD9' : '') : SUNK_SH, nameC: open ? '#5B3A21' : '#8A6A4E', skillC: open ? '#3242A8' : '#8A6A4E' }; });
+    }
+    if (s === 'chapters') {
+      const sel = +this.props.sel || 0;
+      const done = [['60/60', true], ['52/60', false], ['47/60', false]];
+      out.chTop = done.map(([st, perfect], i) => ({ kicker: `CHAPTER ${i + 1} · LEVELS ${i * 20 + 1}–${i * 20 + 20}`, name: TH[i][0], thumb: crop(i, 84), filter: 'none', bg: '#FFFDF7', sh: 'inset 0 2px 0 #fff,0 4px 0 #D8B07A', nameC: '#5B3A21', subOn: perfect, sub: 'Every level at 3 stars', fig: `museum/${FIG[i]}.svg`, figOp: 1, starsOn: true, stars: st, chipSh: perfect ? 'inset 0 0 0 1.5px #F2C230,0 0 0 3px rgba(245,197,24,.35)' : 'inset 0 0 0 1.5px #EAD3B0' }));
+      out.chBottom = [4, 5].map(i => ({ kicker: `CHAPTER ${i + 1} · LEVELS ${i * 20 + 1}–${i * 20 + 20}`, name: TH[i][0], thumb: crop(i, 84), filter: 'grayscale(.7) brightness(1.06)', bg: SUNK, sh: SUNK_SH, nameC: '#8A6A4E', fig: `museum/${FIG[i]}-locked.svg`, figOp: .5 }));
+      out.curThumb = crop(3, 358);
+      const ST = [3, 2, 3, 1, 3, 2], BEST = [11, 16, 14, 21, 12, 19], TIER = { 66: 'hard', 70: 'super', 76: 'hard', 80: 'super' };
+      out.lv = Array.from({ length: 20 }, (_, i) => { const n = 61 + i, won = i < 6, cur = n === 67, t = TIER[n], edge = (won || cur) && t ? `,inset 0 0 0 2px ${t === 'hard' ? '#E5484D' : '#8E4EC6'}` : '', isSel = n === sel;
+        return { n, starsOn: won, st: won ? [0, 1, 2].map(k => `ui/stars/star_${k < ST[i] ? 'filled' : 'empty'}.svg`) : [], best: won ? `Best ${BEST[i]}` : '', playOn: cur, lockOn: !won && !cur && n !== 70 && n !== 80,
+          bg: cur ? 'linear-gradient(180deg,#F7A15E,#F2893B)' : won ? '#FFF6E6' : '#F1E3CC',
+          sh: cur ? 'inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E,0 0 0 4px rgba(242,137,59,.28)' : won ? (isSel ? 'inset 0 0 0 2px #F2893B,0 0 0 3px #F2893B' : 'inset 0 0 0 1.5px #EAD3B0') + edge : SUNK_SH,
+          c: cur ? '#FFFFFF' : won ? '#5B3A21' : '#B99A7A', chest: n === 70, flag: n === 80, markOp: won || cur ? 1 : .8 }; });
+    }
+    if (out.isMuseum) {
+      const got = s === 'museum0' ? 0 : s === 'museum3' ? 3 : 10;
+      Object.assign(out, { muCount: `${got} / 10`, muNextOn: got < 10, muDoneOn: got === 10 });
+      if (got < 10) Object.assign(out, { muNextArt: `museum/${FIG[got]}-locked.svg`, muNextName: FAM[got], muNextLine: got === 0 ? 'Chapter 1 · 19 levels to go' : 'Chapter 4 · 14 levels to go', muNextPct: got === 0 ? 5 : 30, muPlay: got === 0 ? 'Play Level 2' : 'Play Level 67' });
+      out.figs = FIG.map((f, i) => { const earned = i < got, next = i === got; return { art: `museum/${f}${earned ? '' : '-locked'}.svg`, op: earned || next ? 1 : .45, anim: earned ? `nh-bob ${(2.6 + (i % 3) * .4).toFixed(1)}s ease-in-out ${(i * .3).toFixed(1)}s infinite` : 'none', named: earned, name: FAM[i], nextOn: next, chip: got === 0 ? '19 to go' : '14 to go', lockedOn: !earned && !next, l1: `Chapter ${i + 1}`, l2: `Levels ${i * 20 + 1}–${i * 20 + 20}`, bg: earned ? 'radial-gradient(ellipse 70% 80% at 30% 0%,rgba(255,226,160,.5),rgba(255,226,160,0) 70%),linear-gradient(180deg,#5A3218,#6E3F1E)' : 'linear-gradient(180deg,#4A2A14,#5E3519)', ring: next ? ',0 0 0 2px #7FD08D' : '' }; });
+    }
+    if (s === 'records') {
+      out.stats = [['check_circle', 'Levels won', '55', ['#DDF3E2', '#2F7A3E']], ['museum', 'Families home', '2 of 10', ['#FFE9D2', '#C4631E']], ['layers', 'Dolls nested', '1,284', ['#F6E2C2', '#6E4526']], ['extension', 'Daily puzzles solved', '9', ['#FFF1C9', '#8C5E12']], ['local_fire_department', 'Longest streak', '12 days', ['#FFE3D0', '#E0632A']], ['', 'Stars', '151 of 600', ['#FFF6E6', '#8C5E12'], true]].map(([icon, k, v, t, st]) => ({ icon, k, v, ibg: t[0], ic: t[1], starOn: !!st }));
+      out.races = RIV.map((r, i) => ({ name: r.name, art: i < 2 ? r.art : 'ui/rivals/rival_locked.svg', v: ['3', '1', '–'][i], c: i < 2 ? '#5B3A21' : '#A48B72', bt: i ? '1.5px solid #F0DFC4' : 'none' }));
+      out.badges = BADGES.map(([id, nm, line, on]) => ({ art: `ui/badges/${id}${on ? '' : '_locked'}.svg`, name: nm, line: on ? line : 'Not earned yet', bg: on ? '#FFFDF7' : SUNK, sh: on ? 'inset 0 2px 0 #fff,0 4px 0 #D8B07A' : SUNK_SH, c: on ? '#5B3A21' : '#8A6A4E' }));
+    }
+    if (out.isSettings) {
+      const blocked = s === 'settingsBlocked';
+      const rem = blocked ? { ...toggle('notifications_off', 'Daily reminder', 0, 'Off in your phone’s settings', ['#F6E2C2', '#8A5B3A']), actOn: true, act: 'Open phone settings' } : toggle('notifications', 'Daily reminder', 1, '', ['#FFF1C9', '#8C5E12']);
+      const time = link('schedule', 'Time', '7:00 PM', ['#FFF1C9', '#8C5E12']);
+      out.sGroups = [
+        { rows: rowsOf([toggle('volume_up', 'Sound', 1), toggle('music_note', 'Music', 1), toggle('vibration', 'Haptics', 1)]) },
+        { rows: rowsOf([rem, ...(blocked ? [] : [time]), toggle('spa', 'Relaxed mode', 0, 'Unlimited free undo', ['#DDF3E2', '#2F7A3E']), { ...toggle('motion_photos_off', 'Reduce motion', 0, '', ['#E8F3FF', '#2B5E93']), tgl: false, segOn: true, seg: seg('System') }]) },
+        { rows: rowsOf([link('translate', 'Language', 'English'), link('restore', 'Restore Purchases'), link('admin_panel_settings', 'Privacy choices')]) },
+      ];
+    }
+    if (s === 'streakStates') {
+      out.stTiles = [
+        { label: 'Lit', n: '4', glyph: 'local_fire_department', bg: 'linear-gradient(180deg,#FFA36B,#F2702B)', sh: '0 3px 0 #B8501A,0 0 0 2.5px #FFF6E6', c: '#FFFFFF' },
+        { label: 'Paused', n: '4', glyph: 'local_fire_department', bg: 'linear-gradient(180deg,#F1E3CC,#DCC6A4)', sh: '0 3px 0 #B99A7A,0 0 0 2.5px #FFF6E6', c: '#7A5234' },
+        { label: 'Relit', n: '5', glyph: 'local_fire_department', bg: 'linear-gradient(180deg,#FFA36B,#F2702B)', sh: '0 3px 0 #B8501A,0 0 0 2.5px #FFF6E6,0 0 0 6px rgba(255,205,80,.55)', c: '#FFFFFF' },
+      ];
+      const lit = { fBg: 'linear-gradient(180deg,#FFB27A,#F2702B)', fSh: '0 3px 0 #B8501A', fC: '#FFF6E6', bg: 'linear-gradient(180deg,#FFF1DE,#FFE2C2)', sh: 'inset 0 2px 0 #fff,0 5px 0 #E3AE8C', tc: '#5B3A21', sc: '#7A5234' };
+      out.stCards = [
+        { ...lit, label: 'Lit · streak card (5.1)', days: '4 days', chipOn: false, chip: '', line: 'Your flame is lit. See you tomorrow.', spark: false },
+        { fBg: 'linear-gradient(180deg,#F1E3CC,#DCC6A4)', fSh: '0 3px 0 #B99A7A', fC: '#9A6A44', bg: '#FFF9EE', sh: 'inset 0 2px 0 #fff,0 5px 0 #D8B07A', tc: '#5B3A21', sc: '#7A5234', label: 'Paused · a missed day, no freeze left', days: '4 days', chipOn: true, chip: 'Paused', line: 'Your 4-day streak is resting. Solve today’s puzzle to light it again.', spark: false },
+        { ...lit, sh: 'inset 0 2px 0 #fff,0 5px 0 #E3AE8C,0 0 0 3px rgba(255,205,80,.55)', label: 'Relit · on the Daily win card (5.4)', days: 'Streak relit!', chipOn: false, chip: '', line: 'Your 5-day streak is glowing again.', spark: true },
+      ];
+    }
+    if (s === 'starSheet') {
+      out.ssRows = [
+        { title: 'Win card · 44 dp', note: 'ui_stars on 2.8. Empty stars are soft cream outlines in the card’s own colours.', stars: starsOf(2, 40, true), gap: 4, glow: false, gw: 0, gm: '0' },
+        { title: '3★ · the flourish', note: 'star_glow (1.667 × the star) behind the middle star, then sparkles. Only for 3 stars.', stars: starsOf(3, 40, true), gap: 4, glow: true, gw: 80, gm: '-44px 0 0 -40px' },
+        { title: 'Chapters and Records · 20 dp', note: 'On chips: “39/60”. A chapter with every level at 3★ gets a gold ring on its chip.', stars: starsOf(1, 20), gap: 2, glow: false, gw: 0, gm: '0' },
+        { title: 'Level cell · 11 dp', note: 'Under each won level on Chapters, with “Best 16”.', stars: starsOf(2, 11), gap: 1, glow: false, gw: 0, gm: '0' },
+      ];
+    }
+    if (s === 'starReveal') {
+      const row = (n, pop, glow) => [[20, 22], [53, 16], [86, 22]].map(([x, y], i) => ({ x, y, w: 36, src: `ui/stars/star_${i < n ? 'filled' : 'empty'}.svg`, k: pop === i ? 1.18 : 1 }));
+      out.rvRows = [
+        { title: 'The card lands', t: '0 ms', note: 'Three empty stars at rest (frame 0). Coins burst at 700 and count up.', stars: row(0), glow: false, bg: '#FFFDF7' },
+        { title: 'star_1', t: '1,300 ms', note: 'Starts when the coin count-up ends. Pop to 118 %, star_1.wav (E6), light haptic.', stars: row(1, 0), glow: false, bg: '#FFFDF7' },
+        { title: 'star_2', t: '1,633 ms', note: '20 frames later. star_2.wav (G6), light haptic.', stars: row(2, 1), glow: false, bg: '#FFFDF7' },
+        { title: 'star_3 + flourish', t: '1,967–2,967 ms', note: 'star_3.wav (C7), then the glow and sparkles; success haptic at the end.', stars: row(3), glow: true, bg: '#FFFDF7' },
+        { title: 'Reduce motion', t: 'at once', note: 'Jump to the last frame of star_n with no pop or flourish. One sound (the highest star earned) and one light haptic, not three.', stars: row(2), glow: false, bg: '#FFF6E6' },
+      ];
+    }
+    if (out.isStates) {
+      const E = (o) => ({ pos: 'relative', x: 0, y: 0, w: 60, hh: 44, r: '14px', bg: 'transparent', sh: 'none', o: 1, c: '#5B3A21', f: "700 12px/1 'Fredoka',sans-serif", gOn: false, g: '', gs: 20, t: '', ...o });
+      const boost = (dis) => E({ w: 52, hh: 40, r: '12px', bg: dis ? '#E8DCCB' : 'linear-gradient(180deg,#FFF9EE,#FCEBD0)', sh: dis ? 'inset 0 2px 3px rgba(90,45,15,.18)' : 'inset 0 2px 0 #fff,0 4px 0 #CFA36A', c: dis ? '#A48B72' : '#6E4526', gOn: true, g: 'add_box', gs: 22 });
+      const pill = (t, w) => E({ w, hh: 22, r: '11px', bg: '#7B4824', c: '#FFEFD6', f: "700 12px/1 'Fredoka',sans-serif", gOn: true, g: 'person', gs: 13, t });
+      const fdoll = (c, x) => [E({ pos: 'absolute', x, y: 16, w: 30, hh: 30, r: '50%', bg: c, sh: 'inset 0 -3px 0 rgba(0,0,0,.18)' }), E({ pos: 'absolute', x: x + 7, y: 24, w: 16, hh: 14, r: '50%', bg: '#FFF3E0' }), E({ pos: 'absolute', x: x - 5, y: 40, w: 40, hh: 44, r: '48% 48% 40% 40%', bg: c, sh: 'inset 0 -4px 0 rgba(0,0,0,.18)' }), E({ pos: 'absolute', x: x + 7, y: 54, w: 16, hh: 16, r: '50%', bg: 'rgba(255,248,236,.9)' })];
+      const stageC = '#F3E6D2';
+      out.stRows = s === 'statesA' ? [
+        { id: 'E.11', title: 'Disabled booster', note: 'Sunk #E8DCCB face, #A48B72 glyph and label, no edge. Used for +1 Slot at its limit (E.9) and anything offline without a price.', h: 64, stage: stageC, els: [boost(false), boost(true)] },
+        { id: 'E.11', title: 'Danger button', note: 'Red gradient #F07377 → #E5484D, 6 px edge #A92C33, white Fredoka. Only for actions that can’t be undone.', h: 64, stage: stageC, els: [E({ w: 100, hh: 40, r: '14px', bg: 'linear-gradient(180deg,#F07377,#E5484D)', sh: 'inset 0 2px 0 rgba(255,255,255,.3),0 4px 0 #A92C33', c: '#fff', f: "700 14px/1 'Fredoka',sans-serif", t: 'Danger' })] },
+        { id: 'E.11', title: 'Success banner', note: '#EAF7EC with a #A6DDB3 edge and a green check disc; title Fredoka 16, sub Nunito 12. Auto-dismiss 2.5 s.', h: 64, stage: stageC, els: [E({ w: 104, hh: 36, r: '14px', bg: '#EAF7EC', sh: 'inset 0 2px 0 #fff,0 3px 0 #A6DDB3', c: '#2F7A3E', gOn: true, g: 'check_circle', gs: 18, f: "700 11px/1 'Fredoka',sans-serif", t: 'Restored' })] },
+        { id: 'E.18', title: 'Family counter width', note: 'The label hugs its text: min 30 dp, tabular figures, padding 7 / 10 around a 12×18 icon. “4 / 4” = 64 dp, “12 / 12” = 78 dp.', h: 64, stage: stageC, els: [pill('4 / 4', 46), pill('12 / 12', 58)] },
+        { id: 'E.19', title: 'Fallback doll', note: 'Drawn in code when a skin can’t load and on the splash’s first frames: two stacked rounded shapes in the base color, a cream face disc and a cream belly disc with the symbol in ink. No details, no shine.', h: 96, stage: stageC, els: [...fdoll('#E5484D', 12), ...fdoll('#3E8EDE', 44), ...fdoll('#46A758', 76)] },
+      ] : [
+        { id: 'E.13', title: 'Tap on a slot with nothing selected', note: 'No shake (that means an invalid move). An empty stand dips 2 dp for 80 ms with a light haptic; a locked case pings its padlock (1.15×, 160 ms); iced dolls bump the ice counter (1.2×, 160 ms).', h: 64, stage: stageC, els: [E({ w: 60, hh: 18, r: '8px', bg: '#E4BC86', sh: '0 4px 0 #C08A4E', gOn: false })] },
+        { id: 'E.14', title: 'Drag hover', note: 'A valid target under the dragged doll gets fx_select_glow at 60 %; invalid targets get nothing. The highlight follows the stand, not the column.', h: 64, stage: stageC, els: [E({ w: 76, hh: 26, r: '50%', bg: 'radial-gradient(ellipse,rgba(255,224,138,.9),rgba(255,224,138,0) 70%)' })] },
+        { id: 'E.15', title: 'Hint arc to another row', note: 'A cubic from 8 dp above the source doll to 8 dp above the target; both handles rise 42 dp above the higher end (56 dp when the rows differ), so the arc never cuts through a doll.', h: 64, stage: stageC, els: [E({ w: 80, hh: 40, r: '40px 40px 0 0', bg: 'transparent', sh: 'inset 0 3px 0 0 #F2893B' })] },
+        { id: 'E.16', title: 'Extra slot under a doll', note: 'ui_extra_slot stops as a doll lands on it (150 ms fade to the rest frame) and starts again at frame 0 when the pad is empty.', h: 64, stage: stageC, els: [E({ w: 64, hh: 22, r: '9px', bg: '#CDEFD6', sh: '0 3px 0 #7FD08D' })] },
+        { id: 'E.17', title: 'fx_twinkle on the win card', note: 'Three twinkles above the scrim and behind the ribbon: (52, 112), (338, 128) and (292, 396), 2.0–2.4 s, random phase.', h: 64, stage: 'rgba(60,30,10,.55)', els: [E({ w: 16, hh: 16, gOn: true, g: 'star', gs: 16, c: '#FFF3B0' }), E({ w: 16, hh: 16, gOn: true, g: 'star', gs: 12, c: '#FFF3B0' })] },
+        { id: 'E.20', title: '3.1b · hint on the middle top stand', note: 'When ui_hint_arrow sits over x 195 on the top shelf and would reach the family counter (y < 150), the counter fades to 0 in 150 ms and back 150 ms after the hint ends. The arrow keeps its size and bob.', h: 64, stage: stageC, els: [pill('2 / 4', 50), E({ w: 24, hh: 30, gOn: true, g: 'south', gs: 28, c: '#F2893B' })] },
+      ];
+      out.stRows[5 + (s === 'statesA' ? -1 : 0)] && (out.stRows[s === 'statesA' ? 3 : 5].els[0].o = s === 'statesA' ? 1 : .15);
+    }
+    return out;
+  }
+}
+</script>
+</body>
+</html>

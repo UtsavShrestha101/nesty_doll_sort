@@ -2,6 +2,22 @@
 
 ## Changes
 
+### m7-3 (2026-09-30, Claude Design)
+Three new files and one fix; the other 31 are unchanged.
+- **`ui_intro_towers`, `ui_intro_glass`, `ui_intro_ice` (new, D).** Looping animations for the intro cards 4.1–4.3, on the card's 302×230 illustration box, with no text layers. The plank and stands are shapes; dolls, the wood blank, glass case frames, the padlock symbol and ice frames are image slots, filled like the board's (the roles are in Image slots). Every scale and position change sits on a null; image layers only fade. The ice counter shows pips, not a number. Each loop ends on its first frame.
+- **`ui_extra_slot` (E.21).** The pulse now starts and ends at the static pad's pose (100 % scale, 100 % opacity), with a `rest` marker at frame 0: 100 → 104 % (24) → 96 % (72) → 100 % (96), opacity 100 → 80 → 100. The hand-off from the static pad no longer pops, so the game can start at frame 0.
+
+### m7-2 (2026-09-30, Claude Design)
+Two new files; the other 30 are unchanged.
+- **`ui_stars` (new).** The star rating on the win overlay (11.2, 11.3). Three empty stars at rest; segment `star_n` pops the n-th filled star in (scale 0 → 118 % → 100 % on its parent null, 20 f each) and `flourish` (60–120) adds a glow and six sparkles after the third. To show n stars, play 0 → 20·n and hold; for 3 stars go on through `flourish` and hold on 120. Canvas 240×110, star centers (64, 58), (120, 52), (176, 58), 44 dp; everything stays inside the canvas, including the 118 % pop and the glow.
+- **`ui_chest` (new).** The milestone chest (10.3b, 10.3c), shared with the day-7 chest (5.6). `arrive` drops the closed chest in with a squash, `idle` breathes (loop), `wiggle` rocks it three times when Open is tapped, `open` swaps to the open chest with a flash, rays and a burst of coins and sparkles, and `open_idle` loops the rays. Canvas 200×200, chest base (100, 186), chest 130×108 dp.
+- Both follow the rules: image layers never animate their transform (the pops sit on nulls), every PNG is at its declared size, no expressions, effects or mattes other than alpha.
+
+### m7-1 (2026-09-30, Claude Design)
+One new file; the 29 v3 files are unchanged.
+- **`fx_glass_unlock_tall` (new).** The unlock for the tall glass case that holds a size-5 or size-6 doll (`board/glass-case-tall-*.svg`, tokens.json → `layout.board.glassCaseTall`). Built from `fx_glass_unlock` with the same 54 frames, timing, easing, padlock ping, flash, glints and 12 shards. The differences: the case is 93×152 dp at 100 % and the doll stands on the stand surface inside it (no plinth lift), so the freed doll hops from the surface to 16 dp up (frames 42–47) and lands back on it at 53. Every piece except the doll hangs from a new `case_size` null on the stand surface; set it and `doll_size` to the same value, h / 150 (94.7 % for size 6 on the tall preset, 89 % for size 5 on three shelves). Canvas 200×280; everything stays at least 3.9 dp inside it; no image layer animates its transform.
+- **`fx_ice` on the tall preset.** Boards with size-6 dolls (`layout.boardPresets.threeShelvesTall`) use a 96×168 ice overlay. Play `fx_ice` there at scale (1, 1.05) from the ice bottom (anchor (90, 200) → the overlay's bottom centre); nothing else changes.
+
 ### v3 (2026-09-26, Claude Design)
 Built from v2, which stays the baseline, with the owner's answers to the v2 questions. 17 files are byte-identical to v2 and 12 changed. File names, 60 fps, anchors and timings are unchanged except where listed.
 
@@ -26,7 +42,7 @@ Built from v2, which stays the baseline, with the owner's answers to the v2 ques
 
 ---
 
-For Claude Code. **Owner decision (2026-09-26): every animation in the design ships as Lottie.** This folder has 29 files (10 doll, 8 fx, 11 ui) that cover every animation in the flow (`prototypes/Nesty App Flow.dc.html`) and in `prototypes/Nesty Motion & Sound.dc.html`. Watch them all in `prototypes/Lottie FX.dc.html`. Timings come from `tokens.json` → `motion`. Sounds and haptics come from `tokens.json` → `sound` and `haptics`.
+For Claude Code. **Owner decision (2026-09-26): every animation in the design ships as Lottie.** This folder has 35 files (10 doll, 9 fx, 11 ui) that cover every animation in the flow (`prototypes/Nesty App Flow.dc.html`) and in `prototypes/Nesty Motion & Sound.dc.html`. Watch them all in `prototypes/Lottie FX.dc.html`. Timings come from `tokens.json` → `motion`. Sounds and haptics come from `tokens.json` → `sound` and `haptics`.
 
 **Not Lottie:** widget transitions that wrap live content, such as button press, sheet in, modal in, tab lift and banners. They stay Flutter animations using `tokens.motion.ui`. Combo is sound-only. The dashed hint arc and the tutorial arc are static paths.
 
@@ -56,6 +72,7 @@ For Claude Code. **Owner decision (2026-09-26): every animation in the design sh
 | `doll_win_hop` | 160×260 | doll base (80, 230) | 78 f, loop | |
 | `fx_select_glow` | 140×80 | ring center (70, 40) = (slot cx, stand surface − 2) | 113 f | `in` 0–7, `pulse` 7–103 (loop), `out` 103–113 |
 | `fx_glass_unlock` | 180×240 | case top-left at (47, 40); doll base (90, 163) at rest, landing on the stand surface (90, 174) = case top + 134 at frame 53 | 54 f | rest = frame 0 |
+| `fx_glass_unlock_tall` | 200×280 | stand surface (100, 212) = the `case_size` null; at 100 % the case top-left is (53.5, 64) and the doll base rests on the surface, and lands there again at frame 53 | 54 f | rest = frame 0 |
 | `fx_ice` | 180×240 | ice top-left at (42, 40); doll base (90, 170.8) | 150 f | `crack_1` 0–16, `crack_2` 16–32, `crack_3` 32–48, `shatter` 48–81; `crack_hit_0` 82–98, `crack_hit_1` 99–115, `crack_hit_2` 116–132, `crack_hit_3` 133–149; rest markers `rest_0` 0, `rest_1` 16, `rest_2` 32, `rest_3` 48 |
 | `fx_dust_puff` | 160×80 | stand surface under the doll (80, 62) | 24 f | |
 | `fx_sparkle` | 64×64 | center (32, 32) | 16 f | |
@@ -64,7 +81,7 @@ For Claude Code. **Owner decision (2026-09-26): every animation in the design sh
 | `fx_twinkle` | 32×32 | center (16, 16) | 120 f, loop | |
 | `ui_family_counter` | 120×60 | counter center (60, 30) = (195, 129) | 12 f | `bump` 0–12 |
 | `ui_hint_arrow` | 60×80 | arrow center at rest (30, 45), placed at (slot cx, doll top − 33) | 54 f, loop | |
-| `ui_extra_slot` | 110×50 | stand center (55, 25) | 96 f, loop | |
+| `ui_extra_slot` | 110×50 | stand center (55, 25) | 96 f, loop | `rest` = frame 0 (matches the static pad) |
 | `ui_booster_glow` | 130×110 | booster center (65, 55); draw it behind the button | 84 f, loop | |
 | `ui_win_ribbon` | 410×110 | ribbon center (205, 55); band 336 wide | 18 f, then hold | |
 | `ui_chapter_ribbon` | 410×100 | ribbon center (205, 50); band 336 wide | 156 f | |
@@ -73,6 +90,11 @@ For Claude Code. **Owner decision (2026-09-26): every animation in the design sh
 | `ui_splash_loader` | 278×22 | bar box: top-left (0, 0) at (56, 690), left/right 56 | 100 f | frame = load progress % |
 | `ui_tap_hand` | 128×144 | fingertip (48, 32) on the target | 72 f, loop | |
 | `ui_drag_hand` | board | travel S (100, 500) → T (300, 500) | 144 f, loop | |
+| `ui_stars` | 240×110 | stars centered at x 195, canvas top 176 on the win overlay (`layout.winStars`); star centers (64, 58), (120, 52), (176, 58) | 120 f | `star_1` 0–20, `star_2` 20–40, `star_3` 40–60, `flourish` 60–120; rest = frame 0 (three empty stars) |
+| `ui_chest` | 200×200 | chest base (100, 186) on the card (`layout.chestCard`) | 410 f | `arrive` 0–36, `idle` 36–216 (loop), `wiggle` 216–245, `open` 245–290, `open_idle` 290–410 (loop) |
+| `ui_intro_towers` | 302×230 | the intro card's illustration box (4.1) | 240 f, loop | `loop` 0–240 |
+| `ui_intro_glass` | 302×230 | the intro card's illustration box (4.2) | 240 f, loop | `loop` 0–240 |
+| `ui_intro_ice` | 302×230 | the intro card's illustration box (4.3) | 300 f, loop | `loop` 0–300 |
 
 ## When each one plays
 Play events in `MoveEvent` order. The board timeline starts each file, and a Lottie never changes game state. Times are ms from the event.
@@ -85,7 +107,7 @@ Play events in `MoveEvent` order. The board timeline starts each file, and a Lot
 | NestedInto | `doll_move` (dst = hover), then `doll_nest` or `doll_swallow` | `whoosh` @0, `clack_*` when the lid shuts (nest/swallow +270) | medium at the clack |
 | Revealed | `doll_reveal`, once the moving top nest has lifted off | none (the move carries `whoosh`) | none |
 | Completed | `doll_complete`; `fx_dust_puff` @700; `fx_sparkle` every 60 ms from 700 to 1250; `ui_family_counter` bump and a 1.5× `fx_sparkle` @1250 | `complete_{comboStep}` @0 | success @0 |
-| Unlocked | `fx_glass_unlock` | `unlock_glass` @0 | medium @0 |
+| Unlocked | `fx_glass_unlock` (`fx_glass_unlock_tall` for a size-5 or size-6 doll) | `unlock_glass` @0 | medium @0 |
 | IceCracked | `fx_ice` segment `crack_n` (n = the stage it cracks to), then rest on `rest_n` | `ice_crack` @0 | light |
 | IceCracked, no new stage | `fx_ice` segment `crack_hit_n` (n = the stage shown, 0–3), then rest on `rest_n`. For ice counters with more hits than stages (4 or more) | `ice_crack` @0 | light |
 | IceShattered | `fx_ice` segment `shatter` | `ice_shatter` @0 | none |
@@ -101,6 +123,12 @@ Play events in `MoveEvent` order. The board timeline starts each file, and a Lot
 | Settings / Pause toggle | `ui_toggle` on or off | `button` | selection |
 | Skin downloading (7.5) | `ui_spinner` | none | none |
 | Tutorial 1.3 / 1.4, 1.6 | `ui_tap_hand`, `ui_drag_hand` | none | none |
+| Mechanic intro card (4.1–4.3) | `ui_intro_towers`, `ui_intro_glass` or `ui_intro_ice`, looping while the card is open. Reduce motion: frame 0, still | none | none |
+| Win overlay with stars (11.2, 11.3) | `ui_stars` when the coin count-up ends (1,300 ms): `star_1` … `star_n` back to back, then `flourish` if n = 3. `fx_coin_burst` and `coins` keep @700. Reduce motion: the last frame of `star_n` at once | `star_n` at the start of each segment (reduce motion: the highest one only) | light per star, success after the flourish |
+| Milestone or day-7 chest shown (10.3b, 5.6) | `ui_chest` `arrive`, then `idle` (loop) | none | none |
+| Chest Open tapped | `ui_chest` `wiggle`, then `open`, then `open_idle` (loop); the content chips pop in 150 ms apart. Reduce motion: a 200 ms crossfade from `idle` to the last frame of `open`, no wiggle | `chest_wiggle` @0, `chest_open` @483 (segment `open`), `jingle_reward` @733 | medium @483 |
+| Chest Collect (10.3d) | no Lottie: 6 `ui/sprites/coin_flight` fly to the coin pill (700 ms, 60 ms apart) and `hint_flight` to the Hint button (650 ms), whose badge bumps 1.3×. Reduce motion: no flights, the counts update | `coins` @0 | light as the hint lands |
+| Race: the computer completes a family | none (the strip dot fills, `motion.rivalDot`) | `rival_complete` | none |
 
 ## Image slots
 Every doll and board piece is an image slot. The game fills each one with its own raster through `LottieDelegates(image: (composition, asset) => …)`, keyed by `asset.id`. `images/*.png` are placeholders (Cherry classic doll and board art) so that the files also play standalone. Each one is exactly its asset's declared size.
@@ -112,12 +140,20 @@ Every doll and board piece is an image slot. The game fills each one with its ow
 | `doll_silhouette` | The unpainted wood blank of a buried nest: `board/doll-silhouette.svg` at 512×768, the same for every skin (owner decision, 2026-09-26). The placeholder is that raster |
 | `glow_ring`, `hint_arrow`, `extra_slot` | `board/*.svg` rasters at 3×: 348×156, 120×150 and 270×102 px (116×52, 40×50 and 90×34 dp) |
 | `glass_case_0/1/2`, `unlock_symbol` | Glass case frames at 258×429 px (86×143 dp) and the unlock color's symbol in ink at 36×36 px (12×12 dp) |
+| `glass_case_tall_0/1/2` | Tall glass case frames, `board/glass-case-tall-{0,1,2}.svg` at 279×456 px (93×152 dp at 100 %), in `fx_glass_unlock_tall` |
 | `ice_0` … `ice_3`, `ice_shatter` | Ice frames at 288×480 px (96×160 dp) |
+| `star_filled`, `star_empty` | `ui/stars/star_filled.svg`, `star_empty.svg` at 132×132 px (44 dp), in `ui_stars` |
+| `star_glow` | `ui/stars/star_glow.svg` at 220×220 px (73 dp, 1.667 × the star), in `ui_stars` |
+| `chest_closed`, `chest_open` | `ui/chest/chest_closed.svg`, `chest_open.svg` at 390×325 px (130×108 dp), in `ui_chest` |
+| `mover`, `revealed` (lid and body) + `doll_silhouette` | `ui_intro_towers`: the top nest (any color), the doll revealed under it (another color), and the wood blank of the buried nest, at 512×768 |
+| `family`, `family_2`, `freed` (lid and body) | `ui_intro_glass` and `ui_intro_ice`: the families that complete (their color is the padlock's symbol in glass), and the freed doll inside the case or ice, at 512×768 |
+| `glass_case_0/1/2`, `unlock_symbol`, `ice_0`, `ice_1`, `ice_shatter` | the same rasters as the board files (258×429, 36×36, 288×480) |
 
 Return every raster at exactly its asset's declared `w`×`h` in pixels, because lottie-flutter draws an image at its own pixel size. Board pieces are declared at 3× and their layers are at 33.33 % with the anchor ×3, so 3× art stays sharp and the on-screen size is the dp size above. Doll layers are 512×768 at 19.53 %.
 
 ## Doll size, rim and tint
 - **Size:** every doll has a null named `<role>_size`, where role is `doll`, `mover` or `target`. At 100 % the doll is 150 dp tall (size 6 on a 3-shelf board). Override it with `ValueDelegate.transformScale(const ['doll_size'], value: Offset(k, k))`, where k = dollHeight / 150. In `doll_nest` and `doll_swallow`, `mover_size` sits inside `target_size`, so give it moverHeight / targetHeight. Lift, hop, shake and arc distances stay in absolute dp. Lid lift and squash follow the doll's size.
+- **Case size:** `fx_glass_unlock_tall` also has a `case_size` null. Give it the same scale as `doll_size` (h / 150) with `ValueDelegate.transformScale(const ['case_size'], …)`, so the case, flash, shards, glints and padlock grow with the doll.
 - **Hover points:** nest ends the move with the mover's base 0.50 × target height above the target base, and swallow uses 1.06 × target height.
 - **Rim:** fills named `rim_tint` take `DollSwatch.rimColor`. In `doll_nest` and `doll_swallow` the drawing order, bottom to top, is: host rim (`target_rim` / `mover_rim`), guest doll, host body, host lid. This is intended (owner, 2026-09-26). The rim is the back lip of the opening and the host body is the front wall, which covers the guest's lower half, so only the rim's upper half shows. The hidden front half would be about 2 dp tall on a 150 dp doll. `generator/nesty-doll.js` draws one open doll on its own with the whole rim above the body; that is not the nesting order.
 - **Reveal drop:** in `doll_reveal`, the `drop` null parents the whole doll and is authored from (0, −18) to (0, 0) over frames 0–7 (120 ms, easeOut). A buried nest sits 18 dp higher per depth, so override its start per tower with `ValueDelegate.transformPosition(const ['drop'], callback: …)`. The wipe starts at frame 7 and ends at 19, where `doll_silhouette` ends. The wipe is centred at art (256, 476), the doll's centre, 62 % down the artboard. This is intended (owner, 2026-09-26): it matches the approved prototype, the five splash drops start there, and the paint reaches the head and the base within the same 12 frames. From the belly (y 590) the head would be 560 art px away instead of 446 and would be painted last. `tokens.json` → `motion.reveal` now says so.
@@ -164,7 +200,7 @@ lottie-flutter skips a position callback while two consecutive keyframes are equ
 
 ## Rendering contract
 - At rest the board draws sprites. While a doll animation plays, hide that doll's sprite and let the Lottie draw it. The first and last frames match the rest pose.
-- A locked or iced slot draws its `fx_glass_unlock` / `fx_ice` composition paused on the rest frame (frame 0 for glass; for ice, `rest_n` for the stage shown, also after a `crack_hit_n`) the whole time. These files include the doll inside, so don't draw that sprite separately.
+- A locked or iced slot draws its `fx_glass_unlock` (or `fx_glass_unlock_tall`) / `fx_ice` composition paused on the rest frame (frame 0 for glass; for ice, `rest_n` for the stage shown, also after a `crack_hit_n`) the whole time. These files include the doll inside, so don't draw that sprite separately.
 
 ## Flutter and Flame
 - **Packages:** `lottie` (widgets) and `flame_lottie` (board components). Neither is in spec §13.2, so write the rule-9 reason in `docs/PROGRESS.md` → Package reasons. Pin versions that resolve with the locked `flame` and Flutter 3.41.

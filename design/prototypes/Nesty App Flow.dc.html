@@ -11,7 +11,7 @@
 
 <section class="sec" id="s0" data-screen-label="00 Cover">
 <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:36px;max-width:1512px">
-<div><div style="font:700 13px/1 'Nunito',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9A6A44">Nesty: Doll Sort · iOS + Android · portrait 390×844</div><div style="margin-top:12px;font:700 64px/1 'Fredoka',sans-serif;color:#5B3A21">Full app flow</div><div style="margin-top:16px;font:600 17px/1.55 'Nunito',sans-serif;color:#7A5234;max-width:760px;text-wrap:pretty">Every screen from GAME_SPEC §10, in the order players meet it: 62 frames across 8 flows. All frames follow one player, so levels, coins, chapters and themes carry through from frame to frame.</div></div>
+<div><div style="font:700 13px/1 'Nunito',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9A6A44">Nesty: Doll Sort · iOS + Android · portrait 390×844</div><div style="margin-top:12px;font:700 64px/1 'Fredoka',sans-serif;color:#5B3A21">Full app flow</div><div style="margin-top:16px;font:600 17px/1.55 'Nunito',sans-serif;color:#7A5234;max-width:760px;text-wrap:pretty">Every screen from GAME_SPEC §10, in the order players meet it: 132 frames across 12 flows (sections 09–12 and the redrawn 2.1, 5.6, 6.1 and 7.3–7.4 variants are the m7 additions).</div></div>
 <div style="display:flex;flex-direction:column;gap:10px;font:700 13px/1.3 'Nunito',sans-serif;color:#8A5B3A;flex:none">
 <div style="display:flex;align-items:center;gap:10px"><span style="position:relative;display:block;width:44px;height:3px;border-radius:2px;background:#C4631E"></span>Tap or game event</div>
 <div style="display:flex;align-items:center;gap:10px"><span style="display:block;width:44px;height:3px;background:repeating-linear-gradient(90deg,#B98A60 0 7px,transparent 7px 12px)"></span>Branch or variant</div>
@@ -41,6 +41,14 @@
 <div class="fmr"><a class="ch opt" href="#f4-1">Intro cards</a><span class="ar">·</span><a class="ch" href="#f4-5">Level 60 win</a><span class="ar">→</span><a class="ch" href="#f4-6">Chapter complete</a><span class="ar">→</span><a class="ch" href="#f4-7">Next chapter</a><span class="ar">·</span><a class="ch opt" href="#f4-9">Bonus levels</a></div>
 <div class="fml">From Home</div>
 <div class="fmr"><a class="ch" href="#f5-1">Daily</a><a class="ch" href="#f6-1">Museum</a><a class="ch" href="#f7-1">Shop</a><a class="ch" href="#f8-1">Settings</a><span class="ar">·</span><a class="ch opt" href="#f8-5">ATT</a><a class="ch opt" href="#f8-7">Rate</a></div>
+<div class="fml">vs Computer (m7)</div>
+<div class="fmr"><a class="ch" href="#f9-1">Home tile</a><span class="ar">→</span><a class="ch" href="#f9-2">Pick a rival</a><span class="ar">→</span><a class="ch" href="#f9-3">Race</a><span class="ar">→</span><a class="ch" href="#f9-4">Won</a><a class="ch opt" href="#f9-5">Lost</a><a class="ch opt" href="#f9-7">Pause</a></div>
+<div class="fml">Engagement (m7)</div>
+<div class="fmr"><a class="ch" href="#f10-1">Share</a><a class="ch opt" href="#f10-2">Reminder</a><a class="ch" href="#f10-3">Chest</a><a class="ch" href="#f10-4">Chapters</a><a class="ch" href="#f10-6">Records</a><a class="ch" href="#f10-7">Streak</a><a class="ch opt" href="#f10-9">Relaxed</a></div>
+<div class="fml">More states (m7)</div>
+<div class="fmr"><a class="ch" href="#f12-1">Home states</a><a class="ch" href="#f12-4">Bonus win</a><a class="ch opt" href="#f12-5">Generating</a><a class="ch opt" href="#f12-10">Splash errors</a><a class="ch" href="#f12-12">Components</a></div>
+<div class="fml">Stars (m7)</div>
+<div class="fmr"><a class="ch" href="#f11-2">Win with stars</a><span class="ar">→</span><a class="ch" href="#f11-3">Reveal</a><span class="ar">·</span><a class="ch" href="#f11-4">Replay</a></div>
 </div>
 <div style="margin-top:18px;padding-top:14px;border-top:1px dashed rgba(110,60,25,.2);font:600 13px/1.6 'Nunito',sans-serif;color:#8A5B3A">Related boards: <a href="Nesty%20Design%20System.dc.html">Design system</a> · <a href="Classic%20Board%20Pieces.dc.html">Board pieces</a> · <a href="Classic%20Doll%20Skin.dc.html">Classic doll</a> · <a href="Doll%20Skins.dc.html">Doll skins</a> · <a href="Museum%20Figurines.dc.html">Museum figurines</a> · <a href="Chapter%20Backgrounds.dc.html">Chapter backgrounds</a> · <a href="Store%20Assets.dc.html">Store assets</a> · <a href="Level%20Editor%20Admin.dc.html">Level editor</a></div>
 </div>
@@ -90,7 +98,9 @@
 <div class="sh"><a class="sn" href="#s2">02</a><span class="st">Home &amp; core loop</span></div>
 <div class="sd">One full level, from Home to the next level: every move type, the chain reaction when a family completes, the win, the optional reward and the post-win ad.</div>
 <div class="row">
-<div class="fr" id="f2-1"><div class="tg"></div><div class="fl"><a class="fid" href="#f2-1">2.1</a><span class="ft">Home</span></div><dc-import name="NestyMenus" scene="home" hint-size="390px,844px"></dc-import><div class="fn">The background follows the player's chapter. The play button shows the next level and its tier. Tiles lead to Daily, Museum and Remove Ads. <span class="fs">§10.2 #2</span></div></div>
+<div class="fr" id="f2-1"><div class="tg"></div><div class="fl"><a class="fid" href="#f2-1">2.1</a><span class="ft">Home</span></div><dc-import name="NestyHub" scene="home" hint-size="390px,844px"></dc-import><div class="fn">Redrawn for m7 (J.1): the chapter card opens Chapters and shows its stars, Records sits beside it, and the tiles are Daily Puzzle, vs Computer and Remove Ads. Museum is the nav tab. <span class="fs">§10.2 #2</span></div></div>
+<div class="cn br"><span>16:9 phone</span><i></i></div>
+<div class="fr" id="f2-1b"><div class="tg">390×693</div><div class="fl"><a class="fid" href="#f2-1b">2.1b</a><span class="ft">Home · short screen</span></div><dc-import name="NestyHub" scene="homeShort" hint-size="390px,693px"></dc-import><div class="fn">The tiles stay 12 dp above the nav and the hero (plank, dolls, Play) scales to fit. <span class="fs">J.1 · E.1</span></div></div>
 <div class="cn"><span>tap Play</span><i></i></div>
 <div class="fr" id="f2-2"><div class="tg"></div><div class="fl"><a class="fid" href="#f2-2">2.2</a><span class="ft">Level 56</span></div><dc-import name="NestyBoard" scene="play" hint-size="390px,844px"></dc-import><div class="fn">Four families, a tower, a glass case locked by Grape and an ice slot. Pips on each stand show the sizes inside a nest. The counter under the level tracks families. <span class="fs">§10.3</span></div></div>
 <div class="cn"><span>tap a nest</span><i></i></div>
@@ -178,7 +188,9 @@
 <div class="cn"><span>Back to Daily</span><i></i></div>
 <div class="fr" id="f5-5"><div class="tg"></div><div class="fl"><a class="fid" href="#f5-5">5.5</a><span class="ft">Done for today</span></div><dc-import name="NestyMenus" scene="dailyDone" hint-size="390px,844px"></dc-import><div class="fn">Today is checked. A countdown shows when the next puzzle opens, and a shortcut goes back to the main levels. <span class="fs">§7.5</span></div></div>
 <div class="cn br"><span>two days later</span><i></i></div>
-<div class="fr" id="f5-6"><div class="tg">7th day of the streak</div><div class="fl"><a class="fid" href="#f5-6">5.6</a><span class="ft">Day 7 chest</span></div><dc-import name="NestyMenus" scene="dailyChest" hint-size="390px,844px"></dc-import><div class="fn">The chest opens for 300 coins. A reward video can double it. <span class="fs">§7.3 · §9.1</span></div></div>
+<div class="fr" id="f5-6"><div class="tg">7th day of the streak</div><div class="fl"><a class="fid" href="#f5-6">5.6</a><span class="ft">Day 7 chest</span></div><dc-import name="NestyMeta" scene="dayChest" hint-size="390px,844px"></dc-import><div class="fn">Redrawn for m7: the day-7 chest now arrives closed, with its contents shown, like the milestone chest (10.3). <span class="fs">§7.3 · §9.1</span></div></div>
+<div class="cn"><span>Open</span><i></i></div>
+<div class="fr" id="f5-6b"><div class="tg"></div><div class="fl"><a class="fid" href="#f5-6b">5.6b</a><span class="ft">Day 7 chest · open</span></div><dc-import name="NestyMeta" scene="dayChestOpen" hint-size="390px,844px"></dc-import><div class="fn">The same burst as 10.3c; a reward video can double it. <span class="fs">I.3 · §9.1</span></div></div>
 </div>
 </section>
 
@@ -186,7 +198,11 @@
 <div class="sh"><a class="sn" href="#s6">06</a><span class="st">Museum</span></div>
 <div class="sd">Chapter rewards on display. The figurine art comes from the museum set, with locked silhouettes for chapters not reached yet.</div>
 <div class="row">
-<div class="fr" id="f6-1"><div class="tg">From the Museum tab or tile</div><div class="fl"><a class="fid" href="#f6-1">6.1</a><span class="ft">Museum</span></div><dc-import name="NestyShop" scene="museum" hint-size="390px,844px"></dc-import><div class="fn">One figurine per chapter. Two are earned, the Baker Family shows its progress, and the rest are silhouettes. <span class="fs">§7.2</span></div></div>
+<div class="fr" id="f6-1"><div class="tg">From the Museum tab or tile</div><div class="fl"><a class="fid" href="#f6-1">6.1</a><span class="ft">Museum</span></div><dc-import name="NestyHub" scene="museum3" hint-size="390px,844px"></dc-import><div class="fn">Redrawn for m7 (J.2), shown for a player in chapter 4: the next family leads with its progress and Play; collected families bob gently under warm light with their names; locked ones show their chapter and levels on two lines. 6.2 and 6.3 are unchanged. <span class="fs">§7.2</span></div></div>
+<div class="cn br"><span>new player</span><i></i></div>
+<div class="fr" id="f6-1b"><div class="tg"></div><div class="fl"><a class="fid" href="#f6-1b">6.1b</a><span class="ft">Museum · none yet</span></div><dc-import name="NestyHub" scene="museum0" hint-size="390px,844px"></dc-import><div class="fn">What it is and how a family is earned, with the Classic Family as the first goal. <span class="fs">J.2</span></div></div>
+<div class="cn br"><span>all ten home</span><i></i></div>
+<div class="fr" id="f6-1c"><div class="tg"></div><div class="fl"><a class="fid" href="#f6-1c">6.1c</a><span class="ft">Museum · all home</span></div><dc-import name="NestyHub" scene="museum10" hint-size="390px,844px"></dc-import><div class="fn">“Every family is home.” with the Full House badge. <span class="fs">J.2 · E.4</span></div></div>
 <div class="cn"><span>tap Sailor</span><i></i></div>
 <div class="fr" id="f6-2"><div class="tg"></div><div class="fl"><a class="fid" href="#f6-2">6.2</a><span class="ft">Figurine detail</span></div><dc-import name="NestyShop" scene="museumDetail" hint-size="390px,844px"></dc-import><div class="fn">A larger view with the chapter, the name and one line of flavor text. <span class="fs">§10.2 #10</span></div></div>
 <div class="cn br"><span>tap Baker</span><i></i></div>
@@ -203,8 +219,14 @@
 <div class="fr" id="f7-2"><div class="tg"></div><div class="fl"><a class="fid" href="#f7-2">7.2</a><span class="ft">Purchase complete</span></div><dc-import name="NestyShop" scene="purchased" hint-size="390px,844px"></dc-import><div class="fn">Coins are added right away and the header balance updates to 4,830. <span class="fs">§9.2</span></div></div>
 <div class="cn br"><span>Skins tab</span><i></i></div>
 <div class="fr" id="f7-3"><div class="tg"></div><div class="fl"><a class="fid" href="#f7-3">7.3</a><span class="ft">Skins</span></div><dc-import name="NestyShop" scene="shopSkins" hint-size="390px,844px"></dc-import><div class="fn">Each card shows three dolls from the skin on a plank. States: Equipped, Owned (Equip) and a coin price. <span class="fs">§7.4</span></div></div>
+<div class="cn br"><span>Buy, too few coins</span><i></i></div>
+<div class="fr" id="f7-3b"><div class="tg">Over a skin card</div><div class="fl"><a class="fid" href="#f7-3b">7.3b</a><span class="ft">Not enough coins</span></div><dc-import name="NestyMeta" scene="noCoinsCard" hint-size="390px,844px"></dc-import><div class="fn">Opens before anything else: the price, how many coins are missing and where coins come from. Go to Shop opens the Coins tab. <span class="fs">J.3 · G.10</span></div></div>
 <div class="cn"><span>tap Ocean</span><i></i></div>
 <div class="fr" id="f7-4"><div class="tg"></div><div class="fl"><a class="fid" href="#f7-4">7.4</a><span class="ft">Skin detail</span></div><dc-import name="NestyShop" scene="skinDetail" hint-size="390px,844px"></dc-import><div class="fn">The whole color lineup on two shelves, plus the size lineup, before buying. <span class="fs">§10.2 #12</span></div></div>
+<div class="cn br"><span>tap Forest Bear</span><i></i></div>
+<div class="fr" id="f7-4b"><div class="tg">7th card in 7.3</div><div class="fl"><a class="fid" href="#f7-4b">7.4b</a><span class="ft">Forest Bear detail</span></div><dc-import name="NestyShop" scene="skinDetailBear" hint-size="390px,844px"></dc-import><div class="fn">2,500 coins, after Forest Friends in the grid. <span class="fs">H · G.3</span></div></div>
+<div class="cn br"><span>Buy with 830 coins</span><i></i></div>
+<div class="fr" id="f7-4c"><div class="tg">Over the skin detail</div><div class="fl"><a class="fid" href="#f7-4c">7.4c</a><span class="ft">Not enough coins</span></div><dc-import name="NestyMeta" scene="noCoinsDetail" hint-size="390px,844px"></dc-import><div class="fn">The same dialog over 7.4. The booster popup (3.2) uses it too when online; offline, 3.8 is unchanged. <span class="fs">J.3</span></div></div>
 <div class="cn"><span>Buy · 800</span><i></i></div>
 <div class="fr" id="f7-5"><div class="tg"></div><div class="fl"><a class="fid" href="#f7-5">7.5</a><span class="ft">Downloading</span></div><dc-import name="NestyShop" scene="skinsDownloading" hint-size="390px,844px"></dc-import><div class="fn">The skin downloads with a spinner on its card. If the download fails, the current skin stays. <span class="fs">§13.5</span></div></div>
 <div class="cn"><span>equipped</span><i></i></div>
@@ -216,7 +238,8 @@
 <div class="cn br"><span>after 3rd interstitial</span><i></i></div>
 <div class="fr" id="f7-9"><div class="tg">Once, after the 3rd interstitial</div><div class="fl"><a class="fid" href="#f7-9">7.9</a><span class="ft">Remove Ads offer</span></div><dc-import name="NestyOverlay" scene="removeAds" hint-size="390px,844px"></dc-import><div class="fn">An honest offer with a clear No thanks, shown before the next level loads. <span class="fs">§9.2</span></div></div>
 <div class="cn"><span>$2.99 paid</span><i></i></div>
-<div class="fr" id="f7-10"><div class="tg"></div><div class="fl"><a class="fid" href="#f7-10">7.10</a><span class="ft">Home · ads removed</span></div><dc-import name="NestyMenus" scene="homeNoAds" hint-size="390px,844px"></dc-import><div class="fn">The Remove Ads tile disappears and the other two tiles widen. A toast thanks the player once. <span class="fs">§10.2 #2</span></div></div>
+<div class="fr" id="f7-10"><div class="tg"></div><div class="fl"><a class="fid" href="#f7-10">7.10</a><span class="ft">Home · ads removed</span></div><dc-import name="NestyHub" scene="homeNoAds" hint-size="390px,844px"></dc-import><div class="fn">The Remove Ads tile disappears and the other two tiles widen. A toast thanks the player once. <span class="fs">§10.2 #2</span></div></div>
+
 </div>
 </section>
 
@@ -237,6 +260,152 @@
 <div class="fr" id="f8-6"><div class="tg">System dialog</div><div class="fl"><a class="fid" href="#f8-6">8.6</a><span class="ft">ATT system alert</span></div><dc-import name="NestyOverlay" scene="attSystem" hint-size="390px,844px"></dc-import><div class="fn">The iOS dialog with Nesty's purpose string. Either answer returns to the game. <span class="fs">§9.3</span></div></div>
 <div class="cn br"><span>Level 15 win</span><i></i></div>
 <div class="fr" id="f8-7"><div class="tg">After the Level 15 win · no fails in last 3</div><div class="fl"><a class="fid" href="#f8-7">8.7</a><span class="ft">Rate prompt</span></div><dc-import name="NestyOverlay" scene="rate" hint-size="390px,844px"></dc-import><div class="fn">The native review sheet over the win screen. The OS decides whether it actually appears. <span class="fs">§10.2 #16</span></div></div>
+</div>
+</section>
+
+<section class="sec" id="s9" data-screen-label="09 vs Computer">
+<div class="sh"><a class="sn" href="#s9">09</a><span class="st">vs Computer</span></div>
+<div class="sd">A race against a computer rival on identical copies of one puzzle; whoever completes every family first wins. The player’s board stays the focus and the rival takes the HUD’s top row. Three rivals unlock in turn after Level 20. Every rival surface carries the Computer tag; no faces, no online dots, no chat.</div>
+<div class="row">
+<div class="fr" id="f9-1"><div class="tg">Before Level 20</div><div class="fl"><a class="fid" href="#f9-1">9.1</a><span class="ft">Home tile · locked</span></div><dc-import name="NestyHub" scene="homeLocked" hint-size="390px,844px"></dc-import><div class="fn">The vs Computer tile sits between Daily Puzzle and Remove Ads with a locked portrait and “After Level 20”. It opens nothing yet. <span class="fs">C.1 · J.1</span></div></div>
+<div class="cn br"><span>Level 21</span><i></i></div>
+<div class="fr" id="f9-1b"><div class="tg">From Level 21</div><div class="fl"><a class="fid" href="#f9-1b">9.1b</a><span class="ft">Home tile · open</span></div><dc-import name="NestyHub" scene="home" hint-size="390px,844px"></dc-import><div class="fn">Unlocked: Pebble’s portrait and the Computer tag. Same frame as 2.1. <span class="fs">C.1</span></div></div>
+<div class="cn"><span>tap vs Computer</span><i></i></div>
+<div class="fr" id="f9-2"><div class="tg">First visit</div><div class="fl"><a class="fid" href="#f9-2">9.2</a><span class="ft">Pick a rival</span></div><dc-import name="NestyHub" scene="rivals" hint-size="390px,844px"></dc-import><div class="fn">96 px portraits (48 px on result cards and Records). Pebble is open and selected; Button and Comet say who to beat. Rewards 20, 30 and 40 coins. <span class="fs">C.2 · G.5</span></div></div>
+<div class="cn br"><span>after beating Pebble</span><i></i></div>
+<div class="fr" id="f9-2b"><div class="tg">After the first win against Pebble</div><div class="fl"><a class="fid" href="#f9-2b">9.2b</a><span class="ft">Pick a rival · Button new</span></div><dc-import name="NestyHub" scene="rivalsNew" hint-size="390px,844px"></dc-import><div class="fn">Pebble keeps a green check, Button gets a “New” mark and is preselected, Comet stays locked. <span class="fs">C.2 · C.9</span></div></div>
+<div class="cn"><span>Start</span><i></i></div>
+<div class="fr" id="f9-3"><div class="tg">Before the race</div><div class="fl"><a class="fid" href="#f9-3">9.3</a><span class="ft">Ready</span></div><dc-import name="NestyBoard" scene="raceStart" hint-size="390px,844px"></dc-import><div class="fn">No countdown: the race begins on Start, which covers the two middle booster slots. The strip replaces the level and coin pills; the family counter stays. <span class="fs">C.3</span></div></div>
+<div class="cn"><span>Start</span><i></i></div>
+<div class="fr" id="f9-3b"><div class="tg"></div><div class="fl"><a class="fid" href="#f9-3b">9.3b</a><span class="ft">Racing · thinking</span></div><dc-import name="NestyBoard" scene="race" hint-size="390px,844px"></dc-import><div class="fn">Only Undo (unlimited) and Restart (free). The rival moves every couple of seconds; each move gives its portrait a 160 ms nudge, and each family it completes fills a dot with rival_complete. With reduce motion, “Thinking…” shows without the dots or the nudge. <span class="fs">C.3 · C.9</span></div></div>
+<div class="cn br"><span>its board goes wrong</span><i></i></div>
+<div class="fr" id="f9-3c"><div class="tg"></div><div class="fl"><a class="fid" href="#f9-3c">9.3c</a><span class="ft">Starting over</span></div><dc-import name="NestyBoard" scene="raceStartingOver" hint-size="390px,844px"></dc-import><div class="fn">The computer restarts its own board. The strip says so; the player’s board is untouched. <span class="fs">C.3</span></div></div>
+<div class="cn br"><span>computer finishes</span><i></i></div>
+<div class="fr" id="f9-3d"><div class="tg">Just before 9.5</div><div class="fl"><a class="fid" href="#f9-3d">9.3d</a><span class="ft">Computer finished</span></div><dc-import name="NestyBoard" scene="raceLost" hint-size="390px,844px"></dc-import><div class="fn">The strip reads Finished with every dot filled, then 9.5 opens. After a player win it reads “You finished first”. <span class="fs">C.3 · C.9</span></div></div>
+<div class="cn br"><span>16:9 phone</span><i></i></div>
+<div class="fr" id="f9-3e"><div class="tg">390×693</div><div class="fl"><a class="fid" href="#f9-3e">9.3e</a><span class="ft">Short screen</span></div><dc-import name="NestyBoard" scene="race" short="{{ true }}" hint-size="390px,693px"></dc-import><div class="fn">The board scales to 79.6 % under the same HUD and the booster bar moves up to 583. The strip stays in the HUD row, never over the top shelf, so doll heads pass under the family counter and taps reach the board. <span class="fs">C.3 · C.9</span></div></div>
+<div class="cn br"><span>board fails to set up</span><i></i></div>
+<div class="fr" id="f9-3f"><div class="tg">Generation error</div><div class="fl"><a class="fid" href="#f9-3f">9.3f</a><span class="ft">Race board failed</span></div><dc-import name="NestyMeta" scene="raceRetry" hint-size="390px,844px"></dc-import><div class="fn">Try again generates a new board with the same rival; Back to races returns to 9.2. Nothing is lost. <span class="fs">C.9</span></div></div>
+<div class="cn"><span>you finish first</span><i></i></div>
+<div class="fr" id="f9-4"><div class="tg"></div><div class="fl"><a class="fid" href="#f9-4">9.4</a><span class="ft">You win</span></div><dc-import name="NestyMeta" scene="raceWin" hint-size="390px,844px"></dc-import><div class="fn">2.8’s confetti, coin burst and count-up, with jingle_versus_win instead of win. Toasts (a new badge here) sit above the ribbon at y 60, one at a time, and leave with the card. New race starts a fresh board; Rematch replays this one. <span class="fs">C.4 · C.9</span></div></div>
+<div class="cn"><span>New race, first win vs a rival</span><i></i></div>
+<div class="fr" id="f9-6"><div class="tg">Once per rival, when 9.4 closes</div><div class="fl"><a class="fid" href="#f9-6">9.6</a><span class="ft">Rival unlocked</span></div><dc-import name="NestyMeta" scene="rivalUnlocked" hint-size="390px,844px"></dc-import><div class="fn">A full card rather than a toast, so it never competes with 9.4. The new rival shows “New” in 9.2 until raced. <span class="fs">C.4 · C.9</span></div></div>
+<div class="cn br"><span>computer finishes first</span><i></i></div>
+<div class="fr" id="f9-5"><div class="tg"></div><div class="fl"><a class="fid" href="#f9-5">9.5</a><span class="ft">So close</span></div><dc-import name="NestyMeta" scene="raceLose" hint-size="390px,844px"></dc-import><div class="fn">No confetti; the player’s finished families stand still. jingle_versus_lose under a 0.3 duck. Nothing is lost and Rematch is free. <span class="fs">C.4</span></div></div>
+<div class="cn br"><span>pause</span><i></i></div>
+<div class="fr" id="f9-7"><div class="tg">3.9’s system</div><div class="fl"><a class="fid" href="#f9-7">9.7</a><span class="ft">Pause in a race</span></div><dc-import name="NestyMeta" scene="racePause" hint-size="390px,844px"></dc-import><div class="fn">Pausing pauses the rival too. Resume, Restart, Leave race and Settings (still reachable). <span class="fs">C.5 · C.9</span></div></div>
+<div class="cn"><span>Leave race</span><i></i></div>
+<div class="fr" id="f9-7b"><div class="tg">Confirm</div><div class="fl"><a class="fid" href="#f9-7b">9.7b</a><span class="ft">Leave race?</span></div><dc-import name="NestyMeta" scene="raceQuit" hint-size="390px,844px"></dc-import><div class="fn">Leaving is the one action Resume can’t undo, so it asks once. No reward, no penalty. <span class="fs">C.5 · C.9</span></div></div>
+</div>
+</section>
+
+<section class="sec" id="s10" data-screen-label="10 Engagement">
+<div class="sh"><a class="sn" href="#s10">10</a><span class="st">Engagement</span></div>
+<div class="sd">The approved features: the daily share, the reminder, milestone chests, Chapters and replays, Records and badges, the gentle streak, the first launch and relaxed mode. Warm and never pushy: no countdowns, nothing random, nothing guilt-based.</div>
+<div class="row">
+<div class="fr" id="f10-1"><div class="tg">Replaces 5.4 from m7</div><div class="fl"><a class="fid" href="#f10-1">10.1</a><span class="ft">Daily solved · Share</span></div><dc-import name="NestyMeta" scene="dailyShare" hint-size="390px,844px"></dc-import><div class="fn">Share sits above Back to Daily. The daily card shows “Moves 18” only. <span class="fs">I.1</span></div></div>
+<div class="cn"><span>Share</span><i></i></div>
+<div class="fr" id="f10-1b"><div class="tg">System sheet</div><div class="fl"><a class="fid" href="#f10-1b">10.1b</a><span class="ft">Share sheet</span></div><dc-import name="NestyMeta" scene="shareSheet" hint-size="390px,844px"></dc-import><div class="fn">Text only, through the phone’s share sheet: date, one emoji per family in board order, moves and streak day. <span class="fs">I.1 · G.6</span></div></div>
+<div class="cn"><span>sent</span><i></i></div>
+<div class="fr" id="f10-1c"><div class="tg">System UI</div><div class="fl"><a class="fid" href="#f10-1c">10.1c</a><span class="ft">In a message</span></div><dc-import name="NestyHub" scene="shareMessage" hint-size="390px,844px"></dc-import><div class="fn">How the text reads in a chat. No board, no moves shown. <span class="fs">I.1</span></div></div>
+<div class="cn br"><span>first daily done</span><i></i></div>
+<div class="fr" id="f10-2"><div class="tg">Once, after the first solve</div><div class="fl"><a class="fid" href="#f10-2">10.2</a><span class="ft">Reminder offer</span></div><dc-import name="NestyMeta" scene="reminderOffer" hint-size="390px,844px"></dc-import><div class="fn">Asked in the game’s words before the system prompt. The time defaults to 7:00 PM. <span class="fs">I.2 · G.7</span></div></div>
+<div class="cn"><span>Change time</span><i></i></div>
+<div class="fr" id="f10-2b"><div class="tg">System UI</div><div class="fl"><a class="fid" href="#f10-2b">10.2b</a><span class="ft">Time picker</span></div><dc-import name="NestyMeta" scene="timePicker" hint-size="390px,844px"></dc-import><div class="fn">The phone’s own time picker, themed only by the app theme. Settings uses the same one. <span class="fs">I.2</span></div></div>
+<div class="cn"><span>Yes, remind me</span><i></i></div>
+<div class="fr" id="f10-2c"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-2c">10.2c</a><span class="ft">Reminder set</span></div><dc-import name="NestyMeta" scene="reminderSet" hint-size="390px,844px"></dc-import><div class="fn">The system prompt follows; if it’s allowed, a toast confirms the time. <span class="fs">I.2</span></div></div>
+<div class="cn br"><span>prompt declined</span><i></i></div>
+<div class="fr" id="f10-2d"><div class="tg">The offer card’s next state</div><div class="fl"><a class="fid" href="#f10-2d">10.2d</a><span class="ft">Notifications off</span></div><dc-import name="NestyMeta" scene="reminderDenied" hint-size="390px,844px"></dc-import><div class="fn">Says where to turn them on and offers Open phone settings (replaces the stand-in’s text-only line). <span class="fs">I.2</span></div></div>
+<div class="cn br"><span>gear</span><i></i></div>
+<div class="fr" id="f10-2e"><div class="tg">Replaces 8.1 from m7</div><div class="fl"><a class="fid" href="#f10-2e">10.2e</a><span class="ft">Settings</span></div><dc-import name="NestyHub" scene="settings" hint-size="390px,844px"></dc-import><div class="fn">Daily reminder with its time row, Relaxed mode, and Reduce motion as a three-way control (Off · On · System). Color symbols (8.1) stays between these and Language. <span class="fs">I.2 · I.10</span></div></div>
+<div class="cn br"><span>blocked by the phone</span><i></i></div>
+<div class="fr" id="f10-2f"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-2f">10.2f</a><span class="ft">Settings · blocked</span></div><dc-import name="NestyHub" scene="settingsBlocked" hint-size="390px,844px"></dc-import><div class="fn">“Off in your phone’s settings” with Open phone settings. The time row hides until notifications are back. <span class="fs">I.2</span></div></div>
+<div class="cn br"><span>7:00 PM next day</span><i></i></div>
+<div class="fr" id="f10-2g"><div class="tg">System notification</div><div class="fl"><a class="fid" href="#f10-2g">10.2g</a><span class="ft">The daily note</span></div><dc-import name="NestyHub" scene="notification" hint-size="390px,844px"></dc-import><div class="fn">iOS shows the app icon. Android draws ui/notification/ic_notification (white on transparent, 24 dp) tinted with the accent #F2893B. <span class="fs">I.2 · I.10</span></div></div>
+<div class="cn br"><span>win near a chest</span><i></i></div>
+<div class="fr" id="f10-3"><div class="tg">The chest is nearer than the figurine</div><div class="fl"><a class="fid" href="#f10-3">10.3</a><span class="ft">Win · chest ahead</span></div><dc-import name="NestyMeta" scene="winChest" hint-size="390px,844px"></dc-import><div class="fn">The progress card swaps the figurine for the chest: “3 levels to the chest”. <span class="fs">I.3</span></div></div>
+<div class="cn"><span>level 50 won</span><i></i></div>
+<div class="fr" id="f10-3b"><div class="tg">Level 10 of each chapter, every 10th bonus level</div><div class="fl"><a class="fid" href="#f10-3b">10.3b</a><span class="ft">Milestone chest</span></div><dc-import name="NestyMeta" scene="chest" hint-size="390px,844px"></dc-import><div class="fn">Arrives (drop and settle), then breathes with a glint on the lock. The contents show before it opens: 100 coins and a hint by default. <span class="fs">I.3 · G.9</span></div></div>
+<div class="cn"><span>Open</span><i></i></div>
+<div class="fr" id="f10-3c"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-3c">10.3c</a><span class="ft">The burst</span></div><dc-import name="NestyMeta" scene="chestOpen" hint-size="390px,844px"></dc-import><div class="fn">Wiggle (three creaks), then the lid, light, coins and sparkles; the chips pop in one by one. The coin chip keeps the promised amount the whole time. <span class="fs">I.3</span></div></div>
+<div class="cn"><span>Collect</span><i></i></div>
+<div class="fr" id="f10-3d"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-3d">10.3d</a><span class="ft">Collect</span></div><dc-import name="NestyMeta" scene="chestCollect" hint-size="390px,844px"></dc-import><div class="fn">Coins fly to the coin pill, the hint flies to the Hint button and its badge bumps. Reduce motion: a quick crossfade, no wiggle or flights. <span class="fs">I.3</span></div></div>
+<div class="cn br"><span>Chapters on Home</span><i></i></div>
+<div class="fr" id="f10-4"><div class="tg">From the chapter card on Home</div><div class="fl"><a class="fid" href="#f10-4">10.4</a><span class="ft">Chapters</span></div><dc-import name="NestyHub" scene="chapters" hint-size="390px,844px"></dc-import><div class="fn">Opens scrolled to the current chapter (here chapter 4). Finished chapters fold to rows with their family and stars; locked ones dim. Won levels show stars and “Best N”, the current level is the orange tile, the chest (level 10) and the flag (level 20) mark their levels, and HARD / SUPER HARD edges show on won or current levels only. <span class="fs">I.4 · K.5</span></div></div>
+<div class="cn"><span>tap Level 62</span><i></i></div>
+<div class="fr" id="f10-4b"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-4b">10.4b</a><span class="ft">Level card</span></div><dc-import name="NestyMeta" scene="levelCard" hint-size="390px,844px"></dc-import><div class="fn">Its stars, “Best 16” and the target. Play replays it. <span class="fs">I.4 · K.4</span></div></div>
+<div class="cn"><span>Play</span><i></i></div>
+<div class="fr" id="f10-5"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-5">10.5</a><span class="ft">Replay win</span></div><dc-import name="NestyMeta" scene="replay" hint-size="390px,844px"></dc-import><div class="fn">Stars, “Moves 18 · Best 16”, no coins, and the reason on a solid card that stays readable over the board and confetti. Back to Chapters returns to 10.4. <span class="fs">I.5 · K.4</span></div></div>
+<div class="cn br"><span>Records on Home</span><i></i></div>
+<div class="fr" id="f10-6"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-6">10.6</a><span class="ft">Records</span></div><dc-import name="NestyHub" scene="records" hint-size="390px,844px"></dc-import><div class="fn">Levels won, families, dolls nested, dailies, the longest streak, stars of 600, races won per rival with their portraits, a link to best moves, and the 12 badges. <span class="fs">I.6 · K.5</span></div></div>
+<div class="cn br"><span>badge earned on a win</span><i></i></div>
+<div class="fr" id="f10-6b"><div class="tg">Over 2.8</div><div class="fl"><a class="fid" href="#f10-6b">10.6b</a><span class="ft">Badge toast</span></div><dc-import name="NestyMeta" scene="winBadge" hint-size="390px,844px"></dc-import><div class="fn">Above the ribbon at y 60, clear of it, 2.5 s, and it leaves with the card. A second toast waits for the first. <span class="fs">I.6</span></div></div>
+<div class="cn br"><span>streak states</span><i></i></div>
+<div class="fr" id="f10-7"><div class="tg">Daily tile and streak card</div><div class="fl"><a class="fid" href="#f10-7">10.7</a><span class="ft">Gentle streak</span></div><dc-import name="NestyHub" scene="streakStates" hint-size="390px,844px"></dc-import><div class="fn">Lit, paused (a missed day with no freeze) and relit. The number never drops. <span class="fs">I.7 · G.9</span></div></div>
+<div class="cn"><span>daily solved after a pause</span><i></i></div>
+<div class="fr" id="f10-7b"><div class="tg">On 5.4</div><div class="fl"><a class="fid" href="#f10-7b">10.7b</a><span class="ft">Streak relit</span></div><dc-import name="NestyMeta" scene="dailyRelit" hint-size="390px,844px"></dc-import><div class="fn">“Streak relit! Your 5-day streak is glowing again.” <span class="fs">I.7</span></div></div>
+<div class="cn br"><span>first launch</span><i></i></div>
+<div class="fr" id="f10-8"><div class="tg">A new player</div><div class="fl"><a class="fid" href="#f10-8">10.8</a><span class="ft">First launch</span></div><dc-import name="NestyMenus" scene="splash" hint-size="390px,844px"></dc-import><div class="fn">The splash loads, then fades straight into Level 1 (no Home). <span class="fs">I.8</span></div></div>
+<div class="cn"><span>loaded · 400 ms fade</span><i></i></div>
+<div class="fr" id="f10-8b"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-8b">10.8b</a><span class="ft">Level 1</span></div><dc-import name="NestyBoard" scene="tut1a" hint-size="390px,844px"></dc-import><div class="fn">The tutorial’s first step, as 1.3. <span class="fs">I.8</span></div></div>
+<div class="cn br"><span>Relaxed mode on</span><i></i></div>
+<div class="fr" id="f10-9"><div class="tg"></div><div class="fl"><a class="fid" href="#f10-9">10.9</a><span class="ft">Relaxed mode</span></div><dc-import name="NestyMeta" scene="relaxedOn" hint-size="390px,844px"></dc-import><div class="fn">Undo shows the ∞ badge (all_inclusive) and costs nothing. <span class="fs">I.9</span></div></div>
+<div class="cn br"><span>stuck</span><i></i></div>
+<div class="fr" id="f10-9b"><div class="tg">3.5’s system</div><div class="fl"><a class="fid" href="#f10-9b">10.9b</a><span class="ft">Out of moves · relaxed</span></div><dc-import name="NestyMeta" scene="oomRelaxed" hint-size="390px,844px"></dc-import><div class="fn">The Undo row is always free. <span class="fs">I.9</span></div></div>
+</div>
+</section>
+
+<section class="sec" id="s11" data-screen-label="11 Stars">
+<div class="sh"><a class="sn" href="#s11">11</a><span class="st">Stars</span></div>
+<div class="sd">Every win of levels 1–200 earns 1 to 3 stars from its moves against par (3★ within par + 20 %, 2★ within + 60 %). A hint or +1 Slot caps a win at 2★; Undo and Restart never count. Stars sit inside the celebration and never replace it; the daily, bonus and race cards show moves only.</div>
+<div class="row">
+<div class="fr" id="f11-1"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-1">11.1</a><span class="ft">The star</span></div><dc-import name="NestyHub" scene="starSheet" hint-size="390px,844px"></dc-import><div class="fn">Gold, round and lit, unlike the Grape dolls’ star. Empty stars are soft outlines, never grey or red. <span class="fs">K.1</span></div></div>
+<div class="cn br"><span>win</span><i></i></div>
+<div class="fr" id="f11-2"><div class="tg">First win under 3★</div><div class="fl"><a class="fid" href="#f11-2">11.2</a><span class="ft">Win · 1 star</span></div><dc-import name="NestyMeta" scene="win1" hint-size="390px,844px"></dc-import><div class="fn">Still a full win. The one-time tip shows here, once. <span class="fs">K.2 · K.4</span></div></div>
+<div class="fr" id="f11-2b"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-2b">11.2b</a><span class="ft">Win · 2 stars</span></div><dc-import name="NestyMeta" scene="win2" hint-size="390px,844px"></dc-import><div class="fn">The stars sit between the ribbon and the families; the moves chip joins the coins. <span class="fs">K.2</span></div></div>
+<div class="fr" id="f11-2c"><div class="tg">Replaces 2.8 from m7</div><div class="fl"><a class="fid" href="#f11-2c">11.2c</a><span class="ft">Win · 3 stars</span></div><dc-import name="NestyMeta" scene="win3" hint-size="390px,844px"></dc-import><div class="fn">The flourish glow stays behind the middle star. <span class="fs">K.2</span></div></div>
+<div class="cn br"><span>16:9 phone</span><i></i></div>
+<div class="fr" id="f11-2d"><div class="tg">390×693</div><div class="fl"><a class="fid" href="#f11-2d">11.2d</a><span class="ft">Win · short screen</span></div><dc-import name="NestyMeta" scene="winShort" hint-size="390px,693px"></dc-import><div class="fn">Everything moves up; the buttons end above the home area. <span class="fs">K.2</span></div></div>
+<div class="cn br"><span>reveal</span><i></i></div>
+<div class="fr" id="f11-3"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-3">11.3</a><span class="ft">The reveal</span></div><dc-import name="NestyHub" scene="starReveal" hint-size="390px,844px"></dc-import><div class="fn">Starts when the coin count-up ends (1,300 ms), one star every 333 ms, then the flourish. <span class="fs">K.3</span></div></div>
+<div class="cn br"><span>replay beats the best</span><i></i></div>
+<div class="fr" id="f11-4"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-4">11.4</a><span class="ft">Replay · new best</span></div><dc-import name="NestyMeta" scene="replayBest" hint-size="390px,844px"></dc-import><div class="fn">“New best!” on the moves chip; at 3★ there is no target line. <span class="fs">K.4</span></div></div>
+<div class="cn br"><span>tallest replay</span><i></i></div>
+<div class="fr" id="f11-4b"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-4b">11.4b</a><span class="ft">Replay · target and tip</span></div><dc-import name="NestyMeta" scene="replayTall" hint-size="390px,844px"></dc-import><div class="fn">Target line and tip together; Back to Chapters still ends above the booster bar (732 < 734). <span class="fs">K.4</span></div></div>
+<div class="cn br"><span>hint used</span><i></i></div>
+<div class="fr" id="f11-4c"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-4c">11.4c</a><span class="ft">Win with a helper</span></div><dc-import name="NestyMeta" scene="winHint" hint-size="390px,844px"></dc-import><div class="fn">13 moves would be 3★; the note explains the cap without blame. <span class="fs">K.4</span></div></div>
+<div class="cn br"><span>Chapters and Records</span><i></i></div>
+<div class="fr" id="f11-5"><div class="tg"></div><div class="fl"><a class="fid" href="#f11-5">11.5</a><span class="ft">Stars on Chapters</span></div><dc-import name="NestyHub" scene="chapters" hint-size="390px,844px"></dc-import><div class="fn">Stars and “Best N” under won levels, each chapter’s total, a gold ring for Every level at 3 stars. Records shows 151 of 600 (10.6) and Home’s chapter card the chapter total (2.1). <span class="fs">K.5</span></div></div>
+</div>
+</section>
+<section class="sec" id="s12" data-screen-label="12 More states">
+<div class="sh"><a class="sn" href="#s12">12</a><span class="st">More states (E)</span></div>
+<div class="sd">The states no frame showed yet. Notes instead of frames: E.3, a streak is never lost under the gentle rules; a missed day without a freeze pauses it (10.7). E.4, Home has no Museum tile since J.1; the all-home Museum is 6.1c. E.10, the tutorial’s third step reuses 1.4’s layout with the holes on the last Cherry doll and the family: “STEP 3 OF 3 · Finish the family · Put the last doll in. A family is done when every size is nested.” (steps 1 and 2 then read “OF 3”). E.21, ui_extra_slot now rests on frame 0.</div>
+<div class="row">
+<div class="fr" id="f12-1"><div class="tg">Level 60</div><div class="fl"><a class="fid" href="#f12-1">12.1</a><span class="ft">Home · Super Hard</span></div><dc-import name="NestyHub" scene="homeSuper" hint-size="390px,844px"></dc-import><div class="fn">The SUPER HARD badge (bolt, purple) replaces HARD on the Play button. <span class="fs">E.1</span></div></div>
+<div class="cn br"><span>Bonus Endless</span><i></i></div>
+<div class="fr" id="f12-2"><div class="tg">After Level 200 · streak 0</div><div class="fl"><a class="fid" href="#f12-2">12.2</a><span class="ft">Home · Bonus Endless</span></div><dc-import name="NestyHub" scene="homeBonus" hint-size="390px,844px"></dc-import><div class="fn">“Bonus Level 7” on Play with a BONUS badge; the chapter card reads Bonus levels with the total stars. The Daily tile at a streak of 0 shows an unlit flame and no number. <span class="fs">E.1</span></div></div>
+<div class="cn br"><span>new player</span><i></i></div>
+<div class="fr" id="f12-3"><div class="tg">Before Level 2 is won</div><div class="fl"><a class="fid" href="#f12-3">12.3</a><span class="ft">Home · new player</span></div><dc-import name="NestyHub" scene="homeNew" hint-size="390px,844px"></dc-import><div class="fn">Daily Puzzle is locked (“After Level 2”) and so is vs Computer. Nothing else changes. <span class="fs">E.1</span></div></div>
+<div class="cn br"><span>bonus win</span><i></i></div>
+<div class="fr" id="f12-4"><div class="tg"></div><div class="fl"><a class="fid" href="#f12-4">12.4</a><span class="ft">Win · Bonus Endless</span></div><dc-import name="NestyMeta" scene="winBonus" hint-size="390px,844px"></dc-import><div class="fn">The card shows the bonus level’s number and the chest countdown (every 10th bonus level), and moves only, no stars. <span class="fs">E.2</span></div></div>
+<div class="cn br"><span>bonus or daily board</span><i></i></div>
+<div class="fr" id="f12-5"><div class="tg">While a board generates</div><div class="fl"><a class="fid" href="#f12-5">12.5</a><span class="ft">Setting up the shelves</span></div><dc-import name="NestyMeta" scene="generating" hint-size="390px,844px"></dc-import><div class="fn">A small card over the dimmed previous board; no progress number. <span class="fs">E.5</span></div></div>
+<div class="cn br"><span>generation fails</span><i></i></div>
+<div class="fr" id="f12-6"><div class="tg">After Continue</div><div class="fl"><a class="fid" href="#f12-6">12.6</a><span class="ft">Level can’t be set up</span></div><dc-import name="NestyMeta" scene="genFailed" hint-size="390px,844px"></dc-import><div class="fn">Try again or Back to Home (the text-link style). Races use the same view (9.3f). <span class="fs">E.6</span></div></div>
+<div class="cn br"><span>stuck, nothing to undo</span><i></i></div>
+<div class="fr" id="f12-7"><div class="tg">3.4 without undos</div><div class="fl"><a class="fid" href="#f12-7">12.7</a><span class="ft">Stuck · try Restart</span></div><dc-import name="NestyMeta" scene="stuckRestart" hint-size="390px,844px"></dc-import><div class="fn">The banner suggests Restart, which glows instead of Undo. <span class="fs">E.7</span></div></div>
+<div class="cn br"><span>free undos spent</span><i></i></div>
+<div class="fr" id="f12-8"><div class="tg">3.5</div><div class="fl"><a class="fid" href="#f12-8">12.8</a><span class="ft">Out of moves · undos spent</span></div><dc-import name="NestyMeta" scene="oomPriced" hint-size="390px,844px"></dc-import><div class="fn">The Undo row gets the same ▶ and coin price as +1 Slot (20 coins). <span class="fs">E.8</span></div></div>
+<div class="cn br"><span>2 slots used</span><i></i></div>
+<div class="fr" id="f12-9"><div class="tg"></div><div class="fl"><a class="fid" href="#f12-9">12.9</a><span class="ft">+1 Slot at its limit</span></div><dc-import name="NestyMeta" scene="slotLimit" hint-size="390px,844px"></dc-import><div class="fn">The button turns to the disabled face with “2/2”; a tap shows the info toast once. <span class="fs">E.9 · E.11</span></div></div>
+<div class="cn br"><span>splash fails</span><i></i></div>
+<div class="fr" id="f12-10"><div class="tg">Not enough space</div><div class="fl"><a class="fid" href="#f12-10">12.10</a><span class="ft">Splash · storage</span></div><dc-import name="NestyMeta" scene="splashStorage" hint-size="390px,844px"></dc-import><div class="fn">Says what to do; Try again reruns the setup. <span class="fs">E.12</span></div></div>
+<div class="fr" id="f12-11"><div class="tg">A file didn’t load</div><div class="fl"><a class="fid" href="#f12-11">12.11</a><span class="ft">Splash · content</span></div><dc-import name="NestyMeta" scene="splashContent" hint-size="390px,844px"></dc-import><div class="fn">Separate from storage so the fix is clear. <span class="fs">E.12</span></div></div>
+<div class="cn br"><span>components</span><i></i></div>
+<div class="fr" id="f12-12"><div class="tg"></div><div class="fl"><a class="fid" href="#f12-12">12.12</a><span class="ft">Components &amp; small states</span></div><dc-import name="NestyHub" scene="statesA" hint-size="390px,844px"></dc-import><div class="fn">Disabled booster, danger button, success banner, the family counter’s width and the fallback doll. <span class="fs">E.11 · E.18 · E.19</span></div></div>
+<div class="cn br"><span>board feedback</span><i></i></div>
+<div class="fr" id="f12-13"><div class="tg"></div><div class="fl"><a class="fid" href="#f12-13">12.13</a><span class="ft">Taps, hovers and hints</span></div><dc-import name="NestyHub" scene="statesB" hint-size="390px,844px"></dc-import><div class="fn">Tap feedback, drag hover, hint arcs, the extra slot under a doll, fx_twinkle on the win card and 3.1b. <span class="fs">E.13–E.17 · E.20</span></div></div>
 </div>
 </section>
 </x-dc>

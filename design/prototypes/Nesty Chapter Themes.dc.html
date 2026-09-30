@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><style>body{margin:0;background:#EFE4D2;font-family:'Nunito',sans-serif;color:#5B3A21}a{color:#C4631E}a:hover{color:#8A3F10}</style></helmet>
+<div style="width:2240px;padding:56px;box-sizing:border-box;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px">
+<div><div style="font:700 13px/1 'Nunito',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9A6A44">Nesty · chapter themes · request A</div><div style="margin-top:10px;font:700 48px/1 'Fredoka',sans-serif">Ten chapters, ten rooms</div></div>
+<div style="max-width:760px;font:600 15px/1.6 'Nunito',sans-serif;color:#8A5B3A;text-align:right;text-wrap:pretty">Chapters 7–10 follow the ch01–ch06 recipe: a 1290×2796 SVG built only from paths and soft gradients, a flat top band for the HUD, a washed-out middle behind the board and a floor band under the bottom shelf. The dashed box is the 1080×1920 safe area. Each palette drives that chapter's ribbon, card header and chips (tokens.json → theme). The small crop is the Shop thumbnail rectangle (theme.chapters.N.thumb).</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:36px 28px">
+<sc-for list="{{ chapters }}" as="c" hint-placeholder-count="10"><div style="display:flex;flex-direction:column;gap:14px">
+<div style="position:relative;width:100%;aspect-ratio:1290/2796;border-radius:30px;overflow:hidden;background:{{ c.bgi }} center top/100% auto no-repeat,{{ c.band }};box-shadow:0 0 0 7px #2A1A10,0 18px 36px rgba(60,25,5,.3)">
+<sc-if value="{{ safe }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:8.14%;top:15.67%;width:83.72%;height:68.67%;border:2px dashed rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(60,30,10,.2);box-sizing:border-box"></div></sc-if>
+<sc-if value="{{ planks }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ plankYs }}" as="p" hint-placeholder-count="3"><div style="position:absolute;left:0;right:0;top:{{ p }}%;height:4.7%;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 100%"></div></sc-for></sc-if>
+<div style="position:absolute;left:0;right:0;top:17.5%;display:flex;justify-content:center"><div style="padding:7px 16px 8px;border-radius:11px;background:linear-gradient(180deg,{{ c.top }},{{ c.accent }});box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 4px 0 {{ c.edge }},0 10px 18px rgba(40,20,10,.25);text-align:center;color:#fff"><div style="font:700 8px/1 'Fredoka',sans-serif;letter-spacing:.16em;color:{{ c.soft }}">CHAPTER {{ c.n }}</div><div style="margin-top:3px;font:700 15px/1 'Fredoka',sans-serif;white-space:nowrap;text-shadow:0 2px 0 {{ c.edge }}">{{ c.name }}</div></div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="font:700 20px/1.15 'Fredoka',sans-serif">{{ c.ribbon }}</div>
+<div style="font:700 13px/1.4 'Nunito',sans-serif;color:#8A5B3A">Levels {{ c.levels }} · awards {{ c.family }}</div>
+<div style="font:600 11px/1.4 ui-monospace,Menlo,monospace;color:#9A6A44">themes/{{ c.file }}.svg</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">
+<sc-for list="{{ c.sw }}" as="s" hint-placeholder-count="6"><div style="display:flex;flex-direction:column;gap:4px"><div style="height:30px;border-radius:9px;background:{{ s.hex }};box-shadow:inset 0 0 0 1px rgba(60,30,10,.14)"></div><div style="font:700 9px/1.2 'Nunito',sans-serif;color:#8A5B3A">{{ s.k }}</div><div style="font:600 9px/1.2 ui-monospace,Menlo,monospace;color:#9A6A44">{{ s.hex }}</div></div></sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:12px">
+<div style="flex:none;padding:8px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A"><div style="width:158px;height:74px;border-radius:13px;background:{{ c.bgi }} {{ c.tx }}px {{ c.ty }}px/188.7px auto no-repeat,{{ c.band }}"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div style="display:inline-flex;align-self:flex-start;padding:5px 9px;border-radius:9px;background:{{ c.soft }};color:{{ c.ink }};font:700 12px/1 'Fredoka',sans-serif">Chapter {{ c.n }} · {{ c.levels }}</div><div style="font:600 11px/1.4 ui-monospace,Menlo,monospace;color:#9A6A44">thumb {{ c.crop }}</div></div>
+</div>
+</div></sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSafeArea&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showShelves&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const CH = [
+  ['Sunny Toy Shop', 'ch1-sunny-toy-shop', 'ch01_sunny_toy_shop', 'The Classic Family', '#FBEAD0', '#DA942C', '#BC7D1B', '#8A5B0F', '#FCECD9', '#6A4405', 700],
+  ['Rainy Café Corner', 'ch2-rainy-cafe-corner', 'ch02_rainy_cafe_corner', 'The Sailor Family', '#E9E6E8', '#7B95B0', '#647D97', '#41586F', '#E7F0F8', '#3C4F62', 640],
+  ['Seaside Market', 'ch3-seaside-market', 'ch03_seaside_market', 'The Baker Family', '#E6F5F7', '#21A3BC', '#0789A0', '#0F5F6F', '#D9F4FB', '#105664', 560],
+  ['Snowy Cabin', 'ch4-snowy-cabin', 'ch04_snowy_cabin', 'The Astronaut Family', '#EEF1F5', '#6FA8DC', '#3E7FC0', '#2B5E93', '#DCEBFA', '#194F81', 700],
+  ['Night Carnival', 'ch5-night-carnival', 'ch05_night_carnival', 'The Gardener Family', '#2C305F', '#8E7CD4', '#7764BA', '#533F8D', '#EEECFF', '#4F4080', 560],
+  ['Spring Garden Shed', 'ch6-spring-garden-shed', 'ch06_spring_garden_shed', 'The Snow Family', '#EEF6E6', '#67AC5F', '#4E9347', '#2A6B25', '#E4F4E1', '#275B22', 700],
+  ['Puppet Theater', 'ch7-puppet-theater', 'ch07_puppet_theater', 'The Circus Family', '#F7E6D8', '#DE6676', '#C24D5F', '#93283D', '#FFE8E9', '#812A39', 600],
+  ['Autumn Bandstand', 'ch8-autumn-bandstand', 'ch08_autumn_bandstand', 'The Musician Family', '#FBEBD5', '#DC7A44', '#C16229', '#90410A', '#FFEADF', '#7C3503', 680],
+  ['Castle Library', 'ch9-castle-library', 'ch09_castle_library', 'The Royal Family', '#EFE9F4', '#AD6EB1', '#945798', '#6B346F', '#F9E8FA', '#67396A', 620],
+  ['Sunrise Lookout', 'ch10-sunrise-lookout', 'ch10_sunrise_lookout', 'The Explorer Family', '#F8E6DA', '#3AA697', '#148D7F', '#016359', '#DAF6F0', '#055A50', 720],
+];
+const S = 158 / 1080;
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      safe: this.props.showSafeArea ?? true,
+      planks: this.props.showShelves ?? true,
+      plankYs: [312, 498, 684].map(y => +(y / 844 * 100).toFixed(2)),
+      chapters: CH.map(([name, bg, file, family, band, top, accent, edge, soft, ink, ty], i) => ({
+        n: i + 1, name, file, family, band, top, accent, edge, soft, ink,
+        ribbon: `Chapter ${i + 1} · ${name}`, levels: `${i * 20 + 1}–${i * 20 + 20}`,
+        bgi: `url(backgrounds/${bg}.svg)`, tx: +(-105 * S).toFixed(1), ty: +(-ty * S).toFixed(1), crop: `x 105 · y ${ty} · w 1080 · h 506`,
+        sw: [['band', band], ['accentTop', top], ['accent', accent], ['accentEdge', edge], ['soft', soft], ['ink', ink]].map(([k, hex]) => ({ k, hex })),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

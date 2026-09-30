@@ -96,6 +96,22 @@
     E('bass', 'bass', 1, midi('C3'), 3, 0.5);
     for (let k = 0; k < 8; k++) E('shaker', 'drums', 1 + k * 0.25, 0, 0.1, 0.2 * (1 - k / 9));
   }
+  function versusWin(E) { // m7: race won, C major
+    ['G5', 'A5', 'B5', 'C6', 'D6', 'E6'].forEach((n, i) => E('marimba', 'melody', i * 0.25, midi(n), 0.5, 0.4 + i * 0.05));
+    E('bala', 'melody', 1.5, midi('D6'), 0.5, 0.7); E('bala', 'melody', 2, midi('G6'), 2.5, 0.74, { tr: 1 }); E('bala', 'melody', 2, midi('C6'), 2.5, 0.4, { tr: 1 });
+    E('bass', 'bass', 1, midi('G2'), 1, 0.6); E('bass', 'bass', 2, midi('C3'), 2.5, 0.85);
+    voice(chord('C'), 55, 3).forEach((m, j) => E('guitar', 'harmony', 2, m, 2.5, 0.46, { strum: j }));
+    ['E6', 'G6', 'C7', 'E7'].forEach((n, i) => E('mbox', 'melody', 2.25 + i * 0.2, midi(n), 1, 0.26));
+    E('kick', 'drums', 2, 0, 0.5, 0.55); [[1, 0.2], [1.5, 0.24], [2, 0.46], [2.5, 0.22], [3, 0.3]].forEach(([b, v]) => E('tamb', 'drums', b, 0, 0.3, v));
+  }
+  function versusLose(E) { // m7: the computer finished first. Warm, lifts at the end, F major
+    ['A5', 'G5', 'F5'].forEach((n, i) => E('marimba', 'melody', i * 0.5, midi(n), 0.75, 0.5 - i * 0.04));
+    E('marimba', 'melody', 1.5, midi('C6'), 1.5, 0.52);
+    ['F3', 'A3', 'C4', 'F4'].forEach((n, i) => E('guitar', 'harmony', 1.5 + i * 0.18, midi(n), 3, 0.38));
+    E('bass', 'bass', 1.5, midi('F2'), 2.5, 0.6);
+    ['F6', 'A6', 'C7'].forEach((n, i) => E('mbox', 'melody', 2.25 + i * 0.25, midi(n), 1.2, 0.2));
+    for (let k = 0; k < 6; k++) E('shaker', 'drums', 1.5 + k * 0.25, 0, 0.1, 0.16 * (1 - k / 7));
+  }
   function oom(E) {
     ['E5', 'D5', 'C5', 'A4'].forEach((n, i) => E('marimba', 'melody', i * 0.5, midi(n), 1, 0.62 - i * 0.07));
     ['F3', 'A3', 'C4', 'E4'].forEach((n, i) => E('guitar', 'harmony', 2 + i * 0.22, midi(n), 3, 0.42));
@@ -109,6 +125,8 @@
     jingle_chapter: { title: 'Chapter complete', bpm: 120, beats: 4, bars: 1.5, tail: 2.6, key: 'C major', build: chapter },
     jingle_reward: { title: 'Reward', bpm: 120, beats: 4, bars: 1, tail: 2.4, key: 'C major', build: reward },
     jingle_oom: { title: 'Out of moves', bpm: 120, beats: 4, bars: 1.25, tail: 2, key: 'F major', build: oom },
+    jingle_versus_win: { title: 'Race won', bpm: 120, beats: 4, bars: 1.25, tail: 2.4, key: 'C major', build: versusWin },
+    jingle_versus_lose: { title: 'So close', bpm: 120, beats: 4, bars: 1.25, tail: 2.2, key: 'F major', build: versusLose },
   };
   const scores = {};
   function score(name) {

@@ -67,6 +67,21 @@
     ice_crack: (c, o, t) => { [0, 0.035, 0.08, 0.13].forEach((dt, i) => noise(c, o, t + dt, { f: [2600, 3800, 2000, 3200][i], q: 5, d: 0.022, v: 0.42 - i * 0.06, off: i * 0.21 })); partials(c, o, t, 760, [[1, 1, 0.03]], 0.1, 0.002, 0.55); },
     ice_shatter: (c, o, t) => { noise(c, o, t, { type: 'highpass', f: 1300, a: 0.003, d: 0.26, v: 0.4 }); partials(c, o, t, 150, [[1, 1, 0.05]], 0.28, 0.003, 0.6); const r = rng(13); for (let i = 0; i < 11; i++) partials(c, o, t + 0.03 + r() * 0.45, 2500 + r() * 3800, [[1, 1, 0.025 + r() * 0.03], [2.6, 0.3, 0.012]], 0.09 * (1 - i / 13)); },
     button: (c, o, t) => { wood(c, o, t, 1180, 0.3, 0.7); partials(c, o, t, 700, [[1, 1, 0.02]], 0.12, 0.003, 1.45); },
+    // m7: star reveal (rising E6, G6, C7), chest lid, chest wiggle creaks, rival family done
+    star: (c, o, t, p = {}) => { const s = Math.max(1, Math.min(3, p.step || 1)), f = [1318.5, 1568, 2093][s - 1];
+      partials(c, o, t, f / 2, MARIMBA(f / 2), 0.26, 0.002); partials(c, o, t, f, BOX, 0.24 + s * 0.02); partials(c, o, t + 0.045, f * 2, BOX, 0.07);
+      noise(c, o, t + 0.02, { type: 'highpass', f: 7500, a: 0.02, d: 0.22 + s * 0.06, v: 0.03 + s * 0.008 });
+      if (s === 3) [2637, 3136].forEach((g, i) => partials(c, o, t + 0.12 + i * 0.07, g, BOX, 0.08)); },
+    chest_open: (c, o, t) => {
+      wood(c, o, t, 330, 0.5, 1.4); noise(c, o, t, { type: 'lowpass', f: 700, d: 0.05, v: 0.3 });
+      noise(c, o, t + 0.05, { f: 520, f2: 1500, q: 7, a: 0.04, d: 0.16, v: 0.16, off: 0.3 });
+      partials(c, o, t + 0.2, 131, [[1, 1, 0.08], [2.76, 0.3, 0.03]], 0.36, 0.004);
+      ['C6', 1047, 'E6', 1318.5, 'G6', 1568, 'C7', 2093].filter((x, i) => i % 2).forEach((f, i) => partials(c, o, t + 0.22 + i * 0.05, f, BOX, 0.2 - i * 0.02));
+      noise(c, o, t + 0.24, { type: 'highpass', f: 6500, a: 0.05, d: 0.55, v: 0.05 }); },
+    chest_wiggle: (c, o, t) => { [0, 0.16, 0.32].forEach((dt, i) => {
+      const k = semis(i * 3); noise(c, o, t + dt, { f: 380 * k, f2: 620 * k, q: 6, a: 0.03, d: 0.09, v: 0.42, off: 0.1 + i * 0.2 });
+      wood(c, o, t + dt + 0.07, 520 * k, 0.34, 0.9); }); },
+    rival_complete: (c, o, t) => { wood(c, o, t, 784, 0.24, 1.1); wood(c, o, t + 0.09, 1047, 0.26, 1.1); partials(c, o, t + 0.09, 2093, BOX, 0.07); },
   };
   /* Spec file list → generator + params + export length (s) */
   const FILES = [
@@ -87,6 +102,12 @@
     ['ice_crack', 'ice_crack', {}, 0.35, 'Ice counter drops', 'light'],
     ['ice_shatter', 'ice_shatter', {}, 0.7, 'Ice reaches 0', 'medium'],
     ['button', 'button', {}, 0.15, 'Any UI button', 'selection'],
+    ['star_1', 'star', { step: 1 }, 0.7, 'Win card: 1st star pops in (m7)', 'light'],
+    ['star_2', 'star', { step: 2 }, 0.75, 'Win card: 2nd star', 'light'],
+    ['star_3', 'star', { step: 3 }, 0.9, 'Win card: 3rd star', 'light'],
+    ['chest_open', 'chest_open', {}, 1.1, 'Chest lid opens (m7)', 'medium'],
+    ['chest_wiggle', 'chest_wiggle', {}, 0.6, 'Chest wiggles before it opens: three rising creaks (m7)', 'light'],
+    ['rival_complete', 'rival_complete', {}, 0.45, 'The computer rival completes a family (m7)', null],
   ].map(([file, fn, params, len, event, haptic]) => ({ file, fn, params, len, event, haptic }));
 
   function ensure() {

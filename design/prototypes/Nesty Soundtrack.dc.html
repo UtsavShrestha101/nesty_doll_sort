@@ -136,11 +136,14 @@ const JINGLES = [
   { id: 'jingle_chapter', title: 'Chapter complete', meta: '4.9 s', when: 'Chapter complete (4.6), when the figurine lands in the spotlight.' },
   { id: 'jingle_reward', title: 'Reward', meta: '3.8 s', when: 'A figurine joins the Museum, a skin or theme unlocks, the daily chest opens, a purchase goes through.' },
   { id: 'jingle_oom', title: 'Out of moves', meta: '4.4 s', when: 'Out of moves sheet (3.5, 3.7). Soft and hopeful, because the sheet offers a way out.' },
+  { id: 'jingle_versus_win', title: 'Race won', meta: '4.4 s', when: 'vs Computer: the player finishes first (9.4). Bright, in C major.' },
+  { id: 'jingle_versus_lose', title: 'Race lost', meta: '4.3 s', when: 'vs Computer: the computer finishes first (9.5). Gentle, in F major, never sad, because a rematch is free.' },
 ];
 const SFX = [
   ['pick', 'Nest picked up'], ['clack_1', 'Lid snaps shut'], ['clack_2', 'Lid snaps shut'], ['clack_3', 'Lid snaps shut'], ['whoosh', 'Nest moves'], ['bonk', 'Invalid drop'],
   ['complete_1', 'Family done · combo 1'], ['complete_2', 'Combo 2'], ['complete_3', 'Combo 3'], ['complete_4', 'Combo 4'], ['complete_5', 'Combo 5'], ['win', 'Level complete'],
   ['coins', 'Coins count up'], ['unlock_glass', 'Glass case shatters'], ['ice_crack', 'Ice counter drops'], ['ice_shatter', 'Ice breaks'], ['button', 'Any button'],
+  ['star_1', 'First star lands'], ['star_2', 'Second star'], ['star_3', 'Third star'], ['chest_wiggle', 'Chest wiggles'], ['chest_open', 'Chest opens'], ['rival_complete', 'Computer completes a family'],
 ];
 const RULES = [
   ['App start', 'music_home fades in over 1.2 s once the splash is ready.'],
@@ -150,6 +153,8 @@ const RULES = [
   ['Out of moves (3.5)', 'Music ducks to 40 % and jingle_oom plays. Full volume returns when the sheet closes.'],
   ['Reward moments', 'Music ducks to 40 % under jingle_reward and comes back when it ends.'],
   ['Pause (3.9)', 'Music ducks to 50 %.'],
+  ['Race result (9.4, 9.5)', 'Music ducks to 30 % and jingle_versus_win or jingle_versus_lose plays. It comes back over 0.8 s after the next tap.'],
+  ['Chest opens (10.3c, 5.6b)', 'chest_open with the lid, then jingle_reward 250 ms later under a 40 % duck.'],
   ['Ads', 'Music pauses for interstitial and rewarded ads, then fades back in over 0.6 s.'],
   ['Background', 'Everything pauses. On return, music fades in over 0.6 s.'],
   ['Settings', 'Music off fades out in 0.3 s; on fades in over 0.6 s. Jingles follow the Sound toggle and SFX volume.'],

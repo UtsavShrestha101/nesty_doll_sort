@@ -7,44 +7,59 @@
 </head>
 <body>
 <x-dc>
-<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes nb-pulse{0%,100%{opacity:.75;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}@keyframes nb-glow{0%,100%{box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 0 0 3px #FFE08A,0 0 14px 4px rgba(255,205,80,.6)}50%{box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 0 0 4px #FFE08A,0 0 26px 10px rgba(255,205,80,.9)}}@keyframes nb-hand{0%,15%{transform:translate(0,0)}60%,75%{transform:translate(var(--hx),var(--hy))}100%{transform:translate(0,0)}}@keyframes nb-tap{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(6px) scale(.92)}}@keyframes nb-ring{0%{transform:scale(.4);opacity:.95}100%{transform:scale(1.6);opacity:0}}@keyframes nb-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes nb-wob{0%{transform:rotate(-3deg) scale(1.05)}100%{transform:rotate(3deg) scale(1.05)}}@keyframes nb-tw{0%,100%{opacity:.35;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}</style></helmet>
-<div style="position:relative;width:390px;height:844px;border-radius:{{ rad }};overflow:hidden;background:{{ bg }};box-shadow:{{ bezel }};flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
-<sc-for list="{{ planks }}" as="p" hint-placeholder-count="3"><div style="position:absolute;left:0;right:0;top:{{ p.y }}px;height:40px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 40px"></div></sc-for>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes nb-pulse{0%,100%{opacity:.75;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}@keyframes nb-glow{0%,100%{box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 0 0 3px #FFE08A,0 0 14px 4px rgba(255,205,80,.6)}50%{box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 0 0 4px #FFE08A,0 0 26px 10px rgba(255,205,80,.9)}}@keyframes nb-hand{0%,15%{transform:translate(0,0)}60%,75%{transform:translate(var(--hx),var(--hy))}100%{transform:translate(0,0)}}@keyframes nb-tap{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(6px) scale(.92)}}@keyframes nb-ring{0%{transform:scale(.4);opacity:.95}100%{transform:scale(1.6);opacity:0}}@keyframes nb-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes nb-wob{0%{transform:rotate(-3deg) scale(1.05)}100%{transform:rotate(3deg) scale(1.05)}}@keyframes nb-tw{0%,100%{opacity:.35;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}@keyframes nb-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}</style></helmet>
+<div style="position:relative;width:390px;height:{{ frameH }}px;border-radius:{{ rad }};overflow:hidden;background:{{ bg }};box-shadow:{{ bezel }};flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+<div style="position:absolute;left:0;top:0;width:390px;height:844px;transform:{{ boardTf }};transform-origin:195px 150px">
+<sc-for list="{{ planks }}" as="p" hint-placeholder-count="3"><div style="position:absolute;left:{{ p.i }}px;right:{{ p.i }}px;top:{{ p.y }}px;height:40px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 40px"></div></sc-for>
 <sc-for list="{{ pieces }}" as="q" hint-placeholder-count="0"><div style="position:absolute;left:{{ q.x }}px;top:{{ q.y }}px;width:{{ q.w }}px;height:{{ q.h }}px;background:{{ q.bgi }} center/100% 100% no-repeat;opacity:{{ q.op }};clip-path:{{ q.cp }};transform:{{ q.tf }};transform-origin:50% 96%;border-radius:{{ q.br }};-webkit-mask:{{ q.mask }};mask:{{ q.mask }};animation:{{ q.anim }}"></div></sc-for>
 <sc-for list="{{ pips }}" as="pp" hint-placeholder-count="0"><div style="position:absolute;left:{{ pp.x }}px;top:{{ pp.y }}px;width:6px;height:6px;border-radius:50%;background:{{ pp.bg }};box-shadow:{{ pp.sh }}"></div></sc-for>
 <sc-for list="{{ locks }}" as="lk" hint-placeholder-count="0"><div style="position:absolute;left:{{ lk.x }}px;top:{{ lk.y }}px;width:12px;height:12px;background:{{ lk.ink }};-webkit-mask:url({{ lk.icon }}) center/contain no-repeat;mask:url({{ lk.icon }}) center/contain no-repeat"></div></sc-for>
-<sc-for list="{{ tags }}" as="tg" hint-placeholder-count="0"><div style="position:absolute;left:{{ tg.x }}px;top:{{ tg.y }}px;padding:2px 6px;border-radius:8px;background:#7B4824;color:#FFEFD6;font:700 12px/14px 'Fredoka',sans-serif;box-shadow:inset 0 1px 0 rgba(255,210,160,.5),0 0 0 1.5px #FFF4E0">{{ tg.t }}</div></sc-for>
+<sc-for list="{{ tags }}" as="tg" hint-placeholder-count="0"><div style="position:absolute;left:{{ tg.x }}px;top:{{ tg.y }}px;padding:2px 6px;border-radius:8px;background:#7B4824;color:#FFEFD6;font:700 12px/14px 'Fredoka',sans-serif;box-shadow:{{ tg.sh }}">{{ tg.t }}</div></sc-for>
 <sc-for list="{{ ice }}" as="ic" hint-placeholder-count="0"><div style="position:absolute;left:{{ ic.x }}px;top:{{ ic.y }}px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#6FB4EA,#3E8EDE);box-shadow:0 0 0 2.5px #FFFFFF,0 3px 0 2.5px #2B6CB0;display:flex;align-items:center;justify-content:center;color:#fff;font:700 16px/1 'Fredoka',sans-serif">{{ ic.n }}</div></sc-for>
 <sc-for list="{{ badges }}" as="bd" hint-placeholder-count="0"><div style="position:absolute;left:{{ bd.x }}px;top:{{ bd.y }}px;width:{{ bd.s }}px;height:{{ bd.s }}px;border-radius:50%;background:#FFF8EC;box-shadow:0 0 0 2px {{ bd.ink }},0 2px 4px rgba(60,25,5,.35);display:flex;align-items:center;justify-content:center"><div style="width:{{ bd.is }}px;height:{{ bd.is }}px;background:{{ bd.ink }};-webkit-mask:url({{ bd.icon }}) center/contain no-repeat;mask:url({{ bd.icon }}) center/contain no-repeat"></div></div></sc-for>
 <sc-if value="{{ hasArc }}" hint-placeholder-val="{{ false }}"><svg width="390" height="844" style="position:absolute;left:0;top:0;z-index:6;pointer-events:none"><path d="{{ arcD }}" fill="none" stroke="{{ arcU }}" stroke-width="{{ arcUW }}" stroke-linecap="round" stroke-dasharray="{{ arcDash }}"></path><path d="{{ arcD }}" fill="none" stroke="{{ arcC }}" stroke-width="{{ arcW }}" stroke-linecap="round" stroke-dasharray="{{ arcDash }}"></path><path d="{{ headD }}" fill="{{ arcC }}" stroke="{{ arcU }}" stroke-width="2" stroke-linejoin="round"></path></svg></sc-if>
 <sc-for list="{{ marks }}" as="m" hint-placeholder-count="0"><div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;width:4px;height:{{ m.h }}px;border-radius:2px;background:#FFF6E6;box-shadow:0 0 0 1.5px rgba(90,45,15,.6);transform:rotate({{ m.r }}deg);z-index:7"></div></sc-for>
 <sc-for list="{{ sparks }}" as="s" hint-placeholder-count="0"><div style="position:absolute;left:{{ s.x }}px;top:{{ s.y }}px;font-family:'Material Symbols Rounded';font-size:{{ s.s }}px;line-height:1;color:#FFF3B0;font-variation-settings:'FILL' 1;text-shadow:0 0 8px rgba(255,200,80,.95),0 0 2px rgba(190,110,20,.9);animation:nb-tw 2s ease-in-out {{ s.d }}s infinite;z-index:7">{{ s.g }}</div></sc-for>
+</div>
+<div style="position:absolute;left:0;top:0;width:390px;height:844px;transform:{{ hudTf }};z-index:11;pointer-events:none">
 
 <div style="position:absolute;left:16px;top:62px;width:48px;height:48px;border-radius:17px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.22);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:28px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600;z-index:10">pause</div>
-<div style="position:absolute;right:16px;top:66px;height:40px;padding:0 14px 0 6px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A,0 8px 12px rgba(90,50,20,.2);display:flex;align-items:center;gap:7px;font:700 17px/1 'Fredoka',sans-serif;color:#5B3A21;font-variant-numeric:tabular-nums;z-index:10"><div style="width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -2px 0 rgba(120,70,0,.35),inset 0 0 0 2px rgba(255,240,180,.6)"></div>{{ coins }}</div>
+<sc-if value="{{ notRace }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;right:16px;top:66px;height:40px;padding:0 14px 0 6px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A,0 8px 12px rgba(90,50,20,.2);display:flex;align-items:center;gap:7px;font:700 17px/1 'Fredoka',sans-serif;color:#5B3A21;font-variant-numeric:tabular-nums;z-index:10"><div style="width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -2px 0 rgba(120,70,0,.35),inset 0 0 0 2px rgba(255,240,180,.6)"></div>{{ coins }}</div></sc-if>
 <div style="position:absolute;left:0;right:0;top:62px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:10;pointer-events:none">
 <sc-if value="{{ isNormal }}" hint-placeholder-val="{{ false }}"><div style="height:46px;padding:0 20px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.22);display:flex;align-items:center;font:700 18px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap">{{ lvl }}</div></sc-if>
 <sc-if value="{{ isHard }}" hint-placeholder-val="{{ true }}"><div style="height:46px;padding:0 10px 0 16px;border-radius:18px;background:linear-gradient(180deg,#F07377,#E5484D);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #A92C33,0 9px 14px rgba(150,30,30,.25);display:flex;align-items:center;gap:8px;color:#fff;font:700 18px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(120,20,25,.3);white-space:nowrap">{{ lvl }}<div style="display:flex;align-items:center;gap:2px;padding:4px 7px 4px 4px;border-radius:9px;background:#FFF1EE;color:#C33338;font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.06em;text-shadow:none"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1">local_fire_department</span>HARD</div></div></sc-if>
 <sc-if value="{{ isSuper }}" hint-placeholder-val="{{ false }}"><div style="height:46px;padding:0 7px 0 13px;border-radius:18px;background:linear-gradient(180deg,#A06AE0,#7A3FB8);box-shadow:inset 0 2px 0 rgba(255,255,255,.3),0 5px 0 #522783,0 9px 14px rgba(80,30,130,.28);display:flex;align-items:center;gap:6px;color:#fff;font:700 17px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(50,15,90,.35);white-space:nowrap">{{ lvl }}<div style="padding:5px 6px;border-radius:9px;background:#F4ECFF;color:#6A31A6;font:700 10px/1 'Fredoka',sans-serif;letter-spacing:.02em;text-shadow:none">SUPER HARD</div></div></sc-if>
 <sc-if value="{{ isDaily }}" hint-placeholder-val="{{ false }}"><div style="height:46px;padding:0 10px 0 12px;border-radius:18px;background:linear-gradient(180deg,#FFE58A,#F5C518);box-shadow:inset 0 2px 0 rgba(255,255,255,.55),0 5px 0 #C9960A,0 9px 14px rgba(150,100,10,.25);display:flex;align-items:center;gap:7px;color:#5A3F06;font:700 18px/1 'Fredoka',sans-serif;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">calendar_today</span>Daily<div style="padding:5px 8px;border-radius:9px;background:#FFF8DC;color:#8C5E12;font:700 12px/1 'Fredoka',sans-serif">{{ lvl }}</div></div></sc-if>
 <sc-if value="{{ isBonus }}" hint-placeholder-val="{{ false }}"><div style="height:46px;padding:0 14px 0 10px;border-radius:18px;background:linear-gradient(180deg,#3FC6B4,#12A594);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #0B7568,0 9px 14px rgba(10,90,80,.25);display:flex;align-items:center;color:#fff;font:700 17px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(5,70,60,.3);white-space:nowrap">{{ lvl }}</div></sc-if>
+<sc-if value="{{ isRace }}" hint-placeholder-val="{{ false }}"><div style="height:46px"></div></sc-if>
 <div style="height:26px;padding:0 10px 0 7px;border-radius:13px;background:#7B4824;box-shadow:{{ famSh }};transform:{{ famTf }};display:flex;align-items:center;gap:5px;color:#FFEFD6;font:700 13px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap"><div style="width:12px;height:18px;background:#FFE3B8;-webkit-mask:url(skins/classic/board/doll-silhouette.svg) center/contain no-repeat;mask:url(skins/classic/board/doll-silhouette.svg) center/contain no-repeat"></div>{{ fam }}</div>
 </div>
+<sc-if value="{{ isRace }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:76px;right:16px;top:62px;height:48px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.22);display:flex;align-items:center;gap:9px;padding:0 12px 0 5px;box-sizing:border-box">
+<div style="width:38px;height:38px;flex:none;border-radius:50%;background:url({{ rvArt }}) center/100% 100% no-repeat;box-shadow:0 0 0 2px #FFFDF7,0 2px 4px rgba(60,25,5,.25)"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span style="font:700 16px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap">{{ rvName }}</span><div style="display:flex;align-items:center;gap:3px;height:20px;padding:0 7px 0 5px;border-radius:10px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #D8B07A;color:#6E4526;font:800 11px/1 'Nunito',sans-serif;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1,'wght' 600">computer</span>Computer</div></div>
+<div style="display:flex;align-items:center;gap:4px;font:700 12px/1 'Nunito',sans-serif;color:#8A5B3A;white-space:nowrap"><sc-if value="{{ rvGlyphOn }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Material Symbols Rounded';font-size:14px;font-variation-settings:'FILL' 1,'wght' 600;color:{{ rvGlyphC }}">{{ rvGlyph }}</span></sc-if>{{ rvState }}<sc-if value="{{ rvThinking }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;gap:2px;margin-left:1px"><span style="width:3px;height:3px;border-radius:50%;background:#8A5B3A;animation:nb-dot 1.2s ease-in-out infinite"></span><span style="width:3px;height:3px;border-radius:50%;background:#8A5B3A;animation:nb-dot 1.2s ease-in-out .2s infinite"></span><span style="width:3px;height:3px;border-radius:50%;background:#8A5B3A;animation:nb-dot 1.2s ease-in-out .4s infinite"></span></span></sc-if></div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none"><div style="font:700 17px/1 'Fredoka',sans-serif;color:#3242A8;font-variant-numeric:tabular-nums">{{ rvCount }}</div><div style="display:flex;gap:3px"><sc-for list="{{ rvDots }}" as="dt" hint-placeholder-count="4"><div style="width:8px;height:8px;border-radius:50%;background:{{ dt.bg }};box-shadow:{{ dt.sh }}"></div></sc-for></div></div>
+</div></sc-if>
 
 <sc-if value="{{ bWarn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:20px;right:20px;top:152px;display:flex;align-items:center;gap:10px;padding:9px 9px 9px 12px;border-radius:20px;background:#FFE3D0;box-shadow:inset 0 2px 0 #FFF4EA,0 4px 0 #E3AE8C,0 8px 14px rgba(120,60,20,.2);z-index:12">
 <div style="width:30px;height:30px;flex:none;border-radius:50%;background:#F2893B;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:20px;color:#fff;font-variation-settings:'FILL' 1,'wght' 700">sentiment_neutral</div>
 <div style="flex:1;min-width:0"><div style="font:700 16px/1.1 'Fredoka',sans-serif;color:#5B3A21">Hmm, this looks stuck</div><div style="font:700 12px/1.3 'Nunito',sans-serif;color:#8A5B3A">Try Undo? You can keep playing too.</div></div>
 <div style="height:38px;padding:0 14px;border-radius:14px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;display:flex;align-items:center;gap:4px;color:#fff;font:700 15px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1,'wght' 700">undo</span>Undo</div>
 </div></sc-if>
-<sc-if value="{{ bRibbon }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:150px;display:flex;justify-content:center;z-index:12"><div style="position:relative;padding:10px 26px 11px;border-radius:14px;background:linear-gradient(180deg,#6FA8DC,#3E7FC0);box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 5px 0 #2B5E93,0 12px 22px rgba(30,60,100,.3);text-align:center;color:#fff"><div style="font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.16em;color:#DCEBFA">CHAPTER 4</div><div style="margin-top:4px;font:700 22px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(20,50,90,.35)">Snowy Cabin</div></div></div></sc-if>
+<sc-if value="{{ bRibbon }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:150px;display:flex;justify-content:center;z-index:12"><div style="position:relative;padding:10px 26px 11px;border-radius:14px;background:{{ rbBg }};box-shadow:{{ rbSh }};text-align:center;color:#fff"><div style="font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.16em;color:{{ rbLbl }}">{{ rbNum }}</div><div style="margin-top:4px;font:700 22px/1 'Fredoka',sans-serif;text-shadow:{{ rbTs }}">{{ rbName }}</div></div></div></sc-if>
+</div>
+<div style="position:absolute;left:0;top:0;width:390px;height:844px;transform:{{ barTf }};z-index:9">
 
 <div style="position:absolute;left:0;right:0;top:734px;bottom:0;background:repeating-linear-gradient(90deg,rgba(90,45,15,.06) 0 2px,rgba(0,0,0,0) 2px 30px),linear-gradient(180deg,#D8995A 0,#BD7B40 14px,#A56A34 100%);box-shadow:inset 0 3px 0 rgba(255,225,180,.6),0 -6px 14px rgba(90,45,15,.25);z-index:9"></div>
 <div style="position:absolute;left:23px;top:746px;display:flex;gap:8px;z-index:10">
-<sc-for list="{{ boosters }}" as="b" hint-placeholder-count="4"><div style="position:relative;width:80px;height:58px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 8px 10px rgba(60,25,5,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;animation:{{ b.anim }}"><span style="font-family:'Material Symbols Rounded';font-size:25px;line-height:1;color:{{ b.color }};font-variation-settings:'FILL' 1,'wght' 600">{{ b.icon }}</span><span style="font:600 13px/1 'Fredoka',sans-serif;color:{{ b.color }}">{{ b.label }}</span>
+<sc-for list="{{ boosters }}" as="b" hint-placeholder-count="4"><div style="position:relative;visibility:{{ b.vis }};width:80px;height:58px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 8px 10px rgba(60,25,5,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;animation:{{ b.anim }}"><span style="font-family:'Material Symbols Rounded';font-size:25px;line-height:1;color:{{ b.color }};font-variation-settings:'FILL' 1,'wght' 600">{{ b.icon }}</span><span style="font:600 13px/1 'Fredoka',sans-serif;color:{{ b.color }}">{{ b.label }}</span>
 <sc-if value="{{ b.isCount }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-6px;top:-7px;min-width:22px;height:22px;border-radius:11px;background:#E93D82;color:#fff;font:700 13px/22px 'Fredoka',sans-serif;text-align:center;box-shadow:0 2px 0 #B32463,0 0 0 2px #FFF4E0">{{ b.v }}</div></sc-if>
+<sc-if value="{{ b.isInf }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-6px;top:-7px;width:26px;height:22px;border-radius:11px;background:#E93D82;box-shadow:0 2px 0 #B32463,0 0 0 2px #FFF4E0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Material Symbols Rounded';font-size:18px;line-height:1;font-variation-settings:'FILL' 1,'wght' 700">all_inclusive</div></sc-if>
 <sc-if value="{{ b.isAd }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-7px;top:-8px;width:26px;height:22px;border-radius:8px;background:linear-gradient(180deg,#9A72EC,#7C4DDB);box-shadow:0 2px 0 #5530A8,0 0 0 2px #FFF4E0;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div></sc-if>
 <sc-if value="{{ b.isCoin }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-9px;top:-9px;height:22px;padding:0 6px 0 3px;border-radius:11px;background:linear-gradient(180deg,#FFF1C9,#F9DC8A);box-shadow:0 2px 0 #D4A93A,0 0 0 2px #FFF4E0;display:flex;align-items:center;gap:3px;color:#8C5E12;font:700 12px/1 'Fredoka',sans-serif"><div style="width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></div>{{ b.v }}</div></sc-if>
 </div></sc-for>
+</div>
+<sc-if value="{{ raceStart }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:111px;top:746px;width:168px;height:58px;border-radius:18px;background:linear-gradient(180deg,#7B8BEF,#4E5FD9);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #3242A8,0 8px 12px rgba(40,50,140,.35);display:flex;align-items:center;justify-content:center;gap:6px;color:#fff;font:700 21px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(30,40,120,.35);z-index:10"><span style="font-family:'Material Symbols Rounded';font-size:26px;font-variation-settings:'FILL' 1,'wght' 600">play_arrow</span>Start</div></sc-if>
 </div>
 
 <sc-if value="{{ tut }}" hint-placeholder-val="{{ false }}">
@@ -63,17 +78,23 @@
 <div style="position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#120B06;z-index:21"></div>
 <div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:rgba(40,20,8,.75);z-index:22"></div>
 </sc-if>
+<sc-if value="{{ chromeShort }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:20px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box;font:700 12px 'Nunito',sans-serif;color:#3A2414;z-index:20"><span>9:41</span><div style="width:22px;height:10px;border:1.5px solid rgba(58,36,20,.5);border-radius:3px;padding:1px;box-sizing:border-box"><div style="width:80%;height:100%;background:#3A2414;border-radius:1px"></div></div></div></sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;play&quot;,&quot;select&quot;,&quot;nest&quot;,&quot;complete&quot;,&quot;invalid&quot;,&quot;hint&quot;,&quot;unlock&quot;,&quot;stuck&quot;,&quot;full&quot;,&quot;extra&quot;,&quot;noHints&quot;,&quot;noUndo&quot;,&quot;tut1a&quot;,&quot;tut1b&quot;,&quot;tut2&quot;,&quot;tower16&quot;,&quot;glass31&quot;,&quot;ice51&quot;,&quot;gold101&quot;,&quot;super60&quot;,&quot;next57&quot;,&quot;ch4&quot;,&quot;daily&quot;,&quot;bonus&quot;,&quot;assist&quot;,&quot;ocean&quot;,&quot;won1&quot;,&quot;won15&quot;,&quot;won56&quot;,&quot;won60&quot;,&quot;wonDaily&quot;,&quot;won200&quot;],&quot;default&quot;:&quot;play&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;bare&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;play&quot;,&quot;select&quot;,&quot;nest&quot;,&quot;complete&quot;,&quot;invalid&quot;,&quot;hint&quot;,&quot;unlock&quot;,&quot;stuck&quot;,&quot;full&quot;,&quot;extra&quot;,&quot;noHints&quot;,&quot;noUndo&quot;,&quot;tut1a&quot;,&quot;tut1b&quot;,&quot;tut2&quot;,&quot;tower16&quot;,&quot;glass31&quot;,&quot;ice51&quot;,&quot;gold101&quot;,&quot;super60&quot;,&quot;next57&quot;,&quot;ch4&quot;,&quot;daily&quot;,&quot;bonus&quot;,&quot;assist&quot;,&quot;ocean&quot;,&quot;won1&quot;,&quot;won15&quot;,&quot;won56&quot;,&quot;won60&quot;,&quot;wonDaily&quot;,&quot;won200&quot;,&quot;size5&quot;,&quot;size6&quot;,&quot;glass56&quot;,&quot;towerTop3&quot;,&quot;iceTower&quot;,&quot;iceTowerThawed&quot;,&quot;extraFull&quot;,&quot;extraRow5&quot;,&quot;shelves4&quot;,&quot;row5&quot;,&quot;ch7&quot;,&quot;ch8&quot;,&quot;ch9&quot;,&quot;ch10&quot;,&quot;raceStart&quot;,&quot;race&quot;,&quot;raceStartingOver&quot;,&quot;raceWon&quot;,&quot;raceLost&quot;,&quot;relaxed&quot;],&quot;default&quot;:&quot;play&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;bare&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;short&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;rival&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;,&quot;3&quot;],&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 const B = 'skins/classic/board/';
 const PAL = { cherry: '#E5484D', tangerine: '#F2893B', sunflower: '#F5C518', leaf: '#46A758', lagoon: '#12A594', sky: '#3E8EDE', grape: '#8E4EC6', bubblegum: '#E93D82', midnight: '#2F3E8F', cocoa: '#A0673C', gold: '#D4A22C' };
 const INK = { cherry: '#A43434', tangerine: '#AD6028', sunflower: '#92710D', leaf: '#38753C', lagoon: '#157365', sky: '#326497', grape: '#693887', bubblegum: '#A72D58', midnight: '#282C5D', cocoa: '#754929', gold: '#8C5E12' };
 const SYM = { cherry: 'heart', tangerine: 'flower', sunflower: 'sun', leaf: 'leaf', lagoon: 'wave', sky: 'drop', grape: 'star', bubblegum: 'bow', midnight: 'moon', cocoa: 'acorn', gold: 'crown' };
-const BG = { 1: ['ch1-sunny-toy-shop', '#F4D29C'], 2: ['ch2-rainy-cafe-corner', '#BFC6CC'], 3: ['ch3-seaside-market', '#F3E6CF'], 4: ['ch4-snowy-cabin', '#E7EDF2'], 5: ['ch5-night-carnival', '#3B3470'], 6: ['ch6-spring-garden-shed', '#DCEBC8'] };
+const BG = { 1: ['ch1-sunny-toy-shop', '#F4D29C'], 2: ['ch2-rainy-cafe-corner', '#BFC6CC'], 3: ['ch3-seaside-market', '#F3E6CF'], 4: ['ch4-snowy-cabin', '#E7EDF2'], 5: ['ch5-night-carnival', '#3B3470'], 6: ['ch6-spring-garden-shed', '#DCEBC8'], 7: ['ch7-puppet-theater', '#F2D7C6'], 8: ['ch8-autumn-bandstand', '#F8DDBB'], 9: ['ch9-castle-library', '#E6DDEE'], 10: ['ch10-sunrise-lookout', '#F4D2C6'] };
+const CHAP = { 4: ['Snowy Cabin', '#6FA8DC', '#3E7FC0', '#2B5E93', '#DCEBFA', 'rgba(20,50,90,.35)', 'rgba(30,60,100,.3)'], 7: ['Puppet Theater', '#DE6676', '#C24D5F', '#93283D', '#FFE8E9', 'rgba(110,25,40,.4)', 'rgba(110,25,40,.3)'], 8: ['Autumn Bandstand', '#DC7A44', '#C16229', '#90410A', '#FFEADF', 'rgba(110,50,10,.4)', 'rgba(110,50,10,.3)'], 9: ['Castle Library', '#AD6EB1', '#945798', '#6B346F', '#F9E8FA', 'rgba(75,30,80,.4)', 'rgba(75,30,80,.3)'], 10: ['Sunrise Lookout', '#3AA697', '#148D7F', '#016359', '#DAF6F0', 'rgba(5,70,60,.4)', 'rgba(5,70,60,.3)'] };
+const RIB = n => { const c = CHAP[n]; return { rbNum: 'CHAPTER ' + n, rbName: c[0], rbBg: `linear-gradient(180deg,${c[1]},${c[2]})`, rbSh: `inset 0 2px 0 rgba(255,255,255,.4),0 5px 0 ${c[3]},0 12px 22px ${c[6]}`, rbLbl: c[4], rbTs: `0 2px 0 ${c[5]}` }; };
 const F = [0.42, 0.54, 0.66, 0.78, 0.89, 1];
 const R = Math.round;
 const L3 = { N: 4, Hs: 150, planks: [312, 498, 684] }, L2 = { N: 3, Hs: 140, planks: [430, 650] }, L5 = { N: 5, Hs: 150, planks: [312, 498, 684] };
+const L3T = { N: 6, Hs: 150, planks: [300, 494, 688], iceH: 168 }, L4S = { N: 4, Hs: 150, planks: [253, 398, 543, 688] };
+const AB = 742 / 768, spOf = n => Math.min(96, 372 / n), swOf = n => Math.min(90, spOf(n) - 2.4);
+const TAGSH = 'inset 0 1px 0 rgba(255,210,160,.5),0 0 0 1.5px #FFF4E0', TAGPOP = ',0 0 0 4px rgba(255,224,138,.9),0 0 14px 4px rgba(255,205,80,.75)';
 const SHINE = 'linear-gradient(115deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.85) 47%,rgba(255,255,255,0) 62%)';
 const MASK = `url(${B}doll-silhouette.svg) center/100% 100% no-repeat`;
 
@@ -140,12 +161,78 @@ const GOLD101 = () => [
   [{ c: 'sky', s: [3] }, { c: 'cherry', s: [1] }, { c: 'sky', s: [2, 1], tower: 1 }, { c: 'grape', s: [4, 3, 2] }],
   [{ c: 'grape', s: [1] }, null, { c: 'leaf', s: [4, 3] }],
 ];
+const SIZE5 = () => [
+  [{ c: 'sky', s: [5, 4] }, { c: 'cocoa', s: [5] }, { c: 'midnight', s: [3, 2, 1] }, { c: 'sky', s: [3] }],
+  [{ c: 'midnight', s: [5, 4] }, { c: 'cocoa', s: [4, 3, 2] }, null, { c: 'sky', s: [2, 1] }],
+  [{ c: 'cocoa', s: [1] }, null, null],
+];
+const SIZE6 = () => [
+  [{ c: 'cherry', s: [6, 5] }, { c: 'lagoon', s: [6] }, { c: 'grape', s: [3, 2] }, { c: 'lagoon', s: [2] }],
+  [{ c: 'grape', s: [6, 5, 4] }, { c: 'cherry', s: [4, 3] }, { c: 'lagoon', s: [5, 4, 3] }, null],
+  [{ c: 'cherry', s: [2, 1] }, { c: 'lagoon', s: [1] }, { c: 'grape', s: [1] }],
+];
+const GLASS56 = () => [
+  [{ c: 'cherry', s: [6, 5] }, { c: 'grape', s: [3, 2, 1] }, { c: 'lagoon', s: [5, 4] }, null],
+  [{ c: 'lagoon', s: [6], lock: 'cherry' }, { c: 'cherry', s: [4, 3, 2, 1] }, { c: 'grape', s: [5, 4], lock: 'lagoon' }, { c: 'lagoon', s: [3, 2, 1] }],
+  [{ c: 'grape', s: [6] }, null, null],
+];
+const TOWERTOP = () => [
+  [{ c: 'tangerine', s: [4] }, { c: 'sky', s: [4], tower: 3 }, { c: 'leaf', s: [3], tower: 3 }],
+  [{ c: 'leaf', s: [4] }, { c: 'tangerine', s: [3, 2, 1] }, { c: 'sky', s: [3, 2] }, null],
+  [{ c: 'sky', s: [1] }, { c: 'leaf', s: [2, 1] }, null],
+];
+const ICETOWER = th => [
+  [{ c: 'grape', s: [4, 3] }, { c: 'bubblegum', s: [4] }, { c: 'cocoa', s: [4] }, th ? { puff: true } : { c: 'midnight', s: [4, 3, 2, 1] }],
+  [{ c: 'cocoa', s: [3, 2] }, Object.assign({ c: 'bubblegum', s: [2], tower: 2 }, th ? { ice: 0, iceStage: 'shatter', thawed: true } : { ice: 2 }), { c: 'grape', s: [2, 1] }, { c: 'bubblegum', s: [3] }],
+  [{ c: 'cocoa', s: [1] }, null, { c: 'bubblegum', s: [1] }],
+];
+const EXTRAFULL = () => [
+  [{ c: 'cherry', s: [4, 3] }, { c: 'sky', s: [4] }, { c: 'leaf', s: [4, 3] }],
+  [{ c: 'grape', s: [4] }, { c: 'tangerine', s: [4, 3] }, { c: 'sky', s: [3, 2, 1] }],
+  [{ c: 'tangerine', s: [2, 1] }, { c: 'leaf', s: [2, 1] }, { c: 'grape', s: [3, 2, 1] }, { c: 'cherry', s: [2, 1] }],
+];
+const FULL12 = () => [
+  [{ c: 'cherry', s: [4, 3] }, { c: 'sky', s: [4] }, { c: 'leaf', s: [4, 3] }, { c: 'grape', s: [4, 3] }],
+  [{ c: 'tangerine', s: [4] }, { c: 'grape', s: [2, 1] }, { c: 'sky', s: [3, 2] }, { c: 'cherry', s: [2] }],
+  [{ c: 'tangerine', s: [3, 2, 1] }, { c: 'leaf', s: [2, 1] }, { c: 'sky', s: [1] }, { c: 'cherry', s: [1] }],
+];
+const SHELVES4 = () => [
+  [{ c: 'sunflower', s: [4, 3] }, { c: 'lagoon', s: [4] }, { c: 'bubblegum', s: [2, 1] }, null],
+  [{ c: 'lagoon', s: [3, 2] }, { c: 'bubblegum', s: [4, 3] }, { c: 'sunflower', s: [2] }, { c: 'midnight', s: [4] }],
+  [{ c: 'midnight', s: [3, 2, 1] }, null, { c: 'lagoon', s: [1] }, { c: 'sunflower', s: [1] }],
+  [null, null, null],
+];
+const ROW5 = () => [
+  [{ c: 'cherry', s: [4, 3] }, { c: 'sunflower', s: [4] }, { c: 'sky', s: [2, 1] }, { c: 'cherry', s: [2] }, null],
+  [{ c: 'sky', s: [4, 3] }, { c: 'leaf', s: [4, 3, 2] }, null, { c: 'sunflower', s: [3, 2] }, { c: 'cherry', s: [1] }],
+  [{ c: 'leaf', s: [1] }, { c: 'sunflower', s: [1] }, null, null],
+];
+const CHB = n => { const c = { 7: ['bubblegum', 'sunflower', 'grape'], 8: ['tangerine', 'leaf', 'cocoa'], 9: ['grape', 'midnight', 'sunflower'], 10: ['lagoon', 'cherry', 'sky'] }[n]; return [
+  [{ c: c[0], s: [4] }, { c: c[1], s: [3, 2] }, null, { c: c[2], s: [4, 3] }],
+  [{ c: c[1], s: [4] }, { c: c[0], s: [3, 2, 1] }, { c: c[2], s: [2, 1] }],
+  [{ c: c[1], s: [1] }, null, null],
+]; };
+const withExtra = rows => { let r = rows.length - 1; while (r > 0 && rows[r].length >= 4) r--; rows[rows[r].length < 4 ? r : rows.length - 1].push({ extra: true }); return rows; };
 const clear = rows => rows.map(r => r.map(() => null));
+const RIVAL = { 1: ['Pebble', 'ui/rivals/rival_1.svg'], 2: ['Button', 'ui/rivals/rival_2.svg'], 3: ['Comet', 'ui/rivals/rival_3.svg'] };
+const RACEB = () => [
+  [{ c: 'cherry', s: [4, 3] }, { c: 'sky', s: [4] }, { c: 'leaf', s: [4, 3, 2] }, null],
+  [{ c: 'sky', s: [3, 2, 1] }, { c: 'cherry', s: [2, 1] }, { c: 'grape', s: [4, 3] }, { c: 'leaf', s: [1] }],
+  [{ c: 'grape', s: [2, 1] }, null, null],
+];
+const RACEMID = () => [
+  [{ c: 'cherry', s: [4, 3, 2, 1] }, { c: 'sky', s: [4] }, { puff: true }, null],
+  [{ c: 'sky', s: [3, 2, 1] }, null, { c: 'grape', s: [4, 3] }, null],
+  [{ c: 'grape', s: [2, 1] }, null, null],
+];
 
 function build(cfg) {
-  const { N, Hs, planks } = cfg.lay, rows = cfg.rows, P = `skins/${cfg.skin || 'classic'}/preview/`;
-  const hOf = s => R(Hs * F[s - 1] / (N === 3 ? F[2] : 1));
-  const g = { pieces: [], pips: [], locks: [], tags: [], ice: [], badges: [], pos: {}, planks: planks.slice(0, rows.length).map(y => ({ y })) };
+  const { N, Hs, planks } = cfg.lay, rows = cfg.rows, P = `skins/${cfg.skin || 'classic'}/preview/`, iceH = cfg.lay.iceH || 160;
+  const used = planks.slice(0, rows.length), pitchY = used.length > 1 ? Math.min(...used.slice(1).map((y, i) => y - used[i])) : Infinity;
+  const hFit = Math.min((pitchY - 54.7) / AB, (used[0] - 162.7) / AB, ...rows.map(rw => (Math.min(swOf(rw.length), spOf(rw.length)) - 8) / 0.5353));
+  const h0 = s => Hs * F[s - 1] / (N === 3 ? F[2] : 1), fk = Math.min(1, hFit / h0(N));
+  const hOf = s => R(h0(s) * fk);
+  const g = { pieces: [], pips: [], locks: [], tags: [], ice: [], badges: [], pos: {}, planks: used.map(y => ({ y })) };
   const add = (bgi, x, y, w, h, o = {}) => g.pieces.push({ x: R(x), y: R(y), w: R(w), h: R(h), bgi, anim: o.anim || 'none', op: o.op ?? 1, cp: o.cp || 'none', tf: o.tf || 'none', br: o.br || '0', mask: o.mask || 'none' });
   const img = (src, x, y, w, h, o) => add(`url(${src})`, x, y, w, h, o);
   const doll = (c, cx, base, h, o = {}) => {
@@ -156,16 +243,25 @@ function build(cfg) {
   };
   Object.assign(g, { add, img, hOf });
   rows.forEach((row, r) => {
-    const pt = planks[r], n = row.length, sp = Math.min(96, 372 / n);
+    const pt = planks[r], n = row.length, sp = spOf(n), ss = swOf(n) / 90;
     row.forEach((s0, i) => {
-      const sl = s0 || {}, cx = 195 + (i - (n - 1) / 2) * sp, tw = sl.tower, top = pt + 9 - (tw ? 39 : 34), surf = top + 12.3;
+      const sl = s0 || {}, cx = 195 + (i - (n - 1) / 2) * sp, tw = sl.tower, sh0 = (tw ? 39 : 34) * ss, top = pt + 9 - sh0, surf = top + 12.3 * ss;
       const h = sl.c ? hOf(sl.s[0]) : 0, p = g.pos[r + '-' + i] = { cx, pt, surf, top, h, dt: surf - h * 742 / 768 };
-      img(B + (sl.extra ? 'extra-slot.svg' : tw ? 'tower-base-blank.svg' : 'slot-stand-blank.svg'), cx - 45, top, 90, tw ? 39 : 34, { anim: sl.extra ? 'nb-pulse 1.6s ease-in-out infinite' : 'none' });
-      if (!sl.extra) { const py = top + (tw ? 31.9 : 24) - 3; for (let k = 0; k < N; k++) { const on = sl.c && sl.s.includes(N - k); g.pips.push({ x: R(cx - (N - 1) * 3.9 + k * 7.8 - 3), y: R(py), bg: on ? PAL[sl.c] : '#2C170A', sh: on ? '0 0 0 1px rgba(255,240,215,.95)' : 'inset 0 1px 1px rgba(0,0,0,.6)' }); } }
+      if (sl.extra) g.extraPos = p;
+      img(B + (sl.extra ? 'extra-slot.svg' : tw ? 'tower-base-blank.svg' : 'slot-stand-blank.svg'), cx - 45 * ss, top, 90 * ss, sh0, { anim: sl.extra ? 'nb-pulse 1.6s ease-in-out infinite' : 'none' });
+      if (!sl.extra) { const py = top + (tw ? 31.9 : 24) * ss - 3; for (let k = 0; k < N; k++) { const on = sl.c && sl.s.includes(N - k); g.pips.push({ x: R(cx - (N - 1) * 3.9 + k * 7.8 - 3), y: R(py), bg: on ? PAL[sl.c] : '#2C170A', sh: on ? '0 0 0 1px rgba(255,240,215,.95)' : 'inset 0 1px 1px rgba(0,0,0,.6)' }); } }
       if (sl.puff) [[-26, -16, 22], [6, -28, 28], [28, -12, 18], [-6, -6, 16]].forEach(([dx, dy, d]) => add('radial-gradient(circle at 40% 35%,#FFFDF5,#F1DFC2 62%,rgba(241,223,194,0) 71%)', cx + dx - d / 2, surf + dy - d / 2, d, d, { br: '50%' }));
       if (!sl.c) return;
       if (sl.sel || sl.target) img(B + 'glow-ring.svg', cx - 58, surf - 28, 116, 52, { anim: 'nb-pulse 1.6s ease-in-out infinite', op: sl.target ? .85 : 1 });
-      if (tw) { for (let b = tw; b >= 1; b--) { const bh = h + 18 * b; img(B + 'doll-silhouette.svg', cx - bh / 3, surf - bh * 742 / 768, bh * 2 / 3, bh); } g.tags.push({ x: R(cx + 21), y: R(top + 16), t: '+' + tw }); }
+      if (tw) {
+        const iced = sl.ice !== undefined && sl.iceStage !== 'shatter';
+        let lim = r === 0 ? 150 : planks[r - 1] + 42; if (iced) lim = Math.max(lim, pt + 16.5 - iceH + 8);
+        const room = (surf - lim) / AB - h; let nd = tw, st = Math.min(18, room / tw);
+        if (st < 9) { nd = Math.max(1, Math.floor(room / 9)); st = Math.max(0, Math.min(9, room / nd)); }
+        for (let b = nd; b >= 1; b--) { const bh = h + st * b; img(B + 'doll-silhouette.svg', cx - bh / 3, surf - bh * 742 / 768, bh * 2 / 3, bh); }
+        if (!iced) g.tags.push({ x: R(cx + 21 * ss), y: R(top + 16 * ss), t: '+' + tw, sh: TAGSH + (sl.thawed ? TAGPOP : '') });
+      }
+      if (sl.lock && h > 117.5) { const st = sl.glass || 0, cw = .62 * h, chh = 152 / 150 * h, ct = surf + 4 / 150 * h - chh; doll(sl.c, cx, surf, h); img(B + `glass-case-tall-${st}.svg`, cx - cw / 2, ct, cw, chh); if (st < 2) g.locks.push({ x: R(cx - 6), y: R(ct + 273 / 304 * chh - 6), ink: INK[sl.lock], icon: `icons/${SYM[sl.lock]}.svg` }); return; }
       if (sl.lock) { const ct = surf - 134, st = sl.glass || 0; doll(sl.c, cx, ct + 123, h); img(B + `glass-case-${st}.svg`, cx - 43, ct, 86, 143); if (st < 2) g.locks.push({ x: R(cx - 6), y: R(ct + 244 / 300 * 143 - 6), ink: INK[sl.lock], icon: `icons/${SYM[sl.lock]}.svg` }); return; }
       if (sl.lid) {
         const w = h * 2 / 3, y0 = surf - h * 742 / 768, cut = surf - h * 342 / 768, hm = hOf(sl.lid), wm = hm * 2 / 3, bm = cut + hm * .55;
@@ -177,7 +273,7 @@ function build(cfg) {
       }
       if (sl.shake) [-7, 7].forEach(dx => doll(sl.c, cx + dx, surf, h, { op: .3, nb: true }));
       p.dt = doll(sl.c, cx, surf, h, { lift: sl.sel ? -14 : sl.back ? -8 : 0, anim: sl.sel ? 'nb-wob .7s ease-in-out infinite alternate' : 'none' });
-      if (sl.ice !== undefined) { const it = pt + 9 - 152.5, st = sl.iceStage || '0'; img(B + `ice-${st}.svg`, cx - 48, it, 96, 160); if (st !== 'shatter') g.ice.push({ x: R(cx + 22), y: R(it + 2), n: sl.ice }); }
+      if (sl.ice !== undefined) { const it = pt + 16.5 - iceH, st = sl.iceStage || '0'; img(B + `ice-${st}.svg`, cx - 48, it, 96, iceH); if (st !== 'shatter') g.ice.push({ x: R(cx + 22), y: R(it + 2), n: sl.ice }); }
     });
   });
   return g;
@@ -233,7 +329,24 @@ function scene(name) {
     case 'ch4': d.bg = 4; d.rows = CH4(); d.hud = { lvl: 'Level 61', tier: 'normal', coins: '1,135', fam: '0 / 3' }; d.banner = 'ribbon'; break;
     case 'daily': d.rows = DAILY(); d.hud = { lvl: 'Sep 26', tier: 'daily', coins: '830', fam: '0 / 5' }; break;
     case 'bonus': d.bg = 6; d.lay = L5; d.rows = BONUS(); d.hud = { lvl: 'Bonus Level 1', tier: 'bonus', coins: '6,190', fam: '0 / 4' }; break;
+    case 'size5': d.bg = 4; d.lay = L5; d.rows = SIZE5(); d.hud = { lvl: 'Level 71', tier: 'normal', coins: '1,480', fam: '0 / 3' }; break;
+    case 'size6': d.bg = 7; d.lay = L3T; d.rows = SIZE6(); d.hud = { lvl: 'Level 130', tier: 'super', coins: '2,960', fam: '0 / 3' }; break;
+    case 'glass56': d.bg = 7; d.lay = L3T; d.rows = GLASS56(); d.hud = { lvl: 'Level 140', tier: 'super', coins: '3,210', fam: '0 / 3' }; break;
+    case 'towerTop3': d.bg = 8; d.rows = TOWERTOP(); d.hud = { lvl: 'Level 147', tier: 'normal', coins: '3,540', fam: '0 / 3' }; break;
+    case 'iceTower': case 'iceTowerThawed': { const th = name === 'iceTowerThawed'; d.bg = 9; d.rows = ICETOWER(th); d.hud = { lvl: 'Level 173', tier: 'normal', coins: '4,020', fam: th ? '1 / 4' : '0 / 4' }; if (th) { d.famGlow = true; d.fx = g => { const p = g.pos['1-1']; return { sparks: spk([[p.cx + 34, p.top - 4, 16, 0], [p.cx + 50, p.top + 22, 12, .5, 'auto_awesome'], [p.cx - 42, p.top - 36, 14, .9]]) }; }; } break; }
+    case 'extraFull': case 'extraRow5': { const r5 = name === 'extraRow5'; d.bg = 10; d.rows = withExtra(r5 ? FULL12() : EXTRAFULL()); d.hud = { lvl: r5 ? 'Level 188' : 'Level 186', tier: 'normal', coins: '4,410', fam: '0 / 5' }; d.bst = { u: ['count', 1], h: ['ad'], s: ['ad'] }; d.fx = g => { const p = g.extraPos; return { sparks: spk([[R(p.cx - 40), R(p.top - 8), 16, 0], [R(p.cx + 26), R(p.top - 16), 13, .6, 'auto_awesome'], [R(p.cx + 14), R(p.top + 22), 11, 1.1]]) }; }; break; }
+    case 'shelves4': d.bg = 10; d.lay = L4S; d.rows = SHELVES4(); d.hud = { lvl: 'Bonus Level 12', tier: 'bonus', coins: '6,420', fam: '0 / 4' }; break;
+    case 'row5': d.bg = 3; d.rows = ROW5(); d.hud = { lvl: 'Level 96', tier: 'normal', coins: '2,310', fam: '0 / 4' }; break;
+    case 'ch7': case 'ch8': case 'ch9': case 'ch10': { const n = +name.slice(2); d.bg = n; d.ch = n; d.rows = CHB(n); d.hud = { lvl: 'Level ' + (20 * n - 19), tier: 'normal', coins: ['2,640', '3,180', '3,720', '4,260'][n - 7], fam: '0 / 3' }; d.banner = 'ribbon'; break; }
     case 'assist': d.symbols = true; break;
+    case 'raceStart': case 'race': case 'raceStartingOver': case 'raceWon': case 'raceLost': {
+      d.bg = 2; d.rows = name === 'race' || name === 'raceStartingOver' ? RACEMID() : name === 'raceStart' ? RACEB() : clear(RACEB());
+      d.hud = { lvl: '', tier: 'race', coins: '', fam: { raceStart: '0 / 4', race: '2 / 4', raceStartingOver: '2 / 4', raceWon: '4 / 4', raceLost: '3 / 4' }[name] };
+      d.bst = { u: ['inf'], r: ['none'] }; d.hideB = name === 'raceStart' ? ['u', 'h', 's', 'r'] : ['h', 's'];
+      d.race = { n: 1, start: name === 'raceStart', state: { raceStart: 'Ready when you are', race: 'Thinking', raceStartingOver: 'Starting over', raceWon: 'You finished first', raceLost: 'Finished' }[name], glyph: { raceStartingOver: ['restart_alt', '#8A5B3A'], raceWon: ['check_circle', '#46A758'], raceLost: ['check_circle', '#4E5FD9'] }[name], thinking: name === 'race', count: { raceStart: 0, race: 1, raceStartingOver: 0, raceWon: 3, raceLost: 4 }[name], total: 4 };
+      if (name === 'raceLost') d.rows = [[{ c: 'cherry', s: [4, 3, 2, 1] }, null, null, null], [null, null, null, null], [null, null, null]];
+      break; }
+    case 'relaxed': d.bst.u = ['inf']; break;
     case 'ocean': d.skin = 'ocean'; hud({ coins: '30' }); break;
   }
   return d;
@@ -251,16 +364,22 @@ class Component extends DCLogic {
     const d = scene(this.props.scene || 'play'), bare = !!this.props.bare;
     const g = build(d), fx = d.fx ? d.fx(g) : {};
     const out = { planks: g.planks, pieces: g.pieces, pips: g.pips, locks: g.locks, tags: g.tags, ice: g.ice, badges: g.badges, marks: fx.marks || [], sparks: fx.sparks || [] };
-    const bgc = BG[d.bg];
+    const bgc = BG[d.bg], short = !!this.props.short, rc = d.race;
+    if (rc && this.props.rival) rc.n = Math.max(1, Math.min(3, +this.props.rival));
+    out.planks = g.planks.map(p => ({ ...p, i: short ? -50 : 0 }));
     Object.assign(out, {
-      rad: bare ? '0' : '46px', bezel: bare ? 'none' : '0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35)', chrome: !bare,
+      frameH: short ? 693 : 844, hudTf: short ? 'translateY(-32px)' : 'none', boardTf: short ? 'translateY(-32px) scale(0.796)' : 'none', barTf: short ? 'translateY(-151px)' : 'none', chromeShort: short && !bare,
+      isRace: !!rc, notRace: !rc, raceStart: !!(rc && rc.start),
+      rvName: rc ? RIVAL[rc.n][0] : '', rvArt: rc ? RIVAL[rc.n][1] : '', rvState: rc ? rc.state : '', rvThinking: !!(rc && rc.thinking), rvGlyphOn: !!(rc && rc.glyph), rvGlyph: rc && rc.glyph ? rc.glyph[0] : '', rvGlyphC: rc && rc.glyph ? rc.glyph[1] : '#8A5B3A',
+      rvCount: rc ? `${rc.count}/${rc.total}` : '', rvDots: rc ? Array.from({ length: rc.total }, (_, i) => ({ bg: i < rc.count ? '#4E5FD9' : '#EAD3B0', sh: i < rc.count ? '0 0 0 1.5px #FFFDF7' : 'inset 0 1px 1px rgba(90,45,15,.3)' })) : [],
+      rad: bare ? '0' : short ? '30px' : '46px', bezel: bare ? 'none' : '0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35)', chrome: !bare && !short,
       bg: `url(backgrounds/${bgc[0]}.svg) center top/390px auto no-repeat,${bgc[1]}`,
-      lvl: d.hud.lvl, coins: d.hud.coins, fam: d.hud.fam,
-      isNormal: d.hud.tier === 'normal', isHard: d.hud.tier === 'hard', isSuper: d.hud.tier === 'super', isDaily: d.hud.tier === 'daily', isBonus: d.hud.tier === 'bonus',
+      lvl: this.props.lvl || d.hud.lvl, coins: d.hud.coins, fam: d.hud.fam,
+      isNormal: (this.props.tier || d.hud.tier) === 'normal', isHard: (this.props.tier || d.hud.tier) === 'hard', isSuper: (this.props.tier || d.hud.tier) === 'super', isDaily: (this.props.tier || d.hud.tier) === 'daily', isBonus: (this.props.tier || d.hud.tier) === 'bonus',
       famTf: d.famGlow ? 'scale(1.14)' : 'none',
       famSh: 'inset 0 1px 0 rgba(255,210,160,.5),0 3px 0 #4E2C14,0 0 0 2px #FFF4E0' + (d.famGlow ? ',0 0 0 5px rgba(255,224,138,.9),0 0 22px 8px rgba(255,205,80,.75)' : ''),
-      bWarn: d.banner === 'warn', bRibbon: d.banner === 'ribbon',
-      boosters: BST.map(([icon, label, color, k]) => { const b = d.bst[k] || ['none']; return { icon, label, color, isCount: b[0] === 'count', isAd: b[0] === 'ad', isCoin: b[0] === 'coin', v: b[1], anim: d.glow === k ? 'nb-glow 1.4s ease-in-out infinite' : 'none' }; }),
+      bWarn: d.banner === 'warn', bRibbon: d.banner === 'ribbon', ...RIB(d.ch || 4),
+      boosters: BST.map(([icon, label, color, k]) => { const b = d.bst[k] || ['none']; return { icon, label, color, vis: d.hideB && d.hideB.includes(k) ? 'hidden' : 'visible', isCount: b[0] === 'count', isInf: b[0] === 'inf', isAd: b[0] === 'ad', isCoin: b[0] === 'coin', v: b[1], anim: d.glow === k ? 'nb-glow 1.4s ease-in-out infinite' : 'none' }; }),
     });
     const arcs = fx.arcs || [], st = ARC[d.arc || 'guide'];
     Object.assign(out, { hasArc: arcs.length > 0, arcD: arcs.map(a => a.d).join(''), headD: fx.noHead ? '' : arcs.map(a => a.h).join(''), arcC: st.c, arcU: st.u, arcW: st.w, arcUW: st.uw, arcDash: st.dash });

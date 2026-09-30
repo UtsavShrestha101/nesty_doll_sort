@@ -47,19 +47,19 @@
 </div></sc-if>
 
 <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
-<div style="position:absolute;left:16px;right:16px;top:124px;height:292px;border-radius:26px;background:linear-gradient(180deg,#DDF2F6,#A9D8E4);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 6px 0 #7FB6C6;overflow:hidden">
+<div style="position:absolute;left:16px;right:16px;top:124px;height:292px;border-radius:26px;background:{{ dBg }};box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 6px 0 {{ dEdge }};overflow:hidden">
 <div style="position:absolute;left:0;right:0;top:118px;height:22px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 22px"></div>
 <div style="position:absolute;left:0;right:0;top:252px;height:22px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 22px"></div>
 <div style="position:absolute;left:0;right:0;top:36px;height:88px;display:flex;justify-content:center;align-items:flex-end;gap:4px"><sc-for list="{{ lineA }}" as="d" hint-placeholder-count="6"><div style="width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat"></div></sc-for></div>
 <div style="position:absolute;left:0;right:0;top:170px;height:88px;display:flex;justify-content:center;align-items:flex-end;gap:4px"><sc-for list="{{ lineB }}" as="d" hint-placeholder-count="5"><div style="width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat"></div></sc-for></div>
-<div style="position:absolute;left:12px;top:12px;padding:5px 10px;border-radius:10px;background:rgba(255,255,255,.85);font:700 12px/1 'Fredoka',sans-serif;color:#1F5E6E">All 11 colors · symbols kept</div>
+<div style="position:absolute;left:12px;top:12px;padding:5px 10px;border-radius:10px;background:rgba(255,255,255,.85);font:700 12px/1 'Fredoka',sans-serif;color:{{ dTagC }}">All 11 colors · symbols kept</div>
 </div>
 <div style="position:absolute;left:16px;right:16px;top:432px;display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:22px;background:rgba(255,249,236,.9);box-shadow:0 3px 0 #D8B07A">
 <div style="display:flex;align-items:flex-end;gap:4px"><sc-for list="{{ sizes }}" as="d" hint-placeholder-count="4"><div style="width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat"></div></sc-for></div>
 <div style="flex:1;min-width:0;font:700 13px/1.35 'Nunito',sans-serif;color:#8A5B3A">Every size nests the same way. Only the paint changes.</div>
 </div>
-<div style="position:absolute;left:24px;right:24px;top:560px;text-align:center"><div style="font:700 30px/1 'Fredoka',sans-serif">Ocean</div><div style="margin-top:8px;font:600 16px/1.45 'Nunito',sans-serif;color:#6E4526;text-wrap:pretty">Sailor collars, tiny anchors and wave trims.</div></div>
-<div style="position:absolute;left:24px;right:24px;top:664px;height:60px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;font:700 22px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">Buy<div style="display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:14px;background:rgba(255,255,255,.22);text-shadow:none;font-size:19px"><div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></div>800</div></div>
+<div style="position:absolute;left:24px;right:24px;top:560px;text-align:center"><div style="font:700 30px/1 'Fredoka',sans-serif">{{ dName }}</div><div style="margin-top:8px;font:600 16px/1.45 'Nunito',sans-serif;color:#6E4526;text-wrap:pretty">{{ dDesc }}</div></div>
+<div style="position:absolute;left:24px;right:24px;top:664px;height:60px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;font:700 22px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">Buy<div style="display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:14px;background:rgba(255,255,255,.22);text-shadow:none;font-size:19px"><div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></div>{{ dPrice }}</div></div>
 <div style="position:absolute;left:0;right:0;top:744px;text-align:center;font:700 13px/1 'Nunito',sans-serif;color:#9A6A44">You have 830 coins</div>
 </sc-if>
 
@@ -136,7 +136,7 @@
 <div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:32"></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;shopCoins&quot;,&quot;purchased&quot;,&quot;shopSkins&quot;,&quot;skinsDownloading&quot;,&quot;skinDetail&quot;,&quot;shopThemes&quot;,&quot;shopNoAds&quot;,&quot;museum&quot;,&quot;museumDetail&quot;,&quot;museumLocked&quot;],&quot;default&quot;:&quot;shopCoins&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;shopCoins&quot;,&quot;purchased&quot;,&quot;shopSkins&quot;,&quot;skinsDownloading&quot;,&quot;skinDetail&quot;,&quot;shopThemes&quot;,&quot;shopNoAds&quot;,&quot;museum&quot;,&quot;museumDetail&quot;,&quot;museumLocked&quot;,&quot;skinDetailBear&quot;],&quot;default&quot;:&quot;shopCoins&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 const R = Math.round;
 const doll = (skin, c, h) => ({ bgi: `url(skins/${skin}/preview/doll-${c}.svg)`, w: R(h * 2 / 3), h });
 const nav = active => ['Shop:storefront', 'Home:home', 'Museum:museum'].map(s => { const [label, icon] = s.split(':'); const on = label === active; return { label, icon, w: on ? 58 : 48, h: on ? 52 : 48, lift: on ? -6 : 0, bg: on ? 'linear-gradient(180deg,#FFF9EE,#FCEBD0)' : 'rgba(255,240,215,.18)', sh: on ? 'inset 0 2px 0 #fff,0 5px 0 #CFA36A' : 'none', ic: on ? '#C4631E' : '#FFE9C8', lc: on ? '#FFF4E0' : 'rgba(255,236,205,.85)' }; });
@@ -149,6 +149,7 @@ const SKINS = [
   ['Ocean', 'ocean', ['lagoon', 'sky', 'midnight'], 'linear-gradient(180deg,#DDF2F6,#A9D8E4)', 'buy', '800'],
   ['Sweets', 'sweets', ['bubblegum', 'sunflower', 'cherry'], 'linear-gradient(180deg,#FFE6EF,#F9C6D8)', 'buy', '1,500'],
   ['Forest Friends', 'forest', ['leaf', 'cocoa', 'tangerine'], 'linear-gradient(180deg,#E3F1D4,#C4DFAA)', 'buy', '2,000'],
+  ['Forest Bear', 'forest-bear', ['cocoa', 'tangerine', 'leaf'], 'linear-gradient(180deg,#F3E6D0,#DCC39D)', 'buy', '2,500'],
   ['Winter', 'winter', ['sky', 'cherry', 'midnight'], 'linear-gradient(180deg,#EEF4FA,#D3E2F0)', 'buy', '3,000'],
 ];
 const THEMES = [['Sunny Toy Shop', 'ch1-sunny-toy-shop', 'own'], ['Rainy Café Corner', 'ch2-rainy-cafe-corner', 'own'], ['Seaside Market', 'ch3-seaside-market', 'use'], ['Snowy Cabin', 'ch4-snowy-cabin', 'lock', '1,200', 'Ch 4'], ['Night Carnival', 'ch5-night-carnival', 'lock', '1,500', 'Ch 5'], ['Spring Garden Shed', 'ch6-spring-garden-shed', 'lock', '2,000', 'Ch 6']];
@@ -165,8 +166,9 @@ class Component extends DCLogic {
       return { art: `museum/${n}-${k}${got ? '' : '-locked'}.svg`, op: got || prog ? 1 : .55, label: got ? FIGNAME[i].replace('The ', '').replace(' Family', ' Family') : prog ? 'Baker · soon' : `Chapter ${i + 1}`, lc: got ? '#5B3A21' : '#9A6A44', ring: s === 'museum' && i === 1 ? '0 0 0 3px #F2893B' : 'none', prog };
     });
     const locked = s === 'museumLocked';
+    const det = s === 'skinDetail' || s === 'skinDetailBear', bear = s === 'skinDetailBear', dsk = bear ? 'forest-bear' : 'ocean';
     return {
-      heading: museum ? 'Museum' : s === 'skinDetail' ? 'Skin' : 'Shop',
+      heading: museum ? 'Museum' : det ? 'Skin' : 'Shop',
       coins: s === 'purchased' ? '4,830' : dl ? '30' : '830',
       hasTabs: !!tab, tabs: tabs(tab || 'Coins'),
       isCoins: s === 'shopCoins' || s === 'purchased', isThanks: s === 'purchased',
@@ -177,10 +179,10 @@ class Component extends DCLogic {
       ],
       isSkins: s === 'shopSkins' || dl,
       skins: SKINS.map(([name, skin, cols, bg, st, price]) => { const state = dl && skin === 'ocean' ? 'dl' : st; return { name, bg, price, eq: state === 'eq', own: state === 'own', buy: state === 'buy', dl: state === 'dl', ring: state === 'eq' ? '0 0 0 3px #46A758' : state === 'dl' ? '0 0 0 3px #B79BE8' : NONE, dolls: cols.map((c, i) => doll(skin, c, [66, 54, 44][i])) }; }),
-      isDetail: s === 'skinDetail',
-      lineA: ['cherry', 'tangerine', 'sunflower', 'leaf', 'lagoon', 'sky'].map(c => doll('ocean', c, 76)),
-      lineB: ['grape', 'bubblegum', 'midnight', 'cocoa', 'gold'].map(c => doll('ocean', c, 76)),
-      sizes: [34, 44, 54, 64].map(h => doll('ocean', 'lagoon', h)),
+      isDetail: det, dBg: bear ? 'linear-gradient(180deg,#F3E6D0,#DCC39D)' : 'linear-gradient(180deg,#DDF2F6,#A9D8E4)', dEdge: bear ? '#B89868' : '#7FB6C6', dTagC: bear ? '#6B4A22' : '#1F5E6E', dName: bear ? 'Forest Bear' : 'Ocean', dDesc: bear ? 'Round bear ears, cozy hoods and acorns in the leaves.' : 'Sailor collars, tiny anchors and wave trims.', dPrice: bear ? '2,500' : '800',
+      lineA: ['cherry', 'tangerine', 'sunflower', 'leaf', 'lagoon', 'sky'].map(c => doll(dsk, c, 76)),
+      lineB: ['grape', 'bubblegum', 'midnight', 'cocoa', 'gold'].map(c => doll(dsk, c, 76)),
+      sizes: [34, 44, 54, 64].map(h => doll(dsk, bear ? 'cocoa' : 'lagoon', h)),
       isThemes: s === 'shopThemes',
       themes: THEMES.map(([name, file, st, price, ch]) => ({ name, file, price, ch, own: st === 'own', inUse: st === 'use', locked: st === 'lock', ring: st === 'use' ? '0 0 0 3px #46A758' : NONE })),
       isNoAds: s === 'shopNoAds',
@@ -194,8 +196,8 @@ class Component extends DCLogic {
       mStyle: locked ? 'normal' : 'italic',
       burst: [[70, 10, 34], [30, 40, 26], [120, 34, 30], [56, 62, 28], [104, 74, 24], [150, 70, 20], [16, 80, 18]].map(([x, y, s2]) => ({ x, y, s: s2 })),
       tw: [{ x: 6, y: 6, s: 18, d: 0 }, { x: 166, y: 12, s: 22, d: .6 }, { x: 170, y: 96, s: 14, d: 1.2 }],
-      hasNav: s !== 'skinDetail', nav: nav(museum ? 'Museum' : 'Shop'),
-      sbc: '#3A2414', hi: s === 'skinDetail' ? 'rgba(40,20,8,.75)' : 'rgba(255,240,215,.85)',
+      hasNav: !det, nav: nav(museum ? 'Museum' : 'Shop'),
+      sbc: '#3A2414', hi: det ? 'rgba(40,20,8,.75)' : 'rgba(255,240,215,.85)',
     };
   }
 }

@@ -57,7 +57,7 @@ void main() {
         await tester.pump(
           const Duration(milliseconds: ChestRewardSequence.arrivalMs + 50),
         );
-        await tester.tap(find.text('Open'));
+        await tester.tap(find.text(testL10n.chestOpen));
         // The wiggle then the burst are bounded `AnimationController`s
         // (never repeating), so `pumpAndSettle` is safe once Open has
         // been tapped (it stops the idle breath synchronously).

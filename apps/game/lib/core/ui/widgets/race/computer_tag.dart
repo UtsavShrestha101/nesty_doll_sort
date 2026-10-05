@@ -22,10 +22,62 @@ class ComputerTag extends StatelessWidget {
   /// The glyph alone (a narrow screen).
   final bool glyphOnly;
 
-  /// Glyph only when the screen is narrower than the tokens' 360 dp.
+  /// Glyph only when the screen is narrower than the tokens' 360 dp (D192).
   static bool glyphOnlyFor(BuildContext context) =>
       MediaQuery.sizeOf(context).width <
       RivalStripTokens.narrowTagGlyphOnlyBelowWidth;
+
+  /// Whether a row of [lead] (in [leadStyle]), a [gap] and this tag should
+  /// show the glyph alone: under the screen rule, or when the full tag would
+  /// make the row scale below [minScale] (textFit: the short form comes
+  /// before shrinking past the floor).
+  ///
+  /// Only for a row whose own text already says "Computer": the Home tile's
+  /// "vs Computer" label and the Pause header "vs Computer · {rival}". The
+  /// race strip, a race's only on-screen rival label, keeps the word at
+  /// 360 dp and up and makes room instead (`RivalStrip`; 5C ethics, D271).
+  static bool glyphOnlyForRow(
+    BuildContext context, {
+    required String lead,
+    required TextStyle leadStyle,
+    required double gap,
+    required double maxWidth,
+    double minScale = 0.75,
+  }) {
+    if (glyphOnlyFor(context)) return true;
+    if (!maxWidth.isFinite) return false;
+    final total =
+        lineWidth(context, lead, leadStyle) + gap + fullWidth(context);
+    return maxWidth / total < minScale;
+  }
+
+  /// The tag with its word, laid out at the context's text scale: the
+  /// padding, the glyph, the gap and the word (the ring is painted, not laid
+  /// out).
+  static double fullWidth(BuildContext context) =>
+      RivalStripTokens.tagPadding.horizontal +
+      RivalStripTokens.tagGlyphSize +
+      _wordGap +
+      lineWidth(
+        context,
+        context.localizations.raceComputerTag,
+        RivalStripTokens.tagText,
+      );
+
+  /// One unwrapped line of [text] in [style] at the context's text scale.
+  static double lineWidth(BuildContext context, String text, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
+  }
+
+  static const double _wordGap = 3;
 
   /// A tag whose form follows the screen width.
   static Widget responsive({Key? key}) => Builder(
@@ -62,7 +114,7 @@ class ComputerTag extends StatelessWidget {
                   color: AppColorTokens.computerTagText,
                 ),
                 if (!glyphOnly) ...[
-                  const SizedBox(width: 3),
+                  const SizedBox(width: _wordGap),
                   Text(
                     label,
                     style: RivalStripTokens.tagText,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -49,6 +50,30 @@ void main() {
           .first,
     );
     expect(disc, const Size(96, 96));
+  });
+
+  testWidgets('the head balances its lines and the body never ends on one '
+      'word (CSS balance and pretty, frames 12.6 and 12.10)', (tester) async {
+    await pumpUi(tester, card());
+    // 12.6: "The shelves / need a moment", not "The shelves need a / moment".
+    final head = find.text('The shelves need a moment');
+    final lines = tester.renderObject<RenderParagraph>(head);
+    final box = lines.getBoxesForSelection(
+      const TextSelection(baseOffset: 0, extentOffset: 25),
+    );
+    expect(box.map((b) => b.top.round()).toSet(), hasLength(2));
+    final firstLine = box.where((b) => b.top.round() == box.first.top.round());
+    final secondLine = box.where((b) => b.top.round() != box.first.top.round());
+    double width(Iterable<TextBox> l) =>
+        l.map((b) => b.right).reduce((a, b) => a > b ? a : b) -
+        l.map((b) => b.left).reduce((a, b) => a < b ? a : b);
+    expect((width(firstLine) - width(secondLine)).abs(), lessThan(60));
+    expect(
+      find.text('This level didn’t set up. Try again, or head back\u00A0home.'),
+      findsOneWidget,
+    );
+    expect(bindLastWord('one'), 'one');
+    expect(bindLastWord('a b c'), 'a b\u00A0c');
   });
 
   testWidgets('compact: a 56 disc with a 30 glyph (the splash\'s)', (

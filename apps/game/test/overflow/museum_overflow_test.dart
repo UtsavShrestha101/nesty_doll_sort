@@ -94,11 +94,11 @@ void main() {
         await pumpMuseum(tester, cubit, size: size, textScale: textScale);
         await expectAccessibleLayout(tester);
 
-        await tapAndSettle(tester, find.text('The Classic Family'));
+        await tapAndSettle(tester, find.text(testL10n.figurineName('classic')));
         await expectAccessibleLayout(tester);
         await tapAndSettle(tester, find.byIcon(NestyIcons.close));
 
-        await tapAndSettle(tester, find.text('5 levels to go'));
+        await tapAndSettle(tester, find.text(testL10n.museumNextChip(5)));
         await expectAccessibleLayout(tester);
       });
     }

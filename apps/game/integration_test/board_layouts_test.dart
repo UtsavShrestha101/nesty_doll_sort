@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/widgets.dart' show ValueKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nesty_core/nesty_core.dart';
@@ -17,6 +18,7 @@ import 'package:nesty_game/main_dev.dart' as app;
 import 'package:nesty_render/nesty_render.dart';
 
 import 'support/board_probe.dart';
+import 'support/phone_language.dart';
 import 'support/seeded_save.dart';
 
 /// The board's m7-3 layouts on a device (phase 4 lane B; m7-design P4.3;
@@ -24,7 +26,15 @@ import 'support/seeded_save.dart';
 /// Presets` scenes): the fit rule and presets, the tall glass case and its
 /// unlock, a 3-deep top-shelf tower, an iced tower's tag, two +1 Slots
 /// (rows of 5 and 6), the tap feedback, the drag hover and the hint over
-/// the middle top stand.
+/// the middle top stand. Phase 5 adds an invalid move's shake (frame 2.6)
+/// and level 57's board (frame 2.11). After Claude Design's m7-4 the same
+/// steps show the glass and ice scaling with the stand (5.1), the top-shelf
+/// tower's smaller step under `hudClearY` (5.3) and the hint's
+/// `hintMiddle.clampTop` (5.4), and a last step opens chapters 7–10's first
+/// levels: each chapter's ribbon in its own colours (4.15) and its own
+/// shelf wood (`theme.chapters.N.boardArt`, A.5). No bundled or generated
+/// level has four shelves, so `fourShelves` (5.2) is host-only
+/// (nesty_render's `board_overlays_m74_test`).
 ///
 /// It finds its levels by scanning the bundle (`assets/levels/bundle.json`,
 /// decoded with nesty_core's codec), then jumps to each with the dev
@@ -50,6 +60,7 @@ void main() {
   testWidgets(
     'the board layouts of levels 31–200',
     (tester) async {
+      pinEnglishPhone(tester);
       // A returning player past Level 20 who has met every level (the
       // picker lists every bundled one whatever the save says).
       await seedSave(const SaveDocument(currentLevel: 71, highestLevel: 200));
@@ -67,6 +78,9 @@ void main() {
       final flow = _Flow(tester, board, shots, levels);
 
       await flow.sizeFive();
+      await flow.boardMoments();
+      await flow.invalidMove();
+      await flow.levelFiftySeven();
       await flow.tallPreset();
       await flow.tallCase();
       await flow.towerOnTop();
@@ -75,6 +89,7 @@ void main() {
       await flow.emptyStandTap();
       await flow.dragHover();
       await flow.hintOverTheMiddle();
+      await flow.themedWood();
 
       // Merged, never replaced: `takeScreenshot` keeps the shots in
       // `reportData['screenshots']`, and the driver only writes what is
@@ -163,6 +178,26 @@ final class _Flow {
   /// Home's dev level picker, scrolled to the tile (200 levels, grouped by
   /// chapter), then the level with its art and no intro card in the way.
   Future<void> jump(LevelBundleEntry entry) async {
+    await _tapPickerTile(entry);
+    await _waitForLevel(entry.order);
+    await _dismissIntro();
+    await board.waitIdle();
+    await tester.pumpFor(const Duration(milliseconds: 800));
+  }
+
+  /// Level [number] on the board with its art.
+  Future<void> _waitForLevel(int number) => tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isNotEmpty &&
+        board.bloc.state.data?.levelNumber == number &&
+        board.game.geometry != null &&
+        board.game.skin != null,
+    timeout: const Duration(seconds: 30),
+    reason: 'level $number with its skin',
+  );
+
+  /// Home's dev level picker: [entry]'s tile, tapped.
+  Future<void> _tapPickerTile(LevelBundleEntry entry) async {
     final number = entry.order;
     final picker = find.byType(LevelPickerSheet);
     await tester.tap(find.text('Jump to a level'));
@@ -180,18 +215,6 @@ final class _Flow {
       reason: 'level $number is ${entry.tier.id}',
     );
     await tester.tap(tile);
-    await tester.pumpUntil(
-      () =>
-          find.byType(GameplayView).evaluate().isNotEmpty &&
-          board.bloc.state.data?.levelNumber == number &&
-          board.game.geometry != null &&
-          board.game.skin != null,
-      timeout: const Duration(seconds: 30),
-      reason: 'level $number with its skin',
-    );
-    await _dismissIntro();
-    await board.waitIdle();
-    await tester.pumpFor(const Duration(milliseconds: 800));
   }
 
   /// A mechanic this save hasn't met opens on its intro card, which holds
@@ -239,6 +262,198 @@ final class _Flow {
     expect(geometry.dollHeightScale, 1);
     expect(geometry.maxDollHeight / geometry.scale, closeTo(133.5, 0.1));
     await shots.take('b_l71_size5');
+    await home();
+  }
+
+  // ── Frames 2.3 to 2.5: a lifted doll, a nesting move, a completed family ──
+
+  /// A plain board (no tutorial scrim, which `playthrough_test`'s own
+  /// `03_selection`, `04_nesting` and `05_family_complete` show on level 1):
+  /// the first level of the levels 21 to 60 whose optimal line nests before it
+  /// completes a family, with more than one family. Shots `b_03_selection`
+  /// (a doll lifted, the legal stands glowing, 450 ms in), `b_04_nesting`
+  /// (250 ms into the nest, doll_move 0 to 267 then doll_nest) and
+  /// `b_05_family_complete` (90 ms after the set lands on the counter, which
+  /// is 1250 ms after doll_complete starts).
+  Future<void> boardMoments() async {
+    for (final entry in levels.entries.where(
+      (e) => e.order > 20 && e.order <= 60,
+    )) {
+      final line = _Levels.line(entry.level);
+      var state = GameState.initial(entry.level);
+      int? nestAt;
+      int? completeAt;
+      for (var i = 0; i < line.length && completeAt == null; i++) {
+        final result = Rules.tryMove(state, line[i]);
+        if (result is! MoveApplied) break;
+        state = result.state;
+        final completed = result.events.whereType<Completed>();
+        if (completed.isNotEmpty && completed.first.totalSets > 1) {
+          completeAt = i;
+        } else if (nestAt == null &&
+            result.events.any((e) => e is NestedInto)) {
+          nestAt = i;
+        }
+      }
+      if (nestAt == null || completeAt == null) continue;
+      await jump(entry);
+      for (var i = 0; i < nestAt; i++) {
+        await board.move(line[i].from, line[i].to);
+        await board.waitIdle();
+      }
+      final nest = line[nestAt];
+      await board.waitIdle();
+      await board.tap(nest.from);
+      await tester.pumpUntil(
+        () => board.state.selectedSlotId == nest.from,
+        reason: '${nest.from} lifted',
+      );
+      await tester.pumpFor(const Duration(milliseconds: 450));
+      await shots.take('b_03_selection');
+      Future<void> shotAt(String name, double from, double atMs) async {
+        final timeline = board.game.board.timeline!;
+        await tester.pumpUntil(
+          () => timeline.nowMs >= from + atMs,
+          reason: '$name at $atMs ms',
+          step: const Duration(milliseconds: 4),
+        );
+        board.game.pauseEngine();
+        try {
+          await shots.take(name);
+        } finally {
+          board.game.resumeEngine();
+        }
+      }
+
+      final timeline = board.game.board.timeline!;
+      var start = timeline.nowMs;
+      await board.drop(nest.to);
+      await shotAt('b_04_nesting', start, 250);
+      await board.waitIdle();
+      for (var i = nestAt + 1; i < completeAt; i++) {
+        await board.move(line[i].from, line[i].to);
+        await board.waitIdle();
+      }
+      final last = line[completeAt];
+      await board.waitIdle();
+      await board.tap(last.from);
+      await tester.pumpUntil(
+        () => board.state.selectedSlotId == last.from,
+        reason: '${last.from} lifted',
+      );
+      await tester.pumpFor(const Duration(milliseconds: 250));
+      start = timeline.nowMs;
+      await board.drop(last.to);
+      // Frame 2.5 is the completion moment: the counter lit 1/n with the
+      // sparkle over it and the trail's last particles. The set lands on the
+      // counter at doll_complete's start + 1250 ms (TimelinePlans), so find
+      // the clip's start, then shoot just after the landing (the old
+      // 1,087 ms from the drop came before it: 0/n, no sparkles).
+      await tester.pumpUntil(
+        () => [
+          for (final c in board.game.board.fx.liveClips) c.fx,
+        ].contains(FxId.dollComplete),
+        reason: 'doll_complete started',
+        step: const Duration(milliseconds: 4),
+      );
+      final completeAtMs = timeline.nowMs;
+      await shotAt('b_05_family_complete', completeAtMs, 1250 + 90);
+      await board.waitIdle();
+      await home();
+      return;
+    }
+    fail('no early level nests before it completes a family');
+  }
+
+  // ── Frame 2.6: an invalid move (phase 5, architecture.md §1.3) ──
+
+  /// On level 71 (the file's own seed's level): a lifted nest dropped on a
+  /// stand core refuses (the same colour at the wrong size first, else
+  /// another colour). The target shakes (`doll_invalid`, 600 ms, tokens
+  /// `motion.invalid`); shot about 250 ms in, mid-shake, with the engine
+  /// paused while the platform captures it.
+  Future<void> invalidMove() async {
+    final entry = levels.order(71);
+    await jump(entry);
+    final state = board.state.board;
+    Move? sizeMove;
+    Move? colorMove;
+    for (final (from, source) in _slots(entry.level)) {
+      if (source is! OpenSlot || source.isEmpty || source.isFrozen) continue;
+      for (final (to, target) in _slots(entry.level)) {
+        if (to == from || target is! OpenSlot) continue;
+        if (target.isEmpty || target.isFrozen) continue;
+        final result = Rules.tryMove(state, Move(from, to));
+        if (result is! MoveRejected) continue;
+        if (result.reason == InvalidMoveReason.sizeMismatch) {
+          sizeMove ??= Move(from, to);
+        } else if (result.reason == InvalidMoveReason.colorMismatch) {
+          colorMove ??= Move(from, to);
+        }
+      }
+    }
+    final move = sizeMove ?? colorMove;
+    expect(move, isNotNull, reason: 'an illegal drop on level 71');
+    final before = board.state.board;
+    await board.tap(move!.from);
+    await tester.pumpUntil(
+      () => board.state.selectedSlotId == move.from,
+      reason: '${move.from} lifted',
+    );
+    await tester.pumpFor(const Duration(milliseconds: 250));
+    await board.tap(move.to);
+    await tester.pumpUntil(
+      () => board.state.effect is MoveRejectedEffect,
+      reason: 'core refused ${move.from} → ${move.to}',
+      step: const Duration(milliseconds: 4),
+    );
+    final timeline = board.game.board.timeline!;
+    final start = timeline.nowMs;
+    // Frame 2.6 is the shake mid-animation. A bare doll's target shake is
+    // inside the doll_invalid Lottie clip (frames 10.8-25.2 = 180-420 ms,
+    // tokens motion.invalid; TimelinePlans._planRejected), not the slot's
+    // hand-coded shakeX, which only a case, ice or tower target drives. So
+    // catch the clock 260 ms in (a swing's peak) and prove the clip is live
+    // and the window still open, then shoot with the engine paused.
+    // Frame 2.6's ghost copies (+-7 dp at 30 %) and tick marks are the static
+    // frame's way of drawing the shake (NestyBoard.dc.html `invalid`: `shake`
+    // ghosts and `marks`); doll_invalid has only mover and target layers, so
+    // no shot of the clip carries them (5f-fix2, by design).
+    await tester.pumpUntil(
+      () => timeline.nowMs >= start + 260,
+      reason: 'the shake 260 ms in',
+      step: const Duration(milliseconds: 4),
+    );
+    board.game.pauseEngine();
+    try {
+      expect(
+        timeline.nowMs,
+        lessThan(start + 400),
+        reason: 'still inside the 180-420 ms shake window',
+      );
+      expect(
+        [for (final c in board.game.board.fx.liveClips) c.fx],
+        contains(FxId.dollInvalid),
+        reason: 'doll_invalid is playing mid-shake',
+      );
+      await shots.take('b_invalid_move');
+    } finally {
+      board.game.resumeEngine();
+    }
+    await board.waitIdle();
+    for (final id in before.slotIds) {
+      expect(board.state.board.slot(id), before.slot(id), reason: 'kept: $id');
+    }
+    expect(board.state.selectedSlotId, isNull, reason: 'the selection clears');
+    await home();
+  }
+
+  // ── Frame 2.11: level 57's board (phase 5, architecture.md §1.3) ──
+
+  /// Level 57 as the player meets it (its intro card, if any, dismissed).
+  Future<void> levelFiftySeven() async {
+    await jump(levels.order(57));
+    await shots.take('b_l57_board');
     await home();
   }
 
@@ -560,7 +775,21 @@ final class _Flow {
     expect(board.state.hint!.from, 'r0c1');
     final middle = geometry.slot('r0c1');
     final size = slot('r0c1').view.outerSize;
-    expect(middle.hintNeedsCounter(size), isTrue);
+    // Frame 3.1b's case needs the iPhone's 54 dp status bar: where the top
+    // inset is shorter (the Android emulator at 390×844), the top shelf sits
+    // higher under a lower HUD and the arrow clears the counter, which then
+    // stays (the host tests cover both branches of hintNeedsCounter).
+    if (!middle.hintNeedsCounter(size)) {
+      await tester.pumpFor(const Duration(milliseconds: 500));
+      expect(
+        board.game.familyCounterYield.value,
+        isFalse,
+        reason: 'the arrow clears the counter, which stays',
+      );
+      await shots.take('b_hint_counter_yields');
+      await home();
+      return;
+    }
     expect(
       await _pollUntil(() => board.game.familyCounterYield.value),
       isTrue,
@@ -583,6 +812,47 @@ final class _Flow {
     await tester.pumpFor(const Duration(milliseconds: 400));
     await shots.take('b_hint_counter_back');
     await home();
+  }
+
+  // ── m7-4 A.5 and 4.15: chapters 7–10's wood and ribbons ──
+
+  /// The first level of each of chapters 7–10 (levels 121, 141, 161, 181):
+  /// the chapter's ribbon (`ui_chapter_ribbon`, one line, its named fills
+  /// in the chapter's palette with `ribbonTail` and `ribbonFold`) over the
+  /// board as it opens, then the board on the chapter's own stand, tower
+  /// base and plank (`board/chNN/`), loaded once per theme. The save picks
+  /// no theme, so each board wears its chapter's.
+  Future<void> themedWood() async {
+    final ribbon = find.byKey(const ValueKey('chapterRibbon'));
+    for (var chapter = 7; chapter <= 10; chapter++) {
+      final id = 'ch${chapter.toString().padLeft(2, '0')}';
+      final entry = levels.order((chapter - 1) * 20 + 1);
+      expect(entry.chapterId, id);
+      final theme = ChapterThemeTokens.chapters.singleWhere((t) => t.id == id);
+      expect(theme.boardArtDir, 'board/$id/', reason: '$id has its own wood');
+      await _tapPickerTile(entry);
+      // The ribbon starts with the level (2.6 s), whatever the art's state.
+      await tester.pumpUntil(
+        () => ribbon.evaluate().isNotEmpty,
+        timeout: const Duration(seconds: 30),
+        reason: "chapter $chapter's ribbon",
+        step: const Duration(milliseconds: 16),
+      );
+      await tester.pumpFor(const Duration(milliseconds: 700));
+      await shots.take('b_${id}_ribbon');
+      await _waitForLevel(entry.order);
+      await tester.pumpUntil(
+        () => ribbon.evaluate().isEmpty,
+        timeout: const Duration(seconds: 10),
+        reason: "chapter $chapter's ribbon gone",
+      );
+      await _dismissIntro();
+      await board.waitIdle();
+      await tester.pumpFor(const Duration(milliseconds: 400));
+      expect(board.state.entry.chapterId, id);
+      await shots.take('b_${id}_board');
+      await home();
+    }
   }
 
   /// Pumps frames until [condition] holds (a tween that lasts a few

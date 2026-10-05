@@ -150,12 +150,11 @@ class BoosterBadgeView extends StatelessWidget {
     ],
   );
 
-  /// The sunk face's badge: `#F3E6D2` with a 2 dp `#FFF4E0` ring (frame
-  /// 12.9; frame-only colours).
-  // TODO(design): add the disabled booster's colours to tokens.json.
+  /// The sunk face's badge (frame 12.9; tokens.json `color.limitBadgeFace`
+  /// with its 2 dp `limitBadgeRing`).
   static const _limitStyle = SurfaceStyle(
-    color: Color(0xFFF3E6D2),
-    shadows: [_ring],
+    color: AppColorTokens.limitBadgeFace,
+    shadows: [NestyShadow(color: AppColorTokens.limitBadgeRing, spread: 2)],
   );
 
   @override
@@ -237,7 +236,7 @@ class BoosterBadgeView extends StatelessWidget {
             style: AppTextStyleTokens.number.copyWith(
               fontSize: 12,
               height: 1,
-              color: const Color(0xFF8A6A4E),
+              color: AppColorTokens.limitBadgeText,
             ),
           ),
         ),

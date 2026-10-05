@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show Rect;
 
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -15,7 +14,6 @@ import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
-import 'package:nesty_game/core/services/share/share_service.dart';
 
 part 'daily_cubit.freezed.dart';
 part 'daily_state.dart';
@@ -24,22 +22,19 @@ part 'daily_state.dart';
 /// §10.5, §8): [DailyService.refresh] for the streak, [LevelResolver] to
 /// prefetch today's board and read its preview colours, [SaveService] for
 /// the header's coin pill, [RemoteConfigService] for the reward and chest
-/// amounts, and [ShareService] (Share moved to the daily win card, frame 10.1, D188:
-/// nothing on this screen calls [share] now; it stays for the frozen constructor
-/// shape until the contract tests drop it, BACKLOG).
+/// amounts. (Share lives on the daily win card, frame 10.1, D188, and goes
+/// through `ShareService` there; this cubit has none, D207.)
 ///
 /// The Daily board itself is the gameplay page; this cubit only feeds the
 /// menu around it. [collectChest] and [acknowledgeFreezeNotice] are the
-/// only writes here; [share] touches no save field (rule: sharing pays
-/// nothing).
+/// only writes here.
 @injectable
 class DailyCubit extends BaseAsyncCubit<DailyState> {
   DailyCubit(
     this._daily,
     this._resolver,
     this._save,
-    this._remoteConfig,
-    this._share, {
+    this._remoteConfig, {
     @ignoreParam
     @visibleForTesting
     Duration countdownInterval = const Duration(minutes: 1),
@@ -52,7 +47,6 @@ class DailyCubit extends BaseAsyncCubit<DailyState> {
   final LevelResolver _resolver;
   final SaveService _save;
   final RemoteConfigService _remoteConfig;
-  final ShareService _share;
   final Duration _countdownInterval;
   late final StreamSubscription<DailyStatus> _dailyChanges;
   late final StreamSubscription<void> _saveChanges;
@@ -95,14 +89,6 @@ class DailyCubit extends BaseAsyncCubit<DailyState> {
 
   /// The "Streak saved!" banner (frame 5.2) was shown.
   void acknowledgeFreezeNotice() => _daily.acknowledgeFreezeNotice();
-
-  /// The solved card's Share button (E3; spec-prop §10.2 #11): opens the OS
-  /// share sheet with [text] (built by `DailyShareText.of`), anchored at
-  /// [origin] for the iPad popover. A pure delegate: the outcome shows
-  /// nothing on screen and touches no save field or analytics event —
-  /// sharing is the player's own act and pays nothing (rule 3, spec §14.4).
-  Future<ShareOutcome> share(String text, {Rect? origin}) =>
-      _share.shareText(text, origin: origin);
 
   /// Collects the pending day-7 chest (frame 5.6): true, and coins added,
   /// when one was pending, so the page plays `JingleCues.reward()` only

@@ -333,7 +333,7 @@ void main() {
     expect(find.byKey(const ValueKey('raceLeaveConfirm')), findsOneWidget);
     expect(find.text('Leave this race?'), findsOneWidget);
     expect(
-      find.text('The race ends here. No coins, and nothing lost.'),
+      find.text('The race stops here. No coins, and you keep everything.'),
       findsOneWidget,
     );
     expect(find.text('Keep racing'), findsOneWidget);
@@ -368,7 +368,7 @@ void main() {
     expect(screen.raceState.phase, RacePhase.finished);
     expect(screen.raceState.result, RaceResult.playerWon);
     expect(find.byType(RaceWinCard), findsOneWidget);
-    expect(find.text('You won the race!'), findsOneWidget);
+    expect(find.bySemanticsLabel('You won the race!'), findsOneWidget);
     expect(find.text('Pebble'), findsWidgets);
     expect(find.text('Computer'), findsWidgets);
     expect(find.text('Rematch'), findsOneWidget);
@@ -451,7 +451,7 @@ void main() {
     expect(screen.raceState.result, RaceResult.rivalWon);
     expect(find.byType(RaceLossCard), findsOneWidget);
     // copy.md G.5 (phase 4).
-    expect(find.text('So close! Rematch?'), findsOneWidget);
+    expect(find.bySemanticsLabel('So close! Rematch?'), findsOneWidget);
     expect(
       find.text('Pebble finished first this time. A rematch costs nothing.'),
       findsOneWidget,
@@ -578,7 +578,7 @@ void main() {
         findsOneWidget,
         reason: 'the tag',
       );
-      expect(find.text('Careful · Slow'), findsOneWidget);
+      expect(find.text('Steady pace'), findsOneWidget);
       // Nothing began yet: the race in play is still rival 1's race 1.
       expect(screen.raceCubit.request, const RacePlay(rival: 1, raceNo: 1));
 
@@ -606,7 +606,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(RivalUnlockedCard),
-          matching: find.text('New race'),
+          matching: find.text('Race Button'),
         ),
       );
       await tester.pump(const Duration(milliseconds: 300));

@@ -457,7 +457,7 @@ class BoardComponent extends PositionComponent
       }
       final slot = scene.slot(command.slotId);
       if (slot == null) continue;
-      final scale = slot.geometry.furnitureScale;
+      final scale = slot.geometry.overlayFurnitureScale;
       final tall = slot.geometry.usesTallCase;
       unawaited(
         sprites
@@ -491,7 +491,7 @@ class BoardComponent extends PositionComponent
               slot.geometry.usesTallCase
                   ? BoardSprite.glassCaseTall0
                   : BoardSprite.glassCase0,
-              slot.geometry.furnitureScale,
+              slot.geometry.overlayFurnitureScale,
             )
             .catchError(_ignore),
       );

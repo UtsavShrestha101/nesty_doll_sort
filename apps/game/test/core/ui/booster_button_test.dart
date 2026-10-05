@@ -17,20 +17,22 @@ void main() {
     VoidCallback? onPressed,
     RecordingFeedback? feedback,
     bool spent = false,
-    String? spentLabel,
+    bool suggested = false,
+    BoosterButtonKind kind = BoosterButtonKind.hint,
     String? gainTag,
     int badgeBump = 0,
   }) => pumpUi(
     tester,
     Center(
       child: BoosterButton(
+        kind: kind,
         icon: NestyIcons.lightbulb,
         label: 'Hint',
         badge: badge,
         glow: glow,
         onPressed: onPressed,
         spent: spent,
-        spentLabel: spentLabel,
+        suggested: suggested,
         gainTag: gainTag,
         badgeBump: badgeBump,
       ),
@@ -104,7 +106,7 @@ void main() {
       tester,
       badge: const BoosterBadge.limit(2, 2),
       spent: true,
-      spentLabel: '+Slot, 2 of 2 used',
+      kind: BoosterButtonKind.slot,
       onPressed: () => taps++,
     );
     expect(find.text('2/2'), findsOneWidget);
@@ -126,7 +128,7 @@ void main() {
       tester,
       badge: const BoosterBadge.limit(2, 2),
       spent: true,
-      spentLabel: '+Slot, 2 of 2 used',
+      kind: BoosterButtonKind.slot,
       onPressed: () {},
     );
     expect(find.bySemanticsLabel('+Slot, 2 of 2 used'), findsOneWidget);
@@ -206,7 +208,8 @@ void main() {
     expect(find.text('2'), findsOneWidget);
   });
 
-  testWidgets('screen readers hear the label and the badge', (tester) async {
+  testWidgets('screen readers hear each booster by its own words '
+      '(copy.md A11y a11y_booster_*)', (tester) async {
     final handle = tester.ensureSemantics();
     await pumpBooster(
       tester,
@@ -214,17 +217,49 @@ void main() {
       onPressed: () {},
     );
     expect(find.bySemanticsLabel('Hint, 2 left'), findsOneWidget);
+    await pumpBooster(
+      tester,
+      kind: BoosterButtonKind.undo,
+      badge: const BoosterBadge.count(1),
+    );
+    expect(find.bySemanticsLabel('Undo, 1 left'), findsOneWidget);
+    await pumpBooster(
+      tester,
+      kind: BoosterButtonKind.slot,
+      badge: const BoosterBadge.count(2),
+    );
+    expect(find.bySemanticsLabel('Extra slot, 2 left'), findsOneWidget);
     await pumpBooster(tester, badge: const BoosterBadge.coin(20));
     expect(find.bySemanticsLabel('Hint, 20 coins'), findsOneWidget);
     await pumpBooster(tester, badge: const BoosterBadge.ad());
-    expect(
-      find.bySemanticsLabel('Hint, watch an ad for one more'),
-      findsOneWidget,
+    expect(find.bySemanticsLabel('Hint, watch a video'), findsOneWidget);
+    await pumpBooster(
+      tester,
+      kind: BoosterButtonKind.undo,
+      badge: const BoosterBadge.infinite(),
     );
-    await pumpBooster(tester, badge: const BoosterBadge.infinite());
-    expect(find.bySemanticsLabel('Hint, unlimited'), findsOneWidget);
-    await pumpBooster(tester, badge: const BoosterBadge.limit(2, 2));
-    expect(find.bySemanticsLabel('Hint, 2 of 2 used'), findsOneWidget);
+    expect(find.bySemanticsLabel('Undo, unlimited'), findsOneWidget);
+    await pumpBooster(
+      tester,
+      kind: BoosterButtonKind.slot,
+      badge: const BoosterBadge.limit(2, 2),
+    );
+    expect(find.bySemanticsLabel('+Slot, 2 of 2 used'), findsOneWidget);
+    await pumpBooster(tester, kind: BoosterButtonKind.restart);
+    expect(find.bySemanticsLabel('Restart the level'), findsOneWidget);
+    handle.dispose();
+  });
+
+  testWidgets('the glowing Restart is read as suggested '
+      '(a11y_booster_suggested, frame 12.7)', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpBooster(
+      tester,
+      kind: BoosterButtonKind.restart,
+      suggested: true,
+      onPressed: () {},
+    );
+    expect(find.bySemanticsLabel('Hint, suggested'), findsOneWidget);
     handle.dispose();
   });
 }

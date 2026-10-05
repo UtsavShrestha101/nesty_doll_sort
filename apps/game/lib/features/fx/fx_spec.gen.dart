@@ -2,7 +2,8 @@
 //
 // Source: design/lottie/*.json (validated by sync_design_assets, shipped
 // to apps/game/assets/lottie/) and, for what the JSON does not carry
-// (anchor, kind, loop, travel S/T, scale nulls), the LOTTIE.md v3 contract
+// (anchor, kind, loop, travel S/T, scale nulls, named fills and
+// rectangles), the LOTTIE.md contract
 // table in tools/lib/src/fx/lottie_contract.dart. Validation guarantees
 // that no travel null holds and no image layer animates its transform.
 
@@ -603,6 +604,8 @@ const Map<FxId, FxSpec> fxSpecs = {
     kind: FxKind.segmented,
     markers: [FxMarker('bump', 0, 12)],
     textLayers: ['count_new', 'count_old'],
+    tintFills: ['glow_fill', 'pill_fill'],
+    sizedRects: ['glow_rect', 'pill_rect'],
   ),
   // ui_hint_arrow: 54 f (900 ms), 60×80, loops.
   FxId.uiHintArrow: FxSpec(
@@ -660,6 +663,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     anchor: Offset(205, 55),
     kind: FxKind.inPlace,
     textLayers: ['label', 'label_shadow'],
+    tintFills: ['band_fill', 'edge_fill', 'fold_fill', 'hi_fill', 'tail_fill'],
   ),
   // ui_chapter_ribbon: 156 f (2600 ms), 410×100.
   FxId.uiChapterRibbon: FxSpec(
@@ -670,6 +674,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     anchor: Offset(205, 50),
     kind: FxKind.inPlace,
     textLayers: ['label', 'label_shadow'],
+    tintFills: ['band_fill', 'edge_fill', 'fold_fill', 'hi_fill', 'tail_fill'],
   ),
   // ui_toggle: 22 f (367 ms), 54×30.
   FxId.uiToggle: FxSpec(
@@ -977,6 +982,48 @@ const Map<FxId, FxSpec> fxSpecs = {
         slot: FxImageSlot.family2Body,
         scale: Offset(0.1953, 0.1953),
         anchor: Offset(256, 742),
+      ),
+    ],
+    loops: true,
+  ),
+  // ui_rival_react: 380 f (6333 ms), 120×120.
+  FxId.uiRivalReact: FxSpec(
+    id: FxId.uiRivalReact,
+    frames: 380,
+    width: 120,
+    height: 120,
+    anchor: Offset(60, 64),
+    kind: FxKind.segmented,
+    markers: [
+      FxMarker('idle', 0, 180),
+      FxMarker('family', 180, 40),
+      FxMarker('win', 220, 80),
+      FxMarker('lose', 300, 80),
+    ],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['rival_portrait'],
+        slot: FxImageSlot.rivalPortrait,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(144, 144),
+      ),
+    ],
+  ),
+  // ui_museum_idle: 240 f (4000 ms), 90×90, loops.
+  FxId.uiMuseumIdle: FxSpec(
+    id: FxId.uiMuseumIdle,
+    frames: 240,
+    width: 90,
+    height: 90,
+    anchor: Offset(45, 80),
+    kind: FxKind.inPlace,
+    markers: [FxMarker('loop', 0, 240)],
+    imageLayers: [
+      FxImageLayer(
+        keyPath: ['figurine'],
+        slot: FxImageSlot.figurine,
+        scale: Offset(0.3333, 0.3333),
+        anchor: Offset(93, 186),
       ),
     ],
     loops: true,

@@ -14,6 +14,9 @@ abstract final class SettingsKeys {
   static const music = 'music';
   static const haptics = 'haptics';
   static const symbols = 'symbols';
+
+  /// The app's language: [LocaleSetting.system] (follow the phone; the
+  /// default) or a pinned locale code such as `de` or `pt_BR`.
   static const locale = 'locale';
 
   /// Relaxed mode (E6, spec-prop §8): a bool.
@@ -39,6 +42,16 @@ abstract final class SettingsKeys {
   /// The one-time offer has appeared ("offered once"): a bool.
   static const reminderOffered = 'reminderOffered';
 
+  /// The relight Home's Daily tile last glowed for (m7-4 4.10,
+  /// `motion.relitHome`): the `yyyy-MM-dd` of the solve that relit the
+  /// paused streak, a string. Missing reads as none.
+  static const relitGlowSeen = 'relitGlowSeen';
+
+  /// The rival (1–3) the player last started a race against (m7-4 4.5):
+  /// rival select's pick on a new visit when no rival is New. An int;
+  /// missing reads as 0 (none).
+  static const lastRival = 'lastRival';
+
   /// The reminder's four keys, which `DatabaseService.reminderChanges`
   /// follows.
   static const reminder = [
@@ -49,18 +62,32 @@ abstract final class SettingsKeys {
   ];
 }
 
+/// The values of [SettingsKeys.locale] that are not a locale code.
+abstract final class LocaleSetting {
+  /// Follow the phone's language list: the first supported language in it,
+  /// else English (`AppLocaleResolver`; M7 phase 5B, l10n plan §1.4). A
+  /// language picked in Settings' sheet replaces it with that code.
+  static const system = 'system';
+}
+
 /// Defaults for a fresh install — spec §13.3
 /// `{"sound": true, "music": true, "haptics": true, "symbols": "subtle",
 /// "locale": "en"}`, except [symbols], which the owner made `large`
-/// (PROGRESS D91), plus spec-prop §13.3's `"relaxed": false` and
-/// `"reduceMotion": "system"`. Every [DatabaseService] implementation reads these, so
-/// the fake and Hive versions can't disagree.
+/// (PROGRESS D91), and [locale], which follows the phone (M7 phase 5B: a
+/// recorded deviation from §13.3's example "en"; the same key, so no schema
+/// step), plus spec-prop §13.3's `"relaxed": false` and
+/// `"reduceMotion": "system"`. Every [DatabaseService] implementation reads
+/// these, so the fake and Hive versions can't disagree.
 abstract final class SettingsDefaults {
   static const sound = true;
   static const music = true;
   static const haptics = true;
   static const symbols = SymbolsMode.large;
-  static const locale = 'en';
+
+  /// Follow the phone. An install that never picked a language (no stored
+  /// key) reads this too, so it opens in the phone's language when that is
+  /// supported; a stored code, `en` included, stays pinned.
+  static const locale = LocaleSetting.system;
 
   /// Off on a fresh install (spec-prop §8).
   static const relaxed = false;

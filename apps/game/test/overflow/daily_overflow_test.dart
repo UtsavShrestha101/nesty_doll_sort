@@ -21,7 +21,6 @@ import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
-import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/services/system_settings/fake_system_settings_service.dart';
@@ -102,13 +101,7 @@ void main() {
     final resolver = FakeLevelResolver(levels, save, FakeRemoteConfigService());
     final daily = FakeDailyService(FakeClock(), status: status);
     return (
-      cubit: DailyCubit(
-        daily,
-        resolver,
-        save,
-        FakeRemoteConfigService(),
-        FakeShareService(),
-      ),
+      cubit: DailyCubit(daily, resolver, save, FakeRemoteConfigService()),
       daily: daily,
     );
   }
@@ -249,17 +242,20 @@ void main() {
             await tester.pump(const Duration(milliseconds: 300));
             if (denied) {
               // A short screen at 1.3× scrolls the card: bring the button in.
-              await tester.ensureVisible(find.text('Yes, remind me'));
-              await tester.tap(find.text('Yes, remind me'));
+              await tester.ensureVisible(find.text(testL10n.reminderOfferYes));
+              await tester.tap(find.text(testL10n.reminderOfferYes));
               await tester.pump();
               await tester.pump(const Duration(milliseconds: 400));
-              expect(find.text('Open phone settings'), findsOneWidget);
+              expect(
+                find.text(testL10n.settingOpenPhoneSettings),
+                findsOneWidget,
+              );
             } else {
-              expect(find.text('Yes, remind me'), findsOneWidget);
+              expect(find.text(testL10n.reminderOfferYes), findsOneWidget);
             }
             await expectAccessibleLayout(tester);
             // Share left the solved card (D188).
-            expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+            expect(find.bySemanticsLabel('Share today’s result'), findsNothing);
             await built.cubit.close();
           });
         }
@@ -296,7 +292,7 @@ void main() {
           await tester.pump(
             const Duration(milliseconds: ChestRewardSequence.arrivalMs + 50),
           );
-          await tester.tap(find.text('Open'));
+          await tester.tap(find.text(testL10n.chestOpen));
           await tester.pump(
             const Duration(
               milliseconds:
@@ -305,7 +301,7 @@ void main() {
                   100,
             ),
           );
-          expect(find.text('Collect'), findsOneWidget);
+          expect(find.text(testL10n.dailyChestCollect), findsOneWidget);
           await expectAccessibleLayout(tester);
         });
       }

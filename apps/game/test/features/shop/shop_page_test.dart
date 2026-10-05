@@ -296,6 +296,24 @@ void main() {
       expect(skinService.showcaseRequests, hasLength(2 * skins.length));
     });
 
+    testWidgets(
+      'a skin card is 173 dp tall at 1.0x (frame 7.3: 172, plus 1) and grows '
+      'with the text scale',
+      (tester) async {
+        await pumpShop(tester, state: AsyncValue.data(data: skinsState()));
+        expect(tester.getSize(find.byType(SkinGridCard).first).height, 173);
+        await pumpShop(
+          tester,
+          state: AsyncValue.data(data: skinsState()),
+          textScale: 1.3,
+        );
+        expect(
+          tester.getSize(find.byType(SkinGridCard).first).height,
+          greaterThan(173),
+        );
+      },
+    );
+
     testWidgets('one card per sold skin, in catalog order', (tester) async {
       await pumpShop(tester, state: AsyncValue.data(data: skinsState()));
       expect(find.byType(SkinGridCard), findsNWidgets(3));
@@ -420,7 +438,7 @@ void main() {
       expect(tabs, isEmpty, reason: 'the dialog, not a jump, opens first');
 
       expect(find.byType(NotEnoughCoinsDialog), findsOneWidget);
-      expect(find.text('800 coins'), findsWidgets); // ocean's price
+      expect(find.text('800'), findsWidgets); // ocean's price
       expect(find.text('You need 800 more coins'), findsOneWidget);
 
       await tester.tap(find.text('Not now'));
@@ -498,6 +516,31 @@ void main() {
       expect(toggle.value, isTrue);
       expect(find.text('Match each chapter'), findsOneWidget);
     });
+
+    testWidgets(
+      'a theme card is 152 dp tall (frame 7.7: 150, plus 2) and the Match card '
+      'is about 55 dp with its toggle hit area overhanging',
+      (tester) async {
+        final values = <bool>[];
+        await pumpShop(
+          tester,
+          state: AsyncValue.data(data: themesState()),
+          onSetMatchesChapter: values.add,
+        );
+        expect(tester.getSize(find.byType(ThemeGridCard).first).height, 152);
+        final card = find.ancestor(
+          of: find.text('Match each chapter'),
+          matching: find.byType(NestySurface),
+        );
+        expect(tester.getSize(card.first).height, lessThanOrEqualTo(60));
+        // 18 dp off the toggle's centre is outside its 30 dp but inside 48.
+        await tester.tapAt(
+          tester.getCenter(find.byType(NestyToggle)) + const Offset(0, 19),
+        );
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(values, [false]);
+      },
+    );
 
     testWidgets('toggling it off asks for false', (tester) async {
       final values = <bool>[];

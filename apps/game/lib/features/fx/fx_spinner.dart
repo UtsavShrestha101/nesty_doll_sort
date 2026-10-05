@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
+import 'package:nesty_game/features/fx/spinner_pulse.dart';
 
 /// The `ui_spinner` loop (LOTTIE.md: a loading state) at [size], shown
 /// while a doll preview's skin art is prepared, so a card never flashes
 /// the placeholder dolls first; a plain progress ring stands in when the
-/// Lottie file can't load.
+/// Lottie file can't load. Under reduced motion it rests on frame 0 and
+/// pulses ([SpinnerPulse]).
 class FxSpinner extends StatelessWidget {
   const FxSpinner({this.size = 32, super.key});
 
@@ -15,7 +17,9 @@ class FxSpinner extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox.square(
     dimension: size,
-    child: const LottieFxView(id: FxId.uiSpinner, fallback: _FallbackSpinner()),
+    child: const SpinnerPulse(
+      child: LottieFxView(id: FxId.uiSpinner, fallback: _FallbackSpinner()),
+    ),
   );
 }
 

@@ -54,6 +54,10 @@ abstract interface class SkinService {
   ///   extra-slot stand while +Slot is usable, and the level's ice frames);
   /// - the unlock colours' symbols at 12 × furniture scale × DPR.
   ///
+  /// [themeId] is the chapter theme behind the board (`ch07`…): chapters
+  /// 7 to 10 draw their own board wood (m7-4 A.5); null or any other theme
+  /// the shared wood.
+  ///
   /// Call it behind the route transition, and again after a re-layout (an
   /// extra slot re-pitches the bottom row): the new [LevelSkin] reuses the
   /// cached rasters, then the caller swaps and disposes the old one. Never
@@ -63,6 +67,7 @@ abstract interface class SkinService {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   });
 
   /// The skin every later [prepareForLevel] board uses: the save's

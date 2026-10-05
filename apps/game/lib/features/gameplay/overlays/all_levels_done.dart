@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
@@ -100,9 +101,12 @@ class AllLevelsDone extends StatelessWidget {
             Text(
               l10n.allLevelsBody,
               textAlign: TextAlign.center,
-              style: AppTextStyles.body.copyWith(
-                height: 1.45,
-                color: AppColors.iconBrown,
+              style: context.scriptStyle(
+                AppTextStyles.body.copyWith(
+                  height: 1.45,
+                  color: AppColors.iconBrown,
+                ),
+                role: ScriptTextRole.body,
               ),
             ),
             const SizedBox(height: 20),

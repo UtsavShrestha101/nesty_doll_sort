@@ -157,7 +157,12 @@ class _Segment extends StatelessWidget {
                         ? AppColorTokens.textPrimary
                         : AppColorTokens.textSecondary,
                   ),
-                  child: Text(label, maxLines: 1, softWrap: false),
+                  // One line that scales down to its segment (textFit: a
+                  // longer translation shrinks, never cut).
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(label, maxLines: 1, softWrap: false),
+                  ),
                 ),
               ),
             ],

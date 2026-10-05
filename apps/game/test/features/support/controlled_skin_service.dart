@@ -37,7 +37,14 @@ final class ControlledSkinService implements SkinService {
   final List<Completer<LevelSkin>> _pending = [];
 
   /// What each call asked for, in order.
-  final List<({Level level, double devicePixelRatio, DollSymbols symbols})>
+  final List<
+    ({
+      Level level,
+      double devicePixelRatio,
+      DollSymbols symbols,
+      String? themeId,
+    })
+  >
   requests = [];
 
   /// Skins handed out, in the order of their requests.
@@ -64,11 +71,13 @@ final class ControlledSkinService implements SkinService {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   }) {
     requests.add((
       level: level,
       devicePixelRatio: devicePixelRatio,
       symbols: symbols,
+      themeId: themeId,
     ));
     final completer = Completer<LevelSkin>();
     _pending.add(completer);

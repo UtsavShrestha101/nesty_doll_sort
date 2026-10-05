@@ -26,6 +26,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:appCategory="game"
+        android:localeConfig="@xml/locales_config"
         tools:targetApi="26">
         <!-- flutter_local_notifications: redelivers a scheduled notification
              and re-registers the daily reminder's schedule after a reboot or

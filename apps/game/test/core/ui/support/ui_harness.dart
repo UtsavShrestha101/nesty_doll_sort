@@ -7,6 +7,11 @@ import 'package:nesty_game/core/ui/theme/app_theme.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
 import 'package:nesty_game/l10n/app_localizations.dart';
 
+import '../../../l10n/support/test_locale.dart';
+
+export '../../../l10n/support/test_locale.dart'
+    show testL10n, testLocale, testLocaleCode;
+
 /// Loads the bundled Fredoka, Nunito and NestySymbols files, so text is laid
 /// out with the real glyph widths. flutter_test otherwise draws every glyph
 /// one em wide (FlutterTest font), which makes overflow checks meaningless.
@@ -34,8 +39,10 @@ final class RecordingFeedback implements TactileFeedback {
   void activate() => activations++;
 }
 
-/// Pumps [child] in the app theme and English localizations on a
-/// [width]-wide phone at [textScale], optionally with reduced motion.
+/// Pumps [child] in the app theme and the run's localizations
+/// ([testLocale], English by default, or [locale]; build/m7-p5/p5/l10n.md
+/// §6.2) on a [width]-wide phone at [textScale], optionally with reduced
+/// motion.
 Future<void> pumpUi(
   WidgetTester tester,
   Widget child, {
@@ -44,6 +51,7 @@ Future<void> pumpUi(
   double textScale = 1,
   bool reduceMotion = false,
   TactileFeedback? feedback,
+  Locale? locale,
 }) async {
   tester.view
     ..physicalSize = Size(width, height)
@@ -57,6 +65,7 @@ Future<void> pumpUi(
     MaterialApp(
       theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
+      locale: checkedLocale(locale),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) => MediaQuery(

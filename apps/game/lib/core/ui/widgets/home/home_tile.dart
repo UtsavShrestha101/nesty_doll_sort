@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
-import 'package:nesty_game/core/ui/colors/app_colors.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
@@ -12,6 +12,7 @@ import 'package:nesty_game/core/ui/widgets/number/nesty_number_text.dart';
 import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_surface.dart';
+import 'package:nesty_game/core/ui/widgets/text/shrink_to_fit_text.dart';
 
 /// "Home tile: 132 tall, radius 24, surface, 5px edge. 58px colored icon
 /// tile plus 15/700 label. Streak badge (flame + number) sits at top-right"
@@ -64,6 +65,7 @@ class HomeTile extends StatelessWidget {
   final double tileHeight;
 
   static const double _radius = 24;
+  static const double _labelWidth = 110;
   static const double _lockedOpacity = 0.6;
 
   static const _style = SurfaceStyle(
@@ -78,35 +80,58 @@ class HomeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final footer = this.footer;
+    // The short frame (2.1b) is 20 dp lower: its gaps tighten so a label that
+    // had to step down to 0.75x (Japanese) isn't scaled again with the column.
+    final compact = tileHeight < height;
     final content = Opacity(
       opacity: locked ? _lockedOpacity : 1,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: ConstrainedBox(
-            // The label wraps at the tile's own width before the whole
-            // column scales.
-            constraints: const BoxConstraints(maxWidth: 110),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                leading,
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: AppTextStyleTokens.cardTitle.copyWith(
-                    fontSize: 15,
-                    color: AppColorTokens.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
+        padding: EdgeInsets.symmetric(horizontal: 6, vertical: compact ? 2 : 4),
+        // The label wraps or steps down at the tile's own inner width, not
+        // a fixed one: three tiles share a 360 dp row, and a Japanese label
+        // wider than its tile would otherwise scale the whole column below
+        // the readability floor (textFit).
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final tileWidth = constraints.maxWidth.isFinite
+                ? math.min(constraints.maxWidth, _labelWidth)
+                : _labelWidth;
+            const width = _labelWidth;
+            return FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: width),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    leading,
+                    SizedBox(height: compact ? 5 : 8),
+                    // Wraps to 2 lines at the tile's width, then the font
+                    // steps down to 0.75x so a long word ("Computadora")
+                    // isn't broken (textFit); the column's FittedBox scales
+                    // what is left.
+                    ShrinkToFitText(
+                      label,
+                      style: AppTextStyleTokens.cardTitle.copyWith(
+                        fontSize: 15,
+                        color: AppColorTokens.textPrimary,
+                      ),
+                      minFontScale: 0.75,
+                      fixedWidth: width,
+                    ),
+                    if (footer != null) ...[
+                      SizedBox(height: compact ? 2 : 5),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: tileWidth),
+                        child: footer,
+                      ),
+                    ],
+                  ],
                 ),
-                if (footer != null) ...[const SizedBox(height: 5), footer],
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -177,7 +202,7 @@ class HomeTileIcon extends StatelessWidget {
               color: AppColorTokens.danger,
               borderRadius: BorderRadius.circular(3 * k),
               boxShadow: [
-                BoxShadow(color: AppColors.cream, spreadRadius: 2.5 * k),
+                BoxShadow(color: AppColorTokens.cream, spreadRadius: 2.5 * k),
               ],
             ),
             child: SizedBox(width: 62 * k, height: 6 * k),
@@ -216,8 +241,9 @@ class HomeTileIcon extends StatelessWidget {
 ///
 /// * [StreakLook.lit]: `gradient.streak`, a white flame and the count.
 /// * [StreakLook.paused]: the resting `streakPaused` colours, never red (Q96).
-/// * [StreakLook.relit]: the lit look with a 3 dp `relitGlow` ring, faded in
-///   over 400 ms once (a static ring under reduce motion).
+/// * [StreakLook.relit]: the lit look with a 3 dp `relitGlow` ring for
+///   `motion.relitHome`'s 2,400 ms, then a 400 ms fade (a cut under reduce
+///   motion); [onRelitGlowEnd] says when it is over (m7-4 4.10).
 /// * [StreakLook.zero]: an unlit flame and no number (frame 12.2).
 ///
 /// Position it with `PositionedDirectional(end: -8, top: -14)` over the tile,
@@ -226,17 +252,21 @@ class StreakBadge extends StatelessWidget {
   const StreakBadge({
     required this.days,
     this.look = StreakLook.lit,
+    this.onRelitGlowEnd,
     super.key,
   });
 
   final int days;
   final StreakLook look;
 
+  /// Called once, when a [StreakLook.relit] badge's glow has faded.
+  final VoidCallback? onRelitGlowEnd;
+
   static const _litStyle = SurfaceStyle(
     gradient: AppGradientTokens.streak,
     shadows: [
       NestyShadow(color: AppColorTokens.streakEdge, dy: 3),
-      NestyShadow(color: AppColors.cream, spread: 2.5),
+      NestyShadow(color: AppColorTokens.cream, spread: 2.5),
     ],
   );
 
@@ -248,7 +278,7 @@ class StreakBadge extends StatelessWidget {
     ),
     shadows: [
       NestyShadow(color: AppColorTokens.streakPausedEdge, dy: 3),
-      NestyShadow(color: AppColors.cream, spread: 2.5),
+      NestyShadow(color: AppColorTokens.cream, spread: 2.5),
     ],
   );
 
@@ -288,7 +318,7 @@ class StreakBadge extends StatelessWidget {
       ),
     );
     final Widget face = look == StreakLook.relit
-        ? _RelitRing(child: pill)
+        ? _RelitRing(onEnd: onRelitGlowEnd, child: pill)
         : pill;
     if (look == StreakLook.zero) return ExcludeSemantics(child: face);
     return Semantics(
@@ -301,31 +331,99 @@ class StreakBadge extends StatelessWidget {
   }
 }
 
-/// [StreakLook.relit]'s ring: 3 dp of `relitGlow` around the pill, fading in
-/// over 400 ms once, no loop (menus spec 6.5). Under reduce motion it is
-/// just there.
-class _RelitRing extends StatelessWidget {
-  const _RelitRing({required this.child});
+/// [StreakLook.relit]'s ring: 3 dp of `relitGlow` around the pill, held for
+/// `motion.relitHome.glowMs` (2,400 ms) and faded over `fadeMs` (400 ms), once
+/// (m7-4 4.10). Under reduce motion the fade is a cut. [onEnd] is called when
+/// it is over.
+class _RelitRing extends StatefulWidget {
+  const _RelitRing({required this.child, this.onEnd});
 
   final Widget child;
+  final VoidCallback? onEnd;
 
   static const _ringWidth = 3.0;
 
+  static const _totalMs = RelitHomeTokens.glowMs + RelitHomeTokens.fadeMs;
+
+  @override
+  State<_RelitRing> createState() => _RelitRingState();
+}
+
+class _RelitRingState extends State<_RelitRing>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: _RelitRing._totalMs),
+      )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) widget.onEnd?.call();
+      });
+
+  /// The glow has started: it plays once, from when Home first shows.
+  bool _started = false;
+
+  /// The glow starts only once Home is on screen. Home's cubit learns of a
+  /// relight during the daily's solve, while the Daily screen and the board
+  /// cover it: its tickers are muted then, but a muted ticker's clock still
+  /// runs, so a glow started there would be over before Home came back
+  /// (m7-4 4.10: the first Home visit after a relight shows it).
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_started && TickerMode.valuesOf(context).enabled) {
+      _started = true;
+      unawaited(_controller.forward());
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final ring = DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14 + _ringWidth),
-        border: Border.all(color: AppColorTokens.relitGlow, width: _ringWidth),
-      ),
-      child: child,
-    );
-    if (context.reduceMotion) return ring;
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 400),
-      builder: (context, value, child) => Opacity(opacity: value, child: child),
-      child: ring,
+    final reduced = context.reduceMotion;
+    const held = RelitHomeTokens.glowMs / _RelitRing._totalMs;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final t = _controller.value;
+        final opacity = t <= held
+            ? 1.0
+            : reduced
+            ? 0.0
+            : 1 - (t - held) / (1 - held);
+        // The pill keeps its place and size: the ring (`0 0 0 3px`) is drawn
+        // around it and only it fades.
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            widget.child,
+            Positioned(
+              left: -_RelitRing._ringWidth,
+              top: -_RelitRing._ringWidth,
+              right: -_RelitRing._ringWidth,
+              bottom: -_RelitRing._ringWidth,
+              child: Opacity(
+                opacity: opacity,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      14 + _RelitRing._ringWidth,
+                    ),
+                    border: Border.all(
+                      color: AppColorTokens.relitGlow,
+                      width: _RelitRing._ringWidth,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

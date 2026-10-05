@@ -37,31 +37,35 @@ class RecordsView extends StatelessWidget {
         final data = value.data;
         final error = value.exceptionOrNull;
         return Scaffold(
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ScreenHeader(
-                    title: l10n.recordsTitle,
-                    onBack: () => context.router.maybePop(),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: data != null
-                        ? WideScreenColumn(child: _RecordsBody(state: data))
-                        : error != null
-                        ? Center(
-                            child: RetryView(
-                              exception: error,
-                              onRetry: () =>
-                                  context.read<RecordsCubit>().load(),
-                            ),
-                          )
-                        : const Center(child: CircularProgressIndicator()),
-                  ),
-                ],
+          body: CreamPage(
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ScreenHeader(
+                      title: l10n.recordsTitle,
+                      onBack: () => context.router.maybePop(),
+                    ),
+                    // Frame 10.6: the body starts at top 124 = header 110 + 14.
+                    const SizedBox(height: 14),
+                    Expanded(
+                      child: data != null
+                          ? WideScreenColumn(child: _RecordsBody(state: data))
+                          : error != null
+                          ? Center(
+                              child: RetryView(
+                                exception: error,
+                                onRetry: () =>
+                                    context.read<RecordsCubit>().load(),
+                              ),
+                            )
+                          : const Center(child: CircularProgressIndicator()),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -78,7 +82,10 @@ class _RecordsBody extends StatelessWidget {
 
   static const _linkStyle = SurfaceStyle(
     color: AppColorTokens.surfaceWhite,
-    shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5)],
+    shadows: [
+      NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
+      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4),
+    ],
   );
 
   @override
@@ -86,51 +93,51 @@ class _RecordsBody extends StatelessWidget {
     final l10n = context.localizations;
     final summary = state.summary;
     String count(int value) => NestyNumberText.formatCount(context, value);
+    // Each tile's tint and glyph colour are `statsGrid.cell.tints`.
     final cells = [
       RecordStatCell(
         icon: IconUses.levelsWon,
-        tint: AppColorTokens.successTint,
-        glyphColor: AppColorTokens.success,
+        tint: RecordsTokens.statsGridCellTintsLevelsWon[0],
+        glyphColor: RecordsTokens.statsGridCellTintsLevelsWon[1],
         value: count(summary.levelsWon),
         label: l10n.recordsLevelsWon,
       ),
-      // Every family completed (spec-prop §7.9, `records.families`), a
-      // plain count: frame 10.6's "2 of 10 Families home" counts the
-      // Museum's figurines instead, and read "2 of 10" after two wins with
-      // the Museum still empty (the device run, 2026-09-30; Q159).
-      // TODO(design): the cell's copy and glyph for "families completed".
+      // Every family completed (spec-prop §7.9, `records.families`), a plain
+      // count with the family counter's doll mark (m7-4 8.5, Q159's default:
+      // frame 10.6's "of 10" counted the Museum's figurines instead).
       RecordStatCell(
         icon: IconUses.familiesHome,
-        tint: AppColorTokens.woodLight.withValues(alpha: 0.5),
-        glyphColor: AppColorTokens.primaryEdge,
+        dollMark: true,
+        tint: RecordsTokens.statsGridCellTintsFamiliesCompleted[0],
+        glyphColor: RecordsTokens.statsGridCellTintsFamiliesCompleted[1],
         value: count(summary.families),
         label: l10n.recordsFamilies,
       ),
       RecordStatCell(
         icon: IconUses.dollsNested,
-        tint: AppColorTokens.canvasCreamLow,
-        glyphColor: AppColorTokens.walnut,
+        tint: RecordsTokens.statsGridCellTintsDollsNested[0],
+        glyphColor: RecordsTokens.statsGridCellTintsDollsNested[1],
         value: count(summary.dolls),
         label: l10n.recordsDolls,
       ),
       RecordStatCell(
         icon: IconUses.dailiesSolved,
-        tint: AppColorTokens.dailyTop.withValues(alpha: 0.35),
-        glyphColor: AppColorTokens.coinText,
+        tint: RecordsTokens.statsGridCellTintsDailies[0],
+        glyphColor: RecordsTokens.statsGridCellTintsDailies[1],
         value: count(summary.dailies),
         label: l10n.recordsDailies,
       ),
       RecordStatCell(
         icon: IconUses.longestStreak,
-        tint: AppColorTokens.streakTop.withValues(alpha: 0.3),
-        glyphColor: AppColorTokens.streak,
+        tint: RecordsTokens.statsGridCellTintsLongestStreak[0],
+        glyphColor: RecordsTokens.statsGridCellTintsLongestStreak[1],
         value: l10n.dailyStreakDays(summary.longestRun),
         label: l10n.recordsLongestStreak,
       ),
       RecordStatCell(
         icon: NestyIcons.star,
         art: UiArt.starFilled,
-        tint: AppColorTokens.warningTint.withValues(alpha: 0.5),
+        tint: RecordsTokens.statsGridCellTintsStars[0],
         value: l10n.recordsStarsValue(summary.stars, summary.starsPossible),
         label: l10n.recordsStars,
       ),
@@ -139,7 +146,10 @@ class _RecordsBody extends StatelessWidget {
     final oneColumn = MediaQuery.sizeOf(context).width < 320;
     final perRow = oneColumn ? 1 : RecordsTokens.statsGridColumns;
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      // The home indicator's band stays under the list's end (F-SAFE).
+      padding: EdgeInsets.only(
+        bottom: 24 + MediaQuery.viewPaddingOf(context).bottom,
+      ),
       children: [
         for (var i = 0; i < cells.length; i += perRow) ...[
           if (i > 0) const SizedBox(height: RecordsTokens.statsGridGap),
@@ -167,7 +177,7 @@ class _RecordsBody extends StatelessWidget {
           onPressed: () =>
               unawaited(context.router.root.push(const ChaptersRoute())),
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 12, 6),
           semanticLabel: l10n.recordsBestMovesLink,
           excludeChildSemantics: true,
           alignment: AlignmentDirectional.centerStart,
@@ -177,17 +187,17 @@ class _RecordsBody extends StatelessWidget {
               children: [
                 const NestySurface(
                   style: SurfaceStyle(
-                    color: AppColorTokens.woodLight,
+                    color: AppColorTokens.closeFill,
                     shadows: [],
                   ),
                   radius: BorderRadius.all(Radius.circular(12)),
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   alignment: Alignment.center,
                   child: Icon(
                     IconUses.bestMoves,
-                    size: 24,
-                    color: AppColorTokens.primaryEdge,
+                    size: 22,
+                    color: AppColorTokens.iconBrown,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -195,7 +205,9 @@ class _RecordsBody extends StatelessWidget {
                   child: Text(
                     l10n.recordsBestMovesLink,
                     style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 19,
+                      fontSize: 16,
+                      height: 1.1,
+                      fontWeight: FontWeight.w600,
                       color: AppColorTokens.textPrimary,
                     ),
                     maxLines: 2,
@@ -203,8 +215,8 @@ class _RecordsBody extends StatelessWidget {
                 ),
                 const Icon(
                   NestyIcons.chevronRight,
-                  size: 26,
-                  color: AppColorTokens.textMuted,
+                  size: 24,
+                  color: AppColorTokens.chevron,
                 ),
               ],
             ),
@@ -221,7 +233,8 @@ class _RecordsBody extends StatelessWidget {
                   child: Text(
                     l10n.recordsBadgesHeader,
                     style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 22,
+                      fontSize: 20,
+                      height: 1,
                       color: AppColorTokens.textPrimary,
                     ),
                     maxLines: 1,
@@ -233,10 +246,11 @@ class _RecordsBody extends StatelessWidget {
                   summary.badges.length,
                   BadgeId.values.length,
                 ),
-                style: AppTextStyleTokens.caption.copyWith(
+                // NestyHub:146: Fredoka 700 15, `#8A5B3A`.
+                style: AppTextStyleTokens.number.copyWith(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: AppColorTokens.textMuted,
+                  height: 1,
+                  color: AppColorTokens.textSecondary,
                 ),
               ),
             ],

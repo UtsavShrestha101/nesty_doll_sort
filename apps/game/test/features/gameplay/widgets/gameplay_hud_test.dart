@@ -1,8 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/family_counter.dart';
 import 'package:nesty_game/features/gameplay/widgets/gameplay_hud.dart';
 
@@ -53,7 +57,15 @@ void main() {
         // NestyBoard: pause at (16, top + 3), pill centred at top + 3.
         expect(pause.topLeft, Offset(16, top + 3));
         expect(pill.top, top + 3);
-        expect(pill.center.dx, closeTo(size.width / 2, 0.01));
+        // Centred while it fits between the controls at the wider one's
+        // width; otherwise it takes the free width on its side (5B-5).
+        final symmetricRoom =
+            size.width - 2 * (16 + math.max(pause.width, coins.width) + 8);
+        if (pill.width <= symmetricRoom + 0.01) {
+          expect(pill.center.dx, closeTo(size.width / 2, 0.01));
+        } else {
+          expect(pill.center.dx, isNot(closeTo(size.width / 2, 0.01)));
+        }
         expect(coins.right, lessThanOrEqualTo(size.width - 16 + 0.01));
         // The level pill never runs into the side controls.
         expect(pill.left, greaterThan(pause.right));
@@ -73,7 +85,7 @@ void main() {
     expect(find.text('HARD'), findsOneWidget);
     expect(find.bySemanticsLabel('Level 56 · Hard'), findsOneWidget);
     expect(find.bySemanticsLabel('830 coins'), findsOneWidget);
-    expect(find.bySemanticsLabel('1 of 4 families done'), findsOneWidget);
+    expect(find.bySemanticsLabel('1 of 4 families complete'), findsOneWidget);
   });
 
   testWidgets('coinPillKey marks the coin pill, for the milestone chest\'s '
@@ -206,7 +218,7 @@ void main() {
       tester,
     ) async {
       await pumpCounter(tester, 0, 4);
-      expect(find.bySemanticsLabel('0 of 4 families done'), findsOneWidget);
+      expect(find.bySemanticsLabel('0 of 4 families complete'), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (w) => w is CustomPaint && w.painter is FamilyCounterPillPainter,
@@ -218,11 +230,11 @@ void main() {
     testWidgets('follows the landed count up and resets down', (tester) async {
       await pumpCounter(tester, 0, 4);
       await pumpCounter(tester, 1, 4);
-      expect(find.bySemanticsLabel('1 of 4 families done'), findsOneWidget);
+      expect(find.bySemanticsLabel('1 of 4 families complete'), findsOneWidget);
       await pumpCounter(tester, 0, 4);
-      expect(find.bySemanticsLabel('0 of 4 families done'), findsOneWidget);
+      expect(find.bySemanticsLabel('0 of 4 families complete'), findsOneWidget);
       await pumpCounter(tester, 1, 1);
-      expect(find.bySemanticsLabel('1 of 1 family done'), findsOneWidget);
+      expect(find.bySemanticsLabel('1 of 1 family complete'), findsOneWidget);
     });
   });
 
@@ -239,30 +251,47 @@ void main() {
       });
     });
 
-    testWidgets('the file\'s 70 dp pill scales to hug: smaller for "4 / 4", '
-        'larger for "12 / 12"', (tester) async {
-      Future<double> scaleFor(int done, int total) async {
+    testWidgets('the pill takes the hugged width itself (m7-4 4.14): no '
+        'scale on the counter, the fallback pill is that wide', (tester) async {
+      Future<double> pillFor(int done, int total) async {
         await pumpUi(
           tester,
           FamilyCounter(done: done, total: total, library: FakeFxLibrary()),
         );
-        final transform = tester.widget<Transform>(
-          find
-              .descendant(
-                of: find.byType(FamilyCounter),
-                matching: find.byType(Transform),
-              )
-              .first,
+        expect(
+          find.descendant(
+            of: find.byType(FamilyCounter),
+            matching: find.byType(Transform),
+          ),
+          findsNothing,
+          reason: 'the old 0.9-1.2 scale is gone',
         );
-        return transform.transform.storage[0];
+        final paint = tester.widget<CustomPaint>(
+          find.byWidgetPredicate(
+            (w) => w is CustomPaint && w.painter is FamilyCounterPillPainter,
+          ),
+        );
+        final width = (paint.painter! as FamilyCounterPillPainter).pillWidth;
+        final view = tester.widget<LottieFxView>(
+          find.byWidgetPredicate(
+            (w) => w is LottieFxView && w.id == FxId.uiFamilyCounter,
+          ),
+        );
+        expect(
+          view.controller!.params.pillWidth,
+          width,
+          reason: 'the file gets the same width through pill_rect',
+        );
+        return width;
       }
 
-      final small = await scaleFor(1, 4);
-      final large = await scaleFor(12, 12);
-      expect(small, lessThan(1));
-      expect(large, greaterThan(1));
-      expect(small, greaterThanOrEqualTo(FamilyCounter.minHug));
-      expect(large, lessThanOrEqualTo(FamilyCounter.maxHug));
+      final small = await pillFor(1, 4);
+      final large = await pillFor(12, 12);
+      expect(small, closeTo(64, 4));
+      expect(large, closeTo(78, 4));
+      expect(large, greaterThan(small));
+      // Not clamped to the old 0.9-1.2 of 70 (63-84): any width.
+      expect(FamilyCounter.hugWidth('100 / 100'), greaterThan(84));
     });
   });
 

@@ -80,7 +80,24 @@ abstract interface class DatabaseService {
   /// reads at that point. `DailyReminder` follows it and reschedules.
   Stream<ReminderSettings> get reminderChanges;
 
-  /// Persisted locale code, e.g. `en` or `pt_BR`.
+  /// The `yyyy-MM-dd` of the relight Home's Daily tile last glowed for, or
+  /// null (m7-4 4.10, `motion.relitHome`: the first Home visit after a
+  /// relight, in that session or a later one, once). A value of the wrong
+  /// type reads as null.
+  String? get relitGlowSeen;
+  Future<void> setRelitGlowSeen(String date);
+
+  /// The rival (1–3) the player last started a race against, or 0 (m7-4
+  /// 4.5: rival select's pick on a new visit is the New rival, else this
+  /// one). A stored value outside 1–3 reads as 0.
+  int get lastRival;
+  Future<void> setLastRival(int rival);
+
+  /// The persisted language setting, as stored: `LocaleSetting.system`
+  /// (follow the phone; the default, also for an install that never stored
+  /// one) or a pinned locale code such as `en` or `pt_BR`. It is not
+  /// resolved here: `AppLocaleResolver` turns it into the language the app
+  /// renders in.
   String get languageCode;
   Future<void> setLanguage(String languageCode);
 

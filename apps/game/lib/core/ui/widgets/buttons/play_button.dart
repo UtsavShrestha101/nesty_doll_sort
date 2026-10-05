@@ -5,6 +5,7 @@ import 'package:nesty_core/nesty_core.dart' show Tier;
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/colors/app_colors.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/hud/tier_chip.dart';
@@ -77,6 +78,9 @@ class PlayButton extends StatelessWidget {
         : tierBadge
         ? l10n.playLevelSemantics(level, l10n.tierName(tier.id))
         : l10n.playSemantics(level);
+    final label =
+        title ??
+        (allLevelsDone ? l10n.homeAllLevelsDone : l10n.levelTitle(level));
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -90,19 +94,18 @@ class PlayButton extends StatelessWidget {
               l10n.homePlay,
               style: AppTextStyleTokens.buttonSmall.copyWith(
                 fontSize: 14,
-                letterSpacing: 14 * 0.14,
+                letterSpacing: context.script.tracking(14 * 0.14),
                 color: AppColors.playCaption,
               ),
               maxLines: 1,
             ),
             const SizedBox(height: 2),
             Text(
-              title ??
-                  (allLevelsDone
-                      ? l10n.homeAllLevelsDone
-                      : l10n.levelTitle(level)),
+              label,
               style: AppTextStyleTokens.display.copyWith(
-                fontSize: 36,
+                // NestyHub:290: labels over 9 characters ("Bonus Level 7")
+                // are set at 28, the rest at 36.
+                fontSize: label.length > 9 ? 28 : 36,
                 color: const Color(0xFFFFFFFF),
                 shadows: const [
                   Shadow(color: Color(0x59963C0A), offset: Offset(0, 3)),
@@ -249,7 +252,7 @@ class _TierBadge extends StatelessWidget {
                 : l10n.tierHard,
             style: AppTextStyleTokens.tierChip.copyWith(
               fontSize: 13,
-              letterSpacing: 13 * 0.06,
+              letterSpacing: context.script.tracking(13 * 0.06),
               color: const Color(0xFFFFFFFF),
             ),
             maxLines: 1,

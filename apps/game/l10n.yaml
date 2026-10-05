@@ -4,3 +4,7 @@ output-localization-file: app_localizations.dart
 # AppLocalizations.of(context) returns a non-null instance, so call sites
 # never need `!` (context.localizations in core/extensions).
 nullable-getter: false
+# English first in AppLocalizations.supportedLocales, whatever catalogs
+# exist (gen-l10n sorts them otherwise, so `de` would come first): it is the
+# fallback both Flutter's matching and AppLocaleResolver end on (spec §16).
+preferred-supported-locales: [en]

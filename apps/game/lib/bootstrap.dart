@@ -18,7 +18,12 @@ const _useFakeServices = bool.fromEnvironment('NESTY_FAKE_SERVICES');
 
 /// Shared startup for every flavor. `lib/main_<flavor>.dart` sets
 /// `FlavorConfig` first, then calls this.
-void bootstrap() {
+///
+/// [beforeRunApp] is a test seam: it runs after DI is configured and before
+/// `runApp`, so a fault scenario can re-register a service (GetIt's
+/// `allowReassignment`) without a fault flag in app code. No caller in
+/// `lib/` passes it.
+void bootstrap({@visibleForTesting Future<void> Function()? beforeRunApp}) {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +63,8 @@ void bootstrap() {
       // never schedules on a fresh install (the reminder is off).
       get<DailyReminder>().start();
 
+      await beforeRunApp?.call();
+
       runApp(App(router: get<AppRouter>()));
     },
     (error, stackTrace) {
@@ -84,12 +91,28 @@ void bootstrap() {
 }
 
 /// The bundled fonts' licences, shown on Flutter's licence page. The OFL
-/// (Fredoka, Nunito) and Apache 2.0 (Material Symbols) both require shipping
-/// the licence text with the font; the files come from the pinned upstream
-/// commits in tools/fonts/build_fonts.sh.
+/// (Fredoka, Nunito, Baloo 2, M PLUS Rounded 1c) and Apache 2.0 (Material
+/// Symbols) both require shipping the licence text with the font; the files
+/// come from the pinned upstream commits in tools/fonts/build_fonts.sh
+/// (M PLUS Rounded 1c's is composed there from its METADATA.pb copyright and
+/// the M+ family's OFL text, as its folder ships none).
 const _fontLicenses = <(List<String>, String, String?)>[
   (['Fredoka'], 'assets/fonts/Fredoka-OFL.txt', null),
   (['Nunito'], 'assets/fonts/Nunito-OFL.txt', null),
+  (
+    ['Baloo 2'],
+    'assets/fonts/Baloo2-OFL.txt',
+    'Modified: the app ships Devanagari subsets of static instances of '
+        'Baloo 2, renamed Baloo 2 Display and Baloo 2 Body, made with '
+        'tools/fonts/build_fonts.sh.',
+  ),
+  (
+    ['M PLUS Rounded 1c'],
+    'assets/fonts/MPLUSRounded1c-OFL.txt',
+    'Modified: the app ships Japanese subsets of M PLUS Rounded 1c, renamed '
+        'M PLUS Rounded 1c Display and M PLUS Rounded 1c Body, made with '
+        'tools/fonts/build_fonts.sh.',
+  ),
   (
     ['Material Symbols Rounded'],
     'assets/fonts/MaterialSymbols-LICENSE.txt',

@@ -51,6 +51,17 @@ abstract class ChapterInfo with _$ChapterInfo {
   static const int levelsPerChapter = 20;
 }
 
+/// Chapters are uniform blocks of `levels` in order-space (spec §7.1); the
+/// one place Home, the Museum, Chapters and the star tally find a block.
+extension ChapterOrders on ChapterInfo {
+  /// The campaign order of this chapter's first level (1, 21, 41, …).
+  int get firstOrder => (number - 1) * levels + 1;
+
+  /// Levels of this chapter won when the player stands on [currentLevel],
+  /// 0 to `levels`.
+  int doneAt(int currentLevel) => (currentLevel - firstOrder).clamp(0, levels);
+}
+
 /// A doll skin in the Shop (spec §7.4, frames 7.3–7.4). Its name and
 /// description are ARB selects keyed by [id] (`skinName`,
 /// `skinDescription`).

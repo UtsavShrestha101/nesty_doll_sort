@@ -36,7 +36,7 @@ enum FxRole {
 /// the hard split at art y 400).
 enum FxDollPart { lid, body, silhouette }
 
-/// Every image asset id in the 35 files (LOTTIE.md "Image slots"). The game
+/// Every image asset id in the 37 files (LOTTIE.md "Image slots"). The game
 /// fills each one with its own raster; the placeholder PNGs in
 /// `design/lottie/images/` are never shipped or decoded (PROGRESS D50).
 ///
@@ -166,7 +166,15 @@ enum FxImageSlot {
     part: FxDollPart.body,
   ),
   freedLid('freed_lid', 512, 768, role: FxRole.freed, part: FxDollPart.lid),
-  freedBody('freed_body', 512, 768, role: FxRole.freed, part: FxDollPart.body);
+  freedBody('freed_body', 512, 768, role: FxRole.freed, part: FxDollPart.body),
+
+  /// `ui_rival_react` (m7-4 C.6): the rival's portrait, `ui/rivals/
+  /// rival_n.svg` at 96×96, UI art at 3×. Which rival is the caller's.
+  rivalPortrait('rival_portrait', 288, 288),
+
+  /// `ui_museum_idle` (m7-4 J.2): the collected family's figurine,
+  /// `museum/<id>` at 62×62, at 3×.
+  figurine('figurine', 186, 186);
 
   const FxImageSlot(
     this.assetId,

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -18,7 +19,11 @@ void main() {
     List<RivalProgress> rivals,
   ) async {
     final save = FakeSaveService(initial: doc(rivals));
-    final cubit = RivalSelectCubit(save, FakeRemoteConfigService());
+    final cubit = RivalSelectCubit(
+      save,
+      FakeRemoteConfigService(),
+      FakeDatabaseService(),
+    );
     await cubit.load();
     return (cubit, save);
   }
@@ -79,6 +84,30 @@ void main() {
       await cubit.close();
     },
   );
+
+  test('with nothing new, the last rival raced is selected, not the highest '
+      '(m7-4 4.5, settings lastRival)', () async {
+    final database = FakeDatabaseService();
+    final save = FakeSaveService(
+      initial: doc(const [
+        RivalProgress(unlocked: true, wins: 1, raceNo: 2),
+        RivalProgress(unlocked: true, wins: 1, raceNo: 1),
+        RivalProgress(),
+      ]),
+    );
+    final cubit = RivalSelectCubit(save, FakeRemoteConfigService(), database);
+    await cubit.load();
+    expect(read(cubit).selected, 2, reason: 'no memory: the highest');
+
+    // Racing Pebble remembers it for the next visit.
+    expect(cubit.begin(1), isNotNull);
+    expect(database.lastRival, 1);
+    final next = RivalSelectCubit(save, FakeRemoteConfigService(), database);
+    await next.load();
+    expect(read(next).selected, 1);
+    await cubit.close();
+    await next.close();
+  });
 
   test('New clears when the rival is first raced (beginRace stores its '
       'raceNo)', () async {

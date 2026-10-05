@@ -163,6 +163,46 @@ void main() {
       expect(find.byType(CoinIcon), findsNothing);
     });
 
+    testWidgets('10.9c: the Free chip moves under the sub when the text '
+        'column would fall under 120 dp, and never scales', (tester) async {
+      await pumpScreen(
+        tester,
+        sheet(onUndo: () {}, freeUndosLeft: 0, relaxed: true),
+        size: const Size(320, 740),
+        textScale: 1.3,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      final chip = find.byWidgetPredicate((w) => w is SheetRowChip).first;
+      final sub = find.text('Free, as often as you like');
+      expect(
+        tester.getTopLeft(chip).dx,
+        closeTo(tester.getTopLeft(sub).dx, 0.5),
+      );
+      expect(
+        tester.getTopLeft(chip).dy,
+        greaterThanOrEqualTo(tester.getBottomLeft(sub).dy),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('10.9b: at 1.0x the Free chip stays beside the text', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        sheet(onUndo: () {}, freeUndosLeft: 0, relaxed: true),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        tester
+            .getTopLeft(find.byWidgetPredicate((w) => w is SheetRowChip).first)
+            .dx,
+        greaterThan(
+          tester.getTopRight(find.text('Free, as often as you like')).dx - 1,
+        ),
+      );
+    });
+
     testWidgets('the undos spent (frame 12.8): "Your 2 free undos are '
         'used", the price chip, no ring', (tester) async {
       await pumpScreen(
@@ -183,6 +223,19 @@ void main() {
         tester.widget<SheetRow>(find.byType(SheetRow).first).highlighted,
         isFalse,
       );
+      // 12.8: Undo's tile is mint, and +1 Slot's outline is gone.
+      final rows = tester.widgetList<SheetRow>(find.byType(SheetRow)).toList();
+      expect(rows[0].tone, SheetRowTone.success);
+      expect(rows[1].highlighted, isFalse);
+    });
+
+    testWidgets('while Undo is free (frame 3.5) +1 Slot keeps its outline and '
+        'Undo\'s tile is mint', (tester) async {
+      await pumpScreen(tester, sheet(onUndo: () {}, onExtraSlot: () {}));
+      await tester.pump(const Duration(milliseconds: 300));
+      final rows = tester.widgetList<SheetRow>(find.byType(SheetRow)).toList();
+      expect(rows[0].tone, SheetRowTone.success);
+      expect(rows[1].highlighted, isTrue);
     });
 
     testWidgets('the spent line follows the free-undo count it is given', (

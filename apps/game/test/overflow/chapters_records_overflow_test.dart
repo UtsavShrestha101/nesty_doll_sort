@@ -235,7 +235,7 @@ void main() {
           await cubit.load();
           await tester.pump();
           await tester.pump();
-          expect(find.text('Best 188'), findsWidgets);
+          expect(find.text(testL10n.chaptersBestMoves(188)), findsWidgets);
           await expectAccessibleLayout(tester);
         },
       );
@@ -260,7 +260,7 @@ void main() {
           await cubit.load();
           await tester.pump();
           await tester.pump();
-          expect(find.text('Every level at 3 stars'), findsWidgets);
+          expect(find.text(testL10n.chaptersAllThreeStars), findsWidgets);
           await expectAccessibleLayout(tester);
         },
       );

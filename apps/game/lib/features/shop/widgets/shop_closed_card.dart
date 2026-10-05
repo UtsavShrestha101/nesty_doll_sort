@@ -1,5 +1,6 @@
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 
 /// The Coins and No Ads tabs' M3 placeholder (frame 7.1/7.8, docs/plans/
 /// m3-design.md §10.7, D75, Q75): "The store is closed for now" / "Coin
@@ -27,7 +28,7 @@ class ShopClosedCard extends StatelessWidget {
             const Icon(
               NestyIcons.storefront,
               size: 40,
-              color: AppColors.iconBrown,
+              color: AppColorTokens.iconBrown,
             ),
             const SizedBox(height: 12),
             Text(
@@ -38,7 +39,10 @@ class ShopClosedCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               l10n.shopClosedBody,
-              style: AppTextStyles.body.copyWith(color: AppColors.textBrown),
+              style: context.scriptStyle(
+                AppTextStyles.body.copyWith(color: AppColorTokens.textBrown),
+                role: ScriptTextRole.body,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

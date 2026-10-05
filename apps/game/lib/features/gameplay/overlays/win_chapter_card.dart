@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
+import 'package:nesty_game/core/services/chest/milestone_chest.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
+import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
 
 /// The solid cream card over the scrim (ui-spec-game §1 "InfoCard"; tokens.json
@@ -136,7 +139,7 @@ class WinChapterCard extends StatelessWidget {
 /// The milestone chest's cadence (`MilestoneChest.chapterPosition`/
 /// `.bonusEvery`, both 10).
 abstract final class MilestoneChestCountdown {
-  static const int cycle = 10;
+  static const int cycle = MilestoneChest.bonusEvery;
 }
 
 /// The replay card's reason card (frames 10.5, 11.4–11.4b; `layout.replayCard`):
@@ -261,13 +264,45 @@ final class _DashPainter extends CustomPainter {
 /// [relit] (E2; m7-design §8, §15.7): the solve restarted a paused streak,
 /// so the two lines become "Streak relit!" / "Your N-day streak is glowing
 /// again" instead of the count and the chest hint (D98: a moment, not a
-/// stored state).. The moves sit in the chips row above it (frame 10.1).
+/// stored state). A relit card wears the `auto_awesome` glyph at the flame
+/// disc's top-right corner, and `fx_twinkle` plays once on it as the card
+/// lands (`motion.relitTwinkle`, m7-4 4.17); under reduced motion the glyph
+/// alone. The moves sit in the chips row above it (frame 10.1).
 class DailyStreakCard extends StatelessWidget {
-  const DailyStreakCard({required this.streak, this.relit = false, super.key});
+  const DailyStreakCard({
+    required this.streak,
+    this.relit = false,
+    this.library,
+    super.key,
+  });
 
   /// The streak after this solve (`GameplayState.dailyStreak`).
   final int streak;
   final bool relit;
+
+  /// The Lottie library for a relit card's twinkle.
+  final FxLibrary? library;
+
+  /// A relit card's `relitGlow` ring (NestyMeta `0 0 0 3px rgba(255,205,80,
+  /// .6)`, the same as the daily page's relit streak card).
+  static const _relitStyle = SurfaceStyle(
+    color: ReplayCardTokens.cardFill,
+    shadows: [
+      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5),
+      NestyShadow(color: AppColorTokens.relitGlow, spread: 3),
+    ],
+  );
+
+  /// The relit glyph's key, for tests.
+  static const relitGlyphKey = Key('relit-glyph');
+
+  /// The relit mark's one `fx_twinkle`, a 32 dp box (the file's canvas) on
+  /// the glyph's centre.
+  static const double twinkleSize = 32;
+
+  /// The glyph's box and where its top-right sits: 8 dp outside the 52 dp
+  /// flame disc's corner (`motion.relitTwinkle.place`, frame 10.7b).
+  static const double _discSize = 52;
 
   /// Days left to the next Day 7 chest (0 the day it opens): the streak
   /// counts up from 1, and the chest lands every 7th day (`streak % 7 == 0`,
@@ -284,13 +319,32 @@ class DailyStreakCard extends StatelessWidget {
         ? l10n.dailyStreakRelitBody(streak)
         : l10n.dailyWinChestHint(_daysToChest(streak).toString());
     return NestySurface(
-      style: winInfoCardStyle,
+      style: relit ? _relitStyle : winInfoCardStyle,
       radius: const BorderRadius.all(Radius.circular(22)),
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 16, 12),
       child: Row(
         children: [
-          const _StreakBadge(),
+          if (relit)
+            // The glyph's box sits 8 dp outside the disc's corner; the card
+            // keeps its own padding, so the mark may overhang the disc.
+            SizedBox(
+              width: DailyStreakCard._discSize,
+              height: DailyStreakCard._discSize,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const _StreakBadge(),
+                  PositionedDirectional(
+                    end: RelitTwinkleTokens.placeInset,
+                    top: RelitTwinkleTokens.placeInset,
+                    child: _RelitMark(library: library),
+                  ),
+                ],
+              ),
+            )
+          else
+            const _StreakBadge(),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -316,6 +370,52 @@ class DailyStreakCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A relit streak's mark (`motion.relitTwinkle`): the `auto_awesome` glyph,
+/// 22 dp `#FFE08A` with a soft glow, and one `fx_twinkle` over it as the card
+/// lands. Reduced motion: the glyph only.
+class _RelitMark extends StatelessWidget {
+  const _RelitMark({this.library});
+
+  final FxLibrary? library;
+
+  @override
+  Widget build(BuildContext context) {
+    const size = RelitTwinkleTokens.glyphSize;
+    const twinkle = DailyStreakCard.twinkleSize;
+    return ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: size,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Icon(
+              NestyIcons.autoAwesome,
+              key: DailyStreakCard.relitGlyphKey,
+              size: size,
+              color: RelitTwinkleTokens.glyphColor,
+              shadows: [
+                for (final glow in RelitTwinkleTokens.glyphGlow)
+                  Shadow(color: glow.color, blurRadius: glow.blur),
+              ],
+            ),
+            if (!context.reduceMotion)
+              Positioned(
+                left: (size - twinkle) / 2,
+                top: (size - twinkle) / 2,
+                child: LottieTwinkle(
+                  size: twinkle,
+                  once: true,
+                  library: library,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

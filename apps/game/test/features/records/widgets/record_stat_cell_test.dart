@@ -36,12 +36,12 @@ void main() {
     expect(find.byType(Opacity), findsNothing);
   });
 
-  testWidgets('is one node reading "label, value", and its tile is 36 dp', (
+  testWidgets('is one node reading "label: value", and its tile is 36 dp', (
     tester,
   ) async {
     final handle = tester.ensureSemantics();
     await pumpScreen(tester, cell());
-    expect(find.bySemanticsLabel('Levels won, 128'), findsOneWidget);
+    expect(find.bySemanticsLabel('Levels won: 128'), findsOneWidget);
     expect(
       tester.getSize(
         find
@@ -64,6 +64,27 @@ void main() {
         (w) => w is UiArtImage && w.art == UiArt.starFilled,
       ),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('the value is 20/1, the label 11.5/1.2 and the star 26 in the '
+      '36 tile (NestyHub:130-132)', (tester) async {
+    await pumpScreen(tester, cell(art: UiArt.starFilled));
+    final value = tester.widget<Text>(find.text('128'));
+    expect(value.style!.fontSize, 20);
+    expect(value.style!.height, 1);
+    final label = tester.widget<Text>(find.text('Levels won'));
+    expect(label.style!.fontSize, 11.5);
+    expect(label.style!.height, 1.2);
+    expect(
+      tester
+          .widget<UiArtImage>(
+            find.byWidgetPredicate(
+              (w) => w is UiArtImage && w.art == UiArt.starFilled,
+            ),
+          )
+          .size,
+      const Size(26, 26),
     );
   });
 

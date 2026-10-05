@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart' show Tier;
 import 'package:nesty_game/core/repository/fake_catalog_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
+import 'package:nesty_game/core/services/chest/milestone_chest.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
@@ -43,6 +44,29 @@ void main() {
 
     expect(data.currentLevel, 41);
     expect(data.totalLevels, 200);
+  });
+
+  test('a cell is the chest exactly where MilestoneChest says: the 10th of '
+      'every chapter, from the one rule', () async {
+    final save = FakeSaveService(
+      initial: const SaveDocument(currentLevel: 1, highestLevel: 1),
+    );
+    final cubit = ChaptersCubit(save, levelsThrough(200), catalog);
+    await cubit.load();
+    final cells = [
+      for (final chapter in cubit.state.data!.chapters) ...chapter.levels,
+    ];
+
+    expect(cells, hasLength(200));
+    for (final cell in cells) {
+      expect(
+        cell.isChest,
+        MilestoneChest.opensAtCampaign(cell.order),
+        reason: 'level ${cell.order}',
+      );
+    }
+    expect(cells.where((c) => c.isChest).length, 10);
+    await cubit.close();
   });
 
   test('a level\'s own tier reaches its cell, won and current alike', () async {

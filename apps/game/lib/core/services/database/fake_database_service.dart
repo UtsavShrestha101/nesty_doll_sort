@@ -33,7 +33,22 @@ class FakeDatabaseService implements DatabaseService {
   ReduceMotionMode _reduceMotion = SettingsDefaults.reduceMotion;
   ReminderSettings _reminder = SettingsDefaults.reminder;
   String _languageCode = SettingsDefaults.locale;
+  String? _relitGlowSeen;
+  int _lastRival = 0;
   final Map<String, String> _save = {};
+
+  @override
+  String? get relitGlowSeen => _relitGlowSeen;
+
+  @override
+  Future<void> setRelitGlowSeen(String date) async => _relitGlowSeen = date;
+
+  @override
+  int get lastRival => _lastRival;
+
+  @override
+  Future<void> setLastRival(int rival) async =>
+      _lastRival = rival >= 1 && rival <= 3 ? rival : 0;
 
   @override
   bool get soundEnabled => _sound;

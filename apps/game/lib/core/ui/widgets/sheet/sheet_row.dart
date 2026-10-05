@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/ui/colors/app_colors.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
 import 'package:nesty_game/core/ui/theme/app_text_styles.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
@@ -72,7 +73,40 @@ class SheetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
     final trailing = this.trailing;
-    final content = Row(
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        // `textFit.sheetRows` (10.9c): a trailing chip never scales; when the
+        // text column would get narrower than 120 dp it moves under the sub,
+        // left-aligned with the text.
+        final chip = trailing is SheetRowChip ? trailing : null;
+        final under =
+            chip != null &&
+            constraints.maxWidth -
+                    (_tileSize + 12 + 8) -
+                    chip.naturalWidth(context) <
+                minTextColumn;
+        return _body(
+          context,
+          subtitle,
+          under ? null : trailing,
+          under ? chip.onOwnLine() : null,
+        );
+      },
+    );
+    return _frame(content);
+  }
+
+  /// Under this the trailing chip moves under the sub (`textFit.sheetRows`).
+  static const double minTextColumn = 120;
+  static const double _tileSize = 44;
+
+  Widget _body(
+    BuildContext context,
+    String? subtitle,
+    Widget? trailing,
+    Widget? below,
+  ) {
+    return Row(
       children: [
         _IconTile(icon: icon, tone: tone),
         const SizedBox(width: 12),
@@ -91,18 +125,26 @@ class SheetRow extends StatelessWidget {
               if (subtitle != null)
                 Text(
                   subtitle,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 13,
-                    height: 1.3,
-                    color: AppColorTokens.textSecondary,
+                  style: context.scriptStyle(
+                    AppTextStyles.bodySmall.copyWith(
+                      fontSize: 13,
+                      height: 1.3,
+                      color: AppColorTokens.textSecondary,
+                    ),
+                    role: ScriptTextRole.body,
                   ),
                 ),
+              if (below != null)
+                Padding(padding: const EdgeInsets.only(top: 6), child: below),
             ],
           ),
         ),
         if (trailing != null) ...[const SizedBox(width: 8), trailing],
       ],
     );
+  }
+
+  Widget _frame(Widget content) {
     final style = highlighted
         ? SurfaceStyles.rowHighlighted
         : SurfaceStyles.row;
@@ -151,15 +193,53 @@ class _IconTile extends StatelessWidget {
 
 /// A row's status tag, such as the Undo row's "Free · 1 left": green on
 /// mint with a 2 px inner ring (NestyOverlay 3.5).
-class SheetRowTag extends StatelessWidget {
-  const SheetRowTag(this.label, {super.key});
+/// A trailing chip that [SheetRow] may move under the sub (`textFit.
+/// sheetRows`, 10.9c): it reports its width and never scales there.
+abstract class SheetRowChip extends StatelessWidget {
+  const SheetRowChip({super.key});
+
+  /// The chip's width at the current text scale.
+  double naturalWidth(BuildContext context);
+
+  /// The chip as it looks alone on a line under the sub.
+  Widget onOwnLine() => this;
+}
+
+class SheetRowTag extends SheetRowChip {
+  const SheetRowTag(this.label, {this.capped = true, super.key});
+
+  @override
+  Widget onOwnLine() => SheetRowTag(label, capped: false);
 
   final String label;
+
+  /// False once the chip has its own line under the sub: it never scales.
+  final bool capped;
 
   /// The widest a tag gets: copy.md m7-3's relaxed-mode tag ("Free, as
   /// often as you like") is long, so at 1.3× text on a 360 dp phone it
   /// scales down inside this instead of pushing the row past the sheet.
   static const double maxWidth = 150;
+
+  /// The chip's own width at the current text scale, never above
+  /// [maxWidth]'s scale-down limit when it is alone on a line.
+  @override
+  double naturalWidth(BuildContext context) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: _textStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width + 24;
+    painter.dispose();
+    return width;
+  }
+
+  static final _textStyle = AppTextStyleTokens.buttonSmall.copyWith(
+    fontSize: 14,
+    color: AppColorTokens.successEdge,
+  );
 
   static const _style = SurfaceStyle(
     color: AppColorTokens.successTint,
@@ -170,7 +250,7 @@ class SheetRowTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: maxWidth),
+    constraints: BoxConstraints(maxWidth: capped ? maxWidth : double.infinity),
     child: NestySurface(
       style: _style,
       radius: const BorderRadius.all(Radius.circular(AppRadii.md)),

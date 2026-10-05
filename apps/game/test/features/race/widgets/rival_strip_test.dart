@@ -55,13 +55,22 @@ void main() {
   ) async {
     await pump(tester, dataOf(rivalSets: 1, totalSets: 3));
     expect(
-      find.bySemanticsLabel('Pebble, Computer: 1 of 3 families'),
+      find.bySemanticsLabel('Pebble, computer: 1 of 3 families'),
       findsOneWidget,
     );
     expect(find.text('Pebble'), findsOneWidget);
     expect(find.text('Computer'), findsOneWidget, reason: 'the tag');
     expect(find.byIcon(IconUses.computerTag), findsOneWidget);
     expect(find.text('1/3'), findsOneWidget);
+  });
+
+  testWidgets('the portrait is ui_rival_react at 38 dp; its family count is '
+      'the rival\'s completed families (m7-4 C.6)', (tester) async {
+    await pump(tester, dataOf(rival: 2, rivalSets: 1));
+    final react = tester.widget<RivalReact>(find.byType(RivalReact));
+    expect((react.number, react.size, react.familyCount), (2, 38, 1));
+    await pump(tester, dataOf(rival: 2, rivalSets: 2));
+    expect(tester.widget<RivalReact>(find.byType(RivalReact)).familyCount, 2);
   });
 
   testWidgets('the Computer tag sits beside every rival name', (tester) async {
@@ -195,21 +204,12 @@ void main() {
     expect(size, const Size.square(RivalStripTokens.dotsSize));
   });
 
-  testWidgets('above 8 families the dots shrink to 6 dp and still fit', (
-    tester,
-  ) async {
+  testWidgets('above 8 families the count stands alone, so the name and '
+      'the Computer word keep their room', (tester) async {
     await pump(tester, dataOf(rivalSets: 5, totalSets: 12), width: 320);
     expect(tester.takeException(), isNull);
-    expect(find.byKey(const ValueKey('rivalDot-11')), findsOneWidget);
-    final size = tester.getSize(
-      find
-          .descendant(
-            of: find.byKey(const ValueKey('rivalDot-0')),
-            matching: find.byType(SizedBox),
-          )
-          .first,
-    );
-    expect(size, const Size.square(6));
+    expect(find.text('5/12'), findsOneWidget);
+    expect(find.byKey(const ValueKey('rivalDot-0')), findsNothing);
   });
 
   testWidgets('a filling dot and the count bump with the tokens; reduced '
@@ -298,7 +298,7 @@ void main() {
           // Screen readers always hear "Computer", whatever is drawn.
           final handle = tester.ensureSemantics();
           expect(
-            find.bySemanticsLabel(RegExp('^Pebble, Computer')),
+            find.bySemanticsLabel(RegExp('^Pebble, computer')),
             findsOneWidget,
           );
           handle.dispose();
@@ -306,6 +306,17 @@ void main() {
       );
     }
   }
+
+  testWidgets('Start is announced once, naming the computer '
+      '(a11y_race_start)', (tester) async {
+    await pump(tester, dataOf());
+    await pump(tester, dataOf(activity: RivalActivity.thinking));
+    expect(
+      find.bySemanticsLabel('Race started against Pebble, a computer player.'),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(milliseconds: 2000));
+  });
 
   testWidgets('the live region announces a family, throttled to one per '
       '2,000 ms, and the latest wins', (tester) async {

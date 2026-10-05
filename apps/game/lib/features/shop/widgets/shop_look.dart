@@ -25,22 +25,17 @@ abstract final class ShopLook {
   /// The detail panel's 6 dp bottom edge.
   static Color edge(String skinId) => of(skinId).edge;
 
-  /// The tag chip's text on the detail panel.
-  static Color caption(String skinId) => of(skinId).caption;
+  /// The tag chip's text on the detail panel: the skin's `caption`, or the
+  /// `skinTags` text where its caption wouldn't read on its chip (Space's
+  /// `#2A2766`, m7-4 4.11).
+  static Color caption(String skinId) =>
+      ShopTokens.skinTags[skinId]?.text ?? of(skinId).caption;
 
-  /// The tag chip's face. A dark skin's caption is a light lilac (Space's
-  /// `#E6E3FF`), illegible on the frame's white `.85` chip, so the chip
-  /// takes the panel's own dark `edge` at `.85` there (menus spec 8.1).
-  ///
-  /// `TODO(design)`: confirm Space's chip (menus spec §10, BACKLOG "M7
-  /// phase 4 design gaps").
-  static Color captionFace(String skinId) {
-    final look = of(skinId);
-    final light = look.caption.computeLuminance() > 0.6;
-    return light
-        ? look.edge.withValues(alpha: 0.85)
-        : ShopTokens.detailPanelTagFill;
-  }
+  /// The tag chip's face: white at 85 %, or the skin's `skinTags` face where
+  /// its caption wouldn't read on that (Space's white at 92 %, 12:1, m7-4
+  /// 4.11).
+  static Color captionFace(String skinId) =>
+      ShopTokens.skinTags[skinId]?.face ?? ShopTokens.detailPanelTagFill;
 }
 
 /// Frame 7.5's downloading look, built for M4 and unreachable with the

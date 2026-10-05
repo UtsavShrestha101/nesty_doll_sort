@@ -184,4 +184,64 @@ void main() {
       expect(pill.dy, greaterThan(title.dy));
     });
   });
+
+  group('phase 5 type and divider (F-SET, NestyHub:153-157)', () {
+    testWidgets('title Fredoka 600 17/1.15, sub Nunito 700 12/1.3, value '
+        'Nunito 700 15, and a 1.5 dp settingsDivider between rows', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        Material(
+          child: SettingsSection(
+            tiled: true,
+            children: [
+              SettingsToggleRow(
+                icon: NestyIcons.bolt,
+                label: 'Relaxed mode',
+                subtitle: 'Unlimited free undo',
+                tile: SettingsTile.motion,
+                value: false,
+                onChanged: (_) {},
+              ),
+              SettingsRow(
+                icon: NestyIcons.bolt,
+                label: 'Language',
+                value: 'English',
+                tile: SettingsTile.motion,
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      );
+      TextStyle styleOf(String text) =>
+          tester.widget<Text>(find.text(text)).style!;
+      final title = styleOf('Relaxed mode');
+      expect(title.fontSize, 17);
+      expect(title.fontWeight, FontWeight.w600);
+      expect(title.height, 1.15);
+      expect(title.fontFamily, contains('Fredoka'));
+      final sub = styleOf('Unlimited free undo');
+      expect(sub.fontSize, 12);
+      expect(sub.height, 1.3);
+      expect(sub.fontWeight, FontWeight.w700);
+      final value = styleOf('English');
+      expect(value.fontSize, 15);
+      expect(value.fontWeight, FontWeight.w700);
+      final divider = tester.widgetList<ColoredBox>(
+        find.byWidgetPredicate(
+          (w) => w is ColoredBox && w.color == AppColorTokens.divider,
+        ),
+      );
+      expect(divider, hasLength(1));
+      final box = find.ancestor(
+        of: find.byWidgetPredicate(
+          (w) => w is ColoredBox && w.color == AppColorTokens.divider,
+        ),
+        matching: find.byType(SizedBox),
+      );
+      expect(tester.getSize(box.first).height, 1.5);
+    });
+  });
 }

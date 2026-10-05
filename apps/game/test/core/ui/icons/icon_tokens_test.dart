@@ -8,7 +8,8 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
 void main() {
   test('every tokens.json `icons` glyph is a NestyIcons member', () {
-    expect(IconTokens.glyphs, hasLength(23));
+    // 23 since m7-3, and m7-4's two splash-error glyphs.
+    expect(IconTokens.glyphs, hasLength(25));
     expect(
       IconTokens.glyphs.values.where((g) => !NestyIcons.byName.containsKey(g)),
       isEmpty,

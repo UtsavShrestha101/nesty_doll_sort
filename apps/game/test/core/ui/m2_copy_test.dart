@@ -32,12 +32,12 @@ void main() {
 
   test('HUD, coins and boosters', () {
     expect(l10n.familyCounter(1, 4), '1 / 4');
-    expect(l10n.familyCounterSemantics(1, 4), '1 of 4 families done');
-    expect(l10n.familyCounterSemantics(1, 1), '1 of 1 family done');
+    expect(l10n.familyCounterSemantics(1, 4), '1 of 4 families complete');
+    expect(l10n.familyCounterSemantics(1, 1), '1 of 1 family complete');
     expect(l10n.coinsSemantics(1), '1 coin');
     expect(l10n.coinsSemantics(1240), '1,240 coins');
     expect(l10n.coinPrice(60), '60 coins');
-    expect(l10n.boosterCountSemantics('Hint', 2), 'Hint, 2 left');
+    expect(l10n.boosterHintCountSemantics(2), 'Hint, 2 left');
     expect(l10n.boosterCoinSemantics('Undo', 20), 'Undo, 20 coins');
     expect(l10n.bonusLevelTitle(1), 'Bonus Level 1');
   });

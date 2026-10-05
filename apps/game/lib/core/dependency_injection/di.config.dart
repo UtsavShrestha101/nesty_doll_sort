@@ -367,6 +367,13 @@ extension GetItInjectableX on _i174.GetIt {
       registerFor: {_real},
       dispose: (i) => i.dispose(),
     );
+    gh.factory<_i74.RivalSelectCubit>(
+      () => _i74.RivalSelectCubit(
+        gh<_i276.SaveService>(),
+        gh<_i567.RemoteConfigService>(),
+        gh<_i980.DatabaseService>(),
+      ),
+    );
     gh.lazySingleton<_i1053.ShowcaseDolls>(
       () => _i1053.ShowcaseDolls(
         gh<_i267.SkinService>(),
@@ -386,12 +393,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i655.ContentReadyGuard>(
       () => _i655.ContentReadyGuard(gh<_i789.LevelRepository>()),
-    );
-    gh.factory<_i74.RivalSelectCubit>(
-      () => _i74.RivalSelectCubit(
-        gh<_i276.SaveService>(),
-        gh<_i567.RemoteConfigService>(),
-      ),
     );
     gh.factoryParam<_i110.RaceCubit, _i143.RacePlay, dynamic>(
       (request, _) => _i110.RaceCubit(
@@ -467,6 +468,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i843.DailyService>(),
         gh<_i885.CatalogRepository>(),
         gh<_i567.RemoteConfigService>(),
+        gh<_i980.DatabaseService>(),
       ),
     );
     gh.factory<_i151.DailyCubit>(
@@ -475,7 +477,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i969.LevelResolver>(),
         gh<_i276.SaveService>(),
         gh<_i567.RemoteConfigService>(),
-        gh<_i307.ShareService>(),
       ),
     );
     gh.lazySingleton<_i489.JingleCues>(

@@ -165,7 +165,7 @@ class _InfoChip extends StatelessWidget {
 
   static final TextStyle style = AppTextStyleTokens.tierChip.copyWith(
     fontSize: 12,
-    color: AppColors.textBrown,
+    color: AppColorTokens.textBrown,
   );
 
   @override
@@ -522,7 +522,7 @@ class _SolvedFooter extends StatelessWidget {
           l10n.dailyNextPuzzle(time),
           style: AppTextStyleTokens.cardTitle.copyWith(
             fontSize: 15,
-            color: AppColors.textBrown,
+            color: AppColorTokens.textBrown,
           ),
         ),
         const SizedBox(height: 12),

@@ -13,6 +13,8 @@ final class SeededSettings {
     this.sound,
     this.music,
     this.haptics,
+    this.lastRival,
+    this.locale,
   });
 
   final bool? relaxedMode;
@@ -20,6 +22,15 @@ final class SeededSettings {
   final bool? sound;
   final bool? music;
   final bool? haptics;
+
+  /// The rival the player last started a race against (1–3), rival
+  /// select's pick on a new visit when no rival is New (m7-4 4.5).
+  final int? lastRival;
+
+  /// The language the player picked in Settings (a `launchLanguages` code:
+  /// `de`, `pt_BR`, `ja` …), so a run opens in it (`locales_test.dart`,
+  /// build/m7-p5/p5/l10n.md §7.2).
+  final String? locale;
 }
 
 /// Starts a device check from a known save (phase 4 architecture §6.6,
@@ -50,6 +61,10 @@ Future<void> seedSave(
     if (settings.haptics case final on?) {
       await database.setHapticsEnabled(on);
     }
+    if (settings.lastRival case final rival?) {
+      await database.setLastRival(rival);
+    }
+    if (settings.locale case final code?) await database.setLanguage(code);
   } finally {
     // The app opens the boxes itself (`DatabaseModule`); Hive's own
     // `initFlutter` then finds these files.

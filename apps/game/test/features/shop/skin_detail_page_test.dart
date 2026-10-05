@@ -96,6 +96,22 @@ void main() {
     await tester.pump();
   }
 
+  testWidgets('frame 7.4 spacing: sizes card 16 under the panel, Buy 60 dp '
+      'tall, the balance 20 dp under it', (tester) async {
+    await pumpDetail(tester, state: const AsyncValue.data(data: oceanBuyable));
+    final sizes = tester.getRect(
+      find.text('Every size nests the same way. Only the paint changes.'),
+    );
+    final name = tester.getRect(find.text('Ocean'));
+    final buy = tester.getRect(buyButton().first);
+    final balance = tester.getRect(find.textContaining('You have'));
+    expect(buy.height, closeTo(60, 6)); // 60 + the 6 dp edge below
+    expect(balance.top - buy.bottom, greaterThanOrEqualTo(14));
+    // The sizes card's text sits above the name by the 38 dp gap plus the
+    // card's own padding.
+    expect(name.top - sizes.bottom, greaterThan(38));
+  });
+
   testWidgets('the title, captions, name and Buy', (tester) async {
     await pumpDetail(tester, state: const AsyncValue.data(data: oceanBuyable));
     expect(find.text('Skin'), findsOneWidget);
@@ -106,7 +122,7 @@ void main() {
     );
     expect(find.text('Ocean'), findsOneWidget);
     expect(
-      find.text('Sailor collars, tiny anchors and wave trims.'),
+      find.text('Sailor collars, tiny anchors and wave\u00A0trims.'),
       findsOneWidget,
     );
     expect(find.text('Buy'), findsOneWidget);

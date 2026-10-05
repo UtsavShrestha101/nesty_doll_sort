@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/spinner_pulse.dart';
 import 'package:nesty_game/features/gameplay/widgets/generating_overlay.dart';
 
 import '../../../core/ui/support/ui_harness.dart';
@@ -100,4 +101,38 @@ void main() {
       });
     }
   }
+
+  testWidgets('reduced motion (12.5, motion.spinner): frame 0 and the opacity '
+      'pulses 1 -> 0.45 -> 1 over 1,600 ms, looping', (tester) async {
+    await pumpScreen(tester, stage((_) {}), reduceMotion: true);
+    double opacity() => tester
+        .widget<FadeTransition>(
+          find.descendant(
+            of: find.byType(SpinnerPulse),
+            matching: find.byType(FadeTransition),
+          ),
+        )
+        .opacity
+        .value;
+    await tester.pump();
+    expect(opacity(), closeTo(1, 0.01));
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(opacity(), closeTo(0.45, 0.02), reason: 'the low at half a turn');
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(opacity(), closeTo(1, 0.02), reason: 'back up at 1,600 ms');
+    await tester.pump(const Duration(milliseconds: 800));
+    expect(opacity(), closeTo(0.45, 0.02), reason: 'and it loops');
+  });
+
+  testWidgets('with motion allowed there is no pulse', (tester) async {
+    await pumpScreen(tester, stage((_) {}));
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: find.byType(SpinnerPulse),
+        matching: find.byType(FadeTransition),
+      ),
+      findsNothing,
+    );
+  });
 }

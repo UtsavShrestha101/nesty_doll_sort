@@ -120,6 +120,52 @@ void main() {
     expect(find.text('Glass Act'), findsOneWidget);
   });
 
+  testWidgets('frame 10.6: the cream page, a start-aligned title, one-line '
+      'cells under 58 dp and the NestyHub:130-137 type', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1
+      ..padding = const FakeViewPadding(bottom: 34)
+      ..viewPadding = const FakeViewPadding(bottom: 34);
+    addTearDown(tester.view.reset);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+    final cubit = build(const SaveDocument(highestLevel: 6));
+    await pumpRecords(tester, cubit);
+
+    expect(find.byType(CreamPage), findsOneWidget);
+    expect(tester.getTopLeft(find.text('Records')).dx, 16 + 48 + 12);
+    // The list runs to the screen edge (the safe band is padding, not a
+    // gap) and ends clear of the home indicator.
+    expect(tester.getRect(find.byType(ListView)).bottom, 844);
+    // The body starts 14 dp under the header (CSS top 124 = 110 + 14).
+    expect(
+      tester.getRect(find.byType(ListView)).top -
+          tester.getBottomLeft(find.byType(ScreenHeader)).dy,
+      14,
+    );
+
+    expect(
+      // "Longest streak" and "Stars" are both one line.
+      tester.getSize(find.byType(RecordStatCell).at(4)).height,
+      lessThanOrEqualTo(58),
+    );
+    final value = tester.widget<Text>(find.text('Levels won').first);
+    expect(value.style!.fontSize, 11.5);
+    expect(value.style!.height, 1.2);
+    final number = tester.widget<Text>(find.text('5'));
+    expect(number.style!.fontSize, 20);
+
+    final header = tester.widget<Text>(find.text('Races won'));
+    expect(header.style!.fontSize, 16);
+    final rival = tester.widget<Text>(find.text('Pebble'));
+    expect(rival.style!.fontSize, 16);
+    expect(rival.style!.fontWeight, FontWeight.w600);
+    final link = tester.widget<Text>(find.text('Best moves by level'));
+    expect(link.style!.fontSize, 16);
+    expect(link.style!.fontWeight, FontWeight.w600);
+  });
+
   testWidgets('the races card reads to a screen reader as "computer '
       'player", with the wins, and a locked rival says so', (tester) async {
     final handle = tester.ensureSemantics();
@@ -135,19 +181,10 @@ void main() {
       ),
     );
     await pumpRecords(tester, cubit);
-    expect(
-      find.bySemanticsLabel('Pebble, computer player, races won: 3'),
-      findsOneWidget,
-    );
-    expect(
-      find.bySemanticsLabel('Button, computer player, races won: 0'),
-      findsOneWidget,
-    );
-    expect(
-      find.bySemanticsLabel('Comet, computer player, not unlocked yet'),
-      findsOneWidget,
-    );
-    expect(find.bySemanticsLabel('Levels won, 0'), findsOneWidget);
+    expect(find.bySemanticsLabel('Pebble, computer. 3 wins.'), findsOneWidget);
+    expect(find.bySemanticsLabel('Button, computer. 0 wins.'), findsOneWidget);
+    expect(find.bySemanticsLabel('Comet, computer. Locked.'), findsOneWidget);
+    expect(find.bySemanticsLabel('Levels won: 0'), findsOneWidget);
     handle.dispose();
   });
 

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
+import 'package:nesty_game/core/ui/widgets/home/text_link.dart';
 import 'package:nesty_game/features/daily/cubit/reminder_offer_cubit.dart';
-import 'package:nesty_game/features/gameplay/overlays/overlay_text_link.dart';
+import 'package:nesty_game/features/daily/widgets/reminder_time_picker.dart';
 
 /// The one-time reminder offer, a card over the Daily screen after the first
 /// solve (frames 10.2 and 10.2d; ui-spec-menus §6.2; spec-prop §7.9, §10.2
@@ -71,9 +73,7 @@ class ReminderOfferDialog extends StatelessWidget {
 }
 
 String _formatTime(BuildContext context, ReminderOfferState data) =>
-    MaterialLocalizations.of(
-      context,
-    ).formatTimeOfDay(TimeOfDay(hour: data.hour, minute: data.minute));
+    context.formatClock(TimeOfDay(hour: data.hour, minute: data.minute));
 
 class _Overlay extends StatelessWidget {
   const _Overlay({required this.data});
@@ -225,35 +225,37 @@ class _Ask extends StatelessWidget {
         Semantics(
           header: true,
           namesRoute: true,
-          child: Text(
+          // The modal head: Fredoka 700 24/1.15 balanced (frames 10.2,
+          // 10.2d; `text-wrap: balance`).
+          child: BalancedText(
             l10n.reminderOfferTitle,
-            textAlign: TextAlign.center,
-            style: AppTextStyleTokens.h2.copyWith(
-              color: AppColorTokens.textPrimary,
-            ),
+            style: ErrorCard.headStyle,
           ),
         ),
         const SizedBox(height: 10),
         Text(
           l10n.reminderOfferBody,
           textAlign: TextAlign.center,
-          style: AppTextStyleTokens.body.copyWith(
-            color: AppColorTokens.textSecondary,
+          style: context.scriptStyle(
+            AppTextStyleTokens.body.copyWith(
+              color: AppColorTokens.textSecondary,
+            ),
+            role: ScriptTextRole.body,
           ),
         ),
         const SizedBox(height: 16),
         Center(
           child: _TimeChip(
             label: l10n.reminderOfferTime(time),
-            semanticLabel:
-                '${l10n.reminderOfferTime(time)}, ${l10n.reminderOfferChangeTime}',
+            semanticLabel: l10n.reminderTimeChipSemantics(time),
             onPressed: asking
                 ? null
                 : () => unawaited(_pickTime(context, cubit)),
           ),
         ),
         Center(
-          child: _AccentLink(
+          child: TextLink(
+            accent: true,
             label: l10n.reminderOfferChangeTime,
             onPressed: asking
                 ? null
@@ -267,7 +269,7 @@ class _Ask extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Center(
-          child: OverlayTextLink(
+          child: TextLink(
             label: l10n.reminderOfferNo,
             onPressed: asking ? null : () => unawaited(cubit.decline()),
           ),
@@ -277,9 +279,9 @@ class _Ask extends StatelessWidget {
   }
 
   Future<void> _pickTime(BuildContext context, ReminderOfferCubit cubit) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: data.hour, minute: data.minute),
+    final picked = await showReminderTimePicker(
+      context,
+      initial: TimeOfDay(hour: data.hour, minute: data.minute),
     );
     if (picked != null) cubit.setTime(hour: picked.hour, minute: picked.minute);
   }
@@ -303,20 +305,22 @@ class _Denied extends StatelessWidget {
         Semantics(
           header: true,
           namesRoute: true,
-          child: Text(
+          // The modal head: Fredoka 700 24/1.15 balanced (frames 10.2,
+          // 10.2d; `text-wrap: balance`).
+          child: BalancedText(
             l10n.reminderOfferDeniedTitle,
-            textAlign: TextAlign.center,
-            style: AppTextStyleTokens.h2.copyWith(
-              color: AppColorTokens.textPrimary,
-            ),
+            style: ErrorCard.headStyle,
           ),
         ),
         const SizedBox(height: 10),
         Text(
           l10n.reminderOfferDenied(_formatTime(context, data)),
           textAlign: TextAlign.center,
-          style: AppTextStyleTokens.body.copyWith(
-            color: AppColorTokens.textSecondary,
+          style: context.scriptStyle(
+            AppTextStyleTokens.body.copyWith(
+              color: AppColorTokens.textSecondary,
+            ),
+            role: ScriptTextRole.body,
           ),
         ),
         const SizedBox(height: 20),
@@ -326,7 +330,7 @@ class _Denied extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Center(
-          child: OverlayTextLink(
+          child: TextLink(
             label: l10n.notNow,
             onPressed: () => unawaited(cubit.decline()),
           ),
@@ -338,7 +342,7 @@ class _Denied extends StatelessWidget {
 
 /// Frame 10.2's time chip: 48 tall, radius 24, white with a 4 px edge, a
 /// 32 dp clock tile and the "Every day at {time}" line. It opens the
-/// phone's time picker, like [_AccentLink].
+/// phone's time picker, like the "Change time" link.
 class _TimeChip extends StatelessWidget {
   const _TimeChip({
     required this.label,
@@ -396,43 +400,4 @@ class _TimeChip extends StatelessWidget {
       ],
     ),
   );
-}
-
-/// "Change time": the orange text link of frame 10.2 (`primaryEdge`), a
-/// 48 dp touch target around the line (lead note 3).
-// TODO(design): 10.2's orange link has no `textLink` variant in tokens.json.
-class _AccentLink extends StatelessWidget {
-  const _AccentLink({required this.label, required this.onPressed});
-
-  final String label;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final onPressed = this.onPressed;
-    void activate() {
-      TactileFeedback.of(context)?.activate();
-      onPressed?.call();
-    }
-
-    return Semantics(
-      button: true,
-      enabled: onPressed != null,
-      onTap: onPressed == null ? null : activate,
-      child: TouchTarget(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          excludeFromSemantics: true,
-          onTap: onPressed == null ? null : activate,
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: OverlayTextLink.style.copyWith(
-              color: AppColorTokens.primaryEdge,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 /// Coins and counters as text: grouped for the player's locale ("1,240",
 /// "6,190"; NestyBoard HUD) in the given style.
 ///
-/// TODO(M7): tabular figures (PROGRESS Q29; moved from M2, the approach
+/// TODO(M8): tabular figures (PROGRESS Q29; moved from M2, the approach
 /// waits on the owner). The design asks for them, but Fredoka's digits are
 /// proportional and it has no `tnum`, so a changing number still shifts.
 /// This widget is the one place to apply the approach the owner picks (a

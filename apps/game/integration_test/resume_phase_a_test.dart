@@ -5,6 +5,7 @@ import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
+import 'support/phone_language.dart';
 import 'support/resume_scenario.dart';
 
 /// Phase A of the device-kill resume check (plan-m3.md "Verification";
@@ -31,6 +32,9 @@ import 'support/resume_scenario.dart';
 /// Hive directory, so what this phase writes is what phase B's fresh
 /// process reads back. Reinstalling phase B's build over this one keeps
 /// the app's data (`adb install -r`, `simctl install`).
+///
+/// With `--dart-define=NESTY_RESUME_SCENARIO=l1` it is E9's kill instead
+/// (`ResumeScenario.duringLevel1`): one move on level 1, then the kill.
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   // The board's own timeline and the solver's isolate need real frames,
@@ -38,8 +42,11 @@ void main() {
   binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
   testWidgets(
-    'phase A: wins levels 1-2, plays level 3 from Home and saves it',
+    ResumeScenario.duringLevel1
+        ? 'phase A (E9): one move on level 1 from the splash, saved'
+        : 'phase A: wins levels 1-2, plays level 3 from Home and saves it',
     (tester) async {
+      pinEnglishPhone(tester);
       app.main();
       final board = Board(tester);
 
@@ -52,14 +59,22 @@ void main() {
       );
       expect(find.byType(HomePage), findsNothing);
 
-      await ResumeScenario.winTutorialLevels(tester, board);
-      await tester.tap(
-        find.bySemanticsLabel('Play level ${ResumeScenario.level}'),
-      );
-      await board.waitForLevel(ResumeScenario.level);
-      expect(board.state.restored, isFalse, reason: 'a fresh level 3');
+      if (ResumeScenario.duringLevel1) {
+        // E9 (`l1`): one tutorial move on the splash's level 1, then the
+        // kill.
+        await board.waitForLevel(1);
+        expect(board.state.restored, isFalse, reason: 'a fresh level 1');
+        await ResumeScenario.playLevel1(tester, board);
+      } else {
+        await ResumeScenario.winTutorialLevels(tester, board);
+        await tester.tap(
+          find.bySemanticsLabel('Play level ${ResumeScenario.level}'),
+        );
+        await board.waitForLevel(ResumeScenario.level);
+        expect(board.state.restored, isFalse, reason: 'a fresh level 3');
 
-      await ResumeScenario.play(tester, board);
+        await ResumeScenario.play(tester, board);
+      }
       ResumeScenario.expectScriptedBoard(board.state.board);
       expect(board.state.freeUndosLeft, ResumeScenario.expectedFreeUndosLeft);
 

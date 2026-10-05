@@ -1,5 +1,6 @@
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/services/records/badge.dart';
+import 'package:nesty_game/core/services/records/badge_rules.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 
 /// The Records screen's badge grid (frame 10.6; tokens `layout.records.
@@ -57,7 +58,18 @@ class _BadgeCell extends StatelessWidget {
 
   static const _style = SurfaceStyle(
     color: AppColorTokens.surfaceWhite,
-    shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4)],
+    shadows: [
+      NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
+      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4),
+    ],
+  );
+
+  /// A badge not earned yet (NestyHub:322): the sunk face.
+  static const _lockedStyle = SurfaceStyle(
+    color: AppColorTokens.sunkFace,
+    shadows: [
+      NestyShadow(color: AppColorTokens.sunkShade, inset: true, dy: 2, blur: 4),
+    ],
   );
 
   @override
@@ -66,16 +78,23 @@ class _BadgeCell extends StatelessWidget {
     final name = l10n.badgeName(badge.id);
     final semanticLabel = earned
         ? l10n.badgeSemanticsEarned(name)
-        : l10n.badgeSemanticsLocked(name, l10n.badgeHint(badge.id));
+        : l10n.badgeSemanticsLocked(
+            name,
+            l10n.badgeHint(
+              badge.id,
+              BadgeRules.howLevel(badge),
+              BadgeRules.howDailies(badge),
+            ),
+          );
     return Semantics(
       container: true,
       label: semanticLabel,
       hint: earned ? l10n.badgeLine(badge.id) : null,
       excludeSemantics: true,
       child: NestySurface(
-        style: _style,
+        style: earned ? _style : _lockedStyle,
         radius: BorderRadius.circular(RecordsTokens.badgeGridRadius),
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -88,11 +107,11 @@ class _BadgeCell extends StatelessWidget {
               name,
               textAlign: TextAlign.center,
               style: AppTextStyleTokens.cardTitle.copyWith(
-                fontSize: 14,
+                fontSize: 13,
                 height: 1.15,
                 color: earned
                     ? AppColorTokens.textPrimary
-                    : AppColorTokens.textMuted,
+                    : AppColorTokens.textLocked,
               ),
             ),
             const SizedBox(height: 3),
@@ -100,9 +119,9 @@ class _BadgeCell extends StatelessWidget {
               earned ? l10n.badgeLine(badge.id) : l10n.badgeLockedLine,
               textAlign: TextAlign.center,
               style: AppTextStyleTokens.caption.copyWith(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
-                height: 1.2,
+                height: 1.3,
                 color: AppColorTokens.textSecondary,
               ),
             ),

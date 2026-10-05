@@ -45,8 +45,10 @@ abstract final class HapticPatterns {
 /// Real [HapticsService] on Flutter's built-in [HapticFeedback], no extra
 /// package needed. Multi-pulse patterns are timed with [Future.delayed]
 /// (tests inject the delay).
-// TODO(M7): tune by feel on devices (BACKLOG M7, moved from M3's "Audio
-// and haptics": it needs the owner's hands on real phones).
+//
+// The patterns and gaps are tokens.json `haptics` (success 80 ms, softError
+// 60 ms); how they feel on real phones is the owner's check, in BACKLOG
+// "Owner inputs".
 @LazySingleton(as: HapticsService, env: [AppEnv.real])
 class SystemHapticsService implements HapticsService {
   SystemHapticsService(

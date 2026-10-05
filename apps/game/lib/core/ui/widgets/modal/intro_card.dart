@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
-import 'package:nesty_game/core/ui/colors/app_colors.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/buttons/tactile_button.dart';
@@ -53,10 +53,13 @@ class IntroCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             text,
-            style: AppTextStyleTokens.body.copyWith(
-              fontSize: 16,
-              height: 1.45,
-              color: AppColors.iconBrown,
+            style: context.scriptStyle(
+              AppTextStyleTokens.body.copyWith(
+                fontSize: 16,
+                height: 1.45,
+                color: AppColorTokens.iconBrown,
+              ),
+              role: ScriptTextRole.body,
             ),
             textAlign: TextAlign.center,
           ),
@@ -90,7 +93,7 @@ class _NewChip extends StatelessWidget {
       label,
       style: AppTextStyleTokens.tierChip.copyWith(
         fontSize: 12,
-        letterSpacing: 1.44,
+        letterSpacing: context.script.tracking(1.44),
         color: const Color(0xFFFFFFFF),
       ),
     ),

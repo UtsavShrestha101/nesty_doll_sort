@@ -14,6 +14,18 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>es</string>
+		<string>pt-BR</string>
+		<string>id</string>
+		<string>hi</string>
+		<string>de</string>
+		<string>fr</string>
+		<string>tr</string>
+		<string>ja</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>Nesty</string>
 	<key>CFBundlePackageType</key>

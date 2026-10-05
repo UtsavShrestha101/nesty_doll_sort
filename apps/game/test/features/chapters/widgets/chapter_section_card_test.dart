@@ -85,9 +85,7 @@ void main() {
     expect(find.text('Rainy Café Corner'), findsOneWidget);
     // The header is one node that folds the card and says it is expanded.
     expect(
-      find.bySemanticsLabel(
-        'Chapter 2, Rainy Café Corner, levels 21 to 24, 0 of 0 stars',
-      ),
+      find.bySemanticsLabel('Chapter 2, Rainy Café Corner. 0 of 0 stars.'),
       findsOneWidget,
     );
   });
@@ -106,8 +104,9 @@ void main() {
     final played = <PlayRequest>[];
     await pumpScreen(tester, card(section, onPlay: played.add));
     expect(find.text('Best 9'), findsOneWidget);
+    // A best with no stars (a level without a par) still says its best.
     expect(
-      find.bySemanticsLabel('Level 21, won, best 9 moves'),
+      find.bySemanticsLabel('Level 21, won. Best 9 moves.'),
       findsOneWidget,
     );
 
@@ -129,7 +128,7 @@ void main() {
       'has only Play (a level won before M7)', (tester) async {
     final played = <PlayRequest>[];
     await pumpScreen(tester, card(section, onPlay: played.add));
-    expect(find.bySemanticsLabel('Level 22, won'), findsOneWidget);
+    expect(find.bySemanticsLabel('Level 22, won.'), findsOneWidget);
 
     await tester.tap(find.text('22'));
     await tester.pumpAndSettle();
@@ -143,7 +142,7 @@ void main() {
       'arrow', (tester) async {
     final played = <PlayRequest>[];
     await pumpScreen(tester, card(section, onPlay: played.add));
-    expect(find.bySemanticsLabel('Level 23, play next'), findsOneWidget);
+    expect(find.bySemanticsLabel('Level 23, next to play.'), findsOneWidget);
     expect(find.byIcon(NestyIcons.playArrow), findsOneWidget);
 
     await tester.tap(find.text('23'));
@@ -156,7 +155,7 @@ void main() {
   ) async {
     final played = <PlayRequest>[];
     await pumpScreen(tester, card(section, onPlay: played.add));
-    expect(find.bySemanticsLabel('Level 24, locked'), findsOneWidget);
+    expect(find.bySemanticsLabel('Level 24, locked.'), findsOneWidget);
     expect(find.text('24'), findsOneWidget);
     expect(find.byIcon(NestyIcons.lock), findsOneWidget);
 
@@ -274,9 +273,7 @@ void main() {
       expect(find.text('60/60'), findsOneWidget);
       expect(find.byType(ChapterLevelCell), findsNothing);
       expect(
-        find.bySemanticsLabel(
-          'Chapter 1, Sunny Toy Shop, levels 1 to 20, 60 of 60 stars',
-        ),
+        find.bySemanticsLabel('Chapter 1, Sunny Toy Shop. 60 of 60 stars.'),
         findsOneWidget,
       );
     });
@@ -324,9 +321,7 @@ void main() {
       expect(find.byType(StarsChip), findsNothing);
       expect(find.byIcon(NestyIcons.lock), findsOneWidget);
       expect(
-        find.bySemanticsLabel(
-          'Chapter 5, Night Carnival, levels 81 to 100, locked',
-        ),
+        find.bySemanticsLabel('Chapter 5, Night Carnival. Locked.'),
         findsOneWidget,
       );
       await tester.tap(find.text('Night Carnival'));
@@ -450,7 +445,7 @@ void main() {
       expect(chest.size.width, 18);
       expect(chest.size.height, closeTo(15, 0.1));
       expect(
-        find.bySemanticsLabel('Level 10, play next, has a milestone chest'),
+        find.bySemanticsLabel('Level 10, next to play. A chest at this level.'),
         findsOneWidget,
       );
     });
@@ -465,7 +460,9 @@ void main() {
       expect(find.byIcon(IconUses.chapterFinale), findsOneWidget);
       expect(find.byWidgetPredicate(isChestArt), findsOneWidget);
       expect(
-        find.bySemanticsLabel('Level 20, play next, last level of the chapter'),
+        find.bySemanticsLabel(
+          'Level 20, next to play. The last level of the chapter.',
+        ),
         findsOneWidget,
       );
     });
@@ -498,12 +495,12 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.bySemanticsLabel('Level 21, won, best 9 moves, 3 of 3 stars'),
+        find.bySemanticsLabel('Level 21, 3 stars. Best 9 moves.'),
         findsOneWidget,
       );
       // A won cell without stars (won before M7, or without a par) draws
       // none, and its semantics stay exactly as before.
-      expect(find.bySemanticsLabel('Level 22, won'), findsOneWidget);
+      expect(find.bySemanticsLabel('Level 22, won.'), findsOneWidget);
     });
 
     testWidgets('the card and the folded row always show the star total, '

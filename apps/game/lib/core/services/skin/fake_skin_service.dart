@@ -30,6 +30,7 @@ class FakeSkinService implements SkinService {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   }) async => _PlaceholderLevelSkin();
 
   @override

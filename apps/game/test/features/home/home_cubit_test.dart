@@ -10,9 +10,11 @@ import 'package:nesty_game/core/repository/fake_catalog_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_resolver.dart';
 import 'package:nesty_game/core/services/clock/fake_clock.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/fake_daily_service.dart';
 import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -33,11 +35,16 @@ FakeLevelRepository _levels() {
   );
 }
 
+class _SettableSave extends FakeSaveService {
+  void replaceDocument(SaveDocument next) => adopt(next);
+}
+
 HomeCubit _cubit({
   required FakeSaveService save,
   FakeLevelRepository? levels,
   DailyService? daily,
   FakeCatalogRepository? catalog,
+  FakeDatabaseService? database,
 }) {
   final theLevels = levels ?? _levels();
   return HomeCubit(
@@ -47,6 +54,7 @@ HomeCubit _cubit({
     daily ?? FakeDailyService(FakeClock()),
     catalog ?? FakeCatalogRepository(),
     FakeRemoteConfigService(),
+    database ?? FakeDatabaseService(),
   );
 }
 
@@ -342,23 +350,65 @@ void main() {
       expect(cubit.state.data!.dailyStreak, 4, reason: 'the number stays');
     });
 
-    test('a solve that lights a resting flame reads relit once, until the '
-        'next refresh', () async {
-      final save = FakeSaveService();
+    SaveDocument relitDoc() => SaveDocument(
+      daily: DailyProgress(
+        streak: 5,
+        lit: true,
+        run: 1,
+        lastDate: LocalDate(2026, 10, 1),
+      ),
+    );
+
+    test('a solve that lights a resting flame glows once, then plays the '
+        'plain flame (m7-4 4.10)', () async {
+      final save = _SettableSave();
+      final database = FakeDatabaseService();
       final daily = FakeDailyService(FakeClock());
       daily.status = daily.status.copyWith(streak: 4, lit: false);
-      final cubit = _cubit(save: save, daily: daily);
+      final cubit = _cubit(save: save, daily: daily, database: database);
       addTearDown(cubit.close);
       await cubit.load();
       expect(cubit.state.data!.streakLook, StreakLook.paused);
 
-      daily.status = daily.status.copyWith(lit: true);
+      save.replaceDocument(relitDoc());
+      daily.status = daily.status.copyWith(streak: 5, lit: true);
       await pumpEventQueue();
       expect(cubit.state.data!.streakLook, StreakLook.relit);
+      expect(database.relitGlowSeen, '2026-10-01');
 
+      // A refresh while it plays keeps it; finishing ends it for good.
+      save.addCoins(5);
+      await pumpEventQueue();
+      expect(cubit.state.data!.streakLook, StreakLook.relit);
+      cubit.relitGlowFinished();
+      expect(cubit.state.data!.streakLook, StreakLook.lit);
       save.addCoins(5);
       await pumpEventQueue();
       expect(cubit.state.data!.streakLook, StreakLook.lit);
+    });
+
+    test('a later session shows the glow once for a relight Home missed, '
+        'and not again once it was seen', () async {
+      final database = FakeDatabaseService();
+      final daily = FakeDailyService(FakeClock());
+      daily.status = daily.status.copyWith(streak: 5, lit: true);
+      final first = _cubit(
+        save: FakeSaveService(initial: relitDoc()),
+        daily: daily,
+        database: database,
+      );
+      addTearDown(first.close);
+      await first.load();
+      expect(first.state.data!.streakLook, StreakLook.relit);
+
+      final second = _cubit(
+        save: FakeSaveService(initial: relitDoc()),
+        daily: daily,
+        database: database,
+      );
+      addTearDown(second.close);
+      await second.load();
+      expect(second.state.data!.streakLook, StreakLook.lit);
     });
 
     test('a first solve (nothing was resting) is lit, not relit', () async {

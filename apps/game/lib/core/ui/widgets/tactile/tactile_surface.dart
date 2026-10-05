@@ -33,6 +33,8 @@ class TactileSurface extends StatefulWidget {
     this.semanticLabel,
     this.semanticValue,
     this.selected,
+    this.radioChecked,
+    this.semanticAttributedLabel,
     this.customSemanticsActions,
     this.excludeChildSemantics = false,
     this.minTouchSize,
@@ -63,6 +65,15 @@ class TactileSurface extends StatefulWidget {
   /// Whether this is the chosen option of a group (a sheet's active row).
   /// Null (the default) exposes no selected state at all.
   final bool? selected;
+
+  /// Makes this a radio of a mutually exclusive group (the language
+  /// sheet's rows): checked or not, and no longer announced as a button.
+  /// Null (the default) is a plain button.
+  final bool? radioChecked;
+
+  /// The label with its language spans (a name read in its own language),
+  /// used instead of [semanticLabel] when set.
+  final AttributedString? semanticAttributedLabel;
 
   /// Extra actions a screen reader offers on this control (the Skins
   /// card's Equip and Buy, whose own buttons its label covers).
@@ -216,10 +227,15 @@ class _TactileSurfaceState extends State<TactileSurface>
     // Its own node: the child's text merges into the button's label.
     return Semantics(
       container: true,
-      button: true,
+      button: widget.radioChecked == null,
+      inMutuallyExclusiveGroup: widget.radioChecked == null ? null : true,
+      checked: widget.radioChecked,
       enabled: enabled,
       selected: widget.selected,
-      label: widget.semanticLabel,
+      label: widget.semanticAttributedLabel == null
+          ? widget.semanticLabel
+          : null,
+      attributedLabel: widget.semanticAttributedLabel,
       value: widget.semanticValue,
       excludeSemantics: widget.excludeChildSemantics,
       customSemanticsActions: widget.customSemanticsActions,

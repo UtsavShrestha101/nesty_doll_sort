@@ -82,9 +82,11 @@ abstract class HomeState with _$HomeState {
     @Default(0) int chapterStars,
     @Default(0) int chapterStarsPossible,
 
-    /// The flame was paused and a solve just lit it again (the Daily win
-    /// card's "relit" moment): the tile's badge shows its once-only ring
-    /// until the next refresh (frame 10.7; menus spec 6.5).
+    /// The flame was paused and a solve lit it again, and Home hasn't
+    /// glowed for that yet (this session or an earlier one): the tile's badge
+    /// shows its `relitGlow` ring once, 2,400 ms and a 400 ms fade, until
+    /// `HomeCubit.relitGlowFinished` (m7-4 4.10, `motion.relitHome`; frame
+    /// 10.7).
     @Default(false) bool streakRelit,
   }) = _HomeState;
 

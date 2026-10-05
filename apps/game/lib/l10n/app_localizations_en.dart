@@ -30,12 +30,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashStorageTitle => 'Your phone is nearly full';
 
   @override
-  String splashStorageBody(int megabytes) {
-    final intl.NumberFormat megabytesNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String megabytesString = megabytesNumberFormat.format(megabytes);
+  String splashStorageBody(int size) {
+    final intl.NumberFormat sizeNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String sizeString = sizeNumberFormat.format(size);
 
-    return 'Nesty needs about $megabytesString MB to set up the shelves. Free some space, then try again.';
+    return 'Nesty needs about $sizeString MB to set up the shelves. Free some space, then try again.';
   }
 
   @override
@@ -60,13 +61,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boosterUndo => 'Undo';
 
   @override
+  String get boosterUndoShort => 'Undo';
+
+  @override
   String get boosterHint => 'Hint';
+
+  @override
+  String get boosterHintShort => 'Hint';
 
   @override
   String get boosterExtraSlot => '+Slot';
 
   @override
+  String get boosterExtraSlotShort => '+1';
+
+  @override
   String get restart => 'Restart';
+
+  @override
+  String get restartShort => 'Restart';
 
   @override
   String get splashDollSort => 'DOLL SORT';
@@ -107,8 +120,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString coins. Get more coins',
-      one: '1 coin. Get more coins',
+      other: '$countString coins. Opens the Shop.',
+      one: '$countString coin. Opens the Shop.',
     );
     return '$_temp0';
   }
@@ -118,6 +131,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tierSuperHard => 'SUPER HARD';
+
+  @override
+  String get tierSuperShort => 'SUPER';
 
   @override
   String tierName(String tier) {
@@ -154,11 +170,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String familyCounterSemantics(int done, int total) {
-    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String doneString = doneNumberFormat.format(done);
+  String familyCounterSemantics(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
@@ -166,8 +181,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$doneString of $totalString families done',
-      one: '$doneString of 1 family done',
+      other: '$countString of $totalString families complete',
+      one: '$countString of $totalString family complete',
     );
     return '$_temp0';
   }
@@ -211,23 +226,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backSemantics => 'Back';
 
   @override
-  String boosterCountSemantics(String booster, int count) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String countString = countNumberFormat.format(count);
-
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$booster, $countString left',
-      one: '$booster, 1 left',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String boosterAdSemantics(String booster) {
-    return '$booster, watch an ad for one more';
+    return '$booster, watch a video';
   }
 
   @override
@@ -240,7 +240,52 @@ class AppLocalizationsEn extends AppLocalizations {
       price,
       locale: localeName,
       other: '$booster, $priceString coins',
-      one: '$booster, 1 coin',
+      one: '$booster, $priceString coin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boosterUndoCountSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Undo, $countString left',
+      one: 'Undo, $countString left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boosterHintCountSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hint, $countString left',
+      one: 'Hint, $countString left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boosterSlotCountSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Extra slot, $countString left',
+      one: 'Extra slot, $countString left',
     );
     return '$_temp0';
   }
@@ -327,6 +372,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get winTitle => 'Level Complete!';
 
   @override
+  String get winTitleShort => 'Complete!';
+
+  @override
   String get winContinue => 'Continue';
 
   @override
@@ -399,6 +447,11 @@ class AppLocalizationsEn extends AppLocalizations {
     final String numberString = numberNumberFormat.format(number);
 
     return 'CHAPTER $numberString · $name';
+  }
+
+  @override
+  String chapterRibbonShort(String name) {
+    return '$name';
   }
 
   @override
@@ -492,7 +545,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navShop => 'Shop';
 
   @override
+  String get navHomeShort => 'Home';
+
+  @override
+  String get navShopShort => 'Shop';
+
+  @override
   String get navMuseum => 'Museum';
+
+  @override
+  String get navMuseumShort => 'Museum';
 
   @override
   String get homeDailyTile => 'Daily Puzzle';
@@ -517,7 +579,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeDailyLocked => 'After Level 2';
+  String homeDailyLocked(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'After Level $levelString';
+  }
 
   @override
   String get homeBonusBadge => 'BONUS';
@@ -584,6 +652,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String languageName(String language) {
     String _temp0 = intl.Intl.selectLogic(language, {
+      'en': 'English',
       'es': 'Spanish',
       'pt_BR': 'Portuguese',
       'id': 'Indonesian',
@@ -598,7 +667,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get languageComingSoon => 'Coming soon';
+  String a11yJoinList(String first, String second) {
+    return '$first, $second';
+  }
+
+  @override
+  String a11yJoinSentences(String first, String second) {
+    return '$first. $second';
+  }
 
   @override
   String languageRowSemantics(String autonym, String detail) {
@@ -650,6 +726,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String dailyFreezesSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString streak freezes',
+      one: '$countString streak freeze',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get dailyDay => 'Day';
 
   @override
@@ -686,12 +777,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String dailyChestRow(int coins) {
-    final intl.NumberFormat coinsNumberFormat =
+  String dailyChestRow(int count) {
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String coinsString = coinsNumberFormat.format(coins);
+    final String countString = countNumberFormat.format(count);
 
-    return 'Day 7 chest · $coinsString coins';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Day 7 chest · $countString coins',
+      one: 'Day 7 chest · $countString coin',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -876,6 +973,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get museumNextFamily => 'Next family';
 
   @override
+  String get museumNextFamilyKicker => 'NEXT FAMILY';
+
+  @override
   String museumFamilyLabel(String name) {
     return '$name Family';
   }
@@ -977,19 +1077,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String museumLockedShelfLabel(int chapter, int first, int last) {
-    final intl.NumberFormat chapterNumberFormat =
+  String museumNextChip(int count) {
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String chapterString = chapterNumberFormat.format(chapter);
-    final intl.NumberFormat firstNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String firstString = firstNumberFormat.format(first);
-    final intl.NumberFormat lastNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String lastString = lastNumberFormat.format(last);
+    final String countString = countNumberFormat.format(count);
 
-    return 'Chapter $chapterString · Levels $firstString–$lastString';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString to go',
+      one: '$countString to go',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1052,7 +1151,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopEquip => 'Equip';
 
   @override
-  String get shopOwned => 'Owned';
+  String get skinOwnedSemantics => 'Owned';
 
   @override
   String skinName(String skin) {
@@ -1239,6 +1338,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Put the last doll in. A family is done when every size is nested.';
 
   @override
+  String tutorialStepSemantics(int step, String title) {
+    final intl.NumberFormat stepNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String stepString = stepNumberFormat.format(step);
+
+    return 'Step $stepString of 3. $title';
+  }
+
+  @override
   String get tutorialSwallowChip => 'NEW MOVE';
 
   @override
@@ -1403,19 +1512,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chaptersLevelPlay => 'Play';
 
   @override
-  String chaptersLevelSemanticsWon(int level, int moves) {
+  String chaptersLevelSemanticsWon(int level, int count, int best) {
     final intl.NumberFormat levelNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
-    final intl.NumberFormat movesNumberFormat =
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String movesString = movesNumberFormat.format(moves);
+    final String countString = countNumberFormat.format(count);
+    final intl.NumberFormat bestNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String bestString = bestNumberFormat.format(best);
 
     String _temp0 = intl.Intl.pluralLogic(
-      moves,
+      count,
       locale: localeName,
-      other: 'Level $levelString, won, best $movesString moves',
-      one: 'Level $levelString, won, best 1 move',
+      other: 'Level $levelString, $countString stars. Best $bestString moves.',
+      one: 'Level $levelString, $countString star. Best $bestString moves.',
     );
     return '$_temp0';
   }
@@ -1430,12 +1543,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String chaptersLevelSemanticsWonBestOnly(int level, int best) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+    final intl.NumberFormat bestNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String bestString = bestNumberFormat.format(best);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      best,
+      locale: localeName,
+      other: 'Level $levelString, won. Best $bestString moves.',
+      one: 'Level $levelString, won. Best $bestString move.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String chaptersLevelSemanticsCurrent(int level) {
     final intl.NumberFormat levelNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Level $levelString, play next';
+    return 'Level $levelString, next to play';
   }
 
   @override
@@ -1518,33 +1650,40 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String badgeHint(String badge) {
+  String badgeHint(String badge, int level, int count) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.selectLogic(badge, {
-      'first_family': 'Complete a family',
-      'glass_breaker': 'Open a glass case',
-      'ice_melter': 'Melt the ice on a stand',
-      'tall_order': 'Win a level with size-5 dolls',
-      'grand_nest': 'Win a level with size-6 dolls',
-      'level_100': 'Win Level 100',
-      'level_200': 'Win Level 200',
-      'dailies_7': 'Solve 7 daily puzzles',
-      'dailies_30': 'Solve 30 daily puzzles',
-      'first_race': 'Win a race against the computer',
-      'all_rivals': 'Beat every computer rival',
-      'museum_full': 'Bring every Museum family home',
+      'first_family': 'Nest a whole family.',
+      'glass_breaker': 'Open a glass case.',
+      'ice_melter': 'Free a doll from the ice.',
+      'tall_order': 'Win a level with size-5 dolls.',
+      'grand_nest': 'Win a level with size-6 dolls.',
+      'level_100': 'Win level $levelString.',
+      'level_200': 'Win level $levelString.',
+      'dailies_7': 'Solve $countString daily puzzles.',
+      'dailies_30': 'Solve $countString daily puzzles.',
+      'first_race': 'Beat the computer in a race.',
+      'all_rivals': 'Beat every computer rival.',
+      'museum_full': 'Bring every family home to your Museum.',
       'other': '',
     });
     return '$_temp0';
   }
 
   @override
-  String badgeSemanticsEarned(String name) {
-    return '$name, earned';
+  String badgeSemanticsEarned(String badge) {
+    return '$badge, earned';
   }
 
   @override
-  String badgeSemanticsLocked(String name, String hint) {
-    return '$name, not earned yet. $hint';
+  String badgeSemanticsLocked(String badge, String how) {
+    return '$badge, not earned yet. $how';
   }
 
   @override
@@ -1662,15 +1801,20 @@ class AppLocalizationsEn extends AppLocalizations {
       coins,
       locale: localeName,
       other: '$coinsString coins',
-      one: '1 coin',
+      one: '$coinsString coin',
     );
     String _temp1 = intl.Intl.pluralLogic(
       hints,
       locale: localeName,
       other: '$hintsString hints',
-      one: '1 hint',
+      one: '$hintsString hint',
     );
-    return '$_temp0 and $_temp1';
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String chestSemantics(String contents) {
+    return 'Chest. Inside: $contents.';
   }
 
   @override
@@ -1710,7 +1854,7 @@ class AppLocalizationsEn extends AppLocalizations {
       count,
       locale: localeName,
       other: 'Your $countString free undos are used',
-      one: 'Your 1 free undo is used',
+      one: 'Your $countString free undo is used',
     );
     return '$_temp0';
   }
@@ -1725,32 +1869,45 @@ class AppLocalizationsEn extends AppLocalizations {
       count,
       locale: localeName,
       other: '$countString extra slots is the most for one level.',
-      two: 'Two extra slots is the most for one level.',
       one: 'One extra slot is the most for one level.',
     );
     return '$_temp0';
   }
 
   @override
-  String boosterUndoUnlimitedSemantics(String booster) {
-    return '$booster, unlimited';
-  }
+  String get boosterUndoUnlimitedSemantics => 'Undo, unlimited';
 
   @override
   String get oomUndoFreeChip => 'Free';
 
   @override
-  String boosterLimitSemantics(String booster, int used, int total) {
-    return '$booster, $used of $total used';
+  String boosterLimitSemantics(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '+Slot, $countString of $totalString used';
   }
 
   @override
   String hintGainedTag(int count) {
-    return '+$count';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '+$countString';
   }
 
   @override
-  String get restartSuggestedHint => 'Suggested';
+  String boosterSuggestedSemantics(String booster) {
+    return '$booster, suggested';
+  }
+
+  @override
+  String get boosterRestartSemantics => 'Restart the level';
 
   @override
   String get homeVsComputerTile => 'vs Computer';
@@ -1816,8 +1973,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       number,
       locale: localeName,
-      other: 'Quick, tidy and hard to catch.',
-      two: 'Checks each move twice before it makes it.',
+      other: 'Lively, tidy and hard to catch.',
+      two: 'Checks each move twice, then makes it.',
       one: 'Takes its time and enjoys every doll along the way.',
     );
     return '$_temp0';
@@ -1832,9 +1989,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       number,
       locale: localeName,
-      other: 'Careful · Quick',
-      two: 'Careful · Slow',
-      one: 'Relaxed · Slow',
+      other: 'Lively pace',
+      two: 'Steady pace',
+      one: 'Gentle pace',
     );
     return '$_temp0';
   }
@@ -1866,6 +2023,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String raceRivalSemantics(String name) {
     return '$name, Computer';
   }
+
+  @override
+  String raceRivalCardSemantics(String rival, String skill) {
+    return '$rival, computer rival. $skill.';
+  }
+
+  @override
+  String raceRivalLockedSemantics(String rival) {
+    return 'Locked computer rival. Beat $rival to unlock.';
+  }
+
+  @override
+  String get raceRivalSelectedSemantics => 'Selected';
 
   @override
   String get raceStart => 'Start';
@@ -1903,11 +2073,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String raceStripSemantics(String name, int done, int total) {
-    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String doneString = doneNumberFormat.format(done);
+  String raceStripSemantics(String name, int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
@@ -1915,8 +2084,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$name, Computer: $doneString of $totalString families',
-      one: '$name, Computer: $doneString of 1 family',
+      other: '$name, computer: $countString of $totalString families',
+      one: '$name, computer: $countString of $totalString family',
     );
     return '$_temp0';
   }
@@ -1955,8 +2124,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get raceWinTitle => 'You won the race!';
 
   @override
+  String get raceWinTitleShort => 'You won!';
+
+  @override
   String raceWinBody(String rival) {
-    return 'You completed every family before $rival.';
+    return 'Every family is complete. $rival was still sorting.';
   }
 
   @override
@@ -1978,6 +2150,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get raceLossTitle => 'So close! Rematch?';
 
   @override
+  String get raceLossTitleShort => 'So close!';
+
+  @override
   String raceLossBody(String rival) {
     return '$rival finished first this time. A rematch costs nothing.';
   }
@@ -1991,10 +2166,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String raceRivalUnlockedRace(String rival) {
+    return 'Race $rival';
+  }
+
+  @override
   String get raceLeaveTitle => 'Leave this race?';
 
   @override
-  String get raceLeaveBody => 'The race ends here. No coins, and nothing lost.';
+  String get raceLeaveBody =>
+      'The race stops here. No coins, and you keep everything.';
 
   @override
   String get raceLeaveKeep => 'Keep racing';
@@ -2079,15 +2260,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Wins with a hint or an extra slot earn up to 2 stars.';
 
   @override
-  String chaptersStarsTotal(int earned, int total) {
-    final intl.NumberFormat earnedNumberFormat =
+  String chaptersStarsTotal(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String earnedString = earnedNumberFormat.format(earned);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
-    return '$earnedString/$totalString';
+    return '$countString/$totalString';
+  }
+
+  @override
+  String chaptersStarsTotalAll(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$countString/$totalString';
   }
 
   @override
@@ -2142,7 +2335,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get dailyShareSemantics => 'Share today\'s result';
+  String get dailyShareSemantics => 'Share today’s result';
 
   @override
   String dailyShareText(String date, String glyphs, int moves, int day) {
@@ -2183,6 +2376,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reminderOfferChangeTime => 'Change time';
 
   @override
+  String reminderTimeChipSemantics(String time) {
+    return 'Reminder time, every day at $time. Change time.';
+  }
+
+  @override
+  String get reminderPickerTitle => 'Reminder time';
+
+  @override
   String get reminderOfferYes => 'Yes, remind me';
 
   @override
@@ -2216,11 +2417,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'New dolls are waiting to be nested. Today’s puzzle is ready.';
 
   @override
-  String get reminderChannelName => 'Daily reminder';
+  String get reminderChannelName => 'Daily puzzle';
 
   @override
   String get reminderChannelDescription =>
-      'One note a day when the daily puzzle is ready';
+      'One note a day when a new daily puzzle is ready.';
 
   @override
   String get settingReminder => 'Daily reminder';
@@ -2229,18 +2430,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingReminderTime => 'Time';
 
   @override
-  String settingReminderOn(String time) {
-    return 'Every day at $time';
-  }
-
-  @override
-  String get settingReminderOff => 'Off';
-
-  @override
   String get settingReminderBlocked => 'Off in your phone’s settings';
 
   @override
   String get settingOpenPhoneSettings => 'Open phone settings';
+
+  @override
+  String get settingReminderTurnOff => 'Turn off';
 
   @override
   String homeChapterKicker(int number) {
@@ -2253,38 +2449,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String homeChapterCardSemantics(
-    int number,
+    int chapter,
     String name,
-    int earned,
+    int count,
     int total,
   ) {
-    final intl.NumberFormat numberNumberFormat =
+    final intl.NumberFormat chapterNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String numberString = numberNumberFormat.format(number);
-    final intl.NumberFormat earnedNumberFormat =
+    final String chapterString = chapterNumberFormat.format(chapter);
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String earnedString = earnedNumberFormat.format(earned);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
-    return 'Chapter $numberString, $name, $earnedString of $totalString stars. Opens chapters.';
+    return 'Chapter $chapterString, $name. $countString of $totalString stars. Opens Chapters.';
   }
 
   @override
-  String homeBonusCardSemantics(int earned, int total) {
-    final intl.NumberFormat earnedNumberFormat =
+  String homeBonusCardSemantics(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String earnedString = earnedNumberFormat.format(earned);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
-    return 'Bonus levels, $earnedString of $totalString stars. Opens chapters.';
+    return 'Bonus levels. $countString of $totalString stars. Opens Chapters.';
   }
 
   @override
-  String get homeVsComputerSemantics => 'vs Computer, computer player';
+  String get homeVsComputerSemantics =>
+      'vs Computer. Race a computer on the same puzzle.';
+
+  @override
+  String homeVsComputerLockedSemantics(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'vs Computer, locked. After Level $levelString.';
+  }
 
   @override
   String chaptersKicker(int number, int first, int last) {
@@ -2303,71 +2509,42 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String chaptersRowSemantics(
-    int number,
-    String name,
-    int first,
-    int last,
-    int earned,
-    int total,
-  ) {
-    final intl.NumberFormat numberNumberFormat =
+  String chaptersRowSemantics(int chapter, String name, int count, int total) {
+    final intl.NumberFormat chapterNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String numberString = numberNumberFormat.format(number);
-    final intl.NumberFormat firstNumberFormat =
+    final String chapterString = chapterNumberFormat.format(chapter);
+    final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
-    final String firstString = firstNumberFormat.format(first);
-    final intl.NumberFormat lastNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String lastString = lastNumberFormat.format(last);
-    final intl.NumberFormat earnedNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String earnedString = earnedNumberFormat.format(earned);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
-    return 'Chapter $numberString, $name, levels $firstString to $lastString, $earnedString of $totalString stars';
+    return 'Chapter $chapterString, $name. $countString of $totalString stars.';
   }
 
   @override
-  String chaptersRowLockedSemantics(
-    int number,
-    String name,
-    int first,
-    int last,
-  ) {
-    final intl.NumberFormat numberNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String numberString = numberNumberFormat.format(number);
-    final intl.NumberFormat firstNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String firstString = firstNumberFormat.format(first);
-    final intl.NumberFormat lastNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String lastString = lastNumberFormat.format(last);
-
-    return 'Chapter $numberString, $name, levels $firstString to $lastString, locked';
-  }
-
-  @override
-  String get chaptersLevelChestSemantics => 'has a milestone chest';
-
-  @override
-  String get chaptersLevelFinaleSemantics => 'last level of the chapter';
-
-  @override
-  String museumNicheCollectedSemantics(String name) {
-    return '$name, collected';
-  }
-
-  @override
-  String museumNicheNextSemantics(String name, int chapter, int count) {
+  String chaptersRowLockedSemantics(int chapter, String name) {
     final intl.NumberFormat chapterNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String chapterString = chapterNumberFormat.format(chapter);
+
+    return 'Chapter $chapterString, $name. Locked.';
+  }
+
+  @override
+  String get chaptersLevelChestSemantics => 'A chest at this level';
+
+  @override
+  String get chaptersLevelFinaleSemantics => 'The last level of the chapter';
+
+  @override
+  String museumNicheCollectedSemantics(String name) {
+    return '$name, home in your Museum';
+  }
+
+  @override
+  String museumNicheNextSemantics(String name, int count) {
     final intl.NumberFormat countNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
@@ -2375,39 +2552,31 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$name, next, chapter $chapterString, $countString levels to go',
-      one: '$name, next, chapter $chapterString, 1 level to go',
+      other: '$name, next to come home. $countString levels to go.',
+      one: '$name, next to come home. $countString level to go.',
     );
     return '$_temp0';
   }
 
   @override
-  String museumNicheLockedSemantics(int chapter, int first, int last) {
+  String museumNicheLockedSemantics(String name, int chapter) {
     final intl.NumberFormat chapterNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String chapterString = chapterNumberFormat.format(chapter);
-    final intl.NumberFormat firstNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String firstString = firstNumberFormat.format(first);
-    final intl.NumberFormat lastNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String lastString = lastNumberFormat.format(last);
 
-    return 'Chapter $chapterString, levels $firstString to $lastString, locked';
+    return '$name, not home yet. Chapter $chapterString.';
   }
 
   @override
-  String museumCountSemantics(int done, int total) {
-    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
-    final String doneString = doneNumberFormat.format(done);
+  String museumCountSemantics(int count, int total) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
     final intl.NumberFormat totalNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
 
-    return '$doneString of $totalString families home';
+    return '$countString of $totalString families home';
   }
 
   @override
@@ -2425,17 +2594,23 @@ class AppLocalizationsEn extends AppLocalizations {
         intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '$rival, computer player, races won: $countString';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$rival, computer. $countString wins.',
+      one: '$rival, computer. $countString win.',
+    );
+    return '$_temp0';
   }
 
   @override
   String recordsRaceLockedSemantics(String rival) {
-    return '$rival, computer player, not unlocked yet';
+    return '$rival, computer. Locked.';
   }
 
   @override
   String recordsStatSemantics(String label, String value) {
-    return '$label, $value';
+    return '$label: $value';
   }
 
   @override

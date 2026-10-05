@@ -34,10 +34,14 @@ void main() {
           await pumpScreen(
             tester,
             NextLevelFailedCard(
-              title: 'The shelves need a moment',
-              body: 'This level didn’t set up. Try again, or head back home.',
-              retryLabel: 'Try again',
-              secondaryLabel: 'Back to Home',
+              title: versus
+                  ? testL10n.raceFailedTitle
+                  : testL10n.gameplayFailedTitle,
+              body: versus
+                  ? testL10n.raceFailedBody
+                  : testL10n.gameplayFailedBody,
+              retryLabel: testL10n.retry,
+              secondaryLabel: testL10n.nextLevelFailedHome,
               onRetry: () {},
               onSecondary: () {},
               versus: versus,
@@ -58,12 +62,12 @@ void main() {
           Scaffold(
             body: Center(
               child: BoosterButton(
+                kind: BoosterButtonKind.slot,
                 icon: NestyIcons.addBox,
                 label: '+Slot',
                 width: BoosterBar.buttonWidth(size.width),
                 badge: const BoosterBadge.limit(2, 2),
                 spent: true,
-                spentLabel: '+Slot, 2 of 2 used',
                 onPressed: () {},
               ),
             ),

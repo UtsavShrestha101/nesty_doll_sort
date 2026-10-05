@@ -88,9 +88,10 @@ final class WinOverlaySchedule {
     );
   }
 
-  /// The "+N" count-up's length at 1× (§9.7, hand-coded, easeOut).
-  // TODO(M7): tune by feel (BACKLOG "Animation polish").
-  static const winCountUpMs = 600.0;
+  /// The "+N" count-up's length at 1× (§9.7, easeOut): from `coins @700`
+  /// (LOTTIE.md) to the stars' start (tokens.json `motion.stars.startMs`
+  /// 1300), so the count lands as the first star does.
+  static const winCountUpMs = StarMotionTokens.startMs - FxTiming.winCoinsMs;
 
   /// One `ui_stars` star segment (`star_1…star_3`, 20 frames) at 1×, the
   /// gap between two stars' cues (tokens.json `motion.stars.perStarMs`).

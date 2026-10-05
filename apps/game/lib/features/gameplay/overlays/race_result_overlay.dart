@@ -9,6 +9,7 @@ import 'package:nesty_game/core/services/music/music_duck.dart';
 import 'package:nesty_game/core/services/music/music_service.dart';
 import 'package:nesty_game/core/services/records/badge.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/widgets/race/race_coin_chip.dart';
 import 'package:nesty_game/core/ui/widgets/race/versus_ribbon.dart';
 import 'package:nesty_game/features/fx/fx_cue.dart';
@@ -170,6 +171,7 @@ class _RaceResultLayerState extends State<RaceResultLayer> {
             card = RivalUnlockedCard(
               key: const ValueKey('rivalUnlocked'),
               rival: unlocked,
+              jingles: services.jingles,
               onNewRace: () => _unlockedNewRace(unlocked),
               onNotNow: _unlockedNotNow,
             );
@@ -233,6 +235,7 @@ class _RaceResultLayerState extends State<RaceResultLayer> {
 class _RaceHeaderBlock extends StatelessWidget {
   const _RaceHeaderBlock({
     required this.title,
+    required this.shortTitle,
     required this.families,
     required this.hop,
     required this.startsMs,
@@ -244,6 +247,7 @@ class _RaceHeaderBlock extends StatelessWidget {
   });
 
   final String title;
+  final String shortTitle;
   final List<DollColor> families;
   final bool hop;
   final List<double> startsMs;
@@ -340,7 +344,11 @@ class _RaceHeaderBlock extends StatelessWidget {
                 child: OverflowBox(
                   minWidth: ribbonSize.width,
                   maxWidth: ribbonSize.width,
-                  child: VersusRibbon(title: title),
+                  child: VersusRibbon(
+                    title: title,
+                    shortTitle: shortTitle,
+                    library: library,
+                  ),
                 ),
               ),
             ],
@@ -358,17 +366,26 @@ class _RaceHeaderBlock extends StatelessWidget {
 /// `raceLossBody`) on an `InfoCard` (left/right 28, radius 22, cream at
 /// .97, a 5 dp `#D8B07A` edge). Read as one "{name}, Computer. {body}".
 class _RivalCard extends StatelessWidget {
-  const _RivalCard({required this.rival, required this.body});
+  const _RivalCard({
+    required this.rival,
+    required this.body,
+    required this.reaction,
+    required this.library,
+  });
 
   final int rival;
   final String body;
+
+  /// The portrait's one-shot: a nod on 9.4, a hop on 9.5 (`ui_rival_react`).
+  final RivalReaction reaction;
+  final FxLibrary? library;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     final name = l10n.raceRivalName(rival);
     return Semantics(
-      label: '${l10n.raceRivalSemantics(name)}. $body',
+      label: l10n.joinSentences([l10n.raceRivalSemantics(name), body]),
       container: true,
       excludeSemantics: true,
       child: DecoratedBox(
@@ -388,7 +405,12 @@ class _RivalCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
           child: Row(
             children: [
-              RivalPortrait(number: rival, size: 56),
+              RivalReact(
+                number: rival,
+                size: 56,
+                reaction: reaction,
+                library: library,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -689,6 +711,7 @@ class _RaceWinCardState extends State<RaceWinCard>
           _Announce(l10n.raceAnnounceWon),
           _RaceHeaderBlock(
             title: l10n.raceWinTitle,
+            shortTitle: l10n.raceWinTitleShort,
             families: widget.families,
             hop: true,
             startsMs: hopStarts,
@@ -716,6 +739,9 @@ class _RaceWinCardState extends State<RaceWinCard>
             child: _RivalCard(
               rival: widget.rival,
               body: l10n.raceWinBody(name),
+              // The player finished first: the rival nods.
+              reaction: RivalReaction.lose,
+              library: widget.library,
             ),
           ),
           const SizedBox(height: 40),
@@ -803,6 +829,7 @@ class _RaceLossCardState extends State<RaceLossCard> {
           _Announce(l10n.raceAnnounceLost),
           _RaceHeaderBlock(
             title: l10n.raceLossTitle,
+            shortTitle: l10n.raceLossTitleShort,
             families: widget.families,
             hop: false,
             startsMs: const [],
@@ -817,6 +844,9 @@ class _RaceLossCardState extends State<RaceLossCard> {
             child: _RivalCard(
               rival: widget.rival,
               body: l10n.raceLossBody(name),
+              // The rival finished first: it hops.
+              reaction: RivalReaction.win,
+              library: widget.library,
             ),
           ),
           const SizedBox(height: 90),
@@ -835,36 +865,56 @@ class _RaceLossCardState extends State<RaceLossCard> {
   }
 }
 
-/// Frame 9.6, "New rival unlocked!" (ui-spec-game §2.1): a card, once per
-/// rival, as 9.4 closes. The versus pill, gold rays behind the 128 dp
-/// portrait (emphasis ring), the name and [ComputerTag], the skill line, and
-/// "{rival} is ready to race."; New race (a fresh race against this rival)
-/// and Not now. No sound, no haptic: the 9.4 jingle has finished. The rays
-/// turn slowly (24 s), not under reduced motion; it fades in.
-///
-/// TODO(design): 9.6's interposing before 9.4's action and `jingle_reward`
-/// as its sound are the design's proposals (ui-spec-game §2.1); the default
-/// ships the interposing and no sound.
-class RivalUnlockedCard extends StatelessWidget {
+/// Frame 9.6, "New rival unlocked!" (ui-spec-game §2.1; m7-4 4.1): a card,
+/// once per rival, that interposes before 9.4's chosen action (any button, or
+/// back). The versus pill, gold rays behind the 128 dp portrait (emphasis
+/// ring), the name and [ComputerTag], the skill line, and "{rival} is ready
+/// to race."; "Race {rival}" (a fresh race against this rival) and Not now
+/// (carry on with 9.4's action). `jingle_reward` plays as the card lands
+/// (`sound.events.rivalUnlocked`), no haptic. The rays turn slowly (24 s),
+/// not under reduced motion; it fades in.
+class RivalUnlockedCard extends StatefulWidget {
   const RivalUnlockedCard({
     required this.rival,
     required this.onNewRace,
     required this.onNotNow,
+    this.jingles,
     super.key,
   });
 
   /// The rival just unlocked, 2 or 3.
   final int rival;
+
+  /// "Race {rival}": a fresh race against the new rival.
   final VoidCallback onNewRace;
   final VoidCallback onNotNow;
+
+  /// Plays `jingle_reward` as the card lands; null is silent.
+  final JinglePlayer? jingles;
 
   /// The card's top and sides (ui-spec-game §2.1: modal top 176, 28).
   static const double cardTop = 176 - 59;
   static const double side = 28;
 
   @override
+  State<RivalUnlockedCard> createState() => _RivalUnlockedCardState();
+}
+
+class _RivalUnlockedCardState extends State<RivalUnlockedCard> {
+  bool _played = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_played) return;
+    _played = true;
+    widget.jingles?.playJingle(Jingle.reward);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
+    final rival = widget.rival;
     final name = l10n.raceRivalName(rival);
     return OverlayEntrance(
       kind: OverlayEntranceKind.modal,
@@ -873,8 +923,8 @@ class RivalUnlockedCard extends StatelessWidget {
         children: [
           Scrim(opacity: progress),
           ModalPlacement(
-            cardTop: cardTop,
-            side: side,
+            cardTop: RivalUnlockedCard.cardTop,
+            side: RivalUnlockedCard.side,
             clearance: RibbonTitle.overhang,
             child: content,
           ),
@@ -896,9 +946,10 @@ class RivalUnlockedCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Semantics(
-              label:
-                  '${l10n.raceRivalSemantics(name)}. '
-                  '${l10n.raceRivalUnlockedBody(name)}',
+              label: l10n.joinSentences([
+                l10n.raceRivalSemantics(name),
+                l10n.raceRivalUnlockedBody(name),
+              ]),
               container: true,
               excludeSemantics: true,
               child: Column(
@@ -954,9 +1005,12 @@ class RivalUnlockedCard extends StatelessWidget {
                   Text(
                     l10n.raceRivalUnlockedBody(name),
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: 16,
-                      height: 23 / 16,
+                    style: context.scriptStyle(
+                      AppTextStyles.bodySmall.copyWith(
+                        fontSize: 16,
+                        height: 23 / 16,
+                      ),
+                      role: ScriptTextRole.body,
                     ),
                   ),
                 ],
@@ -964,12 +1018,12 @@ class RivalUnlockedCard extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             TactileButton(
-              label: l10n.raceNewRace,
+              label: l10n.raceRivalUnlockedRace(name),
               variant: TactileButtonVariant.versus,
-              onPressed: onNewRace,
+              onPressed: widget.onNewRace,
             ),
             const SizedBox(height: 16 - OverlayTextLink.slack),
-            OverlayTextLink(label: l10n.notNow, onPressed: onNotNow),
+            OverlayTextLink(label: l10n.notNow, onPressed: widget.onNotNow),
           ],
         ),
       ),

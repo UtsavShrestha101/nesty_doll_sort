@@ -57,6 +57,14 @@ final class _GatedDatabaseService implements DatabaseService {
   Future<void> close() => _inner.close();
 
   @override
+  String? get relitGlowSeen => _inner.relitGlowSeen;
+  @override
+  Future<void> setRelitGlowSeen(String date) => _inner.setRelitGlowSeen(date);
+  @override
+  int get lastRival => _inner.lastRival;
+  @override
+  Future<void> setLastRival(int rival) => _inner.setLastRival(rival);
+  @override
   bool get soundEnabled => _inner.soundEnabled;
   @override
   Future<void> setSoundEnabled(bool enabled) => _inner.setSoundEnabled(enabled);

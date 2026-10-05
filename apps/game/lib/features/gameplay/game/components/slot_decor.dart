@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
+import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 /// The board's localized "+N" tower tag and ice badge text (ARB
@@ -229,6 +230,7 @@ final class SlotDecor {
       style: TextStyle(
         // Bundled by the game (pubspec fonts).
         fontFamily: 'Fredoka',
+        fontFamilyFallback: AppFontTokens.displayFallback,
         fontWeight: FontWeight.w700,
         fontSize: fontSize,
         height: height,

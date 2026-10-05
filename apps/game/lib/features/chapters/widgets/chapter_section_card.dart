@@ -4,6 +4,7 @@ import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/ui/art/theme_thumbnail_loader.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/widgets/home/stars_chip.dart';
 import 'package:nesty_game/features/chapters/cubit/chapters_cubit.dart';
 import 'package:nesty_game/features/chapters/widgets/chapter_level_cell.dart';
@@ -19,6 +20,15 @@ import 'package:nesty_render/nesty_render.dart' show ChapterTheme;
 /// Only one card is open at a time and the page owns which ([expanded],
 /// [onToggle]): the current chapter opens by default, a tap on a finished row
 /// opens it in place. A locked row is inert (a disabled node, no tap).
+/// `layout.chapters.foldedRow.name`: one line, Fredoka 700 15, scaling down
+/// to 0.85 before it cuts. Past a 1.15x text scale the row gives it a second
+/// line (and the old floor), so 1.3x text never clips (spec §16).
+int _foldedNameLines(BuildContext context) =>
+    MediaQuery.textScalerOf(context).scale(1) > 1.15 ? 2 : 1;
+
+double _foldedNameScale(BuildContext context) =>
+    _foldedNameLines(context) == 1 ? 0.85 : 0.75;
+
 class ChapterSectionCard extends StatelessWidget {
   const ChapterSectionCard({
     required this.section,
@@ -49,13 +59,17 @@ const _rowStyle = SurfaceStyle(
   color: AppColorTokens.surfaceWhite,
   shadows: [
     NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
-    NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5),
+    NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4),
   ],
 );
 
+/// A locked row (NestyHub:257, :304): the sunk face with its inset shadow,
+/// on the cream page.
 const _lockedStyle = SurfaceStyle(
-  color: AppColorTokens.surfaceSunk,
-  shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 3)],
+  color: AppColorTokens.sunkFace,
+  shadows: [
+    NestyShadow(color: AppColorTokens.sunkShade, inset: true, dy: 2, blur: 4),
+  ],
 );
 
 ChapterTheme _themeOf(ChapterSection section) =>
@@ -91,8 +105,6 @@ class _FoldedRow extends StatelessWidget {
     final label = l10n.chaptersRowSemantics(
       section.number,
       name,
-      section.firstLevel,
-      section.lastLevel,
       section.stars,
       section.starsPossible,
     );
@@ -103,7 +115,7 @@ class _FoldedRow extends StatelessWidget {
         radius: BorderRadius.circular(ChaptersTokens.foldedRowRadius),
         onPressed: onTap,
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(8, 7, 10, 7),
+        padding: const EdgeInsets.fromLTRB(7, 7, 10, 7),
         semanticLabel: label,
         semanticValue: null,
         excludeChildSemantics: true,
@@ -124,16 +136,17 @@ class _FoldedRow extends StatelessWidget {
                   children: [
                     Text(
                       _kicker(l10n, section),
-                      style: _kickerStyle,
+                      style: context.scriptStyle(_kickerStyle),
                       maxLines: 3,
                     ),
                     ShrinkToFitText(
                       l10n.chapterName(section.chapterId),
-                      maxLines: 2,
-                      minFontScale: 0.75,
+                      maxLines: _foldedNameLines(context),
+                      overflowLines: 2,
+                      minFontScale: _foldedNameScale(context),
                       textAlign: TextAlign.start,
                       style: AppTextStyleTokens.cardTitle.copyWith(
-                        fontSize: 19,
+                        fontSize: 15,
                         height: 1.1,
                         color: AppColorTokens.textPrimary,
                       ),
@@ -142,8 +155,9 @@ class _FoldedRow extends StatelessWidget {
                       Text(
                         l10n.chaptersAllThreeStars,
                         style: AppTextStyleTokens.caption.copyWith(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          height: 1,
+                          fontWeight: FontWeight.w800,
                           color: AppColorTokens.successEdge,
                         ),
                         maxLines: 3,
@@ -181,12 +195,12 @@ bool _roomForFamily(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= 380 &&
     MediaQuery.textScalerOf(context).scale(1) < 1.15;
 
-final _kickerStyle = AppTextStyleTokens.caption.copyWith(
-  fontSize: 11,
-  fontWeight: FontWeight.w800,
-  letterSpacing: 11 * 0.06,
-  height: 1.15,
-  color: AppColorTokens.textSecondary,
+/// NestyHub:74: Fredoka 700 10, +0.08 em, `#9A6A44`.
+final _kickerStyle = AppTextStyleTokens.cardTitle.copyWith(
+  fontSize: 10,
+  letterSpacing: 10 * 0.08,
+  height: 1.1,
+  color: AppColorTokens.textMuted,
 );
 
 /// A locked chapter: the sunk surface, the theme crop greyed, the family
@@ -203,18 +217,13 @@ class _LockedRow extends StatelessWidget {
     return Semantics(
       container: true,
       enabled: false,
-      label: l10n.chaptersRowLockedSemantics(
-        section.number,
-        name,
-        section.firstLevel,
-        section.lastLevel,
-      ),
+      label: l10n.chaptersRowLockedSemantics(section.number, name),
       excludeSemantics: true,
       child: NestySurface(
         style: _lockedStyle,
         radius: BorderRadius.circular(ChaptersTokens.foldedRowRadius),
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(8, 7, 12, 7),
+        padding: const EdgeInsets.fromLTRB(7, 7, 10, 7),
         alignment: AlignmentDirectional.centerStart,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
@@ -231,20 +240,19 @@ class _LockedRow extends StatelessWidget {
                   children: [
                     Text(
                       _kicker(l10n, section),
-                      style: _kickerStyle,
+                      style: context.scriptStyle(_kickerStyle),
                       maxLines: 3,
                     ),
                     ShrinkToFitText(
                       name,
-                      maxLines: 2,
-                      minFontScale: 0.75,
+                      maxLines: _foldedNameLines(context),
+                      overflowLines: 2,
+                      minFontScale: _foldedNameScale(context),
                       textAlign: TextAlign.start,
                       style: AppTextStyleTokens.cardTitle.copyWith(
-                        fontSize: 19,
+                        fontSize: 15,
                         height: 1.1,
-                        // Frame: #8A6A4E, nearest token `textMuted`
-                        // (`TODO(design)`, menus spec §11 gap 9).
-                        color: AppColorTokens.textMuted,
+                        color: AppColorTokens.textLocked,
                       ),
                     ),
                   ],
@@ -263,8 +271,8 @@ class _LockedRow extends StatelessWidget {
               const SizedBox(width: 10),
               const Icon(
                 NestyIcons.lock,
-                size: 18,
-                color: AppColorTokens.textMuted,
+                size: 20,
+                color: AppColorTokens.textLockedLight,
               ),
             ],
           ),
@@ -380,7 +388,7 @@ class _OpenCard extends StatelessWidget {
                                 minFontScale: 0.7,
                                 textAlign: TextAlign.start,
                                 style: AppTextStyleTokens.cardTitle.copyWith(
-                                  fontSize: 20,
+                                  fontSize: 15,
                                   height: 1.1,
                                   color: AppColorTokens.textPrimary,
                                 ),
@@ -406,8 +414,9 @@ class _OpenCard extends StatelessWidget {
                                   child: Text(
                                     l10n.museumLevelsToGo(levelsToGo),
                                     style: AppTextStyleTokens.caption.copyWith(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                      height: 1,
+                                      fontWeight: FontWeight.w800,
                                       color: AppColorTokens.textSecondary,
                                     ),
                                     maxLines: 1,
@@ -485,8 +494,6 @@ class _Header extends StatelessWidget {
     final label = l10n.chaptersRowSemantics(
       section.number,
       name,
-      section.firstLevel,
-      section.lastLevel,
       section.stars,
       section.starsPossible,
     );
@@ -541,19 +548,21 @@ class _Header extends StatelessWidget {
                         minFontScale: 0.7,
                         textAlign: TextAlign.start,
                         style: AppTextStyleTokens.cardTitle.copyWith(
-                          fontSize: 13,
-                          letterSpacing: 13 * 0.06,
+                          fontSize: 11,
+                          height: 1,
+                          letterSpacing: context.script.tracking(11 * 0.08),
                           color: palette.onAccent,
                         ),
                       ),
                       ShrinkToFitText(
                         name,
                         maxLines: 1,
+                        overflowLines: 2,
                         minFontScale: 0.6,
                         textAlign: TextAlign.start,
                         style: AppTextStyleTokens.cardTitle.copyWith(
-                          fontSize: 28,
-                          height: 1.1,
+                          fontSize: 23,
+                          height: 1.05,
                           color: palette.onAccent,
                           shadows: [
                             Shadow(

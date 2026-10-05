@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart' show SemanticsAction;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -22,7 +23,7 @@ void main() {
   setUpAll(loadBundledFonts);
 
   RivalSelectCubit build(FakeSaveService save) =>
-      RivalSelectCubit(save, FakeRemoteConfigService());
+      RivalSelectCubit(save, FakeRemoteConfigService(), FakeDatabaseService());
 
   FakeSaveService saveWith(List<RivalProgress> rivals) => FakeSaveService(
     initial: SaveDocument(
@@ -47,11 +48,12 @@ void main() {
     WidgetTester tester,
     RivalSelectCubit cubit, {
     double width = 390,
+    double height = 844,
     double textScale = 1,
     bool reduceMotion = false,
   }) async {
     tester.view
-      ..physicalSize = Size(width, 844)
+      ..physicalSize = Size(width, height)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -81,6 +83,12 @@ void main() {
 
     expect(find.text('vs Computer'), findsOneWidget);
     expect(find.text('Race a computer on the same puzzle'), findsOneWidget);
+    // Frame 9.2: the subtitle's top is 13 dp under the header's bottom.
+    expect(
+      tester.getTopLeft(find.text('Race a computer on the same puzzle')).dy -
+          tester.getBottomLeft(find.byType(ScreenHeader)).dy,
+      13,
+    );
     expect(find.text('Pebble'), findsOneWidget);
     expect(find.text('Button'), findsOneWidget);
     expect(find.text('Comet'), findsOneWidget);
@@ -90,7 +98,7 @@ void main() {
       find.text('Takes its time and enjoys every doll along the way.'),
       findsOneWidget,
     );
-    expect(find.text('Relaxed · Slow'), findsOneWidget);
+    expect(find.text('Gentle pace'), findsOneWidget);
     expect(find.text('Win 20 coins'), findsOneWidget);
     expect(
       find.text('Same puzzle, two boards. Complete every family first.'),
@@ -102,6 +110,23 @@ void main() {
       reason: 'one Start, no per-card',
     );
     expect(find.byIcon(NestyIcons.playArrow), findsOneWidget);
+  });
+
+  testWidgets('a locked card carries the 1.5 dp #E2CBA6 ring over the '
+      'gradient page (m7-4 8.2)', (tester) async {
+    await pumpSelect(tester, build(saveWith(fresh)));
+    final rings = tester
+        .widgetList<NestySurface>(find.byType(NestySurface))
+        .where(
+          (s) => s.style.shadows.any(
+            (sh) =>
+                sh.inset &&
+                sh.spread == 1.5 &&
+                sh.color == const Color(0xFFE2CBA6),
+          ),
+        );
+    expect(rings.length, 2, reason: 'rivals 2 and 3');
+    expect(find.byType(CreamPage), findsOneWidget);
   });
 
   testWidgets('locked cards say who to beat, take no reward chip and show '
@@ -225,10 +250,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Beat Pebble to unlock'), findsNothing);
-    expect(
-      find.text('Checks each move twice before it makes it.'),
-      findsOneWidget,
-    );
+    expect(find.text('Checks each move twice, then makes it.'), findsOneWidget);
     expect(find.text('New'), findsOneWidget);
   });
 
@@ -238,25 +260,33 @@ void main() {
     await pumpSelect(tester, build(saveWith(buttonNew)));
 
     final pebble = tester.getSemantics(
-      find.bySemanticsLabel(RegExp('^Pebble, Computer')),
+      find.bySemanticsLabel(RegExp('^Pebble, computer rival. Gentle pace.')),
     );
     final pebbleData = pebble.getSemanticsData();
-    expect(pebbleData.label, contains('Relaxed · Slow'));
+    expect(pebbleData.label, contains('Gentle pace'));
     expect(pebbleData.label, contains('Win 20 coins'));
     expect(pebbleData.label, contains('Beaten'));
     expect(pebbleData.flagsCollection.isInMutuallyExclusiveGroup, isTrue);
     expect(pebbleData.hasAction(SemanticsAction.tap), isTrue);
 
     final button = tester
-        .getSemantics(find.bySemanticsLabel(RegExp('^Button, Computer')))
+        .getSemantics(
+          find.bySemanticsLabel(
+            RegExp('^Button, computer rival. Steady pace.'),
+          ),
+        )
         .getSemanticsData();
     expect(button.label, contains('New'));
+    // a11y_rival_selected: the pick says so; no card reads ". ." twice.
+    expect(button.label, endsWith('Selected.'));
+    expect(button.label, isNot(contains('..')));
+    expect(pebbleData.label, isNot(contains('Selected')));
     expect(button.flagsCollection.isChecked, CheckedState.isTrue);
 
     final comet = tester
-        .getSemantics(find.bySemanticsLabel(RegExp('^Comet, Computer')))
+        .getSemantics(find.bySemanticsLabel(RegExp('^Locked computer rival')))
         .getSemanticsData();
-    expect(comet.label, contains('Beat Button to unlock'));
+    expect(comet.label, 'Locked computer rival. Beat Button to unlock.');
     expect(comet.hasAction(SemanticsAction.tap), isFalse);
 
     final start = tester.getSemantics(
@@ -293,5 +323,122 @@ void main() {
       tester.getSize(find.byType(UiArtImage).first),
       const Size.square(RivalSelectTokens.portrait),
     );
+  });
+
+  group('phase 5: fidelity (F-RS1, F-RS2, F-TYPE-R)', () {
+    TextStyle styleOf(WidgetTester tester, String text) =>
+        tester.widget<Text>(find.text(text)).style!;
+
+    testWidgets('F-RS1: cream page, start-aligned title, sunk locked face', (
+      tester,
+    ) async {
+      await pumpSelect(tester, build(saveWith(fresh)));
+      expect(find.byType(CreamPage), findsOneWidget);
+      // Start-aligned: the title begins right after the 48 dp back button.
+      final title = tester.getTopLeft(find.text('vs Computer')).dx;
+      expect(title, lessThan(100), reason: 'start, not centred');
+      final surfaces = tester
+          .widgetList<NestySurface>(find.byType(NestySurface))
+          .where((s) => s.style.color == AppColorTokens.sunkFace)
+          .toList();
+      expect(surfaces, hasLength(2), reason: 'two locked cards');
+      expect(AppColorTokens.sunkFace, const Color(0xFFF3E6D2));
+      // The sunk shade and, since m7-4 (8.2), a 1.5 dp #E2CBA6 ring.
+      final shadows = surfaces.first.style.shadows;
+      expect(shadows, hasLength(2));
+      expect(shadows.first.color, AppColorTokens.sunkShade);
+      expect(shadows.first.inset, isTrue);
+      expect(shadows.last.color, const Color(0xFFE2CBA6));
+      expect(shadows.last.spread, 1.5);
+      expect(shadows.last.inset, isTrue);
+      expect(styleOf(tester, 'Button').color, AppColorTokens.textLocked);
+      expect(
+        styleOf(tester, 'Beat Pebble to unlock').color,
+        AppColorTokens.textLocked,
+      );
+    });
+
+    testWidgets('F-TYPE-R: each card text per NestyHub:54-65', (tester) async {
+      await pumpSelect(tester, build(saveWith(fresh)));
+      final name = styleOf(tester, 'Pebble');
+      expect((name.fontSize, name.height), (20, 1));
+      final skill = styleOf(tester, 'Gentle pace');
+      expect((skill.fontSize, skill.fontWeight), (13, FontWeight.w800));
+      final line = styleOf(
+        tester,
+        'Takes its time and enjoys every doll along the way.',
+      );
+      expect(line.fontSize, 14);
+      expect(line.height, 1.35);
+      expect(line.fontWeight, FontWeight.w600);
+      expect(line.color, AppColorTokens.textBrown);
+      final lock = styleOf(tester, 'Beat Pebble to unlock');
+      expect((lock.fontSize, lock.fontWeight), (13, FontWeight.w800));
+      final reward = styleOf(tester, 'Win 20 coins');
+      expect(reward.fontSize, 14);
+      expect(
+        tester
+            .getSize(
+              find
+                  .ancestor(
+                    of: find.text('Win 20 coins'),
+                    matching: find.byType(NestySurface),
+                  )
+                  .first,
+            )
+            .height,
+        28,
+      );
+      final hint = styleOf(
+        tester,
+        'Same puzzle, two boards. Complete every family first.',
+      );
+      expect(hint.fontSize, 14);
+      expect(hint.height, 1.35);
+      expect(hint.fontWeight, FontWeight.w700);
+    });
+
+    testWidgets('F-RS2 at 411x731: the mask fades the list while it can '
+        'scroll and the last card clears the hint by 12 dp', (tester) async {
+      await pumpSelect(
+        tester,
+        build(saveWith(buttonNew)),
+        width: 411,
+        height: 731,
+        // The cards now fit at 1.0x text (NestyHub's sizes), so 1.3x is
+        // what makes this phone scroll.
+        textScale: 1.3,
+      );
+      await tester.pump();
+      expect(
+        find.byType(ShaderMask),
+        findsOneWidget,
+        reason: 'the list can scroll: the mask is on',
+      );
+      await tester.drag(find.byType(ListView), const Offset(0, -2000));
+      await tester.pumpAndSettle();
+      expect(find.byType(ShaderMask), findsNothing, reason: 'at the end');
+      final lastCard = tester.getBottomLeft(
+        find
+            .ancestor(
+              of: find.text('Beat Button to unlock'),
+              matching: find.byType(NestySurface),
+            )
+            .first,
+      );
+      final hintTop = tester
+          .getTopLeft(
+            find.text('Same puzzle, two boards. Complete every family first.'),
+          )
+          .dy;
+      expect(lastCard.dy, lessThanOrEqualTo(hintTop - 12));
+    });
+
+    testWidgets('F-RS2 at 390x844: the list fits, so there is no mask', (
+      tester,
+    ) async {
+      await pumpSelect(tester, build(saveWith(fresh)));
+      expect(find.byType(ShaderMask), findsNothing);
+    });
   });
 }

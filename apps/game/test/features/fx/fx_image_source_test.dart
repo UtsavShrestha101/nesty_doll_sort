@@ -57,15 +57,21 @@ void main() {
         // m7-3's UI art (`ui_stars`, `ui_chest`): at 3× like the pieces, its
         // box the file's own (44 stars, the 73.3 glow, the 130×108.3 chest).
         expect(slot.density, 3, reason: slot.assetId);
-      } else {
-        expect(slot, FxImageSlot.unlockSymbol);
+      } else if (slot == FxImageSlot.unlockSymbol) {
         expect(slot.density, 3);
         expect((slot.declaredWidth, slot.declaredHeight), (12.0, 12.0));
+      } else {
+        // m7-4: the rival portrait (96) and the Museum figurine (62), at 3×;
+        // which rival or figurine is the caller's.
+        expect(slot, isIn([FxImageSlot.rivalPortrait, FxImageSlot.figurine]));
+        expect(slot.density, 3);
       }
     }
     expect(FxImageSlot.starFilled.declaredWidth, 44);
     expect(FxImageSlot.starGlow.declaredWidth, closeTo(73.33, 0.01));
     expect(FxImageSlot.chestOpen.declaredWidth, 130);
+    expect(FxImageSlot.rivalPortrait.declaredWidth, 96);
+    expect(FxImageSlot.figurine.declaredHeight, 62);
     expect(FxImageSlot.chestOpen.declaredHeight, closeTo(108.33, 0.01));
     expect(
       (FxImageSlot.glowRing.assetWidth, FxImageSlot.glowRing.declaredWidth),
@@ -104,7 +110,12 @@ void main() {
       'art its UiArt', () {
     for (final slot in FxImageSlot.values) {
       expect(slot.isDoll, slot.part != null);
-      if (slot == FxImageSlot.unlockSymbol) {
+      if (const [
+        FxImageSlot.unlockSymbol,
+        FxImageSlot.rivalPortrait,
+        FxImageSlot.figurine,
+      ].contains(slot)) {
+        // Filled per use (the padlock's colour, the rival, the figurine).
         expect(slot.piece, isNull);
         expect(slot.art, isNull);
       } else {

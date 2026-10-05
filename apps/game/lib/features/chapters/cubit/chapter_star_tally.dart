@@ -24,7 +24,7 @@ abstract final class ChapterStarTally {
     required SaveDocument document,
     required LevelRepository levels,
   }) {
-    final first = (chapter.number - 1) * chapter.levels + 1;
+    final first = chapter.firstOrder;
     var stars = 0;
     var withPar = 0;
     for (var order = first; order < first + chapter.levels; order++) {

@@ -63,9 +63,9 @@ class _PlaceholderFigurine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const ColoredBox(
-    color: AppColors.disabledFace,
+    color: AppColorTokens.disabledFace,
     child: Center(
-      child: Icon(NestyIcons.museum, color: AppColors.disabledText),
+      child: Icon(NestyIcons.museum, color: AppColorTokens.disabledText),
     ),
   );
 }

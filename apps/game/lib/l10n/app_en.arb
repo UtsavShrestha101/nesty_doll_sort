@@ -33,11 +33,11 @@
     "description": "The splash's storage error title (frame 12.10). copy.md E `splash_storage_title`."
   },
 
-  "splashStorageBody": "Nesty needs about {megabytes} MB to set up the shelves. Free some space, then try again.",
+  "splashStorageBody": "Nesty needs about {size} MB to set up the shelves. Free some space, then try again.",
   "@splashStorageBody": {
-    "description": "The splash's storage error line (frame 12.10). {megabytes} is `SplashCopy.storageMegabytes` (60, copy.md's number; Q157 asks the owner to confirm it). copy.md E `splash_storage_body`.",
+    "description": "The splash's storage error line (frame 12.10). {size} is `SplashCopy.storageMegabytes` (60: the figure lives in code, not in the translations; Q157 asks the owner to confirm it). copy.md E `splash_storage_body`.",
     "placeholders": {
-      "megabytes": {
+      "size": {
         "type": "int",
         "format": "decimalPattern",
         "example": "60"
@@ -73,27 +73,47 @@
 
   "pause": "Pause",
   "@pause": {
-    "description": "Tooltip for the gameplay pause button (spec §10.2 #3)."
+    "description": "The gameplay pause button's tooltip and screen-reader label (spec §10.2 #3). copy.md A11y `a11y_pause`."
   },
 
   "boosterUndo": "Undo",
   "@boosterUndo": {
-    "description": "Undo booster button label (spec §8)."
+    "description": "Undo booster button label (spec §8). copy.md Short forms `booster_undo`."
+  },
+
+  "boosterUndoShort": "Undo",
+  "@boosterUndoShort": {
+    "description": "The Undo booster label's short form (textFit.boosterLabels). copy.md Short forms `booster_undo_short`."
   },
 
   "boosterHint": "Hint",
   "@boosterHint": {
-    "description": "Hint booster button label (spec §8)."
+    "description": "Hint booster button label (spec §8). copy.md Short forms `booster_hint`."
+  },
+
+  "boosterHintShort": "Hint",
+  "@boosterHintShort": {
+    "description": "The Hint booster label's short form (textFit.boosterLabels). copy.md Short forms `booster_hint_short`."
   },
 
   "boosterExtraSlot": "+Slot",
   "@boosterExtraSlot": {
-    "description": "Extra slot booster button label (spec §3.6, §8). Keep it short."
+    "description": "Extra slot booster button label (spec §3.6, §8). Keep it short. copy.md Short forms `booster_slot`."
+  },
+
+  "boosterExtraSlotShort": "+1",
+  "@boosterExtraSlotShort": {
+    "description": "The +Slot booster label's short form (textFit.boosterLabels). The booster bar and frame 12.9 read +Slot; the sheets keep \"+1 Slot\" as their title. copy.md Short forms `booster_slot_short`."
   },
 
   "restart": "Restart",
   "@restart": {
-    "description": "Restart the current level (spec §2.4). Always free."
+    "description": "Restart the current level (spec §2.4). Always free. copy.md Short forms `booster_restart`."
+  },
+
+  "restartShort": "Restart",
+  "@restartShort": {
+    "description": "The Restart booster label's short form (textFit.boosterLabels). copy.md Short forms `booster_restart_short`."
   },
 
   "splashDollSort": "DOLL SORT",
@@ -144,9 +164,9 @@
     }
   },
 
-  "coinPillShopSemantics": "{count, plural, =1{1 coin. Get more coins} other{{count} coins. Get more coins}}",
+  "coinPillShopSemantics": "{count, plural, =1{{count} coin. Opens the Shop.} other{{count} coins. Opens the Shop.}}",
   "@coinPillShopSemantics": {
-    "description": "Screen-reader label of the Home coin pill, whose green plus opens the Shop (frame 2.1, spec §10.2 #2).",
+    "description": "Screen-reader label of the Home coin pill, whose green plus opens the Shop (frame 2.1, spec §10.2 #2). copy.md A11y `a11y_coins`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -158,12 +178,17 @@
 
   "tierHard": "HARD",
   "@tierHard": {
-    "description": "Red tier badge on the level pill and the Home play button for hard levels (spec §6.6, frames 2.1, 2.2). Keep it very short and uppercase."
+    "description": "Red tier badge on the level pill and the Home play button for hard levels (spec §6.6, frames 2.1, 2.2). Keep it very short and uppercase. copy.md Short forms `tier_hard`."
   },
 
   "tierSuperHard": "SUPER HARD",
   "@tierSuperHard": {
-    "description": "Purple tier badge on the level pill for super hard levels (spec §6.6, frame 4.4). Keep it very short and uppercase; the chip is tiny."
+    "description": "Purple tier badge on the level pill for super hard levels (spec §6.6, frame 4.4). Keep it very short and uppercase; the chip is tiny. copy.md Short forms `tier_super`."
+  },
+
+  "tierSuperShort": "SUPER",
+  "@tierSuperShort": {
+    "description": "The Super Hard pill's short form (textFit.hudPills). HARD and BONUS have no short form: they drop to their glyph. copy.md Short forms `tier_super_short`."
   },
 
   "tierName": "{tier, select, easy{Easy} medium{Medium} hard{Hard} superhard{Super Hard} other{}}",
@@ -210,11 +235,11 @@
     }
   },
 
-  "familyCounterSemantics": "{total, plural, =1{{done} of 1 family done} other{{done} of {total} families done}}",
+  "familyCounterSemantics": "{total, plural, =1{{count} of {total} family complete} other{{count} of {total} families complete}}",
   "@familyCounterSemantics": {
-    "description": "Screen-reader label of the family counter (frame 2.2, spec §10.2 #3).",
+    "description": "Screen-reader label of the family counter (frame 2.2, spec §10.2 #3). The one-family case (Level 1) reads \"family\"; every other count is copy.md's wording. copy.md A11y `a11y_family_counter`.",
     "placeholders": {
-      "done": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "1"
@@ -269,33 +294,17 @@
 
   "closeSemantics": "Close",
   "@closeSemantics": {
-    "description": "Screen-reader label of the round close button on cards and popups (frames 3.2, 3.9)."
+    "description": "Screen-reader label of the round close button on cards and popups (frames 3.2, 3.9). copy.md A11y `a11y_close`."
   },
 
   "backSemantics": "Back",
   "@backSemantics": {
-    "description": "Screen-reader label of the back arrow in screen headers (spec §10.2)."
+    "description": "Screen-reader label of the back arrow in screen headers (spec §10.2). copy.md A11y `a11y_back`."
   },
 
-  "boosterCountSemantics": "{count, plural, =1{{booster}, 1 left} other{{booster}, {count} left}}",
-  "@boosterCountSemantics": {
-    "description": "Screen-reader label of a booster button whose badge shows how many are left (frame 2.2, spec §8). {booster} is its label (Undo, Hint, +Slot).",
-    "placeholders": {
-      "booster": {
-        "type": "String",
-        "example": "Hint"
-      },
-      "count": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "2"
-      }
-    }
-  },
-
-  "boosterAdSemantics": "{booster}, watch an ad for one more",
+  "boosterAdSemantics": "{booster}, watch a video",
   "@boosterAdSemantics": {
-    "description": "Screen-reader label of a booster with none left whose badge offers a rewarded ad (frame 3.2, spec §8, §9.1).",
+    "description": "Screen-reader label of a booster with none left whose badge offers a rewarded video (frame 3.2, spec §8, §9.1). {booster} is its label. copy.md A11y `a11y_booster_ad`.",
     "placeholders": {
       "booster": {
         "type": "String",
@@ -304,9 +313,9 @@
     }
   },
 
-  "boosterCoinSemantics": "{price, plural, =1{{booster}, 1 coin} other{{booster}, {price} coins}}",
+  "boosterCoinSemantics": "{price, plural, =1{{booster}, {price} coin} other{{booster}, {price} coins}}",
   "@boosterCoinSemantics": {
-    "description": "Screen-reader label of a booster with none left whose badge shows its coin price (frame 3.3, spec §8).",
+    "description": "Screen-reader label of a booster with none left whose badge shows its coin price (frame 3.3, spec §8). {booster} is its label. copy.md A11y `a11y_booster_price`.",
     "placeholders": {
       "booster": {
         "type": "String",
@@ -316,6 +325,42 @@
         "type": "int",
         "format": "decimalPattern",
         "example": "20"
+      }
+    }
+  },
+
+  "boosterUndoCountSemantics": "{count, plural, =1{Undo, {count} left} other{Undo, {count} left}}",
+  "@boosterUndoCountSemantics": {
+    "description": "Screen-reader label of the Undo booster when its badge shows how many are left (frame 2.2, spec §8). copy.md A11y `a11y_booster_undo`.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "boosterHintCountSemantics": "{count, plural, =1{Hint, {count} left} other{Hint, {count} left}}",
+  "@boosterHintCountSemantics": {
+    "description": "Screen-reader label of the Hint booster when its badge shows how many are left (frame 2.2, spec §8). copy.md A11y `a11y_booster_hint`.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "boosterSlotCountSemantics": "{count, plural, =1{Extra slot, {count} left} other{Extra slot, {count} left}}",
+  "@boosterSlotCountSemantics": {
+    "description": "Screen-reader label of the +1 Slot booster when its badge shows how many are left (frame 2.2, spec §8). Spoken as \"Extra slot\": a screen reader would read \"+Slot\" as \"plus slot\". copy.md A11y `a11y_booster_slot`.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
       }
     }
   },
@@ -426,7 +471,12 @@
 
   "winTitle": "Level Complete!",
   "@winTitle": {
-    "description": "The win ribbon, drawn over the ui_win_ribbon animation (frame 2.8, spec §10.2 #4). The band fits about 22 characters; longer text shrinks."
+    "description": "The win ribbon, drawn over the ui_win_ribbon animation (frame 2.8, spec §10.2 #4). The band fits about 22 characters; longer text shrinks. copy.md Short forms `win_title`."
+  },
+
+  "winTitleShort": "Complete!",
+  "@winTitleShort": {
+    "description": "The win ribbon's short form, used only when winTitle doesn't fit the band at its minimum scale (tokens.json textFit.winRibbon). copy.md Short forms `win_title_short`."
   },
 
   "winContinue": "Continue",
@@ -514,13 +564,24 @@
 
   "chapterRibbon": "CHAPTER {number} · {name}",
   "@chapterRibbon": {
-    "description": "The ribbon on a chapter's first level, drawn over the ui_chapter_ribbon animation, fading after about 2 s (frame 4.7, spec §7.1). {name} is chapterName. The band fits about 22 characters; longer text shrinks.",
+    "description": "The ribbon on a chapter's first level, drawn over the ui_chapter_ribbon animation, fading after about 2 s (frame 4.7, spec §7.1). {name} is chapterName. The band fits about 22 characters; longer text shrinks. copy.md Short forms `chapter_ribbon`.",
     "placeholders": {
       "number": {
         "type": "int",
         "format": "decimalPattern",
         "example": "2"
       },
+      "name": {
+        "type": "String",
+        "example": "Rainy Café Corner"
+      }
+    }
+  },
+
+  "chapterRibbonShort": "{name}",
+  "@chapterRibbonShort": {
+    "description": "The chapter ribbon's short form (textFit.chapterRibbon) when chapterRibbon doesn't fit: the name alone. {name} is chapterName. copy.md Short forms `chapter_ribbon_short`.",
+    "placeholders": {
       "name": {
         "type": "String",
         "example": "Rainy Café Corner"
@@ -551,12 +612,12 @@
 
   "home": "Home",
   "@home": {
-    "description": "Pause card tile that leaves the level for Home (frame 3.9, spec §10.2 #14)."
+    "description": "Pause card tile that leaves the level for Home (frame 3.9, spec §10.2 #14). copy.md Short forms `tab_home`."
   },
 
   "settings": "Settings",
   "@settings": {
-    "description": "Pause card tile and Home gear that open Settings (frames 2.1, 3.9, spec §10.2 #13). Also the gear's screen-reader label."
+    "description": "Pause card tile and Home gear that open Settings (frames 2.1, 3.9, spec §10.2 #13). Also the gear's screen-reader label. copy.md A11y `a11y_settings`."
   },
 
   "settingSound": "Sound",
@@ -645,12 +706,27 @@
 
   "navShop": "Shop",
   "@navShop": {
-    "description": "The shell's bottom-nav Shop tab label (frame 2.1; m3 §10.1, §10.9)."
+    "description": "The shell's bottom-nav Shop tab label (frame 2.1; m3 §10.1, §10.9). copy.md Short forms `tab_shop`."
+  },
+
+  "navHomeShort": "Home",
+  "@navHomeShort": {
+    "description": "The Home tab label's short form (textFit.tabBar). copy.md Short forms `tab_home_short`."
+  },
+
+  "navShopShort": "Shop",
+  "@navShopShort": {
+    "description": "The Shop tab label's short form (textFit.tabBar). copy.md Short forms `tab_shop_short`."
   },
 
   "navMuseum": "Museum",
   "@navMuseum": {
-    "description": "The shell's bottom-nav Museum tab label (frame 2.1; m3 §10.1, §10.9)."
+    "description": "The shell's bottom-nav Museum tab label (frame 2.1; m3 §10.1, §10.9). copy.md Short forms `tab_museum`."
+  },
+
+  "navMuseumShort": "Museum",
+  "@navMuseumShort": {
+    "description": "The Museum tab label's short form (textFit.tabBar). copy.md Short forms `tab_museum_short`."
   },
 
   "homeDailyTile": "Daily Puzzle",
@@ -685,14 +761,21 @@
     }
   },
 
-  "homeDailyLocked": "After Level 2",
+  "homeDailyLocked": "After Level {level}",
   "@homeDailyLocked": {
-    "description": "Home's Daily tile before Level 2 (frame 12.3); \"2\" is the daily's fixed unlock level (Q67). copy.md E `daily_locked`."
+    "description": "Home's Daily tile, and the Daily screen, before the daily opens (frames 12.3, 12.2). {level} is `DailyService.unlockAfterLevel` (2: the level to win first, Q67). copy.md E `daily_locked`.",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
   },
 
   "homeBonusBadge": "BONUS",
   "@homeBonusBadge": {
-    "description": "Home's Play button badge on a bonus level (frame 12.2). copy.md E `home_bonus_badge`."
+    "description": "Home's Play button badge on a bonus level (frame 12.2). copy.md E `home_bonus_badge`. Also copy.md Short forms `tier_bonus`."
   },
 
   "homeBonusKicker": "BONUS ENDLESS",
@@ -791,9 +874,9 @@
     "description": "Closes the language sheet (frame 8.2)."
   },
 
-  "languageName": "{language, select, es{Spanish} pt_BR{Portuguese} id{Indonesian} hi{Hindi} de{German} fr{French} tr{Turkish} ja{Japanese} other{}}",
+  "languageName": "{language, select, en{English} es{Spanish} pt_BR{Portuguese} id{Indonesian} hi{Hindi} de{German} fr{French} tr{Turkish} ja{Japanese} other{}}",
   "@languageName": {
-    "description": "A launch language's name in the UI language, next to its autonym, which is data rather than ARB since it reads the same in every locale (frame 8.2, m3 §10.2). {language} is the locale code.",
+    "description": "A launch language's name in the UI language, next to its autonym, which is data rather than ARB since it reads the same in every locale (frame 8.2, m3 §10.2). {language} is the locale code. The English row draws no name, but a screen reader and Settings' fallback use the en branch.",
     "placeholders": {
       "language": {
         "type": "String",
@@ -802,14 +885,39 @@
     }
   },
 
-  "languageComingSoon": "Coming soon",
-  "@languageComingSoon": {
-    "description": "Screen-reader note on a language sheet row that is disabled until its ARB file exists (frame 8.2, TODO(M7))."
+  "a11yJoinList": "{first}, {second}",
+  "@a11yJoinList": {
+    "description": "Joins two parts of one screen-reader label, such as a level's number and its stars (spec §16). Each language writes its own separator (Japanese uses 、). A longer label folds its parts through this one pair at a time.",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "example": "Level 12"
+      },
+      "second": {
+        "type": "String",
+        "example": "3 stars"
+      }
+    }
+  },
+
+  "a11yJoinSentences": "{first}. {second}",
+  "@a11yJoinSentences": {
+    "description": "Joins two sentences of one screen-reader label (a card's title, then its explanation; spec §16). Each language writes its own full stop (Japanese uses 。 with no space). Folded through this one pair at a time.",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "example": "Race the Computer"
+      },
+      "second": {
+        "type": "String",
+        "example": "Locked until level 30"
+      }
+    }
   },
 
   "languageRowSemantics": "{autonym}, {detail}",
   "@languageRowSemantics": {
-    "description": "Screen-reader label of an unselected language sheet row (frame 8.2, spec §16): the language's own name, then its languageName, or languageComingSoon when the row is disabled.",
+    "description": "Screen-reader label of an unselected language sheet row (frame 8.2, spec §16): the language's own name, then its languageName. The selected row is read by its own name alone.",
     "placeholders": {
       "autonym": {
         "type": "String",
@@ -866,6 +974,18 @@
     }
   },
 
+  "dailyFreezesSemantics": "{count, plural, =1{{count} streak freeze} other{{count} streak freezes}}",
+  "@dailyFreezesSemantics": {
+    "description": "Screen-reader label of the Daily streak card's freezes (frame 5.1). Visible: dailyFreezes. copy.md A11y `a11y_freezes` says \"{count} streak freeze left\"; \"left\" is the respect rules' scarcity word (spec-prop §1.1, E1), so the string keeps the rule and drops the word (an owner question).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
   "dailyDay": "Day",
   "@dailyDay": {
     "description": "Prefix on the 7-day strip's day-7 chest label (frame 5.1)."
@@ -908,33 +1028,33 @@
     }
   },
 
-  "dailyChestRow": "Day 7 chest · {coins} coins",
+  "dailyChestRow": "{count, plural, =1{Day 7 chest · {count} coin} other{Day 7 chest · {count} coins}}",
   "@dailyChestRow": {
-    "description": "The 7-day strip's chest row caption (frame 5.1).",
+    "description": "The 7-day strip's chest row caption (frame 5.1). {count} is the chest's coins (the app fills it). copy.md E `daily_chest_title`.",
     "placeholders": {
-      "coins": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
-        "example": "300"
+        "example": "100"
       }
     }
   },
 
   "dailyChestToGo": "{count, plural, =1{1 day to go} other{{count} days to go}}",
   "@dailyChestToGo": {
-    "description": "Days left to the Day 7 chest, not counting today (frame 5.5: dailyDone scene, \"2 days to go\"; m3 §8.4).",
+    "description": "The Daily chest row's days still to go (frame 5.1). {count} is the days. copy.md E `daily_chest_to_go`.",
     "placeholders": {
       "count": {
         "type": "int",
         "format": "decimalPattern",
-        "example": "2"
+        "example": "3"
       }
     }
   },
 
   "dailyChestToGoToday": "{count, plural, =1{1 day to go, counting today} other{{count} days to go, counting today}}",
   "@dailyChestToGoToday": {
-    "description": "Days left to the Day 7 chest, counting today (frame 5.1, \"3 days to go, counting today\"; m3 §8.4).",
+    "description": "The Daily chest row's days still to go while today's puzzle is unsolved (frame 5.1). {count} is the days. copy.md E `daily_chest_to_go_today`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -946,7 +1066,7 @@
 
   "dailyChestOpenedToday": "Opened today",
   "@dailyChestOpenedToday": {
-    "description": "The 7-day strip's chest row once the Day 7 chest has been collected (frame 5.6: dailyChest scene, \"chestSub: 'Opened today'\")."
+    "description": "The Daily chest row once the chest was opened today (frame 5.1). copy.md E `daily_chest_opened`."
   },
 
   "dailyPuzzleTitle": "{weekday}’s puzzle",
@@ -1151,6 +1271,11 @@
     "description": "The Museum's next-family card's kicker (frame 6.1). copy.md G.10 `museum_next`."
   },
 
+  "museumNextFamilyKicker": "NEXT FAMILY",
+  "@museumNextFamilyKicker": {
+    "description": "museumNextFamily as the card's capitalised kicker (frame 6.1). Each language writes its own capitals (Turkish keeps İ and I apart), so the code never changes the case of a string."
+  },
+
   "museumFamilyLabel": "{name} Family",
   "@museumFamilyLabel": {
     "description": "A figurine's cabinet label once earned, e.g. \"Classic Family\" (frame 6.1). {name} is figurineShortName.",
@@ -1241,7 +1366,7 @@
 
   "museumIntro": "Every chapter has a doll family. Win all {levels} of its levels to bring that family home.",
   "@museumIntro": {
-    "description": "The Museum's one-line explainer (frame 6.1). {levels} is a chapter's level count (20 in the bundle; the app fills it). copy.md G.10 `museum_intro`.",
+    "description": "The Museum's one-line explainer (frame 6.1). {levels} is a chapter's level count (ChapterInfo.levelsPerChapter, 20 in the bundle; the app fills it). copy.md G.10 `museum_intro`.",
     "placeholders": {
       "levels": {
         "type": "int",
@@ -1263,27 +1388,18 @@
     }
   },
 
-  "museumLockedShelfLabel": "Chapter {chapter} · Levels {first}–{last}",
-  "@museumLockedShelfLabel": {
-    "description": "A locked cabinet shelf's one-line label: its chapter and level range (frame 6.1). copy.md G.10 `museum_locked_shelf`.",
+  "museumNextChip": "{count, plural, =1{{count} to go} other{{count} to go}}",
+  "@museumNextChip": {
+    "description": "The count chip on the Museum's next-family niche (frame 6.1). {count} is the levels still to win. The two forms read alike in English; translators may differ. copy.md G.10 `museum_next_chip`.",
     "placeholders": {
-      "chapter": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
-        "example": "4"
-      },
-      "first": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "61"
-      },
-      "last": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "80"
+        "example": "14"
       }
     }
   },
+
 
   "museumLockedShelfShort": "Ch {chapter} · {first}–{last}",
   "@museumLockedShelfShort": {
@@ -1371,9 +1487,9 @@
     "description": "An owned, unequipped skin card's button (frame 7.3, 7.4)."
   },
 
-  "shopOwned": "Owned",
-  "@shopOwned": {
-    "description": "A Shop card's Owned state. Not in copy.md m7-3 (TODO(design): ask for it in the next copy request)."
+  "skinOwnedSemantics": "Owned",
+  "@skinOwnedSemantics": {
+    "description": "A Shop skin card's screen-reader value for a skin the player owns but has not equipped, read after its name; the card itself shows Equip (frame 7.3). copy.md A11y `a11y_skin_owned`."
   },
 
   "skinName": "{skin, select, classic{Classic} space{Space} ocean{Ocean} sweets{Sweets} forest{Forest Friends} winter{Winter} forest_bear{Forest Bear} other{}}",
@@ -1471,7 +1587,7 @@
 
   "notNow": "Not now",
   "@notNow": {
-    "description": "A dialog's Not now (NotEnoughCoinsDialog). copy.md G.10 `coins_needed_later`."
+    "description": "A dialog's secondary \"Not now\" button: NotEnoughCoinsDialog, the New rival unlocked card and the reminder's denied card. It is deliberately not under a respect-test prefix (its \"now\" is the opposite of urgency). copy.md G.10 `coins_needed_later`. copy.md G.5 `rival_unlocked_later`. copy.md G.7 `reminder_not_now`."
   },
 
   "shopDownloading": "Downloading {percent}%",
@@ -1552,7 +1668,7 @@
 
   "tutorialStep1Title": "Tap the small doll",
   "@tutorialStep1Title": {
-    "description": "L1's tutorial step 1 title (frame 1.3)."
+    "description": "L1's tutorial step 1 title (frames 1.3, 10.8b). copy.md E `tut_step_1_title`."
   },
 
   "tutorialStepChip": "STEP {step} OF {total}",
@@ -1572,27 +1688,43 @@
 
   "tutorialStep1Text": "Dolls nest into the same color, one size bigger.",
   "@tutorialStep1Text": {
-    "description": "L1's tutorial step 1 body (frame 1.3)."
+    "description": "L1's tutorial step 1 body (frames 1.3, 10.8b). copy.md E `tut_step_1_body`."
   },
 
   "tutorialStep2Title": "Now tap the big one",
   "@tutorialStep2Title": {
-    "description": "L1's tutorial step 2 title (frame 1.4)."
+    "description": "L1's tutorial step 2 title (frames 1.4, 10.8b). copy.md E `tut_step_2_title`."
   },
 
   "tutorialStep2Text": "The small doll drops inside with a clack.",
   "@tutorialStep2Text": {
-    "description": "L1's tutorial step 2 body (frame 1.4)."
+    "description": "L1's tutorial step 2 body (frames 1.4, 10.8b). copy.md E `tut_step_2_body`."
   },
 
   "tutorialStep3Title": "Finish the family",
   "@tutorialStep3Title": {
-    "description": "Level 1's tutorial step 3 title (frame 10.8b). copy.md E `tut_step_3_title`."
+    "description": "L1's tutorial step 3 title (frames 1.5, 10.8b). copy.md E `tut_step_3_title`."
   },
 
   "tutorialStep3Text": "Put the last doll in. A family is done when every size is nested.",
   "@tutorialStep3Text": {
     "description": "Level 1's tutorial step 3 line (frame 10.8b). copy.md E `tut_step_3_body`."
+  },
+
+  "tutorialStepSemantics": "Step {step} of 3. {title}",
+  "@tutorialStepSemantics": {
+    "description": "Screen-reader announcement of a tutorial step's card (frames 1.3-1.5). {step} is 1-3, {title} the step's title (tutorialStep1Title...). copy.md A11y `a11y_tut_step`.",
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      },
+      "title": {
+        "type": "String",
+        "example": "Tap the small doll"
+      }
+    }
   },
 
   "tutorialSwallowChip": "NEW MOVE",
@@ -1721,7 +1853,7 @@
 
   "gameplayGenerating": "Setting up the shelves…",
   "@gameplayGenerating": {
-    "description": "The generating card's line under `ui_spinner` while a level is made (frame 12.5). Not in copy.md m7-3: frame 12.5's own text (ui-spec C8; TODO(design): ask for its id)."
+    "description": "The generating card's line under `ui_spinner` while a level is made (frame 12.5). copy.md E `gen_busy`."
   },
 
   "dailyStreakPaused": "Your {count}-day streak is resting. Solve today’s puzzle to light it again.",
@@ -1821,16 +1953,21 @@
     "description": "The Chapters level card's Play button (frame 10.4b). copy.md G.11 `level_play`."
   },
 
-  "chaptersLevelSemanticsWon": "{moves, plural, =1{Level {level}, won, best 1 move} other{Level {level}, won, best {moves} moves}}",
+  "chaptersLevelSemanticsWon": "{count, plural, =1{Level {level}, {count} star. Best {best} moves.} other{Level {level}, {count} stars. Best {best} moves.}}",
   "@chaptersLevelSemanticsWon": {
-    "description": "A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.",
+    "description": "A won Chapters level cell's screen-reader label (frame 10.4, spec §16). {count} is the cell's stars (1-3), {best} its best moves. copy.md A11y `a11y_level_won`.",
     "placeholders": {
       "level": {
         "type": "int",
         "format": "decimalPattern",
         "example": "24"
       },
-      "moves": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      },
+      "best": {
         "type": "int",
         "format": "decimalPattern",
         "example": "16"
@@ -1840,7 +1977,7 @@
 
   "chaptersLevelSemanticsWonNoBest": "Level {level}, won",
   "@chaptersLevelSemanticsWonNoBest": {
-    "description": "A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.",
+    "description": "A won Chapters level cell's screen-reader label when the save holds no best or stars for it (a save from before they were kept). Not in copy.md m7-4: the fallback beside a11y_level_won.",
     "placeholders": {
       "level": {
         "type": "int",
@@ -1850,9 +1987,26 @@
     }
   },
 
-  "chaptersLevelSemanticsCurrent": "Level {level}, play next",
+  "chaptersLevelSemanticsWonBestOnly": "{best, plural, =1{Level {level}, won. Best {best} move.} other{Level {level}, won. Best {best} moves.}}",
+  "@chaptersLevelSemanticsWonBestOnly": {
+    "description": "A won Chapters level cell's screen-reader label when the save holds a best but no stars for it (a level without a par). Not in copy.md m7-4: the fallback beside a11y_level_won, in its words.",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "24"
+      },
+      "best": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "9"
+      }
+    }
+  },
+
+  "chaptersLevelSemanticsCurrent": "Level {level}, next to play",
   "@chaptersLevelSemanticsCurrent": {
-    "description": "A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.",
+    "description": "The Chapters level cell for the level to play next (frame 10.4, spec §16). copy.md A11y `a11y_level_current`.",
     "placeholders": {
       "level": {
         "type": "int",
@@ -1864,7 +2018,7 @@
 
   "chaptersLevelSemanticsLocked": "Level {level}, locked",
   "@chaptersLevelSemanticsLocked": {
-    "description": "A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.",
+    "description": "A locked Chapters level cell's screen-reader label (spec §16). copy.md A11y `a11y_level_locked`.",
     "placeholders": {
       "level": {
         "type": "int",
@@ -1891,7 +2045,7 @@
 
   "recordsFamilies": "Families completed",
   "@recordsFamilies": {
-    "description": "Records' families cell label (frame 10.6), under the count of every family completed (`records.families`, spec-prop §7.9 \"families completed\"). copy.md G.10 `records_families` reads \"Families home\" with the value `records_families_value` \"{count} of 10\", which counts the Museum's figurines; the rule counts every family a won board completed (212 in spec-prop's example), so \"of 10\" read \"2 of 10\" after two wins with the Museum empty (the phase-4 device run, 2026-09-30). The rule's words until the owner settles it (Q159)."
+    "description": "Records' families cell label (frame 10.6), under the lifetime count of every family a won board completed, shown with the family counter's doll mark (`records.families`, spec-prop §7.9). It is not the Museum's \"of 10\" count: `records_families_value` is withdrawn (Q159). copy.md G.10 `records_families`."
   },
 
   "recordsRacesHeader": "Races won",
@@ -1946,39 +2100,49 @@
     }
   },
 
-  "badgeHint": "{badge, select, first_family{Complete a family} glass_breaker{Open a glass case} ice_melter{Melt the ice on a stand} tall_order{Win a level with size-5 dolls} grand_nest{Win a level with size-6 dolls} level_100{Win Level 100} level_200{Win Level 200} dailies_7{Solve 7 daily puzzles} dailies_30{Solve 30 daily puzzles} first_race{Win a race against the computer} all_rivals{Beat every computer rival} museum_full{Bring every Museum family home} other{}}",
+  "badgeHint": "{badge, select, first_family{Nest a whole family.} glass_breaker{Open a glass case.} ice_melter{Free a doll from the ice.} tall_order{Win a level with size-5 dolls.} grand_nest{Win a level with size-6 dolls.} level_100{Win level {level}.} level_200{Win level {level}.} dailies_7{Solve {count} daily puzzles.} dailies_30{Solve {count} daily puzzles.} first_race{Beat the computer in a race.} all_rivals{Beat every computer rival.} museum_full{Bring every family home to your Museum.} other{}}",
   "@badgeHint": {
-    "description": "A locked badge's screen-reader hint: how to earn it, in a few words (spec §16). {badge} is BadgeId.id. Not in copy.md m7-3: the visible locked line is badgeLockedLine.",
+    "description": "A locked badge's how-to line, read after badgeSemanticsLocked and by nothing else (frame 10.6, spec §16). {badge} is BadgeId.id. {level} and {count} are the rule's numbers (BadgeRules: level 100 or 200 won; 7 or 30 dailies), so a tuning change can't contradict the copy. The ids are the select cases: `<badge>_how`. copy.md A11y `first_family_how`, `glass_breaker_how`, `ice_melter_how`, `tall_order_how`, `grand_nest_how`, `level_100_how`, `level_200_how`, `dailies_7_how`, `dailies_30_how`, `first_race_how`, `all_rivals_how`, `museum_full_how`.",
     "placeholders": {
       "badge": {
         "type": "String",
-        "example": "glass_breaker"
-      }
-    }
-  },
-
-  "badgeSemanticsEarned": "{name}, earned",
-  "@badgeSemanticsEarned": {
-    "description": "An earned badge's screen-reader label. Not in copy.md m7-3: a screen-reader label.",
-    "placeholders": {
-      "name": {
-        "type": "String",
-        "example": "Glass Breaker"
-      }
-    }
-  },
-
-  "badgeSemanticsLocked": "{name}, not earned yet. {hint}",
-  "@badgeSemanticsLocked": {
-    "description": "A locked badge's screen-reader label with badgeHint. Not in copy.md m7-3: a screen-reader label.",
-    "placeholders": {
-      "name": {
-        "type": "String",
-        "example": "Glass Breaker"
+        "example": "level_100"
       },
-      "hint": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "7"
+      }
+    }
+  },
+
+  "badgeSemanticsEarned": "{badge}, earned",
+  "@badgeSemanticsEarned": {
+    "description": "An earned badge's screen-reader label (frame 10.6). {badge} is badgeName. copy.md A11y `a11y_badge_earned`.",
+    "placeholders": {
+      "badge": {
         "type": "String",
-        "example": "Open a glass case"
+        "example": "Glass Act"
+      }
+    }
+  },
+
+  "badgeSemanticsLocked": "{badge}, not earned yet. {how}",
+  "@badgeSemanticsLocked": {
+    "description": "A locked badge's screen-reader label (frame 10.6). {badge} is badgeName, {how} is badgeHint, the how-to line only a screen reader hears; the visible line stays badgeLockedLine. copy.md A11y `a11y_badge_locked`.",
+    "placeholders": {
+      "badge": {
+        "type": "String",
+        "example": "Glass Act"
+      },
+      "how": {
+        "type": "String",
+        "example": "Open a glass case."
       }
     }
   },
@@ -2103,9 +2267,9 @@
     }
   },
 
-  "chestContentsSemantics": "{coins, plural, =1{1 coin} other{{coins} coins}} and {hints, plural, =1{1 hint} other{{hints} hints}}",
+  "chestContentsSemantics": "{coins, plural, =1{{coins} coin} other{{coins} coins}}, {hints, plural, =1{{hints} hint} other{{hints} hints}}",
   "@chestContentsSemantics": {
-    "description": "A chest's contents as one screen-reader label. Not in copy.md m7-3: a screen-reader label.",
+    "description": "A chest's contents as one screen-reader phrase, joined by a comma (\"100 coins, 1 hint\"), for chestSemantics' {contents}. A coins-only chest uses coinsSemantics. Not in copy.md m7-4: copy.md says the game joins the chip labels with commas; this key does the joining so a locale controls its own separator.",
     "placeholders": {
       "coins": {
         "type": "int",
@@ -2116,6 +2280,17 @@
         "type": "int",
         "format": "decimalPattern",
         "example": "1"
+      }
+    }
+  },
+
+  "chestSemantics": "Chest. Inside: {contents}.",
+  "@chestSemantics": {
+    "description": "A chest's screen-reader label on the milestone and streak chest cards (frames 10.3, 5.6). {contents} is chestContentsSemantics (or coinsSemantics for a coins-only chest). copy.md A11y `a11y_chest_contents`.",
+    "placeholders": {
+      "contents": {
+        "type": "String",
+        "example": "100 coins, 1 hint"
       }
     }
   },
@@ -2142,7 +2317,7 @@
 
   "settingReduceMotion": "Reduce motion",
   "@settingReduceMotion": {
-    "description": "Settings' Reduce motion row with its Off · On · System control (frame 10.2e). copy.md G.7 `settings_reduce_motion`."
+    "description": "Settings' Reduce motion row with its Off · On · System control (frame 10.2e). copy.md G.7 `settings_reduce_motion`. It is also the segmented control's group label for a screen reader. copy.md A11y `a11y_reduce_motion_group`."
   },
 
   "reduceMotionSystem": "System",
@@ -2165,7 +2340,7 @@
     "description": "The Out of moves sheet's Undo row with Relaxed mode on, or in a race (frame 10.9b). copy.md G.9 `relaxed_undo_row`."
   },
 
-  "oomUndoSpent": "{count, plural, =1{Your 1 free undo is used} other{Your {count} free undos are used}}",
+  "oomUndoSpent": "{count, plural, =1{Your {count} free undo is used} other{Your {count} free undos are used}}",
   "@oomUndoSpent": {
     "description": "The Out of moves sheet's Undo row once the free undos are spent (frame 12.8). {count} is free_undos_per_level (2 by default; the app fills it). copy.md E `oom_undo_spent`.",
     "placeholders": {
@@ -2177,9 +2352,9 @@
     }
   },
 
-  "extraSlotLimitToast": "{count, plural, =1{One extra slot is the most for one level.} =2{Two extra slots is the most for one level.} other{{count} extra slots is the most for one level.}}",
+  "extraSlotLimitToast": "{count, plural, =1{One extra slot is the most for one level.} other{{count} extra slots is the most for one level.}}",
   "@extraSlotLimitToast": {
-    "description": "The toast when the level's last +1 Slot lands (frame 12.9). {count} is LayoutLimits.maxExtraSlots (2). copy.md E `slot_limit`.",
+    "description": "The toast when the level's last +1 Slot lands (frame 12.9). {count} is LayoutLimits.maxExtraSlots (2; the app fills it). copy.md E `slot_limit`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -2189,39 +2364,59 @@
     }
   },
 
-  "boosterUndoUnlimitedSemantics": "{booster}, unlimited",
+  "boosterUndoUnlimitedSemantics": "Undo, unlimited",
   "@boosterUndoUnlimitedSemantics": {
-    "description": "Screen-reader label of the Undo booster with Relaxed mode on (its badge shows the `all_inclusive` glyph; spec §16). {booster} is boosterUndo. copy.md G.9 `a11y_undo_unlimited`.",
+    "description": "Screen-reader label of the Undo booster with Relaxed mode on (its badge shows the `all_inclusive` glyph; spec §16). copy.md A11y `a11y_undo_unlimited`."
+  },
+
+  "oomUndoFreeChip": "Free",
+  "@oomUndoFreeChip": {
+    "description": "The chip on the Out of Moves sheet's Undo row in Relaxed mode: the `all_inclusive` glyph and this word (frame 10.9b). The row's own line is oomUndoFreeUnlimited. copy.md G.9 `relaxed_free_chip`."
+  },
+
+  "boosterLimitSemantics": "+Slot, {count} of {total} used",
+  "@boosterLimitSemantics": {
+    "description": "Screen-reader label of the +1 Slot booster at its limit: its sunk face shows \"2/2\" (frame 12.9; spec §16). {count} is the slots used, {total} LayoutLimits.maxExtraSlots. copy.md A11y `a11y_booster_slot_used`.",
     "placeholders": {
-      "booster": {
-        "type": "String",
-        "example": "Undo"
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
       }
     }
   },
-  "oomUndoFreeChip": "Free",
-  "@oomUndoFreeChip": {
-    "description": "The chip on the Out of Moves sheet's Undo row in Relaxed mode: the `all_inclusive` glyph and this word (frame 10.9b). Not in copy.md m7-3: the frame's text; the row's own line is oomUndoFreeUnlimited."
-  },
-  "boosterLimitSemantics": "{booster}, {used} of {total} used",
-  "@boosterLimitSemantics": {
-    "description": "Screen-reader label of the +1 Slot booster at its limit: its sunk face shows \"2/2\" (frame 12.9; spec §16). Not in copy.md m7-3: the frame's badge said aloud.",
-    "placeholders": {
-      "booster": { "type": "String", "example": "+Slot" },
-      "used": { "type": "int", "example": "2" },
-      "total": { "type": "int", "example": "2" }
-    }
-  },
+
   "hintGainedTag": "+{count}",
   "@hintGainedTag": {
-    "description": "The green tag over the Hint booster as a chest's hint sprite lands on it (frame 10.3d). Not in copy.md m7-3: the frame's text.",
+    "description": "The green tag over a booster as a chest's sprite lands on it (frame 10.3d). {count} is the number gained. copy.md E `chest_gain_tag`.",
     "placeholders": {
-      "count": { "type": "int", "example": "1" }
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
     }
   },
-  "restartSuggestedHint": "Suggested",
-  "@restartSuggestedHint": {
-    "description": "Screen-reader hint on the Restart booster while it glows because the level looks stuck with nothing to undo (frame 12.7: Restart's label gains this hint). Not in copy.md m7-3: ui-spec-game 12.7."
+
+  "boosterSuggestedSemantics": "{booster}, suggested",
+  "@boosterSuggestedSemantics": {
+    "description": "Screen-reader label of the Restart booster while it glows because the level looks stuck with nothing to undo (frame 12.7): nothing reads \"Suggested\" on screen, the ring alone marks it. {booster} is the Restart label. copy.md A11y `a11y_booster_suggested`.",
+    "placeholders": {
+      "booster": {
+        "type": "String",
+        "example": "Restart"
+      }
+    }
+  },
+
+  "boosterRestartSemantics": "Restart the level",
+  "@boosterRestartSemantics": {
+    "description": "Screen-reader label of the Restart booster's button (frame 2.2, spec §2.4); its visible label is `restart`. copy.md A11y `a11y_booster_restart`."
   },
 
   "homeVsComputerTile": "vs Computer",
@@ -2231,7 +2426,7 @@
 
   "homeVsComputerLocked": "After Level {level}",
   "@homeVsComputerLocked": {
-    "description": "Home's vs Computer tile while it is locked (frame 9.1b): {level} is race_unlock_level (20 by default; the copy's \"20\" is the Remote Config value, so the app fills it). copy.md G.5 `rival_locked_mode`.",
+    "description": "Home's vs Computer tile while it is locked (frame 9.1b). {level} is `race_unlock_level` (20 by default; the app fills it from Remote Config). copy.md G.5 `rival_locked_mode`.",
     "placeholders": {
       "level": {
         "type": "int",
@@ -2292,9 +2487,9 @@
     }
   },
 
-  "raceRivalBlurb": "{number, plural, =1{Takes its time and enjoys every doll along the way.} =2{Checks each move twice before it makes it.} other{Quick, tidy and hard to catch.}}",
+  "raceRivalBlurb": "{number, plural, =1{Takes its time and enjoys every doll along the way.} =2{Checks each move twice, then makes it.} other{Lively, tidy and hard to catch.}}",
   "@raceRivalBlurb": {
-    "description": "A computer rival's one-line personality on its select card, by rival number 1-3 (frame 9.2). It describes the computer, never the player: respect_copy_test exempts rival 3's \"Quick\" for this key only (phase 4 decision on Q-P4-2). copy.md G.5 `rival_n_personality`.",
+    "description": "A computer rival's one-line personality on its select card, by rival number 1-3 (frame 9.2). It describes the computer, never the player, and uses none of the respect rules' denied words. copy.md G.5 `rival_1_personality`, `rival_2_personality`, `rival_3_personality`.",
     "placeholders": {
       "number": {
         "type": "int",
@@ -2304,9 +2499,9 @@
     }
   },
 
-  "raceRivalSkill": "{number, plural, =1{Relaxed · Slow} =2{Careful · Slow} other{Careful · Quick}}",
+  "raceRivalSkill": "{number, plural, =1{Gentle pace} =2{Steady pace} other{Lively pace}}",
   "@raceRivalSkill": {
-    "description": "A computer rival's skill label on its select card, by rival number 1-3: rival 1 plays like the casual bot at 3 s a move, rival 2 the smart bot at 2.4 s, rival 3 the smart bot at 1.6 s (spec-prop §7.7; frame 9.2). It describes the computer's pace: respect_copy_test exempts \"Slow\" and \"Quick\" for this key only (Q-P4-2's decision). copy.md G.5 `rival_n_skill`.",
+    "description": "A computer rival's pace label on its select card, by rival number 1-3: rival 1 plays like the casual bot at 3 s a move, rival 2 the smart bot at 2.4 s, rival 3 the smart bot at 1.6 s (spec-prop §7.7; frame 9.2). No rival is called slow and no two read alike, so no respect-test exemption is needed. copy.md G.5 `rival_1_skill`, `rival_2_skill`, `rival_3_skill`.",
     "placeholders": {
       "number": {
         "type": "int",
@@ -2346,13 +2541,44 @@
 
   "raceRivalSemantics": "{name}, Computer",
   "@raceRivalSemantics": {
-    "description": "A rival card's and the results' screen-reader name, which says \"Computer\" (spec-prop §1.1 rule 5; the visible name sits beside the tag). Not in copy.md m7-3: a screen-reader label the app composes.",
+    "description": "A computer rival's name for a screen reader on the pause and result cards, which says \"Computer\" (spec-prop §1.1 rule 5; the visible name sits beside the tag). Not in copy.md m7-4: built on `tag_computer`.",
     "placeholders": {
       "name": {
         "type": "String",
         "example": "Rival 1"
       }
     }
+  },
+
+  "raceRivalCardSemantics": "{rival}, computer rival. {skill}.",
+  "@raceRivalCardSemantics": {
+    "description": "A rival's select card, for a screen reader (frame 9.2). {rival} is raceRivalName, {skill} raceRivalSkill. Says \"computer\" (spec-prop §1.1 rule 5). The pick adds raceRivalSelectedSemantics. copy.md A11y `a11y_rival_card`.",
+    "placeholders": {
+      "rival": {
+        "type": "String",
+        "example": "Pebble"
+      },
+      "skill": {
+        "type": "String",
+        "example": "Gentle pace"
+      }
+    }
+  },
+
+  "raceRivalLockedSemantics": "Locked computer rival. Beat {rival} to unlock.",
+  "@raceRivalLockedSemantics": {
+    "description": "A locked rival's select card, for a screen reader (frame 9.2b). {rival} is the rival before it (raceRivalName). copy.md A11y `a11y_rival_locked`.",
+    "placeholders": {
+      "rival": {
+        "type": "String",
+        "example": "Pebble"
+      }
+    }
+  },
+
+  "raceRivalSelectedSemantics": "Selected",
+  "@raceRivalSelectedSemantics": {
+    "description": "The word a screen reader adds to the rival select card the player has picked (frame 9.2). copy.md A11y `a11y_rival_selected`."
   },
 
   "raceStart": "Start",
@@ -2367,7 +2593,7 @@
 
   "raceStripReady": "Ready when you are",
   "@raceStripReady": {
-    "description": "The rival strip's state line before Start (frame 9.3). Not in copy.md m7-3: frame 9.3's own text (ui-spec C7; TODO(design): ask Claude Design for its id)."
+    "description": "The rival strip's state line before Start (frame 9.3). copy.md G.5 `strip_ready`."
   },
 
   "raceStripThinking": "Thinking…",
@@ -2407,15 +2633,15 @@
     }
   },
 
-  "raceStripSemantics": "{total, plural, =1{{name}, Computer: {done} of 1 family} other{{name}, Computer: {done} of {total} families}}",
+  "raceStripSemantics": "{total, plural, =1{{name}, computer: {count} of {total} family} other{{name}, computer: {count} of {total} families}}",
   "@raceStripSemantics": {
-    "description": "The rival strip's screen-reader label, which says \"Computer\" (spec-prop §1.1 rule 5). Not in copy.md m7-3: a screen-reader label the app composes.",
+    "description": "The rival strip's screen-reader label, which says \"computer\" (spec-prop §1.1 rule 5). {name} is raceRivalName. copy.md A11y `a11y_rival_strip`.",
     "placeholders": {
       "name": {
         "type": "String",
-        "example": "Rival 1"
+        "example": "Pebble"
       },
-      "done": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "3"
@@ -2430,7 +2656,7 @@
 
   "raceAnnounceFamily": "The computer completed a family: {done} of {total}",
   "@raceAnnounceFamily": {
-    "description": "The rival strip's live screen-reader announcement when the computer completes a family, rate-limited (spec §16). copy.md G.5 `a11y_rival_family` ({count} is {done} here).",
+    "description": "The rival strip's live screen-reader announcement when the computer completes a family, rate-limited (spec §16). copy.md A11y `a11y_rival_family`.",
     "placeholders": {
       "done": {
         "type": "int",
@@ -2447,7 +2673,7 @@
 
   "raceAnnounceStart": "Race started against {rival}, a computer player.",
   "@raceAnnounceStart": {
-    "description": "The live screen-reader announcement when Start is tapped (spec §16). Says \"computer\" (spec-prop §1.1 rule 5). copy.md G.5 `a11y_race_start`.",
+    "description": "The live screen-reader announcement when Start is tapped (spec §16). Says \"computer\" (spec-prop §1.1 rule 5). copy.md A11y `a11y_race_start`.",
     "placeholders": {
       "rival": {
         "type": "String",
@@ -2458,22 +2684,22 @@
 
   "raceAnnounceStartingOver": "The computer is starting over.",
   "@raceAnnounceStartingOver": {
-    "description": "The rival strip's live announcement when the computer restarts (spec §16). copy.md G.5 `a11y_rival_starting_over`."
+    "description": "The rival strip's live announcement when the computer restarts (spec §16). copy.md A11y `a11y_rival_starting_over`."
   },
 
   "raceAnnounceFinished": "The computer completed every family.",
   "@raceAnnounceFinished": {
-    "description": "The rival strip's live announcement when the computer finishes (spec §16). copy.md G.5 `a11y_rival_finished`."
+    "description": "The rival strip's live announcement when the computer finishes (spec §16). copy.md A11y `a11y_rival_finished`."
   },
 
   "raceAnnounceWon": "You won the race.",
   "@raceAnnounceWon": {
-    "description": "The live announcement as the race win card opens (spec §16). copy.md G.5 `a11y_race_won`."
+    "description": "The live announcement as the race win card opens (spec §16). copy.md A11y `a11y_race_won`."
   },
 
   "raceAnnounceLost": "The computer finished first.",
   "@raceAnnounceLost": {
-    "description": "The live announcement as the race loss card opens (spec §16). copy.md G.5 `a11y_race_lost`."
+    "description": "The live announcement as the race loss card opens (spec §16). copy.md A11y `a11y_race_lost`."
   },
 
   "raceWinTitle": "You won the race!",
@@ -2481,9 +2707,14 @@
     "description": "The race win card's ribbon title (frame 9.4). copy.md G.5 `race_win_title`."
   },
 
-  "raceWinBody": "You completed every family before {rival}.",
+  "raceWinTitleShort": "You won!",
+  "@raceWinTitleShort": {
+    "description": "The race win ribbon's short form (textFit.winRibbon) when raceWinTitle doesn't fit. copy.md Short forms `race_win_title_short`."
+  },
+
+  "raceWinBody": "Every family is complete. {rival} was still sorting.",
   "@raceWinBody": {
-    "description": "The race win card's line under the title (frame 9.4). {rival} is raceRivalName. It names the computer's pace, never a player's: respect_copy_test exempts \"before\" for this key only (Q-P4-2's decision). copy.md G.5 `race_win_body`.",
+    "description": "The race win card's line under the title (frame 9.4). {rival} is raceRivalName. copy.md G.5 `race_win_body`.",
     "placeholders": {
       "rival": {
         "type": "String",
@@ -2507,6 +2738,11 @@
   "raceLossTitle": "So close! Rematch?",
   "@raceLossTitle": {
     "description": "The race loss card's ribbon title (frame 9.5). Warm, never a taunt (vs-computer rule 10). copy.md G.5 `race_lose_title`."
+  },
+
+  "raceLossTitleShort": "So close!",
+  "@raceLossTitleShort": {
+    "description": "The race result ribbon's short form (textFit.winRibbon) when raceLossTitle doesn't fit. copy.md Short forms `race_lose_title_short`."
   },
 
   "raceLossBody": "{rival} finished first this time. A rematch costs nothing.",
@@ -2536,14 +2772,25 @@
     }
   },
 
+  "raceRivalUnlockedRace": "Race {rival}",
+  "@raceRivalUnlockedRace": {
+    "description": "The New rival unlocked card's primary button: it races the new rival (frame 9.6). {rival} is raceRivalName. The card's secondary button is `notNow`. copy.md G.5 `rival_unlocked_race`.",
+    "placeholders": {
+      "rival": {
+        "type": "String",
+        "example": "Button"
+      }
+    }
+  },
+
   "raceLeaveTitle": "Leave this race?",
   "@raceLeaveTitle": {
     "description": "The confirm card when Pause's Leave race is tapped (frame 9.7b; Q133). copy.md G.5 `race_quit_title`."
   },
 
-  "raceLeaveBody": "The race ends here. No coins, and nothing lost.",
+  "raceLeaveBody": "The race stops here. No coins, and you keep everything.",
   "@raceLeaveBody": {
-    "description": "The confirm card's line (frame 9.7b): nothing is lost by leaving (spec-prop §7.7). respect_copy_test exempts \"ends\" and \"lost\" for this key only: they reassure, they don't threaten (Q-P4-2's decision). copy.md G.5 `race_quit_body`."
+    "description": "The confirm card's line (frame 9.7b): nothing is lost by leaving (spec-prop §7.7). copy.md G.5 `race_quit_body`."
   },
 
   "raceLeaveKeep": "Keep racing",
@@ -2589,7 +2836,7 @@
 
   "racePauseHeader": "vs Computer · {rival}",
   "@racePauseHeader": {
-    "description": "The Pause dialog's header in a race, beside the rival's portrait and Computer tag (frame 9.7). {rival} is raceRivalName. Not in copy.md m7-3: frame 9.7's own text (TODO(design): ask for its id).",
+    "description": "The Pause dialog's header in a race, beside the rival's portrait and Computer tag (frame 9.7). {rival} is raceRivalName. copy.md G.5 `race_pause_title`.",
     "placeholders": {
       "rival": {
         "type": "String",
@@ -2600,12 +2847,12 @@
 
   "raceRivalBeaten": "Beaten",
   "@raceRivalBeaten": {
-    "description": "Rival select's screen-reader word for a rival the player has beaten (the check on its portrait, frame 9.2b). Not in copy.md m7-3: a label the app composes."
+    "description": "Rival select's screen-reader word for a rival the player has beaten (the check on its portrait, frame 9.2b). copy.md A11y `a11y_rival_beaten`."
   },
 
   "raceStartFor": "Start race against {rival}",
   "@raceStartFor": {
-    "description": "Rival select's Start button label for a screen reader, naming the selected computer rival (frame 9.2). Not in copy.md m7-3: a label the app composes.",
+    "description": "Rival select's Start button label for a screen reader, naming the selected computer rival (frame 9.2). {rival} is raceRivalName. copy.md A11y `a11y_race_start_button`.",
     "placeholders": {
       "rival": {
         "type": "String",
@@ -2621,7 +2868,7 @@
 
   "starsSemantics": "{count, plural, =1{1 of 3 stars} other{{count} of 3 stars}}",
   "@starsSemantics": {
-    "description": "The screen-reader label of every star row: a level's stars out of 3 (StarRating.maxStars, a rule constant; spec-prop §7.10). copy.md G.11 `a11y_stars`.",
+    "description": "The screen-reader label of every star row: a level's stars out of 3 (StarRating.maxStars, a rule constant; spec-prop §7.10). copy.md A11y `a11y_stars`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -2632,7 +2879,7 @@
 
   "starsNewBestSemantics": "{count, plural, =1{New best, 1 of 3 stars} other{New best, {count} of 3 stars}}",
   "@starsNewBestSemantics": {
-    "description": "The win card's star row's screen-reader label on a new best (frame 11.4b). copy.md G.11 `a11y_stars_new_best`.",
+    "description": "The win card's star row's screen-reader label on a new best (frame 11.4b). copy.md A11y `a11y_stars_new_best`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -2668,11 +2915,11 @@
     "description": "The win card's note pill when a hint or +1 Slot capped the stars (Q145; frame 11.2d); it takes the tip's place. copy.md G.11 `stars_helper_note`."
   },
 
-  "chaptersStarsTotal": "{earned}/{total}",
+  "chaptersStarsTotal": "{count}/{total}",
   "@chaptersStarsTotal": {
-    "description": "Stars earned out of the stars possible: a chapter's card and folded row in Chapters, Home's chapter card (frame 11.5). copy.md G.11 `chapter_stars_total` ({count} is {earned}, the copy's \"60\" is {total}).",
+    "description": "Stars earned out of the stars possible: a chapter's card and folded row in Chapters, Home's chapter card (frame 11.5). {count} is the stars earned, {total} the stars possible for the chapter's levels with a par (the app fills both). copy.md G.11 `chapter_stars_total`.",
     "placeholders": {
-      "earned": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "38"
@@ -2681,6 +2928,23 @@
         "type": "int",
         "format": "decimalPattern",
         "example": "60"
+      }
+    }
+  },
+
+  "chaptersStarsTotalAll": "{count}/{total}",
+  "@chaptersStarsTotalAll": {
+    "description": "The stars total on Home's Bonus Endless chip (frame 12.2): the whole campaign's stars. {count} is the stars earned, {total} the stars possible (600 in the bundle; the app fills both). copy.md G.11 `chapter_stars_total_all`.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "552"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "600"
       }
     }
   },
@@ -2712,12 +2976,12 @@
 
   "recordsStarsValue": "{count} of {total}",
   "@recordsStarsValue": {
-    "description": "Records' Stars value: the stars earned of every level's 3 (600 for 200 levels with a par; the app fills {total}). copy.md G.11 `records_stars_value`.",
+    "description": "Records' Stars cell value (frame 10.6). {count} is the stars earned, {total} the stars possible over the levels with a par (600 in the bundle; the app fills both). copy.md G.10 `records_stars_value`.",
     "placeholders": {
       "count": {
         "type": "int",
         "format": "decimalPattern",
-        "example": "151"
+        "example": "412"
       },
       "total": {
         "type": "int",
@@ -2743,9 +3007,9 @@
     }
   },
 
-  "dailyShareSemantics": "Share today's result",
+  "dailyShareSemantics": "Share today’s result",
   "@dailyShareSemantics": {
-    "description": "The Share button's screen-reader label. Not in copy.md m7-3: a screen-reader label."
+    "description": "The Share button's screen-reader label (frame 5.2). copy.md A11y `a11y_share_daily`."
   },
 
   "dailyShareText": "Nesty Daily · {date}\n{glyphs}\n{moves, plural, =1{Solved in 1 move · Day {day} 🔥} other{Solved in {moves} moves · Day {day} 🔥}}",
@@ -2816,6 +3080,22 @@
     "description": "The offer's Change time link: the phone's time picker (frame 10.2b). copy.md G.7 `reminder_change_time`."
   },
 
+  "reminderTimeChipSemantics": "Reminder time, every day at {time}. Change time.",
+  "@reminderTimeChipSemantics": {
+    "description": "The reminder offer's time chip, for a screen reader (frame 10.2b). {time} is the locale's time. Visible: reminderOfferTime. copy.md A11y `a11y_reminder_time_chip`.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "7:00 PM"
+      }
+    }
+  },
+
+  "reminderPickerTitle": "Reminder time",
+  "@reminderPickerTitle": {
+    "description": "The title (helpText) of the system time picker the reminder's time chip and Settings' Time row open (frames 10.2c, 10.2e). copy.md G.7 `reminder_picker_title`."
+  },
+
   "reminderOfferYes": "Yes, remind me",
   "@reminderOfferYes": {
     "description": "The offer's Yes button: asks the phone for notifications, then turns the reminder on (spec-prop §1.1 rule 7). copy.md G.7 `reminder_yes`."
@@ -2873,14 +3153,14 @@
     "description": "The notification's third body line (rotation as reminderNotificationBody). copy.md G.7 `notification_3`."
   },
 
-  "reminderChannelName": "Daily reminder",
+  "reminderChannelName": "Daily puzzle",
   "@reminderChannelName": {
-    "description": "The Android notification channel's name in the phone's settings. Not in copy.md m7-3: an OS label."
+    "description": "The Android notification channel's name in the phone's settings. copy.md G.7 `notification_channel_name`."
   },
 
-  "reminderChannelDescription": "One note a day when the daily puzzle is ready",
+  "reminderChannelDescription": "One note a day when a new daily puzzle is ready.",
   "@reminderChannelDescription": {
-    "description": "The Android notification channel's description in the phone's settings. Not in copy.md m7-3: an OS label."
+    "description": "The Android notification channel's description in the phone's settings. copy.md G.7 `notification_channel_description`."
   },
 
   "settingReminder": "Daily reminder",
@@ -2893,21 +3173,7 @@
     "description": "Settings' reminder time row under the toggle, with the time and a chevron (frame 10.2e). copy.md G.7 `settings_reminder_time`."
   },
 
-  "settingReminderOn": "Every day at {time}",
-  "@settingReminderOn": {
-    "description": "The Daily reminder row's value while it is on (frame 10.2e). copy.md G.7 `settings_reminder_on`.",
-    "placeholders": {
-      "time": {
-        "type": "String",
-        "example": "7:00 PM"
-      }
-    }
-  },
 
-  "settingReminderOff": "Off",
-  "@settingReminderOff": {
-    "description": "The Daily reminder row's value while it is off. copy.md G.7 `settings_reminder_off`."
-  },
 
   "settingReminderBlocked": "Off in your phone’s settings",
   "@settingReminderBlocked": {
@@ -2917,6 +3183,11 @@
   "settingOpenPhoneSettings": "Open phone settings",
   "@settingOpenPhoneSettings": {
     "description": "The button to the phone's notification settings, on the offer's denied step and Settings' blocked row (frames 10.2d, 10.2f; Q140). copy.md G.7 `settings_open_phone_settings`."
+  },
+
+  "settingReminderTurnOff": "Turn off",
+  "@settingReminderTurnOff": {
+    "description": "The Turn off link under Settings' Daily reminder row while the phone blocks notifications (frame 10.2f): it switches the reminder off in the app. copy.md G.7 `settings_reminder_turn_off`."
   },
 
   "homeChapterKicker": "CHAPTER {number}",
@@ -2931,11 +3202,11 @@
     }
   },
 
-  "homeChapterCardSemantics": "Chapter {number}, {name}, {earned} of {total} stars. Opens chapters.",
+  "homeChapterCardSemantics": "Chapter {chapter}, {name}. {count} of {total} stars. Opens Chapters.",
   "@homeChapterCardSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's chapter card (menus spec 1.1): the chapter, its name, its stars and where a tap goes.",
+    "description": "Screen-reader label of Home's chapter card (frame 2.1): the chapter, its name, its stars and where a tap goes. copy.md A11y `a11y_home_chapter`.",
     "placeholders": {
-      "number": {
+      "chapter": {
         "type": "int",
         "format": "decimalPattern",
         "example": "3"
@@ -2944,7 +3215,7 @@
         "type": "String",
         "example": "Seaside Market"
       },
-      "earned": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "39"
@@ -2957,11 +3228,11 @@
     }
   },
 
-  "homeBonusCardSemantics": "Bonus levels, {earned} of {total} stars. Opens chapters.",
+  "homeBonusCardSemantics": "Bonus levels. {count} of {total} stars. Opens Chapters.",
   "@homeBonusCardSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's chapter card in Bonus Endless (frame 12.2): the whole campaign's stars.",
+    "description": "Screen-reader label of Home's chapter card in Bonus Endless (frame 12.2): the whole campaign's stars. copy.md A11y `a11y_home_bonus`.",
     "placeholders": {
-      "earned": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "552"
@@ -2974,9 +3245,21 @@
     }
   },
 
-  "homeVsComputerSemantics": "vs Computer, computer player",
+  "homeVsComputerSemantics": "vs Computer. Race a computer on the same puzzle.",
   "@homeVsComputerSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's vs Computer tile (frame 9.1, spec-prop §1.1 rule 5: a computer is always called one). A locked tile adds its unlock line as the value."
+    "description": "Screen-reader label of Home's vs Computer tile (frame 9.1; spec-prop §1.1 rule 5: a computer is always called one). copy.md A11y `a11y_home_versus`."
+  },
+
+  "homeVsComputerLockedSemantics": "vs Computer, locked. After Level {level}.",
+  "@homeVsComputerLockedSemantics": {
+    "description": "Screen-reader label of Home's vs Computer tile while it is locked (frame 9.1b). {level} is `race_unlock_level` (the app fills it). copy.md A11y `a11y_home_versus_locked`.",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "20"
+      }
+    }
   },
 
   "chaptersKicker": "CHAPTER {number} · LEVELS {first}–{last}",
@@ -3001,11 +3284,11 @@
     }
   },
 
-  "chaptersRowSemantics": "Chapter {number}, {name}, levels {first} to {last}, {earned} of {total} stars",
+  "chaptersRowSemantics": "Chapter {chapter}, {name}. {count} of {total} stars.",
   "@chaptersRowSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Chapters row (menus spec 3, Semantics). The row adds its expanded or collapsed state.",
+    "description": "Screen-reader label of a Chapters row (frame 10.4). The row adds its expanded or collapsed state. {count} is the stars earned, {total} the stars possible. copy.md A11y `a11y_chapter_row`.",
     "placeholders": {
-      "number": {
+      "chapter": {
         "type": "int",
         "format": "decimalPattern",
         "example": "1"
@@ -3014,17 +3297,7 @@
         "type": "String",
         "example": "Sunny Toy Shop"
       },
-      "first": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "1"
-      },
-      "last": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "20"
-      },
-      "earned": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "60"
@@ -3037,11 +3310,11 @@
     }
   },
 
-  "chaptersRowLockedSemantics": "Chapter {number}, {name}, levels {first} to {last}, locked",
+  "chaptersRowLockedSemantics": "Chapter {chapter}, {name}. Locked.",
   "@chaptersRowLockedSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a locked Chapters row (frame 10.4).",
+    "description": "Screen-reader label of a locked Chapters row (frame 10.4). copy.md A11y `a11y_chapter_locked`.",
     "placeholders": {
-      "number": {
+      "chapter": {
         "type": "int",
         "format": "decimalPattern",
         "example": "5"
@@ -3049,33 +3322,23 @@
       "name": {
         "type": "String",
         "example": "Night Carnival"
-      },
-      "first": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "81"
-      },
-      "last": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "100"
       }
     }
   },
 
-  "chaptersLevelChestSemantics": "has a milestone chest",
+  "chaptersLevelChestSemantics": "A chest at this level",
   "@chaptersLevelChestSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: appended to the screen-reader label of a Chapters cell that is the chapter's 10th level (frame 10.4)."
+    "description": "Appended to the screen-reader label of a Chapters cell that carries a milestone chest (frame 10.4). copy.md A11y `a11y_level_chest`."
   },
 
-  "chaptersLevelFinaleSemantics": "last level of the chapter",
+  "chaptersLevelFinaleSemantics": "The last level of the chapter",
   "@chaptersLevelFinaleSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: appended to the screen-reader label of a Chapters cell that is the chapter's last level (frame 10.4)."
+    "description": "Appended to the screen-reader label of a Chapters cell that is the chapter's last level (frame 10.4). copy.md A11y `a11y_level_finale`."
   },
 
-  "museumNicheCollectedSemantics": "{name}, collected",
+  "museumNicheCollectedSemantics": "{name}, home in your Museum",
   "@museumNicheCollectedSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a collected family's niche in the Museum cabinet (frame 6.1). {name} is figurineName (\"The Baker Family\").",
+    "description": "Screen-reader label of a collected family's niche in the Museum cabinet (frame 6.1). {name} is figurineName (\"The Baker Family\"). copy.md A11y `a11y_figurine_home`.",
     "placeholders": {
       "name": {
         "type": "String",
@@ -3084,18 +3347,13 @@
     }
   },
 
-  "museumNicheNextSemantics": "{count, plural, =1{{name}, next, chapter {chapter}, 1 level to go} other{{name}, next, chapter {chapter}, {count} levels to go}}",
+  "museumNicheNextSemantics": "{count, plural, =1{{name}, next to come home. {count} level to go.} other{{name}, next to come home. {count} levels to go.}}",
   "@museumNicheNextSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of the next family's niche (frame 6.1).",
+    "description": "Screen-reader label of the next family's niche (frame 6.1). {count} is the levels still to win. copy.md A11y `a11y_figurine_next`.",
     "placeholders": {
       "name": {
         "type": "String",
         "example": "The Astronaut Family"
-      },
-      "chapter": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "4"
       },
       "count": {
         "type": "int",
@@ -3105,33 +3363,27 @@
     }
   },
 
-  "museumNicheLockedSemantics": "Chapter {chapter}, levels {first} to {last}, locked",
+  "museumNicheLockedSemantics": "{name}, not home yet. Chapter {chapter}.",
   "@museumNicheLockedSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a locked family's niche (frame 6.1).",
+    "description": "Screen-reader label of a locked family's niche (frame 6.1). {name} is figurineName. copy.md A11y `a11y_figurine_locked`.",
     "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "The Snow Family"
+      },
       "chapter": {
         "type": "int",
         "format": "decimalPattern",
         "example": "5"
-      },
-      "first": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "81"
-      },
-      "last": {
-        "type": "int",
-        "format": "decimalPattern",
-        "example": "100"
       }
     }
   },
 
-  "museumCountSemantics": "{done} of {total} families home",
+  "museumCountSemantics": "{count} of {total} families home",
   "@museumCountSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of the Museum's count chip (frame 6.1, \"3 / 10\").",
+    "description": "Screen-reader label of the Museum's count chip (frame 6.1, \"3 / 10\"). copy.md A11y `a11y_museum_count`.",
     "placeholders": {
-      "done": {
+      "count": {
         "type": "int",
         "format": "decimalPattern",
         "example": "3"
@@ -3146,7 +3398,7 @@
 
   "museumFullSub": "Full House · all {count} families",
   "@museumFullSub": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: the Museum's celebration card sub line once every family is home (frame 6.1c). copy.md has `museum_full` (\"Full House\") but no id for the rest; {count} is the number of families.",
+    "description": "The Museum's celebration card sub line once every family is home (frame 6.1c), under the badge name (`museum_full`, \"Full House\"). {count} is the number of families. copy.md G.10 `museum_all_home_sub`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -3156,9 +3408,9 @@
     }
   },
 
-  "recordsRaceSemantics": "{rival}, computer player, races won: {count}",
+  "recordsRaceSemantics": "{count, plural, =1{{rival}, computer. {count} win.} other{{rival}, computer. {count} wins.}}",
   "@recordsRaceSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records races row (frame 10.6, spec-prop §1.1 rule 5: a computer is always called one). A rival with no wins reads 0.",
+    "description": "Screen-reader label of a Records races row (frame 10.6, spec-prop §1.1 rule 5: a computer is always called one). A rival with no wins reads 0. copy.md A11y `a11y_race_row`.",
     "placeholders": {
       "rival": {
         "type": "String",
@@ -3172,9 +3424,9 @@
     }
   },
 
-  "recordsRaceLockedSemantics": "{rival}, computer player, not unlocked yet",
+  "recordsRaceLockedSemantics": "{rival}, computer. Locked.",
   "@recordsRaceLockedSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records races row for a rival the player has not unlocked (frame 10.6).",
+    "description": "Screen-reader label of a Records races row for a rival the player has not unlocked (frame 10.6). copy.md A11y `a11y_race_row_locked`.",
     "placeholders": {
       "rival": {
         "type": "String",
@@ -3183,9 +3435,9 @@
     }
   },
 
-  "recordsStatSemantics": "{label}, {value}",
+  "recordsStatSemantics": "{label}: {value}",
   "@recordsStatSemantics": {
-    "description": "Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records stat cell: its label, then its value (\"Levels won, 55\", menus spec 5).",
+    "description": "Screen-reader label of a Records stat cell: its label, then its value (\"Levels won: 55\", frame 10.6). The cell's visible words are its label and its value. copy.md A11y `a11y_record_cell`.",
     "placeholders": {
       "label": {
         "type": "String",

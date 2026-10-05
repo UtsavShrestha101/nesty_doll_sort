@@ -2,13 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
+import 'package:nesty_game/core/extensions/a11y_join_extension.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
-import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/buttons/tactile_button.dart';
 import 'package:nesty_game/core/ui/widgets/coins/coin_icon.dart';
 import 'package:nesty_game/core/ui/widgets/home/text_link.dart';
 import 'package:nesty_game/core/ui/widgets/modal/modal_card.dart';
+import 'package:nesty_game/core/ui/widgets/number/nesty_number_text.dart';
 import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 
@@ -123,8 +124,8 @@ class NotEnoughCoinsDialog extends StatelessWidget {
                 Text(
                   l10n.notEnoughCoinsNeeded(needed),
                   textAlign: TextAlign.center,
-                  style: AppTextStyleTokens.sheetTitle.copyWith(
-                    fontSize: 30,
+                  // `layout.noCoins.heading`: Fredoka 700 24/1.15.
+                  style: NoCoinsTokens.heading.copyWith(
                     color: AppColorTokens.textPrimary,
                   ),
                 ),
@@ -132,10 +133,9 @@ class NotEnoughCoinsDialog extends StatelessWidget {
                 Text(
                   l10n.notEnoughCoinsSource,
                   textAlign: TextAlign.center,
-                  style: AppTextStyleTokens.body.copyWith(
-                    fontSize: 17,
-                    height: 24 / 17,
-                    color: AppColorTokens.textSecondary,
+                  // `layout.noCoins.body`: Nunito 600 16/23.
+                  style: NoCoinsTokens.body.copyWith(
+                    color: AppColorTokens.textBrown,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -155,8 +155,9 @@ class NotEnoughCoinsDialog extends StatelessWidget {
   }
 }
 
-/// The dialog's item chip (frame 7.3b): the item's name and its price in a
-/// `daily`-gradient coin pill, on a 52 tall white pill.
+/// The dialog's item chip (frame 7.3b; NestyMeta:59): the item's name and
+/// its price in a gold coin pill (the number only, the label says "coins"),
+/// on a white chip with a 2 dp `surfaceTrack` ring, as tall as its content.
 class _ItemChip extends StatelessWidget {
   const _ItemChip({required this.name, required this.price});
 
@@ -164,13 +165,13 @@ class _ItemChip extends StatelessWidget {
   final int price;
 
   static const _chip = SurfaceStyle(
-    color: AppColorTokens.surfaceWhite,
-    shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4)],
+    color: NoCoinsTokens.itemChipFace,
+    shadows: NoCoinsTokens.itemChipRing,
   );
 
   static const _pill = SurfaceStyle(
-    gradient: AppGradientTokens.daily,
-    shadows: [NestyShadow(color: AppColorTokens.dailyEdge, dy: 3)],
+    gradient: NoCoinsTokens.itemChipPriceFill,
+    shadows: AppGradientTokens.coinChipEdge,
   );
 
   @override
@@ -181,13 +182,12 @@ class _ItemChip extends StatelessWidget {
       container: true,
       label: name == null
           ? l10n.coinPrice(price)
-          : '$name, ${l10n.coinPrice(price)}',
+          : l10n.joinList([name, l10n.coinPrice(price)]),
       excludeSemantics: true,
       child: NestySurface(
         style: _chip,
-        radius: BorderRadius.circular(26),
-        height: 52,
-        padding: const EdgeInsetsDirectional.only(start: 18, end: 6),
+        radius: BorderRadius.circular(NoCoinsTokens.itemChipRadius),
+        padding: NoCoinsTokens.itemChipPadding,
         alignment: Alignment.center,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -198,8 +198,8 @@ class _ItemChip extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     name,
-                    style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 22,
+                    style: NoCoinsTokens.itemChipName.copyWith(
+                      height: 1,
                       color: AppColorTokens.textPrimary,
                     ),
                     maxLines: 1,
@@ -211,20 +211,20 @@ class _ItemChip extends StatelessWidget {
             ],
             NestySurface(
               style: _pill,
-              radius: BorderRadius.circular(20),
-              height: 40,
-              padding: const EdgeInsetsDirectional.only(start: 6, end: 12),
+              radius: BorderRadius.circular(15),
+              height: NoCoinsTokens.itemChipPriceHeight,
+              padding: const EdgeInsetsDirectional.only(start: 5, end: 10),
               alignment: Alignment.center,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CoinIcon(size: 26),
-                  const SizedBox(width: 6),
+                  const CoinIcon(size: NoCoinsTokens.itemChipPriceCoin),
+                  const SizedBox(width: 5),
                   Text(
-                    l10n.coinPrice(price),
-                    style: AppTextStyleTokens.number.copyWith(
-                      fontSize: 20,
-                      color: AppColorTokens.coinText,
+                    NestyNumberText.formatCount(context, price),
+                    style: NoCoinsTokens.itemChipPriceText.copyWith(
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                     maxLines: 1,
                     softWrap: false,

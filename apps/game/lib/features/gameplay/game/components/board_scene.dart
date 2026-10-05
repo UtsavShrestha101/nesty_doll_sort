@@ -148,7 +148,7 @@ final class SlotState {
       )
       ..setBadge(
         ice > 0 ? labels.iceBadge(ice) : null,
-        g.furnitureScale,
+        g.overlayFurnitureScale,
         g.iceBadgeRect.width,
         labels.textDirection,
       );
@@ -184,6 +184,12 @@ final class SlotState {
 
   double furnitureScale(RepitchTween? r) =>
       _lerp(r, from?.furnitureScale, geometry.furnitureScale);
+
+  /// The glass and ice compositions' scale (`SlotGeometry.
+  /// overlayFurnitureScale`: the furniture scale, and the dolls' k on four
+  /// shelves).
+  double overlayFurnitureScale(RepitchTween? r) =>
+      _lerp(r, from?.overlayFurnitureScale, geometry.overlayFurnitureScale);
 
   double dollHeight(int size, RepitchTween? r) =>
       _lerp(r, from?.dollHeight(size), geometry.dollHeight(size));

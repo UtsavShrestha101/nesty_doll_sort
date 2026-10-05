@@ -114,6 +114,8 @@ class OutOfMovesSheet extends StatelessWidget {
                 : undoPriced
                 ? l10n.oomUndoSpent(freeUndosTotal)
                 : l10n.oomUndoSubtitle,
+            // 12.8 / 9.x: Undo's tile is always mint with a green glyph.
+            tone: SheetRowTone.success,
             highlighted: relaxed,
             trailing: relaxed
                 ? const _FreeChip()
@@ -130,7 +132,9 @@ class OutOfMovesSheet extends StatelessWidget {
               title: l10n.oomSlotTitle,
               subtitle: l10n.oomSlotSubtitle,
               tone: SheetRowTone.success,
-              highlighted: true,
+              // The outline marks the way out while Undo is still free
+              // (3.5); once Undo is priced the frame (12.8) drops it.
+              highlighted: !undoPriced,
               trailing: unlimitedBoosters || extraSlotsLeft > 0
                   ? SheetRow.chevron
                   : _CoinChip(price: slotPrice),
@@ -195,8 +199,25 @@ class _CoinChip extends StatelessWidget {
 /// The relaxed Undo row's chip (frame 10.9b): 34 tall, radius 14,
 /// `successTint` with a 2 dp `successRing`, the `all_inclusive` glyph 20 and
 /// "Free" in Fredoka 700 14 `#2F7A3E`.
-class _FreeChip extends StatelessWidget {
+class _FreeChip extends SheetRowChip {
   const _FreeChip();
+
+  @override
+  double naturalWidth(BuildContext context) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: context.localizations.oomUndoFreeChip,
+        style: AppTextStyleTokens.buttonSmall.copyWith(fontSize: 14, height: 1),
+      ),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    // Padding 10 + 10, the 20 dp glyph and its 4 dp gap.
+    final width = painter.width + 20 + 20 + 4;
+    painter.dispose();
+    return width;
+  }
 
   static const _style = SurfaceStyle(
     color: AppColorTokens.successTint,

@@ -1,68 +1,95 @@
 import 'package:flutter/widgets.dart';
+import 'package:nesty_game/core/ui/lottie/lottie_text_overlay.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
+import 'package:nesty_game/core/ui/widgets/text/fit_text.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 
 /// The race results' ribbon (frames 9.4, 9.5; ui-spec-game §1
-/// "VersusRibbonTitle"): the celebration ribbon re-coloured to versus's
-/// indigo (band `#7B8BEF → #4E5FD9`, shadow `#28358F`, tails `#3242A8`),
-/// with the title in Fredoka 700 28 white over it.
-///
-/// Drawn by [VersusRibbonPainter], not by `ui_win_ribbon` re-tinted:
-/// tinting that Lottie by a value delegate isn't supported by the game's
-/// `LottieFxView`, and the win card's own painter is the file's orange.
-/// TODO(design): confirm `ui_win_ribbon` can be tinted by its named fills,
-/// or ship a versus variant of the file (ui-spec-game §1).
+/// "VersusRibbonTitle"): `ui_win_ribbon` recoloured to versus's indigo by its
+/// named fills, `tokens.versus.ribbon` (band `#4E5FD9`, edge `#3242A8`, tail
+/// `#4250C6`, fold `#1F297F`; m7-4 4.3: no separate file), with the title in
+/// the ribbon's white Fredoka. It plays the ribbon's pop once, and rests on
+/// its last frame under reduced motion.
 ///
 /// A modal's title: it is a header that names the overlay's route, read as
 /// [title]. On a screen narrower than 390 dp it scales down, as the win
-/// card's ribbon does.
-class VersusRibbon extends StatelessWidget {
-  const VersusRibbon({required this.title, super.key});
+/// card's ribbon does. Without the file (rule 3, R10) [VersusRibbonPainter]
+/// draws its rest look.
+class VersusRibbon extends StatefulWidget {
+  const VersusRibbon({
+    required this.title,
+    this.shortTitle,
+    this.library,
+    super.key,
+  });
 
   final String title;
 
-  /// The ribbon's canvas (the win ribbon's, 410×100 here), centred on the
-  /// band.
-  static const Size canvas = Size(410, 100);
+  /// The ARB's short form (`raceWinTitleShort`, `raceLossTitleShort`),
+  /// drawn when [title] needs more than textFit.winRibbon's `minScale`.
+  final String? shortTitle;
+
+  /// The FX library (the DI one by default).
+  final FxLibrary? library;
+
+  /// The ribbon's canvas (`ui_win_ribbon`'s, 410×110), centred on the band.
+  static const Size canvas = Size(410, 110);
+
+  @override
+  State<VersusRibbon> createState() => _VersusRibbonState();
+}
+
+class _VersusRibbonState extends State<VersusRibbon> {
+  final LottieFxController _controller = LottieFxController(FxId.uiWinRibbon);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.params.setRibbonColors(WinRibbonTokens.versusColors);
+    _controller.playWhole();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final scale = width >= 390 ? 1.0 : (width / 390).clamp(0.0, 1.0);
+    final shortTitle = widget.shortTitle;
+    final label = shortTitle == null
+        ? widget.title
+        : RibbonLabel.pick(
+            context,
+            style: LottieLabelStyles.winRibbon,
+            full: widget.title,
+            short: shortTitle,
+            minScale: TextFitTokens.winRibbonMinScale,
+          );
     return Semantics(
       header: true,
       namesRoute: true,
-      label: title,
+      label: widget.title,
       excludeSemantics: true,
       child: SizedBox(
-        width: canvas.width * scale,
-        height: canvas.height * scale,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            const Positioned.fill(
-              child: CustomPaint(painter: VersusRibbonPainter()),
-            ),
-            SizedBox(
-              width: 300 * scale,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  softWrap: false,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyleTokens.button.copyWith(
-                    fontSize: 28,
-                    height: 1.1,
-                    color: const Color(0xFFFFFFFF),
-                    shadows: const [
-                      Shadow(color: Color(0x591E1E6E), offset: Offset(0, 2)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+        width: VersusRibbon.canvas.width * scale,
+        height: VersusRibbon.canvas.height * scale,
+        child: LottieTextOverlay(
+          label: label,
+          semanticLabel: widget.title,
+          style: LottieLabelStyles.winRibbon,
+          lottie: LottieFxView(
+            id: FxId.uiWinRibbon,
+            controller: _controller,
+            library: widget.library,
+            label: label,
+            fallback: const CustomPaint(painter: VersusRibbonPainter()),
+          ),
         ),
       ),
     );
@@ -70,16 +97,15 @@ class VersusRibbon extends StatelessWidget {
 }
 
 /// The ribbon's rest look in versus colours: a 336×56 band (radius 16) over
-/// its 6 dp shadow, a soft highlight, and the two tails 22 past the band
-/// with a notch and a fold, on the 410×100 canvas around (205, 50).
+/// its 6 dp edge, a soft highlight, and the two tails 22 past the band with a
+/// notch and a fold, on the 410×110 canvas around (205, 55), in
+/// `tokens.versus.ribbon`'s colours.
 final class VersusRibbonPainter extends CustomPainter {
   const VersusRibbonPainter();
 
-  static const _anchor = Offset(205, 50);
+  static const _anchor = Offset(205, 55);
 
-  static const _tail = Color(0xFF3242A8);
-  static const _fold = Color(0xFF28358F);
-  static const _shadow = Color(0xFF28358F);
+  static const _colors = WinRibbonTokens.versusColors;
   static const _highlight = Color(0x4DFFFFFF);
 
   static final RRect _band = RRect.fromRectAndRadius(
@@ -102,14 +128,15 @@ final class VersusRibbonPainter extends CustomPainter {
       ..translate(_anchor.dx, _anchor.dy);
     for (final side in const [-1.0, 1.0]) {
       canvas
-        ..drawPath(_tailPath(side), Paint()..color = _tail)
-        ..drawPath(_foldPath(side), Paint()..color = _fold);
+        ..drawPath(_tailPath(side), Paint()..color = _colors.tail)
+        ..drawPath(_foldPath(side), Paint()..color = _colors.fold);
     }
-    final face = Paint()
-      ..shader = AppGradientTokens.versus.createShader(_band.outerRect);
     canvas
-      ..drawRRect(_band.shift(const Offset(0, 6)), Paint()..color = _shadow)
-      ..drawRRect(_band, face)
+      ..drawRRect(
+        _band.shift(const Offset(0, 6)),
+        Paint()..color = _colors.edge,
+      )
+      ..drawRRect(_band, Paint()..color = _colors.band)
       ..drawRRect(_shine, Paint()..color = _highlight)
       ..restore();
   }

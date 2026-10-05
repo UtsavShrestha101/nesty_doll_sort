@@ -225,6 +225,23 @@ class HiveDatabaseService implements DatabaseService {
   }
 
   @override
+  String? get relitGlowSeen {
+    final value = _settings.get(SettingsKeys.relitGlowSeen);
+    return value is String ? value : null;
+  }
+
+  @override
+  Future<void> setRelitGlowSeen(String date) =>
+      _settings.put(SettingsKeys.relitGlowSeen, date);
+
+  @override
+  int get lastRival => _readInt(SettingsKeys.lastRival, 0, min: 1, max: 3);
+
+  @override
+  Future<void> setLastRival(int rival) =>
+      _settings.put(SettingsKeys.lastRival, rival);
+
+  @override
   String get languageCode =>
       _readString(SettingsKeys.locale, SettingsDefaults.locale);
 

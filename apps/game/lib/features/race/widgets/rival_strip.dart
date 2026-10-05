@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:get_it/get_it.dart';
 import 'package:nesty_game/core/common_imports.dart';
@@ -112,7 +113,16 @@ class _RivalStripViewState extends State<RivalStripView> {
     super.didUpdateWidget(oldWidget);
     final old = oldWidget.data;
     final data = widget.data;
-    if (data.rivalSets > old.rivalSets && data.rivalSets < data.totalSets) {
+    if (old.activity == RivalActivity.idle &&
+        data.activity == RivalActivity.thinking) {
+      // Start was tapped (copy.md A11y `a11y_race_start`; spec §16).
+      _queue(
+        context.localizations.raceAnnounceStart(
+          context.localizations.raceRivalName(data.rival),
+        ),
+      );
+    } else if (data.rivalSets > old.rivalSets &&
+        data.rivalSets < data.totalSets) {
       _queue(
         context.localizations.raceAnnounceFamily(
           data.rivalSets,
@@ -181,54 +191,111 @@ class _RivalStripViewState extends State<RivalStripView> {
                 ),
                 height: RivalStrip.height,
                 padding: RivalStripTokens.padding,
-                child: Row(
-                  children: [
-                    _MovedBeat(
-                      key: ValueKey('moved-${data.rivalMoves}'),
-                      child: RivalPortrait(
-                        number: data.rival,
-                        size: RivalStripTokens.portrait,
-                      ),
-                    ),
-                    const SizedBox(width: RivalStripTokens.gap),
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  name,
-                                  style: RivalStripTokens.name,
-                                  maxLines: 1,
-                                  softWrap: false,
-                                ),
-                                const SizedBox(width: 6),
-                                ComputerTag(glyphOnly: glyphOnly),
-                              ],
-                            ),
-                            if (showState)
-                              _StateLine(
-                                activity: data.activity,
-                                playerFirst: playerFirst,
-                                held: data.held,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: RivalStripTokens.gap),
-                    _Progress(
-                      key: const ValueKey('rivalProgress'),
-                      done: data.rivalSets,
+                child: LayoutBuilder(
+                  builder: (context, inner) {
+                    final room = _StripRoom.of(
+                      context,
+                      width: inner.maxWidth,
+                      name: name,
                       total: data.totalSets,
-                    ),
-                  ],
+                      glyphOnly: glyphOnly,
+                    );
+                    return Row(
+                      children: [
+                        _MovedBeat(
+                          key: ValueKey('moved-${data.rivalMoves}'),
+                          // `ui_rival_react`: it breathes, and pops its ring and
+                          // sparkles when the computer completes a family.
+                          child: RivalReact(
+                            number: data.rival,
+                            size: RivalStripTokens.portrait,
+                            familyCount: data.rivalSets,
+                          ),
+                        ),
+                        const SizedBox(width: RivalStripTokens.gap),
+                        Expanded(
+                          // The outer FittedBox only scales for height (the strip
+                          // is fixed); the lines inside fit the width one by one.
+                          child: LayoutBuilder(
+                            builder: (context, box) => FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: AlignmentDirectional.centerStart,
+                              child: SizedBox(
+                                width: box.maxWidth,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Each line scales on its own, so a long state line
+                                    // doesn't shrink the rival's name below the
+                                    // readability floor (l10n 5B). The tag keeps
+                                    // its word at 360 dp and up (_StripRoom).
+                                    if (room == _StripRoom.stacked) ...[
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment:
+                                            AlignmentDirectional.centerStart,
+                                        child: Text(
+                                          name,
+                                          style: RivalStripTokens.name,
+                                          maxLines: 1,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      const ComputerTag(),
+                                    ] else ...[
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              alignment: AlignmentDirectional
+                                                  .centerStart,
+                                              child: Text(
+                                                name,
+                                                style: RivalStripTokens.name,
+                                                maxLines: 1,
+                                                softWrap: false,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: _StripRoom.tagGap,
+                                          ),
+                                          ComputerTag(glyphOnly: glyphOnly),
+                                        ],
+                                      ),
+                                      if (showState)
+                                        FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment:
+                                              AlignmentDirectional.centerStart,
+                                          child: _StateLine(
+                                            activity: data.activity,
+                                            playerFirst: playerFirst,
+                                            held: data.held,
+                                          ),
+                                        ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: RivalStripTokens.gap),
+                        _Progress(
+                          key: const ValueKey('rivalProgress'),
+                          done: data.rivalSets,
+                          total: data.totalSets,
+                          dots: room == _StripRoom.full,
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -250,6 +317,73 @@ class _RivalStripViewState extends State<RivalStripView> {
         ],
       ),
     );
+  }
+}
+
+/// How the strip makes room for the rival's name and the word "Computer"
+/// (spec-prop §1.1 rule 5). In a race the strip is the only on-screen rival
+/// label, so at 360 dp and up the word always shows (D192; 5C ethics, D271):
+/// the name scales down to the readability floor first, then the dots give
+/// way to the count alone, then the tag takes the state line's place.
+enum _StripRoom {
+  /// The name and the tag on one line, the state line, the count over its
+  /// dots.
+  full,
+
+  /// As [full] with the count alone (also every race above 8 families).
+  countOnly,
+
+  /// The name, then the tag on the second line, and the count alone; no
+  /// state line (the portrait's motion and the announcer still carry it).
+  stacked;
+
+  /// The gap between the name and the tag.
+  static const double tagGap = 6;
+
+  /// Frame 9.3 draws one dot per family up to 8.
+  static const int _maxDots = 8;
+
+  /// The readability floor (textFit's `minScale`).
+  static const double _minScale = 0.75;
+
+  static _StripRoom of(
+    BuildContext context, {
+    required double width,
+    required String name,
+    required int total,
+    required bool glyphOnly,
+  }) {
+    final dots = total <= _maxDots;
+    // Under 360 dp the glyph alone fits beside any name (D192).
+    if (glyphOnly || !width.isFinite) return dots ? full : countOnly;
+    final nameWidth = ComputerTag.lineWidth(
+      context,
+      name,
+      RivalStripTokens.name,
+    );
+    final tagWidth = ComputerTag.fullWidth(context);
+    final countWidth = ComputerTag.lineWidth(
+      context,
+      context.localizations.raceStripFamilies(total, total),
+      RivalStripTokens.count,
+    );
+    final dotsWidth =
+        total * RivalStripTokens.dotsSize +
+        (total - 1) * RivalStripTokens.dotsGap;
+    // The name's box is the strip less the portrait, both gaps and the
+    // progress column; beside the tag the name may scale to the floor.
+    bool fits(double progress) {
+      final box =
+          width -
+          RivalStripTokens.portrait -
+          2 * RivalStripTokens.gap -
+          progress;
+      return box - tagGap - tagWidth >= nameWidth * _minScale;
+    }
+
+    if (dots && fits(math.max(countWidth, dotsWidth))) return full;
+    if (fits(countWidth)) return countOnly;
+    return stacked;
   }
 }
 
@@ -421,23 +555,31 @@ class _ThinkingState extends State<_Thinking>
 /// The right column: the family count ("2/4", Fredoka 700 17 `#3242A8`,
 /// tabular) over one dot per family. Both bump (1.3, `easeOutBack`, 240 ms:
 /// `motion.rivalDot`) when the rival lands a family, and skip it under
-/// reduced motion, which fills the dot at once. Above 8 families the dots
-/// go to 6 dp with a 2 dp gap (frame proposal, `TODO(design)`).
+/// reduced motion, which fills the dot at once. Without [dots] the count
+/// stands alone (`_StripRoom`: above 8 families, or a long name).
 class _Progress extends StatelessWidget {
-  const _Progress({required this.done, required this.total, super.key});
+  const _Progress({
+    required this.done,
+    required this.total,
+    required this.dots,
+    super.key,
+  });
 
   final int done;
   final int total;
+
+  /// The dot row under the count.
+  final bool dots;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     final bump = !context.reduceMotion && done > 0;
-    // TODO(design): frame 9.3 draws up to 8 dots; the 6 dp / 2 dp rows above
-    // 8 families are this lane's proposal (ui-spec-game §2.1 "Open").
-    final small = total > 8;
-    final dot = small ? 6.0 : RivalStripTokens.dotsSize;
-    final gap = small ? 2.0 : RivalStripTokens.dotsGap;
+    // TODO(design): frame 9.3 draws up to 8 dots and one name line; above 8
+    // families, or when a long name and the "Computer" word need the room,
+    // the count stands alone (our proposal, ui-spec-game §2.1 "Open"; D271).
+    const dot = RivalStripTokens.dotsSize;
+    const gap = RivalStripTokens.dotsGap;
     return ExcludeSemantics(
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -463,20 +605,21 @@ class _Progress extends StatelessWidget {
                 softWrap: false,
               ),
             ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var i = 0; i < total; i++) ...[
-                  if (i > 0) SizedBox(width: gap),
-                  _Dot(
-                    key: ValueKey('rivalDot-$i'),
-                    filled: i < done,
-                    size: dot,
-                  ),
+            if (dots) const SizedBox(height: 2),
+            if (dots)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < total; i++) ...[
+                    if (i > 0) const SizedBox(width: gap),
+                    _Dot(
+                      key: ValueKey('rivalDot-$i'),
+                      filled: i < done,
+                      size: dot,
+                    ),
+                  ],
                 ],
-              ],
-            ),
+              ),
           ],
         ),
       ),

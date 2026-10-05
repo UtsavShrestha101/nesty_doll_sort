@@ -51,6 +51,35 @@ void main() {
     expect(resume.variant, TactileButtonVariant.versus);
   });
 
+  testWidgets('9.7 rows: Fredoka 600 17, 50 dp tall, a solid 1.5 dp divider, '
+      'glyph #6E4526 (the campaign pause keeps its dashes)', (tester) async {
+    await pumpScreen(tester, dialog());
+    await tester.pump(const Duration(milliseconds: 300));
+    final label = tester.widget<Text>(find.text('Sound'));
+    expect(label.style?.fontFamily, 'Fredoka');
+    expect(label.style?.fontSize, 17);
+    expect(label.style?.fontWeight, FontWeight.w600);
+    expect(label.style?.height, 1);
+    final icon = tester.widget<Icon>(find.byIcon(NestyIcons.volumeUp));
+    expect(icon.color, const Color(0xFF6E4526));
+    final rowHeight = tester
+        .getSize(
+          find
+              .ancestor(
+                of: find.byIcon(NestyIcons.volumeUp),
+                matching: find.byType(SizedBox),
+              )
+              .first,
+        )
+        .height;
+    expect(rowHeight, 50);
+    // Two solid dividers between three rows, none after the last.
+    final dividers = tester
+        .widgetList<ColoredBox>(find.byType(ColoredBox))
+        .where((b) => b.color == const Color(0xFFF0DFC4));
+    expect(dividers, hasLength(2));
+  });
+
   testWidgets('the tiles are Restart, Leave race and Settings, in that '
       'order, each at least 48 dp; no Home', (tester) async {
     await pumpScreen(tester, dialog());
@@ -95,7 +124,7 @@ void main() {
     expect(find.byKey(const ValueKey('raceLeaveConfirm')), findsOneWidget);
     expect(find.text('Leave this race?'), findsOneWidget);
     expect(
-      find.text('The race ends here. No coins, and nothing lost.'),
+      find.text('The race stops here. No coins, and you keep everything.'),
       findsOneWidget,
     );
     final portrait = tester.widget<RivalPortrait>(find.byType(RivalPortrait));

@@ -94,4 +94,23 @@ void main() {
       },
     );
   }
+
+  // The pill takes the free width on its side (it is centred only while it
+  // fits), so the longest tier and a 99,999 balance stay readable (5B-5,
+  // 5b-copy "Readability floor"): it failed at 49-72 % before.
+  for (final size in const [Size(360, 640), Size(375, 667)]) {
+    for (final scale in textScales) {
+      testWidgets('the worst-case pill stays above the readability floor at '
+          '${size.width.toInt()}×${size.height.toInt()} at $scale× text', (
+        tester,
+      ) async {
+        await pumpScreen(tester, hud(), size: size, textScale: scale);
+        expect(
+          unreadableText(tester),
+          isEmpty,
+          reason: 'the level pill text is drawn too small',
+        );
+      });
+    }
+  }
 }

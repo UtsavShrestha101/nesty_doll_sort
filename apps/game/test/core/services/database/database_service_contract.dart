@@ -38,7 +38,10 @@ void runDatabaseServiceContract(
       expect(database.musicEnabled, SettingsDefaults.music);
       expect(database.hapticsEnabled, SettingsDefaults.haptics);
       expect(database.symbolsMode, SettingsDefaults.symbols);
-      expect(database.languageCode, 'en');
+      // M7 phase 5B (l10n plan §1.4): the language follows the phone until
+      // one is picked; spec §13.3's example "en" is a recorded deviation.
+      expect(database.languageCode, LocaleSetting.system);
+      expect(SettingsDefaults.locale, LocaleSetting.system);
       // M7 (m7-design §4): relaxed mode off, reduce motion follows the OS.
       expect(database.relaxedMode, isFalse);
       expect(database.reduceMotion, ReduceMotionMode.system);
@@ -49,6 +52,17 @@ void runDatabaseServiceContract(
       expect(database.reminder.hour, 19);
       expect(database.reminder.minute, 0);
       expect(database.reminder.offered, isFalse);
+    });
+
+    test('relitGlowSeen and lastRival: defaults, round trips, range', () async {
+      expect(database.relitGlowSeen, isNull);
+      expect(database.lastRival, 0);
+      await database.setRelitGlowSeen('2026-10-05');
+      await database.setLastRival(2);
+      expect(database.relitGlowSeen, '2026-10-05');
+      expect(database.lastRival, 2);
+      await database.setLastRival(7);
+      expect(database.lastRival, 0, reason: 'only rivals 1-3 exist');
     });
 
     test('every setting reads back what was written', () async {
@@ -67,6 +81,28 @@ void runDatabaseServiceContract(
       expect(database.hapticsEnabled, isFalse);
       expect(database.symbolsMode, SymbolsMode.large);
       expect(database.languageCode, 'pt_BR');
+    });
+
+    test('the language setting stores "system" and a pinned "en" as given '
+        '(the resolver, not the store, picks the rendered language)', () async {
+      await database.setLanguage('en');
+      expect(database.languageCode, 'en');
+      await database.setLanguage(LocaleSetting.system);
+      expect(database.languageCode, LocaleSetting.system);
+      await database.setLanguage('pt_BR');
+      expect(database.languageCode, 'pt_BR');
+    });
+
+    test('languageStream emits "system" when the player goes back to the '
+        "phone's language", () async {
+      await database.setLanguage('de');
+      final emitted = expectLater(
+        database.languageStream,
+        emitsInOrder([LocaleSetting.system, 'en']),
+      );
+      await database.setLanguage(LocaleSetting.system);
+      await database.setLanguage('en');
+      await emitted;
     });
 
     test('languageStream emits each stored locale', () async {

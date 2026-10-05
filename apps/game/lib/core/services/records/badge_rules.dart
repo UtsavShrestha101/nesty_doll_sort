@@ -26,6 +26,18 @@ abstract final class BadgeRules {
   static const int dailiesWeek = 7;
   static const int dailiesMonth = 30;
 
+  /// The campaign level [badge]'s how-to line names ("Win level 100", copy.md
+  /// A11y `level_100_how`), so a tuning change can't contradict the copy.
+  /// Only meaningful for [BadgeId.level100] and [BadgeId.level200].
+  static int howLevel(BadgeId badge) => badge == BadgeId.level200
+      ? level200HighestLevel - 1
+      : level100HighestLevel - 1;
+
+  /// The dailies [badge]'s how-to line names ("Solve 7 daily puzzles"). Only
+  /// meaningful for [BadgeId.dailies7] and [BadgeId.dailies30].
+  static int howDailies(BadgeId badge) =>
+      badge == BadgeId.dailies30 ? dailiesMonth : dailiesWeek;
+
   /// `maxSize` of a [BadgeId.tallOrder] and a [BadgeId.grandNest] board.
   static const int tallMaxSize = 5;
   static const int grandMaxSize = 6;

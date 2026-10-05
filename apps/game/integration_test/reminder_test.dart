@@ -14,6 +14,7 @@ import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
+import 'support/phone_language.dart';
 import 'support/resume_scenario.dart';
 
 /// The optional Android reminder check (E4; m7-design P3.13; plan-m7
@@ -50,6 +51,7 @@ void main() {
   testWidgets(
     'Settings turns the daily reminder on (one pending) and off (none)',
     (tester) async {
+      pinEnglishPhone(tester);
       app.main();
       final board = Board(tester);
       await tester.pumpUntil(

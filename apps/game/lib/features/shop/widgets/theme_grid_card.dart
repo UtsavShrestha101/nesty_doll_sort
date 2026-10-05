@@ -7,6 +7,7 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/shop/model/purchase_outcome.dart';
 import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
 import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
+import 'package:nesty_game/features/shop/widgets/tag_pop.dart';
 import 'package:nesty_render/nesty_render.dart' show ChapterTheme;
 
 /// One Themes-tab tile (frame 7.7; menus spec 8.2): the chapter's own crop
@@ -14,7 +15,7 @@ import 'package:nesty_render/nesty_render.dart' show ChapterTheme;
 /// then In use (green ring) / Use / a locked "lock · Ch N" chip on the crop
 /// with the price button (the buy coin chip) below. A locked crop stays in
 /// full colour here, unlike Chapters' greyed rows.
-class ThemeGridCard extends StatelessWidget {
+class ThemeGridCard extends StatefulWidget {
   const ThemeGridCard({
     required this.theme,
     required this.owned,
@@ -46,7 +47,68 @@ class ThemeGridCard extends StatelessWidget {
   static const double thumbnailHeight = 74;
 
   @override
+  State<ThemeGridCard> createState() => _ThemeGridCardState();
+}
+
+class _ThemeGridCardState extends State<ThemeGridCard> {
+  bool _buying = false;
+
+  /// A purchase tapped on this card is in flight, and whether its
+  /// celebration has played (see `SkinGridCard`).
+  bool _buyPending = false;
+  bool _celebrated = false;
+
+  /// The footer built now is the swap's: it comes in with `motion.tagPop`.
+  bool _popFooter = false;
+
+  @override
+  void didUpdateWidget(ThemeGridCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_buyPending && !oldWidget.owned && widget.owned) _swapped();
+  }
+
+  /// The purchase landed (`motion.purchaseItem`): the new footer pops, the
+  /// haptic fires and three sparkles play, once.
+  void _swapped() {
+    if (_celebrated) return;
+    _celebrated = true;
+    _popFooter = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _popFooter = false);
+    PurchaseTwinkleBurst.celebrate(context);
+  }
+
+  Future<void> _buy() async {
+    if (_buying) return;
+    setState(() => _buying = true);
+    _buyPending = true;
+    _celebrated = false;
+    final outcome = await widget.onBuy();
+    _buyPending = false;
+    if (!mounted) return;
+    setState(() => _buying = false);
+    switch (outcome) {
+      case PurchaseOutcome.bought:
+        _swapped();
+      case PurchaseOutcome.needsCoins:
+        unawaited(
+          NotEnoughCoinsDialog.show(
+            context,
+            price: widget.theme.priceCoins,
+            balance: widget.coins,
+            itemName: context.localizations.chapterName(widget.theme.id),
+            onGoToShop: widget.onGoToCoins,
+          ),
+        );
+      case PurchaseOutcome.unavailable:
+        break;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = widget.theme;
+    final owned = widget.owned;
+    final inUse = widget.inUse;
     final l10n = context.localizations;
     final ring = inUse ? AppColorTokens.success : null;
     return NestySurface(
@@ -68,7 +130,10 @@ class ThemeGridCard extends StatelessWidget {
               children: [
                 ThemeThumbnail(
                   theme: ChapterTheme.byId(theme.id) ?? ChapterTheme.ch01,
-                  size: Size(constraints.maxWidth, thumbnailHeight),
+                  size: Size(
+                    constraints.maxWidth,
+                    ThemeGridCard.thumbnailHeight,
+                  ),
                   radius: 16,
                 ),
                 if (!owned)
@@ -90,8 +155,8 @@ class ThemeGridCard extends StatelessWidget {
               alignment: AlignmentDirectional.centerStart,
               child: Text(
                 l10n.chapterName(theme.id),
-                style: AppTextStyles.cardTitle.copyWith(
-                  fontSize: 19,
+                // `shop.cardName` themes: Fredoka 700 14/1.15.
+                style: ShopTokens.cardNameTheme.copyWith(
                   color: AppColorTokens.textPrimary,
                 ),
                 maxLines: 1,
@@ -104,19 +169,29 @@ class ThemeGridCard extends StatelessWidget {
           // cell: each answers across 48 dp over the gap above it and the
           // card's padding below instead of growing the card (review R19).
           if (inUse)
-            _InUsePill(label: l10n.themeInUse)
+            TagPop(
+              key: const ValueKey('footer-in-use'),
+              animate: _popFooter,
+              child: _InUsePill(label: l10n.themeInUse),
+            )
           else if (owned)
-            TouchSlop(
-              child: _UseButton(label: l10n.themeUse, onTap: onUse),
+            TagPop(
+              key: const ValueKey('footer-owned'),
+              animate: _popFooter,
+              child: TouchSlop(
+                child: _UseButton(label: l10n.themeUse, onTap: widget.onUse),
+              ),
             )
           else
             TouchSlop(
-              child: _LockedBuyButton(
-                themeId: theme.id,
+              child: ShopBuyButton(
                 price: theme.priceCoins,
-                coins: coins,
-                onTap: onBuy,
-                onGoToCoins: onGoToCoins,
+                onPressed: _buying ? null : _buy,
+                height: 30,
+                radius: 12,
+                edge: 3,
+                plainPriceSize: 13,
+                plainCoinSize: 15,
               ),
             ),
         ],
@@ -151,7 +226,7 @@ class _LockChip extends StatelessWidget {
           Text(
             context.localizations.themeChapterLock(number),
             style: AppTextStyleTokens.button.copyWith(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w700,
               color: _text,
             ),
@@ -207,64 +282,8 @@ class _UseButton extends StatelessWidget {
       style: AppTextStyleTokens.button.copyWith(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.iconBrown,
+        color: AppColorTokens.iconBrown,
       ),
     ),
-  );
-}
-
-class _LockedBuyButton extends StatefulWidget {
-  const _LockedBuyButton({
-    required this.themeId,
-    required this.price,
-    required this.coins,
-    required this.onTap,
-    required this.onGoToCoins,
-  });
-
-  final String themeId;
-  final int price;
-  final int coins;
-  final Future<PurchaseOutcome> Function() onTap;
-  final VoidCallback onGoToCoins;
-
-  @override
-  State<_LockedBuyButton> createState() => _LockedBuyButtonState();
-}
-
-class _LockedBuyButtonState extends State<_LockedBuyButton> {
-  bool _buying = false;
-
-  Future<void> _tap() async {
-    if (_buying) return;
-    setState(() => _buying = true);
-    final outcome = await widget.onTap();
-    if (!mounted) return;
-    setState(() => _buying = false);
-    switch (outcome) {
-      case PurchaseOutcome.bought:
-        PurchaseTwinkleBurst.celebrate(context);
-      case PurchaseOutcome.needsCoins:
-        unawaited(
-          NotEnoughCoinsDialog.show(
-            context,
-            price: widget.price,
-            balance: widget.coins,
-            itemName: context.localizations.chapterName(widget.themeId),
-            onGoToShop: widget.onGoToCoins,
-          ),
-        );
-      case PurchaseOutcome.unavailable:
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => ShopBuyButton(
-    price: widget.price,
-    onPressed: _buying ? null : _tap,
-    height: 38,
-    radius: 14,
-    edge: 4,
   );
 }

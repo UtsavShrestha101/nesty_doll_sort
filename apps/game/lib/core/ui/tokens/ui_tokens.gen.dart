@@ -1,7 +1,7 @@
 // GENERATED — do not edit; run dart run nesty_tools:gen_design_tokens
 //
-// Source: design/tokens.json (tokens v3).
-// Nesty: Doll Sort design tokens v3. Source of truth for colors, type,
+// Source: design/tokens.json (tokens v4).
+// Nesty: Doll Sort design tokens v4. Source of truth for colors, type,
 // spacing, radii, shadows, layout, motion, sound and haptics. Keys under
 // dollColor match nesty_core DollColor ids.
 
@@ -12,7 +12,7 @@ import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 /// Which design/tokens.json these UI tokens were generated from.
 abstract final class UiTokensInfo {
   /// tokens.json `meta.version`.
-  static const version = 3;
+  static const version = 4;
 }
 
 /// App colors (tokens.json `color`).
@@ -283,6 +283,399 @@ abstract final class AppColorTokens {
 
   /// `#E6C36A`.
   static const badgeToastEdge = Color(0xFFE6C36A);
+
+  /// `#DDBE8E`.
+  static const starEmptyOutline = Color(0xFFDDBE8E);
+
+  /// `#EDD6B2`.
+  static const starEmptyTop = Color(0xFFEDD6B2);
+
+  /// `#F6E6CC`.
+  static const starEmptyBottom = Color(0xFFF6E6CC);
+
+  /// `#EAF7EC`.
+  static const toastSuccessFace = Color(0xFFEAF7EC);
+
+  /// `#A6DDB3`.
+  static const toastSuccessRing = Color(0xFFA6DDB3);
+
+  /// `#46A758`.
+  static const toastSuccessAccent = Color(0xFF46A758);
+
+  /// `#E8F3FF`.
+  static const toastInfoFace = Color(0xFFE8F3FF);
+
+  /// `#9CC4EA`.
+  static const toastInfoRing = Color(0xFF9CC4EA);
+
+  /// `#3E8EDE`.
+  static const toastInfoAccent = Color(0xFF3E8EDE);
+
+  /// `#FFF7E0`.
+  static const toastBadgeFace = Color(0xFFFFF7E0);
+
+  /// `#E6C36A`.
+  static const toastBadgeRing = Color(0xFFE6C36A);
+
+  /// `#F5C518`.
+  static const toastBadgeAccent = Color(0xFFF5C518);
+
+  /// `#FFE3D0`.
+  static const toastWarnFace = Color(0xFFFFE3D0);
+
+  /// `#E3AE8C`.
+  static const toastWarnRing = Color(0xFFE3AE8C);
+
+  /// `#F2893B`.
+  static const toastWarnAccent = Color(0xFFF2893B);
+
+  /// `#FFF1DE`.
+  static const streakCardTop = Color(0xFFFFF1DE);
+
+  /// `#FFE2C2`.
+  static const streakCardBottom = Color(0xFFFFE2C2);
+
+  /// `#E3AE8C`.
+  static const streakCardEdge = Color(0xFFE3AE8C);
+
+  /// `#F0DFC4`.
+  static const divider = Color(0xFFF0DFC4);
+
+  /// `#8A6A4E`.
+  static const textLocked = Color(0xFF8A6A4E);
+
+  /// `#B99A7A`.
+  static const textLockedLight = Color(0xFFB99A7A);
+
+  /// `#C4AE92`.
+  static const lockGlyph = Color(0xFFC4AE92);
+
+  /// `#F1E3CC`.
+  static const levelLockedFace = Color(0xFFF1E3CC);
+
+  /// `#F3E6D2`.
+  static const sunkFace = Color(0xFFF3E6D2);
+
+  /// `rgba(90,45,15,0.15)`.
+  static const sunkShade = Color(0x265A2D0F);
+
+  /// `#E2CBA6`.
+  static const sunkRing = Color(0xFFE2CBA6);
+
+  /// `rgba(60,30,10,0.35)`.
+  static const scrimLight = Color(0x593C1E0A);
+
+  /// `rgba(60,30,10,0.28)`.
+  static const scrimBoard = Color(0x473C1E0A);
+
+  /// `rgba(60,30,10,0.18)`.
+  static const scrimFaint = Color(0x2E3C1E0A);
+
+  /// `#E8DCCB`.
+  static const disabledFace = Color(0xFFE8DCCB);
+
+  /// `rgba(90,45,15,0.2)`.
+  static const disabledShade = Color(0x335A2D0F);
+
+  /// `#A48B72`.
+  static const disabledText = Color(0xFFA48B72);
+
+  /// `#CDB89C`.
+  static const disabledCoin = Color(0xFFCDB89C);
+
+  /// `#F3E6D2`.
+  static const limitBadgeFace = Color(0xFFF3E6D2);
+
+  /// `#FFF4E0`.
+  static const limitBadgeRing = Color(0xFFFFF4E0);
+
+  /// `#8A6A4E`.
+  static const limitBadgeText = Color(0xFF8A6A4E);
+
+  /// `#F6E2C2`.
+  static const tileNeutral = Color(0xFFF6E2C2);
+
+  /// `#FFF1C9`.
+  static const tileGold = Color(0xFFFFF1C9);
+
+  /// `#DDF3E2`.
+  static const tileGreen = Color(0xFFDDF3E2);
+
+  /// `#E8F3FF`.
+  static const tileBlue = Color(0xFFE8F3FF);
+
+  /// `#2B5E93`.
+  static const tileBlueGlyph = Color(0xFF2B5E93);
+
+  /// `#FFE9D2`.
+  static const tileOrange = Color(0xFFFFE9D2);
+
+  /// `#FFE3D0`.
+  static const tilePeach = Color(0xFFFFE3D0);
+
+  /// `#E0632A`.
+  static const tilePeachGlyph = Color(0xFFE0632A);
+
+  /// `#FFF6E6`.
+  static const tileCream = Color(0xFFFFF6E6);
+
+  /// `#CDEFD6`.
+  static const iconTileGreen = Color(0xFFCDEFD6);
+
+  /// `#6E4526`.
+  static const iconBrown = Color(0xFF6E4526);
+
+  /// `#7A5234`.
+  static const textBrown = Color(0xFF7A5234);
+
+  /// `#B98A60`.
+  static const chevron = Color(0xFFB98A60);
+
+  /// `#F6E2C2`.
+  static const closeFill = Color(0xFFF6E2C2);
+
+  /// `rgba(150,100,50,0.25)`.
+  static const closeShade = Color(0x40966432);
+
+  /// `#FFF1C9`.
+  static const coinChipTop = Color(0xFFFFF1C9);
+
+  /// `#F9DC8A`.
+  static const coinChipBottom = Color(0xFFF9DC8A);
+
+  /// `#D4A93A`.
+  static const coinChipEdge = Color(0xFFD4A93A);
+
+  /// `#E9DDF9`.
+  static const adClaimedFace = Color(0xFFE9DDF9);
+
+  /// `#C9B3F0`.
+  static const adClaimedRing = Color(0xFFC9B3F0);
+
+  /// `#5530A8`.
+  static const adClaimedText = Color(0xFF5530A8);
+
+  /// `#6A31A6`.
+  static const superHardChipText = Color(0xFF6A31A6);
+
+  /// `#5A3F06`.
+  static const dailyText = Color(0xFF5A3F06);
+
+  /// `#FFF8DC`.
+  static const dailyChipFace = Color(0xFFFFF8DC);
+
+  /// `rgba(110,70,40,0.25)`.
+  static const sheetGrabber = Color(0x406E4628);
+
+  /// `#E3F4E6`.
+  static const dayDoneFace = Color(0xFFE3F4E6);
+
+  /// `#A6DDB3`.
+  static const dayDoneRing = Color(0xFFA6DDB3);
+
+  /// `#46A758`.
+  static const dayDoneDot = Color(0xFF46A758);
+
+  /// `#F9A964`.
+  static const dayTodayTop = Color(0xFFF9A964);
+
+  /// `#F2893B`.
+  static const dayTodayBottom = Color(0xFFF2893B);
+
+  /// `#C4631E`.
+  static const dayTodayEdge = Color(0xFFC4631E);
+
+  /// `#FFF6E6`.
+  static const dayTodayDot = Color(0xFFFFF6E6);
+
+  /// `#FFF1C9`.
+  static const dayChestFace = Color(0xFFFFF1C9);
+
+  /// `#E8C35C`.
+  static const dayChestRing = Color(0xFFE8C35C);
+
+  /// `#F5C518`.
+  static const dayChestDot = Color(0xFFF5C518);
+
+  /// `#FFE58A`.
+  static const dayOpenTop = Color(0xFFFFE58A);
+
+  /// `#F5C518`.
+  static const dayOpenBottom = Color(0xFFF5C518);
+
+  /// `#C9960A`.
+  static const dayOpenEdge = Color(0xFFC9960A);
+
+  /// `#FFF8DC`.
+  static const dayOpenDot = Color(0xFFFFF8DC);
+
+  /// `rgba(255,249,236,0.7)`.
+  static const dayFutureFace = Color(0xB3FFF9EC);
+
+  /// `#E2C9A3`.
+  static const dayFutureRing = Color(0xFFE2C9A3);
+
+  /// `#EAD3B0`.
+  static const dayFutureDot = Color(0xFFEAD3B0);
+
+  /// `#B98A60`.
+  static const dayFutureGlyph = Color(0xFFB98A60);
+
+  /// `#7A5234`.
+  static const dayLabel = Color(0xFF7A5234);
+
+  /// `#C98A4E`.
+  static const chestBodyTop = Color(0xFFC98A4E);
+
+  /// `#8A5429`.
+  static const chestBodyBottom = Color(0xFF8A5429);
+
+  /// `#D99A5A`.
+  static const chestLidTop = Color(0xFFD99A5A);
+
+  /// `#A56A34`.
+  static const chestLidBottom = Color(0xFFA56A34);
+
+  /// `#E8B94A`.
+  static const chestRing = Color(0xFFE8B94A);
+
+  /// `#F5C518`.
+  static const chestLock = Color(0xFFF5C518);
+
+  /// `#8C5E12`.
+  static const chestLockRing = Color(0xFF8C5E12);
+
+  /// `rgba(255,220,110,0.9)`.
+  static const chestGlow = Color(0xE6FFDC6E);
+
+  /// `#326497`.
+  static const freezeChipText = Color(0xFF326497);
+
+  /// `#FFF1E4`.
+  static const symbolsCardSelectedFace = Color(0xFFFFF1E4);
+
+  /// `#E2C9A3`.
+  static const symbolsCardRing = Color(0xFFE2C9A3);
+
+  /// `#F2893B`.
+  static const symbolsCardSelectedRing = Color(0xFFF2893B);
+
+  /// `#8A5530`.
+  static const walnutCabinetTop = Color(0xFF8A5530);
+
+  /// `#6B3E1E`.
+  static const walnutCabinetBottom = Color(0xFF6B3E1E);
+
+  /// `rgba(255,210,160,0.35)`.
+  static const walnutHighlight = Color(0x59FFD2A0);
+
+  /// `rgba(40,18,6,0.4)`.
+  static const walnutShade = Color(0x66281206);
+
+  /// `#5A3218`.
+  static const shelfFaceTop = Color(0xFF5A3218);
+
+  /// `#6E3F1E`.
+  static const shelfFaceBottom = Color(0xFF6E3F1E);
+
+  /// `#4A2A14`.
+  static const shelfFaceLockedTop = Color(0xFF4A2A14);
+
+  /// `#5E3519`.
+  static const shelfFaceLockedBottom = Color(0xFF5E3519);
+
+  /// `#A56A34`.
+  static const shelfLip = Color(0xFFA56A34);
+
+  /// `rgba(0,0,0,0.35)`.
+  static const shelfShadow = Color(0x59000000);
+
+  /// `rgba(255,226,160,0.5)`.
+  static const shelfLight = Color(0x80FFE2A0);
+
+  /// `#F5D98C`.
+  static const namePlateTop = Color(0xFFF5D98C);
+
+  /// `#D9AE52`.
+  static const namePlateBottom = Color(0xFFD9AE52);
+
+  /// `#8C6420`.
+  static const namePlateEdge = Color(0xFF8C6420);
+
+  /// `#4A3008`.
+  static const namePlateText = Color(0xFF4A3008);
+
+  /// `#7FD08D`.
+  static const museumNextRing = Color(0xFF7FD08D);
+
+  /// `rgba(255,244,210,0.55)`.
+  static const spotlightTop = Color(0x8CFFF4D2);
+
+  /// `rgba(255,236,190,0.1)`.
+  static const spotlightBottom = Color(0x1AFFECBE);
+
+  /// `rgba(255,240,200,0.75)`.
+  static const spotlightFloor = Color(0xBFFFF0C8);
+
+  /// `rgba(255,255,255,0.55)`.
+  static const spotlightPanel = Color(0x8CFFFFFF);
+
+  /// `#FFF4EA`.
+  static const warningHighlight = Color(0xFFFFF4EA);
+
+  /// `#FFF2F2`.
+  static const dangerHighlight = Color(0xFFFFF2F2);
+
+  /// `#EAF7EC`.
+  static const successBannerFace = Color(0xFFEAF7EC);
+
+  /// `#1F5A2B`.
+  static const successToastTitle = Color(0xFF1F5A2B);
+
+  /// `#3F7A4B`.
+  static const successToastMessage = Color(0xFF3F7A4B);
+
+  /// `#E8F3FF`.
+  static const infoFace = Color(0xFFE8F3FF);
+
+  /// `#9CC4EA`.
+  static const infoEdge = Color(0xFF9CC4EA);
+
+  /// `#23456E`.
+  static const infoTitle = Color(0xFF23456E);
+
+  /// `#46698F`.
+  static const infoText = Color(0xFF46698F);
+
+  /// `#FFF6E6`.
+  static const cream = Color(0xFFFFF6E6);
+
+  /// `#F2CFA4`.
+  static const playDiscShade = Color(0xFFF2CFA4);
+
+  /// `#FFE9D2`.
+  static const playCaption = Color(0xFFFFE9D2);
+
+  /// `rgba(255,225,180,0.6)`.
+  static const woodBarHighlight = Color(0x99FFE1B4);
+
+  /// `rgba(90,45,15,0.25)`.
+  static const woodBarShadow = Color(0x405A2D0F);
+
+  /// `#F9B27A`.
+  static const loaderTop = Color(0xFFF9B27A);
+
+  /// `#8A5B3A`.
+  static const textLink = Color(0xFF8A5B3A);
+
+  /// `#6E4526`.
+  static const textLinkPressed = Color(0xFF6E4526);
+
+  /// `#C4631E`.
+  static const textLinkAccent = Color(0xFFC4631E);
+
+  /// `#A94F12`.
+  static const textLinkAccentPressed = Color(0xFFA94F12);
 }
 
 /// Gradients (tokens.json `gradient`). CSS angles map to Alignment so the
@@ -431,6 +824,47 @@ abstract final class AppGradientTokens {
     end: Alignment.bottomCenter,
     colors: [Color(0xFF7B8BEF), Color(0xFF4E5FD9)],
   );
+
+  /// 180deg.
+  static const canvas = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFBEAD0), Color(0xFFF4D9AE)],
+  );
+
+  /// 180deg.
+  static const streakCard = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF1DE), Color(0xFFFFE2C2)],
+  );
+
+  /// 180deg.
+  static const loader = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFF9B27A), Color(0xFFF2893B)],
+  );
+
+  /// "-45deg rgba(255,255,255,0.22) 6px on / 6px off".
+  static const loaderStripes = TokenStripes(
+    angleDeg: -45.0,
+    color: Color(0x38FFFFFF),
+    onPx: 6.0,
+    offPx: 6.0,
+  );
+
+  /// 180deg.
+  static const coinChip = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF1C9), Color(0xFFF9DC8A)],
+  );
+
+  /// The solid edge under [coinChip]: `0 3px 0 #D4A93A`.
+  static const List<NestyShadow> coinChipEdge = [
+    NestyShadow(color: Color(0xFFD4A93A), dy: 3.0),
+  ];
 }
 
 /// Font families and weights (tokens.json `font`). The TTFs are bundled in
@@ -470,6 +904,87 @@ abstract final class AppFontTokens {
 
   /// Icon axis opsz.
   static const iconOpticalSize = 24.0;
+
+  /// The Baloo 2 face for Fredoka (display) text: bundled per role, its files
+  /// carry the Fredoka weight they answer.
+  static const devaDisplayFamily = 'Baloo2Display';
+
+  /// The Baloo 2 face for Nunito (body) text: bundled per role, its files carry
+  /// the Nunito weight they answer.
+  static const devaBodyFamily = 'Baloo2Body';
+
+  /// The locales whose text is in this script.
+  static const List<String> devaLocales = ['hi'];
+
+  /// Fredoka weight → Baloo 2 weight its display text draws (tools/test/fonts
+  /// checks the bundled files resolve to it).
+  static const Map<int, int> devaDisplayWeights = {700: 700, 600: 600};
+
+  /// Nunito weight → Baloo 2 weight its body text draws (tools/test/fonts
+  /// checks the bundled files resolve to it).
+  static const Map<int, int> devaBodyWeights = {800: 700, 700: 600, 600: 500};
+
+  /// The font size factor for text in this script.
+  static const devaSizeFactor = 1.0;
+
+  /// The least line height of multi-line body text in this script: "multi-line
+  /// ≥ 1.5 (body) / 1.3 (titles); single-line boxes keep their height and never
+  /// clip ascenders".
+  static const devaBodyLineHeight = 1.5;
+
+  /// The least line height of multi-line title text in this script: "multi-line
+  /// ≥ 1.5 (body) / 1.3 (titles); single-line boxes keep their height and never
+  /// clip ascenders".
+  static const devaTitleLineHeight = 1.3;
+
+  /// The M PLUS Rounded 1c face for Fredoka (display) text: bundled per role,
+  /// its files carry the Fredoka weight they answer.
+  static const jpanDisplayFamily = 'MPLUSRounded1cDisplay';
+
+  /// The M PLUS Rounded 1c face for Nunito (body) text: bundled per role, its
+  /// files carry the Nunito weight they answer.
+  static const jpanBodyFamily = 'MPLUSRounded1cBody';
+
+  /// The locales whose text is in this script.
+  static const List<String> jpanLocales = ['ja'];
+
+  /// Fredoka weight → M PLUS Rounded 1c weight its display text draws
+  /// (tools/test/fonts checks the bundled files resolve to it).
+  static const Map<int, int> jpanDisplayWeights = {700: 800, 600: 700};
+
+  /// Nunito weight → M PLUS Rounded 1c weight its body text draws
+  /// (tools/test/fonts checks the bundled files resolve to it).
+  static const Map<int, int> jpanBodyWeights = {800: 700, 700: 700, 600: 500};
+
+  /// The font size factor for text in this script.
+  static const jpanSizeFactor = 0.94;
+
+  /// The least line height of multi-line body text in this script: "multi-line
+  /// 1.6 (body) / 1.3 (titles)".
+  static const jpanBodyLineHeight = 1.6;
+
+  /// The least line height of multi-line title text in this script: "multi-line
+  /// 1.6 (body) / 1.3 (titles)".
+  static const jpanTitleLineHeight = 1.3;
+
+  /// Letter spacing for text in this script: "always 0 (drop tracked caps)".
+  static const jpanLetterSpacing = 0.0;
+
+  /// The `fontFamilyFallback` of every Fredoka style: Nunito for a Latin glyph
+  /// Fredoka lacks, then the script faces (each maps only its own script).
+  static const List<String> displayFallback = [
+    'Nunito',
+    'Baloo2Display',
+    'MPLUSRounded1cDisplay',
+  ];
+
+  /// The `fontFamilyFallback` of every Nunito style: Fredoka for a Latin glyph
+  /// Nunito lacks, then the script faces (each maps only its own script).
+  static const List<String> bodyFallback = [
+    'Fredoka',
+    'Baloo2Body',
+    'MPLUSRounded1cBody',
+  ];
 }
 
 /// Text styles (tokens.json `fontSize`). `height` is lineHeight ÷ size with
@@ -482,6 +997,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 40/42/700.
@@ -491,6 +1007,7 @@ abstract final class AppTextStyleTokens {
     height: 1.05,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 30/33/700.
@@ -500,6 +1017,7 @@ abstract final class AppTextStyleTokens {
     height: 1.1,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 28/31/700.
@@ -509,6 +1027,7 @@ abstract final class AppTextStyleTokens {
     height: 1.1071428571428572,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 26/26/700.
@@ -518,6 +1037,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 20/22/700.
@@ -527,6 +1047,7 @@ abstract final class AppTextStyleTokens {
     height: 1.1,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 21/21/700.
@@ -536,6 +1057,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 17/17/700.
@@ -545,6 +1067,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 18/18/700.
@@ -554,6 +1077,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 17/17/700.
@@ -563,6 +1087,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     fontFeatures: [FontFeature.tabularFigures()],
   );
 
@@ -573,6 +1098,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Fredoka 11/11/700.
@@ -582,6 +1108,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     letterSpacing: 0.66,
   );
 
@@ -592,6 +1119,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// Nunito 16/23/600.
@@ -601,6 +1129,7 @@ abstract final class AppTextStyleTokens {
     height: 1.4375,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
   );
 
   /// Nunito 14/20/600.
@@ -610,6 +1139,7 @@ abstract final class AppTextStyleTokens {
     height: 1.4285714285714286,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
   );
 
   /// Nunito 17/17/700.
@@ -619,6 +1149,7 @@ abstract final class AppTextStyleTokens {
     height: 1.0,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
   );
 
   /// Nunito 12/16/700.
@@ -628,6 +1159,7 @@ abstract final class AppTextStyleTokens {
     height: 1.3333333333333333,
     leadingDistribution: TextLeadingDistribution.even,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
   );
 }
 
@@ -784,6 +1316,11 @@ abstract final class HudTokens {
   static const familyCounterIconSize = Size(12.0, 18.0);
 
   static const familyCounterGap = 5.0;
+
+  /// `ui_family_counter`'s pill is authored this wide: for another width w,
+  /// size `pill_rect` and `glow_rect` to (w, 26) and move `icon` by (−w / 2 +
+  /// 14, 0).
+  static const familyCounterLottieWidth = 70.0;
 
   /// The design's counter widths by label, for the layout test.
   static const Map<String, double> familyCounterWidthExamples = {
@@ -944,6 +1481,12 @@ abstract final class SoundTokens {
   /// `jingle_versus_lose`: a jingle (OGG, in [jingleFiles]; the bus is
   /// [jingleBus]).
   static const raceLost = SoundCue(['jingle_versus_lose']);
+
+  /// `jingle_reward`: a jingle (OGG, in [jingleFiles]; the bus is [jingleBus]).
+  static const rivalUnlocked = SoundCue(['jingle_reward']);
+
+  /// `none (no sound, no haptic)`: no sound (an empty cue plays nothing).
+  static const reminderSet = SoundCue([]);
 
   /// Every SFX file base name the events use, sorted (for preloading and the
   /// asset manifest test): `assets/audio/<name>.wav`. The jingles are
@@ -1114,6 +1657,662 @@ abstract final class SoundTokens {
   static const jingleBus = 'sfx';
 }
 
+/// tokens.json `layout.tutorial` (m7-4 (8.1): 1.3, 1.4, 1.6, 10.8b), in dp on
+/// the 390×844 reference unless a member says otherwise.
+abstract final class TutorialTokens {
+  /// The tutorial scrim, over the HUD and the booster bar too, with a hole that
+  /// keeps Pause lit (m7-4 8.1).
+  static const scrim = Color(0x99341A08);
+
+  /// x, y, width, height (`[10, 56, 60, 60]`).
+  static const pauseHoleRect = Rect.fromLTWH(10.0, 56.0, 60.0, 60.0);
+
+  static const pauseHoleRadius = 22.0;
+
+  /// The tip sits in the HUD row (`HudTokens.top`).
+  static const tooltipTop = 62.0;
+
+  /// On the 16:9 screen.
+  static const tooltipTopShort = 30.0;
+
+  static const tooltipLeft = 76.0;
+
+  static const tooltipRight = 16.0;
+
+  static const tooltipPadding = EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 16.0);
+
+  static const tooltipRadius = 22.0;
+}
+
+/// tokens.json `layout.sizeBlend` (4.7, 4.12), in dp on the 390×844 reference
+/// unless a member says otherwise.
+abstract final class SizeBlendTokens {}
+
+/// tokens.json `layout.settingsRows`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class SettingsRowsTokens {
+  static const segmentedHeight = 48.0;
+
+  static const segmentedSegmentMinHeight = 40.0;
+
+  /// The blocked reminder row's two actions, "Open phone settings" (a secondary
+  /// chip) and "Turn off" (a text link), this far apart; they wrap under each
+  /// other when narrow (10.2f, Q158).
+  static const blockedActionsGap = 18.0;
+
+  static const iconTilesSize = 36.0;
+
+  static const iconTilesRadius = 12.0;
+
+  static const iconTilesGlyph = 22.0;
+
+  /// `#F6E2C2, #6E4526`.
+  static const List<Color> iconTilesDefault = [
+    Color(0xFFF6E2C2),
+    Color(0xFF6E4526),
+  ];
+
+  /// `#FFF1C9, #8C5E12`.
+  static const List<Color> iconTilesReminder = [
+    Color(0xFFFFF1C9),
+    Color(0xFF8C5E12),
+  ];
+
+  /// `#F6E2C2, #8A5B3A`.
+  static const List<Color> iconTilesReminderBlocked = [
+    Color(0xFFF6E2C2),
+    Color(0xFF8A5B3A),
+  ];
+
+  /// `#DDF3E2, #2F7A3E`.
+  static const List<Color> iconTilesRelaxed = [
+    Color(0xFFDDF3E2),
+    Color(0xFF2F7A3E),
+  ];
+
+  /// `#E8F3FF, #2B5E93`.
+  static const List<Color> iconTilesReduceMotion = [
+    Color(0xFFE8F3FF),
+    Color(0xFF2B5E93),
+  ];
+
+  /// The rows' divider (`AppColorTokens.divider`).
+  static const divider = TokenStroke(width: 1.5, color: Color(0xFFF0DFC4));
+}
+
+/// tokens.json `layout.noCoins` (7.3b, 7.4c (the modal shared with the other
+/// cards)), in dp on the 390×844 reference unless a member says otherwise.
+abstract final class NoCoinsTokens {
+  static const top = 220.0;
+
+  /// `Fredoka 700 24/1.15, balanced`.
+  static const heading = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 24.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    height: 1.15,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `Nunito 600 16/23`.
+  static const body = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.4375,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `#FFFDF7`.
+  static const itemChipFace = Color(0xFFFFFDF7);
+
+  /// `inset 0 0 0 2px #EAD3B0`.
+  static const List<NestyShadow> itemChipRing = [
+    NestyShadow(color: Color(0xFFEAD3B0), inset: true, spread: 2.0),
+  ];
+
+  static const itemChipRadius = 18.0;
+
+  static const itemChipPadding = EdgeInsets.fromLTRB(16.0, 8.0, 10.0, 8.0);
+
+  /// `Fredoka 700 18`.
+  static const itemChipName = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 18.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+  );
+
+  /// `gradient.coinChip pill, 30 tall, Fredoka 700 16 #8C5E12 with the 20 dp
+  /// coin: the number alone (“2,500”); the coin says the rest, and a11y reads
+  /// “2,500 coins”`.
+  static const itemChipPriceFill = AppGradientTokens.coinChip;
+
+  /// The price pill shows the number alone; the coin says the rest and screen
+  /// readers hear "coins" (m7-4 10.1).
+  static const itemChipPriceHeight = 30.0;
+
+  /// `gradient.coinChip pill, 30 tall, Fredoka 700 16 #8C5E12 with the 20 dp
+  /// coin: the number alone (“2,500”); the coin says the rest, and a11y reads
+  /// “2,500 coins”`.
+  static const itemChipPriceText = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    color: Color(0xFF8C5E12),
+  );
+
+  /// `gradient.coinChip pill, 30 tall, Fredoka 700 16 #8C5E12 with the 20 dp
+  /// coin: the number alone (“2,500”); the coin says the rest, and a11y reads
+  /// “2,500 coins”`.
+  static const itemChipPriceCoin = 20.0;
+}
+
+/// tokens.json `layout.museumDetail`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class MuseumDetailTokens {
+  static const spotlightDrawnInCode = true;
+
+  /// The art panel the cone is clipped to.
+  static const spotlightPanelHeight = 300.0;
+
+  /// `the 300-tall art panel, radius 24, overflow hidden`.
+  static const spotlightPanelRadius = 24.0;
+
+  static const spotlightConeWidth = 250.0;
+
+  static const spotlightConeHeight = 320.0;
+
+  static const spotlightConeTop = -10.0;
+
+  static const spotlightConeCentred = true;
+
+  /// The cone's top edge runs from this fraction of its width …
+  static const spotlightConeTopLeft = 0.38;
+
+  /// … to this one; its bottom edge is the full width.
+  static const spotlightConeTopRight = 0.62;
+
+  /// `linear 180°: rgba(255,255,255,0.55) → rgba(255,255,255,0)`.
+  static const spotlightConeFill = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0x8CFFFFFF), Color(0x00FFFFFF)],
+  );
+}
+
+/// tokens.json `layout.languageSheet` (8.2, 8.2b), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class LanguageSheetTokens {
+  static const rowHeight = 56.0;
+
+  /// `Nunito 600 13 #9A6A44, right, before the radio; not shown on the English
+  /// row`.
+  static const english = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    color: Color(0xFF9A6A44),
+  );
+
+  /// `24, ring 2px #D8B07A; current: #F2893B fill with a white check`.
+  static const radioSize = 24.0;
+
+  /// `24, ring 2px #D8B07A; current: #F2893B fill with a white check`.
+  static const radioRing = TokenStroke(width: 2.0, color: Color(0xFFD8B07A));
+
+  /// The current language's radio, with a white check.
+  static const radioCurrentFill = Color(0xFFF2893B);
+
+  /// The sheet is at most the screen − the safe top − this.
+  static const maxHeightInset = 72.0;
+
+  /// The fade over the last rows while more are below.
+  static const scrollFadeHeight = 16.0;
+
+  /// `the rows scroll under the pinned title row; a 16 dp fade (#FCEBD0) at the
+  /// bottom edge while more rows are below`.
+  static const scrollFadeColor = Color(0xFFFCEBD0);
+}
+
+/// tokens.json `toast` (m7-4 (1.5). Kinds use color.toast*; title #5B3A21,
+/// sub #8A5B3A unless noted), in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class ToastLayoutTokens {
+  /// The app toast's top is the safe top + this, just under the status bar
+  /// (m7-4 1.5).
+  static const appTopBelowSafeTop = 4.0;
+
+  static const appSide = 16.0;
+
+  static const appPadding = EdgeInsets.fromLTRB(12.0, 12.0, 16.0, 12.0);
+
+  static const appRadius = 22.0;
+
+  static const appGap = 12.0;
+
+  static const appIcon = 40.0;
+
+  static const appGlyph = 26.0;
+
+  /// `Fredoka 700 17/1.1`.
+  static const appTitle = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 17.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    height: 1.1,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `Nunito 700 13/1.3`.
+  static const appMessage = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `inset 0 2px 0 #FFFFFF`.
+  static const List<NestyShadow> appHighlight = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+  ];
+
+  /// The solid edge's depth under the toast, in its kind's ring colour
+  /// (`AppColorTokens.toast<Kind>Ring`).
+  static const appEdgeDepth = 4.0;
+
+  /// `0 12px 24px rgba(30,60,100,0.25)`.
+  static const List<NestyShadow> appShadow = [
+    NestyShadow(color: Color(0x401E3C64), dy: 12.0, blur: 24.0),
+  ];
+
+  /// `linear-gradient(180deg,#6FB4EA,#3E8EDE)`.
+  static const appIconDiscInfo = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF6FB4EA), Color(0xFF3E8EDE)],
+  );
+
+  /// `#46A758`.
+  static const appIconDiscSuccess = Color(0xFF46A758);
+
+  /// `#F2893B`.
+  static const appIconDiscWarn = Color(0xFFF2893B);
+
+  /// A badge toast shows the badge art at this size, with no disc.
+  static const appBadgeArtSize = 38.0;
+
+  /// `0 12px 24px rgba(30,90,40,0.2)`.
+  static const List<NestyShadow> appShadowSuccess = [
+    NestyShadow(color: Color(0x331E5A28), dy: 12.0, blur: 24.0),
+  ];
+
+  static const inPlaceTopsWinCard = 60.0;
+
+  static const inPlaceTopsScreenHeader = 124.0;
+
+  static const inPlaceTopsBoard = 152.0;
+
+  static const inPlaceSide = 20.0;
+
+  static const inPlacePadding = EdgeInsets.fromLTRB(8.0, 8.0, 14.0, 8.0);
+
+  static const inPlaceRadius = 20.0;
+
+  static const inPlaceGap = 10.0;
+
+  static const inPlaceIcon = 32.0;
+
+  static const inPlaceGlyph = 20.0;
+
+  static const inPlaceArt = 38.0;
+
+  /// `Fredoka 700 15/1.3`.
+  static const inPlaceTitle = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `Nunito 700 12/1.3`.
+  static const inPlaceSub = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `inset 0 2px 0 rgba(255,255,255,0.7)`.
+  static const List<NestyShadow> inPlaceHighlight = [
+    NestyShadow(color: Color(0xB3FFFFFF), inset: true, dy: 2.0),
+  ];
+
+  /// The solid edge's depth under the toast, in its kind's ring colour
+  /// (`AppColorTokens.toast<Kind>Ring`).
+  static const inPlaceEdgeDepth = 4.0;
+
+  /// `0 8px 14px rgba(90,50,20,0.2)`.
+  static const List<NestyShadow> inPlaceShadow = [
+    NestyShadow(color: Color(0x335A3214), dy: 8.0, blur: 14.0),
+  ];
+
+  static const inPlaceChipHeight = 24.0;
+
+  static const inPlaceChipRadius = 12.0;
+
+  /// `#FFFDF7`.
+  static const inPlaceChipFace = Color(0xFFFFFDF7);
+
+  /// `1.5px #9CC4EA`.
+  static const inPlaceChipRing = TokenStroke(
+    width: 1.5,
+    color: Color(0xFF9CC4EA),
+  );
+
+  /// `Nunito 800 12 #2B5E93`.
+  static const inPlaceChipText = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    color: Color(0xFF2B5E93),
+  );
+
+  /// `#FFF7E8`.
+  static const pillFace = Color(0xFFFFF7E8);
+
+  static const pillPadding = EdgeInsets.fromLTRB(8.0, 8.0, 18.0, 8.0);
+
+  static const pillRadius = 24.0;
+
+  static const pillIcon = 32.0;
+
+  /// `Fredoka 700 15`.
+  static const pillText = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+  );
+
+  /// `0 4px 0 #D8B07A`.
+  static const List<NestyShadow> pillEdge = [
+    NestyShadow(color: Color(0xFFD8B07A), dy: 4.0),
+  ];
+}
+
+/// tokens.json `textFit` (m7-4 (9.2): what each tight surface does with long
+/// strings (de ≈ +30 %, hi and ja taller). Order: wrap if allowed, else scale
+/// down to min, else the short form in copy.md), in dp on the 390×844
+/// reference unless a member says otherwise.
+abstract final class TextFitTokens {
+  static const winRibbonBox = Size(312.0, 40.0);
+
+  /// `Fredoka 700 24`.
+  static const winRibbonFont = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 24.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+  );
+
+  static const winRibbonWrap = false;
+
+  static const winRibbonMinScale = 0.75;
+
+  /// The copy.md ids of the short forms (the ARB keys).
+  static const List<String> winRibbonShort = [
+    'win_title_short',
+    'race_win_title_short',
+    'race_lose_title_short',
+  ];
+
+  static const chapterRibbonBox = Size(312.0, 32.0);
+
+  /// `Fredoka 700 20`.
+  static const chapterRibbonFont = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 20.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+  );
+
+  static const chapterRibbonWrap = false;
+
+  static const chapterRibbonMinScale = 0.75;
+
+  /// The copy.md id of the short form (the ARB key).
+  static const List<String> chapterRibbonShort = ['chapter_ribbon_short'];
+
+  static const hudPillsWrap = false;
+
+  static const hudPillsMinScale = 0.85;
+
+  static const boosterLabelsBox = Size(72.0, 16.0);
+
+  static const boosterLabelsWrap = false;
+
+  static const boosterLabelsMinScale = 0.8;
+
+  static const tabBarBox = Size(80.0, 14.0);
+
+  static const tabBarWrap = false;
+
+  static const tabBarMinScale = 0.8;
+
+  static const rivalNamesWrap = false;
+
+  static const rivalNamesMinScale = 0.85;
+
+  static const chestChipsWrap = false;
+
+  static const chestChipsMinScale = 0.85;
+
+  static const chapterRowsWrap = false;
+
+  static const chapterRowsMinScale = 0.85;
+}
+
+/// tokens.json `screenHeader` (m7-4 (10.2): one alignment for every screen.
+/// Daily, the Shop, the Museum detail and Skin detail move left, like
+/// Chapters, Records, Settings and rival select (frames updated)), in dp on
+/// the 390×844 reference unless a member says otherwise.
+abstract final class ScreenHeaderTokens {
+  static const top = 62.0;
+
+  static const height = 48.0;
+
+  static const side = 16.0;
+
+  static const buttonSize = 46.0;
+
+  static const buttonRadius = 17.0;
+
+  static const buttonGlyph = 26.0;
+
+  static const gap = 12.0;
+
+  /// The header's trailing coin pill (or nothing).
+  static const trailingCoinPillHeight = 40.0;
+
+  /// A tab screen (the Museum) has no button; its title starts here.
+  static const tabScreenTitleLeft = 20.0;
+}
+
+/// tokens.json `motion.chest.collect`, in dp on the 390×844 reference unless
+/// a member says otherwise.
+abstract final class ChestCollectTokens {
+  /// `0 0 0 4px rgba(255,214,110,0.8), 0 0 18px 6px rgba(255,205,80,0.6)`.
+  static const List<NestyShadow> pillRingShadow = [
+    NestyShadow(color: Color(0xCCFFD66E), spread: 4.0),
+    NestyShadow(color: Color(0x99FFCD50), blur: 18.0, spread: 6.0),
+  ];
+
+  static const pillRingOutset = 4.0;
+
+  static const pillRingInMs = 80;
+
+  /// The ring shows as the first coin lands.
+  static const pillRingFromMs = 700;
+
+  static const pillRingOutMs = 240;
+
+  /// The last coin lands here; the ring fades [pillRingOutMs] after.
+  static const pillRingLastCoinMs = 1000;
+
+  static const hintRingSize = 38.0;
+
+  /// `0 0 0 3px #FFE08A, 0 0 14px 4px rgba(255,205,80,0.7)`.
+  static const List<NestyShadow> hintRingShadow = [
+    NestyShadow(color: Color(0xFFFFE08A), spread: 3.0),
+    NestyShadow(color: Color(0xB3FFCD50), blur: 14.0, spread: 4.0),
+  ];
+
+  /// `#46A758`.
+  static const gainTagFace = Color(0xFF46A758);
+
+  /// `0 2px 0 #2F7A3E`.
+  static const List<NestyShadow> gainTagEdge = [
+    NestyShadow(color: Color(0xFF2F7A3E), dy: 2.0),
+  ];
+
+  /// `Fredoka 700 13 #FFFFFF`.
+  static const gainTagFont = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    color: Color(0xFFFFFFFF),
+  );
+
+  static const gainTagPadding = EdgeInsets.symmetric(
+    vertical: 3.0,
+    horizontal: 8.0,
+  );
+
+  static const gainTagRadius = 10.0;
+
+  static const gainTagOffset = Offset(12.0, -42.0);
+
+  static const gainTagHoldMs = 1200;
+
+  static const trailDot = 6.0;
+
+  /// `#FFF1C9`.
+  static const trailColor = Color(0xFFFFF1C9);
+
+  static const trailCoinDots = 5.0;
+
+  static const trailHintDots = 3.0;
+
+  /// Each trail dot sits behind the sprite at path t − this.
+  static const List<double> trailSpacing = [0.1, 0.2, 0.3, 0.45, 0.6];
+
+  /// `0.95 near the sprite to 0.35 at the tail`.
+  static const trailOpacityHead = 0.95;
+
+  /// `0.95 near the sprite to 0.35 at the tail`.
+  static const trailOpacityTail = 0.35;
+
+  static const trailFadeMs = 200;
+}
+
+/// tokens.json `motion.rivalReact` (C.6), in dp on the 390×844 reference
+/// unless a member says otherwise.
+abstract final class RivalReactTokens {
+  static const stripCanvasDp = 47.5;
+
+  static const resultCardCanvasDp = 70.0;
+}
+
+/// tokens.json `motion.museumIdle` (J.2), in dp on the 390×844 reference
+/// unless a member says otherwise.
+abstract final class MuseumIdleTokens {
+  /// The square canvas, dp.
+  static const canvas = 90.0;
+
+  static const figurineDp = 62.0;
+
+  static const randomStartFrame = true;
+}
+
+/// tokens.json `motion.firstLaunch`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class FirstLaunchTokens {
+  static const fadeMs = 400;
+
+  /// The first launch's fade (`motion.easing.easeOut`).
+  static const Cubic curve = UiMotionTokens.curveEaseOut;
+}
+
+/// tokens.json `motion.spinner`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class SpinnerMotionTokens {
+  /// Under reduce motion `ui_spinner` rests on frame 0 and pulses its opacity 1
+  /// → this → 1 …
+  static const reducedMotionMinOpacity = 0.45;
+
+  /// … over this, looping, `easeInOut` (12.5, 7.5).
+  static const reducedMotionPulseMs = 1600;
+}
+
+/// tokens.json `motion.purchaseItem` (a skin or theme bought with coins (7.3,
+/// 7.4, 7.7); no card), in dp on the 390×844 reference unless a member says
+/// otherwise.
+abstract final class PurchaseItemTokens {
+  /// This many `fx_sparkle` around the card or the Buy button.
+  static const sparkleCount = 3;
+
+  /// The header balance counts down over this.
+  static const balanceCountDownMs = 400;
+}
+
+/// tokens.json `motion.relitHome` (4.10), in dp on the 390×844 reference
+/// unless a member says otherwise.
+abstract final class RelitHomeTokens {
+  /// The Daily tile badge glows (`AppColorTokens.relitGlow` ring) on the first
+  /// Home visit after a relight, in that session or a later one, never twice
+  /// (m7-4 4.10) …
+  static const glowMs = 2400;
+
+  /// … then fades over this.
+  static const fadeMs = 400;
+}
+
+/// tokens.json `motion.relitTwinkle` (10.7, 10.7b (4.17)), in dp on the
+/// 390×844 reference unless a member says otherwise.
+abstract final class RelitTwinkleTokens {
+  /// The `auto_awesome` glyph.
+  static const glyph = 'auto_awesome';
+
+  /// `auto_awesome, 22 dp, #FFE08A, glow 0 0 6px rgba(255,220,120,0.9)`.
+  static const glyphSize = 22.0;
+
+  /// `auto_awesome, 22 dp, #FFE08A, glow 0 0 6px rgba(255,220,120,0.9)`.
+  static const glyphColor = Color(0xFFFFE08A);
+
+  /// `auto_awesome, 22 dp, #FFE08A, glow 0 0 6px rgba(255,220,120,0.9)`.
+  static const List<NestyShadow> glyphGlow = [
+    NestyShadow(color: Color(0xE6FFDC78), blur: 6.0),
+  ];
+
+  /// The twinkle's box sits at the flame disc's top-right corner, right and top
+  /// this far (negative: outside the disc).
+  static const placeInset = -8.0;
+}
+
 /// tokens.json `layout.rivalStrip` (vs Computer HUD top row; replaces the
 /// level pill and the coin pill. Family counter stays at top 116.), in dp on
 /// the 390×844 reference unless a member says otherwise.
@@ -1142,6 +2341,7 @@ abstract final class RivalStripTokens {
     fontFamily: 'Fredoka',
     fontSize: 16.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     color: Color(0xFF5B3A21),
   );
 
@@ -1162,6 +2362,7 @@ abstract final class RivalStripTokens {
     fontFamily: 'Nunito',
     fontSize: 11.0,
     fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     color: Color(0xFF6E4526),
   );
 
@@ -1176,6 +2377,7 @@ abstract final class RivalStripTokens {
     fontFamily: 'Nunito',
     fontSize: 12.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     color: Color(0xFF8A5B3A),
   );
 
@@ -1196,6 +2398,7 @@ abstract final class RivalStripTokens {
     fontFamily: 'Fredoka',
     fontSize: 17.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     color: Color(0xFF3242A8),
     fontFeatures: [FontFeature.tabularFigures()],
   );
@@ -1215,6 +2418,15 @@ abstract final class RivalStripTokens {
 
   /// An empty dot, drawn sunk (`AppShadowTokens.sunk`).
   static const dotsEmpty = Color(0xFFEAD3B0);
+
+  /// From this many families the dots shrink (as built) …
+  static const dotsManyFromFamilies = 9;
+
+  /// … to this, dp …
+  static const dotsManySize = 6.0;
+
+  /// … this far apart.
+  static const dotsManyGap = 2.0;
 
   static const narrowTagGlyphOnlyBelowWidth = 360.0;
 
@@ -1247,6 +2459,7 @@ abstract final class RaceBarTokens {
     fontFamily: 'Fredoka',
     fontSize: 21.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     color: Color(0xFFFFFFFF),
   );
 
@@ -1312,6 +2525,7 @@ abstract final class WinStarsTokens {
     fontFamily: 'Nunito',
     fontSize: 15.0,
     fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     color: Color(0xFF7A5234),
   );
 
@@ -1356,6 +2570,7 @@ abstract final class WinStarsTokens {
     fontFamily: 'Nunito',
     fontSize: 13.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     color: Color(0xFFFFF1DC),
   );
 
@@ -1379,24 +2594,53 @@ abstract final class WinStarsShortTokens {
 
   static const progressTop = 414.0;
 
+  static const notePillTop = 486.0;
+
+  static const notePillWithTipPlankTop = 286.0;
+
+  static const notePillWithTipHopDollHeight = 64.0;
+
+  static const notePillWithTipCoinRowTop = 322.0;
+
+  static const notePillWithTipProgressTop = 392.0;
+
+  static const notePillWithTipButtonsTop = 548.0;
+
   static const buttonsTop = 522.0;
 
   static const buttonsGap = 10.0;
 }
 
-/// tokens.json `layout.chestCard` (milestone chest (10.5, 10.6) and the day-7
-/// chest (5.6) share it), in dp on the 390×844 reference unless a member says
-/// otherwise.
+/// tokens.json `layout.chestCard` (m7-4: the frames are right (10.3b 168, 5.6
+/// 176); 214 is withdrawn), in dp on the 390×844 reference unless a member
+/// says otherwise.
 abstract final class ChestCardTokens {
   static const cardLeft = 28.0;
 
   static const cardRight = 28.0;
 
-  static const cardTop = 214.0;
+  static const cardTop = 168.0;
+
+  static const cardTopDay7 = 176.0;
 
   static const cardRadius = 32.0;
 
-  static const lottieSize = Size(200.0, 200.0);
+  static const cardPadding = EdgeInsets.fromLTRB(22.0, 44.0, 22.0, 22.0);
+
+  static const cardGap = 14.0;
+
+  /// The card's height from its content, for the layout tests: closed …
+  static const cardHeightClosed = 390.0;
+
+  /// … open …
+  static const cardHeightOpen = 390.0;
+
+  /// … and the day-7 chest open with Double it.
+  static const cardHeightOpenDoubleIt = 458.0;
+
+  static const artBox = Size(156.0, 130.0);
+
+  static const lottieScale = 1.2;
 
   static const contentsChipHeight = 44.0;
 
@@ -1500,6 +2744,18 @@ abstract final class ChaptersTokens {
 
   static const foldedRowStarsChip = 28.0;
 
+  /// `Fredoka 700 15, one line; scales down to 0.85 (12.75) before it
+  /// ellipsizes`.
+  static const foldedRowName = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+  );
+
+  /// One line: it scales down to this before it ellipsizes.
+  static const foldedRowNameMinScale = 0.85;
+
   /// The open chapter's ring, in its palette's `accentTop`.
   static const currentRingWidth = 3.0;
 
@@ -1531,6 +2787,7 @@ abstract final class ChaptersTokens {
     fontFamily: 'Nunito',
     fontSize: 9.5,
     fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     color: Color(0xFF9A6A44),
   );
 
@@ -1563,6 +2820,29 @@ abstract final class ChaptersTokens {
     width: 3.0,
     color: Color(0x59F5C518),
   );
+
+  /// On open, the list scrolls so at most this many finished rows show above
+  /// the current chapter card: offset = max(0, currentCardTop − listTop −
+  /// min(this, finished) × [openScrollRowPitch]).
+  static const openScrollFinishedRows = 2;
+
+  /// `the current chapter card with at most two finished rows above it: offset
+  /// = max(0, currentCardTop − listTop − min(2, finished) × 64)`.
+  static const openScrollRowPitch = 64.0;
+
+  /// `#F1E3CC`.
+  static const lockedCellFace = Color(0xFFF1E3CC);
+
+  /// `#B99A7A`.
+  static const lockedCellNumber = Color(0xFFB99A7A);
+
+  /// `#C4AE92`.
+  static const lockedCellLock = Color(0xFFC4AE92);
+
+  /// `inset 0 2px 4px rgba(90,45,15,0.15)`.
+  static const List<NestyShadow> lockedCellShadow = [
+    NestyShadow(color: Color(0x265A2D0F), inset: true, dy: 2.0, blur: 4.0),
+  ];
 }
 
 /// tokens.json `layout.museum` (Museum (6.1, J.2)), in dp on the 390×844
@@ -1575,6 +2855,7 @@ abstract final class MuseumTokens {
     fontFamily: 'Nunito',
     fontSize: 13.0,
     fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
   );
 
   static const nextCardTop = 160.0;
@@ -1584,6 +2865,10 @@ abstract final class MuseumTokens {
   static const nextCardRadius = 26.0;
 
   static const nextCardArt = Size(118.0, 132.0);
+
+  /// The next card's name (`AppTextStyleTokens.cardTitle`) takes up to two
+  /// balanced lines.
+  static const nextCardNameMaxLines = 2;
 
   static const cabinetTop = 324.0;
 
@@ -1606,6 +2891,7 @@ abstract final class MuseumTokens {
     fontFamily: 'Fredoka',
     fontSize: 11.5,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     color: Color(0xFF4A3008),
   );
 
@@ -1614,16 +2900,14 @@ abstract final class MuseumTokens {
     fontFamily: 'Nunito',
     fontSize: 11.0,
     fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
   );
 
-  /// A collected figurine bobs this far, dp.
-  static const cabinetCollectedIdleBob = 3.0;
+  /// The tab screen title (`AppTextStyleTokens.screenTitle`) …
+  static const titleLeft = 20.0;
 
-  /// Its period, varied between this and the max per figurine.
-  static const cabinetCollectedIdleMinPeriodMs = 2600;
-
-  /// `bob 3 dp, 2.6–3.4 s`.
-  static const cabinetCollectedIdleMaxPeriodMs = 3400;
+  /// … at this top.
+  static const titleTop = 62.0;
 }
 
 /// tokens.json `layout.records` (Records (10.6)), in dp on the 390×844
@@ -1633,11 +2917,80 @@ abstract final class RecordsTokens {
 
   static const statsGridGap = 10.0;
 
-  /// `radius 18, icon 36`.
   static const statsGridCellRadius = 18.0;
 
-  /// `radius 18, icon 36`.
-  static const statsGridCellIcon = 36.0;
+  static const statsGridCellPadding = EdgeInsets.symmetric(
+    vertical: 10.0,
+    horizontal: 12.0,
+  );
+
+  static const statsGridCellGap = 10.0;
+
+  static const statsGridCellIconTileSize = 36.0;
+
+  static const statsGridCellIconTileRadius = 12.0;
+
+  static const statsGridCellIconTileGlyph = 22.0;
+
+  /// A stat's value, tabular figures, one line.
+  static const statsGridCellValue = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 20.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
+  /// `Nunito 700 11.5/1.2 #8A5B3A`.
+  static const statsGridCellLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.5,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.2,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// `#DDF3E2, #2F7A3E`.
+  static const List<Color> statsGridCellTintsLevelsWon = [
+    Color(0xFFDDF3E2),
+    Color(0xFF2F7A3E),
+  ];
+
+  /// The tile's face and the doll mark's colour (`[#FFE9D2, #C4631E, doll mark
+  /// 16×24]`).
+  static const List<Color> statsGridCellTintsFamiliesCompleted = [
+    Color(0xFFFFE9D2),
+    Color(0xFFC4631E),
+  ];
+
+  /// The family counter's doll mark, not a glyph.
+  static const statsGridCellTintsFamiliesCompletedMarkSize = Size(16.0, 24.0);
+
+  /// `#F6E2C2, #6E4526`.
+  static const List<Color> statsGridCellTintsDollsNested = [
+    Color(0xFFF6E2C2),
+    Color(0xFF6E4526),
+  ];
+
+  /// `#FFF1C9, #8C5E12`.
+  static const List<Color> statsGridCellTintsDailies = [
+    Color(0xFFFFF1C9),
+    Color(0xFF8C5E12),
+  ];
+
+  /// `#FFE3D0, #E0632A`.
+  static const List<Color> statsGridCellTintsLongestStreak = [
+    Color(0xFFFFE3D0),
+    Color(0xFFE0632A),
+  ];
+
+  /// The tile's face (`[#FFF6E6, star art 26]`); it shows the star art.
+  static const List<Color> statsGridCellTintsStars = [Color(0xFFFFF6E6)];
+
+  /// The star art in the tile.
+  static const statsGridCellTintsStarsArtSize = 26.0;
 
   static const racesCardRowHeight = 56.0;
 
@@ -1670,11 +3023,28 @@ abstract final class RivalSelectTokens {
     fontFamily: 'Fredoka',
     fontSize: 12.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   static const startBottom = 44.0;
 
   static const startHeight = 60.0;
+
+  /// `#F3E6D2`.
+  static const lockedCardFace = Color(0xFFF3E6D2);
+
+  /// `inset 0 2px 4px rgba(90,45,15,0.15)`.
+  static const List<NestyShadow> lockedCardShadow = [
+    NestyShadow(color: Color(0x265A2D0F), inset: true, dy: 2.0, blur: 4.0),
+  ];
+
+  /// `inset 0 0 0 1.5px #E2CBA6`.
+  static const List<NestyShadow> lockedCardRing = [
+    NestyShadow(color: Color(0xFFE2CBA6), inset: true, spread: 1.5),
+  ];
+
+  /// `gradient.canvas`.
+  static const lockedCardPage = AppGradientTokens.canvas;
 }
 
 /// tokens.json `layout.replayCard` (replay win (10.5, 11.4)), in dp on the
@@ -1701,6 +3071,7 @@ abstract final class ReplayCardTokens {
     fontFamily: 'Nunito',
     fontSize: 14.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     color: Color(0xFF7A5234),
   );
 
@@ -1712,6 +3083,7 @@ abstract final class ReplayCardTokens {
     fontFamily: 'Fredoka',
     fontSize: 15.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     color: Color(0xFF8C5E12),
   );
 
@@ -1737,6 +3109,10 @@ abstract final class HintMiddleTokens {
   static const familyCounterFadeInMs = 150;
 
   static const fadeBackAfterHintMs = 0;
+
+  /// The hint arrow's highest bob point stays at or below this y, 4 dp under
+  /// the level pill; it moves down over the doll's head if needed (m7-4 5.4).
+  static const clampTop = 112.0;
 }
 
 /// tokens.json `layout.winTwinkles` (E.17: fx_twinkle above the scrim, behind
@@ -1788,6 +3164,7 @@ abstract final class ShopTokens {
     fontFamily: 'Fredoka',
     fontSize: 19.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     color: Color(0xFFFFFFFF),
   );
 
@@ -1808,6 +3185,27 @@ abstract final class ShopTokens {
     fontFamily: 'Fredoka',
     fontSize: 12.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+  );
+
+  /// `Fredoka 700 16/1.1, one line`.
+  static const cardNameSkin = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    height: 1.1,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `Fredoka 700 14/1.15, one line, ellipsis`.
+  static const cardNameTheme = TextStyle(
+    fontFamily: 'Fredoka',
+    fontSize: 14.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
+    height: 1.15,
+    leadingDistribution: TextLeadingDistribution.even,
   );
 
   /// Each skin's Shop card and detail panel colours, by catalog skin id
@@ -1855,6 +3253,13 @@ abstract final class ShopTokens {
       edge: Color(0xFFA6BFD8),
       caption: Color(0xFF2B4E73),
     ),
+  };
+
+  /// The caption chip of a skin whose caption would not read on its card (m7-4
+  /// 4.11: Space's white chip), by catalog skin id; other skins keep the
+  /// caption colour.
+  static const Map<String, ({Color face, Color text})> skinTags = {
+    'space': (face: Color(0xEBFFFFFF), text: Color(0xFF2A2766)),
   };
 }
 
@@ -1909,16 +3314,20 @@ abstract final class SettingsTokens {
   static const List<NestyShadow> colorSymbolCardsIdleRing = [
     NestyShadow(color: Color(0xFFE2C9A3), inset: true, spread: 2.0),
   ];
+
+  static const reduceMotionControlHeight = 48.0;
 }
 
-/// tokens.json `textLink` (F.4, e.g. Back to Home on 4.9), in dp on the
-/// 390×844 reference unless a member says otherwise.
+/// tokens.json `textLink` (F.4; m7-4: 48 dp hit box (the game rule), the look
+/// is unchanged), in dp on the 390×844 reference unless a member says
+/// otherwise.
 abstract final class TextLinkTokens {
   /// `Fredoka 700 16`.
   static const font = TextStyle(
     fontFamily: 'Fredoka',
     fontSize: 16.0,
     fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.displayFallback,
   );
 
   /// `#8A5B3A`.
@@ -1928,6 +3337,14 @@ abstract final class TextLinkTokens {
   static const pressed = Color(0xFF6E4526);
 
   static const underline = false;
+
+  static const minTapHeight = 48.0;
+
+  /// `#C4631E`.
+  static const accentColor = Color(0xFFC4631E);
+
+  /// `#A94F12`.
+  static const accentPressed = Color(0xFFA94F12);
 }
 
 /// The win card's star reveal, `ui_stars` (tokens.json `motion.stars`). It
@@ -2039,6 +3456,16 @@ abstract final class ToastTokens {
 
   /// tokens.json `motion.toast.badgeToastTop`.
   static const badgeToastTop = 60.0;
+
+  /// The app toast's motion top: the safe top + this (`safeTop − 1`).
+  /// `ToastLayoutTokens.appTopBelowSafeTop` is its resting place.
+  static const appTopOffset = -1.0;
+
+  /// tokens.json `motion.toast.relaxedOncePerLaunch`.
+  static const relaxedOncePerLaunch = true;
+
+  /// tokens.json `motion.toast.slotLimitOncePerLevel`.
+  static const slotLimitOncePerLevel = true;
 }
 
 /// Chapters' rows fade in one after another (tokens.json
@@ -2142,6 +3569,12 @@ abstract final class IconTokens {
   /// The `local_fire_department` glyph.
   static const longestStreak = 'local_fire_department';
 
+  /// The `sd_card_alert` glyph.
+  static const storageError = 'sd_card_alert';
+
+  /// The `inventory_2` glyph.
+  static const contentError = 'inventory_2';
+
   /// Every glyph use, by its tokens.json key.
   static const Map<String, String> glyphs = {
     'chapters': chapters,
@@ -2167,5 +3600,47 @@ abstract final class IconTokens {
     'dollsNested': dollsNested,
     'dailiesSolved': dailiesSolved,
     'longestStreak': longestStreak,
+    'storageError': storageError,
+    'contentError': contentError,
   };
+}
+
+/// The ribbons' tints (tokens.json `winRibbon`, `versus.ribbon`): fills are
+/// named uniquely per group (m7-4); the same names in ui_chapter_ribbon.
+/// `ui_win_ribbon` is tinted [defaultColors] (as authored) or, on the race's
+/// result cards (9.4, 9.5), [versusColors].
+abstract final class WinRibbonTokens {
+  /// The win ribbon as authored (tokens.json `winRibbon.default`).
+  static const defaultColors = RibbonColors(
+    band: Color(0xFFF28A3B),
+    edge: Color(0xFFC4631F),
+    tail: Color(0xFFE07A2E),
+    fold: Color(0xFF9E4A14),
+  );
+
+  /// The race's result ribbon (tokens.json `versus.ribbon`).
+  static const versusColors = RibbonColors(
+    band: Color(0xFF4E5FD9),
+    edge: Color(0xFF3242A8),
+    tail: Color(0xFF4250C6),
+    fold: Color(0xFF1F297F),
+  );
+
+  /// The label on the race ribbon (`#FFFFFF (5.3:1 on the band)`).
+  static const versusLabel = Color(0xFFFFFFFF);
+
+  /// The colour delegate's key path to the `band_fill` fills.
+  static const List<String> bandKeyPath = ['**', 'band_fill'];
+
+  /// The colour delegate's key path to the `edge_fill` fills.
+  static const List<String> edgeKeyPath = ['**', 'edge_fill'];
+
+  /// The colour delegate's key path to the `hi_fill` fills.
+  static const List<String> hiKeyPath = ['**', 'hi_fill'];
+
+  /// The colour delegate's key path to the `tail_fill` fills.
+  static const List<String> tailKeyPath = ['**', 'tail_fill'];
+
+  /// The colour delegate's key path to the `fold_fill` fills.
+  static const List<String> foldKeyPath = ['**', 'fold_fill'];
 }

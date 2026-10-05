@@ -41,7 +41,6 @@ void main() {
     'languageSheetTitle',
     'languageSheetDone',
     'languageName',
-    'languageComingSoon',
     // Daily
     'dailyStreakDays',
     'dailyStreakKeep',

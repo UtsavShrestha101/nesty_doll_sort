@@ -3,11 +3,17 @@ part of 'language_cubit.dart';
 @freezed
 abstract class LanguageState with _$LanguageState {
   const factory LanguageState({
-    /// The locale the app is rendered in (persisted).
-    @Default(SettingsDefaults.locale) String currentLanguageCode,
+    /// The language setting as persisted: [LocaleSetting.system] (follow
+    /// the phone; the default) or the code a sheet tap pinned.
+    @Default(SettingsDefaults.locale) String storedLanguageCode,
+
+    /// The language the app renders in: [storedLanguageCode] resolved by
+    /// [AppLocaleResolver] against the phone's languages and the catalogs
+    /// present. Always a supported storage-style code (`en`, `pt_BR`).
+    @Default(AppLocaleResolver.fallbackCode) String currentLanguageCode,
 
     /// The locale highlighted in a language picker before it's confirmed.
-    @Default(SettingsDefaults.locale) String selectedLanguageCode,
+    @Default(AppLocaleResolver.fallbackCode) String selectedLanguageCode,
     @Default(false) bool isLoading,
 
     /// The last [LanguageCubit.changeLanguage] failed to persist. The UI maps
@@ -18,8 +24,8 @@ abstract class LanguageState with _$LanguageState {
   const LanguageState._();
 
   /// [currentLanguageCode] as a [Locale]; accepts `pt_BR` style codes.
-  Locale get locale {
-    final parts = currentLanguageCode.split('_');
-    return parts.length > 1 ? Locale(parts[0], parts[1]) : Locale(parts[0]);
-  }
+  Locale get locale => AppLocaleResolver.localeFor(currentLanguageCode);
+
+  /// No language was picked: the app follows the phone's.
+  bool get followsPhone => storedLanguageCode == LocaleSetting.system;
 }

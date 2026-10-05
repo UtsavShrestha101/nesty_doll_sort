@@ -5,8 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/app/app.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/models/reduce_motion_mode.dart';
+import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/notifications/fake_notification_service.dart';
 import 'package:nesty_game/core/services/notifications/notification_service.dart';
 import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
@@ -16,6 +18,7 @@ import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/services/system_settings/fake_system_settings_service.dart';
 import 'package:nesty_game/core/services/system_settings/system_settings_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/home/text_link.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/features/settings/widgets/color_symbols_picker.dart';
@@ -210,27 +213,31 @@ void main() {
     expect(database.symbolsMode.dollSymbols.name, 'large');
   });
 
-  testWidgets('the Language row opens the 8.2 sheet: English selected, the '
-      'others disabled with "Coming soon"; Done closes it', (tester) async {
-    await pumpSettings(tester);
+  testWidgets(
+    'the Language row shows the language\'s own name and opens the '
+    '8.2 sheet; a row applies at once and the sheet stays open; Done closes it',
+    (tester) async {
+      await pumpSettings(tester);
 
-    await tester.tap(find.text('Language'));
-    await tester.pumpAndSettle();
-    expect(find.byType(LanguageSheet), findsOneWidget);
-    expect(find.text('Español'), findsOneWidget);
-    expect(find.text('Spanish'), findsOneWidget);
-    expect(find.text('Coming soon'), findsWidgets);
+      await tester.tap(find.text('Language'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LanguageSheet), findsOneWidget);
+      expect(find.text('Español'), findsOneWidget);
+      expect(find.text('Spanish'), findsOneWidget);
 
-    // Tapping a disabled language changes nothing.
-    await tester.tap(find.text('Español'));
-    await tester.pumpAndSettle();
-    expect(find.byType(LanguageSheet), findsOneWidget);
+      // Every launch language has a catalog: a tap applies at once, the sheet
+      // stays open and redraws in that language (frame 8.2).
+      await tester.tap(find.text('Español'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LanguageSheet), findsOneWidget);
+      expect(find.text('Listo'), findsOneWidget);
 
-    await tester.tap(find.text('Done'));
-    await tester.pumpAndSettle();
-    expect(find.byType(LanguageSheet), findsNothing);
-    expect(find.byType(SettingsPage), findsOneWidget);
-  });
+      await tester.tap(find.text('Listo'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LanguageSheet), findsNothing);
+      expect(find.byType(SettingsPage), findsOneWidget);
+    },
+  );
 
   testWidgets('the close button pops back to Home', (tester) async {
     await pumpSettings(tester);
@@ -329,6 +336,86 @@ void main() {
       expect(find.text('Time'), findsOneWidget);
     });
 
+    testWidgets('blocked: the pill and Turn off share one line at 390 dp '
+        '(frame 10.2f), and stack at 1.3x text', (tester) async {
+      await seedDailyUnlocked();
+      await pumpSettings(tester);
+      (get<NotificationService>() as FakeNotificationService).permissionAnswer =
+          NotificationPermission.denied;
+      await tester.tap(toggleFor('Daily reminder'));
+      await tester.pump(const Duration(milliseconds: 300));
+      final pill = tester.getRect(find.byType(SettingsPillButton));
+      final off = tester.getRect(find.byType(TextLink));
+      expect(
+        (pill.center.dy - off.center.dy).abs(),
+        lessThan(4),
+        reason: 'one line',
+      );
+      expect(off.left - pill.right, greaterThanOrEqualTo(18 - 1));
+    });
+
+    testWidgets('blocked: Turn off stops the reminder in the app, no phone '
+        'settings, and the row reads Off (10.2f, 10.2h, Q158)', (tester) async {
+      await seedDailyUnlocked();
+      await pumpSettings(tester);
+      (get<NotificationService>() as FakeNotificationService).permissionAnswer =
+          NotificationPermission.denied;
+      await tester.tap(toggleFor('Daily reminder'));
+      await tester.pump(const Duration(milliseconds: 300));
+      final system = get<SystemSettingsService>() as FakeSystemSettingsService;
+      expect(find.text('Turn off'), findsOneWidget);
+      expect(
+        tester.getSize(find.byType(TextLink)).height,
+        greaterThanOrEqualTo(48),
+      );
+
+      await tester.tap(find.text('Turn off'));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(system.openCalls, 0);
+      expect(get<DatabaseService>().reminder.on, isFalse);
+      expect(find.text('Turn off'), findsNothing);
+      expect(find.text('Open phone settings'), findsNothing);
+      expect(find.text('Time'), findsNothing);
+      final toggle = tester.widget<NestyToggle>(toggleFor('Daily reminder'));
+      expect(toggle.value, isFalse);
+    });
+
+    testWidgets('a time the store refused shows no "Reminder set" toast', (
+      tester,
+    ) async {
+      await seedDailyUnlocked();
+      final database = _RefusingReminderDatabase();
+      await get.unregister<DatabaseService>();
+      get.registerSingleton<DatabaseService>(database);
+      await pumpSettings(tester);
+      await tester.tap(toggleFor('Daily reminder'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Time'), findsOneWidget);
+
+      database.refuse = true;
+      await tester.tap(find.text('Time'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await pumpFor(tester, const Duration(milliseconds: 500));
+
+      expect(find.textContaining('Reminder set'), findsNothing);
+    });
+
+    testWidgets('a stored time shows the "Reminder set" toast', (tester) async {
+      await seedDailyUnlocked();
+      await pumpSettings(tester);
+      await tester.tap(toggleFor('Daily reminder'));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.text('Time'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await pumpFor(tester, const Duration(milliseconds: 500));
+
+      expect(find.textContaining('Reminder set'), findsOneWidget);
+    });
+
     testWidgets('off again cancels the schedule and hides the time row', (
       tester,
     ) async {
@@ -346,6 +433,34 @@ void main() {
     });
   });
 
+  group('phase 5: page frame (F-SET, F-SAFE)', () {
+    testWidgets('cream page, start-aligned title, and the list runs to the '
+        'bottom edge while its last row clears the home indicator', (
+      tester,
+    ) async {
+      await pumpSettings(tester);
+      expect(find.byType(CreamPage), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Settings').first).dx,
+        lessThan(120),
+        reason: 'start-aligned: the title sits left, not centred',
+      );
+      // A home indicator: the bottom inset is the view's, not the page's.
+      tester.view
+        ..padding = const FakeViewPadding(bottom: 34)
+        ..viewPadding = const FakeViewPadding(bottom: 34);
+      addTearDown(tester.view.resetPadding);
+      await tester.pump();
+      await tester.pump();
+      final list = find.byType(ListView);
+      expect(tester.getRect(list).bottom, 844, reason: 'to the screen edge');
+      await tester.drag(list, const Offset(0, -5000));
+      await tester.pumpAndSettle();
+      final lastRow = find.byType(SettingsSection).last;
+      expect(tester.getRect(lastRow).bottom, lessThanOrEqualTo(844 - 34));
+    });
+  });
+
   for (final size in screenSizes) {
     for (final scale in textScales) {
       testWidgets('fits ${size.width.toInt()}×${size.height.toInt()} at '
@@ -359,5 +474,16 @@ void main() {
         expectNoLayoutErrors(tester);
       });
     }
+  }
+}
+
+/// A store whose reminder write can be made to fail, as a full disk would.
+class _RefusingReminderDatabase extends FakeDatabaseService {
+  bool refuse = false;
+
+  @override
+  Future<void> setReminder(ReminderSettings reminder) async {
+    if (refuse) throw StateError('disk full');
+    await super.setReminder(reminder);
   }
 }

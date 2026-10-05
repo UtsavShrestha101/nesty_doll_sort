@@ -1,0 +1,22 @@
+{
+  "@@locale": "de",
+  "play": "Play",
+  "@play": {
+    "description": "A translation has no @key blocks."
+  },
+  "coins": "{count, plural, =1{1 pièce} other{{count} pièces}}",
+  "chaptersStarsSemantics": "{count, plural, one{{count} étoile} =1{une étoile} few{{count} étoiles} many{{count} étoiles}}",
+  "greeting": "Bonjour {nom}",
+  "pick": "{id, select, a{Alpha} c{Gamma} other{}}",
+  "raceRivalName": "{number, plural, one{Galet} =2{Bouton} other{Comète}}",
+  "chaptersKicker": "NIVEAUX {first}-{last} TODO",
+  "dailyStreakKeep": "Joue vite avant la fin pour garder ta série",
+  "raceLossTitle": "Trop lent ! Tu as perdu",
+  "raceComputerTag": "Robot",
+  "raceStripThinking": "En ligne…",
+  "badgeHint": "{badge, select, first_family{Emboîte une famille.} first_race{Bats le robot.} other{}}",
+  "reminderNotificationBody": "Ta série t’attend.",
+  "winStarsTarget": "Tu as échoué : {count} coups",
+  "raceWinBody": "{rival, plural, one{x} other{y}} {rival",
+  "extraKey": "Not in English"
+}

@@ -188,7 +188,6 @@ void main() {
         FxId.uiHintArrow,
         FxId.uiBoosterGlow,
         FxId.uiExtraSlot,
-        FxId.uiSpinner,
         FxId.uiTapHand,
         FxId.uiDragHand,
       ]) {
@@ -225,6 +224,11 @@ void main() {
           FxId.uiIntroTowers,
           FxId.uiIntroGlass,
           FxId.uiIntroIce,
+          // m7-4: frame 0, still (`motion.rivalReact.reducedMotion`).
+          FxId.uiRivalReact,
+          FxId.uiMuseumIdle,
+          // m7-4 4.17: frame 0, pulsing (`SpinnerPulse`).
+          FxId.uiSpinner,
         ]),
       );
       expect(

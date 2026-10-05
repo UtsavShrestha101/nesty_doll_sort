@@ -86,8 +86,19 @@ void main() {
             textScale: scale,
           );
           await expectAccessibleLayout(tester);
-          for (final label in ['Undo', 'Hint', '+Slot', 'Restart']) {
-            expect(find.text(label), findsOneWidget, reason: label);
+          // A booster's label, or its short form where the ladder took it
+          // (textFit), in the run's locale.
+          for (final names in [
+            {testL10n.boosterUndo, testL10n.boosterUndoShort},
+            {testL10n.boosterHint, testL10n.boosterHintShort},
+            {testL10n.boosterExtraSlot, testL10n.boosterExtraSlotShort},
+            {testL10n.restart, testL10n.restartShort},
+          ]) {
+            final found = names.fold<int>(
+              0,
+              (n, name) => n + find.text(name).evaluate().length,
+            );
+            expect(found, 1, reason: names.join(' / '));
           }
 
           board.callbacks.onIntent(const SlotTapped(red2));

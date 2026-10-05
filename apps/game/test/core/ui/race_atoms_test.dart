@@ -108,6 +108,26 @@ void main() {
     );
     final shadows = (box.decoration as BoxDecoration).boxShadow!;
     expect(shadows.map((s) => s.color), contains(AppColorTokens.versus));
-    expect(shadows.first.spreadRadius, 4);
+    // Flutter paints the last shadow on top: the white 4 dp ring over the
+    // indigo 7 dp one over the drop (CSS order reversed, frame 9.6).
+    expect(shadows.last.spreadRadius, 4);
+    expect(shadows.last.color, const Color(0xFFFFFDF7));
+    expect(shadows[1].spreadRadius, 7);
+    expect(shadows.first.blurRadius, greaterThan(0));
+  });
+
+  testWidgets('the plain ring paints over its drop shadow (9.3)', (
+    tester,
+  ) async {
+    await pumpUi(tester, const Center(child: RivalPortrait(number: 1)));
+    final box = tester.widget<DecoratedBox>(
+      find.descendant(
+        of: find.byType(RivalPortrait),
+        matching: find.byType(DecoratedBox),
+      ),
+    );
+    final shadows = (box.decoration as BoxDecoration).boxShadow!;
+    expect(shadows.first.blurRadius, greaterThan(0));
+    expect(shadows.last.spreadRadius, 2);
   });
 }

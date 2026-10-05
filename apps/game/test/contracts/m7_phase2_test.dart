@@ -9,6 +9,7 @@ import 'package:nesty_game/core/repository/default_level_resolver.dart';
 import 'package:nesty_game/core/repository/fake_catalog_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fixture_levels.dart';
+import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/generator/fake_level_generator_service.dart';
 import 'package:nesty_game/core/services/race/race_rules.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
@@ -418,7 +419,11 @@ void main() {
     test('lists the three rivals with their rewards, and begin stores the '
         'race', () async {
       final save = FakeSaveService(initial: unlockedDocument());
-      final cubit = RivalSelectCubit(save, FakeRemoteConfigService());
+      final cubit = RivalSelectCubit(
+        save,
+        FakeRemoteConfigService(),
+        FakeDatabaseService(),
+      );
       addTearDown(cubit.close);
       await cubit.load();
       expect(cubit.state.data!.rivals, const [
@@ -440,7 +445,11 @@ void main() {
 
     test('begins nothing while the mode is locked', () async {
       final save = FakeSaveService();
-      final cubit = RivalSelectCubit(save, FakeRemoteConfigService());
+      final cubit = RivalSelectCubit(
+        save,
+        FakeRemoteConfigService(),
+        FakeDatabaseService(),
+      );
       addTearDown(cubit.close);
       expect(cubit.begin(1), isNull);
       expect(save.document.race.rivals[0].raceNo, 0);

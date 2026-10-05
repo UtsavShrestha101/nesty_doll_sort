@@ -49,7 +49,6 @@ class Wordmark extends StatelessWidget {
   const Wordmark({
     this.size = WordmarkSize.large,
     this.dollRenderer,
-    this.dollShown = true,
     super.key,
   });
 
@@ -57,10 +56,6 @@ class Wordmark extends StatelessWidget {
 
   /// Draws the cherry doll; null uses the shared placeholder painter.
   final DollRenderer? dollRenderer;
-
-  /// False hides the cherry doll while its art is on the way; it fades in
-  /// when this turns true (the splash, Q58).
-  final bool dollShown;
 
   static final DollRenderer _placeholder = PlaceholderDollPainter();
 
@@ -168,13 +163,20 @@ class Wordmark extends StatelessWidget {
       bottom: bottom,
       width: width,
       height: height,
-      child: AnimatedOpacity(
-        opacity: dollShown ? 1 : 0,
+      // The placeholder doll draws from the first frame and crossfades to
+      // the art when it lands (phase 5 F-SPL, superseding Q58).
+      child: AnimatedSwitcher(
         duration: fade,
-        curve: UiMotionTokens.curveEaseOut,
+        switchInCurve: UiMotionTokens.curveEaseOut,
+        switchOutCurve: UiMotionTokens.curveEaseOut,
         child: Transform.rotate(
+          key: ValueKey(dollRenderer != null),
           angle: -8 * math.pi / 180,
+          // An explicit size: AnimatedSwitcher's Stack hands its child loose
+          // constraints, and a childless CustomPaint then collapses to 0x0
+          // (why the perched doll was invisible, phase 5 audit f1-1).
           child: CustomPaint(
+            size: Size(width, height),
             painter: DollPainter(
               renderer: dollRenderer ?? _placeholder,
               color: DollColor.red,

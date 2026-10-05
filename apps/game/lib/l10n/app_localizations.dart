@@ -5,7 +5,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_pt.dart';
+import 'app_localizations_tr.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,7 +100,18 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('de'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('hi'),
+    Locale('id'),
+    Locale('ja'),
+    Locale('pt'),
+    Locale('pt', 'BR'),
+    Locale('tr'),
+  ];
 
   /// Short product name shown on the splash screen. The final name is TBD (spec header).
   ///
@@ -124,11 +143,11 @@ abstract class AppLocalizations {
   /// **'Your phone is nearly full'**
   String get splashStorageTitle;
 
-  /// The splash's storage error line (frame 12.10). {megabytes} is `SplashCopy.storageMegabytes` (60, copy.md's number; Q157 asks the owner to confirm it). copy.md E `splash_storage_body`.
+  /// The splash's storage error line (frame 12.10). {size} is `SplashCopy.storageMegabytes` (60: the figure lives in code, not in the translations; Q157 asks the owner to confirm it). copy.md E `splash_storage_body`.
   ///
   /// In en, this message translates to:
-  /// **'Nesty needs about {megabytes} MB to set up the shelves. Free some space, then try again.'**
-  String splashStorageBody(int megabytes);
+  /// **'Nesty needs about {size} MB to set up the shelves. Free some space, then try again.'**
+  String splashStorageBody(int size);
 
   /// The splash's content error title (frame 12.11). copy.md E `splash_content_title`.
   ///
@@ -154,35 +173,59 @@ abstract class AppLocalizations {
   /// **'Level {level}'**
   String levelTitle(int level);
 
-  /// Tooltip for the gameplay pause button (spec §10.2 #3).
+  /// The gameplay pause button's tooltip and screen-reader label (spec §10.2 #3). copy.md A11y `a11y_pause`.
   ///
   /// In en, this message translates to:
   /// **'Pause'**
   String get pause;
 
-  /// Undo booster button label (spec §8).
+  /// Undo booster button label (spec §8). copy.md Short forms `booster_undo`.
   ///
   /// In en, this message translates to:
   /// **'Undo'**
   String get boosterUndo;
 
-  /// Hint booster button label (spec §8).
+  /// The Undo booster label's short form (textFit.boosterLabels). copy.md Short forms `booster_undo_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get boosterUndoShort;
+
+  /// Hint booster button label (spec §8). copy.md Short forms `booster_hint`.
   ///
   /// In en, this message translates to:
   /// **'Hint'**
   String get boosterHint;
 
-  /// Extra slot booster button label (spec §3.6, §8). Keep it short.
+  /// The Hint booster label's short form (textFit.boosterLabels). copy.md Short forms `booster_hint_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Hint'**
+  String get boosterHintShort;
+
+  /// Extra slot booster button label (spec §3.6, §8). Keep it short. copy.md Short forms `booster_slot`.
   ///
   /// In en, this message translates to:
   /// **'+Slot'**
   String get boosterExtraSlot;
 
-  /// Restart the current level (spec §2.4). Always free.
+  /// The +Slot booster label's short form (textFit.boosterLabels). The booster bar and frame 12.9 read +Slot; the sheets keep "+1 Slot" as their title. copy.md Short forms `booster_slot_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'+1'**
+  String get boosterExtraSlotShort;
+
+  /// Restart the current level (spec §2.4). Always free. copy.md Short forms `booster_restart`.
   ///
   /// In en, this message translates to:
   /// **'Restart'**
   String get restart;
+
+  /// The Restart booster label's short form (textFit.boosterLabels). copy.md Short forms `booster_restart_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get restartShort;
 
   /// The orange chip under the wordmark on the splash screen (frame 1.1, spec §10.2 #1). Keep it short and uppercase; it has +0.12 em letter spacing.
   ///
@@ -220,23 +263,29 @@ abstract class AppLocalizations {
   /// **'Play level {level}, {tier}'**
   String playLevelSemantics(int level, String tier);
 
-  /// Screen-reader label of the Home coin pill, whose green plus opens the Shop (frame 2.1, spec §10.2 #2).
+  /// Screen-reader label of the Home coin pill, whose green plus opens the Shop (frame 2.1, spec §10.2 #2). copy.md A11y `a11y_coins`.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 coin. Get more coins} other{{count} coins. Get more coins}}'**
+  /// **'{count, plural, =1{{count} coin. Opens the Shop.} other{{count} coins. Opens the Shop.}}'**
   String coinPillShopSemantics(int count);
 
-  /// Red tier badge on the level pill and the Home play button for hard levels (spec §6.6, frames 2.1, 2.2). Keep it very short and uppercase.
+  /// Red tier badge on the level pill and the Home play button for hard levels (spec §6.6, frames 2.1, 2.2). Keep it very short and uppercase. copy.md Short forms `tier_hard`.
   ///
   /// In en, this message translates to:
   /// **'HARD'**
   String get tierHard;
 
-  /// Purple tier badge on the level pill for super hard levels (spec §6.6, frame 4.4). Keep it very short and uppercase; the chip is tiny.
+  /// Purple tier badge on the level pill for super hard levels (spec §6.6, frame 4.4). Keep it very short and uppercase; the chip is tiny. copy.md Short forms `tier_super`.
   ///
   /// In en, this message translates to:
   /// **'SUPER HARD'**
   String get tierSuperHard;
+
+  /// The Super Hard pill's short form (textFit.hudPills). HARD and BONUS have no short form: they drop to their glyph. copy.md Short forms `tier_super_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'SUPER'**
+  String get tierSuperShort;
 
   /// A level tier's name in running text, e.g. the Pause card's "Level 56 · Hard" (spec §6.6, frame 3.9). {tier} is the nesty_core Tier id.
   ///
@@ -256,11 +305,11 @@ abstract class AppLocalizations {
   /// **'{done} / {total}'**
   String familyCounter(int done, int total);
 
-  /// Screen-reader label of the family counter (frame 2.2, spec §10.2 #3).
+  /// Screen-reader label of the family counter (frame 2.2, spec §10.2 #3). The one-family case (Level 1) reads "family"; every other count is copy.md's wording. copy.md A11y `a11y_family_counter`.
   ///
   /// In en, this message translates to:
-  /// **'{total, plural, =1{{done} of 1 family done} other{{done} of {total} families done}}'**
-  String familyCounterSemantics(int done, int total);
+  /// **'{total, plural, =1{{count} of {total} family complete} other{{count} of {total} families complete}}'**
+  String familyCounterSemantics(int count, int total);
 
   /// Screen-reader label of the HUD coin pill (frame 2.2, spec §7).
   ///
@@ -286,35 +335,47 @@ abstract class AppLocalizations {
   /// **'Bonus Level {level}'**
   String bonusLevelTitle(int level);
 
-  /// Screen-reader label of the round close button on cards and popups (frames 3.2, 3.9).
+  /// Screen-reader label of the round close button on cards and popups (frames 3.2, 3.9). copy.md A11y `a11y_close`.
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get closeSemantics;
 
-  /// Screen-reader label of the back arrow in screen headers (spec §10.2).
+  /// Screen-reader label of the back arrow in screen headers (spec §10.2). copy.md A11y `a11y_back`.
   ///
   /// In en, this message translates to:
   /// **'Back'**
   String get backSemantics;
 
-  /// Screen-reader label of a booster button whose badge shows how many are left (frame 2.2, spec §8). {booster} is its label (Undo, Hint, +Slot).
+  /// Screen-reader label of a booster with none left whose badge offers a rewarded video (frame 3.2, spec §8, §9.1). {booster} is its label. copy.md A11y `a11y_booster_ad`.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{{booster}, 1 left} other{{booster}, {count} left}}'**
-  String boosterCountSemantics(String booster, int count);
-
-  /// Screen-reader label of a booster with none left whose badge offers a rewarded ad (frame 3.2, spec §8, §9.1).
-  ///
-  /// In en, this message translates to:
-  /// **'{booster}, watch an ad for one more'**
+  /// **'{booster}, watch a video'**
   String boosterAdSemantics(String booster);
 
-  /// Screen-reader label of a booster with none left whose badge shows its coin price (frame 3.3, spec §8).
+  /// Screen-reader label of a booster with none left whose badge shows its coin price (frame 3.3, spec §8). {booster} is its label. copy.md A11y `a11y_booster_price`.
   ///
   /// In en, this message translates to:
-  /// **'{price, plural, =1{{booster}, 1 coin} other{{booster}, {price} coins}}'**
+  /// **'{price, plural, =1{{booster}, {price} coin} other{{booster}, {price} coins}}'**
   String boosterCoinSemantics(String booster, int price);
+
+  /// Screen-reader label of the Undo booster when its badge shows how many are left (frame 2.2, spec §8). copy.md A11y `a11y_booster_undo`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Undo, {count} left} other{Undo, {count} left}}'**
+  String boosterUndoCountSemantics(int count);
+
+  /// Screen-reader label of the Hint booster when its badge shows how many are left (frame 2.2, spec §8). copy.md A11y `a11y_booster_hint`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Hint, {count} left} other{Hint, {count} left}}'**
+  String boosterHintCountSemantics(int count);
+
+  /// Screen-reader label of the +1 Slot booster when its badge shows how many are left (frame 2.2, spec §8). Spoken as "Extra slot": a screen reader would read "+Slot" as "plus slot". copy.md A11y `a11y_booster_slot`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Extra slot, {count} left} other{Extra slot, {count} left}}'**
+  String boosterSlotCountSemantics(int count);
 
   /// Title of the banner shown when legal moves remain but the solver finds no win (frame 3.4, spec §2.4).
   ///
@@ -424,11 +485,17 @@ abstract class AppLocalizations {
   /// **'Connect to watch an ad'**
   String get connectToWatchAd;
 
-  /// The win ribbon, drawn over the ui_win_ribbon animation (frame 2.8, spec §10.2 #4). The band fits about 22 characters; longer text shrinks.
+  /// The win ribbon, drawn over the ui_win_ribbon animation (frame 2.8, spec §10.2 #4). The band fits about 22 characters; longer text shrinks. copy.md Short forms `win_title`.
   ///
   /// In en, this message translates to:
   /// **'Level Complete!'**
   String get winTitle;
+
+  /// The win ribbon's short form, used only when winTitle doesn't fit the band at its minimum scale (tokens.json textFit.winRibbon). copy.md Short forms `win_title_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete!'**
+  String get winTitleShort;
 
   /// The win screen's main button, to the next level (frame 2.8, spec §10.2 #4).
   ///
@@ -484,11 +551,17 @@ abstract class AppLocalizations {
   /// **'{figurine, select, classic{The Classic Family} sailor{The Sailor Family} baker{The Baker Family} astronaut{The Astronaut Family} gardener{The Gardener Family} snow{The Snow Family} circus{The Circus Family} musician{The Musician Family} royal{The Royal Family} explorer{The Explorer Family} other{}}'**
   String figurineName(String figurine);
 
-  /// The ribbon on a chapter's first level, drawn over the ui_chapter_ribbon animation, fading after about 2 s (frame 4.7, spec §7.1). {name} is chapterName. The band fits about 22 characters; longer text shrinks.
+  /// The ribbon on a chapter's first level, drawn over the ui_chapter_ribbon animation, fading after about 2 s (frame 4.7, spec §7.1). {name} is chapterName. The band fits about 22 characters; longer text shrinks. copy.md Short forms `chapter_ribbon`.
   ///
   /// In en, this message translates to:
   /// **'CHAPTER {number} · {name}'**
   String chapterRibbon(int number, String name);
+
+  /// The chapter ribbon's short form (textFit.chapterRibbon) when chapterRibbon doesn't fit: the name alone. {name} is chapterName. copy.md Short forms `chapter_ribbon_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}'**
+  String chapterRibbonShort(String name);
 
   /// A chapter's name, which is its board theme's name (spec §7.1, §12.4; frames 4.6, 4.7, 7.7, 10.4). {theme} is the theme id. ch07–ch10 are copy.md G.4 `7`…`10`; tokens.json `theme.chapters.N.name` repeats them (checked by design_tokens_codegen_test).
   ///
@@ -508,13 +581,13 @@ abstract class AppLocalizations {
   /// **'Resume'**
   String get resume;
 
-  /// Pause card tile that leaves the level for Home (frame 3.9, spec §10.2 #14).
+  /// Pause card tile that leaves the level for Home (frame 3.9, spec §10.2 #14). copy.md Short forms `tab_home`.
   ///
   /// In en, this message translates to:
   /// **'Home'**
   String get home;
 
-  /// Pause card tile and Home gear that open Settings (frames 2.1, 3.9, spec §10.2 #13). Also the gear's screen-reader label.
+  /// Pause card tile and Home gear that open Settings (frames 2.1, 3.9, spec §10.2 #13). Also the gear's screen-reader label. copy.md A11y `a11y_settings`.
   ///
   /// In en, this message translates to:
   /// **'Settings'**
@@ -592,17 +665,35 @@ abstract class AppLocalizations {
   /// **'Chapter {number} · Levels {start}–{end}'**
   String devLevelPickerChapterHeader(int number, int start, int end);
 
-  /// The shell's bottom-nav Shop tab label (frame 2.1; m3 §10.1, §10.9).
+  /// The shell's bottom-nav Shop tab label (frame 2.1; m3 §10.1, §10.9). copy.md Short forms `tab_shop`.
   ///
   /// In en, this message translates to:
   /// **'Shop'**
   String get navShop;
 
-  /// The shell's bottom-nav Museum tab label (frame 2.1; m3 §10.1, §10.9).
+  /// The Home tab label's short form (textFit.tabBar). copy.md Short forms `tab_home_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHomeShort;
+
+  /// The Shop tab label's short form (textFit.tabBar). copy.md Short forms `tab_shop_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get navShopShort;
+
+  /// The shell's bottom-nav Museum tab label (frame 2.1; m3 §10.1, §10.9). copy.md Short forms `tab_museum`.
   ///
   /// In en, this message translates to:
   /// **'Museum'**
   String get navMuseum;
+
+  /// The Museum tab label's short form (textFit.tabBar). copy.md Short forms `tab_museum_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'Museum'**
+  String get navMuseumShort;
 
   /// Home's Daily Puzzle tile label (frame 2.1; m3 §10.3).
   ///
@@ -628,13 +719,13 @@ abstract class AppLocalizations {
   /// **'{done}/{total}'**
   String homeMuseumProgress(int done, int total);
 
-  /// Home's Daily tile before Level 2 (frame 12.3); "2" is the daily's fixed unlock level (Q67). copy.md E `daily_locked`.
+  /// Home's Daily tile, and the Daily screen, before the daily opens (frames 12.3, 12.2). {level} is `DailyService.unlockAfterLevel` (2: the level to win first, Q67). copy.md E `daily_locked`.
   ///
   /// In en, this message translates to:
-  /// **'After Level 2'**
-  String get homeDailyLocked;
+  /// **'After Level {level}'**
+  String homeDailyLocked(int level);
 
-  /// Home's Play button badge on a bonus level (frame 12.2). copy.md E `home_bonus_badge`.
+  /// Home's Play button badge on a bonus level (frame 12.2). copy.md E `home_bonus_badge`. Also copy.md Short forms `tier_bonus`.
   ///
   /// In en, this message translates to:
   /// **'BONUS'**
@@ -730,19 +821,25 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get languageSheetDone;
 
-  /// A launch language's name in the UI language, next to its autonym, which is data rather than ARB since it reads the same in every locale (frame 8.2, m3 §10.2). {language} is the locale code.
+  /// A launch language's name in the UI language, next to its autonym, which is data rather than ARB since it reads the same in every locale (frame 8.2, m3 §10.2). {language} is the locale code. The English row draws no name, but a screen reader and Settings' fallback use the en branch.
   ///
   /// In en, this message translates to:
-  /// **'{language, select, es{Spanish} pt_BR{Portuguese} id{Indonesian} hi{Hindi} de{German} fr{French} tr{Turkish} ja{Japanese} other{}}'**
+  /// **'{language, select, en{English} es{Spanish} pt_BR{Portuguese} id{Indonesian} hi{Hindi} de{German} fr{French} tr{Turkish} ja{Japanese} other{}}'**
   String languageName(String language);
 
-  /// Screen-reader note on a language sheet row that is disabled until its ARB file exists (frame 8.2, TODO(M7)).
+  /// Joins two parts of one screen-reader label, such as a level's number and its stars (spec §16). Each language writes its own separator (Japanese uses 、). A longer label folds its parts through this one pair at a time.
   ///
   /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get languageComingSoon;
+  /// **'{first}, {second}'**
+  String a11yJoinList(String first, String second);
 
-  /// Screen-reader label of an unselected language sheet row (frame 8.2, spec §16): the language's own name, then its languageName, or languageComingSoon when the row is disabled.
+  /// Joins two sentences of one screen-reader label (a card's title, then its explanation; spec §16). Each language writes its own full stop (Japanese uses 。 with no space). Folded through this one pair at a time.
+  ///
+  /// In en, this message translates to:
+  /// **'{first}. {second}'**
+  String a11yJoinSentences(String first, String second);
+
+  /// Screen-reader label of an unselected language sheet row (frame 8.2, spec §16): the language's own name, then its languageName. The selected row is read by its own name alone.
   ///
   /// In en, this message translates to:
   /// **'{autonym}, {detail}'**
@@ -784,6 +881,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No freeze} =1{1 freeze} other{{count} freezes}}'**
   String dailyFreezes(int count);
 
+  /// Screen-reader label of the Daily streak card's freezes (frame 5.1). Visible: dailyFreezes. copy.md A11y `a11y_freezes` says "{count} streak freeze left"; "left" is the respect rules' scarcity word (spec-prop §1.1, E1), so the string keeps the rule and drops the word (an owner question).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} streak freeze} other{{count} streak freezes}}'**
+  String dailyFreezesSemantics(int count);
+
   /// Prefix on the 7-day strip's day-7 chest label (frame 5.1).
   ///
   /// In en, this message translates to:
@@ -814,25 +917,25 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Play, 1 coin} other{Play, {count} coins}}'**
   String dailyPlaySemantics(int count);
 
-  /// The 7-day strip's chest row caption (frame 5.1).
+  /// The 7-day strip's chest row caption (frame 5.1). {count} is the chest's coins (the app fills it). copy.md E `daily_chest_title`.
   ///
   /// In en, this message translates to:
-  /// **'Day 7 chest · {coins} coins'**
-  String dailyChestRow(int coins);
+  /// **'{count, plural, =1{Day 7 chest · {count} coin} other{Day 7 chest · {count} coins}}'**
+  String dailyChestRow(int count);
 
-  /// Days left to the Day 7 chest, not counting today (frame 5.5: dailyDone scene, "2 days to go"; m3 §8.4).
+  /// The Daily chest row's days still to go (frame 5.1). {count} is the days. copy.md E `daily_chest_to_go`.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 day to go} other{{count} days to go}}'**
   String dailyChestToGo(int count);
 
-  /// Days left to the Day 7 chest, counting today (frame 5.1, "3 days to go, counting today"; m3 §8.4).
+  /// The Daily chest row's days still to go while today's puzzle is unsolved (frame 5.1). {count} is the days. copy.md E `daily_chest_to_go_today`.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 day to go, counting today} other{{count} days to go, counting today}}'**
   String dailyChestToGoToday(int count);
 
-  /// The 7-day strip's chest row once the Day 7 chest has been collected (frame 5.6: dailyChest scene, "chestSub: 'Opened today'").
+  /// The Daily chest row once the chest was opened today (frame 5.1). copy.md E `daily_chest_opened`.
   ///
   /// In en, this message translates to:
   /// **'Opened today'**
@@ -970,6 +1073,12 @@ abstract class AppLocalizations {
   /// **'Next family'**
   String get museumNextFamily;
 
+  /// museumNextFamily as the card's capitalised kicker (frame 6.1). Each language writes its own capitals (Turkish keeps İ and I apart), so the code never changes the case of a string.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT FAMILY'**
+  String get museumNextFamilyKicker;
+
   /// A figurine's cabinet label once earned, e.g. "Classic Family" (frame 6.1). {name} is figurineShortName.
   ///
   /// In en, this message translates to:
@@ -1018,7 +1127,7 @@ abstract class AppLocalizations {
   /// **'Finish Chapter {number} to bring this family home.'**
   String museumLockedText(int number);
 
-  /// The Museum's one-line explainer (frame 6.1). {levels} is a chapter's level count (20 in the bundle; the app fills it). copy.md G.10 `museum_intro`.
+  /// The Museum's one-line explainer (frame 6.1). {levels} is a chapter's level count (ChapterInfo.levelsPerChapter, 20 in the bundle; the app fills it). copy.md G.10 `museum_intro`.
   ///
   /// In en, this message translates to:
   /// **'Every chapter has a doll family. Win all {levels} of its levels to bring that family home.'**
@@ -1030,11 +1139,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 level to go} other{{count} levels to go}}'**
   String museumLevelsToGo(int count);
 
-  /// A locked cabinet shelf's one-line label: its chapter and level range (frame 6.1). copy.md G.10 `museum_locked_shelf`.
+  /// The count chip on the Museum's next-family niche (frame 6.1). {count} is the levels still to win. The two forms read alike in English; translators may differ. copy.md G.10 `museum_next_chip`.
   ///
   /// In en, this message translates to:
-  /// **'Chapter {chapter} · Levels {first}–{last}'**
-  String museumLockedShelfLabel(int chapter, int first, int last);
+  /// **'{count, plural, =1{{count} to go} other{{count} to go}}'**
+  String museumNextChip(int count);
 
   /// A locked shelf's label where one line is too narrow. copy.md G.10 `museum_locked_shelf_short`.
   ///
@@ -1096,11 +1205,11 @@ abstract class AppLocalizations {
   /// **'Equip'**
   String get shopEquip;
 
-  /// A Shop card's Owned state. Not in copy.md m7-3 (TODO(design): ask for it in the next copy request).
+  /// A Shop skin card's screen-reader value for a skin the player owns but has not equipped, read after its name; the card itself shows Equip (frame 7.3). copy.md A11y `a11y_skin_owned`.
   ///
   /// In en, this message translates to:
   /// **'Owned'**
-  String get shopOwned;
+  String get skinOwnedSemantics;
 
   /// A skin's display name (frames 7.3, 7.4, 7.4b). {skin} is the catalog skin id with `-` as `_` (an ICU select key can't hold `-`: `forest-bear` is `forest_bear`; `CatalogL10n.skinNameOf` maps it). Forest Bear is copy.md H `forest_bear_name`; the others are M3's names.
   ///
@@ -1174,7 +1283,7 @@ abstract class AppLocalizations {
   /// **'Go to Shop'**
   String get notEnoughCoinsGoToShop;
 
-  /// A dialog's Not now (NotEnoughCoinsDialog). copy.md G.10 `coins_needed_later`.
+  /// A dialog's secondary "Not now" button: NotEnoughCoinsDialog, the New rival unlocked card and the reminder's denied card. It is deliberately not under a respect-test prefix (its "now" is the opposite of urgency). copy.md G.10 `coins_needed_later`. copy.md G.5 `rival_unlocked_later`. copy.md G.7 `reminder_not_now`.
   ///
   /// In en, this message translates to:
   /// **'Not now'**
@@ -1246,7 +1355,7 @@ abstract class AppLocalizations {
   /// **'Adds one empty stand for this level.'**
   String get buySlotText;
 
-  /// L1's tutorial step 1 title (frame 1.3).
+  /// L1's tutorial step 1 title (frames 1.3, 10.8b). copy.md E `tut_step_1_title`.
   ///
   /// In en, this message translates to:
   /// **'Tap the small doll'**
@@ -1258,25 +1367,25 @@ abstract class AppLocalizations {
   /// **'STEP {step} OF {total}'**
   String tutorialStepChip(int step, int total);
 
-  /// L1's tutorial step 1 body (frame 1.3).
+  /// L1's tutorial step 1 body (frames 1.3, 10.8b). copy.md E `tut_step_1_body`.
   ///
   /// In en, this message translates to:
   /// **'Dolls nest into the same color, one size bigger.'**
   String get tutorialStep1Text;
 
-  /// L1's tutorial step 2 title (frame 1.4).
+  /// L1's tutorial step 2 title (frames 1.4, 10.8b). copy.md E `tut_step_2_title`.
   ///
   /// In en, this message translates to:
   /// **'Now tap the big one'**
   String get tutorialStep2Title;
 
-  /// L1's tutorial step 2 body (frame 1.4).
+  /// L1's tutorial step 2 body (frames 1.4, 10.8b). copy.md E `tut_step_2_body`.
   ///
   /// In en, this message translates to:
   /// **'The small doll drops inside with a clack.'**
   String get tutorialStep2Text;
 
-  /// Level 1's tutorial step 3 title (frame 10.8b). copy.md E `tut_step_3_title`.
+  /// L1's tutorial step 3 title (frames 1.5, 10.8b). copy.md E `tut_step_3_title`.
   ///
   /// In en, this message translates to:
   /// **'Finish the family'**
@@ -1287,6 +1396,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Put the last doll in. A family is done when every size is nested.'**
   String get tutorialStep3Text;
+
+  /// Screen-reader announcement of a tutorial step's card (frames 1.3-1.5). {step} is 1-3, {title} the step's title (tutorialStep1Title...). copy.md A11y `a11y_tut_step`.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of 3. {title}'**
+  String tutorialStepSemantics(int step, String title);
 
   /// L2's tutorial swallow-move chip (frame 1.6).
   ///
@@ -1390,7 +1505,7 @@ abstract class AppLocalizations {
   /// **'Next: Chapter {number} · {name}'**
   String chapterCompleteNext(int number, String name);
 
-  /// The generating card's line under `ui_spinner` while a level is made (frame 12.5). Not in copy.md m7-3: frame 12.5's own text (ui-spec C8; TODO(design): ask for its id).
+  /// The generating card's line under `ui_spinner` while a level is made (frame 12.5). copy.md E `gen_busy`.
   ///
   /// In en, this message translates to:
   /// **'Setting up the shelves…'**
@@ -1456,25 +1571,31 @@ abstract class AppLocalizations {
   /// **'Play'**
   String get chaptersLevelPlay;
 
-  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  /// A won Chapters level cell's screen-reader label (frame 10.4, spec §16). {count} is the cell's stars (1-3), {best} its best moves. copy.md A11y `a11y_level_won`.
   ///
   /// In en, this message translates to:
-  /// **'{moves, plural, =1{Level {level}, won, best 1 move} other{Level {level}, won, best {moves} moves}}'**
-  String chaptersLevelSemanticsWon(int level, int moves);
+  /// **'{count, plural, =1{Level {level}, {count} star. Best {best} moves.} other{Level {level}, {count} stars. Best {best} moves.}}'**
+  String chaptersLevelSemanticsWon(int level, int count, int best);
 
-  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  /// A won Chapters level cell's screen-reader label when the save holds no best or stars for it (a save from before they were kept). Not in copy.md m7-4: the fallback beside a11y_level_won.
   ///
   /// In en, this message translates to:
   /// **'Level {level}, won'**
   String chaptersLevelSemanticsWonNoBest(int level);
 
-  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  /// A won Chapters level cell's screen-reader label when the save holds a best but no stars for it (a level without a par). Not in copy.md m7-4: the fallback beside a11y_level_won, in its words.
   ///
   /// In en, this message translates to:
-  /// **'Level {level}, play next'**
+  /// **'{best, plural, =1{Level {level}, won. Best {best} move.} other{Level {level}, won. Best {best} moves.}}'**
+  String chaptersLevelSemanticsWonBestOnly(int level, int best);
+
+  /// The Chapters level cell for the level to play next (frame 10.4, spec §16). copy.md A11y `a11y_level_current`.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, next to play'**
   String chaptersLevelSemanticsCurrent(int level);
 
-  /// A Chapters level cell's screen-reader label (spec §16). Not in copy.md m7-3: a screen-reader label.
+  /// A locked Chapters level cell's screen-reader label (spec §16). copy.md A11y `a11y_level_locked`.
   ///
   /// In en, this message translates to:
   /// **'Level {level}, locked'**
@@ -1498,7 +1619,7 @@ abstract class AppLocalizations {
   /// **'Levels won'**
   String get recordsLevelsWon;
 
-  /// Records' families cell label (frame 10.6), under the count of every family completed (`records.families`, spec-prop §7.9 "families completed"). copy.md G.10 `records_families` reads "Families home" with the value `records_families_value` "{count} of 10", which counts the Museum's figurines; the rule counts every family a won board completed (212 in spec-prop's example), so "of 10" read "2 of 10" after two wins with the Museum empty (the phase-4 device run, 2026-09-30). The rule's words until the owner settles it (Q159).
+  /// Records' families cell label (frame 10.6), under the lifetime count of every family a won board completed, shown with the family counter's doll mark (`records.families`, spec-prop §7.9). It is not the Museum's "of 10" count: `records_families_value` is withdrawn (Q159). copy.md G.10 `records_families`.
   ///
   /// In en, this message translates to:
   /// **'Families completed'**
@@ -1552,23 +1673,23 @@ abstract class AppLocalizations {
   /// **'{badge, select, first_family{You nested your first family.} glass_breaker{You opened your first glass case.} ice_melter{You freed a doll from the ice.} tall_order{You won a level with size-5 dolls.} grand_nest{You won a level with size-6 dolls.} level_100{You won level 100.} level_200{You won level 200, the very last one.} dailies_7{You solved 7 daily puzzles.} dailies_30{You solved 30 daily puzzles.} first_race{You beat the computer in a race.} all_rivals{You beat every computer rival.} museum_full{Every family is home in your Museum.} other{}}'**
   String badgeLine(String badge);
 
-  /// A locked badge's screen-reader hint: how to earn it, in a few words (spec §16). {badge} is BadgeId.id. Not in copy.md m7-3: the visible locked line is badgeLockedLine.
+  /// A locked badge's how-to line, read after badgeSemanticsLocked and by nothing else (frame 10.6, spec §16). {badge} is BadgeId.id. {level} and {count} are the rule's numbers (BadgeRules: level 100 or 200 won; 7 or 30 dailies), so a tuning change can't contradict the copy. The ids are the select cases: `<badge>_how`. copy.md A11y `first_family_how`, `glass_breaker_how`, `ice_melter_how`, `tall_order_how`, `grand_nest_how`, `level_100_how`, `level_200_how`, `dailies_7_how`, `dailies_30_how`, `first_race_how`, `all_rivals_how`, `museum_full_how`.
   ///
   /// In en, this message translates to:
-  /// **'{badge, select, first_family{Complete a family} glass_breaker{Open a glass case} ice_melter{Melt the ice on a stand} tall_order{Win a level with size-5 dolls} grand_nest{Win a level with size-6 dolls} level_100{Win Level 100} level_200{Win Level 200} dailies_7{Solve 7 daily puzzles} dailies_30{Solve 30 daily puzzles} first_race{Win a race against the computer} all_rivals{Beat every computer rival} museum_full{Bring every Museum family home} other{}}'**
-  String badgeHint(String badge);
+  /// **'{badge, select, first_family{Nest a whole family.} glass_breaker{Open a glass case.} ice_melter{Free a doll from the ice.} tall_order{Win a level with size-5 dolls.} grand_nest{Win a level with size-6 dolls.} level_100{Win level {level}.} level_200{Win level {level}.} dailies_7{Solve {count} daily puzzles.} dailies_30{Solve {count} daily puzzles.} first_race{Beat the computer in a race.} all_rivals{Beat every computer rival.} museum_full{Bring every family home to your Museum.} other{}}'**
+  String badgeHint(String badge, int level, int count);
 
-  /// An earned badge's screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  /// An earned badge's screen-reader label (frame 10.6). {badge} is badgeName. copy.md A11y `a11y_badge_earned`.
   ///
   /// In en, this message translates to:
-  /// **'{name}, earned'**
-  String badgeSemanticsEarned(String name);
+  /// **'{badge}, earned'**
+  String badgeSemanticsEarned(String badge);
 
-  /// A locked badge's screen-reader label with badgeHint. Not in copy.md m7-3: a screen-reader label.
+  /// A locked badge's screen-reader label (frame 10.6). {badge} is badgeName, {how} is badgeHint, the how-to line only a screen reader hears; the visible line stays badgeLockedLine. copy.md A11y `a11y_badge_locked`.
   ///
   /// In en, this message translates to:
-  /// **'{name}, not earned yet. {hint}'**
-  String badgeSemanticsLocked(String name, String hint);
+  /// **'{badge}, not earned yet. {how}'**
+  String badgeSemanticsLocked(String badge, String how);
 
   /// The toast when a win earns a badge, at top 60 over the result card, one at a time (Q122, Q136; frame 10.6). {badge} is badgeName. copy.md G.8 `badge_earned_toast`.
   ///
@@ -1642,11 +1763,17 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{+1 hint} other{+{count} hints}}'**
   String chestContentsHint(int count);
 
-  /// A chest's contents as one screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  /// A chest's contents as one screen-reader phrase, joined by a comma ("100 coins, 1 hint"), for chestSemantics' {contents}. A coins-only chest uses coinsSemantics. Not in copy.md m7-4: copy.md says the game joins the chip labels with commas; this key does the joining so a locale controls its own separator.
   ///
   /// In en, this message translates to:
-  /// **'{coins, plural, =1{1 coin} other{{coins} coins}} and {hints, plural, =1{1 hint} other{{hints} hints}}'**
+  /// **'{coins, plural, =1{{coins} coin} other{{coins} coins}}, {hints, plural, =1{{hints} hint} other{{hints} hints}}'**
   String chestContentsSemantics(int coins, int hints);
+
+  /// A chest's screen-reader label on the milestone and streak chest cards (frames 10.3, 5.6). {contents} is chestContentsSemantics (or coinsSemantics for a coins-only chest). copy.md A11y `a11y_chest_contents`.
+  ///
+  /// In en, this message translates to:
+  /// **'Chest. Inside: {contents}.'**
+  String chestSemantics(String contents);
 
   /// A chest card's Open button (frames 10.3b, 5.6). copy.md G.9 `chest_open`.
   ///
@@ -1672,7 +1799,7 @@ abstract class AppLocalizations {
   /// **'Relaxed mode is on. Undo as often as you like.'**
   String get relaxedModeOn;
 
-  /// Settings' Reduce motion row with its Off · On · System control (frame 10.2e). copy.md G.7 `settings_reduce_motion`.
+  /// Settings' Reduce motion row with its Off · On · System control (frame 10.2e). copy.md G.7 `settings_reduce_motion`. It is also the segmented control's group label for a screen reader. copy.md A11y `a11y_reduce_motion_group`.
   ///
   /// In en, this message translates to:
   /// **'Reduce motion'**
@@ -1705,44 +1832,50 @@ abstract class AppLocalizations {
   /// The Out of moves sheet's Undo row once the free undos are spent (frame 12.8). {count} is free_undos_per_level (2 by default; the app fills it). copy.md E `oom_undo_spent`.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Your 1 free undo is used} other{Your {count} free undos are used}}'**
+  /// **'{count, plural, =1{Your {count} free undo is used} other{Your {count} free undos are used}}'**
   String oomUndoSpent(int count);
 
-  /// The toast when the level's last +1 Slot lands (frame 12.9). {count} is LayoutLimits.maxExtraSlots (2). copy.md E `slot_limit`.
+  /// The toast when the level's last +1 Slot lands (frame 12.9). {count} is LayoutLimits.maxExtraSlots (2; the app fills it). copy.md E `slot_limit`.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{One extra slot is the most for one level.} =2{Two extra slots is the most for one level.} other{{count} extra slots is the most for one level.}}'**
+  /// **'{count, plural, =1{One extra slot is the most for one level.} other{{count} extra slots is the most for one level.}}'**
   String extraSlotLimitToast(int count);
 
-  /// Screen-reader label of the Undo booster with Relaxed mode on (its badge shows the `all_inclusive` glyph; spec §16). {booster} is boosterUndo. copy.md G.9 `a11y_undo_unlimited`.
+  /// Screen-reader label of the Undo booster with Relaxed mode on (its badge shows the `all_inclusive` glyph; spec §16). copy.md A11y `a11y_undo_unlimited`.
   ///
   /// In en, this message translates to:
-  /// **'{booster}, unlimited'**
-  String boosterUndoUnlimitedSemantics(String booster);
+  /// **'Undo, unlimited'**
+  String get boosterUndoUnlimitedSemantics;
 
-  /// The chip on the Out of Moves sheet's Undo row in Relaxed mode: the `all_inclusive` glyph and this word (frame 10.9b). Not in copy.md m7-3: the frame's text; the row's own line is oomUndoFreeUnlimited.
+  /// The chip on the Out of Moves sheet's Undo row in Relaxed mode: the `all_inclusive` glyph and this word (frame 10.9b). The row's own line is oomUndoFreeUnlimited. copy.md G.9 `relaxed_free_chip`.
   ///
   /// In en, this message translates to:
   /// **'Free'**
   String get oomUndoFreeChip;
 
-  /// Screen-reader label of the +1 Slot booster at its limit: its sunk face shows "2/2" (frame 12.9; spec §16). Not in copy.md m7-3: the frame's badge said aloud.
+  /// Screen-reader label of the +1 Slot booster at its limit: its sunk face shows "2/2" (frame 12.9; spec §16). {count} is the slots used, {total} LayoutLimits.maxExtraSlots. copy.md A11y `a11y_booster_slot_used`.
   ///
   /// In en, this message translates to:
-  /// **'{booster}, {used} of {total} used'**
-  String boosterLimitSemantics(String booster, int used, int total);
+  /// **'+Slot, {count} of {total} used'**
+  String boosterLimitSemantics(int count, int total);
 
-  /// The green tag over the Hint booster as a chest's hint sprite lands on it (frame 10.3d). Not in copy.md m7-3: the frame's text.
+  /// The green tag over a booster as a chest's sprite lands on it (frame 10.3d). {count} is the number gained. copy.md E `chest_gain_tag`.
   ///
   /// In en, this message translates to:
   /// **'+{count}'**
   String hintGainedTag(int count);
 
-  /// Screen-reader hint on the Restart booster while it glows because the level looks stuck with nothing to undo (frame 12.7: Restart's label gains this hint). Not in copy.md m7-3: ui-spec-game 12.7.
+  /// Screen-reader label of the Restart booster while it glows because the level looks stuck with nothing to undo (frame 12.7): nothing reads "Suggested" on screen, the ring alone marks it. {booster} is the Restart label. copy.md A11y `a11y_booster_suggested`.
   ///
   /// In en, this message translates to:
-  /// **'Suggested'**
-  String get restartSuggestedHint;
+  /// **'{booster}, suggested'**
+  String boosterSuggestedSemantics(String booster);
+
+  /// Screen-reader label of the Restart booster's button (frame 2.2, spec §2.4); its visible label is `restart`. copy.md A11y `a11y_booster_restart`.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart the level'**
+  String get boosterRestartSemantics;
 
   /// Home's vs Computer tile (frames 2.1, 9.1). copy.md G.5 `home_tile_versus`.
   ///
@@ -1750,7 +1883,7 @@ abstract class AppLocalizations {
   /// **'vs Computer'**
   String get homeVsComputerTile;
 
-  /// Home's vs Computer tile while it is locked (frame 9.1b): {level} is race_unlock_level (20 by default; the copy's "20" is the Remote Config value, so the app fills it). copy.md G.5 `rival_locked_mode`.
+  /// Home's vs Computer tile while it is locked (frame 9.1b). {level} is `race_unlock_level` (20 by default; the app fills it from Remote Config). copy.md G.5 `rival_locked_mode`.
   ///
   /// In en, this message translates to:
   /// **'After Level {level}'**
@@ -1792,16 +1925,16 @@ abstract class AppLocalizations {
   /// **'{number, plural, =1{Pebble} =2{Button} other{Comet}}'**
   String raceRivalName(int number);
 
-  /// A computer rival's one-line personality on its select card, by rival number 1-3 (frame 9.2). It describes the computer, never the player: respect_copy_test exempts rival 3's "Quick" for this key only (phase 4 decision on Q-P4-2). copy.md G.5 `rival_n_personality`.
+  /// A computer rival's one-line personality on its select card, by rival number 1-3 (frame 9.2). It describes the computer, never the player, and uses none of the respect rules' denied words. copy.md G.5 `rival_1_personality`, `rival_2_personality`, `rival_3_personality`.
   ///
   /// In en, this message translates to:
-  /// **'{number, plural, =1{Takes its time and enjoys every doll along the way.} =2{Checks each move twice before it makes it.} other{Quick, tidy and hard to catch.}}'**
+  /// **'{number, plural, =1{Takes its time and enjoys every doll along the way.} =2{Checks each move twice, then makes it.} other{Lively, tidy and hard to catch.}}'**
   String raceRivalBlurb(int number);
 
-  /// A computer rival's skill label on its select card, by rival number 1-3: rival 1 plays like the casual bot at 3 s a move, rival 2 the smart bot at 2.4 s, rival 3 the smart bot at 1.6 s (spec-prop §7.7; frame 9.2). It describes the computer's pace: respect_copy_test exempts "Slow" and "Quick" for this key only (Q-P4-2's decision). copy.md G.5 `rival_n_skill`.
+  /// A computer rival's pace label on its select card, by rival number 1-3: rival 1 plays like the casual bot at 3 s a move, rival 2 the smart bot at 2.4 s, rival 3 the smart bot at 1.6 s (spec-prop §7.7; frame 9.2). No rival is called slow and no two read alike, so no respect-test exemption is needed. copy.md G.5 `rival_1_skill`, `rival_2_skill`, `rival_3_skill`.
   ///
   /// In en, this message translates to:
-  /// **'{number, plural, =1{Relaxed · Slow} =2{Careful · Slow} other{Careful · Quick}}'**
+  /// **'{number, plural, =1{Gentle pace} =2{Steady pace} other{Lively pace}}'**
   String raceRivalSkill(int number);
 
   /// What a win against a rival pays, shown on its select card before the race (race_reward_n; spec-prop §1.1 rule 2, §7.7; frame 9.2). copy.md G.5 `rival_reward` ({count} is {coins} here).
@@ -1822,11 +1955,29 @@ abstract class AppLocalizations {
   /// **'New'**
   String get raceRivalNew;
 
-  /// A rival card's and the results' screen-reader name, which says "Computer" (spec-prop §1.1 rule 5; the visible name sits beside the tag). Not in copy.md m7-3: a screen-reader label the app composes.
+  /// A computer rival's name for a screen reader on the pause and result cards, which says "Computer" (spec-prop §1.1 rule 5; the visible name sits beside the tag). Not in copy.md m7-4: built on `tag_computer`.
   ///
   /// In en, this message translates to:
   /// **'{name}, Computer'**
   String raceRivalSemantics(String name);
+
+  /// A rival's select card, for a screen reader (frame 9.2). {rival} is raceRivalName, {skill} raceRivalSkill. Says "computer" (spec-prop §1.1 rule 5). The pick adds raceRivalSelectedSemantics. copy.md A11y `a11y_rival_card`.
+  ///
+  /// In en, this message translates to:
+  /// **'{rival}, computer rival. {skill}.'**
+  String raceRivalCardSemantics(String rival, String skill);
+
+  /// A locked rival's select card, for a screen reader (frame 9.2b). {rival} is the rival before it (raceRivalName). copy.md A11y `a11y_rival_locked`.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked computer rival. Beat {rival} to unlock.'**
+  String raceRivalLockedSemantics(String rival);
+
+  /// The word a screen reader adds to the rival select card the player has picked (frame 9.2). copy.md A11y `a11y_rival_selected`.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get raceRivalSelectedSemantics;
 
   /// The Start button, on rival select (one Start for the selected rival) and on the race board in the booster bar's middle slots: both sides rest until it is tapped, with no countdown (vs-computer rule 4; frames 9.2, 9.3). copy.md G.5 `race_start`.
   ///
@@ -1840,7 +1991,7 @@ abstract class AppLocalizations {
   /// **'Same puzzle, two boards. Complete every family first.'**
   String get raceStartHint;
 
-  /// The rival strip's state line before Start (frame 9.3). Not in copy.md m7-3: frame 9.3's own text (ui-spec C7; TODO(design): ask Claude Design for its id).
+  /// The rival strip's state line before Start (frame 9.3). copy.md G.5 `strip_ready`.
   ///
   /// In en, this message translates to:
   /// **'Ready when you are'**
@@ -1876,43 +2027,43 @@ abstract class AppLocalizations {
   /// **'{done}/{total}'**
   String raceStripFamilies(int done, int total);
 
-  /// The rival strip's screen-reader label, which says "Computer" (spec-prop §1.1 rule 5). Not in copy.md m7-3: a screen-reader label the app composes.
+  /// The rival strip's screen-reader label, which says "computer" (spec-prop §1.1 rule 5). {name} is raceRivalName. copy.md A11y `a11y_rival_strip`.
   ///
   /// In en, this message translates to:
-  /// **'{total, plural, =1{{name}, Computer: {done} of 1 family} other{{name}, Computer: {done} of {total} families}}'**
-  String raceStripSemantics(String name, int done, int total);
+  /// **'{total, plural, =1{{name}, computer: {count} of {total} family} other{{name}, computer: {count} of {total} families}}'**
+  String raceStripSemantics(String name, int count, int total);
 
-  /// The rival strip's live screen-reader announcement when the computer completes a family, rate-limited (spec §16). copy.md G.5 `a11y_rival_family` ({count} is {done} here).
+  /// The rival strip's live screen-reader announcement when the computer completes a family, rate-limited (spec §16). copy.md A11y `a11y_rival_family`.
   ///
   /// In en, this message translates to:
   /// **'The computer completed a family: {done} of {total}'**
   String raceAnnounceFamily(int done, int total);
 
-  /// The live screen-reader announcement when Start is tapped (spec §16). Says "computer" (spec-prop §1.1 rule 5). copy.md G.5 `a11y_race_start`.
+  /// The live screen-reader announcement when Start is tapped (spec §16). Says "computer" (spec-prop §1.1 rule 5). copy.md A11y `a11y_race_start`.
   ///
   /// In en, this message translates to:
   /// **'Race started against {rival}, a computer player.'**
   String raceAnnounceStart(String rival);
 
-  /// The rival strip's live announcement when the computer restarts (spec §16). copy.md G.5 `a11y_rival_starting_over`.
+  /// The rival strip's live announcement when the computer restarts (spec §16). copy.md A11y `a11y_rival_starting_over`.
   ///
   /// In en, this message translates to:
   /// **'The computer is starting over.'**
   String get raceAnnounceStartingOver;
 
-  /// The rival strip's live announcement when the computer finishes (spec §16). copy.md G.5 `a11y_rival_finished`.
+  /// The rival strip's live announcement when the computer finishes (spec §16). copy.md A11y `a11y_rival_finished`.
   ///
   /// In en, this message translates to:
   /// **'The computer completed every family.'**
   String get raceAnnounceFinished;
 
-  /// The live announcement as the race win card opens (spec §16). copy.md G.5 `a11y_race_won`.
+  /// The live announcement as the race win card opens (spec §16). copy.md A11y `a11y_race_won`.
   ///
   /// In en, this message translates to:
   /// **'You won the race.'**
   String get raceAnnounceWon;
 
-  /// The live announcement as the race loss card opens (spec §16). copy.md G.5 `a11y_race_lost`.
+  /// The live announcement as the race loss card opens (spec §16). copy.md A11y `a11y_race_lost`.
   ///
   /// In en, this message translates to:
   /// **'The computer finished first.'**
@@ -1924,10 +2075,16 @@ abstract class AppLocalizations {
   /// **'You won the race!'**
   String get raceWinTitle;
 
-  /// The race win card's line under the title (frame 9.4). {rival} is raceRivalName. It names the computer's pace, never a player's: respect_copy_test exempts "before" for this key only (Q-P4-2's decision). copy.md G.5 `race_win_body`.
+  /// The race win ribbon's short form (textFit.winRibbon) when raceWinTitle doesn't fit. copy.md Short forms `race_win_title_short`.
   ///
   /// In en, this message translates to:
-  /// **'You completed every family before {rival}.'**
+  /// **'You won!'**
+  String get raceWinTitleShort;
+
+  /// The race win card's line under the title (frame 9.4). {rival} is raceRivalName. copy.md G.5 `race_win_body`.
+  ///
+  /// In en, this message translates to:
+  /// **'Every family is complete. {rival} was still sorting.'**
   String raceWinBody(String rival);
 
   /// The race win card's coin chip: the rival's race_reward_n, counted up (frame 9.4). copy.md G.5 `race_win_coins`.
@@ -1941,6 +2098,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'So close! Rematch?'**
   String get raceLossTitle;
+
+  /// The race result ribbon's short form (textFit.winRibbon) when raceLossTitle doesn't fit. copy.md Short forms `race_lose_title_short`.
+  ///
+  /// In en, this message translates to:
+  /// **'So close!'**
+  String get raceLossTitleShort;
 
   /// The race loss card's line under the title (frame 9.5). {rival} is raceRivalName. No loss or streak wording. copy.md G.5 `race_lose_body`.
   ///
@@ -1960,16 +2123,22 @@ abstract class AppLocalizations {
   /// **'{rival} is ready to race.'**
   String raceRivalUnlockedBody(String rival);
 
+  /// The New rival unlocked card's primary button: it races the new rival (frame 9.6). {rival} is raceRivalName. The card's secondary button is `notNow`. copy.md G.5 `rival_unlocked_race`.
+  ///
+  /// In en, this message translates to:
+  /// **'Race {rival}'**
+  String raceRivalUnlockedRace(String rival);
+
   /// The confirm card when Pause's Leave race is tapped (frame 9.7b; Q133). copy.md G.5 `race_quit_title`.
   ///
   /// In en, this message translates to:
   /// **'Leave this race?'**
   String get raceLeaveTitle;
 
-  /// The confirm card's line (frame 9.7b): nothing is lost by leaving (spec-prop §7.7). respect_copy_test exempts "ends" and "lost" for this key only: they reassure, they don't threaten (Q-P4-2's decision). copy.md G.5 `race_quit_body`.
+  /// The confirm card's line (frame 9.7b): nothing is lost by leaving (spec-prop §7.7). copy.md G.5 `race_quit_body`.
   ///
   /// In en, this message translates to:
-  /// **'The race ends here. No coins, and nothing lost.'**
+  /// **'The race stops here. No coins, and you keep everything.'**
   String get raceLeaveBody;
 
   /// The confirm card's button back to the race (frame 9.7b). copy.md G.5 `race_quit_no`.
@@ -2014,19 +2183,19 @@ abstract class AppLocalizations {
   /// **'{rival} is paused too.'**
   String racePauseSubtitle(String rival);
 
-  /// The Pause dialog's header in a race, beside the rival's portrait and Computer tag (frame 9.7). {rival} is raceRivalName. Not in copy.md m7-3: frame 9.7's own text (TODO(design): ask for its id).
+  /// The Pause dialog's header in a race, beside the rival's portrait and Computer tag (frame 9.7). {rival} is raceRivalName. copy.md G.5 `race_pause_title`.
   ///
   /// In en, this message translates to:
   /// **'vs Computer · {rival}'**
   String racePauseHeader(String rival);
 
-  /// Rival select's screen-reader word for a rival the player has beaten (the check on its portrait, frame 9.2b). Not in copy.md m7-3: a label the app composes.
+  /// Rival select's screen-reader word for a rival the player has beaten (the check on its portrait, frame 9.2b). copy.md A11y `a11y_rival_beaten`.
   ///
   /// In en, this message translates to:
   /// **'Beaten'**
   String get raceRivalBeaten;
 
-  /// Rival select's Start button label for a screen reader, naming the selected computer rival (frame 9.2). Not in copy.md m7-3: a label the app composes.
+  /// Rival select's Start button label for a screen reader, naming the selected computer rival (frame 9.2). {rival} is raceRivalName. copy.md A11y `a11y_race_start_button`.
   ///
   /// In en, this message translates to:
   /// **'Start race against {rival}'**
@@ -2038,13 +2207,13 @@ abstract class AppLocalizations {
   /// **'Leave race'**
   String get raceQuit;
 
-  /// The screen-reader label of every star row: a level's stars out of 3 (StarRating.maxStars, a rule constant; spec-prop §7.10). copy.md G.11 `a11y_stars`.
+  /// The screen-reader label of every star row: a level's stars out of 3 (StarRating.maxStars, a rule constant; spec-prop §7.10). copy.md A11y `a11y_stars`.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 of 3 stars} other{{count} of 3 stars}}'**
   String starsSemantics(int count);
 
-  /// The win card's star row's screen-reader label on a new best (frame 11.4b). copy.md G.11 `a11y_stars_new_best`.
+  /// The win card's star row's screen-reader label on a new best (frame 11.4b). copy.md A11y `a11y_stars_new_best`.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{New best, 1 of 3 stars} other{New best, {count} of 3 stars}}'**
@@ -2074,11 +2243,17 @@ abstract class AppLocalizations {
   /// **'Wins with a hint or an extra slot earn up to 2 stars.'**
   String get starsHelperNote;
 
-  /// Stars earned out of the stars possible: a chapter's card and folded row in Chapters, Home's chapter card (frame 11.5). copy.md G.11 `chapter_stars_total` ({count} is {earned}, the copy's "60" is {total}).
+  /// Stars earned out of the stars possible: a chapter's card and folded row in Chapters, Home's chapter card (frame 11.5). {count} is the stars earned, {total} the stars possible for the chapter's levels with a par (the app fills both). copy.md G.11 `chapter_stars_total`.
   ///
   /// In en, this message translates to:
-  /// **'{earned}/{total}'**
-  String chaptersStarsTotal(int earned, int total);
+  /// **'{count}/{total}'**
+  String chaptersStarsTotal(int count, int total);
+
+  /// The stars total on Home's Bonus Endless chip (frame 12.2): the whole campaign's stars. {count} is the stars earned, {total} the stars possible (600 in the bundle; the app fills both). copy.md G.11 `chapter_stars_total_all`.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/{total}'**
+  String chaptersStarsTotalAll(int count, int total);
 
   /// A chapter's line once all 20 levels have 3 stars (frame 11.5). copy.md G.11 `chapter_all_three_stars`.
   ///
@@ -2098,7 +2273,7 @@ abstract class AppLocalizations {
   /// **'Stars'**
   String get recordsStars;
 
-  /// Records' Stars value: the stars earned of every level's 3 (600 for 200 levels with a par; the app fills {total}). copy.md G.11 `records_stars_value`.
+  /// Records' Stars cell value (frame 10.6). {count} is the stars earned, {total} the stars possible over the levels with a par (600 in the bundle; the app fills both). copy.md G.10 `records_stars_value`.
   ///
   /// In en, this message translates to:
   /// **'{count} of {total}'**
@@ -2116,10 +2291,10 @@ abstract class AppLocalizations {
   /// **'{color, select, red{❤️} orange{🌼} yellow{☀️} green{🍃} teal{🌊} blue{💧} purple{⭐} pink{🎀} navy{🌙} brown{🌰} gold{👑} other{🪆}}'**
   String dailyShareGlyph(String color);
 
-  /// The Share button's screen-reader label. Not in copy.md m7-3: a screen-reader label.
+  /// The Share button's screen-reader label (frame 5.2). copy.md A11y `a11y_share_daily`.
   ///
   /// In en, this message translates to:
-  /// **'Share today\'s result'**
+  /// **'Share today’s result'**
   String get dailyShareSemantics;
 
   /// The text the daily win card's Share hands the share sheet while the streak is lit (spec-prop §10.2 #11; frame 10.1): the date, one dailyShareGlyph per family in board order (at most 12), the moves and the streak day. Spoiler-free: never the board or a move. copy.md G.6 `share_line_1`…`share_line_3`.
@@ -2157,6 +2332,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change time'**
   String get reminderOfferChangeTime;
+
+  /// The reminder offer's time chip, for a screen reader (frame 10.2b). {time} is the locale's time. Visible: reminderOfferTime. copy.md A11y `a11y_reminder_time_chip`.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time, every day at {time}. Change time.'**
+  String reminderTimeChipSemantics(String time);
+
+  /// The title (helpText) of the system time picker the reminder's time chip and Settings' Time row open (frames 10.2c, 10.2e). copy.md G.7 `reminder_picker_title`.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get reminderPickerTitle;
 
   /// The offer's Yes button: asks the phone for notifications, then turns the reminder on (spec-prop §1.1 rule 7). copy.md G.7 `reminder_yes`.
   ///
@@ -2212,16 +2399,16 @@ abstract class AppLocalizations {
   /// **'New dolls are waiting to be nested. Today’s puzzle is ready.'**
   String get reminderNotificationBody3;
 
-  /// The Android notification channel's name in the phone's settings. Not in copy.md m7-3: an OS label.
+  /// The Android notification channel's name in the phone's settings. copy.md G.7 `notification_channel_name`.
   ///
   /// In en, this message translates to:
-  /// **'Daily reminder'**
+  /// **'Daily puzzle'**
   String get reminderChannelName;
 
-  /// The Android notification channel's description in the phone's settings. Not in copy.md m7-3: an OS label.
+  /// The Android notification channel's description in the phone's settings. copy.md G.7 `notification_channel_description`.
   ///
   /// In en, this message translates to:
-  /// **'One note a day when the daily puzzle is ready'**
+  /// **'One note a day when a new daily puzzle is ready.'**
   String get reminderChannelDescription;
 
   /// Settings' Daily reminder toggle (frame 10.2e). copy.md G.7 `settings_reminder`.
@@ -2236,18 +2423,6 @@ abstract class AppLocalizations {
   /// **'Time'**
   String get settingReminderTime;
 
-  /// The Daily reminder row's value while it is on (frame 10.2e). copy.md G.7 `settings_reminder_on`.
-  ///
-  /// In en, this message translates to:
-  /// **'Every day at {time}'**
-  String settingReminderOn(String time);
-
-  /// The Daily reminder row's value while it is off. copy.md G.7 `settings_reminder_off`.
-  ///
-  /// In en, this message translates to:
-  /// **'Off'**
-  String get settingReminderOff;
-
   /// The Daily reminder row's value while the phone blocks notifications (frame 10.2f). copy.md G.7 `settings_reminder_blocked`.
   ///
   /// In en, this message translates to:
@@ -2260,34 +2435,46 @@ abstract class AppLocalizations {
   /// **'Open phone settings'**
   String get settingOpenPhoneSettings;
 
+  /// The Turn off link under Settings' Daily reminder row while the phone blocks notifications (frame 10.2f): it switches the reminder off in the app. copy.md G.7 `settings_reminder_turn_off`.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get settingReminderTurnOff;
+
   /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: the kicker over the chapter name on Home's chapter card (frame 2.1). copy.md draws it as a fixed uppercase line; the number is the PLAY level's chapter.
   ///
   /// In en, this message translates to:
   /// **'CHAPTER {number}'**
   String homeChapterKicker(int number);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's chapter card (menus spec 1.1): the chapter, its name, its stars and where a tap goes.
+  /// Screen-reader label of Home's chapter card (frame 2.1): the chapter, its name, its stars and where a tap goes. copy.md A11y `a11y_home_chapter`.
   ///
   /// In en, this message translates to:
-  /// **'Chapter {number}, {name}, {earned} of {total} stars. Opens chapters.'**
+  /// **'Chapter {chapter}, {name}. {count} of {total} stars. Opens Chapters.'**
   String homeChapterCardSemantics(
-    int number,
+    int chapter,
     String name,
-    int earned,
+    int count,
     int total,
   );
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's chapter card in Bonus Endless (frame 12.2): the whole campaign's stars.
+  /// Screen-reader label of Home's chapter card in Bonus Endless (frame 12.2): the whole campaign's stars. copy.md A11y `a11y_home_bonus`.
   ///
   /// In en, this message translates to:
-  /// **'Bonus levels, {earned} of {total} stars. Opens chapters.'**
-  String homeBonusCardSemantics(int earned, int total);
+  /// **'Bonus levels. {count} of {total} stars. Opens Chapters.'**
+  String homeBonusCardSemantics(int count, int total);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of Home's vs Computer tile (frame 9.1, spec-prop §1.1 rule 5: a computer is always called one). A locked tile adds its unlock line as the value.
+  /// Screen-reader label of Home's vs Computer tile (frame 9.1; spec-prop §1.1 rule 5: a computer is always called one). copy.md A11y `a11y_home_versus`.
   ///
   /// In en, this message translates to:
-  /// **'vs Computer, computer player'**
+  /// **'vs Computer. Race a computer on the same puzzle.'**
   String get homeVsComputerSemantics;
+
+  /// Screen-reader label of Home's vs Computer tile while it is locked (frame 9.1b). {level} is `race_unlock_level` (the app fills it). copy.md A11y `a11y_home_versus_locked`.
+  ///
+  /// In en, this message translates to:
+  /// **'vs Computer, locked. After Level {level}.'**
+  String homeVsComputerLockedSemantics(int level);
 
   /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: a Chapters row's and the open chapter header's kicker (frames 10.4, 11.5). A fixed uppercase line.
   ///
@@ -2295,88 +2482,76 @@ abstract class AppLocalizations {
   /// **'CHAPTER {number} · LEVELS {first}–{last}'**
   String chaptersKicker(int number, int first, int last);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Chapters row (menus spec 3, Semantics). The row adds its expanded or collapsed state.
+  /// Screen-reader label of a Chapters row (frame 10.4). The row adds its expanded or collapsed state. {count} is the stars earned, {total} the stars possible. copy.md A11y `a11y_chapter_row`.
   ///
   /// In en, this message translates to:
-  /// **'Chapter {number}, {name}, levels {first} to {last}, {earned} of {total} stars'**
-  String chaptersRowSemantics(
-    int number,
-    String name,
-    int first,
-    int last,
-    int earned,
-    int total,
-  );
+  /// **'Chapter {chapter}, {name}. {count} of {total} stars.'**
+  String chaptersRowSemantics(int chapter, String name, int count, int total);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a locked Chapters row (frame 10.4).
+  /// Screen-reader label of a locked Chapters row (frame 10.4). copy.md A11y `a11y_chapter_locked`.
   ///
   /// In en, this message translates to:
-  /// **'Chapter {number}, {name}, levels {first} to {last}, locked'**
-  String chaptersRowLockedSemantics(
-    int number,
-    String name,
-    int first,
-    int last,
-  );
+  /// **'Chapter {chapter}, {name}. Locked.'**
+  String chaptersRowLockedSemantics(int chapter, String name);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: appended to the screen-reader label of a Chapters cell that is the chapter's 10th level (frame 10.4).
+  /// Appended to the screen-reader label of a Chapters cell that carries a milestone chest (frame 10.4). copy.md A11y `a11y_level_chest`.
   ///
   /// In en, this message translates to:
-  /// **'has a milestone chest'**
+  /// **'A chest at this level'**
   String get chaptersLevelChestSemantics;
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: appended to the screen-reader label of a Chapters cell that is the chapter's last level (frame 10.4).
+  /// Appended to the screen-reader label of a Chapters cell that is the chapter's last level (frame 10.4). copy.md A11y `a11y_level_finale`.
   ///
   /// In en, this message translates to:
-  /// **'last level of the chapter'**
+  /// **'The last level of the chapter'**
   String get chaptersLevelFinaleSemantics;
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a collected family's niche in the Museum cabinet (frame 6.1). {name} is figurineName ("The Baker Family").
+  /// Screen-reader label of a collected family's niche in the Museum cabinet (frame 6.1). {name} is figurineName ("The Baker Family"). copy.md A11y `a11y_figurine_home`.
   ///
   /// In en, this message translates to:
-  /// **'{name}, collected'**
+  /// **'{name}, home in your Museum'**
   String museumNicheCollectedSemantics(String name);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of the next family's niche (frame 6.1).
+  /// Screen-reader label of the next family's niche (frame 6.1). {count} is the levels still to win. copy.md A11y `a11y_figurine_next`.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{{name}, next, chapter {chapter}, 1 level to go} other{{name}, next, chapter {chapter}, {count} levels to go}}'**
-  String museumNicheNextSemantics(String name, int chapter, int count);
+  /// **'{count, plural, =1{{name}, next to come home. {count} level to go.} other{{name}, next to come home. {count} levels to go.}}'**
+  String museumNicheNextSemantics(String name, int count);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a locked family's niche (frame 6.1).
+  /// Screen-reader label of a locked family's niche (frame 6.1). {name} is figurineName. copy.md A11y `a11y_figurine_locked`.
   ///
   /// In en, this message translates to:
-  /// **'Chapter {chapter}, levels {first} to {last}, locked'**
-  String museumNicheLockedSemantics(int chapter, int first, int last);
+  /// **'{name}, not home yet. Chapter {chapter}.'**
+  String museumNicheLockedSemantics(String name, int chapter);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of the Museum's count chip (frame 6.1, "3 / 10").
+  /// Screen-reader label of the Museum's count chip (frame 6.1, "3 / 10"). copy.md A11y `a11y_museum_count`.
   ///
   /// In en, this message translates to:
-  /// **'{done} of {total} families home'**
-  String museumCountSemantics(int done, int total);
+  /// **'{count} of {total} families home'**
+  String museumCountSemantics(int count, int total);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: the Museum's celebration card sub line once every family is home (frame 6.1c). copy.md has `museum_full` ("Full House") but no id for the rest; {count} is the number of families.
+  /// The Museum's celebration card sub line once every family is home (frame 6.1c), under the badge name (`museum_full`, "Full House"). {count} is the number of families. copy.md G.10 `museum_all_home_sub`.
   ///
   /// In en, this message translates to:
   /// **'Full House · all {count} families'**
   String museumFullSub(int count);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records races row (frame 10.6, spec-prop §1.1 rule 5: a computer is always called one). A rival with no wins reads 0.
+  /// Screen-reader label of a Records races row (frame 10.6, spec-prop §1.1 rule 5: a computer is always called one). A rival with no wins reads 0. copy.md A11y `a11y_race_row`.
   ///
   /// In en, this message translates to:
-  /// **'{rival}, computer player, races won: {count}'**
+  /// **'{count, plural, =1{{rival}, computer. {count} win.} other{{rival}, computer. {count} wins.}}'**
   String recordsRaceSemantics(String rival, int count);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records races row for a rival the player has not unlocked (frame 10.6).
+  /// Screen-reader label of a Records races row for a rival the player has not unlocked (frame 10.6). copy.md A11y `a11y_race_row_locked`.
   ///
   /// In en, this message translates to:
-  /// **'{rival}, computer player, not unlocked yet'**
+  /// **'{rival}, computer. Locked.'**
   String recordsRaceLockedSemantics(String rival);
 
-  /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: screen-reader label of a Records stat cell: its label, then its value ("Levels won, 55", menus spec 5).
+  /// Screen-reader label of a Records stat cell: its label, then its value ("Levels won: 55", frame 10.6). The cell's visible words are its label and its value. copy.md A11y `a11y_record_cell`.
   ///
   /// In en, this message translates to:
-  /// **'{label}, {value}'**
+  /// **'{label}: {value}'**
   String recordsStatSemantics(String label, String value);
 
   /// Lane M, phase 4 (menus spec). Not in copy.md m7-3: the Records badge heading's count (frame 10.6, "5/12"); numbers only.
@@ -2396,18 +2571,55 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'de',
+    'en',
+    'es',
+    'fr',
+    'hi',
+    'id',
+    'ja',
+    'pt',
+    'tr',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+country codes are specified.
+  switch (locale.languageCode) {
+    case 'pt':
+      {
+        switch (locale.countryCode) {
+          case 'BR':
+            return AppLocalizationsPtBr();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'id':
+      return AppLocalizationsId();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'pt':
+      return AppLocalizationsPt();
+    case 'tr':
+      return AppLocalizationsTr();
   }
 
   throw FlutterError(

@@ -32,7 +32,6 @@ import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_document_codec.dart';
-import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -469,7 +468,7 @@ void main() {
       expect(plan.title, 'Nesty');
       expect(plan.title.toLowerCase(), isNot(contains('streak')));
       expect(plan.body.toLowerCase(), isNot(contains('streak')));
-      expect(plan.channelName, 'Daily reminder');
+      expect(plan.channelName, 'Daily puzzle');
     });
 
     test('ReminderOfferCubit is frozen hidden', () async {
@@ -539,7 +538,6 @@ void main() {
             resolver,
             save,
             FakeRemoteConfigService(),
-            FakeShareService(),
           );
           await pumpScreen(
             tester,

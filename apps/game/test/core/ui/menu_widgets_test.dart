@@ -14,7 +14,7 @@ void main() {
   setUpAll(loadBundledFonts);
 
   group('StarsChip', () {
-    testWidgets('reads "39/60" beside a 20 dp star, 28 tall by default', (
+    testWidgets('reads "39/60" beside an 18 dp star, 28 tall by default', (
       tester,
     ) async {
       await pumpUi(
@@ -25,15 +25,32 @@ void main() {
       expect(tester.getSize(find.byType(StarsChip)).height, 28);
       final star = tester.widget<UiArtImage>(find.byType(UiArtImage));
       expect(star.art, UiArt.starFilled);
-      expect(star.size, const Size(20, 20));
+      expect(star.size, const Size(18, 18));
+      final text = tester.widget<Text>(find.text('39/60'));
+      expect(text.style!.fontSize, 14);
     });
 
-    testWidgets('Home\'s chip is 32 tall', (tester) async {
+    testWidgets('Home\'s chip is 30 tall with a 20 dp star and Fredoka 15 '
+        '(NestyHub:25)', (tester) async {
       await pumpUi(
         tester,
-        const Center(child: StarsChip(earned: 3, total: 60, height: 32)),
+        const Center(
+          child: StarsChip(earned: 3, total: 60, height: StarsChip.homeHeight),
+        ),
       );
-      expect(tester.getSize(find.byType(StarsChip)).height, 32);
+      expect(tester.getSize(find.byType(StarsChip)).height, 30);
+      final star = tester.widget<UiArtImage>(find.byType(UiArtImage));
+      expect(star.size, const Size(20, 20));
+      expect(tester.widget<Text>(find.text('3/60')).style!.fontSize, 15);
+    });
+
+    testWidgets('`all` (Bonus Endless chip, frame 12.2) reads the campaign '
+        'total', (tester) async {
+      await pumpUi(
+        tester,
+        const Center(child: StarsChip(earned: 120, total: 600, all: true)),
+      );
+      expect(find.text('120/600'), findsOneWidget);
     });
 
     testWidgets('is one node: "39 of 60 stars"', (tester) async {

@@ -11,6 +11,7 @@ import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
 import 'package:nesty_game/features/splash/pages/splash_page.dart';
+import 'package:nesty_render/nesty_render.dart' show DollPainter;
 
 import '../../core/ui/support/ui_harness.dart';
 import '../support/controlled_skin_service.dart';
@@ -33,6 +34,7 @@ void main() {
     ShowcaseDolls? showcase,
     Size size = const Size(390, 844),
     double textScale = 1,
+    bool reduceMotion = false,
   }) async {
     await pumpScreen(
       tester,
@@ -45,6 +47,7 @@ void main() {
       ),
       size: size,
       textScale: textScale,
+      reduceMotion: reduceMotion,
     );
     await tester.pump();
   }
@@ -112,45 +115,123 @@ void main() {
     final skin = skins.completeShowcase(0);
     await tester.runAsync(() => prepared);
     await tester.pump();
+    // The crossfade (240 ms) leaves only the art.
+    await tester.pump(const Duration(milliseconds: 300));
     for (final doll in tester.widgetList<LottieDoll>(find.byType(LottieDoll))) {
       expect(doll.images, same(skin.images));
       expect(doll.renderer, same(skin.restRenderer));
     }
   });
 
-  /// The fade around each shelf doll, in shelf order.
-  List<double> shelfOpacities(WidgetTester tester) => tester
-      .widgetList<AnimatedOpacity>(
-        find.byWidgetPredicate(
-          (w) => w is AnimatedOpacity && w.child is LottieDoll,
-        ),
-      )
-      .map((fade) => fade.opacity)
-      .toList();
+  /// The shelf dolls that are drawing right now.
+  List<LottieDoll> shelfDolls(WidgetTester tester) =>
+      tester.widgetList<LottieDoll>(find.byType(LottieDoll)).toList();
 
-  testWidgets('the dolls wait for the prepared art and fade in, instead of '
-      'flashing the placeholder first (Q58)', (tester) async {
+  Finder shelfSwitchers() => find.ancestor(
+    of: find.byType(LottieDoll),
+    matching: find.byType(AnimatedSwitcher),
+  );
+
+  testWidgets('the placeholder dolls draw from the first frame and crossfade '
+      'to the art once it lands (F-SPL, supersedes Q58)', (tester) async {
     final skins = ControlledSkinService();
     final showcase = ShowcaseDolls(skins, FakeDatabaseService());
     addTearDown(showcase.dispose);
     await pumpSplash(tester, showcase: showcase);
-    expect(shelfOpacities(tester), [0, 0, 0]);
-    expect(tester.widget<Wordmark>(find.byType(Wordmark)).dollShown, isFalse);
+    // Skin null: three red placeholder dolls, no fade hiding them.
+    expect(shelfDolls(tester), hasLength(3));
+    for (final doll in shelfDolls(tester)) {
+      expect(doll.images, isNull);
+      expect(doll.color, DollColor.red);
+    }
+    expect(
+      find.ancestor(
+        of: find.byType(LottieDoll),
+        matching: find.byType(AnimatedOpacity),
+      ),
+      findsNothing,
+    );
+    expect(shelfSwitchers(), findsNWidgets(3));
+    final wordmarkSwitcher = find.descendant(
+      of: find.byType(Wordmark),
+      matching: find.byType(AnimatedSwitcher),
+    );
+    expect(wordmarkSwitcher, findsOneWidget);
+    expect(
+      find.descendant(of: wordmarkSwitcher, matching: find.byType(CustomPaint)),
+      findsWidgets,
+    );
 
     final prepared = showcase.prepare(devicePixelRatio: 1);
-    skins.completeShowcase(0);
+    final skin = skins.completeShowcase(0);
     await tester.runAsync(() => prepared);
     await tester.pump();
-    expect(shelfOpacities(tester), [1, 1, 1]);
-    expect(tester.widget<Wordmark>(find.byType(Wordmark)).dollShown, isTrue);
+    // Mid-fade both the old and the new doll are mounted.
+    expect(shelfDolls(tester).length, greaterThan(3));
+    await tester.pump(const Duration(milliseconds: 240));
+    await tester.pump(const Duration(milliseconds: 20));
+    expect(shelfDolls(tester), hasLength(3));
+    for (final doll in shelfDolls(tester)) {
+      expect(doll.images, same(skin.images));
+    }
+  });
+
+  testWidgets('the wordmark\'s perched doll has a real 30x45 box at 88 px '
+      '(it collapsed to 0x0 under AnimatedSwitcher)', (tester) async {
+    await pumpSplash(tester);
+    final paint = find.descendant(
+      of: find.descendant(
+        of: find.byType(Wordmark),
+        matching: find.byType(AnimatedSwitcher),
+      ),
+      matching: find.byWidgetPredicate(
+        (w) => w is CustomPaint && w.painter is DollPainter,
+      ),
+    );
+    expect(paint, findsOneWidget);
+    final box = tester.getSize(paint);
+    expect(box.width, closeTo(30, 0.01));
+    expect(box.height, closeTo(45, 0.01));
+  });
+
+  testWidgets('under reduce motion the art replaces the placeholder in one '
+      'pump', (tester) async {
+    final skins = ControlledSkinService();
+    final showcase = ShowcaseDolls(skins, FakeDatabaseService());
+    addTearDown(showcase.dispose);
+    await pumpSplash(tester, showcase: showcase, reduceMotion: true);
+    final prepared = showcase.prepare(devicePixelRatio: 1);
+    final skin = skins.completeShowcase(0);
+    await tester.runAsync(() => prepared);
+    await tester.pump();
+    await tester.pump();
+    expect(shelfDolls(tester), hasLength(3));
+    for (final doll in shelfDolls(tester)) {
+      expect(doll.images, same(skin.images));
+    }
+  });
+
+  testWidgets('a showcase whose art fails keeps the placeholder dolls', (
+    tester,
+  ) async {
+    final skins = ControlledSkinService();
+    final showcase = ShowcaseDolls(skins, FakeDatabaseService());
+    addTearDown(showcase.dispose);
+    await pumpSplash(tester, showcase: showcase);
+    final prepared = showcase.prepare(devicePixelRatio: 1);
+    skins.failShowcase(0);
+    await tester.runAsync(() => prepared.catchError((Object _) {}));
     await tester.pump(const Duration(milliseconds: 300));
+    expect(shelfDolls(tester), hasLength(3));
+    for (final doll in shelfDolls(tester)) {
+      expect(doll.images, isNull);
+    }
   });
 
   testWidgets('with no showcase coming, the placeholder dolls show at once '
       '(rule 3)', (tester) async {
     await pumpSplash(tester);
-    expect(shelfOpacities(tester), [1, 1, 1]);
-    expect(tester.widget<Wordmark>(find.byType(Wordmark)).dollShown, isTrue);
+    expect(shelfDolls(tester), hasLength(3));
   });
 
   group('the two errors (frames 12.10, 12.11; ErrorCard)', () {
@@ -168,7 +249,7 @@ void main() {
       expect(find.text('The shelves didn’t unpack'), findsOneWidget);
       expect(
         find.text(
-          'Something went wrong while loading. Try again, or restart Nesty.',
+          'Something went wrong while loading. Try again, or restart\u00A0Nesty.',
         ),
         findsOneWidget,
       );
@@ -204,7 +285,7 @@ void main() {
       expect(
         find.text(
           'Nesty needs about 60 MB to set up the shelves. Free some space, '
-          'then try again.',
+          'then try\u00A0again.',
         ),
         findsOneWidget,
       );

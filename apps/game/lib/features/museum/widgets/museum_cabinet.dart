@@ -4,11 +4,12 @@ import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
+import 'package:nesty_game/features/museum/widgets/museum_idle_figurine.dart';
 
 /// The walnut cabinet (frames 6.1, 6.1c; tokens `layout.museum.cabinet`):
 /// two columns of niches, one per chapter, five rows for the ten families.
-/// A collected family bobs gently under a warm light with a brass plate of
-/// its name; the next one wears a green ring and "14 to go"; a locked one is
+/// A collected family idles under a warm light (`ui_museum_idle`) with a
+/// brass plate of its name; the next one wears a green ring and "14 to go"; a locked one is
 /// dimmed with its chapter and levels on two lines. Tapping any niche calls
 /// [onTapEntry] (the page opens the 6.2/6.3 modal, unchanged).
 class MuseumCabinet extends StatelessWidget {
@@ -34,74 +35,147 @@ class MuseumCabinet extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.walnutTop, AppColors.walnutBottom],
+          colors: [
+            AppColorTokens.walnutCabinetTop,
+            AppColorTokens.walnutCabinetBottom,
+          ],
         ),
         shadows: [
-          NestyShadow(color: AppColors.walnutHighlight, inset: true, dy: 3),
-          NestyShadow(color: AppColors.walnutEdge, dy: 5),
+          NestyShadow(
+            color: AppColorTokens.walnutHighlight,
+            inset: true,
+            dy: 3,
+          ),
+          NestyShadow(color: AppColorTokens.walnutShade, inset: true, dy: -4),
+          NestyShadow(color: AppColors.cabinetDrop, dy: 8, blur: 16),
         ],
       ),
       radius: BorderRadius.circular(MuseumTokens.cabinetRadius),
       width: double.infinity,
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          for (var r = 0; r < rows.length; r++) ...[
-            if (r > 0) const SizedBox(height: MuseumTokens.cabinetGap),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var c = 0; c < columns; c++) ...[
-                    if (c > 0) const SizedBox(width: MuseumTokens.cabinetGap),
-                    Expanded(
-                      child: c < rows[r].length
-                          ? _Niche(
-                              entry: rows[r][c],
-                              index: r * columns + c,
-                              onTap: () => onTapEntry(rows[r][c]),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ],
+      // `layout.museum.cabinet.height` 402 = 5 rows of 72 + 4 gaps of 6 + 2 x 9.
+      padding: const EdgeInsets.all(9),
+      child: LayoutBuilder(
+        builder: (context, box) {
+          // The niche's name column: the niche (a share of the width, less
+          // the gaps) minus its padding, art and gap. IntrinsicHeight below
+          // can't hold a LayoutBuilder, so the names are told this width.
+          final niche =
+              (box.maxWidth - MuseumTokens.cabinetGap * (columns - 1)) /
+              columns;
+          // Large text on a phone gives the figurine less of the niche so a
+          // long family name keeps a column to wrap in (l10n overflow, M7
+          // 5B): a 48 dp figurine instead of 62.
+          final art = MediaQuery.textScalerOf(context).scale(1) > 1.15
+              ? _Niche.largeTextArt
+              : MuseumTokens.cabinetArt;
+          final nameWidth = math.max(0.0, niche - 4 - 8 - art - 6);
+          return Column(
+            children: [
+              for (var r = 0; r < rows.length; r++) ...[
+                if (r > 0) const SizedBox(height: MuseumTokens.cabinetGap),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (var c = 0; c < columns; c++) ...[
+                        if (c > 0)
+                          const SizedBox(width: MuseumTokens.cabinetGap),
+                        Expanded(
+                          child: c < rows[r].length
+                              ? _Niche(
+                                  entry: rows[r][c],
+                                  index: r * columns + c,
+                                  nameWidth: nameWidth,
+                                  onTap: () => onTapEntry(rows[r][c]),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 }
 
 class _Niche extends StatelessWidget {
-  const _Niche({required this.entry, required this.index, required this.onTap});
+  const _Niche({
+    required this.entry,
+    required this.index,
+    required this.nameWidth,
+    required this.onTap,
+  });
+
+  /// The width of the name column (see [MuseumCabinet.build]).
+  final double nameWidth;
 
   final MuseumEntry entry;
   final int index;
   final VoidCallback onTap;
 
-  static const double minHeight = 66;
+  // Row pitch 78 in frame 6.1: a 72 dp niche = 4 + 62 art + 6.
+  static const double minHeight = MuseumTokens.cabinetArt;
 
-  static const _style = SurfaceStyle(
+  /// The figurine's size under large text (see [MuseumCabinet.build]).
+  static const double largeTextArt = 48;
+
+  // NestyHub:116-118: a collected niche's face has a warm light over its
+  // gradient (drawn in the child), a locked one is darker; the next one wears
+  // a 2 dp green ring.
+  static const _earnedStyle = SurfaceStyle(
     gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFF5B3319), Color(0xFF4E2C14)],
+      colors: [AppColorTokens.shelfFaceTop, AppColorTokens.shelfFaceBottom],
     ),
-    shadows: [NestyShadow(color: Color(0xFF9A6232), dy: 4)],
+    shadows: _nicheShadows,
+  );
+
+  static const _lockedStyle = SurfaceStyle(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        AppColorTokens.shelfFaceLockedTop,
+        AppColorTokens.shelfFaceLockedBottom,
+      ],
+    ),
+    shadows: _nicheShadows,
   );
 
   static const _nextStyle = SurfaceStyle(
     gradient: LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Color(0xFF5B3319), Color(0xFF4E2C14)],
+      colors: [
+        AppColorTokens.shelfFaceLockedTop,
+        AppColorTokens.shelfFaceLockedBottom,
+      ],
     ),
     shadows: [
-      NestyShadow(color: AppColorTokens.successRing, inset: true, spread: 2),
-      NestyShadow(color: Color(0xFF9A6232), dy: 4),
+      ..._nicheShadows,
+      NestyShadow(color: AppColorTokens.museumNextRing, spread: 2),
     ],
+  );
+
+  /// `inset 0 3px 8px rgba(0,0,0,.35), inset 0 -5px 0 #A56A34`.
+  static const _nicheShadows = [
+    NestyShadow(color: AppColorTokens.shelfShadow, inset: true, dy: 3, blur: 8),
+    NestyShadow(color: AppColorTokens.shelfLip, inset: true, dy: -5),
+  ];
+
+  /// A collected niche's warm light: `radial-gradient(ellipse 70% 80% at 30%
+  /// 0, rgba(255,226,160,.5), 0 at 70%)`.
+  static const _light = RadialGradient(
+    center: Alignment(-0.4, -1),
+    radius: 0.8,
+    colors: [AppColorTokens.shelfLight, Color(0x00FFE2A0)],
+    stops: [0, 0.7],
   );
 
   @override
@@ -114,8 +188,8 @@ class _Niche extends StatelessWidget {
     final label = entry.earned
         ? l10n.museumNicheCollectedSemantics(name)
         : entry.isNext
-        ? l10n.museumNicheNextSemantics(name, entry.chapterNumber, toGo)
-        : l10n.museumNicheLockedSemantics(entry.chapterNumber, start, end);
+        ? l10n.museumNicheNextSemantics(name, toGo)
+        : l10n.museumNicheLockedSemantics(name, entry.chapterNumber);
     final art = FigurineImage(
       figurineId: entry.figurineId,
       locked: !entry.earned,
@@ -123,36 +197,90 @@ class _Niche extends StatelessWidget {
     );
     final Widget figure;
     if (entry.earned) {
-      figure = _Bob(index: index, child: art);
+      // `ui_museum_idle` (m7-4 J.2): a random start frame per niche, frame 0
+      // under reduce motion; the still art while the file isn't ready.
+      figure = MuseumIdleFigurine(figurineId: entry.figurineId);
     } else if (entry.isNext) {
       figure = art;
     } else {
       figure = Opacity(opacity: MuseumTokens.cabinetLockedOpacity, child: art);
     }
+    final shrink = MediaQuery.textScalerOf(context).scale(1) > 1.15;
+    final shownFigure = shrink
+        ? SizedBox.square(
+            dimension: largeTextArt,
+            child: FittedBox(
+              child: SizedBox.square(
+                dimension: MuseumTokens.cabinetArt,
+                child: figure,
+              ),
+            ),
+          )
+        : figure;
     return TactileSurface(
-      style: entry.isNext ? _nextStyle : _style,
-      radius: BorderRadius.circular(22),
+      style: entry.earned
+          ? _earnedStyle
+          : entry.isNext
+          ? _nextStyle
+          : _lockedStyle,
+      radius: BorderRadius.circular(16),
       onPressed: onTap,
-      padding: const EdgeInsets.fromLTRB(4, 4, 8, 6),
+      padding: EdgeInsets.zero,
       semanticLabel: label,
       excludeChildSemantics: true,
       alignment: AlignmentDirectional.centerStart,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: minHeight),
-        child: Row(
-          children: [
-            figure,
-            const SizedBox(width: 4),
-            Expanded(
-              child: _Text(
-                entry: entry,
-                name: name,
-                start: start,
-                end: end,
-                toGo: toGo,
-              ),
+      child: _Light(
+        on: entry.earned,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 4, 8, 6),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: minHeight),
+            child: Row(
+              children: [
+                shownFigure,
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _Text(
+                    entry: entry,
+                    name: name,
+                    start: start,
+                    end: end,
+                    toGo: toGo,
+                    nameWidth: nameWidth,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A collected niche's warm light under its content ([on]); nothing for the
+/// others. Clipped to the niche's corners.
+class _Light extends StatelessWidget {
+  const _Light({required this.on, required this.child});
+
+  final bool on;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!on) return child;
+    // The niche aligns its content loosely, so the light asks for the whole
+    // niche (an expanding box; a LayoutBuilder would break the row's
+    // IntrinsicHeight) and not only the content's height.
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox.expand(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(gradient: _Niche._light),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: child,
+          ),
         ),
       ),
     );
@@ -166,7 +294,10 @@ class _Text extends StatelessWidget {
     required this.start,
     required this.end,
     required this.toGo,
+    required this.nameWidth,
   });
+
+  final double nameWidth;
 
   final MuseumEntry entry;
   final String name;
@@ -177,23 +308,28 @@ class _Text extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    if (entry.earned) return _BrassPlate(name);
+    if (entry.earned) return _BrassPlate(name, width: nameWidth - 16);
     if (entry.isNext) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          // Wraps to 3 lines, then scales to 0.75× (textFit): a long family
+          // name in a 56 dp column is never cut.
+          ShrinkToFitText(
             name,
             style: AppTextStyleTokens.cardTitle.copyWith(
               fontSize: 12,
-              height: 1.1,
+              height: 1.15,
               color: const Color(0xFFFFFFFF),
             ),
             maxLines: 3,
+            minFontScale: 0.75,
+            textAlign: TextAlign.start,
+            fixedWidth: nameWidth,
           ),
           const SizedBox(height: 3),
-          // Scales down to the niche instead of cutting ("19 levels to go" at
+          // Scales down to the niche instead of cutting ("19 to go" at
           // 1.3× text on a 360 dp phone).
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -208,9 +344,9 @@ class _Text extends StatelessWidget {
               radius: BorderRadius.circular(10),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               child: Text(
-                l10n.museumLevelsToGo(toGo),
+                l10n.museumNextChip(toGo),
                 style: AppTextStyleTokens.cardTitle.copyWith(
-                  fontSize: 11,
+                  fontSize: 10.5,
                   height: 1.1,
                   color: const Color(0xFFFFFFFF),
                 ),
@@ -252,9 +388,12 @@ class _Text extends StatelessWidget {
 /// A collected family's brass name plate (`gradient.gold`, Fredoka 700 11.5
 /// `#4A3008`), up to three lines, growing rather than cutting.
 class _BrassPlate extends StatelessWidget {
-  const _BrassPlate(this.name);
+  const _BrassPlate(this.name, {required this.width});
 
   final String name;
+
+  /// The name's width inside the plate's padding.
+  final double width;
 
   @override
   Widget build(BuildContext context) => NestySurface(
@@ -268,74 +407,13 @@ class _BrassPlate extends StatelessWidget {
     radius: BorderRadius.circular(10),
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-    child: Text(
+    child: ShrinkToFitText(
       name,
       style: MuseumTokens.cabinetNamePlate.copyWith(height: 1.15),
       maxLines: 3,
+      minFontScale: 0.75,
+      textAlign: TextAlign.start,
+      fixedWidth: width,
     ),
   );
-}
-
-/// A collected figurine's idle bob (tokens `museum.cabinet.collectedIdle`:
-/// 3 dp, a 2.6-3.4 s period varied per niche, phase staggered by [index]).
-/// Static under reduce motion.
-class _Bob extends StatefulWidget {
-  const _Bob({required this.index, required this.child});
-
-  final int index;
-  final Widget child;
-
-  @override
-  State<_Bob> createState() => _BobState();
-}
-
-class _BobState extends State<_Bob> with SingleTickerProviderStateMixin {
-  AnimationController? _controller;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (context.reduceMotion) {
-      _controller?.dispose();
-      _controller = null;
-      return;
-    }
-    if (_controller != null) return;
-    // Seeded by the niche's index: the same on every visit and in tests.
-    final span =
-        MuseumTokens.cabinetCollectedIdleMaxPeriodMs -
-        MuseumTokens.cabinetCollectedIdleMinPeriodMs;
-    final periodMs =
-        MuseumTokens.cabinetCollectedIdleMinPeriodMs +
-        (widget.index * 137) % (span + 1);
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: periodMs),
-      value: (widget.index * 0.23) % 1,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = _controller;
-    if (controller == null) return widget.child;
-    return AnimatedBuilder(
-      animation: controller,
-      child: widget.child,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(
-          0,
-          -MuseumTokens.cabinetCollectedIdleBob *
-              Curves.easeInOut.transform(controller.value),
-        ),
-        child: child,
-      ),
-    );
-  }
 }

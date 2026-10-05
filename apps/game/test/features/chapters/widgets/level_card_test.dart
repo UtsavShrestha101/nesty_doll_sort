@@ -54,6 +54,19 @@ void main() {
     expect(find.bySemanticsLabel('2 of 3 stars'), findsOneWidget);
   });
 
+  testWidgets('the target line is Nunito 16/23 and the best chip 18 '
+      '(NestyMeta:60-62)', (tester) async {
+    await pumpScreen(tester, host(won, []));
+    await open(tester);
+    final target = tester.widget<Text>(
+      find.text('3 stars at 15 moves or fewer'),
+    );
+    expect(target.style!.fontSize, 16);
+    expect(target.style!.height, closeTo(23 / 16, 1e-9));
+    expect(target.style!.color, AppColorTokens.textBrown);
+    expect(tester.widget<Text>(find.text('Best 16')).style!.fontSize, 18);
+  });
+
   testWidgets('its text has the app\'s defaults, never the no-Material '
       'underline: a general dialog brings no Material of its own', (
     tester,

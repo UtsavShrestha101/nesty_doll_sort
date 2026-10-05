@@ -80,12 +80,18 @@ abstract final class FxMotionPolicy {
     FxId.uiIntroTowers ||
     FxId.uiIntroGlass ||
     FxId.uiIntroIce => FxMotionClass.ambient,
+    // The rival's portrait reacts, and a collected figurine idles, in
+    // place: both rest still on frame 0 under reduced motion (tokens.json
+    // `motion.rivalReact.reducedMotion`; LOTTIE.md "Museum (6.1)").
+    FxId.uiRivalReact || FxId.uiMuseumIdle => FxMotionClass.ambient,
+    // The spinner rests on frame 0 under reduced motion and pulses its
+    // opacity instead (`motion.spinner.reducedMotion`; `SpinnerPulse`).
+    FxId.uiSpinner => FxMotionClass.ambient,
     FxId.dollPick when segment == 'wobble' => FxMotionClass.ambient,
     FxId.fxSelectGlow when segment == 'pulse' => FxMotionClass.informational,
     FxId.uiHintArrow ||
     FxId.uiBoosterGlow ||
     FxId.uiExtraSlot ||
-    FxId.uiSpinner ||
     FxId.uiTapHand ||
     FxId.uiDragHand => FxMotionClass.informational,
     FxId.fxConfetti => FxMotionClass.decorative,

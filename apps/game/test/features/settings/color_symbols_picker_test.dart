@@ -166,7 +166,10 @@ void main() {
 
   testWidgets('Large selected: its card wears the ring', (tester) async {
     await pumpPicker(tester, ControlledSkinService(), mode: SymbolsMode.large);
-    expect(styleOf(tester, 'Large').color, AppColors.symbolsCardSelectedFace);
+    expect(
+      styleOf(tester, 'Large').color,
+      AppColorTokens.symbolsCardSelectedFace,
+    );
     expect(styleOf(tester, 'Subtle').color, AppColorTokens.surfaceWhite);
   });
 

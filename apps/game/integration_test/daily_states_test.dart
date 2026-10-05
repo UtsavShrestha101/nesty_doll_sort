@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/models/reduce_motion_mode.dart';
+import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/clock/system_clock.dart';
@@ -13,15 +15,20 @@ import 'package:nesty_game/core/services/save/in_memory_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/home/streak_look.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
+import 'package:nesty_game/features/daily/widgets/streak_card.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
+import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
+import 'support/phone_language.dart';
 import 'support/seeded_save.dart';
+import 'support/time_picker_probe.dart';
 
 /// The daily's and Settings' states on a device (phase 4 lane D; m7-design
 /// P4.6; architecture §7.3; frames 5.6, 5.6b, 10.2, 10.2d, 10.2e, 10.7,
@@ -36,9 +43,21 @@ import 'support/seeded_save.dart';
 /// - `paused`: a 4-day streak whose flame is paused (a missed day, no
 ///   freeze). The Daily card is paused (10.7); a solve relights it: the win
 ///   card reads "Streak relit!" (10.7b) and Daily shows the lit card again.
+/// - `saved` (phase 5): a freeze covers yesterday on the first open (5.2,
+///   "Streak saved!").
 /// - `settings`: Relaxed mode, Reduce motion, Sound, Haptics and Color
 ///   symbols in Settings (10.2e), then a board where Undo shows the
-///   unlimited glyph and undoes past the free ones.
+///   unlimited glyph and undoes past the free ones, with the Relaxed mode
+///   toast at the board's first frame (10.9).
+///
+/// Phase 5 also shoots the offer's time picker (10.2b) in `chest`, and the
+/// Daily and Settings screens scrolled to their ends (F-SAFE). After
+/// Claude Design's m7-4: `saved` shoots the freeze toast with the streak
+/// card's freeze line (5.2), then the line kept once the toast has gone;
+/// `paused` checks the paused card's freeze chip (5.2b) and, after the
+/// relight, Home's Daily badge glowing on the first visit and never again
+/// (m7-4 4.10, `motion.relitHome`); `settings` checks the 48 dp Reduce
+/// motion control (10.2e).
 ///
 /// ```sh
 /// cd apps/game
@@ -65,9 +84,11 @@ void main() {
   testWidgets(
     'the daily and Settings states: $_scenario',
     (tester) async {
+      pinEnglishPhone(tester);
       final today = _fakeToday();
       await switch (_scenario) {
         'paused' => _seedPaused(today),
+        'saved' => _seedSaved(today),
         'settings' => _seedSettings(),
         _ => _seedChest(today),
       };
@@ -85,6 +106,8 @@ void main() {
       switch (_scenario) {
         case 'paused':
           await _paused(tester, board, shots);
+        case 'saved':
+          await _saved(tester, shots);
         case 'settings':
           await _settings(tester, board, shots);
         default:
@@ -142,12 +165,37 @@ Future<void> _seedChest(LocalDate today) => seedSave(
 );
 
 /// Four days counted, the flame out: the last solve was three days ago and
-/// no freeze covered the gap.
+/// no freeze covered the gap. This week's freeze is already spent
+/// (`freezes` 0, `freezeWeek` this week): `refresh()` grants a week's
+/// freeze unless `freezeWeek` is that week, and frame 10.7 is the paused
+/// card with none to cover a miss (architecture.md §1.3).
 Future<void> _seedPaused(LocalDate today) => seedSave(
   _base(
     DailyProgress(
       streak: 4,
+      freezeWeek: today.isoWeekKey,
       done: [for (var back = 6; back >= 3; back--) today.addDays(-back)],
+    ),
+  ),
+  // The one-time reminder offer (10.2) has been shown, so it doesn't cover
+  // the Daily screen's Back after the relighting solve.
+  settings: const SeededSettings(reminder: ReminderSettings(offered: true)),
+);
+
+/// Frame 5.2's "first open after a missed day": four days lit through the
+/// day before yesterday, one freeze held from last week. Opening the app
+/// covers yesterday with it (the "Streak saved!" notice) and leaves none
+/// this week (architecture.md §1.3).
+Future<void> _seedSaved(LocalDate today) => seedSave(
+  _base(
+    DailyProgress(
+      streak: 4,
+      lit: true,
+      run: 4,
+      lastDate: today.addDays(-2),
+      freezes: 1,
+      freezeWeek: today.addDays(-7).isoWeekKey,
+      done: [for (var back = 5; back >= 2; back--) today.addDays(-back)],
     ),
   ),
 );
@@ -242,7 +290,9 @@ Future<void> _chest(WidgetTester tester, Board board, _Shots shots) async {
     () => find.text('7-day streak!').evaluate().isNotEmpty,
     reason: 'the day-7 chest modal',
   );
-  await tester.pumpFor(const Duration(milliseconds: 1200));
+  // The chest's `arrive` (it drops in and squashes) has to be over for the
+  // shot to show the settled art size (frame 5.6, `artFit`).
+  await tester.pumpFor(const Duration(milliseconds: 2200));
   expect(find.text('+300 coins'), findsOneWidget, reason: 'contents first');
   expect(find.text('Open'), findsOneWidget);
   expect(find.text('Collect'), findsNothing);
@@ -253,7 +303,9 @@ Future<void> _chest(WidgetTester tester, Board board, _Shots shots) async {
     () => find.text('Collect').evaluate().isNotEmpty,
     reason: 'the open chest with Collect (5.6b)',
   );
-  await tester.pumpFor(const Duration(milliseconds: 1000));
+  // Past the burst, the open pose settled with Collect showing (5.6b).
+  await tester.pumpFor(const Duration(milliseconds: 2000));
+  expect(find.text('Collect'), findsOneWidget);
   await shots.take('d_04_day7_chest_open');
   await tester.tap(find.text('Collect'));
   await tester.pumpUntil(
@@ -270,6 +322,16 @@ Future<void> _chest(WidgetTester tester, Board board, _Shots shots) async {
   );
   await tester.pumpFor(const Duration(milliseconds: 600));
   await shots.take('d_05_reminder_offer');
+  // Frame 10.2b: "Change time" opens the phone's time picker over the
+  // offer; Cancel keeps the offered time (architecture.md §1.3).
+  await tester.ensureVisible(find.text('Change time'));
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await tester.tap(find.text('Change time'));
+  await tester.waitForTimePicker('the time picker (10.2b)');
+  await shots.take('d_05b_time_picker');
+  await tester.cancelTimePicker();
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  expect(find.text(offerTitle), findsOneWidget, reason: 'the offer stays');
   await tester.tap(find.text('No thanks'));
   await tester.pumpUntil(
     () => find.text(offerTitle).evaluate().isEmpty,
@@ -279,13 +341,79 @@ Future<void> _chest(WidgetTester tester, Board board, _Shots shots) async {
   expect(reminder.offered && !reminder.on, isTrue, reason: '$reminder');
   await tester.pumpFor(const Duration(milliseconds: 500));
   await shots.take('d_06_daily_after_day7');
+  // F-SAFE (lane RD): scrolled to the end, the last card clears the home
+  // indicator and the cream gradient runs to the screen's bottom edge.
+  await _scrollToEnd(tester, DailyPage);
+  await shots.take('d_07_daily_bottom');
+}
+
+/// Scrolls [page]'s first vertical scrollable to its end and lets it
+/// settle.
+Future<void> _scrollToEnd(WidgetTester tester, Type page) async {
+  final position = tester
+      .stateList<ScrollableState>(
+        find.descendant(
+          of: find.byType(page),
+          matching: find.byType(Scrollable),
+        ),
+      )
+      .map((state) => state.position)
+      .firstWhere((position) => position.axis == Axis.vertical);
+  position.jumpTo(position.maxScrollExtent);
+  await tester.pumpFor(const Duration(milliseconds: 500));
+}
+
+/// Frame 5.2: the first open after a missed day a freeze covered. The Daily
+/// screen shows the freeze notice once as a toast (copy.md G.9
+/// `streak_freeze_used`), the streak card's line reads "A freeze kept your
+/// flame lit." (m7-4 4.17) and its freeze chip has none left this week
+/// ("No freeze", `dailyFreezes`: copy.md's "0 left" is an owner question).
+/// The card keeps its line after the toast has gone, until the solve.
+Future<void> _saved(WidgetTester tester, _Shots shots) async {
+  await shots.take('d_02a_home_saved');
+  await tester.tap(find.text('Daily Puzzle'));
+  const line = 'A freeze kept your flame lit.';
+  final card = find.byType(StreakCard);
+  final cardLine = find.descendant(of: card, matching: find.text(line));
+  final toast = find.byType(ToastCard);
+  await tester.pumpUntil(
+    () => cardLine.evaluate().isNotEmpty && toast.evaluate().isNotEmpty,
+    reason: 'the freeze toast and the card\'s freeze line (5.2)',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  expect(find.text('4 days'), findsOneWidget);
+  expect(find.descendant(of: toast, matching: find.text(line)), findsOneWidget);
+  expect(
+    find.descendant(of: card, matching: find.text('No freeze')),
+    findsOneWidget,
+    reason: 'the week\'s freeze is spent',
+  );
+  await shots.take('d_02b_streak_saved');
+  // The toast leaves on its own; the line stays for the visit.
+  await tester.pumpUntil(
+    () => toast.evaluate().isEmpty,
+    timeout: const Duration(seconds: 10),
+    reason: 'the freeze toast gone',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  expect(cardLine, findsOneWidget, reason: 'the card keeps its line');
+  await shots.take('d_02c_streak_saved_card');
 }
 
 Future<void> _paused(WidgetTester tester, Board board, _Shots shots) async {
   await shots.take('d_10_home_paused');
+  // Frames 5.2b and 10.7: the paused card before the solve, the number
+  // kept, "Paused", and the freeze chip with none left.
   await _openDaily(tester, shots, 'd_11_paused_card');
   expect(find.text('4 days'), findsOneWidget, reason: 'the count never drops');
   expect(find.text('Paused'), findsOneWidget);
+  expect(
+    find.descendant(
+      of: find.byType(StreakCard),
+      matching: find.text('No freeze'),
+    ),
+    findsOneWidget,
+  );
   await _playDailyToWin(tester, board);
   // 10.7b: the win card says the flame is lit again.
   expect(find.text('Streak relit!'), findsOneWidget);
@@ -301,6 +429,57 @@ Future<void> _paused(WidgetTester tester, Board board, _Shots shots) async {
   expect(find.text('5 days'), findsOneWidget);
   expect(find.text('Paused'), findsNothing);
   await shots.take('d_13_lit_again');
+
+  // m7-4 4.10 (`motion.relitHome`): the first Home visit after the relight
+  // rings the Daily tile's badge for 2,400 ms, fades it over 400, and never
+  // again. Home heard of the relight while the Daily screen covered it;
+  // the glow waits for Home to show.
+  final relitBadge = find.byWidgetPredicate(
+    (w) => w is StreakBadge && w.look == StreakLook.relit,
+  );
+  await tester.tap(
+    find.descendant(
+      of: find.byType(DailyPage),
+      matching: find.bySemanticsLabel('Back'),
+    ),
+  );
+  await tester.pumpUntil(
+    () =>
+        find.byType(DailyPage).evaluate().isEmpty &&
+        find.byType(HomePage).evaluate().isNotEmpty,
+    reason: 'Home after the relight',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  expect(relitBadge, findsOneWidget, reason: 'the relit glow on Home (4.10)');
+  await shots.take('d_14_home_relit_glow');
+  await tester.pumpUntil(
+    () => relitBadge.evaluate().isEmpty,
+    timeout: const Duration(seconds: 8),
+    reason: 'the relit glow over (2,400 + 400 ms)',
+  );
+  expect(get<DatabaseService>().relitGlowSeen, isNotNull);
+  // A second visit: the plain lit badge.
+  await tester.tap(find.text('Daily Puzzle'));
+  await tester.pumpUntil(
+    () => find.byType(DailyPage).evaluate().isNotEmpty,
+    reason: 'the Daily screen again',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 800));
+  await tester.tap(
+    find.descendant(
+      of: find.byType(DailyPage),
+      matching: find.bySemanticsLabel('Back'),
+    ),
+  );
+  await tester.pumpUntil(
+    () =>
+        find.byType(DailyPage).evaluate().isEmpty &&
+        find.byType(HomePage).evaluate().isNotEmpty,
+    reason: 'Home again',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  expect(relitBadge, findsNothing, reason: 'the glow shows once');
+  await shots.take('d_15_home_glow_once');
 }
 
 Future<void> _settings(WidgetTester tester, Board board, _Shots shots) async {
@@ -334,6 +513,14 @@ Future<void> _settings(WidgetTester tester, Board board, _Shots shots) async {
   expect(find.text('Time'), findsNothing);
 
   await tester.ensureVisible(find.text('Reduce motion'));
+  // Frame 10.2e (m7-4 4.16): the three-way control is 48 tall.
+  final track = find
+      .descendant(
+        of: find.byType(SettingsSegmentedRow<ReduceMotionMode>),
+        matching: find.byType(NestySurface),
+      )
+      .first;
+  expect(tester.getSize(track).height, 48);
   await tester.tap(find.text('On'));
   await tester.pumpFor(const Duration(milliseconds: 400));
   expect(database.reduceMotion, ReduceMotionMode.on);
@@ -356,6 +543,10 @@ Future<void> _settings(WidgetTester tester, Board board, _Shots shots) async {
   await tester.pumpFor(const Duration(milliseconds: 400));
   expect(database.symbolsMode, SymbolsMode.large);
   await shots.take('d_24_symbols_large');
+  // F-SAFE (lane RD): Settings scrolled to the end, the last row clear of
+  // the home indicator, the gradient to the bottom edge.
+  await _scrollToEnd(tester, SettingsPage);
+  await shots.take('d_26_settings_bottom');
 
   await tester.tap(find.bySemanticsLabel('Close'));
   await tester.pumpUntil(
@@ -375,9 +566,28 @@ Future<void> _settings(WidgetTester tester, Board board, _Shots shots) async {
   (save as InMemorySaveService).debugUnlimitedBoosters = false;
   final coins = save.coins;
   await tester.tap(find.bySemanticsLabel('Play level 3'));
+  // Frame 10.9: "Relaxed mode is on…", once per launch, on the first level
+  // entered with the mode on; shot as it shows, well within its 2.5 s
+  // (architecture.md §1.3).
+  const relaxedToast = 'Relaxed mode is on. Undo as often as you like.';
+  await tester.pumpUntil(
+    () => find.text(relaxedToast).evaluate().isNotEmpty,
+    reason: 'the Relaxed mode toast (10.9)',
+    step: const Duration(milliseconds: 16),
+  );
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  await shots.take('d_24b_relaxed_toast');
   await board.waitForLevel(3);
   expect(board.state.relaxed, isTrue);
   expect(find.byIcon(NestyIcons.allInclusive), findsOneWidget);
+  // Frame 8.4: the board with Large symbols, once the toast (2.5 s) is gone.
+  expect(database.symbolsMode, SymbolsMode.large);
+  await tester.pumpUntil(
+    () => find.text(relaxedToast).evaluate().isEmpty,
+    reason: 'the Relaxed toast gone',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  await shots.take('d_24c_symbols_large_board');
   await board.move('r1c2', 'r2c1');
   for (var undo = 1; undo <= 3; undo++) {
     await board.waitIdle();
@@ -387,7 +597,7 @@ Future<void> _settings(WidgetTester tester, Board board, _Shots shots) async {
     if (undo < 3) await board.move('r1c2', 'r2c1');
   }
   expect(
-    find.text('Out of moves'),
+    find.byType(OutOfMovesSheet),
     findsNothing,
     reason: 'a third undo costs nothing in Relaxed mode',
   );

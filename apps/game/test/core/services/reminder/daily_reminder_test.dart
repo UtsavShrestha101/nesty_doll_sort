@@ -2,15 +2,20 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/app/localization_cubit/app_locale_resolver.dart';
 import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/services/clock/fake_clock.dart';
 import 'package:nesty_game/core/services/daily/fake_daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/database/hive_database_service.dart';
+import 'package:nesty_game/core/services/database/settings_schema.dart';
 import 'package:nesty_game/core/services/notifications/fake_notification_service.dart';
 import 'package:nesty_game/core/services/notifications/notification_service.dart';
 import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
+import 'package:nesty_game/l10n/app_localizations.dart';
+
+import '../../../app/localization_cubit/support/launch_catalogs.dart';
 
 /// `DailyReminder` (E4; spec-prop §7.9; docs/plans/m7-design.md P3.10):
 /// reminder lane test plan §3. `test/contracts/m7_phase3_test.dart` already
@@ -23,12 +28,20 @@ void main() {
   late FakeNotificationService notifications;
   late FakeDailyService daily;
   late DailyReminder reminder;
+  const englishPhone = [Locale('en', 'US')];
 
   setUp(() {
     settings = FakeDatabaseService();
     notifications = FakeNotificationService();
     daily = FakeDailyService(FakeClock())..unlocked = true;
-    reminder = DailyReminder(notifications, settings, daily);
+    // An English phone: the settings default ("system") follows it, so
+    // the English copy below holds whatever the host's own language.
+    reminder = DailyReminder(
+      notifications,
+      settings,
+      daily,
+      deviceLocales: () => englishPhone,
+    );
   });
 
   tearDown(() async {
@@ -134,6 +147,18 @@ void main() {
     expect(notifications.scheduled?.minute, 45);
   });
 
+  test('setTime says whether the time was stored', () async {
+    expect(await reminder.setTime(hour: 7, minute: 5), isTrue);
+    final failing = DailyReminder(
+      notifications,
+      _FailingStore(),
+      daily,
+      deviceLocales: () => englishPhone,
+    );
+    expect(await failing.setTime(hour: 7, minute: 5), isFalse);
+    await failing.dispose();
+  });
+
   test('setTime while off stores the time but schedules nothing', () async {
     await reminder.setTime(hour: 6, minute: 0);
     expect(settings.reminder.hour, 6);
@@ -156,7 +181,7 @@ void main() {
     },
   );
 
-  test('a language change reschedules with the new copy', () async {
+  test('a language change re-plans through start()', () async {
     await reminder.enable(hour: 8, minute: 0);
     expect(notifications.scheduled?.title, 'Nesty');
 
@@ -165,12 +190,107 @@ void main() {
     final before = notifications.scheduleCalls.length;
 
     await settings.setLanguage('en');
-    // Same language: DatabaseService only emits on an actual change, so
-    // nothing new happens; change language to Spanish once it exists is out
-    // of scope (English only today) — instead cover this by driving
-    // `refresh()` after a language stream event indirectly through resume.
     await Future<void>.delayed(Duration.zero);
-    expect(notifications.scheduleCalls.length, greaterThanOrEqualTo(before));
+    await Future<void>.delayed(Duration.zero);
+    expect(notifications.scheduleCalls.length, greaterThan(before));
+    final english = lookupAppLocalizations(const Locale('en'));
+    expect(
+      [
+        english.reminderNotificationBody,
+        english.reminderNotificationBody2,
+        english.reminderNotificationBody3,
+      ],
+      contains(notifications.scheduled?.body),
+      reason: 'the re-plan carries the pinned language',
+    );
+  });
+
+  group("the notification's text is in the app's language (M7 phase 5B, "
+      'l10n plan §1.4)', () {
+    // A fixed day, so every plan carries the same line (G.7 rotation).
+    final now = DateTime(2026, 9, 30, 10);
+
+    ReminderPlan planOn(List<Locale> phone, {AppLocaleResolver? locales}) {
+      final planner = DailyReminder(
+        notifications,
+        settings,
+        daily,
+        clock: FakeClock(now: now),
+        locales: locales,
+        deviceLocales: () => phone,
+      );
+      addTearDown(planner.dispose);
+      return planner.planFor(const ReminderSettings(on: true, hour: 19));
+    }
+
+    /// The plan [l10n]'s catalog gives on the same day.
+    void expectPlanIn(ReminderPlan plan, AppLocalizations l10n) {
+      expect(plan.title, l10n.reminderNotificationTitle);
+      // 2026-09-30 19:00 is epoch day 20726: 20726 % 3 = 2, the third line.
+      expect(plan.body, l10n.reminderNotificationBody3);
+      expect(plan.channelName, l10n.reminderChannelName);
+      expect(plan.channelDescription, l10n.reminderChannelDescription);
+    }
+
+    for (final locale in AppLocalizations.supportedLocales) {
+      test('a pinned $locale gives its own lines on a Korean phone', () async {
+        await settings.setLanguage(locale.toString());
+        expectPlanIn(
+          planOn(const [Locale('ko')]),
+          lookupAppLocalizations(locale),
+        );
+      });
+
+      test('"system" on a ${locale.languageCode} phone gives its lines', () {
+        expect(settings.languageCode, LocaleSetting.system);
+        expectPlanIn(
+          planOn([Locale(locale.languageCode, 'XX')]),
+          lookupAppLocalizations(Locale(locale.languageCode)),
+        );
+      });
+    }
+
+    test('"system" on a phone with no supported language gives English', () {
+      expectPlanIn(
+        planOn(const [Locale('ko'), Locale('zh', 'CN')]),
+        lookupAppLocalizations(const Locale('en')),
+      );
+    });
+
+    test('a pinned language beats the phone, as in the app', () async {
+      await settings.setLanguage('en');
+      final phone = [
+        for (final l in AppLocalizations.supportedLocales)
+          if (l.languageCode != 'en') l,
+        const Locale('en'),
+      ];
+      expectPlanIn(planOn(phone), lookupAppLocalizations(const Locale('en')));
+    });
+
+    test('an unknown stored code follows the phone', () async {
+      await settings.setLanguage('xx');
+      expectPlanIn(
+        planOn(const [Locale('en', 'GB')]),
+        lookupAppLocalizations(const Locale('en')),
+      );
+    });
+
+    test('the plan never throws for a language without a catalog yet, even '
+        'from a resolver that already lists the nine', () async {
+      await settings.setLanguage('de');
+      const german = Locale('de');
+      final plan = planOn(const [
+        Locale('de'),
+      ], locales: AppLocaleResolver(nineLaunchCatalogs));
+      expectPlanIn(
+        plan,
+        lookupAppLocalizations(
+          AppLocalizations.delegate.isSupported(german)
+              ? german
+              : const Locale('en'),
+        ),
+      );
+    });
   });
 
   test('resume re-reads and reschedules', () async {
@@ -322,6 +442,7 @@ void main() {
         settings,
         daily,
         clock: FakeClock(now: now),
+        deviceLocales: () => englishPhone,
       );
       addTearDown(clocked.dispose);
       return clocked
@@ -360,6 +481,7 @@ void main() {
         settings,
         daily,
         clock: FakeClock(now: DateTime(2026, 9, 30, 10)),
+        deviceLocales: () => englishPhone,
       );
       addTearDown(clocked.dispose);
       await clocked.enable(hour: 19, minute: 0);
@@ -373,4 +495,11 @@ void main() {
       }
     });
   });
+}
+
+/// A store whose reminder write always fails.
+class _FailingStore extends FakeDatabaseService {
+  @override
+  Future<void> setReminder(ReminderSettings reminder) async =>
+      throw StateError('disk full');
 }

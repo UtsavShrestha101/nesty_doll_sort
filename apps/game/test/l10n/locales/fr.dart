@@ -1,0 +1,92 @@
+import '../support/locale_rules.dart';
+
+/// French, tu (l10n.md §2.3). Lists from l10n.md §3.3, refined by T2 (draft
+/// round): more urgency, guilt and taunt wording, unaccented streak forms. A no-break space before `: ; ! ?` and
+/// inside « » is folded to a space before matching.
+const frRules = LocaleRules(
+  code: 'fr',
+  pluralCategories: {'one', 'many', 'other'},
+  oneIncludesZero: true,
+  match: MatchMode.words,
+  denied: [
+    // Loss.
+    'perdre', 'perds', 'perdu*', 'perte', 'réinitialis*', 'remis à zéro',
+    'brisé*', 'cassé*', 'rompu*', 'disparu*', 'manqu*',
+    // Guilt and absence.
+    "n'oublie pas", 'oubli*', 'tu nous manques', 'déçu*', 'décevoir',
+    'triste', 'honte', 'abandonn*',
+    // Urgency.
+    'vite', 'dépêche*', 'maintenant', 'tout de suite', 'avant', 'expire*',
+    'se termine', 'dernière chance', "aujourd'hui seulement", 'bientôt',
+    // Scarcity and FOMO.
+    'seulement', 'uniquement', 'il reste', 'restant*', 'limité*', 'exclusi*',
+    'rare', "tant qu'il", 'le dernier', 'offre limitée', 'plus que',
+    // More urgency and guilt (ne rate pas, sinon, culpabilité).
+    'dépêche-toi', 'sans tarder', 'ne rate pas', 'ne manque pas', 'sinon',
+    'dernier jour', 'tu vas perdre', 'perds pas', 'regrett*', 'coupable',
+    'tu nous as manqué', 'nous manques',
+    // Streak loss.
+    'perdre ta série', 'garder ta série', 'sauve ta série',
+    'préserve ta série', 'protège ta série', 'ne perds pas ta série',
+    'casser ta série', 'sauver ta série', 'garde ta série',
+  ],
+  taunts: [
+    'perdant*',
+    'trop lent',
+    'lent',
+    'écrasé*',
+    'trop facile',
+    'fais un effort',
+    'abandonne',
+    'échec',
+    'échoué',
+    'défaite',
+    'pathétique',
+    'faible',
+    'haha',
+    'mdr',
+    'bien essayé',
+    'plus de chance',
+    'tu as perdu',
+    'humili*',
+    'noob',
+    'looser',
+    'loser',
+    'lamentable',
+    'minable',
+    'ridicule',
+    'trop nul',
+    'nulle*',
+    'tu es nul',
+    'ratage',
+  ],
+  starDenied: [
+    'échoué',
+    'échec',
+    'réessaie',
+    'essaie encore',
+    'mauvais',
+    'nul',
+    'faux',
+    'pas assez',
+    'trop de',
+    'raté*',
+    'insuffisant*',
+    'pas assez bien',
+    'tu as échoué',
+  ],
+  streakWords: ['série*', 'serie*'],
+  identicalAllowed: {
+    'boosterExtraSlotShort': '"+1" is a number',
+    'chapterRibbonShort': 'a bare {name} placeholder',
+    'chaptersStarsTotalAll': 'a bare "{count}/{total}" format',
+    'homeBonusBadge': 'BONUS is the same word in this language',
+    'homeRecordsButton': '"Records" is French (§2.2)',
+    'languageRowSemantics': 'a bare "{autonym}, {detail}" format',
+    'pause': '"Pause" is a French word',
+    'recordsBadgesHeader': '"Badges" is French (§2.2)',
+    'recordsTitle': '"Records" is French (§2.2)',
+  },
+  computerStem: 'ordinateur',
+  humanStatus: ['en ligne', 'écrit', 'joueur 2', 'chat*'],
+);

@@ -5,6 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/repository/bundled_catalog_repository.dart';
 import 'package:nesty_game/core/services/records/badge.dart';
 
+import '../../l10n/locales/locales.dart';
+import '../../l10n/support/arb_checks.dart';
+import '../../l10n/support/arb_file.dart';
+
 /// M7's copy (docs/plans/m7-design.md §16, P2.11, P3.11 and phase 4's P4
 /// copy section; phase 4 architecture §4): every key the M7 phases added
 /// exists in `lib/l10n/app_en.arb`, and since Claude Design's m7-3 copy.md
@@ -157,8 +161,6 @@ void main() {
     'dailyShareTextNoStreak',
     'reminderOfferBody',
     'reminderOfferDeniedTitle',
-    'settingReminderOn',
-    'settingReminderOff',
     'settingOpenPhoneSettings',
     'reminderNotificationBody2',
     'reminderNotificationBody3',
@@ -192,9 +194,48 @@ void main() {
     'splashContentBody',
   ];
 
+  /// copy.md m7-4's new keys (phase 5, 5m-copy): the `## A11y` strings, the
+  /// `## Short forms` pairs, and the ids m7-3's frames drew without one.
+  const m7Phase5Keys = [
+    'boosterUndoShort',
+    'boosterHintShort',
+    'boosterExtraSlotShort',
+    'restartShort',
+    'tierSuperShort',
+    'winTitleShort',
+    'chapterRibbonShort',
+    'navHomeShort',
+    'navShopShort',
+    'navMuseumShort',
+    'raceWinTitleShort',
+    'raceLossTitleShort',
+    'boosterUndoCountSemantics',
+    'boosterHintCountSemantics',
+    'boosterSlotCountSemantics',
+    'boosterRestartSemantics',
+    'boosterSuggestedSemantics',
+    'chestSemantics',
+    'dailyFreezesSemantics',
+    'homeVsComputerLockedSemantics',
+    'raceRivalCardSemantics',
+    'raceRivalLockedSemantics',
+    'raceRivalSelectedSemantics',
+    'reminderTimeChipSemantics',
+    'skinOwnedSemantics',
+    'tutorialStepSemantics',
+    'chaptersStarsTotalAll',
+    'museumNextChip',
+    'raceRivalUnlockedRace',
+    'reminderPickerTitle',
+    'settingReminderTurnOff',
+  ];
+
   /// Keys copy.md m7-3 retired (phase 4 architecture §4): their surfaces
   /// changed, so no code reads them.
   const retiredKeys = [
+    // The language sheet enables a row when its catalog exists; nothing is
+    // "coming soon" any more (5B).
+    'languageComingSoon',
     // Records shows the rule's count of every family completed, a plain
     // number: "{count} of 10" counted the Museum's figurines (the phase-4
     // device run, Q159).
@@ -216,10 +257,24 @@ void main() {
     // chapter card carries its own label (`homeChapterCardSemantics`), the
     // Museum's collection card became the header's count chip (6.1), and
     // frame 10.6 draws no "Levels with 3 stars" cell (copy.md G.11 still
-    // lists `records_three_star_levels`: asked in "Follow-up after m7-3").
+    // listed `records_three_star_levels`; m7-4 withdrew it).
     'homeChaptersButton',
     'museumCollection',
     'recordsThreeStarLevels',
+    // copy.md m7-4 (phase 5): `records_three_star_levels` and
+    // `records_families_value` are withdrawn; the booster's screen-reader
+    // label is one plural per booster (`a11y_booster_undo` ...), the
+    // suggested Restart is `a11y_booster_suggested`, and a skin's owned
+    // value is `a11y_skin_owned`.
+    'boosterCountSemantics',
+    'restartSuggestedHint',
+    'shopOwned',
+    // Phase 5 fix pass (5f): frame 6.1 draws the locked shelf on two lines
+    // (`museumLockedLine1/2`, `museumLockedShelfShort` when narrow); frame
+    // 10.2e shows the reminder time itself and 10.2h has no value text.
+    'museumLockedShelfLabel',
+    'settingReminderOn',
+    'settingReminderOff',
   ];
 
   /// Final copy since M7 phase 1: the board's digits.
@@ -230,6 +285,7 @@ void main() {
     ...m7Phase2Keys,
     ...m7Phase3Keys,
     ...m7Phase4Keys,
+    ...m7Phase5Keys,
   ];
 
   String descriptionOf(String key) {
@@ -267,7 +323,9 @@ void main() {
   });
 
   test('each M7 key cites its copy.md id or says why it is not there', () {
-    final cites = RegExp(r'copy\.md (G\.\d+|E|H)\b|Not in copy\.md m7-3');
+    final cites = RegExp(
+      r'copy\.md (G\.\d+|E|H|A11y|Short forms)\b|Not in copy\.md m7-[34]',
+    );
     for (final key in allM7Keys) {
       expect(descriptionOf(key), matches(cites), reason: key);
     }
@@ -371,6 +429,40 @@ void main() {
       for (final word in human) {
         expect(value, isNot(contains(word)), reason: key);
       }
+    }
+  });
+
+  /// Phase 5B (build/m7-p5/p5/l10n.md §7.1): the same two rules in every
+  /// catalog that exists. Each rival surface keeps the locale's word for
+  /// "computer" (`LocaleRules.computerStem`): the keys above, Home's and
+  /// Records' race labels, and every other key whose English names the
+  /// computer (a select's case where its English case does, so a badge
+  /// about a race keeps it). And no race string shows a human status in
+  /// the locale's words (`LocaleRules.humanStatus`).
+  group('per locale', () {
+    final english = readEnglishArb();
+    final en = rulesFor('en')!;
+
+    test('the pinned rival surfaces name the computer in English', () {
+      for (final key in pinnedComputerKeys) {
+        expect(en.namesComputer(english[key] ?? ''), isTrue, reason: key);
+      }
+      expect(computerKeys(english, en), containsAll(pinnedComputerKeys));
+    });
+
+    for (final file in readArbFiles()) {
+      final rules = rulesFor(file.code)!;
+
+      test('app_${file.code}.arb: every rival surface says '
+          '"${rules.computerStem}"', () {
+        final problems = computerOffences(english, en, file, rules);
+        expect(problems, isEmpty, reason: problems.join('\n'));
+      });
+
+      test('app_${file.code}.arb: the race copy names no human status', () {
+        final problems = humanStatusOffences(rules, file);
+        expect(problems, isEmpty, reason: problems.join('\n'));
+      });
     }
   });
 }

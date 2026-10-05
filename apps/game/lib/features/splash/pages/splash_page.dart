@@ -10,6 +10,7 @@ import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
@@ -262,12 +263,10 @@ class _SplashViewState extends State<SplashView> {
     const base = 578 - SplashView._blockTop;
     const loaderTop = 690 - SplashView._blockTop;
     final loaderWidth = math.max(0.0, width - 2 * 56);
-    // The shelf dolls and the wordmark's doll wait for the skin's art (about
-    // a second after the splash opens) and fade in, instead of flashing the
-    // procedural placeholder first (Q58). With no showcase no art is coming,
-    // so the placeholder draws them (rule 3). A showcase whose art fails
-    // leaves them hidden here, and Home draws its placeholder dolls.
-    final dollsShown = widget.showcase == null || skin != null;
+    // The shelf dolls and the wordmark's doll draw the procedural placeholder
+    // from the first frame (red, frame 1.1) and crossfade to the skin's art
+    // when the showcase lands (phase 5 F-SPL, superseding Q58). A showcase
+    // whose art fails keeps the placeholder.
     final fade = context.reduceMotion
         ? Duration.zero
         : const Duration(milliseconds: UiMotionTokens.modalInMs);
@@ -284,7 +283,7 @@ class _SplashViewState extends State<SplashView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Wordmark(dollRenderer: skin?.restRenderer, dollShown: dollsShown),
+              Wordmark(dollRenderer: skin?.restRenderer),
               SizedBox(height: 18 - WordmarkSize.large.drop),
               const _DollSortChip(),
             ],
@@ -300,11 +299,12 @@ class _SplashViewState extends State<SplashView> {
           LottieDoll.positioned(
             centerX: center + d.dx,
             baseY: base,
-            doll: AnimatedOpacity(
-              opacity: dollsShown ? 1 : 0,
+            doll: AnimatedSwitcher(
               duration: fade,
-              curve: UiMotionTokens.curveEaseOut,
+              switchInCurve: UiMotionTokens.curveEaseOut,
+              switchOutCurve: UiMotionTokens.curveEaseOut,
               child: LottieDoll(
+                key: ValueKey(skin != null),
                 id: FxId.dollIdle,
                 color: DollColor.red,
                 height: d.height,
@@ -387,7 +387,7 @@ class _DollSortChip extends StatelessWidget {
       style: AppTextStyleTokens.cardTitle.copyWith(
         fontSize: 18,
         height: 1,
-        letterSpacing: 18 * 0.12,
+        letterSpacing: context.script.tracking(18 * 0.12),
         color: const Color(0xFFFFFFFF),
       ),
     ),

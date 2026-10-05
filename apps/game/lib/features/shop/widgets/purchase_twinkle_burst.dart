@@ -1,39 +1,32 @@
 import 'dart:async';
 
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
-import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 
-/// A skin or theme purchase's celebration (tokens `motion.purchase`, F.5,
-/// frame 7.2; menus spec 8.3).
+/// A skin or theme purchase's celebration (tokens `motion.purchaseItem`, m7-4
+/// 4.11; no card): `jingle_reward` plays at 0 (`JingleCues.reward`, called by
+/// the cubit when the purchase lands); [celebrate] adds the `success` haptic
+/// at 0 and three `fx_sparkle` around the card or button that was just bought
+/// (`PurchaseItemTokens.sparkleCount`), a few tens of ms apart. The price
+/// chip's swap to Equip / Use with `motion.tagPop` is `TagPop`'s, and the
+/// header balance's count down over 400 ms is `ScreenHeader`'s.
 ///
-/// `jingle_reward` and the music duck to 0.4 play at 0 (`JingleCues.reward`,
-/// called by the cubit when the purchase lands). [celebrate] adds the rest:
-/// the `success` haptic at 0 and, at [burstDelay] (300 ms), a short burst of
-/// `fx_twinkle` stars over the card that was just bought, then gone
-/// (LOTTIE.md "Win, Chapter complete, Shop": 2.0-2.4 s).
-///
-/// Reduce motion: no burst; the jingle and the haptic stay. There is no
-/// coin count-up: that belongs to a coin pack (M6), and a skin or theme
-/// spends coins rather than adding them.
-///
-/// `TODO(design)`: 7.2 draws the coin-pack purchase; what a skin or a theme
-/// purchase shows beyond the jingle (the "card in") is undrawn, so this
-/// keeps the small twinkle over the bought card (menus spec 8.3; BACKLOG "M7
-/// phase 4 design gaps").
+/// Reduce motion: no sparkles; the jingle and the haptic stay.
 abstract final class PurchaseTwinkleBurst {
-  /// When the burst starts (`motion.purchase.coinBurstAtMs`).
-  static const Duration burstDelay = Duration(
-    milliseconds: PurchaseMotionTokens.coinBurstAtMs,
-  );
+  /// The sparkles start with the swap: no wait (m7-4 4.11; the 300 ms of the
+  /// coin pack's 7.2 is that card's).
+  static const Duration burstDelay = Duration.zero;
 
   /// The full celebration for a purchase that just landed in [context]'s
-  /// card: the success haptic now, the burst after [burstDelay] unless
-  /// motion is reduced. [haptics] defaults to the app's service, when one is
+  /// card: the success haptic now and the sparkles, unless motion is
+  /// reduced. [haptics] defaults to the app's service, when one is
   /// registered.
   static void celebrate(
     BuildContext context, {
@@ -48,26 +41,36 @@ abstract final class PurchaseTwinkleBurst {
     // The success family (level won: medium then light).
     if (service != null) unawaited(service.play(HapticPattern.win));
     if (context.reduceMotion) return;
-    Timer(burstDelay, () {
-      if (!context.mounted) return;
-      showOver(context, library: library);
-    });
+    showOver(context, library: library);
   }
 
-  static const Duration _duration = Duration(milliseconds: 2200);
-
-  static const List<({double dx, double dy, double size, double phaseMs})>
+  /// A sparkle's canvas is 64 dp (`fx_sparkle`); the art in it is a small
+  /// star, so these draw it a little larger than the old twinkles.
+  static const List<({double dx, double dy, double size, int delayMs})>
   _points = [
-    (dx: 0.18, dy: 0.22, size: 22, phaseMs: 0),
-    (dx: 0.82, dy: 0.18, size: 18, phaseMs: 300),
-    (dx: 0.5, dy: 0.82, size: 20, phaseMs: 600),
+    (dx: 0.18, dy: 0.22, size: 44, delayMs: 0),
+    (dx: 0.82, dy: 0.18, size: 38, delayMs: 90),
+    (dx: 0.5, dy: 0.82, size: 42, delayMs: 180),
   ];
+
+  /// Long enough for the last sparkle (16 frames) to finish.
+  static const Duration _duration = Duration(milliseconds: 900);
 
   /// Finds [context]'s render box (a card's `GlobalKey`-free `context` is
   /// enough: it is called from inside the card that was tapped) and shows
-  /// the burst over it in the nearest `Overlay`. A missing overlay or an
+  /// the sparkles over it in the nearest `Overlay`. A missing overlay or an
   /// unattached box (the widget was already disposed) does nothing.
   static void showOver(BuildContext context, {FxLibrary? library}) {
+    // The cards celebrate from didUpdateWidget, inside a build: the overlay
+    // can't be marked dirty then, and the card's box isn't laid out yet.
+    // Measure and insert once the frame is done.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) showOver(context, library: library);
+      });
+      return;
+    }
     final overlay = Overlay.maybeOf(context);
     final renderObject = context.findRenderObject();
     if (overlay == null ||
@@ -75,6 +78,7 @@ abstract final class PurchaseTwinkleBurst {
         !renderObject.attached) {
       return;
     }
+    assert(_points.length == PurchaseItemTokens.sparkleCount);
     final origin = renderObject.localToGlobal(Offset.zero);
     final size = renderObject.size;
     late final OverlayEntry entry;
@@ -86,16 +90,15 @@ abstract final class PurchaseTwinkleBurst {
         height: size.height,
         child: IgnorePointer(
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
               for (final t in _points)
                 Positioned(
                   left: size.width * t.dx - t.size / 2,
                   top: size.height * t.dy - t.size / 2,
-                  child: LottieTwinkle(
-                    size: t.size,
-                    phaseMs: t.phaseMs,
-                    library: library,
-                  ),
+                  width: t.size,
+                  height: t.size,
+                  child: _Sparkle(delayMs: t.delayMs, library: library),
                 ),
             ],
           ),
@@ -106,5 +109,45 @@ abstract final class PurchaseTwinkleBurst {
     Timer(_duration, () {
       if (entry.mounted) entry.remove();
     });
+  }
+}
+
+/// One `fx_sparkle`, played once after [delayMs] (nothing is drawn before).
+class _Sparkle extends StatefulWidget {
+  const _Sparkle({required this.delayMs, this.library});
+
+  final int delayMs;
+  final FxLibrary? library;
+
+  @override
+  State<_Sparkle> createState() => _SparkleState();
+}
+
+class _SparkleState extends State<_Sparkle> {
+  Timer? _timer;
+  bool _started = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.delayMs == 0) {
+      _started = true;
+    } else {
+      _timer = Timer(Duration(milliseconds: widget.delayMs), () {
+        if (mounted) setState(() => _started = true);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_started) return const SizedBox.shrink();
+    return LottieFxView(id: FxId.fxSparkle, library: widget.library);
   }
 }

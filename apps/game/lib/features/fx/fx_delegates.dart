@@ -106,6 +106,38 @@ abstract final class FxDelegates {
       );
     }
 
+    // The named fills the game recolours (a ribbon's four, the counter's
+    // pill): the clip's colour, or the authored one.
+    for (final fill in spec.tintFills) {
+      final hook = _TintFill(fill, params);
+      values.add(
+        ValueDelegate.color(
+          ['**', fill],
+          callback: (f) =>
+              hook.color(f.startValue, f.endValue, f.linearKeyframeProgress),
+        ),
+      );
+    }
+
+    // The family counter's pill takes any width: both rectangles and the
+    // doll mark (LOTTIE.md "Tint and width"). The radius stays 13.
+    if (spec.sizedRects.isNotEmpty) {
+      final hook = _PillWidth(params);
+      for (final rect in spec.sizedRects) {
+        values.add(
+          ValueDelegate.rectangleSize([
+            '**',
+            rect,
+          ], callback: (f) => hook.size(f.startValue)),
+        );
+      }
+      values.add(
+        ValueDelegate.transformPosition(const [
+          'icon',
+        ], callback: (f) => hook.icon(f.startValue)),
+      );
+    }
+
     final travel = spec.travel;
     if (travel != null) {
       final hook = _Travel(travel, params);
@@ -314,6 +346,63 @@ final class _Fill {
     if (end == null || end == start) return start;
     // Never reached by the shipped files (every rim/tint fill is static).
     return Color.lerp(start, end, eased) ?? start;
+  }
+}
+
+/// A named fill the game recolours (`FxSpec.tintFills`): the clip's colour,
+/// or the authored one.
+final class _TintFill {
+  _TintFill(this.name, this.params);
+
+  final String name;
+  final FxDrawableParams params;
+
+  Color color(Color? start, Color? end, double eased) {
+    final override = params.tintOf(name);
+    if (override != null) return override;
+    if (start == null) return _white;
+    if (end == null || end == start) return start;
+    return Color.lerp(start, end, eased) ?? start;
+  }
+}
+
+/// The family counter's width (`pill_rect`, `glow_rect` and the `icon` null):
+/// the hugged width, or the authored 70. The values are built once per
+/// width (a callback must return a new [Offset], PROGRESS D42).
+final class _PillWidth {
+  _PillWidth(this.params);
+
+  final FxDrawableParams params;
+
+  /// The authored rectangle's height; the width is the one we set.
+  static const _height = 26.0;
+
+  /// The doll mark sits 14 dp in from the pill's left edge (LOTTIE.md).
+  static const _iconInset = 14.0;
+
+  double? _width;
+  Offset _size = Offset.zero;
+  Offset _icon = Offset.zero;
+
+  Offset size(Offset? authored) {
+    final width = params.pillWidth;
+    if (width == null) return authored ?? const Offset(70, _height);
+    _sync(width);
+    return _size;
+  }
+
+  Offset icon(Offset? authored) {
+    final width = params.pillWidth;
+    if (width == null) return authored ?? const Offset(-21, 0);
+    _sync(width);
+    return _icon;
+  }
+
+  void _sync(double width) {
+    if (_width == width) return;
+    _width = width;
+    _size = Offset(width, _height);
+    _icon = Offset(-width / 2 + _iconInset, 0);
   }
 }
 

@@ -18,7 +18,10 @@ class RacesWonCard extends StatelessWidget {
 
   static const _style = SurfaceStyle(
     color: AppColorTokens.surfaceWhite,
-    shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5)],
+    shadows: [
+      NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
+      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4),
+    ],
   );
 
   @override
@@ -26,26 +29,27 @@ class RacesWonCard extends StatelessWidget {
     final l10n = context.localizations;
     return NestySurface(
       style: _style,
-      radius: BorderRadius.circular(24),
+      radius: BorderRadius.circular(20),
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             l10n.recordsRacesHeader,
             style: AppTextStyleTokens.cardTitle.copyWith(
-              fontSize: 18,
+              fontSize: 16,
+              height: 1,
               color: AppColorTokens.textPrimary,
             ),
             maxLines: 1,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           for (var i = 0; i < wins.length; i++) ...[
             if (i > 0)
               const ColoredBox(
-                color: Color(0xFFF0E0C4),
-                child: SizedBox(height: 1),
+                color: AppColorTokens.divider,
+                child: SizedBox(height: 1.5),
               ),
             _RivalRow(
               number: i + 1,
@@ -91,17 +95,20 @@ class _RivalRow extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Wrap(
-                spacing: 8,
+                spacing: 6,
                 runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     name,
+                    // NestyHub:137: Fredoka 600 16/1; a locked rival `#A48B72`.
                     style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 18,
+                      fontSize: 16,
+                      height: 1,
+                      fontWeight: FontWeight.w600,
                       color: unlocked
                           ? AppColorTokens.textPrimary
-                          : AppColorTokens.textMuted,
+                          : AppColorTokens.disabledText,
                     ),
                     maxLines: 1,
                   ),
@@ -113,10 +120,11 @@ class _RivalRow extends StatelessWidget {
             Text(
               unlocked && wins > 0 ? count : '–',
               style: AppTextStyleTokens.number.copyWith(
-                fontSize: 22,
+                fontSize: 18,
+                height: 1,
                 color: unlocked && wins > 0
                     ? AppColorTokens.textPrimary
-                    : AppColorTokens.textMuted,
+                    : AppColorTokens.disabledText,
               ),
               maxLines: 1,
             ),

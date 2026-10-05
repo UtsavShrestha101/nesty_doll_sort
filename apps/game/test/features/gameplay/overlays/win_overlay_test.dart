@@ -537,8 +537,26 @@ void main() {
       expect(find.byType(StarRow), findsNothing);
     });
 
-    testWidgets('the 16:9 card (winStarsShort): stars at 128, buttons at 522, '
-        'and neither the note nor the tip (C11)', (tester) async {
+    testWidgets('the 16:9 card (winStarsShort): stars at 128, buttons at 522 '
+        'with no note to show', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(stars: 2),
+        size: const Size(390, 693),
+        padding: const EdgeInsets.only(top: 59, bottom: 34),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(tester.getTopLeft(find.byType(StarRow)).dy, closeTo(128, 0.5));
+      expect(find.byKey(WinOverlay.noteKey), findsNothing);
+      expect(
+        tester.getTopLeft(find.widgetWithText(TactileButton, 'Continue')).dy,
+        closeTo(522, 0.5),
+      );
+    });
+
+    testWidgets('the 16:9 card keeps the helper note (tip or helper, never '
+        'both): the pill at 486, the card moved up, buttons at 548 '
+        '(m7-4 4.12)', (tester) async {
       var tipShown = 0;
       await pumpScreen(
         tester,
@@ -553,11 +571,54 @@ void main() {
       );
       await tester.pump(const Duration(seconds: 2));
       expect(tester.getTopLeft(find.byType(StarRow)).dy, closeTo(128, 0.5));
-      expect(find.byKey(WinOverlay.noteKey), findsNothing);
-      expect(tipShown, 0, reason: 'the tip waits for a card that can show it');
+      expect(
+        find.text('Wins with a hint or an extra slot earn up to 2 stars.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Fewer moves earn more stars'), findsNothing);
+      expect(tipShown, 0, reason: 'the helper note wins; the tip waits');
+      expect(
+        tester.getTopLeft(find.byKey(WinOverlay.noteKey)).dy,
+        closeTo(486, 1),
+      );
       expect(
         tester.getTopLeft(find.widgetWithText(TactileButton, 'Continue')).dy,
-        closeTo(522, 0.5),
+        closeTo(548, 0.5),
+      );
+    });
+
+    testWidgets('the 16:9 card shows the tip, once, when that is the note', (
+      tester,
+    ) async {
+      var tipShown = 0;
+      await pumpScreen(
+        tester,
+        _overlay(stars: 2, starTip: true, onTipShown: () => tipShown++),
+        size: const Size(390, 693),
+        padding: const EdgeInsets.only(top: 59, bottom: 34),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byKey(WinOverlay.noteKey), findsOneWidget);
+      expect(tipShown, 1);
+    });
+
+    testWidgets('a 731 dp phone blends the two cards by height: the stars '
+        'and the button sit between the 693 and 844 values', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(stars: 2),
+        size: const Size(390, 731),
+        padding: const EdgeInsets.only(top: 59, bottom: 34),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      final t = (731 - 693) / (844 - 693);
+      expect(
+        tester.getTopLeft(find.byType(StarRow)).dy,
+        closeTo(128 + (176 - 128) * t, 0.6),
+      );
+      expect(
+        tester.getTopLeft(find.widgetWithText(TactileButton, 'Continue')).dy,
+        closeTo(522 + (646 - 522) * t, 0.6),
       );
     });
   });
@@ -651,7 +712,7 @@ void main() {
         tester.getBottomLeft(shareButton).dy,
         lessThan(tester.getTopLeft(back).dy),
       );
-      expect(find.bySemanticsLabel("Share today's result"), findsOneWidget);
+      expect(find.bySemanticsLabel('Share today’s result'), findsOneWidget);
       await tester.tap(shareButton);
       await tester.pump();
       expect(share.shared.single, startsWith('Nesty Daily · Sep 26\n'));

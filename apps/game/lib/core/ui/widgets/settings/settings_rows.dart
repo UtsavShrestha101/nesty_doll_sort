@@ -11,51 +11,55 @@ import 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_surface.dart';
 import 'package:nesty_game/core/ui/widgets/toggle/nesty_toggle.dart';
 
-/// The 44 dp icon tile of frames 10.2e and 10.2f (radius 14, a tint under a
-/// tinted glyph; ui-spec-menus §7.1): [face] fills it, [glyph] colours the
-/// icon. A row without one keeps the bare icon (Records).
+/// The icon tile of frames 10.2e, 10.2f and 10.2h (tokens
+/// `layout.settingsRows.iconTiles`: 36 dp, radius 12, a 22 dp glyph): [face]
+/// fills it, [glyph] colours the icon. A row without one keeps the bare icon
+/// (Records).
 @immutable
 class SettingsTile {
   const SettingsTile({required this.face, required this.glyph});
 
-  /// Sound, Music, Haptics, Language, Restore and the other links: the wood
-  /// tint at half strength under the secondary text colour.
+  /// Sound, Music, Haptics, Language, Restore, the other links and a reminder
+  /// that is switched off (10.2h): `default`, `#F6E2C2` under `#6E4526`.
   static final wood = SettingsTile(
-    face: AppColorTokens.woodLight.withValues(alpha: 0.5),
-    glyph: AppColorTokens.textSecondary,
+    face: SettingsRowsTokens.iconTilesDefault[0],
+    glyph: SettingsRowsTokens.iconTilesDefault[1],
   );
 
-  /// The reminder bell and its Time row (`dailyTop` at .35, `coinText`).
+  /// The reminder bell and its Time row while it is on: `reminder`.
   static final reminder = SettingsTile(
-    face: AppColorTokens.dailyTop.withValues(alpha: 0.35),
-    glyph: AppColorTokens.coinText,
+    face: SettingsRowsTokens.iconTilesReminder[0],
+    glyph: SettingsRowsTokens.iconTilesReminder[1],
   );
 
-  /// The reminder blocked by the phone (frame 10.2f): the wood tile.
-  static final reminderOff = wood;
+  /// The reminder blocked by the phone (frame 10.2f): `reminderBlocked`.
+  static final reminderOff = SettingsTile(
+    face: SettingsRowsTokens.iconTilesReminderBlocked[0],
+    glyph: SettingsRowsTokens.iconTilesReminderBlocked[1],
+  );
 
   /// Relaxed mode.
-  static const relaxed = SettingsTile(
-    face: AppColorTokens.successTint,
-    glyph: AppColorTokens.success,
+  static final relaxed = SettingsTile(
+    face: SettingsRowsTokens.iconTilesRelaxed[0],
+    glyph: SettingsRowsTokens.iconTilesRelaxed[1],
   );
 
   /// Reduce motion.
-  static const motion = SettingsTile(
-    face: AppColorTokens.iceTint,
-    glyph: AppColorTokens.iceEdge,
+  static final motion = SettingsTile(
+    face: SettingsRowsTokens.iconTilesReduceMotion[0],
+    glyph: SettingsRowsTokens.iconTilesReduceMotion[1],
   );
 
   final Color face;
   final Color glyph;
 
   /// The tile's side.
-  static const double size = 44;
+  static const double size = SettingsRowsTokens.iconTilesSize;
 
-  /// The gap between the tile and its text: the text column starts at
-  /// [size] + [gap] (frame 10.2f's Open phone settings pill lines up with
+  /// The gap between the tile and its text (NestyHub:151: 12): the text
+  /// column starts at [size] + [gap] (the blocked row's actions line up with
   /// it).
-  static const double gap = 14;
+  static const double gap = 12;
 }
 
 class _TileIcon extends StatelessWidget {
@@ -76,9 +80,15 @@ class _TileIcon extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: tile.face,
-            borderRadius: const BorderRadius.all(Radius.circular(14)),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(SettingsRowsTokens.iconTilesRadius),
+            ),
           ),
-          child: Icon(icon, size: 24, color: tile.glyph),
+          child: Icon(
+            icon,
+            size: SettingsRowsTokens.iconTilesGlyph,
+            color: tile.glyph,
+          ),
         ),
       ),
     );
@@ -88,22 +98,21 @@ class _TileIcon extends StatelessWidget {
 /// A rounded card grouping [SettingsRow]/[SettingsToggleRow] children with a
 /// dashed divider between them (design/README.md "08 Settings & system",
 /// frame 8.1's toggles and link cards). With [tiled] (the m7-3 Settings,
-/// frames 10.2e and 10.2f) the divider is a solid 1 px line inset by the
-/// icon tile's width.
+/// frames 10.2e, 10.2f and 10.2h) the card is the frame's flat white one
+/// (radius 22, 14 dp inside) and the divider a solid 1.5 dp line across it.
 class SettingsSection extends StatelessWidget {
   const SettingsSection({
     required this.children,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    this.padding = _defaultPadding,
     this.tiled = false,
     super.key,
   });
 
+  static const _defaultPadding = EdgeInsets.symmetric(horizontal: 16);
+
   final List<Widget> children;
   final EdgeInsetsGeometry padding;
   final bool tiled;
-
-  // TODO(design): #F0E0C4 is frame-only (10.2e); ask for a tokens.json color.
-  static const _tiledDivider = Color(0xFFF0E0C4);
 
   static const _style = SurfaceStyle(
     gradient: AppGradientTokens.surface,
@@ -113,27 +122,35 @@ class SettingsSection extends StatelessWidget {
     ],
   );
 
+  /// NestyHub:149: `#FFFDF7`, `inset 0 2px 0 #fff, 0 5px 0 #D8B07A`.
+  static const _tiledStyle = SurfaceStyle(
+    color: AppColorTokens.surfaceWhite,
+    shadows: [
+      NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
+      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) => NestySurface(
-    style: _style,
-    radius: const BorderRadius.all(Radius.circular(24)),
+    style: tiled ? _tiledStyle : _style,
+    radius: BorderRadius.all(Radius.circular(tiled ? 22 : 24)),
     width: double.infinity,
-    padding: padding,
+    padding: tiled && padding == _defaultPadding
+        ? const EdgeInsets.symmetric(horizontal: 14)
+        : padding,
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < children.length; i++) ...[
           if (i > 0)
             tiled
-                ? const Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      start: SettingsTile.size + SettingsTile.gap + 14,
-                    ),
-                    child: SizedBox(
-                      height: 1,
-                      width: double.infinity,
-                      child: ColoredBox(color: _tiledDivider),
-                    ),
+                // `layout.settingsRows.divider`: 1.5 dp `color.divider`, the
+                // card's whole inner width (NestyHub:265).
+                ? SizedBox(
+                    height: SettingsRowsTokens.divider.width,
+                    width: double.infinity,
+                    child: ColoredBox(color: SettingsRowsTokens.divider.color),
                   )
                 : const _DashedDivider(),
           children[i],
@@ -175,6 +192,9 @@ class SettingsRow extends StatelessWidget {
   /// The row's least height: a full touch target.
   static const double minHeight = 48;
 
+  /// NestyHub:151: `min-height: 44px` inside a 6 + 6 dp padding.
+  static const double _tiledMinHeight = 56;
+
   @override
   Widget build(BuildContext context) {
     final value = this.value;
@@ -185,13 +205,16 @@ class SettingsRow extends StatelessWidget {
       // 12 + 12 around the 23 px icon is 47: at least 48 dp for its target
       // (spec §10.3; m7-design §15, review R21).
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: minHeight),
+        // A tiled row is the frame's 44 dp line inside 6 dp above and below.
+        constraints: BoxConstraints(
+          minHeight: tile == null ? minHeight : _tiledMinHeight,
+        ),
         child: TactileSurface(
           style: _transparent,
           radius: BorderRadius.zero,
           onPressed: onTap,
           width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: tile == null ? 12 : 8),
+          padding: EdgeInsets.symmetric(vertical: tile == null ? 12 : 6),
           alignment: AlignmentDirectional.centerStart,
           child: Row(
             children: [
@@ -213,8 +236,9 @@ class SettingsRow extends StatelessWidget {
                 Text(
                   value,
                   style: AppTextStyleTokens.caption.copyWith(
-                    fontSize: 14,
+                    fontSize: tile == null ? 14 : 15,
                     height: 1,
+                    fontWeight: tile == null ? null : FontWeight.w700,
                     color: tile == null
                         ? AppColorTokens.textMuted
                         : AppColorTokens.textSecondary,
@@ -226,7 +250,7 @@ class SettingsRow extends StatelessWidget {
                 const Icon(
                   NestyIcons.chevronRight,
                   size: 22,
-                  color: AppColors.chevron,
+                  color: AppColorTokens.chevron,
                 ),
               ],
             ],
@@ -237,16 +261,19 @@ class SettingsRow extends StatelessWidget {
   }
 }
 
-/// A tiled row's title: Fredoka 700 19 (ui-spec-menus §0.12).
+/// A tiled row's title: Fredoka 600 17/1.15 (NestyHub:153).
 final TextStyle _tiledTitle = AppTextStyleTokens.cardTitle.copyWith(
-  fontSize: 19,
+  fontSize: 17,
+  fontWeight: FontWeight.w600,
   height: 1.15,
   color: AppColorTokens.textPrimary,
 );
 
-/// A tiled row's subtitle: Nunito 700 13, `textSecondary`.
+/// A tiled row's subtitle: Nunito 700 12/1.3, `textSecondary` (NestyHub:153).
 final TextStyle _tiledSubtitle = AppTextStyleTokens.caption.copyWith(
-  fontSize: 13,
+  fontSize: 12,
+  height: 1.3,
+  fontWeight: FontWeight.w700,
   color: AppColorTokens.textSecondary,
 );
 
@@ -285,52 +312,63 @@ class SettingsToggleRow extends StatelessWidget {
     final tile = this.tile;
     final footer = this.footer;
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: tile == null ? 12 : 8),
+      padding: tile == null
+          ? const EdgeInsets.symmetric(vertical: 12)
+          // 6 above and below; a row with actions under it is 8 and 10
+          // (NestyHub:265).
+          : (footer == null
+                ? const EdgeInsets.symmetric(vertical: 6)
+                : const EdgeInsets.only(top: 8, bottom: 10)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _TileIcon(icon: icon, tile: tile),
-              SizedBox(width: tile == null ? 12 : SettingsTile.gap),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: tile == null
-                          ? AppTextStyleTokens.row
-                          : _tiledTitle,
-                    ),
-                    if (subtitle != null)
+          ConstrainedBox(
+            constraints: BoxConstraints(minHeight: tile == null ? 0 : 44),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _TileIcon(icon: icon, tile: tile),
+                SizedBox(width: tile == null ? 12 : SettingsTile.gap),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        subtitle,
+                        label,
                         style: tile == null
-                            ? AppTextStyleTokens.caption.copyWith(
-                                fontSize: 12,
-                                color: AppColorTokens.textMuted,
-                              )
-                            : _tiledSubtitle,
+                            ? AppTextStyleTokens.row
+                            : _tiledTitle,
                       ),
-                  ],
+                      if (subtitle != null)
+                        Text(
+                          subtitle,
+                          style: tile == null
+                              ? AppTextStyleTokens.caption.copyWith(
+                                  fontSize: 12,
+                                  color: AppColorTokens.textMuted,
+                                )
+                              : _tiledSubtitle,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              NestyToggle(
-                value: value,
-                onChanged: onChanged,
-                semanticLabel: label,
-              ),
-            ],
+                NestyToggle(
+                  value: value,
+                  onChanged: onChanged,
+                  semanticLabel: label,
+                ),
+              ],
+            ),
           ),
           if (footer != null)
             Padding(
+              // NestyHub:160: `margin: 8px 0 4px 48px` (tile + gap).
               padding: const EdgeInsetsDirectional.only(
                 start: SettingsTile.size + SettingsTile.gap,
-                top: 4,
+                top: 8,
+                bottom: 4,
               ),
               child: footer,
             ),
@@ -341,8 +379,9 @@ class SettingsToggleRow extends StatelessWidget {
 }
 
 /// A pill button inside a settings row (frame 10.2f's "Open phone
-/// settings"): 44 tall, radius 16, white with a 4 px edge, a 20 dp glyph and
-/// a Fredoka 16 label. Its touch area is padded to 48 dp.
+/// settings", NestyHub:160): 36 tall, radius 14, white with a 4 px edge, a 19
+/// dp glyph and a Fredoka 600 15 label in `iconBrown`. Its touch area is
+/// padded to 48 dp.
 class SettingsPillButton extends StatelessWidget {
   const SettingsPillButton({
     required this.icon,
@@ -355,38 +394,45 @@ class SettingsPillButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
 
-  static const double height = 44;
+  static const double height = 36;
 
   static const _style = SurfaceStyle(
     color: AppColorTokens.surfaceWhite,
-    shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4)],
+    shadows: [
+      NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
+      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 4),
+    ],
   );
 
   @override
   Widget build(BuildContext context) => Align(
     alignment: AlignmentDirectional.centerStart,
+    // Shrink to the pill: an Align that fills the width made a Wrap treat it
+    // as a full line and pushed "Turn off" under it (frame 10.2f).
+    widthFactor: 1,
     child: TactileSurface(
       style: _style,
-      radius: const BorderRadius.all(Radius.circular(16)),
+      radius: const BorderRadius.all(Radius.circular(14)),
       onPressed: onPressed,
       height: height,
       minTouchSize: const Size(48, 48),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsetsDirectional.only(start: 10, end: 14),
       semanticLabel: label,
       excludeChildSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20, color: AppColorTokens.textPrimary),
-          const SizedBox(width: 8),
+          Icon(icon, size: 19, color: AppColorTokens.iconBrown),
+          const SizedBox(width: 6),
           Flexible(
             child: Text(
               label,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyleTokens.buttonSmall.copyWith(
-                fontSize: 16,
-                color: AppColorTokens.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColorTokens.iconBrown,
               ),
             ),
           ),
@@ -432,12 +478,14 @@ class SettingsSegmentedRow<T> extends StatelessWidget {
 
   /// The track: 48 dp, so every segment's touch area is a full 48 (the
   /// spec's 44 grows by the hit-target rule).
-  static const double trackHeight = 48;
+  static const double trackHeight = SettingsRowsTokens.segmentedHeight;
   static const double _inset = 4;
 
   static const _trackStyle = SurfaceStyle(
     color: AppColorTokens.surfaceTrack,
-    shadows: [NestyShadow(color: AppColors.divider, inset: true, dy: 2)],
+    shadows: [
+      NestyShadow(color: AppColors.segmentedTrackShade, inset: true, dy: 2),
+    ],
   );
 
   static const _thumbStyle = SurfaceStyle(
@@ -456,25 +504,31 @@ class SettingsSegmentedRow<T> extends StatelessWidget {
       label: label,
       value: current,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        // `padding: 8px 0 10px` (NestyHub:265).
+        padding: tile == null
+            ? const EdgeInsets.symmetric(vertical: 8)
+            : const EdgeInsets.only(top: 8, bottom: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ExcludeSemantics(
-              child: Row(
-                children: [
-                  _TileIcon(icon: icon, tile: tile),
-                  SizedBox(width: tile == null ? 12 : SettingsTile.gap),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: tile == null
-                          ? AppTextStyleTokens.row
-                          : _tiledTitle,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: tile == null ? 0 : 44),
+                child: Row(
+                  children: [
+                    _TileIcon(icon: icon, tile: tile),
+                    SizedBox(width: tile == null ? 12 : SettingsTile.gap),
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: tile == null
+                            ? AppTextStyleTokens.row
+                            : _tiledTitle,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -531,6 +585,8 @@ class SettingsSegmentedRow<T> extends StatelessWidget {
                 ),
               ),
             ),
+            // The frame's 2 dp under the track (`margin: 8px 0 2px 48px`).
+            if (tile != null) const SizedBox(height: 2),
           ],
         ),
       ),
@@ -573,8 +629,9 @@ class _Segment extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            // NestyHub:160: Fredoka 700 14.
             style: AppTextStyleTokens.buttonSmall.copyWith(
-              fontSize: 16,
+              fontSize: 14,
               color: selected
                   ? AppColorTokens.textPrimary
                   : AppColorTokens.textSecondary,
@@ -603,7 +660,7 @@ final class _DashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.divider
+      ..color = AppColors.rowDash
       ..strokeWidth = 1;
     var x = 0.0;
     while (x < size.width) {

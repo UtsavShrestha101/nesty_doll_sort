@@ -48,7 +48,7 @@ void main() {
   ) async {
     await pumpScreen(tester, const Material(child: BadgeGrid(earned: [])));
     expect(
-      find.bySemanticsLabel('Glass Act, not earned yet. Open a glass case'),
+      find.bySemanticsLabel('Glass Act, not earned yet. Open a glass case.'),
       findsOneWidget,
     );
     expect(find.text('Not earned yet'), findsNWidgets(12));
@@ -61,6 +61,31 @@ void main() {
     expect(arts, [
       for (final badge in BadgeId.values) UiArt.badge(badge, earned: false),
     ]);
+  });
+
+  testWidgets('type 13/11 and the sunk face for a badge not earned yet '
+      '(NestyHub:142-145, :322)', (tester) async {
+    await pumpScreen(
+      tester,
+      const Material(child: BadgeGrid(earned: [BadgeId.firstFamily])),
+    );
+    final earned = tester.widget<Text>(find.text('Snug as a Doll'));
+    expect(earned.style!.fontSize, 13);
+    expect(earned.style!.color, AppColorTokens.textPrimary);
+    final line = tester.widget<Text>(
+      find.text('You nested your first family.'),
+    );
+    expect(line.style!.fontSize, 11);
+    expect(line.style!.height, 1.3);
+    final locked = tester.widget<Text>(find.text('Glass Act'));
+    expect(locked.style!.color, AppColorTokens.textLocked);
+    NestySurface faceOf(String name) => tester.widget<NestySurface>(
+      find
+          .ancestor(of: find.text(name), matching: find.byType(NestySurface))
+          .first,
+    );
+    expect(faceOf('Glass Act').style.color, AppColorTokens.sunkFace);
+    expect(faceOf('Snug as a Doll').style.color, AppColorTokens.surfaceWhite);
   });
 
   testWidgets('three columns of 56 dp art, a row\'s cells the same height', (

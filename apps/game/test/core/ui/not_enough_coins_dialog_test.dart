@@ -41,7 +41,9 @@ void main() {
       'come from, warm and plain (D112)', (tester) async {
     await pumpDialog(tester, price: 800, balance: 100);
     expect(find.text('A few more coins'), findsOneWidget);
-    expect(find.text('800 coins'), findsOneWidget);
+    // The pill shows the number only; "coins" is in the label.
+    expect(find.text('800'), findsOneWidget);
+    expect(find.text('800 coins'), findsNothing);
     expect(find.text('You need 700 more coins'), findsOneWidget);
     expect(
       find.text('Coins come from winning levels, the daily puzzle and chests.'),
@@ -210,16 +212,47 @@ void main() {
       itemName: 'Forest Bear',
     );
     expect(find.text('Forest Bear'), findsOneWidget);
-    expect(find.text('2,500 coins'), findsOneWidget);
+    expect(find.text('2,500'), findsOneWidget);
+    expect(find.text('2,500 coins'), findsNothing);
     expect(find.text('You need 1,670 more coins'), findsOneWidget);
     expect(find.bySemanticsLabel('Forest Bear, 2,500 coins'), findsOneWidget);
     handle.dispose();
   });
 
+  testWidgets('type and chip follow NestyMeta:59-63: 24/1.15, 16/23, a 30 '
+      'tall pill with the number at 16 and the coin at 20', (tester) async {
+    await pumpDialog(tester, price: 800, balance: 100, itemName: 'Ocean');
+    final heading = tester.widget<Text>(find.text('You need 700 more coins'));
+    expect(heading.style!.fontSize, 24);
+    expect(heading.style!.height, 1.15);
+    final body = tester.widget<Text>(
+      find.text('Coins come from winning levels, the daily puzzle and chests.'),
+    );
+    expect(body.style!.fontSize, 16);
+    expect(body.style!.height, closeTo(23 / 16, 1e-9));
+    expect(tester.widget<Text>(find.text('Ocean')).style!.fontSize, 18);
+    final price = find.text('800');
+    expect(tester.widget<Text>(price).style!.fontSize, 16);
+    final pill = find.ancestor(of: price, matching: find.byType(NestySurface));
+    expect(tester.getSize(pill.first).height, 30);
+    final chip = tester.widget<NestySurface>(pill.at(1));
+    expect(chip.style.color, AppColorTokens.surfaceWhite);
+    expect(chip.style.shadows.single.inset, isTrue);
+    expect(chip.style.shadows.single.color, AppColorTokens.surfaceTrack);
+    expect(
+      tester
+          .getSize(
+            find.descendant(of: pill.first, matching: find.byType(CoinIcon)),
+          )
+          .width,
+      20,
+    );
+  });
+
   testWidgets('without an item name the chip is the price alone (the booster '
       'popup passes none until it knows its booster)', (tester) async {
     await pumpDialog(tester, price: 60, balance: 10);
-    expect(find.text('60 coins'), findsOneWidget);
+    expect(find.text('60'), findsOneWidget);
     expect(find.text('Forest Bear'), findsNothing);
   });
 

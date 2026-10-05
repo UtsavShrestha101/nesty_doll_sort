@@ -166,6 +166,8 @@ class BoosterBar extends StatelessWidget {
     this.hintKey,
     this.hintGlow = false,
     this.hintBump = 0,
+    this.hintRing = false,
+    this.hintGain = 0,
     this.onSlotLimit,
     super.key,
   });
@@ -196,6 +198,14 @@ class BoosterBar extends StatelessWidget {
   /// The Hint badge bumps 1.3× for 240 ms each time this changes (the
   /// chest's hint sprite landed, frame 10.3d).
   final int hintBump;
+
+  /// The ring round the Hint badge while the chest's hint sprite lands.
+  final bool hintRing;
+
+  /// The hints the chest just gave, as the green "+N" tag over the Hint
+  /// badge (`motion.chest.collect.gainTag`, held 1,200 ms by the caller);
+  /// 0 shows none.
+  final int hintGain;
 
   /// A tap on the sunk +1 Slot face (frame 12.9): the board's toast says
   /// why. Null makes it inert.
@@ -229,8 +239,10 @@ class BoosterBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               BoosterButton(
+                kind: BoosterButtonKind.undo,
                 icon: NestyIcons.undo,
                 label: l10n.boosterUndo,
+                shortLabel: l10n.boosterUndoShort,
                 width: width,
                 badge: model.undoBadge,
                 onPressed: model.undoEnabled ? onUndo : null,
@@ -239,32 +251,30 @@ class BoosterBar extends StatelessWidget {
               const SizedBox(width: BoosterBarTokens.gap),
               BoosterButton(
                 key: hintKey,
+                kind: BoosterButtonKind.hint,
                 icon: NestyIcons.lightbulb,
                 label: l10n.boosterHint,
+                shortLabel: l10n.boosterHintShort,
                 width: width,
                 badge: model.hintBadge,
                 onPressed: model.hintEnabled ? onHint : null,
                 glow: hintGlow ? BoosterGlow(library: library) : null,
                 badgeBump: hintBump,
-                gainTag: hintGlow ? l10n.hintGainedTag(1) : null,
+                badgeRing: hintRing,
+                gainTag: hintGain > 0 ? l10n.hintGainedTag(hintGain) : null,
               ),
               const SizedBox(width: BoosterBarTokens.gap),
               BoosterButton(
+                kind: BoosterButtonKind.slot,
                 icon: NestyIcons.addBox,
                 label: l10n.boosterExtraSlot,
+                shortLabel: l10n.boosterExtraSlotShort,
                 width: width,
                 color: slotColor,
                 badge: limit == null
                     ? model.slotBadge
                     : BoosterBadge.limit(limit, LayoutLimits.maxExtraSlots),
                 spent: limit != null,
-                spentLabel: limit == null
-                    ? null
-                    : l10n.boosterLimitSemantics(
-                        l10n.boosterExtraSlot,
-                        limit,
-                        LayoutLimits.maxExtraSlots,
-                      ),
                 onPressed: limit != null
                     ? onSlotLimit
                     : model.slotEnabled
@@ -273,14 +283,14 @@ class BoosterBar extends StatelessWidget {
               ),
               const SizedBox(width: BoosterBarTokens.gap),
               BoosterButton(
+                kind: BoosterButtonKind.restart,
                 icon: NestyIcons.restartAlt,
                 label: l10n.restart,
+                shortLabel: l10n.restartShort,
                 width: width,
                 onPressed: model.restartEnabled ? onRestart : null,
                 glow: model.restartGlow ? BoosterGlow(library: library) : null,
-                semanticHint: model.restartGlow
-                    ? l10n.restartSuggestedHint
-                    : null,
+                suggested: model.restartGlow,
               ),
             ],
           ),

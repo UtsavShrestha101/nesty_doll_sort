@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show Locale;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,10 @@ import 'package:nesty_game/core/services/notifications/reminder_notification_det
 import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/features/daily/cubit/reminder_offer_cubit.dart';
+import 'package:nesty_game/l10n/app_localizations.dart';
+
+import '../l10n/locales/locales.dart';
+import '../l10n/support/arb_file.dart';
 
 /// E1, the respect rules for the daily reminder (E4; spec-prop §7.9 "local,
 /// opt-in, off until the player accepts, at most one a day, never naming
@@ -249,6 +254,53 @@ void main() {
     for (final text in [title, body]) {
       expect(text.toLowerCase(), isNot(contains('streak')));
       expect(text, isNot(contains('12')));
+    }
+  });
+
+  /// Phase 5B (build/m7-p5/p5/l10n.md §3.2 item 5, §7.1): in every language
+  /// the game ships, the scheduled plan is that language's own lines (the
+  /// stored language picks them, as the app's own setting does), and none
+  /// of them names the streak in that language's words
+  /// (`LocaleRules.streakWords`). A catalog gen-l10n hasn't turned into
+  /// code yet is skipped with its reason.
+  group('in every language the game ships', () {
+    for (final file in readArbFiles()) {
+      final parts = file.code.split('_');
+      final locale = Locale(parts.first, parts.length > 1 ? parts[1] : null);
+      final generated = AppLocalizations.delegate.isSupported(locale);
+
+      test(
+        '${file.code}: the plan reads its own lines and never names the '
+        'streak',
+        () async {
+          await settings.setLanguage(file.code);
+          daily.status = solved(streak: 12);
+          await reminder.enable(hour: 19, minute: 0);
+          final plan = notifications.scheduled!;
+          final l10n = lookupAppLocalizations(locale);
+          expect(plan.title, l10n.reminderNotificationTitle);
+          expect([
+            l10n.reminderNotificationBody,
+            l10n.reminderNotificationBody2,
+            l10n.reminderNotificationBody3,
+          ], contains(plan.body));
+          expect(plan.channelName, l10n.reminderChannelName);
+          expect(plan.channelDescription, l10n.reminderChannelDescription);
+          final rules = rulesFor(file.code)!;
+          for (final text in [
+            plan.title,
+            plan.body,
+            plan.channelName,
+            plan.channelDescription,
+          ]) {
+            expect(rules.offences(rules.streakWords, text), isEmpty);
+            expect(text, isNot(contains('12')));
+          }
+        },
+        skip: generated
+            ? false
+            : 'app_${file.code}.arb has no generated code yet (gen-l10n)',
+      );
     }
   });
 }

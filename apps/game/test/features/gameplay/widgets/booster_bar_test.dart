@@ -396,6 +396,8 @@ void main() {
       VoidCallback? onSlotLimit,
       VoidCallback? onExtraSlot,
       bool hintGlow = false,
+      int hintGain = 0,
+      bool hintRing = false,
     }) => pumpScreen(
       tester,
       Scaffold(
@@ -410,6 +412,8 @@ void main() {
             onRestart: () {},
             onSlotLimit: onSlotLimit,
             hintGlow: hintGlow,
+            hintGain: hintGain,
+            hintRing: hintRing,
           ),
         ),
       ),
@@ -444,17 +448,85 @@ void main() {
       await pumpBar(tester, _state(softStuck: true, canUndo: false));
       final restart = tester.getCenter(find.byType(BoosterButton).last);
       expect(tester.getCenter(find.byType(BoosterGlow)), restart);
-      expect(find.bySemanticsLabel('Restart. Suggested'), findsOneWidget);
+      expect(find.bySemanticsLabel('Restart, suggested'), findsOneWidget);
       handle.dispose();
     });
 
-    testWidgets('the chest\'s hint landing tags Hint "+1" (frame 10.3d)', (
+    testWidgets('the chest\'s hint landing tags Hint "+N" at the badge\'s '
+        'centre + (12, -42), green, popping in (frame 10.3d, m7-4 1.7)', (
       tester,
     ) async {
-      await pumpBar(tester, _state(), hintGlow: true);
-      expect(find.text('+1'), findsOneWidget);
+      await pumpBar(tester, _state(), hintGain: 2);
+      expect(find.text('+2'), findsOneWidget, reason: 'the count gained');
+      await tester.pump(const Duration(milliseconds: 300));
+      final badge = tester.getCenter(
+        find.descendant(
+          of: find.widgetWithText(BoosterButton, 'Hint'),
+          matching: find.byType(BoosterBadgeView),
+        ),
+      );
+      final tag = tester.getRect(
+        find
+            .ancestor(of: find.text('+2'), matching: find.byType(NestySurface))
+            .first,
+      );
+      // The tag is scaled about its centre while it pops; settled it is 1.
+      expect(tag.left - badge.dx, closeTo(12, 0.6));
+      expect(tag.top - badge.dy, closeTo(-42, 0.6));
+      final style = tester
+          .widget<NestySurface>(
+            find
+                .ancestor(
+                  of: find.text('+2'),
+                  matching: find.byType(NestySurface),
+                )
+                .first,
+          )
+          .style;
+      expect(style.color, ChestCollectTokens.gainTagFace);
+      expect(style.shadows, ChestCollectTokens.gainTagEdge);
       await pumpBar(tester, _state());
-      expect(find.text('+1'), findsNothing);
+      expect(find.text('+2'), findsNothing);
+    });
+
+    testWidgets('the Hint badge ring is a 38 dp circle centred on the '
+        'badge, fading in over 80 ms and out over 240 ms', (tester) async {
+      await pumpBar(tester, _state(), hintRing: true);
+      await tester.pump(const Duration(milliseconds: 100));
+      final badge = tester.getCenter(
+        find.descendant(
+          of: find.widgetWithText(BoosterButton, 'Hint'),
+          matching: find.byType(BoosterBadgeView),
+        ),
+      );
+      expect(
+        find.byKey(RewardRing.ringKey),
+        findsOneWidget,
+        reason: 'only the Hint badge lights a ring',
+      );
+      final ring = find.byKey(RewardRing.ringKey);
+      expect(tester.getSize(ring), const Size.square(38));
+      expect(tester.getCenter(ring), offsetMoreOrLessEquals(badge));
+      final decoration =
+          tester.widget<DecoratedBox>(ring).decoration as BoxDecoration;
+      expect(decoration.shape, BoxShape.circle);
+      expect(decoration.boxShadow, [
+        for (final s in ChestCollectTokens.hintRingShadow) s.toBoxShadow(),
+      ]);
+      expect(
+        tester
+            .widget<AnimatedOpacity>(
+              find.ancestor(of: ring, matching: find.byType(AnimatedOpacity)),
+            )
+            .duration,
+        RewardRing.fadeIn,
+      );
+      await pumpBar(tester, _state());
+      final out = tester.widget<AnimatedOpacity>(
+        find.ancestor(of: ring, matching: find.byType(AnimatedOpacity)),
+      );
+      expect(out.opacity, 0);
+      expect(out.duration, RewardRing.fadeOut);
     });
   });
 }

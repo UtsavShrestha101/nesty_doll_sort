@@ -4,8 +4,8 @@ import 'package:nesty_game/features/fx/fx_id.dart';
 import 'support/design_lottie.dart';
 
 void main() {
-  test('one FxId per design/lottie file: 35 since m7-3', () {
-    expect(FxId.values, hasLength(35));
+  test('one FxId per design/lottie file: 37 since m7-4', () {
+    expect(FxId.values, hasLength(37));
     expect(
       FxId.values.map((id) => id.fileName).toList()..sort(),
       designLottieNames(),

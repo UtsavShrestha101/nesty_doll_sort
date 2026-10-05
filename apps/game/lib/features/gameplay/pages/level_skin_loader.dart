@@ -48,10 +48,17 @@ final class LevelSkinLoader {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   }) async {
     if (_disposed) return;
     final generation = ++_generation;
-    final ahead = _claimAhead(level, geometry, devicePixelRatio, symbols);
+    final ahead = _claimAhead(
+      level,
+      geometry,
+      devicePixelRatio,
+      symbols,
+      themeId,
+    );
     final landed = ahead?.take();
     if (landed != null) {
       _adopt(landed);
@@ -67,6 +74,7 @@ final class LevelSkinLoader {
           geometry: geometry,
           devicePixelRatio: devicePixelRatio,
           symbols: symbols,
+          themeId: themeId,
         );
       } on Object catch (error, stack) {
         // Rule 3: never thrown into the page; the board keeps what it has.
@@ -92,11 +100,12 @@ final class LevelSkinLoader {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   }) {
     if (_disposed) return Future<void>.value();
     final current = _ahead;
     if (current != null &&
-        current.matches(level, geometry, devicePixelRatio, symbols)) {
+        current.matches(level, geometry, devicePixelRatio, symbols, themeId)) {
       return current.landed;
     }
     current?.drop();
@@ -105,11 +114,13 @@ final class LevelSkinLoader {
       geometry,
       devicePixelRatio,
       symbols,
+      themeId,
       _skins.prepareForLevel(
         level,
         geometry: geometry,
         devicePixelRatio: devicePixelRatio,
         symbols: symbols,
+        themeId: themeId,
       ),
     );
     _ahead = ahead;
@@ -135,11 +146,12 @@ final class LevelSkinLoader {
     BoardGeometry geometry,
     double devicePixelRatio,
     DollSymbols symbols,
+    String? themeId,
   ) {
     final ahead = _ahead;
     if (ahead == null || ahead.level != level) return null;
     _ahead = null;
-    if (ahead.matches(level, geometry, devicePixelRatio, symbols)) {
+    if (ahead.matches(level, geometry, devicePixelRatio, symbols, themeId)) {
       return ahead;
     }
     ahead.drop();
@@ -174,6 +186,7 @@ final class _Ahead {
     this.geometry,
     this.devicePixelRatio,
     this.symbols,
+    this.themeId,
     Future<LevelSkin> request,
   ) {
     future = request.then<LevelSkin?>(
@@ -197,6 +210,7 @@ final class _Ahead {
   final BoardGeometry geometry;
   final double devicePixelRatio;
   final DollSymbols symbols;
+  final String? themeId;
 
   /// The skin, or null when preparing failed or it was dropped.
   late final Future<LevelSkin?> future;
@@ -215,8 +229,10 @@ final class _Ahead {
     BoardGeometry geometry,
     double devicePixelRatio,
     DollSymbols symbols,
+    String? themeId,
   ) =>
       level == this.level &&
+      themeId == this.themeId &&
       devicePixelRatio == this.devicePixelRatio &&
       symbols == this.symbols &&
       _sameLayout(geometry, this.geometry);

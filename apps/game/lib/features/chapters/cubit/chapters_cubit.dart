@@ -10,6 +10,7 @@ import 'package:nesty_game/core/base/base_async_state.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/catalog_repository.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/services/chest/milestone_chest.dart';
 import 'package:nesty_game/core/services/records/record_rules.dart';
 import 'package:nesty_game/core/services/records/star_rules.dart';
 import 'package:nesty_game/core/services/remote_config/defaults_remote_config_service.dart';
@@ -80,7 +81,7 @@ class ChaptersCubit extends BaseAsyncCubit<ChaptersState> {
     SaveDocument document,
     StarSlack slack,
   ) {
-    final first = (chapter.number - 1) * chapter.levels + 1;
+    final first = chapter.firstOrder;
     final levels = [
       for (var order = first; order < first + chapter.levels; order++)
         _level(
@@ -132,8 +133,9 @@ class ChaptersCubit extends BaseAsyncCubit<ChaptersState> {
     required int position,
     required int count,
   }) {
-    // The milestone chest is the chapter's 10th level, the flag its last.
-    final isChest = position == 9;
+    // The milestone chest's rule lives in MilestoneChest; the flag is the
+    // chapter's last level.
+    final isChest = MilestoneChest.opensAtCampaign(order);
     final isFinale = position == count - 1;
     final entry = _levels.entryAt(order);
     if (entry == null || entry.order != order) {

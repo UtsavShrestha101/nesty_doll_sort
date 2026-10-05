@@ -9,8 +9,10 @@ import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/catalog_repository.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/repository/level_resolver.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -38,6 +40,7 @@ class HomeCubit extends BaseAsyncCubit<HomeState> {
     this._daily,
     this._catalog,
     this._remoteConfig,
+    this._database,
   ) {
     _saveChanges = _save.changes.listen((_) => _refresh());
     _dailyChanges = _daily.changes.listen((_) => _refresh());
@@ -49,8 +52,13 @@ class HomeCubit extends BaseAsyncCubit<HomeState> {
   final DailyService _daily;
   final CatalogRepository _catalog;
   final RemoteConfigService _remoteConfig;
+  final DatabaseService _database;
   late final StreamSubscription<void> _saveChanges;
   late final StreamSubscription<DailyStatus> _dailyChanges;
+
+  /// The solve date of the relight whose glow is playing now (m7-4 4.10),
+  /// until [relitGlowFinished].
+  LocalDate? _glowing;
 
   Future<void> load() async {
     emit(AsyncValue.loading(data: state.data));
@@ -83,14 +91,7 @@ class HomeCubit extends BaseAsyncCubit<HomeState> {
     );
 
     final chapter = _chapterCard(request, document);
-    final previous = state.data;
-    // The flame was resting and is lit now: a solve relit it (the ring is
-    // that moment's, shown until the next refresh).
-    final relit =
-        previous != null &&
-        previous.dailyStreak > 0 &&
-        !previous.dailyLit &&
-        daily.lit;
+    final relit = _relitGlow(document, daily);
 
     return HomeState(
       chapterNumber: chapter.number,
@@ -117,6 +118,40 @@ class HomeCubit extends BaseAsyncCubit<HomeState> {
       museumCollectedCount: document.museum.length,
       museumCollectedTotal: _catalog.chapters.length,
     );
+  }
+
+  /// Whether the Daily tile's badge glows now (m7-4 4.10, `motion.relitHome`):
+  /// a solve relit the paused streak (`DailyProgress.relitOn`, which holds
+  /// until the next solve), and Home hasn't glowed for it yet, in this
+  /// session or an earlier one. The date is stored the moment the glow is
+  /// first asked for, so a kill during it never shows it twice; it plays
+  /// until [relitGlowFinished].
+  bool _relitGlow(SaveDocument document, DailyStatus daily) {
+    final date = document.daily.lastDate;
+    final relitDate = date != null && daily.lit && document.daily.relitOn(date)
+        ? date
+        : null;
+    if (relitDate == null) {
+      _glowing = null;
+      return false;
+    }
+    if (_glowing != relitDate && _database.relitGlowSeen != relitDate.toIso()) {
+      _glowing = relitDate;
+      unawaited(
+        // A failed write only risks one more glow (rule 3).
+        _database.setRelitGlowSeen(relitDate.toIso()).catchError((Object _) {}),
+      );
+    }
+    return _glowing == relitDate;
+  }
+
+  /// The badge's glow ran its 2,400 ms and faded: the tile shows the plain
+  /// lit flame from now on.
+  void relitGlowFinished() {
+    _glowing = null;
+    final current = state.data;
+    if (isClosed || current == null || !current.streakRelit) return;
+    emit(AsyncValue.data(data: current.copyWith(streakRelit: false)));
   }
 
   /// The chapter card (menus spec 1.1): the PLAY level's chapter with its
@@ -176,8 +211,7 @@ class HomeCubit extends BaseAsyncCubit<HomeState> {
   _museumProgress(List<String> museum, int currentLevel) {
     for (final chapter in _catalog.chapters) {
       if (museum.contains(chapter.id)) continue;
-      final start = (chapter.number - 1) * chapter.levels + 1;
-      final done = (currentLevel - start).clamp(0, chapter.levels);
+      final done = chapter.doneAt(currentLevel);
       return (
         figurineId: chapter.figurine.id,
         lockedArtAsset: chapter.figurine.lockedArtAsset,

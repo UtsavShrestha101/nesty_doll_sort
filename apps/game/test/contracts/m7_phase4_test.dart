@@ -236,6 +236,9 @@ void main() {
         IconTokens.dollsNested: IconUses.dollsNested,
         IconTokens.dailiesSolved: IconUses.dailiesSolved,
         IconTokens.longestStreak: IconUses.longestStreak,
+        // m7-4 (1.1): the splash errors' glyphs are in tokens.json too.
+        IconTokens.storageError: IconUses.storageError,
+        IconTokens.contentError: IconUses.contentError,
       };
       expect(pairs, hasLength(IconTokens.glyphs.length));
       for (final MapEntry(key: glyph, value: icon) in pairs.entries) {

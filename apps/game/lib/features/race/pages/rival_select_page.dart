@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/scheduler.dart' show SchedulerPhase;
+
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
@@ -38,62 +40,138 @@ class RivalSelectView extends StatelessWidget {
         final data = value.data;
         final error = value.exceptionOrNull;
         return Scaffold(
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ScreenHeader(
-                    title: l10n.raceSelectTitle,
-                    onBack: () => context.router.maybePop(),
-                    coins: data?.coins,
-                  ),
-                  const SizedBox(height: 8),
-                  if (data != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Text(
-                        l10n.raceSelectSubtitle,
-                        style: AppTextStyleTokens.row.copyWith(
-                          color: AppColorTokens.textSecondary,
+          body: CreamPage(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ScreenHeader(
+                      title: l10n.raceSelectTitle,
+                      onBack: () => context.router.maybePop(),
+                      coins: data?.coins,
+                    ),
+                    // Frame 9.2: the subtitle's top is at 124 (13 under the
+                    // header's end).
+                    const SizedBox(height: 13),
+                    if (data != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          l10n.raceSelectSubtitle,
+                          style: AppTextStyleTokens.row.copyWith(
+                            color: AppColorTokens.textSecondary,
+                          ),
                         ),
                       ),
-                    ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: data != null
-                        ? WideScreenColumn(
-                            child: ListView(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              children: [
-                                for (final rival in data.rivals) ...[
-                                  _RivalCard(
-                                    rival: rival,
-                                    selected: rival.number == data.selected,
-                                  ),
-                                  const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: data != null
+                          ? WideScreenColumn(
+                              child: _FadingList(
+                                children: [
+                                  for (final (i, rival)
+                                      in data.rivals.indexed) ...[
+                                    _RivalCard(
+                                      rival: rival,
+                                      selected: rival.number == data.selected,
+                                    ),
+                                    if (i < data.rivals.length - 1)
+                                      const SizedBox(height: 12),
+                                  ],
                                 ],
-                              ],
-                            ),
-                          )
-                        : error != null
-                        ? Center(
-                            child: RetryView(
-                              exception: error,
-                              onRetry: () =>
-                                  context.read<RivalSelectCubit>().load(),
-                            ),
-                          )
-                        : const Center(child: CircularProgressIndicator()),
-                  ),
-                  if (data != null) _StartBar(selected: data.selected),
-                ],
+                              ),
+                            )
+                          : error != null
+                          ? Center(
+                              child: RetryView(
+                                exception: error,
+                                onRetry: () =>
+                                    context.read<RivalSelectCubit>().load(),
+                              ),
+                            )
+                          : const Center(child: CircularProgressIndicator()),
+                    ),
+                    if (data != null) _StartBar(selected: data.selected),
+                  ],
+                ),
               ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+/// The rival list. While it can still scroll, a [ShaderMask] fades its last
+/// [fadeExtent] dp so a card cut by the pinned Start bar reads as scrolling
+/// (a mask, not a painted band: a painted one shows a seam on the gradient
+/// page; lead note 10). It is only visual state, so it lives here.
+class _FadingList extends StatefulWidget {
+  const _FadingList({required this.children});
+
+  final List<Widget> children;
+
+  /// The faded strip at the list's bottom.
+  static const fadeExtent = 16.0;
+
+  @override
+  State<_FadingList> createState() => _FadingListState();
+}
+
+class _FadingListState extends State<_FadingList> {
+  bool _fade = false;
+
+  // Keeps the list's scroll position when the mask comes and goes.
+  final _listKey = GlobalKey();
+
+  bool _onMetrics(ScrollMetrics m) {
+    final fade = m.extentAfter > 0.5;
+    if (fade != _fade) {
+      if (WidgetsBinding.instance.schedulerPhase ==
+          SchedulerPhase.persistentCallbacks) {
+        // Never rebuild inside layout; ask for the frame that applies it.
+        WidgetsBinding.instance
+          ..addPostFrameCallback((_) {
+            if (mounted && fade != _fade) setState(() => _fade = fade);
+          })
+          ..ensureVisualUpdate();
+      } else {
+        setState(() => _fade = fade);
+      }
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final list = ListView(
+      key: _listKey,
+      padding: const EdgeInsets.only(bottom: 12),
+      children: widget.children,
+    );
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: (n) => _onMetrics(n.metrics),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (n) => _onMetrics(n.metrics),
+        child: _fade
+            ? ShaderMask(
+                blendMode: BlendMode.dstIn,
+                shaderCallback: (bounds) => LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: const [Color(0xFF000000), Color(0x00000000)],
+                  stops: [
+                    (1 - _FadingList.fadeExtent / bounds.height).clamp(0, 1),
+                    1,
+                  ],
+                ).createShader(bounds),
+                child: list,
+              )
+            : list,
+      ),
     );
   }
 }
@@ -111,7 +189,7 @@ class _StartBar extends StatelessWidget {
     final l10n = context.localizations;
     return WideScreenColumn(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -119,8 +197,9 @@ class _StartBar extends StatelessWidget {
               l10n.raceStartHint,
               textAlign: TextAlign.center,
               style: AppTextStyleTokens.bodySmall.copyWith(
-                fontSize: 16,
-                height: 1.3,
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
                 color: AppColorTokens.textSecondary,
               ),
             ),
@@ -163,9 +242,14 @@ class _RivalCard extends StatelessWidget {
     shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5)],
   );
 
+  // `layout.rivalSelect`: the sunk face, its inset shadow and a 1.5 dp
+  // `#E2CBA6` ring, so the card shows on the gradient page (m7-4 8.2).
   static const _lockedStyle = SurfaceStyle(
-    color: Color(0xB3FCEBD0),
-    shadows: [],
+    color: RivalSelectTokens.lockedCardFace,
+    shadows: [
+      ...RivalSelectTokens.lockedCardShadow,
+      ...RivalSelectTokens.lockedCardRing,
+    ],
   );
 
   static const _radius = BorderRadius.all(
@@ -182,14 +266,20 @@ class _RivalCard extends StatelessWidget {
     final lockedLine = l10n.raceRivalLocked(
       l10n.raceRivalName(rival.number - 1),
     );
-    final label = [
-      l10n.raceRivalSemantics(name),
-      skin,
+    // copy.md A11y: `a11y_rival_card` / `a11y_rival_locked` lead the card's
+    // one reading ("computer" in it, spec-prop §1.1 rule 5), the pick adds
+    // `a11y_rival_selected`.
+    final label = l10n.joinSentences([
+      if (unlocked)
+        l10n.raceRivalCardSemantics(name, skin)
+      else
+        l10n.raceRivalLockedSemantics(l10n.raceRivalName(rival.number - 1)),
       if (unlocked) blurb,
-      if (unlocked) l10n.raceRivalReward(rival.rewardCoins) else lockedLine,
+      if (unlocked) l10n.raceRivalReward(rival.rewardCoins),
       if (rival.beaten) l10n.raceRivalBeaten,
       if (rival.isNew) l10n.raceRivalNew,
-    ].join('. ');
+      if (selected) l10n.raceRivalSelectedSemantics,
+    ], closing: true);
     final reduce = context.reduceMotion;
     final ringDuration = reduce ? Duration.zero : _ringDuration;
     // Its own hit box and semantics (a radio in an exclusive group): the
@@ -380,7 +470,7 @@ class _Details extends StatelessWidget {
     final unlocked = rival.unlocked;
     final nameColor = unlocked
         ? AppColorTokens.textPrimary
-        : AppColorTokens.textMuted;
+        : AppColorTokens.textLocked;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -388,49 +478,54 @@ class _Details extends StatelessWidget {
         // leaves it room, and scales down rather than cut (R28).
         Padding(
           padding: EdgeInsetsDirectional.only(end: unlocked ? 36 : 0),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: AlignmentDirectional.centerStart,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
+          // The name, the Computer tag and the NEW chip sit on one line when
+          // they fit and wrap to a second when they don't (textFit: wrap
+          // first), so a long translation never scales the whole row down
+          // below the readability floor. The name alone scales if it is
+          // wider than the card.
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
                   name,
                   style: AppTextStyleTokens.cardTitle.copyWith(
-                    fontSize: 26,
+                    fontSize: 20,
+                    height: 1,
                     color: nameColor,
                   ),
                   maxLines: 1,
                   softWrap: false,
                 ),
-                const SizedBox(width: 8),
-                ComputerTag.responsive(),
-                if (rival.isNew) ...[
-                  const SizedBox(width: 6),
-                  _NewChip(label: l10n.raceRivalNew),
-                ],
-              ],
-            ),
+              ),
+              ComputerTag.responsive(),
+              if (rival.isNew) _NewChip(label: l10n.raceRivalNew),
+            ],
           ),
         ),
         const SizedBox(height: 4),
         Text(
           skill,
           style: AppTextStyleTokens.row.copyWith(
-            fontSize: 16,
+            fontSize: 13,
+            height: 1,
             fontWeight: FontWeight.w800,
             color: unlocked
                 ? AppColorTokens.versusEdge
-                : AppColorTokens.textMuted,
+                : AppColorTokens.textLocked,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           blurb,
           style: AppTextStyleTokens.bodySmall.copyWith(
-            fontSize: 16,
-            height: 23 / 16,
-            color: AppColorTokens.textSecondary,
+            fontSize: 14,
+            height: 1.35,
+            fontWeight: FontWeight.w600,
+            color: AppColorTokens.textBrown,
           ),
         ),
         const SizedBox(height: 8),
@@ -449,8 +544,9 @@ class _Details extends StatelessWidget {
                 child: Text(
                   lockedLine,
                   style: AppTextStyleTokens.button.copyWith(
-                    fontSize: 16,
-                    color: AppColorTokens.textMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColorTokens.textLocked,
                   ),
                 ),
               ),
@@ -510,13 +606,13 @@ class _RewardChip extends StatelessWidget {
       child: NestySurface(
         style: _style,
         radius: const BorderRadius.all(Radius.circular(20)),
-        height: 40,
-        padding: const EdgeInsetsDirectional.only(start: 6, end: 14),
+        height: 28,
+        padding: const EdgeInsetsDirectional.only(start: 4, end: 10),
         alignment: Alignment.center,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CoinIcon(size: 28),
+            const CoinIcon(size: 22),
             const SizedBox(width: 6),
             Flexible(
               child: FittedBox(
@@ -524,7 +620,7 @@ class _RewardChip extends StatelessWidget {
                 child: Text(
                   l10n.raceRivalReward(coins),
                   style: AppTextStyleTokens.number.copyWith(
-                    fontSize: 18,
+                    fontSize: 14,
                     color: AppColorTokens.coinText,
                   ),
                   maxLines: 1,

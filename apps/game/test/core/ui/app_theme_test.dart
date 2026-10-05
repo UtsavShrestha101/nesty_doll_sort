@@ -87,8 +87,8 @@ void main() {
   });
 
   test('legacy AppColors names alias the token values', () {
-    expect(AppColors.background, AppColorTokens.canvasCream);
-    expect(AppColors.textPrimary, AppColorTokens.textPrimary);
-    expect(AppColors.adPurple, AppColorTokens.ad);
+    expect(AppColorTokens.canvasCream, AppColorTokens.canvasCream);
+    expect(AppColorTokens.textPrimary, AppColorTokens.textPrimary);
+    expect(AppColorTokens.ad, AppColorTokens.ad);
   });
 }

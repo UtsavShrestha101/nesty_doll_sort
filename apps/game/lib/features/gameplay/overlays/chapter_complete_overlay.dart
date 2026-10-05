@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/overlays/overlay_entrance.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart'
@@ -90,7 +91,7 @@ class ChapterCompleteOverlay extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: AppTextStyleTokens.tierChip.copyWith(
                             fontSize: 14,
-                            letterSpacing: 1.96,
+                            letterSpacing: context.script.tracking(1.96),
                             color: const Color(0xFFFFE3B8),
                           ),
                         ),

@@ -52,6 +52,7 @@ void main() {
         initial: const SaveDocument(currentLevel: 21, highestLevel: 21),
       ),
       FakeRemoteConfigService(),
+      FakeDatabaseService(),
     );
     unawaited(cubit.load());
     return cubit;
@@ -82,6 +83,7 @@ void main() {
         ),
       ),
       FakeRemoteConfigService(),
+      FakeDatabaseService(),
     );
     unawaited(cubit.load());
     return cubit;
@@ -351,12 +353,12 @@ void main() {
         (tester) async {
           final board = await pumpRacePage(tester, size: size, scale: scale);
           await expectAccessibleLayout(tester);
-          expect(find.text('Start'), findsOneWidget);
+          expect(find.text(testL10n.raceStart), findsOneWidget);
 
-          await tester.tap(find.text('Start'));
+          await tester.tap(find.text(testL10n.raceStart));
           await tester.pump(const Duration(milliseconds: 20));
           await expectAccessibleLayout(tester);
-          expect(find.text('Undo'), findsOneWidget);
+          expect(find.text(testL10n.boosterUndo), findsOneWidget);
 
           for (final slot in const [red2, red3, red1, red3]) {
             board.callbacks.onIntent(SlotTapped(slot));
@@ -370,7 +372,7 @@ void main() {
           await expectAccessibleLayout(tester);
 
           // Any exit of 9.4 shows 9.6 first (this win unlocked Comet).
-          await tester.tap(find.text('New race'));
+          await tester.tap(find.text(testL10n.raceNewRace));
           await tester.pump(const Duration(milliseconds: 100));
           await tester.pump(const Duration(milliseconds: 500));
           expect(find.byType(RivalUnlockedCard), findsOneWidget);

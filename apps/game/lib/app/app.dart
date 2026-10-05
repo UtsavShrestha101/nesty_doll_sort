@@ -9,6 +9,7 @@ import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/router/music_route_observer.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/ui/theme/app_theme.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/theme/reduce_motion_override.dart';
 import 'package:nesty_game/core/ui/widgets/feedback/toast_queue.dart';
 
@@ -22,7 +23,7 @@ class App extends StatefulWidget {
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends State<App> with WidgetsBindingObserver {
   // Built once so a locale rebuild of MaterialApp keeps the same router
   // delegate and navigation stack. The music follows the page on top
   // (AUDIO.md "Music loops").
@@ -31,6 +32,11 @@ class _AppState extends State<App> {
   );
 
   final DatabaseService _database = get<DatabaseService>();
+
+  /// The app's language (spec §16): the setting resolved against the
+  /// phone's languages, which this root feeds it from the binding at start
+  /// and on every change (l10n plan §1.4).
+  final LanguageCubit _language = get<LanguageCubit>();
 
   /// The reduce-motion override (E14; docs/plans/m7-design.md §14), read
   /// once and then followed live so a change from Pause → Settings reaches
@@ -41,13 +47,26 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
+    final binding = WidgetsBinding.instance..addObserver(this);
+    _language.deviceLocalesChanged(binding.platformDispatcher.locales);
     _reduceMotionSubscription = _database.reduceMotionChanges.listen((mode) {
       if (mounted) setState(() => _reduceMotionMode = mode);
     });
   }
 
+  /// The phone's language list changed (Android while the app runs; iOS
+  /// relaunches): a player who follows the phone sees the new language at
+  /// once.
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    _language.deviceLocalesChanged(
+      locales ?? WidgetsBinding.instance.platformDispatcher.locales,
+    );
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     unawaited(_reduceMotionSubscription?.cancel());
     super.dispose();
   }
@@ -56,7 +75,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       // App-level cubits only; feature cubits are provided at their route.
-      providers: [BlocProvider.value(value: get<LanguageCubit>())],
+      providers: [BlocProvider.value(value: _language)],
       child: BlocBuilder<LanguageCubit, LanguageState>(
         buildWhen: (previous, current) =>
             previous.currentLanguageCode != current.currentLanguageCode,
@@ -64,7 +83,13 @@ class _AppState extends State<App> {
           title: FlavorConfig.values.appTitle,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
+          // Always the resolved language (never null), so Flutter's own
+          // matching, whose fallback is `supportedLocales.first`, never
+          // picks a different one; the callback answers as the resolver
+          // does for the same reason.
           locale: languageState.locale,
+          localeListResolutionCallback:
+              AppLocaleResolver.app.resolveForMaterialApp,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           routerConfig: _routerConfig,
@@ -81,11 +106,11 @@ class _AppState extends State<App> {
           // its turn there; a result card adds its own scoped host.
           builder: (context, child) => MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1.3,
-            child: ReduceMotionOverride(
-              mode: _reduceMotionMode,
-              child: ToastHost(
-                top: ToastHost.appTop,
-                child: child ?? const SizedBox.shrink(),
+            // Japanese is drawn at 0.94 of every size (tokens font.scripts).
+            child: LocaleScriptScope(
+              child: ReduceMotionOverride(
+                mode: _reduceMotionMode,
+                child: ToastHost.app(child: child ?? const SizedBox.shrink()),
               ),
             ),
           ),

@@ -37,21 +37,29 @@ final class CelebrationLayout {
     required this.cardTop,
     required this.noteTop,
     required this.buttonsTop,
+    this.buttonsGap = WinStarsTokens.buttonsGap,
+    this.noteGap = defaultNoteGap,
   });
 
-  /// The layout for [variant] on a screen [screenHeight] tall (the 16:9
-  /// `winStarsShort` values below [shortBelow], for the campaign card).
+  /// The layout for [variant] on a screen [screenHeight] tall. The campaign
+  /// card blends every number between the 390×693 layout
+  /// (`layout.winStarsShort`) and the 390×844 one (`layout.winStars`) by
+  /// screen height, clamped outside (`layout.sizeBlend`, m7-4 4.12: no 760
+  /// switch). When a note shows ([withNote]: the helper or the tip, never
+  /// both) the short end is `winStarsShort.notePill.withTip`.
   factory CelebrationLayout.of(
     CelebrationVariant variant, {
     required double screenHeight,
     required int families,
+    bool withNote = false,
   }) {
     switch (variant) {
       case CelebrationVariant.campaign:
-        if (screenHeight < shortBelow) {
-          return _short;
-        }
-        return _campaign;
+        return _blend(
+          withNote ? _shortWithNote : _short,
+          _campaign,
+          blendOf(screenHeight),
+        );
       case CelebrationVariant.replay:
         return _replay;
       case CelebrationVariant.plain:
@@ -71,9 +79,45 @@ final class CelebrationLayout {
   /// The design's safe-area top the y values are measured on.
   static const double designSafeTop = 59;
 
-  /// A screen shorter than this is the 16:9 reference (390×693): the
-  /// `winStarsShort` card, with no note or tip (C11).
-  static const double shortBelow = 760;
+  /// The 16:9 reference height (`layout.short169.screen`) and the tall
+  /// reference (390×844): the two ends of the straight blend.
+  static const double shortHeight = 693;
+  static const double tallHeight = 844;
+
+  /// How far [screenHeight] is from the 693 layout (0) to the 844 one (1),
+  /// clamped (`layout.sizeBlend`).
+  static double blendOf(double screenHeight) =>
+      ((screenHeight - shortHeight) / (tallHeight - shortHeight)).clamp(
+        0.0,
+        1.0,
+      );
+
+  static double _mix(double a, double b, double t) => a + (b - a) * t;
+
+  static double? _mixNullable(double? a, double? b, double t) =>
+      a == null || b == null ? (t >= 1 ? b : a) : _mix(a, b, t);
+
+  /// Every number of [a] to [b] at [t] (0 is [a], 1 is [b]).
+  static CelebrationLayout _blend(
+    CelebrationLayout a,
+    CelebrationLayout b,
+    double t,
+  ) {
+    if (t <= 0) return a;
+    if (t >= 1) return b;
+    return CelebrationLayout(
+      ribbonCanvasTop: _mix(a.ribbonCanvasTop, b.ribbonCanvasTop, t),
+      starsTop: _mixNullable(a.starsTop, b.starsTop, t),
+      plankTop: _mix(a.plankTop, b.plankTop, t),
+      dollHeight: _mix(a.dollHeight, b.dollHeight, t),
+      chipsTop: _mix(a.chipsTop, b.chipsTop, t),
+      cardTop: _mix(a.cardTop, b.cardTop, t),
+      noteTop: _mixNullable(a.noteTop, b.noteTop, t),
+      buttonsTop: _mix(a.buttonsTop, b.buttonsTop, t),
+      buttonsGap: _mix(a.buttonsGap, b.buttonsGap, t),
+      noteGap: _mix(a.noteGap, b.noteGap, t),
+    );
+  }
 
   /// `ui_win_ribbon`'s 410×110 canvas top: its band's centre stays at y 150
   /// on every card, as before (`WinOverlay.ribbonCenter`).
@@ -105,8 +149,29 @@ final class CelebrationLayout {
     dollHeight: WinStarsShortTokens.hopDollHeight,
     chipsTop: WinStarsShortTokens.coinRowTop,
     cardTop: WinStarsShortTokens.progressTop,
-    noteTop: null,
+    noteTop: WinStarsShortTokens.notePillTop,
     buttonsTop: WinStarsShortTokens.buttonsTop,
+    buttonsGap: WinStarsShortTokens.buttonsGap,
+  );
+
+  /// 390×693 with the note showing (`winStarsShort.notePill.withTip`): the
+  /// plank, dolls, chips, progress card and button all make room for the
+  /// pill at 486.
+  static const CelebrationLayout _shortWithNote = CelebrationLayout(
+    ribbonCanvasTop: WinStarsShortTokens.ribbonTop - 23,
+    starsTop: WinStarsShortTokens.starsCanvasTop,
+    plankTop: WinStarsShortTokens.notePillWithTipPlankTop,
+    dollHeight: WinStarsShortTokens.notePillWithTipHopDollHeight,
+    chipsTop: WinStarsShortTokens.notePillWithTipCoinRowTop,
+    cardTop: WinStarsShortTokens.notePillWithTipProgressTop,
+    noteTop: WinStarsShortTokens.notePillTop,
+    buttonsTop: WinStarsShortTokens.notePillWithTipButtonsTop,
+    buttonsGap: WinStarsShortTokens.buttonsGap,
+    // 486 − 392 − the card's 86: tighter than the tall card's 16.
+    noteGap:
+        WinStarsShortTokens.notePillTop -
+        WinStarsShortTokens.notePillWithTipProgressTop -
+        progressCardHeight,
   );
 
   static const CelebrationLayout _replay = CelebrationLayout(
@@ -138,13 +203,20 @@ final class CelebrationLayout {
   /// The progress card's top (the reason card's on a replay).
   final double cardTop;
 
-  /// The note or tip pill's top; null where none shows (the short card, a
-  /// card without stars).
+  /// The note or tip pill's top; null for a card without stars.
   final double? noteTop;
 
   /// Where the button column starts (Continue takes the first slot while
   /// the ×3 button is absent, C12).
   final double buttonsTop;
+
+  /// The gap between the buttons of a column (10 short, 14 tall).
+  final double buttonsGap;
+
+  /// The gap between the progress card's bottom and the note pill's top: 16
+  /// on the tall card, 8 on the short one (`notePill.top` 486 over a card
+  /// ending at 478).
+  final double noteGap;
 
   /// Whether this card draws stars.
   bool get hasStars => starsTop != null;
@@ -152,9 +224,12 @@ final class CelebrationLayout {
   /// A y as an offset below the safe area's top.
   static double below(double y) => y - designSafeTop;
 
-  /// The gap between the card's bottom and the note pill's top when the card
-  /// is at its natural height (602 − 500 − the card's 86).
-  static const double noteGap = 16;
+  /// The progress card's natural height (frame 2.8).
+  static const double progressCardHeight = 86;
+
+  /// The gap between the card's bottom and the note pill's top on the tall
+  /// card (602 − 500 − the card's 86).
+  static const double defaultNoteGap = 16;
 
   /// The height of the block above the button when nothing grows: from the
   /// safe area's top to [buttonsTop].

@@ -219,7 +219,7 @@ class SlotComponent extends PositionComponent {
       ..source = scene.skin?.images
       ..request.doll = view.color
       ..request.unlockColor = view.unlockColor
-      ..request.furnitureScale = g.furnitureScale
+      ..request.furnitureScale = g.overlayFurnitureScale
       // Locked and iced: the glass composition draws the doll (§8). An iced
       // tower's stand is taller than the composition's, so the slot's own
       // sprite draws the doll under the ice.
@@ -230,7 +230,7 @@ class SlotComponent extends PositionComponent {
     FxLayout.applyDollHeights(
       drawable.params,
       drawable.spec,
-      compositionScale: g.furnitureScale,
+      compositionScale: g.overlayFurnitureScale,
       doll: view.hasNest ? g.dollHeight(view.outerSize) : null,
       // The tall preset plays fx_ice stretched: the doll is compensated.
       stretchY: component.id == FxId.fxIce ? g.iceFxScaleY : 1,
@@ -364,7 +364,7 @@ class SlotComponent extends PositionComponent {
   void place() {
     final r = scene.repitch;
     final x = slot.centerX(r);
-    final fs = slot.furnitureScale(r);
+    final fs = slot.overlayFurnitureScale(r);
     _glass?.placeAt(x, slot.lockedDollBaseY(r), fs);
     _ice?.placeAt(
       x,
@@ -553,7 +553,7 @@ class _SlotOverlay extends Component {
     final side = g.padlockSymbolSize;
     final request = owner._symbolRequest
       ..unlockColor = color
-      ..furnitureScale = g.furnitureScale;
+      ..furnitureScale = g.overlayFurnitureScale;
     final raster = owner.scene.skin?.images.rasterFor(
       FxImageSlot.unlockSymbol,
       request,

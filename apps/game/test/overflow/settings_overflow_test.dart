@@ -122,7 +122,7 @@ void main() {
             textScale: scale,
             reminderUnlocked: true,
           );
-          expect(find.text('Daily reminder'), findsOneWidget);
+          expect(find.text(testL10n.settingReminder), findsOneWidget);
           await expectAccessibleLayout(tester);
         });
 
@@ -137,7 +137,7 @@ void main() {
             reminderUnlocked: true,
             reminderOn: true,
           );
-          expect(find.text('Time'), findsOneWidget);
+          expect(find.text(testL10n.settingReminderTime), findsOneWidget);
           await expectAccessibleLayout(tester);
         });
 
@@ -154,9 +154,9 @@ void main() {
             reminderBlocked: true,
           );
           await tester.pump();
-          expect(find.text('Off in your phone’s settings'), findsOneWidget);
-          expect(find.text('Open phone settings'), findsOneWidget);
-          expect(find.text('Time'), findsNothing);
+          expect(find.text(testL10n.settingReminderBlocked), findsOneWidget);
+          expect(find.text(testL10n.settingOpenPhoneSettings), findsOneWidget);
+          expect(find.text(testL10n.settingReminderTime), findsNothing);
           await expectAccessibleLayout(tester);
         });
       }
@@ -222,8 +222,15 @@ void main() {
               relaxed: true,
               reduceMotion: mode,
             );
-            expect(find.text('Unlimited free undo'), findsOneWidget);
-            for (final label in ['Off', 'On', 'System']) {
+            expect(
+              find.text(testL10n.settingRelaxedModeSubtitle),
+              findsOneWidget,
+            );
+            for (final label in [
+              testL10n.reduceMotionOff,
+              testL10n.reduceMotionOn,
+              testL10n.reduceMotionSystem,
+            ]) {
               expect(find.text(label), findsOneWidget);
             }
             await expectAccessibleLayout(tester);

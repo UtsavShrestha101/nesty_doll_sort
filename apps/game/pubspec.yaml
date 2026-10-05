@@ -68,6 +68,10 @@ flutter:
   assets:
     - assets/audio/
     - assets/board/
+    - assets/board/ch07/
+    - assets/board/ch08/
+    - assets/board/ch09/
+    - assets/board/ch10/
     # The ten bundled museum figurines (m3-design §9.5), each earned and
     # locked PNG copied byte for byte from design/museum/png/.
     - assets/museum/
@@ -109,9 +113,11 @@ flutter:
     - assets/fonts/Fredoka-OFL.txt
     - assets/fonts/Nunito-OFL.txt
     - assets/fonts/MaterialSymbols-LICENSE.txt
+    - assets/fonts/Baloo2-OFL.txt
+    - assets/fonts/MPLUSRounded1c-OFL.txt
 
-  # Built by tools/fonts/build_fonts.sh (static instances of the pinned
-  # upstream variable fonts; see tools/fonts/SHA256SUMS).
+  # Built by tools/fonts/build_fonts.sh (static instances and subsets of the
+  # pinned upstream fonts; see tools/fonts/SHA256SUMS).
   fonts:
     - family: Fredoka
       fonts:
@@ -131,6 +137,40 @@ flutter:
           weight: 700
         - asset: assets/fonts/Nunito-ExtraBold.ttf
           weight: 800
+    # The Devanagari (hi) and Japanese (ja) faces, subset to their script
+    # (tools/fonts/subset/), one family per Latin role. They are never a
+    # style's fontFamily: every style lists them in fontFamilyFallback
+    # (AppFontTokens.displayFallback / bodyFallback), so they draw only the
+    # glyphs Fredoka and Nunito lack. A file's `weight` is the Fredoka or
+    # Nunito weight it answers (its OS/2 weight class, which the engine
+    # matches), not its outlines': Baloo2Body-SemiBold answers Nunito 700,
+    # as tokens.json font.scripts maps body700 → 600.
+    - family: Baloo2Display
+      fonts:
+        - asset: assets/fonts/Baloo2Display-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Baloo2Display-Bold.ttf
+          weight: 700
+    - family: Baloo2Body
+      fonts:
+        - asset: assets/fonts/Baloo2Body-Medium.ttf
+          weight: 600
+        - asset: assets/fonts/Baloo2Body-SemiBold.ttf
+          weight: 700
+        - asset: assets/fonts/Baloo2Body-Bold.ttf
+          weight: 800
+    - family: MPLUSRounded1cDisplay
+      fonts:
+        - asset: assets/fonts/MPLUSRounded1cDisplay-Bold.ttf
+          weight: 600
+        - asset: assets/fonts/MPLUSRounded1cDisplay-ExtraBold.ttf
+          weight: 700
+    - family: MPLUSRounded1cBody
+      fonts:
+        - asset: assets/fonts/MPLUSRounded1cBody-Medium.ttf
+          weight: 600
+        - asset: assets/fonts/MPLUSRounded1cBody-Bold.ttf
+          weight: 700
     # Material Symbols Rounded subset (FILL 1, wght 600); see NestyIcons.
     - family: NestySymbols
       fonts:

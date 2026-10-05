@@ -467,7 +467,7 @@ void main() {
     // appears under the solved card. No thanks hides it and asks the OS
     // nothing; the offer was still marked offered (Q138). Share moved to
     // the daily win card in phase 4 (frame 10.1, D188).
-    expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+    expect(find.bySemanticsLabel('Share today’s result'), findsNothing);
     await tester.pumpAndSettle();
     expect(
       find.text('Want a note when tomorrow’s puzzle is ready?'),
@@ -775,7 +775,7 @@ void main() {
     await pumpFor(tester, const Duration(seconds: 8));
     expect(find.byType(RaceWinCard), findsOneWidget);
     expect(find.byType(WinOverlay), findsNothing);
-    expect(find.text('You won the race!'), findsOneWidget);
+    expect(find.bySemanticsLabel('You won the race!'), findsOneWidget);
     expect(find.text('Computer'), findsWidgets);
     expect(save.document.coins, 20, reason: 'race_reward_1');
     expect(save.document.race.rivals[1].unlocked, isTrue);
@@ -858,12 +858,14 @@ void main() {
     expect(find.byType(HomePage), findsOneWidget);
 
     await tester.tap(
-      find.bySemanticsLabel(RegExp(r'^Chapter 1, .*Opens chapters\.$')),
+      find.bySemanticsLabel(RegExp(r'^Chapter 1, .*Opens Chapters\.$')),
     );
     await pumpFor(tester, const Duration(seconds: 1));
     expect(find.byType(ChaptersPage), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel(RegExp(r'^Level 1, won')));
+    await tester.tap(
+      find.bySemanticsLabel(RegExp(r'^Level 1, (won|\d+ stars?)')),
+    );
     await pumpFor(tester, const Duration(milliseconds: 600));
     expect(find.byType(LevelCard), findsOneWidget);
     await tester.tap(

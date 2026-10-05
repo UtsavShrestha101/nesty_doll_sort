@@ -1182,6 +1182,7 @@ extension _Plans on BoardTimeline {
     _cancelAll();
     if (e.reason != BoardResetReason.undo) combo.reset();
     b.command(ResetBoard(0, e.snapshot, e.reason));
+    _planUndoFlight(b, e);
     // Extra slots survive a restart and an undo (D22): their empty stands
     // pulse again at once.
     for (final id in e.snapshot.slotIds) {
@@ -1190,5 +1191,36 @@ extension _Plans on BoardTimeline {
         _startPulse(b, id, 0);
       }
     }
+  }
+
+  /// An undo's motion: the reverted move's nest flies back from the move's
+  /// target to its source by `doll_move` (`motion.move`, whoosh), after the
+  /// snapshot was applied at 0. The source's restored top sprite hides until
+  /// it lands and both stands are reserved for the flight. A second undo
+  /// cancels this flight with everything else and plays its own: the board
+  /// is on core's state from the first frame either way (rule 10).
+  // TODO(design): Q160, no frame draws the undo motion.
+  void _planUndoFlight(_Batch b, BoardResetEffect e) {
+    final undo = e.undo;
+    if (undo == null) return;
+    final src = undo.revertedMove.from;
+    final dst = undo.revertedMove.to;
+    final gSrc = _geometry.slotOrNull(src);
+    final gDst = _geometry.slotOrNull(dst);
+    final nest = _topOfSlot(e.snapshot, src);
+    if (gSrc == null || gDst == null || nest == null) return;
+    b.cue(const FxCue(atMs: 0, sound: SoundEffect.whoosh));
+    final end = _flight(
+      b,
+      nest,
+      _ref(gDst.centerX, gDst.surfaceY),
+      _ref(gSrc.centerX, gSrc.surfaceY),
+      at: 0,
+      slotId: src,
+      hides: [src],
+    );
+    b
+      ..reserve(src, end)
+      ..reserve(dst, end);
   }
 }

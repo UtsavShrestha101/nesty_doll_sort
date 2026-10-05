@@ -226,12 +226,16 @@ class LottieTwinkle extends StatefulWidget {
     this.color = const Color(0xFFFFF3B0),
     this.periodMs = 2000,
     this.phaseMs = 0,
+    this.once = false,
     this.library,
     super.key,
   });
 
   final double size;
   final Color color;
+
+  /// Plays one twinkle and stops on its last frame, instead of looping.
+  final bool once;
 
   /// One twinkle's length; the file's is 2000 ms.
   final double periodMs;
@@ -257,6 +261,7 @@ class _LottieTwinkleState extends State<LottieTwinkle> {
     _controller.playWhole(
       speed: LottieTwinkle.filePeriodMs / widget.periodMs,
       startMs: widget.phaseMs,
+      loop: widget.once ? false : null,
     );
   }
 

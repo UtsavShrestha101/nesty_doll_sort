@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/models/play_request.dart';
@@ -48,7 +49,11 @@ class _ChaptersBody extends StatefulWidget {
 }
 
 class _ChaptersBodyState extends State<_ChaptersBody> {
-  final _currentChapterKey = GlobalKey();
+  /// One key per chapter (by id), on the box outside the fade-in's
+  /// transform, so [_scrollToCurrentOnce] reads each row's real layout
+  /// offset.
+  final _keys = <String, GlobalKey>{};
+  final _controller = ScrollController();
   bool _scrolled = false;
 
   /// The one open chapter (menus spec 3: an accordion): the current chapter
@@ -74,18 +79,62 @@ class _ChaptersBodyState extends State<_ChaptersBody> {
   void _play(BuildContext context, PlayRequest request) =>
       unawaited(context.router.root.push(GameplayRoute(request: request)));
 
-  void _scrollToCurrentOnce() {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  GlobalKey _keyOf(String chapterId) =>
+      _keys.putIfAbsent(chapterId, GlobalKey.new);
+
+  /// The finished rows kept in view above the current card: at most two
+  /// (`chapters.openScroll`, m7-4 8.4: offset = max(0, currentCardTop −
+  /// listTop − min(2, finished) × 64)), and the room the open card needs
+  /// under them: its 92 dp header, the family row and two grid rows.
+  static const maxFoldedAbove = ChaptersTokens.openScrollFinishedRows;
+  static const double foldedStep = ChaptersTokens.openScrollRowPitch;
+  static const double _needBelow =
+      ChaptersTokens.currentHeaderHeight +
+      14 +
+      60 +
+      14 +
+      2 * ChaptersTokens.currentGridTileHeight +
+      ChaptersTokens.currentGridGap;
+
+  /// Once, after the first layout: an instant jump (no animation to leave
+  /// running) that puts up to [maxFoldedAbove] finished rows above the
+  /// current card, fewer when the card's header and two grid rows wouldn't
+  /// fit under them (a short phone: the rule's "at most"; m7-4 choice 10.4).
+  void _scrollToCurrentOnce(ChaptersState data) {
     if (_scrolled) return;
     _scrolled = true;
+    final current = data.chapters.indexWhere((c) => c.isCurrent);
+    if (current < 0) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final target = _currentChapterKey.currentContext;
-      if (target == null || !mounted) return;
-      unawaited(
-        Scrollable.ensureVisible(
-          target,
-          alignment: 0.1,
-          duration: Duration.zero,
-        ),
+      if (!mounted || !_controller.hasClients) return;
+      final position = _controller.position;
+      double? offsetOf(int index) {
+        final box = _keys[data.chapters[index].chapterId]?.currentContext
+            ?.findRenderObject();
+        if (box == null || !box.attached) return null;
+        return RenderAbstractViewport.maybeOf(
+          box,
+        )?.getOffsetToReveal(box, 0).offset;
+      }
+
+      final currentOffset = offsetOf(current);
+      if (currentOffset == null) return;
+      var folded = current < maxFoldedAbove ? current : maxFoldedAbove;
+      while (folded > 0 &&
+          folded * foldedStep + _needBelow > position.viewportDimension) {
+        folded--;
+      }
+      final anchor = folded == 0
+          ? currentOffset
+          : (offsetOf(current - folded) ?? currentOffset);
+      _controller.jumpTo(
+        anchor.clamp(position.minScrollExtent, position.maxScrollExtent),
       );
     });
   }
@@ -99,84 +148,91 @@ class _ChaptersBodyState extends State<_ChaptersBody> {
         final error = value.exceptionOrNull;
         if (data != null) {
           _chooseInitialOpen(data);
-          _scrollToCurrentOnce();
+          _scrollToCurrentOnce(data);
         }
+        // The home indicator's band stays under the list's end, so the last
+        // card scrolls clear of it (F-SAFE).
+        final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
         return Scaffold(
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ScreenHeader(
-                    title: l10n.chaptersTitle,
-                    onBack: () => context.router.maybePop(),
-                  ),
-                  const SizedBox(height: 4),
-                  if (data != null)
-                    _OverallProgress(
-                      currentLevel: data.currentLevel,
-                      totalLevels: data.totalLevels,
-                      won: data.wonCount,
+          body: CreamPage(
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ScreenHeader(
+                      title: l10n.chaptersTitle,
+                      onBack: () => context.router.maybePop(),
                     ),
-                  Expanded(
-                    child: data != null
-                        ? WideScreenColumn(
-                            child: ListView(
-                              // Every catalog chapter (10 at launch) built
-                              // up front, never lazily dropped: the
-                              // scroll-to-current below needs the current
-                              // chapter's own `KeyedSubtree` already mounted
-                              // to find it, and the default cache extent
-                              // (250 dp) can fall short of it once a
-                              // chapter's card grows (the star total,
-                              // m7-design P3.7, found by this file's own
-                              // overflow test at 360×640).
-                              cacheExtent: 5000,
-                              padding: const EdgeInsets.only(bottom: 24),
-                              children: [
-                                for (
-                                  var i = 0;
-                                  i < data.chapters.length;
-                                  i++
-                                ) ...[
-                                  _StaggerFadeIn(
-                                    index: i,
-                                    child: KeyedSubtree(
-                                      key: data.chapters[i].isCurrent
-                                          ? _currentChapterKey
-                                          : null,
-                                      child: ChapterSectionCard(
-                                        key: ValueKey(
-                                          data.chapters[i].chapterId,
-                                        ),
-                                        section: data.chapters[i],
-                                        expanded:
-                                            _openChapterId ==
+                    const SizedBox(height: 4),
+                    if (data != null)
+                      _OverallProgress(
+                        currentLevel: data.currentLevel,
+                        totalLevels: data.totalLevels,
+                        won: data.wonCount,
+                      ),
+                    Expanded(
+                      child: data != null
+                          ? WideScreenColumn(
+                              child: ListView(
+                                controller: _controller,
+                                // Every catalog chapter (10 at launch) built
+                                // up front, never lazily dropped: the
+                                // scroll-to-current below needs the current
+                                // chapter's own `KeyedSubtree` already mounted
+                                // to find it, and the default cache extent
+                                // (250 dp) can fall short of it once a
+                                // chapter's card grows (the star total,
+                                // m7-design P3.7, found by this file's own
+                                // overflow test at 360×640).
+                                cacheExtent: 5000,
+                                padding: EdgeInsets.only(
+                                  bottom: 24 + bottomInset,
+                                ),
+                                children: [
+                                  for (
+                                    var i = 0;
+                                    i < data.chapters.length;
+                                    i++
+                                  ) ...[
+                                    KeyedSubtree(
+                                      key: _keyOf(data.chapters[i].chapterId),
+                                      child: _StaggerFadeIn(
+                                        index: i,
+                                        child: ChapterSectionCard(
+                                          key: ValueKey(
                                             data.chapters[i].chapterId,
-                                        onToggle: () =>
-                                            _toggle(data.chapters[i]),
-                                        onPlay: (request) =>
-                                            _play(context, request),
+                                          ),
+                                          section: data.chapters[i],
+                                          expanded:
+                                              _openChapterId ==
+                                              data.chapters[i].chapterId,
+                                          onToggle: () =>
+                                              _toggle(data.chapters[i]),
+                                          onPlay: (request) =>
+                                              _play(context, request),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: ChaptersTokens.gap),
+                                    const SizedBox(height: ChaptersTokens.gap),
+                                  ],
                                 ],
-                              ],
-                            ),
-                          )
-                        : error != null
-                        ? Center(
-                            child: RetryView(
-                              exception: error,
-                              onRetry: () =>
-                                  context.read<ChaptersCubit>().load(),
-                            ),
-                          )
-                        : const Center(child: CircularProgressIndicator()),
-                  ),
-                ],
+                              ),
+                            )
+                          : error != null
+                          ? Center(
+                              child: RetryView(
+                                exception: error,
+                                onRetry: () =>
+                                    context.read<ChaptersCubit>().load(),
+                              ),
+                            )
+                          : const Center(child: CircularProgressIndicator()),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -215,15 +271,17 @@ class _OverallProgress extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Flexible(
+              Expanded(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     label,
+                    // NestyHub:70: Fredoka 700 15, `#7A5234`.
                     style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 17,
-                      color: AppColorTokens.textPrimary,
+                      fontSize: 15,
+                      height: 1,
+                      color: AppColorTokens.textBrown,
                     ),
                     maxLines: 1,
                     softWrap: false,
@@ -231,11 +289,13 @@ class _OverallProgress extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+              // The count sits at the row's right edge (space between).
               Text(
                 l10n.chaptersWonCount(won),
                 style: AppTextStyleTokens.row.copyWith(
-                  fontSize: 15,
-                  color: AppColorTokens.textSecondary,
+                  fontSize: 13,
+                  height: 1,
+                  color: AppColorTokens.textMuted,
                 ),
                 maxLines: 1,
                 softWrap: false,

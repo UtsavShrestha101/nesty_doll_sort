@@ -73,12 +73,15 @@ void main() {
     );
     expect(find.text('+100 coins'), findsOneWidget);
     expect(find.text('+1 hint'), findsOneWidget);
-    expect(find.bySemanticsLabel('100 coins and 1 hint'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Chest. Inside: 100 coins, 1 hint.'),
+      findsOneWidget,
+    );
     expect(find.text('Open'), findsOneWidget);
     expect(find.text('Collect'), findsNothing);
     expect(
       tester.getSize(find.byKey(ChestRewardSequence.chestKey)),
-      const Size(200, 200),
+      const Size(240, 240),
     );
   });
 

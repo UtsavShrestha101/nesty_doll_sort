@@ -1,13 +1,16 @@
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
 
 /// The Museum's lead card (frames 6.1, 6.1b, 6.1c; tokens `layout.museum.
-/// nextCard`): the next family to earn, made the screen's focus: its locked
-/// figurine (118×132, cream tinted), "NEXT FAMILY", its name, "Chapter 4 · 14
-/// levels to go", a green progress bar and "Play Level 67" ([onPlay], the
-/// same request Home's PLAY starts).
+/// nextCard`; NestyHub:107-110): the next family to earn, made the screen's
+/// focus, 150 tall (more only when text grows): its locked figurine
+/// (118×132, cream tinted), "NEXT FAMILY" (Fredoka 700 11), its name (20),
+/// "Chapter 4 · 14 levels to go" (Nunito 800 12), a green progress bar and
+/// "Play Level 67" ([onPlay], the same request Home's PLAY starts), a 38 dp
+/// face in a 48 dp touch box.
 ///
 /// Once [MuseumState.allCollected] the card celebrates instead (6.1c): a
 /// brass disc with the museum house, "Every family is home." and "Full House
@@ -40,19 +43,23 @@ class MuseumCollectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final next = state.next;
-    return NestySurface(
-      style: _style,
-      radius: BorderRadius.circular(MuseumTokens.nextCardRadius),
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 12, 16, 14),
-      child: next == null
-          ? _AllHome(count: state.collectedCount)
-          : _Next(
-              entry: next,
-              levelsToGo: state.levelsToGo,
-              homeLevelNumber: state.homeLevelNumber,
-              onPlay: onPlay,
-            ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: MuseumTokens.nextCardHeight),
+      child: NestySurface(
+        style: _style,
+        radius: BorderRadius.circular(MuseumTokens.nextCardRadius),
+        width: double.infinity,
+        alignment: Alignment.center,
+        padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 14, 0),
+        child: next == null
+            ? _AllHome(count: state.collectedCount)
+            : _Next(
+                entry: next,
+                levelsToGo: state.levelsToGo,
+                homeLevelNumber: state.homeLevelNumber,
+                onPlay: onPlay,
+              ),
+      ),
     );
   }
 }
@@ -80,10 +87,14 @@ class _Next extends StatelessWidget {
         // fills the width and is cream tinted by its own locked art.
         SizedBox(
           width: MuseumTokens.nextCardArt.width,
-          child: FigurineImage(
-            figurineId: entry.figurineId,
-            locked: true,
-            size: MuseumTokens.nextCardArt.width,
+          height: MuseumTokens.nextCardArt.height,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: FigurineImage(
+              figurineId: entry.figurineId,
+              locked: true,
+              size: MuseumTokens.nextCardArt.width,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -92,38 +103,43 @@ class _Next extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                l10n.museumNextFamily.toUpperCase(),
-                style: AppTextStyleTokens.caption.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 13 * 0.08,
-                  color: AppColorTokens.textAccent,
-                ),
+              ShrinkToFitText(
+                l10n.museumNextFamilyKicker,
                 maxLines: 1,
+                overflowLines: 2,
+                minFontScale: 0.75,
+                textAlign: TextAlign.start,
+                style: AppTextStyleTokens.cardTitle.copyWith(
+                  fontSize: 11,
+                  height: 1,
+                  letterSpacing: context.script.tracking(11 * 0.08),
+                  color: AppColorTokens.textMuted,
+                ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 6),
               ShrinkToFitText(
                 l10n.figurineName(entry.figurineId),
                 maxLines: 2,
                 minFontScale: 0.6,
                 textAlign: TextAlign.start,
                 style: AppTextStyleTokens.cardTitle.copyWith(
-                  fontSize: 26,
-                  height: 1.05,
+                  fontSize: 20,
+                  height: 1.1,
                   color: AppColorTokens.textPrimary,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 l10n.museumNextLine(entry.chapterNumber, levelsToGo),
                 style: AppTextStyleTokens.row.copyWith(
-                  fontSize: 15,
-                  color: AppColorTokens.textSecondary,
+                  fontSize: 12,
+                  height: 1.2,
+                  fontWeight: FontWeight.w800,
+                  color: AppColorTokens.textBrown,
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               NestyProgressBar(
                 value: entry.total == 0 ? 0 : entry.done / entry.total,
                 height: 10,
@@ -132,15 +148,17 @@ class _Next extends StatelessWidget {
                   levelsToGo,
                 ),
               ),
-              const SizedBox(height: 10),
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: TactileButton(
                   label: l10n.playLevel(homeLevelNumber),
                   onPressed: onPlay,
                   icon: NestyIcons.playArrow,
-                  size: TactileButtonSize.small,
+                  // NestyHub:110: a 36 face; `compact` (38) is the nearest
+                  // size, in the 48 dp touch box (spec §10.3).
+                  size: TactileButtonSize.compact,
                   expand: false,
+                  minTouchSize: const Size(48, 48),
                 ),
               ),
             ],
@@ -194,8 +212,8 @@ class _AllHome extends StatelessWidget {
                 minFontScale: 0.6,
                 textAlign: TextAlign.start,
                 style: AppTextStyleTokens.cardTitle.copyWith(
-                  fontSize: 30,
-                  height: 1.05,
+                  fontSize: 24,
+                  height: 1.1,
                   color: AppColorTokens.textPrimary,
                 ),
               ),
@@ -203,8 +221,9 @@ class _AllHome extends StatelessWidget {
               Text(
                 l10n.museumFullSub(count),
                 style: AppTextStyleTokens.row.copyWith(
-                  fontSize: 16,
-                  color: AppColorTokens.textSecondary,
+                  fontSize: 13,
+                  height: 1.3,
+                  color: AppColorTokens.textBrown,
                 ),
                 maxLines: 2,
               ),

@@ -46,6 +46,56 @@ void main() {
     await second.close();
   });
 
+  group('the language setting across installs (M7 phase 5B, l10n plan '
+      '§1.4: the same key, no schema step)', () {
+    test('a settings box from before "system" existed, with no locale key, '
+        'reads "system" (follow the phone)', () async {
+      Hive.init(directory.path);
+      final raw = await Hive.openBox<Object>(HiveBoxes.settings);
+      await raw.put(SettingsKeys.sound, false);
+      await raw.put(SettingsKeys.symbols, 'large');
+      await raw.close();
+
+      final database = await HiveDatabaseService.open(
+        directory: directory.path,
+      );
+      expect(database.soundEnabled, isFalse, reason: 'the old box is read');
+      expect(database.languageCode, LocaleSetting.system);
+      await database.close();
+    });
+
+    test('a stored "en" from an older build stays pinned to English', () async {
+      Hive.init(directory.path);
+      final raw = await Hive.openBox<Object>(HiveBoxes.settings);
+      await raw.put(SettingsKeys.locale, 'en');
+      await raw.close();
+
+      final database = await HiveDatabaseService.open(
+        directory: directory.path,
+      );
+      expect(database.languageCode, 'en');
+      await database.close();
+    });
+
+    test('"system" and a pinned code survive closing and reopening, under '
+        'the same key', () async {
+      final first = await HiveDatabaseService.open(directory: directory.path);
+      await first.setLanguage(LocaleSetting.system);
+      await first.close();
+      final second = await HiveDatabaseService.open(directory: directory.path);
+      expect(second.languageCode, LocaleSetting.system);
+      expect(
+        Hive.box<Object>(HiveBoxes.settings).get(SettingsKeys.locale),
+        LocaleSetting.system,
+      );
+      await second.setLanguage('pt_BR');
+      await second.close();
+      final third = await HiveDatabaseService.open(directory: directory.path);
+      expect(third.languageCode, 'pt_BR');
+      await third.close();
+    });
+  });
+
   test('a legacy stored "assist" reads as large symbols and is rewritten as '
       '"large" on the next write (PROGRESS D19)', () async {
     Hive.init(directory.path);
@@ -94,6 +144,20 @@ void main() {
     expect(database.soundEnabled, SettingsDefaults.sound);
     expect(database.languageCode, SettingsDefaults.locale);
     expect(database.symbolsMode, SettingsDefaults.symbols);
+    await database.close();
+  });
+
+  test('relitGlowSeen and lastRival of the wrong type or range read as '
+      'unset', () async {
+    Hive.init(directory.path);
+    final raw = await Hive.openBox<Object>(HiveBoxes.settings);
+    await raw.put(SettingsKeys.lastRival, 'x');
+    await raw.put(SettingsKeys.relitGlowSeen, 3);
+    await raw.close();
+
+    final database = await HiveDatabaseService.open(directory: directory.path);
+    expect(database.lastRival, 0);
+    expect(database.relitGlowSeen, isNull);
     await database.close();
   });
 

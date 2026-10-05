@@ -56,6 +56,7 @@ final class LottieLabelStyle {
   /// The text style at [size] (the fitted size).
   TextStyle textStyle([double? size]) => TextStyle(
     fontFamily: AppFontTokens.displayFamily,
+    fontFamilyFallback: AppFontTokens.displayFallback,
     fontWeight: FontWeight.w700,
     fontSize: size ?? fontSize,
     height: 1,
@@ -195,6 +196,21 @@ final class LottieLabelPainter {
       fit = math.min(fit, style.maxHeight / height);
     }
     if (fit < 1) _layout(style.fontSize * fit);
+  }
+
+  /// The share of [style]'s font size [text] is drawn at in its box: 1 when
+  /// it fits, less when it shrinks (so a caller can pick a short form below
+  /// textFit's `minScale`).
+  static double fitOf(
+    LottieLabelStyle style,
+    String text,
+    TextDirection direction,
+  ) {
+    final painter = LottieLabelPainter(style, textDirection: direction)
+      ..text = text;
+    final fit = painter.fontSize / style.fontSize;
+    painter.dispose();
+    return fit;
   }
 
   /// The font size after fitting.

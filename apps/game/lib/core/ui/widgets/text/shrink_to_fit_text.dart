@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 
 /// Text that wraps to at most [maxLines] and, when it still doesn't fit its
 /// width, shrinks its font step by step (down to [minFontScale]) instead of
@@ -17,6 +18,8 @@ class ShrinkToFitText extends StatelessWidget {
     this.maxLines = 2,
     this.textAlign = TextAlign.center,
     this.minFontScale = 0.6,
+    this.overflowLines,
+    this.fixedWidth,
     super.key,
   });
 
@@ -29,43 +32,89 @@ class ShrinkToFitText extends StatelessWidget {
   /// text is laid out at this size as it comes.
   final double minFontScale;
 
+  /// A longer line count a string may use once it no longer fits [maxLines]
+  /// even at [minFontScale] (a translated chapter name on a one-line row):
+  /// the text goes to [overflowLines] lines and scales again from full size,
+  /// so it is wrapped rather than cut (textFit: wrap where the surface
+  /// allows). Null keeps [maxLines].
+  final int? overflowLines;
+
+  /// The width to fit to when the parent can't give one: a box inside an
+  /// `IntrinsicHeight` can't hold a `LayoutBuilder` (it has no intrinsic
+  /// size), so its owner passes the width it knows. Null measures the
+  /// parent's own constraint.
+  final double? fixedWidth;
+
+  static final RegExp _breaksAnywhere = RegExp(
+    r'[\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]',
+  );
+
   static const double _step = 0.05;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final base = DefaultTextStyle.of(context).style.merge(style);
-      final fontSize = base.fontSize ?? 14;
-      final scaler = MediaQuery.textScalerOf(context);
-      final direction = Directionality.of(context);
-      var factor = 1.0;
-      if (constraints.hasBoundedWidth) {
-        while (factor - _step >= minFontScale - 1e-9 &&
+  Widget build(BuildContext context) {
+    final width = fixedWidth;
+    if (width != null) {
+      return _fitted(context, BoxConstraints(maxWidth: width));
+    }
+    return LayoutBuilder(builder: _fitted);
+  }
+
+  Widget _fitted(BuildContext context, BoxConstraints constraints) {
+    // Text that may wrap keeps the script's body line height.
+    final style = maxLines > 1
+        ? context.scriptStyle(this.style, role: ScriptTextRole.body)
+        : context.scriptStyle(this.style);
+    final base = DefaultTextStyle.of(context).style.merge(style);
+    final fontSize = base.fontSize ?? 14;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    var lines = maxLines;
+    var factor = 1.0;
+    if (constraints.hasBoundedWidth) {
+      double shrink(int count) {
+        var f = 1.0;
+        while (f - _step >= minFontScale - 1e-9 &&
             !_fits(
-              base.copyWith(fontSize: fontSize * factor),
+              base.copyWith(fontSize: fontSize * f),
               constraints.maxWidth,
               scaler,
               direction,
+              count,
             )) {
-          factor -= _step;
+          f -= _step;
         }
+        return f;
       }
-      return Text(
-        data,
-        style: factor == 1
-            ? style
-            : style.copyWith(fontSize: fontSize * factor),
-        maxLines: maxLines,
-        textAlign: textAlign,
-      );
-    },
-  );
+
+      factor = shrink(lines);
+      final more = overflowLines ?? maxLines;
+      if (more > maxLines &&
+          !_fits(
+            base.copyWith(fontSize: fontSize * factor),
+            constraints.maxWidth,
+            scaler,
+            direction,
+            lines,
+          )) {
+        lines = more;
+        factor = shrink(lines);
+      }
+    }
+    return Text(
+      data,
+      style: factor == 1 ? style : style.copyWith(fontSize: fontSize * factor),
+      maxLines: lines,
+      textAlign: textAlign,
+    );
+  }
 
   bool _fits(
     TextStyle style,
     double width,
     TextScaler scaler,
     TextDirection direction,
+    int maxLines,
   ) {
     TextPainter painterFor(String text, {int? maxLines}) => TextPainter(
       text: TextSpan(text: text, style: style),
@@ -78,7 +127,10 @@ class ShrinkToFitText extends StatelessWidget {
     whole.dispose();
     if (exceeds) return false;
     for (final word in data.split(RegExp(r'\s+'))) {
-      if (word.isEmpty) continue;
+      // Japanese has no spaces and breaks between any two characters, so a
+      // "word" of kana and kanji may wrap; only a Latin or Devanagari word
+      // must stay whole.
+      if (word.isEmpty || _breaksAnywhere.hasMatch(word)) continue;
       final painter = painterFor(word)..layout();
       final wide = painter.width > width;
       painter.dispose();

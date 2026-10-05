@@ -6,7 +6,7 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 /// Widgets copy a style and change only its colour or shadow, so the size,
 /// weight, family and line height always come from the tokens.
 ///
-/// TODO(M7): tabular figures for coins and counters (PROGRESS Q29; moved
+/// TODO(M8): tabular figures for coins and counters (PROGRESS Q29; moved
 /// from M2, the approach waits on the owner). Fredoka has no `tnum`, so
 /// [number]'s `FontFeature.tabularFigures()` does nothing yet;
 /// `NestyNumberText` is the one place to change once the owner picks one.

@@ -31,7 +31,7 @@ class StreakDailyService implements DailyService {
 
   /// `SaveService.highestLevel` at which the daily unlocks: Level 2 won
   /// (m3-design §8.3).
-  static const int unlockAtHighestLevel = 3;
+  static const int unlockAtHighestLevel = DailyService.unlockAfterLevel + 1;
 
   final SaveService _save;
   final AppClock _clock;

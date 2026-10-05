@@ -6,11 +6,13 @@ import 'package:nesty_game/features/chapters/cubit/chapters_cubit.dart';
 /// One level cell of the open chapter's grid (frames 10.4, 11.5; tokens
 /// `layout.chapters.current.grid`; menus spec 3): 62 tall, radius 14.
 ///
-/// **Won:** a white cell with a 2 dp `surfaceTrack` inset, the number, the
-/// stars (`StarRow`, 11 dp) and "Best N"; a tap opens the level card.
+/// **Won:** a `cream` cell with a 1.5 dp `surfaceTrack` inset, the number,
+/// the stars (`StarRow`, 11 dp) and "Best N"; a tap opens the level card.
 /// **Current:** `gradient.primary` on a 4 dp `primaryEdge` with a soft 4 dp
 /// ring, the number and a play arrow; a tap plays the campaign. **Locked:**
-/// the sunk fill, the number in `textMuted` and a lock; no tap, no ripple.
+/// the `lockedCellFace` fill, the number in `lockedCellNumber` and a lock in
+/// `lockedCellLock` (the 10th and 20th show their mark instead, at 0.8); no
+/// tap, no ripple.
 ///
 /// A Hard or Super Hard level that is won or current gets a 2 dp inset edge
 /// in the tier's colour (`tierEdgeHard`, `tierEdgeSuperHard`); a locked cell
@@ -32,10 +34,11 @@ class ChapterLevelCell extends StatelessWidget {
     Radius.circular(ChaptersTokens.currentGridTileRadius),
   );
 
+  /// NestyHub:310: `#FFF6E6` with `inset 0 0 0 1.5px #EAD3B0`.
   static const _wonStyle = SurfaceStyle(
-    color: AppColorTokens.surfaceWhite,
+    color: AppColorTokens.cream,
     shadows: [
-      NestyShadow(color: AppColorTokens.surfaceTrack, inset: true, spread: 2),
+      NestyShadow(color: AppColorTokens.surfaceTrack, inset: true, spread: 1.5),
     ],
   );
 
@@ -47,10 +50,14 @@ class ChapterLevelCell extends StatelessWidget {
     ],
   );
 
+  /// `chapters.lockedCell`: `#F1E3CC` with the sunk inset shadow.
   static const _lockedStyle = SurfaceStyle(
-    color: AppColorTokens.surfaceSunk,
-    shadows: [],
+    color: ChaptersTokens.lockedCellFace,
+    shadows: ChaptersTokens.lockedCellShadow,
   );
+
+  /// A locked cell's chest and flag marks (NestyHub:311 `markOp`).
+  static const double lockedMarkOpacity = 0.8;
 
   /// The tier edge colour: only for a reached cell (won or current) of a
   /// tier that shows a badge elsewhere (`TierChip.shows`).
@@ -76,15 +83,26 @@ class ChapterLevelCell extends StatelessWidget {
       if (level.isChest) l10n.chaptersLevelChestSemantics,
       if (level.isFinale) l10n.chaptersLevelFinaleSemantics,
     ];
-    return parts.join(', ');
+    // Each part is a sentence (copy.md A11y `a11y_level_*`): one stop and
+    // a space between them.
+    return l10n.joinSentences(parts, closing: true);
   }
 
   String _won(AppLocalizations l10n) {
-    final base = level.bestMoves == null
-        ? l10n.chaptersLevelSemanticsWonNoBest(level.order)
-        : l10n.chaptersLevelSemanticsWon(level.order, level.bestMoves!);
     final stars = level.stars;
-    return stars == null ? base : '$base, ${l10n.starsSemantics(stars)}';
+    final best = level.bestMoves;
+    if (stars != null && best != null) {
+      return l10n.chaptersLevelSemanticsWon(level.order, stars, best);
+    }
+    // A save from before stars or bests were kept, or a level without a par:
+    // say what it holds.
+    if (best != null) {
+      return l10n.chaptersLevelSemanticsWonBestOnly(level.order, best);
+    }
+    final base = l10n.chaptersLevelSemanticsWonNoBest(level.order);
+    return stars == null
+        ? base
+        : l10n.joinList([base, l10n.starsSemantics(stars)]);
   }
 
   @override
@@ -96,7 +114,7 @@ class ChapterLevelCell extends StatelessWidget {
     final textColor = current
         ? const Color(0xFFFFFFFF)
         : locked
-        ? AppColorTokens.textMuted
+        ? ChaptersTokens.lockedCellNumber
         : AppColorTokens.textPrimary;
     final content = FittedBox(
       fit: BoxFit.scaleDown,
@@ -107,8 +125,9 @@ class ChapterLevelCell extends StatelessWidget {
           NestyNumberText(
             level.order,
             style: AppTextStyleTokens.number.copyWith(
-              fontSize: 20,
-              height: 1.1,
+              // NestyHub:86: Fredoka 700 16/1.
+              fontSize: 16,
+              height: 1,
               color: textColor,
             ),
           ),
@@ -127,14 +146,14 @@ class ChapterLevelCell extends StatelessWidget {
           if (current)
             const Icon(
               NestyIcons.playArrow,
-              size: 20,
+              size: 22,
               color: Color(0xFFFFFFFF),
             ),
-          if (locked)
+          if (locked && !level.isChest && !level.isFinale)
             const Icon(
               NestyIcons.lock,
-              size: 16,
-              color: AppColorTokens.textMuted,
+              size: 13,
+              color: ChaptersTokens.lockedCellLock,
             ),
         ],
       ),
@@ -167,7 +186,8 @@ class ChapterLevelCell extends StatelessWidget {
             child: content,
           );
     final edge = _tierEdge();
-    final mark = level.isChest
+    final markOpacity = locked ? lockedMarkOpacity : 1.0;
+    final markArt = level.isChest
         ? UiArtImage(
             UiArt.chestClosed,
             size: Size(18, 18 / UiArt.chestClosed.aspectRatio),
@@ -179,6 +199,9 @@ class ChapterLevelCell extends StatelessWidget {
             color: AppColorTokens.primaryEdge,
           )
         : null;
+    final mark = markArt == null
+        ? null
+        : Opacity(opacity: markOpacity, child: markArt);
     final cell = Stack(
       clipBehavior: Clip.none,
       children: [

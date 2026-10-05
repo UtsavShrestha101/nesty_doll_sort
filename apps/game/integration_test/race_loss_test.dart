@@ -13,18 +13,21 @@ import 'package:nesty_game/core/services/remote_config/remote_config_service.dar
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/race/versus_ribbon.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
 import 'package:nesty_game/features/gameplay/overlays/race_result_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/race/cubit/race_cubit.dart';
+import 'package:nesty_game/features/race/cubit/rival_select_cubit.dart';
 import 'package:nesty_game/features/race/pages/rival_select_page.dart';
 import 'package:nesty_game/features/race/widgets/rival_strip.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
+import 'support/phone_language.dart';
 import 'support/seeded_save.dart';
 
 /// vs Computer's losing side on a device (phase 4 lane R; m7-design P4.4;
@@ -42,11 +45,22 @@ import 'support/seeded_save.dart';
 ///   held), Settings and back, Leave race asks once (9.7b, Keep racing), then
 ///   Leave race for real (back to rival select, nothing written), a second
 ///   race, its loss, and New race (the next raceNo: a different board).
+///   m7-4 adds the strip's portrait reacting when the computer completes a
+///   family (`ui_rival_react`'s `family`) and the 9.5 card's portrait.
 /// - `oom` (run with `--dart-define=NESTY_RACE_PACE_MS=600000`: the rival
 ///   never finishes): Out of Moves in a race. A dead-end line is searched
 ///   with core's rules and each move is checked with `Rules.tryMove` first;
 ///   the sheet shows Undo "Free, as often as you like" and Restart, no +1
-///   Slot; Undo closes it; Leave race.
+///   Slot; Undo closes it; Leave race. m7-4 adds the sheet at 1.3× text
+///   (frame 10.9c; its German strings are 5B's): the Free chip keeps its
+///   size, moving under the line when the text column runs short.
+/// - `restart` (phase 5, frame 9.3c; run with
+///   `--dart-define=NESTY_RACE_PACE_MS=1000`): the strip's "Starting over"
+///   when the rival's bot restarts. Rival 2's race 39 at stage 20 is the
+///   race whose rival restarts first (its 7th step, about 7 s after Start at
+///   that pace; see [_restartRaceNo]); the player never moves. m7-4 4.5
+///   adds rival select's pick on a new visit: the rival last raced when no
+///   rival is New (seeded: Pebble), then Button after racing it.
 ///
 /// ```sh
 /// cd apps/game
@@ -72,23 +86,43 @@ void main() {
   testWidgets(
     'vs Computer, the losing side: $_scenario',
     (tester) async {
+      pinEnglishPhone(tester);
       // Past Level 20: `highestLevel` 21 opens the mode (`race_unlock_level`
       // 20), tutorial long done. Rival 1 open, 2 and 3 locked. `loss` starts
       // with no race yet; `oom` starts at rival 1's race 6 (see [_oomRaceNo]).
+      final document = switch (_scenario) {
+        'oom' => const SaveDocument(
+          currentLevel: 21,
+          highestLevel: 21,
+          race: RaceProgress(
+            rivals: [
+              RivalProgress(unlocked: true, raceNo: _oomRaceNo - 1),
+              RivalProgress(),
+              RivalProgress(),
+            ],
+          ),
+        ),
+        // Rival 1 beaten once, rival 2 open with race 38 behind it, so
+        // rival select's Start races rival 2's race 39.
+        'restart' => const SaveDocument(
+          currentLevel: 21,
+          highestLevel: 21,
+          race: RaceProgress(
+            rivals: [
+              RivalProgress(unlocked: true, wins: 1, raceNo: 1),
+              RivalProgress(unlocked: true, raceNo: _restartRaceNo - 1),
+              RivalProgress(),
+            ],
+          ),
+        ),
+        _ => const SaveDocument(currentLevel: 21, highestLevel: 21),
+      };
       await seedSave(
-        _scenario == 'oom'
-            ? const SaveDocument(
-                currentLevel: 21,
-                highestLevel: 21,
-                race: RaceProgress(
-                  rivals: [
-                    RivalProgress(unlocked: true, raceNo: _oomRaceNo - 1),
-                    RivalProgress(),
-                    RivalProgress(),
-                  ],
-                ),
-              )
-            : const SaveDocument(currentLevel: 21, highestLevel: 21),
+        document,
+        // `restart`: Pebble was the last rival raced (m7-4 4.5's memory).
+        settings: _scenario == 'restart'
+            ? const SeededSettings(lastRival: 1)
+            : const SeededSettings(),
       );
 
       app.main();
@@ -104,6 +138,15 @@ void main() {
       final config = get<RemoteConfigService>();
       final pace = RaceRules.paceMs(1, config);
       switch (_scenario) {
+        case 'restart':
+          expect(
+            pace,
+            inInclusiveRange(500, 3000),
+            reason:
+                'run with --dart-define=NESTY_RACE_PACE_MS=1000: slow enough '
+                'to see "Starting over", quick enough to reach it',
+          );
+          await _restart(tester, board, shots, pace);
         case 'oom':
           expect(
             pace,
@@ -222,6 +265,24 @@ Future<void> _loss(WidgetTester tester, Board board, _Shots shots) async {
   expect(find.text('Hint'), findsNothing);
   await shots.take('r_race_running');
 
+  // m7-4 (`ui_rival_react`): the strip's portrait plays its `family`
+  // segment, a ring and two sparkles, as the computer completes a family.
+  expect(
+    find.descendant(
+      of: find.byType(RivalStrip),
+      matching: find.byType(RivalReact),
+    ),
+    findsOneWidget,
+  );
+  await tester.pumpUntil(
+    () => (_race(tester).state.data?.rivalSets ?? 0) >= 1,
+    timeout: const Duration(minutes: 2),
+    reason: "the computer's first family",
+    step: const Duration(milliseconds: 16),
+  );
+  await tester.pumpFor(const Duration(milliseconds: 300));
+  await shots.take('r_rival_family');
+
   // 9.5: the computer finished first. Nothing is paid or taken.
   await tester.pumpUntil(
     () => find.byType(RaceLossCard).evaluate().isNotEmpty,
@@ -229,7 +290,13 @@ Future<void> _loss(WidgetTester tester, Board board, _Shots shots) async {
     reason: 'the computer to finish first (9.5)',
   );
   await tester.pumpFor(const Duration(milliseconds: 800));
-  expect(find.text('So close! Rematch?'), findsOneWidget);
+  // The ribbon's title is painted by the Lottie label (m7-4), not a Text.
+  expect(
+    find.byWidgetPredicate(
+      (w) => w is VersusRibbon && w.title == 'So close! Rematch?',
+    ),
+    findsOneWidget,
+  );
   expect(
     find.text('Pebble finished first this time. A rematch costs nothing.'),
     findsOneWidget,
@@ -238,6 +305,14 @@ Future<void> _loss(WidgetTester tester, Board board, _Shots shots) async {
   expect(find.text('Rematch'), findsOneWidget);
   expect(find.text('New race'), findsOneWidget);
   expect(find.text('Back to races'), findsNothing, reason: 'two buttons');
+  // The portrait hops (`ui_rival_react`'s `win`: the computer won).
+  expect(
+    find.descendant(
+      of: find.byType(RaceLossCard),
+      matching: find.byType(RivalReact),
+    ),
+    findsOneWidget,
+  );
   expect(save.document.coins, coins);
   expect(save.document.race.rivals[0].wins, 0);
   await shots.take('r_race_loss');
@@ -297,7 +372,7 @@ Future<void> _loss(WidgetTester tester, Board board, _Shots shots) async {
   await tester.pumpFor(const Duration(milliseconds: 500));
   expect(find.text('Leave this race?'), findsOneWidget);
   expect(
-    find.text('The race ends here. No coins, and nothing lost.'),
+    find.text('The race stops here. No coins, and you keep everything.'),
     findsOneWidget,
   );
   await shots.take('r_leave_confirm');
@@ -446,6 +521,25 @@ Future<void> _oom(WidgetTester tester, Board board, _Shots shots) async {
   expect(_race(tester).state.data!.held, isTrue);
   await shots.take('r_out_of_moves');
 
+  // Frame 10.9c at 1.3× text (English here; its German is 5B's): the Free
+  // chip never shrinks, and moves under the line when the text column
+  // would run under 120 dp (`textFit.sheetRows`).
+  tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+  try {
+    await tester.pumpFor(const Duration(milliseconds: 600));
+    expect(
+      find.descendant(
+        of: find.byType(OutOfMovesSheet),
+        matching: find.text('Free'),
+      ),
+      findsOneWidget,
+    );
+    await shots.take('r_out_of_moves_large');
+  } finally {
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+  }
+  await tester.pumpFor(const Duration(milliseconds: 400));
+
   // Undo is free and closes the sheet.
   final coins = save.document.coins;
   await tester.tap(
@@ -480,6 +574,124 @@ Future<void> _oom(WidgetTester tester, Board board, _Shots shots) async {
   );
   expect(save.document.race.rivals[0].wins, 0);
 }
+
+/// The race `restart` plays (frame 9.3c): rival 2's race 39 at stage 20
+/// (`highestLevel` 21).
+///
+/// At that stage it is the race whose rival restarts earliest of rivals 1-3
+/// and races 1-40 (at its 7th step; most races never restart), found by
+/// stepping core's own `RivalBot` over each board (phase 5, architecture.md
+/// §1.3). The test re-checks it on the device's own board before Start, so a
+/// generator or bot change fails here with a clear reason instead of a
+/// silent wait.
+const _restartRival = 2;
+const _restartRaceNo = 39;
+
+Future<void> _restart(
+  WidgetTester tester,
+  Board board,
+  _Shots shots,
+  int paceMs,
+) async {
+  final save = get<SaveService>();
+  final coins = save.document.coins;
+  await _openSelect(tester);
+  // m7-4 4.5: no rival is New (Button has raced before), so a new visit
+  // picks the rival last raced, Pebble (seeded), over the highest unlocked.
+  expect(_selected(tester), 1, reason: 'the rival last raced');
+  await shots.take('r_rival_select_last_raced');
+  // A tap picks Button for this visit.
+  await tester.tap(find.bySemanticsLabel(RegExp(r'^Button, [Cc]omputer')));
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  expect(_selected(tester), 2);
+  await _startFromSelect(tester, board);
+  expect(
+    _race(tester).request,
+    const RacePlay(rival: _restartRival, raceNo: _restartRaceNo),
+    reason: 'the seeded save starts rival 2\'s race $_restartRaceNo',
+  );
+
+  // Core's own bot, built as `RaceCubit.playerBoardLoaded` builds it, on
+  // this very board: it must restart before it finishes.
+  final bot = RivalBot(
+    board.state.entry.level,
+    policy: DifficultyCurve.racePolicy(_restartRival),
+    raceSeed: DifficultyCurve.raceSeed(_restartRival, _restartRaceNo),
+  );
+  var restartStep = 0;
+  for (var step = 1; restartStep == 0; step++) {
+    final result = bot.step();
+    if (result == RivalStep.restarted) restartStep = step;
+    if (result == RivalStep.finished) break;
+  }
+  expect(
+    restartStep,
+    greaterThan(0),
+    reason:
+        'rival $_restartRival race $_restartRaceNo restarts at stage 20 (a '
+        'changed generator or bot? search the races again)',
+  );
+
+  await _tapStart(tester, board);
+  await tester.pumpUntil(
+    () => _race(tester).state.data?.activity == RivalActivity.startingOver,
+    // The pace is ±20 % per step: twice the expected time, plus the start.
+    timeout: Duration(milliseconds: 2 * restartStep * paceMs + 10000),
+    reason: 'the rival starting over (9.3c) at its step $restartStep',
+    step: const Duration(milliseconds: 16),
+  );
+  await tester.pumpFor(const Duration(milliseconds: 150));
+  expect(find.text('Starting over'), findsOneWidget);
+  expect(_race(tester).state.data!.rivalRestarts, 1);
+  expect(_race(tester).state.data!.rivalSets, 0);
+  await shots.take('r_rival_restart');
+
+  // Leave race, asked once: nothing paid or taken.
+  await board.openPause();
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  await tester.tap(find.text('Leave race'));
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await tester.tap(
+    find.descendant(
+      of: find.byKey(const ValueKey('raceLeaveConfirm')),
+      matching: find.text('Leave race'),
+    ),
+  );
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isEmpty &&
+        find.byType(RivalSelectView).evaluate().isNotEmpty,
+    reason: 'Leave race back to rival select',
+  );
+  expect(save.document.coins, coins, reason: 'leaving costs nothing');
+
+  // A new visit starts on the rival last raced: Button now (m7-4 4.5).
+  await tester.pumpFor(const Duration(milliseconds: 400));
+  await tester.tap(
+    find.descendant(
+      of: find.byType(RivalSelectView),
+      matching: find.bySemanticsLabel('Back'),
+    ),
+  );
+  await tester.pumpUntil(
+    () =>
+        find.byType(RivalSelectView).evaluate().isEmpty &&
+        find.byType(HomePage).evaluate().isNotEmpty,
+    reason: 'Home after rival select',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 800));
+  await _openSelect(tester);
+  expect(_selected(tester), 2, reason: 'the rival last raced, Button');
+  await shots.take('r_rival_select_new_visit');
+}
+
+/// Rival select's pick (the one Start's rival).
+int _selected(WidgetTester tester) => tester
+    .element(find.byType(RivalSelectView))
+    .read<RivalSelectCubit>()
+    .state
+    .data!
+    .selected;
 
 final class _Shots {
   _Shots(this._binding, this._tester);

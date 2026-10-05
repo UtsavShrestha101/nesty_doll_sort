@@ -12,6 +12,11 @@ import 'package:nesty_game/core/services/save/save_document.dart';
 /// environments (it composes the save and the clock, which the fake env
 /// fakes); `FakeDailyService` scripts a [DailyStatus] for unit tests.
 abstract interface class DailyService {
+  /// The level the player wins first for the daily to open: Level 2
+  /// (m3-design §8.3, Q67). The locked tile and screen say it ("After Level
+  /// 2", copy.md E `daily_locked`), so the copy follows this number.
+  static const int unlockAfterLevel = 2;
+
   /// Level 2 has been won (`SaveService.highestLevel >= 3`, m3-design
   /// §8.3).
   bool get isUnlocked;

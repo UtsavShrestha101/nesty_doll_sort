@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
@@ -75,6 +76,10 @@ class _DailyViewState extends State<DailyView> {
   /// balance plus what has landed, one landing at a time.
   int _chestCoinsRevealed = 0;
 
+  /// A freeze notice was shown on this visit: the streak card's line keeps
+  /// "A freeze kept your flame lit." (frame 5.2) after the toast is gone.
+  bool _freezeKept = false;
+
   Rect? _coinPillRect() {
     final box = _coinPillKey.currentContext?.findRenderObject();
     if (box is! RenderBox || !box.attached) return null;
@@ -118,29 +123,29 @@ class _DailyViewState extends State<DailyView> {
     // SafeArea around it left both bands undimmed (the device run,
     // 2026-09-30).
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: BlocConsumer<DailyCubit, AsyncValue<DailyState>>(
-        listenWhen: (previous, current) =>
-            current.data?.status.freezeNotice != null &&
-            previous.data?.status.freezeNotice !=
-                current.data?.status.freezeNotice,
-        listener: _onFreezeNotice,
-        builder: (context, value) => switch (value) {
-          AsyncValueData<DailyState>(:final data) => _body(context, data),
-          AsyncValueLoading<DailyState>(:final data) when data != null => _body(
-            context,
-            data,
-          ),
-          AsyncValueError<DailyState>(:final exception) => SafeArea(
-            child: RetryView(
-              exception: exception,
-              onRetry: () => context.read<DailyCubit>().load(),
+      backgroundColor: AppColorTokens.canvasCream,
+      body: CreamPage(
+        child: BlocConsumer<DailyCubit, AsyncValue<DailyState>>(
+          listenWhen: (previous, current) =>
+              current.data?.status.freezeNotice != null &&
+              previous.data?.status.freezeNotice !=
+                  current.data?.status.freezeNotice,
+          listener: _onFreezeNotice,
+          builder: (context, value) => switch (value) {
+            AsyncValueData<DailyState>(:final data) => _body(context, data),
+            AsyncValueLoading<DailyState>(:final data) when data != null =>
+              _body(context, data),
+            AsyncValueError<DailyState>(:final exception) => SafeArea(
+              child: RetryView(
+                exception: exception,
+                onRetry: () => context.read<DailyCubit>().load(),
+              ),
             ),
-          ),
-          _ => const SafeArea(
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        },
+            _ => const SafeArea(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          },
+        ),
       ),
     );
   }
@@ -148,6 +153,7 @@ class _DailyViewState extends State<DailyView> {
   void _onFreezeNotice(BuildContext context, AsyncValue<DailyState> value) {
     final notice = value.data?.status.freezeNotice;
     if (notice == null) return;
+    setState(() => _freezeKept = true);
     final l10n = context.localizations;
     final weekday = DateFormat.EEEE(
       Localizations.localeOf(context).toString(),
@@ -167,6 +173,9 @@ class _DailyViewState extends State<DailyView> {
     return Stack(
       children: [
         SafeArea(
+          // The list runs to the screen's bottom edge: its own padding
+          // clears the home indicator (F-SAFE).
+          bottom: false,
           child: Column(
             children: [
               Padding(
@@ -207,11 +216,16 @@ class _DailyViewState extends State<DailyView> {
 
   Widget _unlocked(BuildContext context, DailyState state) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        14,
+        16,
+        32 + MediaQuery.viewPaddingOf(context).bottom,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          StreakCard(status: state.status),
+          StreakCard(status: state.status, freezeKept: _freezeKept),
           const SizedBox(height: 16),
           DayStrip(status: state.status),
           const SizedBox(height: 16),
@@ -237,15 +251,19 @@ class _DailyViewState extends State<DailyView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(NestyIcons.lock, size: 40, color: AppColors.chevron),
+            const Icon(
+              NestyIcons.lock,
+              size: 40,
+              color: AppColorTokens.chevron,
+            ),
             const SizedBox(height: 12),
             // TODO(design): no frame shows the Daily screen itself before
             // Level 2 (m3-design §8.3, Q67); Home's tile is dimmed instead.
             Text(
-              l10n.homeDailyLocked,
+              l10n.homeDailyLocked(DailyService.unlockAfterLevel),
               textAlign: TextAlign.center,
               style: AppTextStyleTokens.cardTitle.copyWith(
-                color: AppColors.textBrown,
+                color: AppColorTokens.textBrown,
               ),
             ),
           ],

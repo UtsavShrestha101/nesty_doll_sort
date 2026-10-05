@@ -8,6 +8,8 @@ import 'package:nesty_game/core/services/links/app_links.dart';
 import 'package:nesty_game/core/services/links/link_launcher.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/home/text_link.dart';
+import 'package:nesty_game/features/daily/widgets/reminder_time_picker.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/settings/cubit/settings_cubit.dart';
 import 'package:nesty_game/features/settings/widgets/color_symbols_picker.dart';
@@ -45,26 +47,31 @@ class SettingsPage extends StatelessWidget implements AutoRouteWrapper {
   Widget build(BuildContext context) {
     final links = context.read<LinkLauncher>();
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: ScreenHeader(
-                title: context.localizations.settings,
-                onClose: () => context.router.maybePop(),
+      body: CreamPage(
+        child: SafeArea(
+          // The list runs to the bottom edge; its padding clears the home
+          // indicator (F-SAFE).
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: ScreenHeader(
+                  title: context.localizations.settings,
+                  onClose: () => context.router.maybePop(),
+                ),
               ),
-            ),
-            Expanded(
-              child: BlocBuilder<SettingsCubit, AsyncValue<SettingsState>>(
-                builder: (context, state) {
-                  final data = state.data;
-                  if (data == null) return const SizedBox.shrink();
-                  return _SettingsBody(state: data, links: links);
-                },
+              Expanded(
+                child: BlocBuilder<SettingsCubit, AsyncValue<SettingsState>>(
+                  builder: (context, state) {
+                    final data = state.data;
+                    if (data == null) return const SizedBox.shrink();
+                    return _SettingsBody(state: data, links: links);
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -84,7 +91,12 @@ class _SettingsBody extends StatelessWidget {
     final reminder = state.reminder;
     final blocked = reminder.blocked;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        32 + MediaQuery.viewPaddingOf(context).bottom,
+      ),
       children: [
         SettingsSection(
           tiled: true,
@@ -120,9 +132,14 @@ class _SettingsBody extends StatelessWidget {
               SettingsToggleRow(
                 icon: blocked ? IconUses.reminderOff : IconUses.reminder,
                 label: l10n.settingReminder,
+                // The tile follows the state (`iconTiles`): amber while it is
+                // on, the wood tint when it is off (10.2h) and the muted
+                // brown glyph when the phone blocks it (10.2f).
                 tile: blocked
                     ? SettingsTile.reminderOff
-                    : SettingsTile.reminder,
+                    : reminder.settings.on
+                    ? SettingsTile.reminder
+                    : SettingsTile.wood,
                 // Blocked reads as off (frame 10.2f): the reminder is still on
                 // in the player's own settings (D190), the phone just says no.
                 value: reminder.settings.on && !blocked,
@@ -132,11 +149,27 @@ class _SettingsBody extends StatelessWidget {
                   blocked ? cubit.openPhoneSettings() : cubit.setReminderOn(v),
                 ),
                 subtitle: blocked ? l10n.settingReminderBlocked : null,
+                // Two ways out, 18 dp apart, wrapping under each other when
+                // narrow: the phone's settings, or Turn off, which stops the
+                // reminder in the app (the Off row, 10.2h; Q158).
                 footer: blocked
-                    ? SettingsPillButton(
-                        icon: IconUses.openSettings,
-                        label: l10n.settingOpenPhoneSettings,
-                        onPressed: () => unawaited(cubit.openPhoneSettings()),
+                    ? Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: SettingsRowsTokens.blockedActionsGap,
+                        children: [
+                          SettingsPillButton(
+                            icon: IconUses.openSettings,
+                            label: l10n.settingOpenPhoneSettings,
+                            onPressed: () =>
+                                unawaited(cubit.openPhoneSettings()),
+                          ),
+                          TextLink(
+                            inline: true,
+                            label: l10n.settingReminderTurnOff,
+                            onPressed: () =>
+                                unawaited(cubit.setReminderOn(false)),
+                          ),
+                        ],
                       )
                     : null,
               ),
@@ -145,7 +178,7 @@ class _SettingsBody extends StatelessWidget {
                 icon: IconUses.reminderTime,
                 label: l10n.settingReminderTime,
                 tile: SettingsTile.reminder,
-                value: MaterialLocalizations.of(context).formatTimeOfDay(
+                value: context.formatClock(
                   TimeOfDay(
                     hour: reminder.settings.hour,
                     minute: reminder.settings.minute,
@@ -204,9 +237,14 @@ class _SettingsBody extends StatelessWidget {
                 icon: NestyIcons.translate,
                 label: l10n.settingLanguage,
                 tile: SettingsTile.wood,
-                value: language.currentLanguageCode == 'en'
-                    ? 'English'
-                    : l10n.languageName(language.currentLanguageCode),
+                // The language's own name (data: it reads the same in every
+                // UI language), l10n.md §1.2.
+                value: launchLanguages
+                    .firstWhere(
+                      (l) => l.code == language.currentLanguageCode,
+                      orElse: () => launchLanguages.first,
+                    )
+                    .autonym,
                 onTap: () => unawaited(
                   LanguageSheet.show(
                     context,
@@ -269,23 +307,26 @@ class _SettingsBody extends StatelessWidget {
     SettingsCubit cubit,
     SettingsState state,
   ) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(
+    final picked = await showReminderTimePicker(
+      context,
+      initial: TimeOfDay(
         hour: state.reminder.settings.hour,
         minute: state.reminder.settings.minute,
       ),
     );
     if (picked == null) return;
-    await cubit.setReminderTime(hour: picked.hour, minute: picked.minute);
-    if (!context.mounted) return;
+    final stored = await cubit.setReminderTime(
+      hour: picked.hour,
+      minute: picked.minute,
+    );
+    if (!stored || !context.mounted) return;
     // The 10.2c toast confirms the new time (ui-spec-menus §7.2).
     NestyToast.show(
       context,
       tone: NestyBannerTone.success,
       icon: IconUses.reminder,
       title: context.localizations.reminderOfferDone(
-        MaterialLocalizations.of(context).formatTimeOfDay(picked),
+        context.formatClock(picked),
       ),
     );
   }

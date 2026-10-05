@@ -22,6 +22,7 @@ class RivalPortrait extends StatelessWidget {
     this.size = 96,
     this.locked = false,
     this.emphasis = false,
+    this.ring = true,
     super.key,
   });
 
@@ -35,17 +36,27 @@ class RivalPortrait extends StatelessWidget {
   /// The wide versus ring (9.6, 9.7b).
   final bool emphasis;
 
+  /// Draws the `#FFFDF7` ring and its drop. [RivalReact] draws them itself
+  /// under its Lottie and turns this off for its stand-in.
+  final bool ring;
+
   static const _ring = Color(0xFFFFFDF7);
 
+  /// The plain ring and drop, for [RivalReact]'s own.
+  static const plainShadows = _plain;
+
+  // CSS paints the first shadow on top, Flutter the last, so the design's
+  // lists (`0 0 0 2px ring, drop`; `0 0 0 4px ring, 0 0 0 7px indigo, drop`,
+  // NestyMeta.dc.html:281) are written in reverse here.
   static const _plain = [
-    BoxShadow(color: _ring, spreadRadius: 2),
     BoxShadow(color: Color(0x403C1905), offset: Offset(0, 2), blurRadius: 4),
+    BoxShadow(color: _ring, spreadRadius: 2),
   ];
 
   static const _emphasised = [
-    BoxShadow(color: _ring, spreadRadius: 4),
-    BoxShadow(color: AppColorTokens.versus, spreadRadius: 7),
     BoxShadow(color: Color(0x403242A8), offset: Offset(0, 8), blurRadius: 16),
+    BoxShadow(color: AppColorTokens.versus, spreadRadius: 7),
+    BoxShadow(color: _ring, spreadRadius: 4),
   ];
 
   @override
@@ -53,8 +64,12 @@ class RivalPortrait extends StatelessWidget {
     child: DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: _ring,
-        boxShadow: emphasis ? _emphasised : _plain,
+        color: ring ? _ring : null,
+        boxShadow: !ring
+            ? null
+            : emphasis
+            ? _emphasised
+            : _plain,
       ),
       child: ClipOval(
         child: UiArtImage.square(

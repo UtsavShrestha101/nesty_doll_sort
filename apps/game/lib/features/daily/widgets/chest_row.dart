@@ -55,7 +55,7 @@ class ChestRow extends StatelessWidget {
                     fontSize: 13,
                     height: 1.3,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textBrown,
+                    color: AppColorTokens.textBrown,
                   ),
                 ),
               ],

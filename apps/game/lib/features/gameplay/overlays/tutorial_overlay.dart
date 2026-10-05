@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nesty_core/nesty_core.dart' show GameState;
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
@@ -77,22 +78,48 @@ class TutorialOverlay extends StatelessWidget {
     );
     final (chip, title, text) = _copyFor(cue.step, l10n);
     final topInset = MediaQuery.paddingOf(context).top;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final width = MediaQuery.sizeOf(context).width;
+    // The Pause hole (`layout.tutorial.pauseHole`, m7-4 8.1) keeps the button
+    // lit under the scrim; its y is for a 59 dp safe area, like the HUD's.
+    const hole = TutorialTokens.pauseHoleRect;
+    final pauseHole = Rect.fromLTWH(
+      rtl ? width - hole.left - hole.width : hole.left,
+      topInset + (hole.top - 59),
+      hole.width,
+      hole.height,
+    );
     return IgnorePointer(
       child: Stack(
         fit: StackFit.expand,
         children: [
           CustomPaint(
-            painter: _ScrimHolesPainter(holes: [fromHole, toHole]),
+            painter: _ScrimHolesPainter(
+              holes: [fromHole, toHole],
+              pauseHole: pauseHole,
+            ),
             size: Size.infinite,
           ),
           if (arc != null)
             CustomPaint(painter: _ArcPainter(arc), size: Size.infinite),
           Positioned(
-            left: 28,
-            right: 28,
-            // NestyBoard: the card's top at 124 on a 59 safe area.
-            top: topInset + (124 - 59),
-            child: _TooltipCard(chip: chip, title: title, text: text),
+            // In the HUD row, between the Pause hole and the right edge
+            // (`layout.tutorial.tooltip`, m7-4 8.1): over the dimmed level
+            // pill and family counter, never over the hole.
+            left: TutorialTokens.tooltipLeft,
+            right: TutorialTokens.tooltipRight,
+            top: topInset + (TutorialTokens.tooltipTop - 59),
+            child: _TooltipCard(
+              chip: chip,
+              title: title,
+              text: text,
+              // Level 1's three steps read "Step n of 3. {title}" with the
+              // text after it (copy.md A11y `a11y_tut_step`); the swallow
+              // step keeps its chip and title.
+              semanticLabel: cue.step <= levelOneSteps
+                  ? l10n.tutorialStepSemantics(cue.step, title)
+                  : null,
+            ),
           ),
           _Hand(point: tapPoint, dragTo: dragTo, library: library),
         ],
@@ -249,11 +276,12 @@ final class _Hole {
 /// The scrim (`rgba(52,26,8,.6)`) with both holes cut out (evenodd fill,
 /// NestyBoard `tutPath`).
 final class _ScrimHolesPainter extends CustomPainter {
-  const _ScrimHolesPainter({required this.holes});
+  const _ScrimHolesPainter({required this.holes, required this.pauseHole});
 
   final List<_Hole> holes;
+  final Rect pauseHole;
 
-  static final Paint _paint = Paint()..color = const Color(0x99341A08);
+  static final Paint _paint = Paint()..color = TutorialTokens.scrim;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -263,11 +291,18 @@ final class _ScrimHolesPainter extends CustomPainter {
     for (final hole in holes) {
       path.addOval(hole.rect);
     }
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        pauseHole,
+        const Radius.circular(TutorialTokens.pauseHoleRadius),
+      ),
+    );
     canvas.drawPath(path, _paint);
   }
 
   @override
   bool shouldRepaint(_ScrimHolesPainter oldDelegate) =>
+      oldDelegate.pauseHole != pauseHole ||
       oldDelegate.holes.length != holes.length ||
       [
         for (var i = 0; i < holes.length; i++) oldDelegate.holes[i] != holes[i],
@@ -326,63 +361,123 @@ final class _ArcPainter extends CustomPainter {
 }
 
 /// The tooltip card (NestyBoard: 28/124 on a 59 safe area, radius 22,
-/// surface gradient; the step chip, title 22, text 15, a rotated diamond
-/// tail).
+/// surface gradient; the step chip, title 22, text 15, a 22×9 triangle
+/// tail that takes no layout height).
 class _TooltipCard extends StatelessWidget {
   const _TooltipCard({
     required this.chip,
     required this.title,
     required this.text,
+    this.semanticLabel,
   });
 
   final String? chip;
   final String title;
   final String text;
 
+  /// The spoken head, when it replaces the chip and the title.
+  final String? semanticLabel;
+
   static const _style = SurfaceStyle(
     gradient: AppGradientTokens.surface,
     shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 5)],
   );
 
+  static const double _tailWidth = 22;
+  static const double _tailHeight = 9;
+
+  /// The tail, for tests.
+  @visibleForTesting
+  static const Key tailKey = Key('tutorial-tip-tail');
+
+  Widget _spoken(Widget child) =>
+      semanticLabel == null ? child : ExcludeSemantics(child: child);
+
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      NestySurface(
-        style: _style,
-        radius: const BorderRadius.all(Radius.circular(22)),
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (chip != null) ...[_Chip(chip!), const SizedBox(height: 8)],
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTextStyleTokens.h2.copyWith(fontSize: 22, height: 1.15),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body.copyWith(
-                fontSize: 15,
-                height: 1.4,
-                color: AppColorTokens.textSecondary,
+  Widget build(BuildContext context) => Semantics(
+    container: semanticLabel != null,
+    label: semanticLabel,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        NestySurface(
+          style: _style,
+          radius: const BorderRadius.all(
+            Radius.circular(TutorialTokens.tooltipRadius),
+          ),
+          padding: TutorialTokens.tooltipPadding,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (chip != null) ...[
+                _spoken(_Chip(chip!)),
+                const SizedBox(height: 8),
+              ],
+              _spoken(
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyleTokens.h2.copyWith(
+                    fontSize: 22,
+                    height: 1.15,
+                  ),
+                ),
               ),
+              const SizedBox(height: 6),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: context.scriptStyle(
+                  AppTextStyles.body.copyWith(
+                    fontSize: 15,
+                    height: 1.4,
+                    color: AppColorTokens.textSecondary,
+                  ),
+                  role: ScriptTextRole.body,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // The tail: a 22×9 triangle that merges into the card's bottom edge
+        // and takes no layout height (frame 1.3; phase 5 audit f10-8b).
+        const Positioned(
+          left: 0,
+          right: 0,
+          bottom: -8,
+          height: _tailHeight,
+          child: Center(
+            child: CustomPaint(
+              key: tailKey,
+              size: Size(_tailWidth, _tailHeight),
+              painter: _TailPainter(),
             ),
-          ],
+          ),
         ),
-      ),
-      Transform.rotate(
-        angle: math.pi / 4,
-        child: const DecoratedBox(
-          decoration: BoxDecoration(color: Color(0xFFFCEBD0)),
-          child: SizedBox(width: 18, height: 18),
-        ),
-      ),
-    ],
+      ],
+    ),
   );
+}
+
+class _TailPainter extends CustomPainter {
+  const _TailPainter();
+
+  static final Paint _fill = Paint()..color = const Color(0xFFFCEBD0);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, 0)
+        ..lineTo(size.width, 0)
+        ..lineTo(size.width / 2, size.height)
+        ..close(),
+      _fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TailPainter oldDelegate) => false;
 }
 
 class _Chip extends StatelessWidget {

@@ -47,9 +47,21 @@ class MainShellPage extends StatelessWidget {
   static List<NestyBottomNavItem> _items(BuildContext context) {
     final l10n = context.localizations;
     return [
-      NestyBottomNavItem(icon: NestyIcons.storefront, label: l10n.navShop),
-      NestyBottomNavItem(icon: NestyIcons.home, label: l10n.home),
-      NestyBottomNavItem(icon: NestyIcons.museum, label: l10n.navMuseum),
+      NestyBottomNavItem(
+        icon: NestyIcons.storefront,
+        label: l10n.navShop,
+        shortLabel: l10n.navShopShort,
+      ),
+      NestyBottomNavItem(
+        icon: NestyIcons.home,
+        label: l10n.home,
+        shortLabel: l10n.navHomeShort,
+      ),
+      NestyBottomNavItem(
+        icon: NestyIcons.museum,
+        label: l10n.navMuseum,
+        shortLabel: l10n.navMuseumShort,
+      ),
     ];
   }
 }

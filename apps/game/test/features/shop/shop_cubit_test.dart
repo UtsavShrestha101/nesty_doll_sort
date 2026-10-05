@@ -62,11 +62,13 @@ final class _DelayedSkinService implements SkinService {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   }) => _inner.prepareForLevel(
     level,
     geometry: geometry,
     devicePixelRatio: devicePixelRatio,
     symbols: symbols,
+    themeId: themeId,
   );
 
   @override

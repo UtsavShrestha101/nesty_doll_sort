@@ -6,6 +6,7 @@ import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/cubit/shop_cubit.dart';
@@ -110,43 +111,45 @@ class ShopView extends StatelessWidget {
     final data = state.data;
     final error = state.exceptionOrNull;
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ScreenHeader(
-                title: l10n.shopTitle,
-                onBack: onBack,
-                coins: data?.coins,
-              ),
-              // The tabs' 48 dp box is its 46 px track plus 1 px above and
-              // below (review R19): 1 px off each gap keeps the frame's
-              // 12 and 16.
-              const SizedBox(height: 11),
-              if (data != null) ...[
-                NestySegmentedTabs(
-                  labels: [
-                    l10n.shopTabCoins,
-                    l10n.shopTabSkins,
-                    l10n.shopTabThemes,
-                    l10n.shopTabNoAds,
-                  ],
-                  selectedIndex: data.tab.index,
-                  onChanged: (i) => onTabChanged(ShopTab.values[i]),
+      body: CreamPage(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ScreenHeader(
+                  title: l10n.shopTitle,
+                  onBack: onBack,
+                  coins: data?.coins,
                 ),
-                const SizedBox(height: 15),
-                Expanded(child: _body(context, data)),
-              ] else if (error != null)
-                Expanded(
-                  child: Center(
-                    child: RetryView(exception: error, onRetry: onRetry),
+                // The tabs' 48 dp box is its 46 px track plus 1 px above and
+                // below (review R19): 1 px off each gap keeps the frame's
+                // 12 and 16.
+                const SizedBox(height: 11),
+                if (data != null) ...[
+                  NestySegmentedTabs(
+                    labels: [
+                      l10n.shopTabCoins,
+                      l10n.shopTabSkins,
+                      l10n.shopTabThemes,
+                      l10n.shopTabNoAds,
+                    ],
+                    selectedIndex: data.tab.index,
+                    onChanged: (i) => onTabChanged(ShopTab.values[i]),
                   ),
-                )
-              else
-                const Expanded(child: SizedBox()),
-            ],
+                  const SizedBox(height: 15),
+                  Expanded(child: _body(context, data)),
+                ] else if (error != null)
+                  Expanded(
+                    child: Center(
+                      child: RetryView(exception: error, onRetry: onRetry),
+                    ),
+                  )
+                else
+                  const Expanded(child: SizedBox()),
+              ],
+            ),
           ),
         ),
       ),
@@ -196,11 +199,13 @@ class _SkinsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GridView.builder(
     padding: const EdgeInsets.only(bottom: 24),
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: 2,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      mainAxisExtent: 196,
+      // Frame 7.3's card: 10 + 84 preview + 8 + the 16/1.1 name + 8 + the
+      // 34 footer + 10 = 172; the name's line grows with the text scale.
+      mainAxisExtent: _cardExtent(context, fixed: 154, name: 16 * 1.1),
     ),
     itemCount: state.skins.length,
     itemBuilder: (context, index) {
@@ -256,7 +261,7 @@ class _ThemesTab extends StatelessWidget {
               const Icon(
                 NestyIcons.autoAwesome,
                 size: 24,
-                color: AppColors.textBrown,
+                color: AppColorTokens.textBrown,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -266,24 +271,38 @@ class _ThemesTab extends StatelessWidget {
                   children: [
                     Text(
                       l10n.themesMatchTitle,
-                      style: AppTextStyles.body.copyWith(
-                        fontWeight: FontWeight.w700,
+                      style: context.scriptStyle(
+                        AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        role: ScriptTextRole.body,
                       ),
                     ),
                     Text(
                       l10n.themesMatchSubtitle,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textBrown,
+                        color: AppColorTokens.textBrown,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              NestyToggle(
-                value: state.matchesChapter,
-                onChanged: onSetMatchesChapter,
-                semanticLabel: l10n.themesMatchTitle,
+              // Frame 7.7 lays the toggle out at its 30 dp (the card is 55 dp);
+              // the 48 dp hit area overhangs it (TouchSlop) instead of
+              // growing the card.
+              TouchSlop(
+                child: SizedBox.fromSize(
+                  size: NestyToggle.size,
+                  child: OverflowBox(
+                    maxHeight: 48,
+                    child: NestyToggle(
+                      value: state.matchesChapter,
+                      onChanged: onSetMatchesChapter,
+                      semanticLabel: l10n.themesMatchTitle,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -292,13 +311,14 @@ class _ThemesTab extends StatelessWidget {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            // 160 fits the card at 1.0x text; 1.3x (spec §16) needs a
-            // little more (its Column overflowed by 2 px at 160).
-            mainAxisExtent: 172,
+            // Frame 7.7's card: 8 + 74 thumbnail + 7 + the 14/1.15 name + 7
+            // + the 30 footer + 8 = 150; the name's line grows with the
+            // text scale (spec §16's 1.3x).
+            mainAxisExtent: _cardExtent(context, fixed: 134, name: 14 * 1.15),
           ),
           itemCount: state.themes.length,
           itemBuilder: (context, index) {
@@ -318,3 +338,21 @@ class _ThemesTab extends StatelessWidget {
     );
   }
 }
+
+/// A shop card's height: [fixed] dp of padding, art and footer, plus the
+/// name's line ([name] dp at 1.0x text), which follows the text scale.
+///
+/// A dp more than the frame's sum: a footer button answers across 48 dp
+/// (its 30 or 34 dp plus an overhang), and the card's own bottom edge would
+/// clip that by a fraction of a dp.
+double _cardExtent(
+  BuildContext context, {
+  required double fixed,
+  required double name,
+}) =>
+    fixed +
+    MediaQuery.textScalerOf(context).scale(name).ceilToDouble() +
+    1 +
+    // A tall script's fallback face (Devanagari) lays the name line a dp
+    // or so taller than Latin's 1.15 at 1.3× text (l10n overflow, hi).
+    (context.script.isTall ? 2 : 0);

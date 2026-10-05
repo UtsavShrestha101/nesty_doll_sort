@@ -114,7 +114,10 @@ void main() {
         expect(ShopLook.card(entry.key).colors, look.card);
         expect(ShopLook.panel(entry.key).colors, look.panel);
         expect(ShopLook.edge(entry.key), look.edge);
-        expect(ShopLook.caption(entry.key), look.caption);
+        expect(
+          ShopLook.caption(entry.key),
+          ShopTokens.skinTags[entry.key]?.text ?? look.caption,
+        );
         expect(
           ShopLook.card(entry.key).begin,
           Alignment.topCenter,
@@ -134,8 +137,10 @@ void main() {
     test('Space\'s light lilac caption sits on its dark edge, not on the '
         'white chip; the others keep the white chip (menus spec 8.1)', () {
       final space = ShopLook.captionFace('space');
-      expect(space.a, closeTo(0.85, 0.01));
-      expect(space.withValues(alpha: 1), ShopLook.edge('space'));
+      // m7-4 4.11: white 92 % with #2A2766 text.
+      expect(space.a, closeTo(0.92, 0.01));
+      expect(space.withValues(alpha: 1), const Color(0xFFFFFFFF));
+      expect(ShopLook.caption('space'), const Color(0xFF2A2766));
       for (final id in [
         'classic',
         'ocean',
@@ -177,23 +182,57 @@ void main() {
       expect(find.text('3,000'), findsOneWidget, reason: 'Winter');
     });
 
-    testWidgets('the price sits in the primary button as a translucent coin '
-        'chip (radius 14, coin 22, Fredoka 19 white)', (tester) async {
+    testWidgets('a card\'s price is plain in a 34 tall primary button: the '
+        'coin 18 and Fredoka 15 white, no chip (NestyShop:41-44)', (
+      tester,
+    ) async {
       await pumpShop(tester, data: state());
       final button = find.byType(ShopBuyButton).first;
-      final chip = tester
+      expect(tester.getSize(button).height, 34);
+      final chips = tester
           .widgetList<DecoratedBox>(
             find.descendant(of: button, matching: find.byType(DecoratedBox)),
           )
           .map((b) => b.decoration)
           .whereType<BoxDecoration>()
-          .firstWhere((d) => d.color == ShopTokens.buyCoinChipFace);
-      expect(chip.borderRadius, BorderRadius.circular(14));
+          .where((d) => d.color == ShopTokens.buyCoinChipFace);
+      expect(chips, isEmpty);
       final price = tester.widget<Text>(
         find.descendant(of: button, matching: find.byType(Text)).first,
       );
-      expect(price.style!.fontSize, 19);
+      expect(price.style!.fontSize, 15);
       expect(price.style!.color, const Color(0xFFFFFFFF));
+      expect(
+        tester
+            .widget<CoinIcon>(
+              find.descendant(of: button, matching: find.byType(CoinIcon)),
+            )
+            .size,
+        18,
+      );
+    });
+
+    testWidgets(
+      'a skin\'s name is Fredoka 16/1.1 and Equip 15 (NestyShop:41)',
+      (tester) async {
+        await pumpShop(
+          tester,
+          data: state(ownedSkins: ['classic', 'forest']),
+          size: const Size(390, 2000),
+        );
+        final name = tester.widget<Text>(find.text('Forest Friends'));
+        expect(name.style!.fontSize, 16);
+        expect(name.style!.height, 1.1);
+        expect(
+          tester.widget<Text>(find.text('Equip').first).style!.fontSize,
+          15,
+        );
+      },
+    );
+
+    testWidgets('the cream page backs the shop', (tester) async {
+      await pumpShop(tester, data: state());
+      expect(find.byType(CreamPage), findsOneWidget);
     });
 
     testWidgets('an equipped card has the green ring and a successTint pill '
@@ -236,7 +275,7 @@ void main() {
       expect(asked, ['forest-bear']);
       expect(find.byType(NotEnoughCoinsDialog), findsOneWidget);
       expect(find.text('A few more coins'), findsOneWidget);
-      expect(find.text('2,500 coins'), findsOneWidget);
+      expect(find.text('2,500'), findsWidgets);
       expect(find.text('You need 1,670 more coins'), findsOneWidget);
       expect(
         find.descendant(
@@ -304,6 +343,30 @@ void main() {
             .map((t) => t.priceCoins),
         everyElement(BundledCatalogRepository.laterThemePrice),
       );
+    });
+
+    testWidgets('a theme\'s name is Fredoka 14/1.15, its price 13 in a 30 '
+        'tall button and its lock chip 11 (NestyShop:70-74)', (tester) async {
+      await pumpShop(
+        tester,
+        data: state(tab: ShopTab.themes, reached: 1),
+        size: const Size(390, 2400),
+      );
+      final name = tester.widget<Text>(find.text('Sunrise Lookout'));
+      expect(name.style!.fontSize, 14);
+      expect(name.style!.height, 1.15);
+      expect(tester.widget<Text>(find.text('Ch 4')).style!.fontSize, 11);
+      final button = find.byType(ShopBuyButton).first;
+      expect(
+        tester
+            .widget<Text>(
+              find.descendant(of: button, matching: find.byType(Text)).first,
+            )
+            .style!
+            .fontSize,
+        13,
+      );
+      expect(tester.getSize(button).height, 30);
     });
 
     testWidgets('an unaffordable theme names itself in the dialog', (
@@ -396,8 +459,12 @@ void main() {
         'chip and "You have 830 coins"', (tester) async {
       await pumpDetail(tester, bear());
       expect(find.text('Forest Bear'), findsOneWidget);
+      expect(tester.widget<Text>(find.text('Forest Bear')).style!.fontSize, 30);
+      expect(find.byType(CreamPage), findsOneWidget);
+      // text-wrap: pretty (NestyShop dDesc): "the leaves." never wraps
+      // apart, so the description can't end on the orphan "leaves."
       expect(
-        find.text('Round bear ears, cozy hoods and acorns in the leaves.'),
+        find.text('Round bear ears, cozy hoods and acorns in the\u00A0leaves.'),
         findsOneWidget,
       );
       expect(find.text('Buy'), findsOneWidget);
@@ -429,7 +496,7 @@ void main() {
       await pumpDetail(tester, bear());
       final button = tester.widget<ShopBuyButton>(find.byType(ShopBuyButton));
       expect(button.onPressed, isNotNull);
-      expect(button.height, 62);
+      expect(button.height, 60);
       await tester.tap(find.text('Buy'));
       await tester.pumpAndSettle();
       expect(find.text('You need 1,670 more coins'), findsOneWidget);
@@ -548,21 +615,48 @@ void main() {
       );
     }
 
-    testWidgets('the success haptic is at 0 and the burst waits for 300 ms', (
+    testWidgets('the success haptic and the first sparkle are at 0, three '
+        'sparkles in all, then none left (motion.purchaseItem)', (
       tester,
     ) async {
       await pumpHost(tester);
       await tester.tap(find.text('bought'));
       await tester.pump();
       expect(haptics.played, [HapticPattern.win]);
-
-      await tester.pump(const Duration(milliseconds: 299));
-      expect(_burstCount(tester), 0, reason: 'nothing before 300 ms');
-      await tester.pump(const Duration(milliseconds: 2));
-      expect(_burstCount(tester), greaterThan(0));
+      expect(_burstCount(tester), 1, reason: 'no wait at 0');
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(_burstCount(tester), 2);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(_burstCount(tester), 3);
 
       // The burst removes itself, leaving no timer behind.
-      await tester.pump(const Duration(milliseconds: 2300));
+      await tester.pump(const Duration(milliseconds: 1500));
+      expect(_burstCount(tester), 0);
+    });
+
+    testWidgets('a card that flips to owned during a build (didUpdateWidget, '
+        'as the Shop grid does) gets its burst after the frame, with no '
+        'framework error', (tester) async {
+      final owned = ValueNotifier(false);
+      addTearDown(owned.dispose);
+      await pumpScreen(
+        tester,
+        Material(
+          child: Center(
+            child: ValueListenableBuilder<bool>(
+              valueListenable: owned,
+              builder: (context, value, _) => _CelebrateOnOwned(owned: value),
+            ),
+          ),
+        ),
+      );
+      owned.value = true;
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(haptics.played, [HapticPattern.win]);
+      await tester.pump();
+      expect(_burstCount(tester), 1, reason: 'inserted after the frame');
+      await tester.pump(const Duration(milliseconds: 1500));
       expect(_burstCount(tester), 0);
     });
 
@@ -623,6 +717,34 @@ void main() {
 
 /// The twinkles the burst put into the overlay: `LottieTwinkle` boxes.
 int _burstCount(WidgetTester tester) => find
-    .byWidgetPredicate((w) => w.runtimeType.toString() == 'LottieTwinkle')
+    .byWidgetPredicate((w) => w.runtimeType.toString() == 'LottieFxView')
     .evaluate()
     .length;
+
+/// Plays the purchase celebration from `didUpdateWidget` when [owned] flips,
+/// like `SkinGridCard`, `ThemeGridCard` and `SkinDetailView` do.
+class _CelebrateOnOwned extends StatefulWidget {
+  const _CelebrateOnOwned({required this.owned});
+
+  final bool owned;
+
+  @override
+  State<_CelebrateOnOwned> createState() => _CelebrateOnOwnedState();
+}
+
+class _CelebrateOnOwnedState extends State<_CelebrateOnOwned> {
+  @override
+  void didUpdateWidget(_CelebrateOnOwned oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.owned && widget.owned) {
+      PurchaseTwinkleBurst.celebrate(context, library: FakeFxLibrary());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 160,
+    height: 200,
+    child: Text(widget.owned ? 'Equip' : 'Buy'),
+  );
+}

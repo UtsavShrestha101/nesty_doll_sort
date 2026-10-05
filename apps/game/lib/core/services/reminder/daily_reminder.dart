@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart'
     show AppLifecycleListener, AppLifecycleState, Locale;
 import 'package:injectable/injectable.dart';
+import 'package:nesty_game/app/localization_cubit/app_locale_resolver.dart';
 import 'package:nesty_game/core/models/reminder_settings.dart';
 import 'package:nesty_game/core/services/clock/app_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
@@ -34,15 +35,24 @@ export 'package:nesty_game/core/services/reminder/reminder_status.dart';
 /// schedules nor asks.
 @lazySingleton
 class DailyReminder {
+  /// [locales] defaults to [AppLocaleResolver.app] (the catalogs present)
+  /// and [deviceLocales] to the engine's list, read at each plan; tests
+  /// pass both.
   DailyReminder(
     this._notifications,
     this._settings,
     this._daily, {
     AppClock? clock,
-  }) : _clock = clock;
+    @ignoreParam AppLocaleResolver? locales,
+    @ignoreParam List<Locale> Function()? deviceLocales,
+  }) : _clock = clock,
+       _locales = locales ?? AppLocaleResolver.app,
+       _deviceLocales = deviceLocales ?? AppLocaleResolver.platformLocales;
 
   final NotificationService _notifications;
   final AppClock? _clock;
+  final AppLocaleResolver _locales;
+  final List<Locale> Function() _deviceLocales;
   final DatabaseService _settings;
   final DailyService _daily;
   final StreamController<ReminderStatus> _changes =
@@ -208,23 +218,31 @@ class DailyReminder {
   }
 
   /// Stores the time; reschedules when the reminder is on.
-  Future<void> setTime({required int hour, required int minute}) async {
+  ///
+  /// False when the time could not be stored.
+  Future<bool> setTime({required int hour, required int minute}) async {
     try {
       await _settings.setReminder(
         _settings.reminder.copyWith(hour: hour, minute: minute),
       );
       await refresh();
+      return true;
     } on Object catch (error, stack) {
       _log('setTime failed', error, stack);
+      return false;
     }
   }
 
-  /// The one plan for [settings] in the player's language (a supported
-  /// locale from `DatabaseService.languageCode`, else English): the same
-  /// warm title and body every day, whatever the streak (spec-prop §7.9).
+  /// The one plan for [settings] in the app's language (the language
+  /// setting resolved as the app resolves it, by [AppLocaleResolver]: a
+  /// pinned language, else the phone's first supported one, else English):
+  /// the same warm title and body every day, whatever the streak
+  /// (spec-prop §7.9).
   @visibleForTesting
   ReminderPlan planFor(ReminderSettings settings) {
-    final l10n = _localizations(_settings.languageCode);
+    final l10n = _localizations(
+      _locales.resolve(_settings.languageCode, _deviceLocales()),
+    );
     return ReminderPlan(
       hour: settings.hour,
       minute: settings.minute,
@@ -261,12 +279,16 @@ class DailyReminder {
     if (!_changes.isClosed) _changes.add(next);
   }
 
+  /// The catalog for a resolved [code]. The resolver only answers
+  /// languages that have one; a resolver built over a wider list (a test's)
+  /// still never makes a plan throw.
   static AppLocalizations _localizations(String code) {
-    final language = code.split('_').first;
-    final supported = AppLocalizations.supportedLocales.any(
-      (locale) => locale.languageCode == language,
+    final locale = AppLocaleResolver.localeFor(code);
+    return lookupAppLocalizations(
+      AppLocalizations.delegate.isSupported(locale)
+          ? locale
+          : AppLocaleResolver.localeFor(AppLocaleResolver.fallbackCode),
     );
-    return lookupAppLocalizations(Locale(supported ? language : 'en'));
   }
 
   static void _log(String message, Object error, StackTrace? stack) {

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/haptics/haptics_service.dart';
@@ -43,7 +42,7 @@ enum ChestSequencePhase {
 /// The shared reward-opening moment for both chests (docs/plans/
 /// m7-design.md §9 the milestone chest, §15.4, P4.7; phase 4 architecture
 /// §3.5; frames 10.3b–10.3d, 5.6, 5.6b; ui-spec-game §2.3): a card at
-/// `layout.chestCard` (28 in from each side, top 214) holding `ui_chest`,
+/// `layout.chestCard` (28 in from each side, top 168, or 176 for the day-7 chest) holding `ui_chest`,
 /// the contents at their promised amounts from the first frame (spec-prop
 /// §1.1 rule 2: shown before it opens), an Open, and a Collect that flies
 /// six coins (and a hint) to wherever they belong. Nothing here grants
@@ -60,8 +59,11 @@ enum ChestSequencePhase {
 /// as the hint lands. If the Lottie can't load, the SVG art stands in
 /// (rule 3).
 ///
+/// The rays are `ui_chest`'s own, swaying ±6° (m7-4 1.7: no full turn, and
+/// none drawn over the Lottie).
+///
 /// Reduce motion: a 200 ms crossfade from `idle` to `open`'s last frame,
-/// no wiggle, rays or flights; the chips appear together; `chest_open` and
+/// no wiggle or flights; the chips appear together; `chest_open` and
 /// `jingle_reward` still play, with one light haptic.
 ///
 /// [coinTarget] and [hintTarget] are read live, at Collect (never cached):
@@ -130,9 +132,18 @@ class ChestRewardSequence extends StatefulWidget {
   final VoidCallback? onHintLanded;
 
   /// Kept for the callers of the earlier stand-in; the Lottie's box
-  /// (`ChestCardTokens.lottieSize`) sets the chest's size now.
+  /// ([chestCanvas]) sets the chest's size now.
   final double closedChestSize;
   final double openChestSize;
+
+  /// `ui_chest`'s 200×200 canvas at 100 % (`FxSpec`). It plays at
+  /// `ChestCardTokens.lottieScale` over the `artBox` as an overlay that
+  /// takes no layout space (m7-4 6.4, 8.3).
+  static const chestCanvas = Size(200, 200);
+
+  /// Where the chest's base sits in [chestCanvas] (LOTTIE.md: chest base
+  /// (100, 186)); it lands on the art box's bottom centre.
+  static const Offset chestBase = Offset(100, 186);
 
   /// Arrival: `ui_chest`'s `arrive` segment (`motion.chest.arriveMs`).
   static const int arrivalMs = ChestMotionTokens.arriveMs;
@@ -146,6 +157,10 @@ class ChestRewardSequence extends StatefulWidget {
   /// Reduced motion's whole Open step: the crossfade.
   static const int reducedOpenMs = 200;
 
+  /// The chest's art box in the card (`layout.chestCard.artBox`, 156×130):
+  /// the canvas overflows it as an overlay (frames 10.3b, 10.3c).
+  static const Size artBox = ChestCardTokens.artBox;
+
   /// The card's fade once Collect starts, before [onCollect].
   static const int exitFadeMs = 220;
 
@@ -153,10 +168,6 @@ class ChestRewardSequence extends StatefulWidget {
   static const int coinSpriteCount = ChestMotionTokens.collectCoins;
   static const int collectStaggerMs = ChestMotionTokens.collectCoinStaggerMs;
   static const int collectFlightMs = ChestMotionTokens.collectCoinFlightMs;
-
-  /// The rays' turn (frame 10.3c: `chestModal.glow` rotates; no token times
-  /// it, so a slow constant).
-  static const int raysTurnMs = 24000;
 
   /// The chest's Lottie, for tests.
   @visibleForTesting
@@ -169,10 +180,6 @@ class ChestRewardSequence extends StatefulWidget {
   /// The dim behind the card, for tests.
   @visibleForTesting
   static const Key dimKey = Key('chest-dim');
-
-  /// The rays behind the open chest, for tests.
-  @visibleForTesting
-  static const Key raysKey = Key('chest-rays');
 
   @override
   State<ChestRewardSequence> createState() => _ChestRewardSequenceState();
@@ -199,11 +206,6 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
   /// How many chips have popped (0–2), each 150 ms after the last.
   int _popped = 0;
 
-  /// The rays turn only while the chest is open.
-  late final AnimationController _rays = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: ChestRewardSequence.raysTurnMs),
-  );
   late final AnimationController _pop = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 160),
@@ -310,7 +312,6 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     _at(wiggle.toDouble(), () {
       _chest.playMarker('open', thenMarker: 'open_idle');
       _cue(SoundEffect.chestOpen, HapticPattern.nest);
-      _rays.repeat();
       _popChip(1);
     });
     _at(wiggle + ChestMotionTokens.chipStaggerMs.toDouble(), () => _popChip(2));
@@ -340,10 +341,7 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     _cancelTimers();
     _chest.playMarker('open_idle', loop: true);
     _frameOf('open_idle', end: false);
-    if (!started) {
-      _cue(SoundEffect.chestOpen, HapticPattern.nest);
-      _rays.repeat();
-    }
+    if (!started) _cue(SoundEffect.chestOpen, HapticPattern.nest);
     widget.jingleCues?.reward();
     setState(() {
       _popped = 2;
@@ -370,7 +368,6 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
   void _collect() {
     if (_phase != ChestSequencePhase.openIdle) return;
     setState(() => _phase = ChestSequencePhase.collecting);
-    _rays.stop();
     _exitFade.forward();
     _cue(SoundEffect.coins);
     if (_reduceMotion) {
@@ -410,6 +407,8 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
       from: from,
       to: to,
       count: ChestRewardSequence.coinSpriteCount,
+      trail: true,
+      trailDots: ChestCollectTokens.trailCoinDots.round(),
       spriteBuilder: (context) =>
           _Sprite(UiArt.coinFlight, size: 30, library: widget.uiArt),
       vsync: this,
@@ -446,6 +445,8 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
       from: from,
       to: to,
       count: 1,
+      trail: true,
+      trailDots: ChestCollectTokens.trailHintDots.round(),
       spriteBuilder: (context) =>
           _Sprite(UiArt.hintFlight, size: 40, library: widget.uiArt),
       vsync: this,
@@ -467,7 +468,6 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     _hintFlight?.dispose();
     _chest.dispose();
     _dustPuff.dispose();
-    _rays.dispose();
     _pop.dispose();
     _exitFade.dispose();
     super.dispose();
@@ -498,7 +498,12 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
         Positioned(
           left: ChestCardTokens.cardLeft,
           right: ChestCardTokens.cardRight,
-          top: top + ChestCardTokens.cardTop - 59,
+          top:
+              top +
+              (widget.streakRibbon
+                  ? ChestCardTokens.cardTopDay7
+                  : ChestCardTokens.cardTop) -
+              59,
           bottom: 8,
           child: FadeTransition(
             opacity: ReverseAnimation(_exitFade),
@@ -516,6 +521,7 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
                       ChestCardTokens.cardRight,
                   child: ModalCard(
                     ribbon: _ribbon(),
+                    padding: ChestCardTokens.cardPadding,
                     child: _cardContent(context),
                   ),
                 ),
@@ -537,11 +543,16 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox.fromSize(
-          size: ChestCardTokens.lottieSize,
-          child: _chestVisual(),
+        // The art box, 156×130, with `ui_chest` at 1.2 over it as an
+        // overlay that takes no layout space (`layout.chestCard`, frames
+        // 10.3b, 10.3c, 5.6; m7-4 6.4, 8.3): the chest base lands on the
+        // box's bottom centre, and the canvas may draw past the card top.
+        SizedBox(
+          width: ChestRewardSequence.artBox.width,
+          height: ChestRewardSequence.artBox.height,
+          child: _chestArt(),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: ChestCardTokens.cardGap),
         Text(bodyText, textAlign: TextAlign.center, style: _bodyStyle),
         if (caption != null) ...[
           const SizedBox(height: 4),
@@ -553,9 +564,10 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
             ),
           ),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: ChestCardTokens.cardGap),
         _chipsRow(context),
-        const SizedBox(height: 14),
+        // The buttons' own margin-top 4 on top of the gap (NestyMeta).
+        const SizedBox(height: ChestCardTokens.cardGap + 4),
         _actionButton(context),
       ],
     );
@@ -564,6 +576,7 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
   /// Nunito 600 16/23 `#7A5234` (ui-spec-game §2.3 "Body").
   static const TextStyle _bodyStyle = TextStyle(
     fontFamily: 'Nunito',
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 23 / 16,
@@ -572,23 +585,65 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
 
   // The chest itself.
 
-  Widget _chestVisual() {
-    final fallback = ChestIcon(
-      size: 156,
-      key: ValueKey(_isOpen ? 'fallback-open' : 'fallback-closed'),
+  /// The art box's overlay: the 200×200 canvas at `lottieScale`, placed so
+  /// the chest's base (100, 186) is the box's bottom centre.
+  Widget _chestArt() {
+    const scale = ChestCardTokens.lottieScale;
+    final canvas = ChestRewardSequence.chestCanvas * scale;
+    final base = ChestRewardSequence.chestBase * scale;
+    final box = ChestRewardSequence.artBox;
+    final left = box.width / 2 - base.dx;
+    final top = box.height - base.dy;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          left: left,
+          top: top,
+          width: canvas.width,
+          height: canvas.height,
+          child: _chestVisual(Offset(-left, -top)),
+        ),
+      ],
     );
-    final lottie = LottieFxView(
-      key: ChestRewardSequence.chestKey,
-      id: FxId.uiChest,
-      controller: _chest,
-      library: widget.library,
-      images: _source,
-      fallback: Center(
-        child: _isOpen ? const ChestIcon.open(size: 156) : fallback,
+  }
+
+  /// [artOrigin] is where the art box's top-left sits in the canvas, for the
+  /// SVG fallback.
+  Widget _chestVisual(Offset artOrigin) {
+    final box = ChestRewardSequence.artBox;
+    // The still art when the Lottie can't load: the SVG fills the same
+    // 156×130 box the frame draws.
+    Widget fallbackArt({required bool open}) => Padding(
+      padding: EdgeInsets.only(left: artOrigin.dx, top: artOrigin.dy),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: SizedBox.fromSize(
+          size: box,
+          child: Center(
+            child: open
+                ? ChestIcon.open(size: box.width)
+                : ChestIcon(size: box.width),
+          ),
+        ),
+      ),
+    );
+    // SizedBox.expand: a loaded Lottie view is a CustomPaint of its own
+    // 200×200 canvas, and the Stack hands it loose constraints, so without
+    // this it drew at 1.0 (a 101 dp chest, off-centre) instead of the 240 dp
+    // box at 1.2 (121 dp; phase 5 audit f10-3b).
+    final lottie = SizedBox.expand(
+      child: LottieFxView(
+        key: ChestRewardSequence.chestKey,
+        id: FxId.uiChest,
+        controller: _chest,
+        library: widget.library,
+        images: _source,
+        fallback: fallbackArt(open: _isOpen),
       ),
     );
     if (_reduceMotion) {
-      // A 200 ms crossfade idle → open's last frame (no wiggle, no rays).
+      // A 200 ms crossfade idle → open's last frame (no wiggle).
       return ExcludeSemantics(
         child: AnimatedSwitcher(
           duration: const Duration(
@@ -602,6 +657,7 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
             open: _popped > 0 || _isOpen,
             source: _source,
             library: widget.library,
+            fallback: fallbackArt(open: _popped > 0 || _isOpen),
           ),
         ),
       );
@@ -611,7 +667,6 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          if (_opened) _raysLayer(),
           IgnorePointer(
             child: Align(
               alignment: Alignment.bottomCenter,
@@ -631,24 +686,6 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
       ),
     );
   }
-
-  /// The lid has gone up (the rays show on `open` and `open_idle` only).
-  bool get _opened => _popped > 0;
-
-  Widget _raysLayer() => IgnorePointer(
-    child: OverflowBox(
-      maxWidth: ChestModalTokens.glowSize,
-      maxHeight: ChestModalTokens.glowSize,
-      child: RotationTransition(
-        turns: _rays,
-        child: const CustomPaint(
-          key: ChestRewardSequence.raysKey,
-          size: Size.square(ChestModalTokens.glowSize),
-          painter: _RaysPainter(),
-        ),
-      ),
-    ),
-  );
 
   // The contents chips.
 
@@ -679,9 +716,12 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     }
     return Semantics(
       liveRegion: _isOpen,
-      label: widget.hints > 0
-          ? l10n.chestContentsSemantics(widget.coins, widget.hints)
-          : l10n.coinsSemantics(widget.coins),
+      // "Chest. Inside: 100 coins, 1 hint." (copy.md A11y `a11y_chest_contents`).
+      label: l10n.chestSemantics(
+        widget.hints > 0
+            ? l10n.chestContentsSemantics(widget.coins, widget.hints)
+            : l10n.coinsSemantics(widget.coins),
+      ),
       child: ExcludeSemantics(
         child: FittedBox(
           fit: BoxFit.scaleDown,
@@ -738,6 +778,7 @@ class _StillChest extends StatefulWidget {
     required this.open,
     required this.source,
     required this.library,
+    required this.fallback,
     super.key,
   });
 
@@ -745,6 +786,7 @@ class _StillChest extends StatefulWidget {
   final bool open;
   final FxImageSource? source;
   final FxLibrary? library;
+  final Widget fallback;
 
   @override
   State<_StillChest> createState() => _StillChestState();
@@ -761,15 +803,13 @@ class _StillChestState extends State<_StillChest> {
   }
 
   @override
-  Widget build(BuildContext context) => LottieFxView(
-    id: FxId.uiChest,
-    controller: _controller,
-    library: widget.library,
-    images: widget.source,
-    fallback: Center(
-      child: widget.open
-          ? const ChestIcon.open(size: 156)
-          : const ChestIcon(size: 156),
+  Widget build(BuildContext context) => SizedBox.expand(
+    child: LottieFxView(
+      id: FxId.uiChest,
+      controller: _controller,
+      library: widget.library,
+      images: widget.source,
+      fallback: widget.fallback,
     ),
   );
 }
@@ -785,41 +825,6 @@ class _Sprite extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       UiArtImage.square(art, extent: size, library: library);
-}
-
-/// The lit rays behind the open chest (`chestModal.glow`): a
-/// `repeating-conic-gradient` of 9° lit in every 24°, masked radially, solid
-/// to 0.2 of the radius and clear from 0.68.
-final class _RaysPainter extends CustomPainter {
-  const _RaysPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final radius = size.shortestSide / 2;
-    final center = size.center(Offset.zero);
-    final lit = ChestModalTokens.glowRayLitDeg * math.pi / 180;
-    final period = ChestModalTokens.glowRayPeriodDeg * math.pi / 180;
-    final paint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          ChestModalTokens.glowRayColor,
-          ChestModalTokens.glowRayColor,
-          ChestModalTokens.glowRayColor.withValues(alpha: 0),
-        ],
-        stops: [
-          0,
-          ChestModalTokens.glowMaskSolid,
-          ChestModalTokens.glowMaskClear,
-        ],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    for (var a = 0.0; a < 2 * math.pi; a += period) {
-      canvas.drawArc(rect, a, lit, true, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_RaysPainter oldDelegate) => false;
 }
 
 /// Which chip a [RewardChip] is.

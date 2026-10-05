@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nesty_game/core/ui/colors/app_colors.dart';
 import 'package:nesty_game/core/ui/theme/app_text_styles.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
@@ -9,7 +8,8 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 ///
 /// Nunito is the default family and the Material text roles map onto the
 /// design's type scale (Fredoka for display, buttons and numbers). Both are
-/// bundled in assets/fonts, never fetched at runtime (rule 3). The design's
+/// bundled in assets/fonts, never fetched at runtime (rule 3), with the
+/// Devanagari and Japanese faces as every style's `fontFamilyFallback`. The design's
 /// own widgets (`core/ui/widgets`) read `AppTextStyles` directly; the theme
 /// covers the Material widgets that remain (text fields, dialogs, the dev
 /// picker).
@@ -41,18 +41,22 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       fontFamily: AppFontTokens.bodyFamily,
+      // Devanagari and Japanese glyphs (hi, ja; l10n.md §4.6) for any
+      // Material text that takes the default family, such as the time
+      // picker. The token styles below carry their own role's list.
+      fontFamilyFallback: AppFontTokens.bodyFallback,
       textTheme: _textTheme,
       scaffoldBackgroundColor: AppColorTokens.canvasCream,
       canvasColor: AppColorTokens.canvasCream,
-      disabledColor: AppColors.disabledText,
-      dividerColor: AppColors.divider,
+      disabledColor: AppColorTokens.disabledText,
+      dividerColor: AppColorTokens.divider,
       // The design's controls give feedback by moving (the tactile press),
       // never with an ink ripple.
       splashFactory: NoSplash.splashFactory,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       hoverColor: Colors.transparent,
-      iconTheme: const IconThemeData(color: AppColors.iconBrown, size: 26),
+      iconTheme: const IconThemeData(color: AppColorTokens.iconBrown, size: 26),
       textSelectionTheme: const TextSelectionThemeData(
         cursorColor: AppColorTokens.primary,
       ),

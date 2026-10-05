@@ -16,6 +16,7 @@ import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/chest/chest_reward_sequence.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
+import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
 import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/milestone_chest_modal.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
@@ -29,7 +30,9 @@ import 'package:nesty_game/features/splash/pages/splash_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 
 import 'support/board_probe.dart';
+import 'support/phone_language.dart';
 import 'support/seeded_save.dart';
+import 'support/solve_with_hints.dart';
 
 /// Phase 4's overlays on a device (m7-design P4.7, architecture §7.3; lane O;
 /// PROGRESS D169): the win card's stars and helper note on a hinted replay of
@@ -38,8 +41,17 @@ import 'support/seeded_save.dart';
 /// bonus win card, its chest), the Out of Moves sheet with the free undos
 /// spent, two +1 Slots and the limit toast, a soft-stuck board (Undo glowing,
 /// then Restart glowing with nothing to undo), and the intro loops of levels
-/// 16, 31 and 51. Splash errors stay host-only: a device run can't fail
-/// storage or the bundle on purpose.
+/// 16, 31 and 51. Phase 5 (architecture.md §1.3) adds the animated undo's
+/// flight (lane B, Q160), the Undo buy popup (frame 3.3), and the chest's
+/// trail dots and relit rings with real booster counts (frame 10.3d).
+/// Splash errors run in `faults_test.dart` (`storage`, `content`).
+///
+/// After Claude Design's m7-4 the win card blends by height (4.12,
+/// `layout.sizeBlend`; frames 11.2–11.2f, the 731 dp run standing in for
+/// 693): level 1 is also replayed slowly (1 star with the one-time tip) and
+/// on its par line (3 stars), and the chest card follows `layout.chestCard`
+/// (top 168, the 156×130 art box, 6.4) with the collect ring, trail and
+/// gain tag of `motion.chest.collect` (1.7).
 ///
 /// Written, not run, by the overlays lane (one simulator, a shared
 /// `apps/game/build`): the integrator wires it into `tools/scripts/nesty-test`
@@ -63,6 +75,7 @@ void main() {
     'the win card, the chest moment, the bonus chest, Out of Moves with the '
     'undos spent, the +1 Slot limit, a stuck board and the intro loops',
     (tester) async {
+      pinEnglishPhone(tester);
       await seedSave(
         const SaveDocument(
           currentLevel: 60,
@@ -86,9 +99,12 @@ void main() {
       );
       await tester.pumpFor(const Duration(seconds: 1));
 
+      await _slowReplay(tester, board, shots);
       await _hintedReplay(tester, board, shots);
+      await _parReplay(tester, board, shots);
       await _milestoneChest(tester, board, shots);
       await _outOfMovesSpent(tester, board, shots);
+      await _undoFlight(tester, board, shots);
       await _slotLimit(tester, board, shots);
       await _home(tester);
       await _introLoops(tester, board, shots);
@@ -174,35 +190,78 @@ Future<void> _dismissIntro(
   await tester.pumpFor(const Duration(milliseconds: 300));
 }
 
-/// Applies the solver's own hint until the level is won (the dev flavor keeps
-/// Hint free).
-Future<void> _solveWithHints(
-  WidgetTester tester,
-  Board board, {
-  int maxMoves = 40,
-}) async {
-  final hintButton = find.text('Hint');
-  for (var i = 0; i < maxMoves; i++) {
-    if (board.state.status != GameplayStatus.playing) return;
-    await board.waitIdle();
-    if (board.state.status != GameplayStatus.playing) return;
-    // Hint only once nothing covers it (a card fading out takes the tap).
-    await tester.pumpUntil(
-      () => hintButton.hitTestable().evaluate().isNotEmpty,
-      reason:
-          'Hint uncovered (intro ${board.state.intro}, paused '
-          '${board.state.paused}, status ${board.state.status})',
+/// `starsFirstTip`, the one-time tip under the save's first win below 3
+/// stars (Q119).
+const _starTip = 'Fewer moves earn more stars. Replay any level from Chapters.';
+
+/// Plays [line] (`from>to`, space-separated) on the board, each move
+/// checked with core's `Rules.tryMove` first.
+Future<void> _playCheckedLine(Board board, String line) async {
+  for (final step in line.split(' ')) {
+    final [from, to] = step.split('>');
+    expect(
+      Rules.tryMove(board.state.board, Move(from, to)),
+      isA<MoveApplied>(),
+      reason: step,
     );
-    await tester.tap(hintButton);
-    await tester.pumpUntil(
-      () => board.state.hint != null,
-      timeout: const Duration(seconds: 15),
-      reason: 'a hint',
-    );
-    final hint = board.state.hint!;
-    await board.move(hint.from, hint.to);
+    await board.move(from, to);
   }
-  fail('did not solve within $maxMoves moves');
+}
+
+// ── A slow replay of level 1: 1 star and the one-time tip (11.2, 11.2d) ──
+
+/// Six moves where par is 2 (the 2-star line is 4): red2 wanders over the
+/// three empty stands before it nests, then red1 completes the family. The
+/// save's first win below 3 stars, so the card shows the tip, never the
+/// helper note (m7-4 4.12: one or the other).
+Future<void> _slowReplay(WidgetTester tester, Board board, _Shots shots) async {
+  unawaited(
+    get<AppRouter>().push(GameplayRoute(request: const PlayRequest.replay(1))),
+  );
+  await board.waitForLevel(1);
+  await _playCheckedLine(
+    board,
+    'r0c2>r0c1 r0c1>r1c2 r1c2>r1c0 r1c0>r0c2 r0c2>r0c0 r1c1>r0c0',
+  );
+  await board.waitForWinOverlay();
+  await tester.pumpFor(const Duration(milliseconds: 3500));
+  expect(board.state.stars, 1);
+  expect(find.text(_starTip), findsOneWidget);
+  // `noteKey` wraps the tip and the helper note alike: the tip shows, the
+  // helper note (a capped win's) does not.
+  expect(find.byKey(WinOverlay.noteKey), findsOneWidget);
+  expect(
+    find.text('Wins with a hint or an extra slot earn up to 2 stars.'),
+    findsNothing,
+    reason: 'tip only',
+  );
+  await shots.take('01c_replay_one_star');
+  await tester.tap(find.text('Back to Chapters'));
+  await tester.pumpFor(const Duration(seconds: 1));
+  await _home(tester);
+}
+
+// ── Level 1 on its par line: 3 stars (11.2c, 11.2f) ─────────────────────
+
+Future<void> _parReplay(WidgetTester tester, Board board, _Shots shots) async {
+  unawaited(
+    get<AppRouter>().push(GameplayRoute(request: const PlayRequest.replay(1))),
+  );
+  await board.waitForLevel(1);
+  final line = Solver.solve(board.state.board).solution!;
+  expect(line, hasLength(board.state.entry.par), reason: 'the par line');
+  for (final move in line) {
+    await board.move(move.from, move.to);
+  }
+  await board.waitForWinOverlay();
+  // The three segments and the flourish end about 3.3 s in.
+  await tester.pumpFor(const Duration(milliseconds: 3800));
+  expect(board.state.stars, 3);
+  expect(find.text(_starTip), findsNothing);
+  await shots.take('01d_replay_three_stars');
+  await tester.tap(find.text('Back to Chapters'));
+  await tester.pumpFor(const Duration(seconds: 1));
+  await _home(tester);
 }
 
 // ── A hinted replay of level 1: 2 stars and the helper note (11.4c) ──────
@@ -216,12 +275,18 @@ Future<void> _hintedReplay(
     get<AppRouter>().push(GameplayRoute(request: const PlayRequest.replay(1))),
   );
   await board.waitForLevel(1);
-  await _solveWithHints(tester, board);
+  await solveWithHints(tester, board);
   await board.waitForWinOverlay();
+  // Frame 11.3: the card's first frame, the three stars still empty at
+  // rest (no coin count-up on a replay, so the ribbon is the cue). Star 1
+  // lights at 1,300 ms.
+  await tester.pumpFor(const Duration(milliseconds: 200));
+  expect(board.state.stars, isNotNull);
+  await shots.take('01a_replay_stars_starting');
   // The stars start at 1,300 ms; the three segments and the flourish end
   // about 3.3 s in.
-  await tester.pumpFor(const Duration(milliseconds: 1500));
-  await shots.take('01a_replay_stars_starting');
+  await tester.pumpFor(const Duration(milliseconds: 1300));
+  await shots.take('01a2_replay_star1');
   await tester.pumpFor(const Duration(milliseconds: 2500));
   expect(board.state.starsCapped, isTrue, reason: 'a hint held it to 2 stars');
   expect(find.byKey(WinOverlay.noteKey), findsOneWidget);
@@ -244,14 +309,35 @@ Future<void> _milestoneChest(
   _Shots shots,
 ) async {
   await board.jumpTo(10, _tierLabel(10));
-  await _solveWithHints(tester, board);
+  // Frame 10.3d's "+1" on the Hint badge and the coin pill's count: the
+  // dev flavor's unlimited boosters hide every badge, so they are turned
+  // off (debug only, README "Testing") just before the winning move, whose
+  // state the HUD then reads, and back on once the chest is collected
+  // (architecture.md §1.3). The hints before it stay free.
+  final save = get<SaveService>() as InMemorySaveService;
+  await solveWithHints(
+    tester,
+    board,
+    beforeWinningMove: () => save.debugUnlimitedBoosters = false,
+  );
   await board.waitForWinOverlay();
   await tester.pumpFor(const Duration(milliseconds: 3500));
   // Level 10 is chapter 1's level 10: the chest replaces the countdown.
   expect(board.state.chest, isNotNull, reason: 'level 10 pays the chest');
+  expect(board.state.unlimitedBoosters, isFalse, reason: 'real counts');
   await shots.take('02a_win_card');
   await tester.tap(find.text('Continue'));
-  await _openAndCollectChest(tester, shots, 'chest10', next: 11, board: board);
+  try {
+    await _openAndCollectChest(
+      tester,
+      shots,
+      'chest10',
+      next: 11,
+      board: board,
+    );
+  } finally {
+    save.debugUnlimitedBoosters = null;
+  }
   await _home(tester);
 }
 
@@ -282,16 +368,34 @@ Future<void> _openAndCollectChest(
   await tester.pumpFor(
     const Duration(milliseconds: ChestRewardSequence.wiggleMs + 150),
   );
-  await shots.take('${prefix}_open');
+  // Mid-burst: the coins in the air (frame 10.3c's moment before it settles).
+  await shots.take('${prefix}_burst');
   await tester.pumpUntil(
     () => find.text('Collect').evaluate().isNotEmpty,
     reason: 'the chest open',
   );
+  // Frame 10.3c: the settled open pose with Collect showing, past the burst.
+  await tester.pumpFor(const Duration(milliseconds: 1500));
+  expect(find.text('Collect'), findsOneWidget);
+  await shots.take('${prefix}_open');
   await tester.pumpFor(const Duration(milliseconds: 500));
   await shots.take('${prefix}_open_idle');
   await tester.tap(find.text('Collect'));
-  await tester.pumpFor(const Duration(milliseconds: 450));
+  // Phase 5 F-CH2 (frame 10.3d): about 300 ms in, the coins mid-flight
+  // with their trail dots; then once the first coins have landed (a
+  // flight is `collectFlightMs`), the coin pill's relit ring and the Hint
+  // badge's ring and "+1".
+  await tester.pumpFor(const Duration(milliseconds: 300));
   await shots.take('${prefix}_flights');
+  await tester.pumpFor(
+    const Duration(
+      milliseconds:
+          ChestRewardSequence.collectFlightMs +
+          2 * ChestRewardSequence.collectStaggerMs -
+          300,
+    ),
+  );
+  await shots.take('${prefix}_ring');
   await tester.pumpUntil(
     () => find.byType(MilestoneChestModal).evaluate().isEmpty,
     timeout: const Duration(seconds: 10),
@@ -325,7 +429,7 @@ Future<void> _bonusChest(WidgetTester tester, Board board, _Shots shots) async {
   expect(sawGenerating, isTrue, reason: 'the generating card showed');
   await board.waitIdle();
   await tester.pumpFor(const Duration(milliseconds: 600));
-  await _solveWithHints(tester, board);
+  await solveWithHints(tester, board);
   await board.waitForWinOverlay();
   await tester.pumpFor(const Duration(milliseconds: 3000));
   expect(find.text('Bonus Level 10'), findsWidgets);
@@ -414,7 +518,80 @@ Future<void> _outOfMovesSpent(
         board.state.status == GameplayStatus.playing,
     reason: 'the restarted board',
   );
+  await board.waitIdle();
+
+  // Frame 3.3 (phase 5, architecture.md §1.3): the restart keeps the
+  // level's undo count (D22), so with both free undos spent, the booster
+  // bar's Undo after a move opens its buy popup (the same card as 3.2's).
+  final first = Solver.solve(board.state.board).solution!.first;
+  await board.move(first.from, first.to);
+  await board.waitIdle();
+  expect(board.state.freeUndosLeft, 0);
+  await tester.tap(
+    find.descendant(of: find.byType(BoosterBar), matching: find.text('Undo')),
+  );
+  await tester.pumpUntil(
+    () => find.byType(BoosterBuyPopup).evaluate().isNotEmpty,
+    reason: 'the Undo booster popup',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 500));
+  await shots.take('popup_undo');
+  // The scrim also reads "Close"; the last is the card's own button.
+  await tester.tap(
+    find
+        .descendant(
+          of: find.byType(BoosterBuyPopup),
+          matching: find.bySemanticsLabel('Close'),
+        )
+        .last,
+  );
+  await tester.pumpUntil(
+    () => find.byType(BoosterBuyPopup).evaluate().isEmpty,
+    reason: 'the Undo popup closed',
+  );
   (get<SaveService>() as InMemorySaveService).debugUnlimitedBoosters = null;
+  await _home(tester);
+}
+
+// ── The animated undo (Q160's default, lane B) ───────────────────────────
+
+/// Lane B's undo flight (Q160's default: `motion.move` reversed, 260 ms):
+/// one move on level 9, then the booster bar's Undo (free in the dev
+/// flavor), shot about 100 ms into the flight with the engine paused, then
+/// the board is back where it started.
+Future<void> _undoFlight(WidgetTester tester, Board board, _Shots shots) async {
+  await board.jumpTo(9, _tierLabel(9));
+  final start = board.state.board;
+  final first = Solver.solve(start).solution!.first;
+  await board.move(first.from, first.to);
+  await board.waitIdle();
+  final timeline = board.game.board.timeline!;
+  await tester.tap(
+    find.descendant(of: find.byType(BoosterBar), matching: find.text('Undo')),
+  );
+  await tester.pumpUntil(
+    () =>
+        board.state.board.moveCount == 0 &&
+        board.game.board.board == board.state.board,
+    reason: 'the undo scheduled',
+    step: const Duration(milliseconds: 4),
+  );
+  final undoAt = timeline.nowMs;
+  await tester.pumpUntil(
+    () => timeline.nowMs >= undoAt + 100,
+    reason: 'the undo flight 100 ms in',
+    step: const Duration(milliseconds: 4),
+  );
+  board.game.pauseEngine();
+  try {
+    await shots.take('undo_flight');
+  } finally {
+    board.game.resumeEngine();
+  }
+  await board.waitIdle();
+  for (final id in start.slotIds) {
+    expect(board.state.board.slot(id), start.slot(id), reason: 'undone: $id');
+  }
   await _home(tester);
 }
 
@@ -435,7 +612,7 @@ Future<void> _slotLimit(WidgetTester tester, Board board, _Shots shots) async {
   await tester.tap(find.text('+Slot'));
   await tester.pumpUntil(
     () => find
-        .text('Two extra slots is the most for one level.')
+        .text('2 extra slots is the most for one level.')
         .evaluate()
         .isNotEmpty,
     reason: 'the slot-limit toast',

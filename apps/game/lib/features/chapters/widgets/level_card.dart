@@ -1,6 +1,7 @@
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/chapters/cubit/chapters_cubit.dart';
 
 /// The level card (frame 10.4b; menus spec 3): what a tap on a won level in
@@ -99,9 +100,14 @@ class LevelCard extends StatelessWidget {
                   Text(
                     l10n.winStarsTarget(target),
                     textAlign: TextAlign.center,
-                    style: AppTextStyleTokens.body.copyWith(
-                      fontSize: 17,
-                      color: AppColorTokens.textSecondary,
+                    style: context.scriptStyle(
+                      AppTextStyleTokens.body.copyWith(
+                        // NestyMeta:62: Nunito 600 16/23, `#7A5234`.
+                        fontSize: 16,
+                        height: 23 / 16,
+                        color: AppColorTokens.textBrown,
+                      ),
+                      role: ScriptTextRole.body,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -190,7 +196,8 @@ class _BestChip extends StatelessWidget {
         Text(
           context.localizations.chaptersBestMoves(best),
           style: AppTextStyleTokens.number.copyWith(
-            fontSize: 20,
+            // NestyMeta:60: the chip's Fredoka 700 18.
+            fontSize: 18,
             color: AppColorTokens.textPrimary,
           ),
           maxLines: 1,

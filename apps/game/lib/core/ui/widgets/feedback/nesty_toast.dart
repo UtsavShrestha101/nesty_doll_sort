@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/ui/theme/app_text_styles.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/feedback/nesty_banner.dart';
 import 'package:nesty_game/core/ui/widgets/feedback/toast_queue.dart';
@@ -9,11 +10,18 @@ import 'package:nesty_game/core/ui/widgets/feedback/toast_queue.dart';
 export 'package:nesty_game/core/ui/widgets/feedback/nesty_banner.dart'
     show NestyBanner, NestyBannerTone;
 export 'package:nesty_game/core/ui/widgets/feedback/toast_queue.dart'
-    show ToastCard, ToastHost, ToastQueue, ToastSpec, ToastTone;
+    show
+        ToastCard,
+        ToastHost,
+        ToastPill,
+        ToastPlacement,
+        ToastQueue,
+        ToastSpec,
+        ToastTone;
 
-/// A transient banner ("Banners / toasts", design/README.md "Components";
-/// frame 5.2 "Streak saved!", frame 8.3 "Purchases restored"): the same
-/// [NestyBanner] look at its bigger 40 px icon disc.
+/// A transient toast (tokens.json `toast.app`, m7-4 1.5; frame 5.2 "Streak
+/// saved!", frame 8.3 "Purchases restored"): a [ToastCard] in the app
+/// geometry, 40 dp icon disc.
 ///
 /// Use [NestyToast.show] to display it as a self-dismissing overlay; build
 /// it directly (as any [NestyBanner]) to lay it out inline in a widget test.
@@ -31,7 +39,7 @@ class NestyToast extends StatelessWidget {
   final String title;
   final String? message;
 
-  static const double iconSize = 40;
+  static const double iconSize = ToastLayoutTokens.appIcon;
 
   /// tokens.json `motion.toast.autoDismissMs` (2.5 s; Q136).
   static const Duration defaultDuration = ToastSpec.defaultDuration;
@@ -44,12 +52,14 @@ class NestyToast extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) => NestyBanner(
-    tone: tone,
-    icon: icon,
-    title: title,
-    message: message,
-    iconSize: iconSize,
+  Widget build(BuildContext context) => ToastCard(
+    placement: ToastPlacement.app,
+    spec: ToastSpec(
+      tone: toneOf(tone),
+      icon: icon,
+      title: title,
+      message: message,
+    ),
   );
 
   /// Queues the toast on the nearest [ToastHost] (the app root's, or a
@@ -60,7 +70,8 @@ class NestyToast extends StatelessWidget {
   /// With no host above [context] (a widget test's bare page) it inserts an
   /// [Overlay] entry instead, fading in and out over `motion.ui.modalIn`
   /// and dismissing itself after [duration] (respecting reduced motion),
-  /// placed by [margin] (frames 5.2/8.3: left/right 16, top 58).
+  /// placed by [margin] (frames 5.2/8.3: left/right 16, 4 dp under the safe
+  /// top).
   static void show(
     BuildContext context, {
     required NestyBannerTone tone,
@@ -71,7 +82,7 @@ class NestyToast extends StatelessWidget {
     EdgeInsetsGeometry margin = const EdgeInsetsDirectional.only(
       start: 16,
       end: 16,
-      top: 58,
+      top: ToastLayoutTokens.appTopBelowSafeTop,
     ),
   }) {
     final queue = ToastHost.maybeOf(context);
@@ -188,7 +199,10 @@ class _ToastOverlayItemState extends State<_ToastOverlayItem> {
               // toast the body style a page's Material gives it
               // (AppTheme's bodyMedium).
               child: DefaultTextStyle(
-                style: AppTextStyles.bodySmall,
+                style: context.scriptStyle(
+                  AppTextStyles.bodySmall,
+                  role: ScriptTextRole.body,
+                ),
                 child: NestyToast(
                   tone: widget.tone,
                   icon: widget.icon,

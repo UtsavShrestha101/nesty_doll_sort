@@ -74,6 +74,33 @@ void main() {
     expect(request.symbols, DollSymbols.large);
   });
 
+  test('passes the board theme on, and a prefetch of another theme is not '
+      'adopted (m7-4 A.5 board wood)', () async {
+    loader
+        .prefetch(
+          _next,
+          geometry: _geometry(),
+          devicePixelRatio: 3,
+          symbols: DollSymbols.large,
+          themeId: 'ch07',
+        )
+        .ignore();
+    expect(skins.requests.single.themeId, 'ch07');
+    skins.complete(0);
+    final other = loader.prepare(
+      _next,
+      geometry: _geometry(),
+      devicePixelRatio: 3,
+      symbols: DollSymbols.large,
+      themeId: 'ch08',
+    );
+    expect(skins.requests, hasLength(2));
+    expect(skins.requests.last.themeId, 'ch08');
+    skins.complete(1);
+    await other;
+    expect(ready, hasLength(1));
+  });
+
   test('hands each new skin over, then disposes the one it replaces', () async {
     final first = prepare();
     final a = skins.complete(0);

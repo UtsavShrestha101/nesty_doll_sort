@@ -1,0 +1,19 @@
+{
+  "@@locale": "fr",
+  "appName": "Nesty",
+  "play": "Jouer",
+  "coins": "{count, plural, one{{count} pièce} other{{count} pièces}}",
+  "chaptersStarsSemantics": "{count, plural, one{{count} étoile sur {total}} other{{count} étoiles sur {total}}}",
+  "greeting": "Bonjour {name}",
+  "pick": "{id, select, a{Alpha} b{Bêta} other{}}",
+  "raceRivalName": "{number, plural, =1{Galet} =2{Bouton} other{Comète}}",
+  "chaptersKicker": "NIVEAUX {first}–{last}",
+  "dailyStreakKeep": "Joue aujourd’hui pour allonger ta série",
+  "raceLossTitle": "C’était serré !",
+  "raceComputerTag": "Ordinateur",
+  "raceStripThinking": "Réfléchit…",
+  "badgeHint": "{badge, select, first_family{Emboîte une famille entière.} first_race{Bats l’ordinateur dans une course.} other{}}",
+  "reminderNotificationBody": "Un nouveau puzzle t’attend.",
+  "winStarsTarget": "{count, plural, one{{count} coup pour 3 étoiles} other{{count} coups pour 3 étoiles}}",
+  "raceWinBody": "Toutes les familles sont complètes. {rival} triait encore."
+}

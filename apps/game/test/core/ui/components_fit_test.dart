@@ -129,6 +129,7 @@ class _Gallery extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BoosterButton(
+                  kind: BoosterButtonKind.undo,
                   icon: NestyIcons.undo,
                   label: l10n.boosterUndo,
                   width: boosterWidth,
@@ -137,6 +138,7 @@ class _Gallery extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 BoosterButton(
+                  kind: BoosterButtonKind.hint,
                   icon: NestyIcons.lightbulb,
                   label: l10n.boosterHint,
                   width: boosterWidth,
@@ -145,6 +147,7 @@ class _Gallery extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 BoosterButton(
+                  kind: BoosterButtonKind.slot,
                   icon: NestyIcons.addBox,
                   label: l10n.boosterExtraSlot,
                   width: boosterWidth,
@@ -154,6 +157,7 @@ class _Gallery extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 BoosterButton(
+                  kind: BoosterButtonKind.restart,
                   icon: NestyIcons.restartAlt,
                   label: l10n.restart,
                   width: boosterWidth,

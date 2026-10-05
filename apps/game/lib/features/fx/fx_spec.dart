@@ -148,6 +148,8 @@ final class FxSpec {
     this.imageLayers = const [],
     this.textLayers = const [],
     this.colorFills = const [],
+    this.tintFills = const [],
+    this.sizedRects = const [],
     this.scaleNulls = const [],
     this.loops = false,
   }) : assert(frames > 0);
@@ -194,6 +196,16 @@ final class FxSpec {
 
   /// Named fills the game recolours: `rim_tint`, `tint`.
   final List<String> colorFills;
+
+  /// The `<part>_fill` fills a colour delegate on `['**', name]` tints
+  /// (LOTTIE.md m7-4 "Tint and width"): the ribbons' `band_fill`,
+  /// `edge_fill`, `fold_fill`, `hi_fill` and `tail_fill`, the family
+  /// counter's `glow_fill` and `pill_fill`. Sorted.
+  final List<String> tintFills;
+
+  /// The `<part>_rect` rectangles `ValueDelegate.rectangleSize` widens: the
+  /// family counter's `glow_rect` and `pill_rect`. Sorted.
+  final List<String> sizedRects;
 
   /// Other root nulls whose scale the game sets (LOTTIE.md "Case size"):
   /// `fx_glass_unlock_tall`'s `case_size`, the same h / 150 as `doll_size`.

@@ -67,13 +67,13 @@ void main() {
     await pumpScreen(tester, _Counter(library: library));
     await tester.pump();
     expect(_painted<FamilyCounterPillPainter>(), findsNothing);
-    expect(find.bySemanticsLabel('0 of 5 families done'), findsOneWidget);
+    expect(find.bySemanticsLabel('0 of 5 families complete'), findsOneWidget);
     expect(_ticking(), isFalse, reason: 'rests on frame 0');
 
     await tester.tap(find.byType(FamilyCounter));
     await tester.pump();
     expect(_ticking(), isTrue, reason: 'bump plays');
-    expect(find.bySemanticsLabel('1 of 5 families done'), findsOneWidget);
+    expect(find.bySemanticsLabel('1 of 5 families complete'), findsOneWidget);
     // bump: 12 frames (200 ms).
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 150));

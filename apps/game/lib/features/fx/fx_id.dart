@@ -9,13 +9,13 @@ enum FxHost {
   widget,
 }
 
-/// The 35 Lottie files of `design/lottie/` (LOTTIE.md "Files"), shipped as
+/// The 37 Lottie files of `design/lottie/` (LOTTIE.md "Files"), shipped as
 /// `apps/game/assets/lottie/<fileName>.json` (owner decision 2026-09-26:
 /// every animation in the design ships as Lottie, PROGRESS D40).
 ///
 /// The 29 of v3 plus m7-3's six (`fx_glass_unlock_tall`, `ui_stars`,
-/// `ui_chest` and the three intro loops). Declared in the LOTTIE.md table
-/// order. Timing, markers, canvas and
+/// `ui_chest` and the three intro loops) and m7-4's two (`ui_rival_react`,
+/// `ui_museum_idle`). Declared in the LOTTIE.md table order. Timing, markers, canvas and
 /// anchors live in each file's `FxSpec` (`fx_spec.gen.dart`, generated from
 /// the JSON by `nesty_tools`), never here.
 enum FxId {
@@ -84,7 +84,15 @@ enum FxId {
   /// The mechanic intro cards' loops (m7-3, frames 4.1–4.3).
   uiIntroTowers('ui_intro_towers', FxHost.widget),
   uiIntroGlass('ui_intro_glass', FxHost.widget),
-  uiIntroIce('ui_intro_ice', FxHost.widget);
+  uiIntroIce('ui_intro_ice', FxHost.widget),
+
+  /// The rival's portrait reacting on the race's strip and result cards
+  /// (m7-4 C.6): `idle` loops, `family`, `win` and `lose` play once.
+  uiRivalReact('ui_rival_react', FxHost.widget),
+
+  /// A collected figurine's idle in its Museum niche (m7-4 J.2), from a
+  /// random frame per niche.
+  uiMuseumIdle('ui_museum_idle', FxHost.widget);
 
   const FxId(this.fileName, this.host);
 

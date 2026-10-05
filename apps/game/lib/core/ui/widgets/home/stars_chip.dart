@@ -9,9 +9,10 @@ import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 
 /// The chapter's star total, "39/60" (menus spec 0.2; tokens
 /// `layout.chapters.foldedRow.starsChip`, `perfectChip`): a white pill with a
-/// 20 dp star (`UiArt.starFilled`) and the fraction in `coinText`. It sits on
-/// Home's chapter card (32 tall), Chapters' folded rows and the open
-/// chapter's header (28 tall).
+/// star (`UiArt.starFilled`) and the fraction in `coinText`. Two sizes, as
+/// the scenes draw them (NestyHub:25 and :74-76): Home's chapter card, 30
+/// tall (star 20, Fredoka 700 15, gap 4, padding 0 10 0 6), and Chapters'
+/// folded rows and open header, 28 tall (star 18, 14, gap 3, padding 0 9 0 5).
 ///
 /// [perfect] (every level at 3 stars) swaps the sand inset line for the gold
 /// one and adds the soft gold ring (`ChaptersTokens.perfectChip*`).
@@ -23,6 +24,7 @@ class StarsChip extends StatelessWidget {
     required this.total,
     this.height = 28,
     this.perfect = false,
+    this.all = false,
     super.key,
   });
 
@@ -31,7 +33,17 @@ class StarsChip extends StatelessWidget {
   final double height;
   final bool perfect;
 
-  static const double starSize = 20;
+  /// The whole campaign's total (Home's Bonus Endless chip, frame 12.2):
+  /// reads `chaptersStarsTotalAll`.
+  final bool all;
+
+  /// The Home chip's height (NestyHub:25).
+  static const double homeHeight = 30;
+
+  bool get _large => height >= homeHeight;
+
+  /// The star's side: 20 in the 30 dp chip, 18 in the 28 dp one.
+  double get starSize => _large ? 20 : 18;
 
   @override
   Widget build(BuildContext context) {
@@ -60,17 +72,22 @@ class StarsChip extends StatelessWidget {
         style: style,
         radius: BorderRadius.circular(height / 2),
         height: height,
-        padding: EdgeInsetsDirectional.only(start: 6, end: height / 2 - 2),
+        padding: EdgeInsetsDirectional.only(
+          start: _large ? 6 : 5,
+          end: height / 2 - 5,
+        ),
         alignment: Alignment.center,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             UiArtImage.square(UiArt.starFilled, extent: starSize),
-            const SizedBox(width: 3),
+            SizedBox(width: _large ? 4 : 3),
             Text(
-              l10n.chaptersStarsTotal(earned, total),
+              all
+                  ? l10n.chaptersStarsTotalAll(earned, total)
+                  : l10n.chaptersStarsTotal(earned, total),
               style: AppTextStyleTokens.number.copyWith(
-                fontSize: 16,
+                fontSize: height / 2,
                 height: 1,
                 color: AppColorTokens.coinText,
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
+import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 
 import '../../../core/ui/support/ui_harness.dart';
 import '../../support/screen_harness.dart';
@@ -245,6 +246,69 @@ void main() {
       expect(find.text('Your 13-day streak is glowing again.'), findsOneWidget);
       expect(find.text('13-day streak'), findsNothing);
       expect(find.textContaining('Day 7 chest'), findsNothing);
+    });
+
+    testWidgets('a relit card has the 3 dp relitGlow ring, the auto_awesome '
+        'glyph 8 dp outside the flame disc\'s top-right and one fx_twinkle '
+        'on it (motion.relitTwinkle, m7-4 4.17); a plain one has none', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const DailyStreakCard(streak: 13, relit: true));
+      await tester.pump(const Duration(milliseconds: 300));
+      final surface = tester.widget<NestySurface>(find.byType(NestySurface));
+      expect(
+        surface.style.shadows.any(
+          (s) => s.color == AppColorTokens.relitGlow && s.spread == 3,
+        ),
+        isTrue,
+      );
+      final glyph = find.byKey(DailyStreakCard.relitGlyphKey);
+      final icon = tester.widget<Icon>(glyph);
+      expect(icon.icon, NestyIcons.autoAwesome);
+      expect(icon.size, 22);
+      expect(icon.color, const Color(0xFFFFE08A));
+      expect(icon.shadows!.single.blurRadius, 6);
+      expect(icon.shadows!.single.color, const Color(0xE6FFDC78));
+      // The disc is the 52 dp circle round the flame glyph.
+      final flame = tester.getCenter(
+        find.byIcon(NestyIcons.localFireDepartment),
+      );
+      final disc = Rect.fromCenter(center: flame, width: 52, height: 52);
+      final box = tester.getRect(glyph);
+      expect(box.right, closeTo(disc.right + 8, 0.5), reason: 'right -8');
+      expect(box.top, closeTo(disc.top - 8, 0.5), reason: 'top -8');
+      // One twinkle, once, centred on the glyph.
+      final twinkle = tester.widget<LottieTwinkle>(find.byType(LottieTwinkle));
+      expect(twinkle.once, isTrue);
+      expect(
+        tester.getCenter(find.byType(LottieTwinkle)).dx,
+        closeTo(box.center.dx, 0.5),
+      );
+      expect(
+        tester.getCenter(find.byType(LottieTwinkle)).dy,
+        closeTo(box.center.dy, 0.5),
+      );
+
+      await pumpScreen(tester, const DailyStreakCard(streak: 13));
+      await tester.pump(const Duration(milliseconds: 300));
+      final plain = tester.widget<NestySurface>(find.byType(NestySurface));
+      expect(
+        plain.style.shadows.any((s) => s.color == AppColorTokens.relitGlow),
+        isFalse,
+      );
+      expect(find.byType(LottieTwinkle), findsNothing);
+      expect(glyph, findsNothing);
+    });
+
+    testWidgets('reduced motion: the glyph only, no twinkle', (tester) async {
+      await pumpScreen(
+        tester,
+        const DailyStreakCard(streak: 13, relit: true),
+        reduceMotion: true,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(DailyStreakCard.relitGlyphKey), findsOneWidget);
+      expect(find.byType(LottieTwinkle), findsNothing);
     });
 
     for (final size in screenSizes) {

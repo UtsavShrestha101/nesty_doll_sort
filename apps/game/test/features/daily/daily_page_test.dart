@@ -20,7 +20,6 @@ import 'package:nesty_game/core/services/remote_config/fake_remote_config_servic
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
-import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -28,6 +27,7 @@ import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/daily/widgets/daily_background_loader.dart';
 import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
+import 'package:nesty_game/features/daily/widgets/puzzle_card.dart';
 import 'package:nesty_game/features/fx/chest/chest_reward_sequence.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
@@ -108,30 +108,19 @@ void main() {
     solve: solve,
   );
 
-  ({
-    DailyCubit cubit,
-    FakeDailyService daily,
-    FakeAudioService jingles,
-    FakeShareService share,
-  })
-  build({DailyStatus? status, int coins = 140}) {
+  ({DailyCubit cubit, FakeDailyService daily, FakeAudioService jingles}) build({
+    DailyStatus? status,
+    int coins = 140,
+  }) {
     final save = FakeSaveService(initial: SaveDocument(coins: coins));
     final levels = FakeLevelRepository();
     final resolver = FakeLevelResolver(levels, save, FakeRemoteConfigService());
     final daily = FakeDailyService(FakeClock(), status: status);
     final jingles = FakeAudioService();
-    final share = FakeShareService();
     return (
-      cubit: DailyCubit(
-        daily,
-        resolver,
-        save,
-        FakeRemoteConfigService(),
-        share,
-      ),
+      cubit: DailyCubit(daily, resolver, save, FakeRemoteConfigService()),
       daily: daily,
       jingles: jingles,
-      share: share,
     );
   }
 
@@ -264,8 +253,25 @@ void main() {
     expect(find.textContaining('Next puzzle in'), findsOneWidget);
     expect(find.text('Play Level 1'), findsOneWidget);
     // Share is on the daily win card (frame 10.1), never here (D188).
-    expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+    expect(find.bySemanticsLabel('Share today’s result'), findsNothing);
     await built.cubit.close();
+  });
+
+  group('phase 5: page frame (F-PAGE, F-SAFE)', () {
+    testWidgets('cream page; the list runs to the bottom edge and its last '
+        'card clears the home indicator', (tester) async {
+      final built = build(status: status());
+      await pumpDaily(tester, built.cubit, built.jingles);
+      expect(find.byType(CreamPage), findsOneWidget);
+      final scroller = find.byType(SingleChildScrollView).first;
+      // The harness gives 390x844 a 34 dp bottom inset.
+      expect(tester.getRect(scroller).bottom, 844);
+      await tester.drag(scroller, const Offset(0, -5000));
+      await tester.pump();
+      final card = find.byType(PuzzleCard);
+      expect(tester.getRect(card).bottom, lessThanOrEqualTo(844 - 34));
+      await built.cubit.close();
+    });
   });
 
   group('E3: Share left the solved card (frame 5.5; phase 4, D188)', () {
@@ -287,15 +293,14 @@ void main() {
         ),
       );
       await pumpDaily(tester, built.cubit, built.jingles);
-      expect(find.bySemanticsLabel("Share today's result"), findsNothing);
-      expect(built.share.shared, isEmpty);
+      expect(find.bySemanticsLabel('Share today’s result'), findsNothing);
       await built.cubit.close();
     });
 
     testWidgets('hidden before today is solved', (tester) async {
       final built = build(status: status());
       await pumpDaily(tester, built.cubit, built.jingles);
-      expect(find.bySemanticsLabel("Share today's result"), findsNothing);
+      expect(find.bySemanticsLabel('Share today’s result'), findsNothing);
       await built.cubit.close();
     });
   });
@@ -413,7 +418,6 @@ void main() {
       FakeLevelResolver(FakeLevelRepository(), save, FakeRemoteConfigService()),
       save,
       FakeRemoteConfigService(),
-      FakeShareService(),
     );
     await pumpDaily(tester, cubit, jingles);
     int pill() => tester
@@ -487,7 +491,8 @@ void main() {
     await pumpDaily(tester, built.cubit, built.jingles);
 
     // copy.md G.9 `streak_freeze_used`.
-    expect(find.text('A freeze kept your flame lit.'), findsOneWidget);
+    // The toast's title and the streak card's line (m7-4 4.17).
+    expect(find.text('A freeze kept your flame lit.'), findsNWidgets(2));
     expect(
       find.text("A freeze covered Friday. You'll earn a new one next week."),
       findsOneWidget,

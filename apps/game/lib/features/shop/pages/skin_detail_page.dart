@@ -7,6 +7,7 @@ import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/fx_spinner.dart';
 import 'package:nesty_game/features/shop/cubit/skin_detail_cubit.dart';
@@ -16,6 +17,7 @@ import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
 import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
 import 'package:nesty_game/features/shop/widgets/shop_look.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
+import 'package:nesty_game/features/shop/widgets/tag_pop.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 /// A skin's detail (frame 7.4; docs/plans/m3-design.md §10.7): all 11
@@ -121,6 +123,13 @@ class _SkinDetailViewState extends State<SkinDetailView> {
   String? _preparedFor;
   bool _buying = false;
 
+  /// A purchase tapped here is in flight, and whether its celebration has
+  /// played; the button built as it lands is the swap's and pops
+  /// (`motion.purchaseItem`, m7-4 4.11).
+  bool _buyPending = false;
+  bool _celebrated = false;
+  bool _popButton = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -131,6 +140,18 @@ class _SkinDetailViewState extends State<SkinDetailView> {
   void didUpdateWidget(SkinDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
     _prepare();
+    final wasOwned = oldWidget.state.data?.owned ?? false;
+    if (_buyPending && !wasOwned && (widget.state.data?.owned ?? false)) {
+      _swapped();
+    }
+  }
+
+  void _swapped() {
+    if (_celebrated) return;
+    _celebrated = true;
+    _popButton = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _popButton = false);
+    PurchaseTwinkleBurst.celebrate(context);
   }
 
   void _prepare() {
@@ -167,12 +188,15 @@ class _SkinDetailViewState extends State<SkinDetailView> {
   Future<void> _buy(SkinDetailState data) async {
     if (_buying) return;
     setState(() => _buying = true);
+    _buyPending = true;
+    _celebrated = false;
     final outcome = await widget.onBuy();
+    _buyPending = false;
     if (!mounted) return;
     setState(() => _buying = false);
     switch (outcome) {
       case PurchaseOutcome.bought:
-        PurchaseTwinkleBurst.celebrate(context);
+        _swapped();
       case PurchaseOutcome.needsCoins:
         unawaited(
           NotEnoughCoinsDialog.show(
@@ -204,29 +228,34 @@ class _SkinDetailViewState extends State<SkinDetailView> {
     final data = widget.state.data;
     final error = widget.state.exceptionOrNull;
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ScreenHeader(
-                title: l10n.skinDetailTitle,
-                onBack: widget.onBack,
-                coins: data?.coins,
-              ),
-              const SizedBox(height: 12),
-              if (data != null)
-                Expanded(child: _content(context, data))
-              else if (error != null)
-                Expanded(
-                  child: Center(
-                    child: RetryView(exception: error, onRetry: widget.onRetry),
-                  ),
-                )
-              else
-                const Expanded(child: SizedBox()),
-            ],
+      body: CreamPage(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ScreenHeader(
+                  title: l10n.skinDetailTitle,
+                  onBack: widget.onBack,
+                  coins: data?.coins,
+                ),
+                const SizedBox(height: 12),
+                if (data != null)
+                  Expanded(child: _content(context, data))
+                else if (error != null)
+                  Expanded(
+                    child: Center(
+                      child: RetryView(
+                        exception: error,
+                        onRetry: widget.onRetry,
+                      ),
+                    ),
+                  )
+                else
+                  const Expanded(child: SizedBox()),
+              ],
+            ),
           ),
         ),
       ),
@@ -252,7 +281,7 @@ class _SkinDetailViewState extends State<SkinDetailView> {
             symbols: symbols,
             library: library,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           NestySurface(
             style: const SurfaceStyle(
               color: Color(0xE6FFF9EC),
@@ -286,36 +315,46 @@ class _SkinDetailViewState extends State<SkinDetailView> {
                   child: Text(
                     l10n.skinDetailSizes,
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textBrown,
+                      color: AppColorTokens.textBrown,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 38),
           Text(
             l10n.skinNameOf(data.skin.id),
             style: AppTextStyles.display.copyWith(
-              fontSize: 38,
+              fontSize: 30,
+              height: 1,
               color: AppColorTokens.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
           if (description.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: AppTextStyles.body,
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              // text-wrap: pretty (NestyShop dDesc): no lone last word.
+              child: Text(
+                bindLastWord(description),
+                style: context.scriptStyle(
+                  AppTextStyles.body,
+                  role: ScriptTextRole.body,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 43),
           _button(context, data),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           Text(
             l10n.balanceLine(data.coins),
-            style: AppTextStyles.caption.copyWith(color: AppColors.textBrown),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColorTokens.textBrown,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -327,18 +366,26 @@ class _SkinDetailViewState extends State<SkinDetailView> {
   Widget _button(BuildContext context, SkinDetailState data) {
     final l10n = context.localizations;
     if (data.equipped) {
-      return TactileButton(
-        label: l10n.shopEquipped,
-        onPressed: null,
-        variant: TactileButtonVariant.success,
-        icon: NestyIcons.checkCircle,
+      return TagPop(
+        key: const ValueKey('button-equipped'),
+        animate: _popButton,
+        child: TactileButton(
+          label: l10n.shopEquipped,
+          onPressed: null,
+          variant: TactileButtonVariant.success,
+          icon: NestyIcons.checkCircle,
+        ),
       );
     }
     if (data.owned) {
-      return TactileButton(
-        label: l10n.shopEquip,
-        onPressed: _buying ? null : _equip,
-        variant: TactileButtonVariant.secondary,
+      return TagPop(
+        key: const ValueKey('button-owned'),
+        animate: _popButton,
+        child: TactileButton(
+          label: l10n.shopEquip,
+          onPressed: _buying ? null : _equip,
+          variant: TactileButtonVariant.secondary,
+        ),
       );
     }
     return Padding(
@@ -348,9 +395,10 @@ class _SkinDetailViewState extends State<SkinDetailView> {
         price: data.skin.priceCoins,
         label: l10n.shopBuy,
         onPressed: _buying ? null : () => _buy(data),
-        height: 62,
+        height: 60,
         radius: 22,
         edge: 6,
+        labelSize: 22,
       ),
     );
   }

@@ -94,9 +94,9 @@ void main() {
           tester,
           size: size,
           textScale: scale,
-          tapLabel: 'Yes, remind me',
+          tapLabel: testL10n.reminderOfferYes,
         );
-        expect(find.textContaining('Reminder set for'), findsOneWidget);
+        expect(find.textContaining(_doneFragment), findsOneWidget);
         await expectAccessibleLayout(tester);
         await tester.pump(const Duration(seconds: 4));
       });
@@ -107,11 +107,19 @@ void main() {
           size: size,
           textScale: scale,
           permission: NotificationPermission.denied,
-          tapLabel: 'Yes, remind me',
+          tapLabel: testL10n.reminderOfferYes,
         );
-        expect(find.text('Open phone settings'), findsOneWidget);
+        expect(find.text(testL10n.settingOpenPhoneSettings), findsOneWidget);
         await expectAccessibleLayout(tester);
       });
     }
   }
 }
+
+/// The longest fixed stretch of "Reminder set for {time}." in the test
+/// locale, so the finder works wherever the language puts the time.
+final String _doneFragment =
+    (testL10n.reminderOfferDone('\u0000').split('\u0000')
+          ..sort((a, b) => b.length.compareTo(a.length)))
+        .first
+        .trim();

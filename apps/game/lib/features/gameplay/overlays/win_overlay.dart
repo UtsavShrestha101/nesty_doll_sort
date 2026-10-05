@@ -325,16 +325,20 @@ class _WinOverlayState extends State<_WinOverlayBody>
         : summary.stars == null || summary.dailyStreak != null
         ? CelebrationVariant.plain
         : CelebrationVariant.campaign;
+    // The helper note wins over the tip: one note, never both. Every height
+    // has room for it now (the card blends by height, `layout.sizeBlend`,
+    // m7-4 4.12), so it shows wherever the card has stars. The tip is
+    // recorded only when it shows (D191).
+    final canNote =
+        _variant != CelebrationVariant.plain && summary.stars != null;
+    _showHelper = canNote && summary.starsCapped;
+    _showTip = canNote && !_showHelper && summary.starTip;
     _layout = CelebrationLayout.of(
       _variant,
       screenHeight: MediaQuery.sizeOf(context).height,
       families: summary.families.length,
+      withNote: _showHelper || _showTip,
     );
-    // The helper note wins over the tip, and neither shows where the card
-    // has no room (C11). The tip is recorded only when it shows (D191).
-    final canNote = _layout.noteTop != null && summary.stars != null;
-    _showHelper = canNote && summary.starsCapped;
-    _showTip = canNote && !_showHelper && summary.starTip;
     _ribbon.playWhole();
     _confetti.playWhole();
     _burst.rest(0);
@@ -527,7 +531,18 @@ class _WinOverlayState extends State<_WinOverlayBody>
     final layout = _layout;
     final dailyStreak = summary.dailyStreak;
     final isReplay = summary.isReplay;
-    final title = dailyStreak == null ? l10n.winTitle : l10n.dailyWinTitle;
+    final fullTitle = dailyStreak == null ? l10n.winTitle : l10n.dailyWinTitle;
+    // textFit.winRibbon: the short form when the full title would shrink
+    // below its minScale (the daily's title has none).
+    final title = dailyStreak == null
+        ? RibbonLabel.pick(
+            context,
+            style: LottieLabelStyles.winRibbon,
+            full: fullTitle,
+            short: l10n.winTitleShort,
+            minScale: TextFitTokens.winRibbonMinScale,
+          )
+        : fullTitle;
     final movesCaption = summary.movesCaption(l10n);
     const canvas = WinOverlay.ribbonCanvas;
     final ribbonScale = LottieRibbonFit.scaleFor(
@@ -585,6 +600,7 @@ class _WinOverlayState extends State<_WinOverlayBody>
                         maxHeight: canvas.height * ribbonScale,
                         child: LottieTextOverlay(
                           label: title,
+                          semanticLabel: fullTitle,
                           style: LottieLabelStyles.winRibbon,
                           lottie: LottieFxView(
                             id: FxId.uiWinRibbon,
@@ -664,10 +680,11 @@ class _WinOverlayState extends State<_WinOverlayBody>
                 : DailyStreakCard(
                     streak: dailyStreak,
                     relit: summary.dailyRelit,
+                    library: widget.library,
                   ),
           ),
           if (note != null) ...[
-            const SizedBox(height: CelebrationLayout.noteGap),
+            SizedBox(height: layout.noteGap),
             KeyedSubtree(
               key: WinOverlay.noteKey,
               child: WinNotePill(text: note),
@@ -681,9 +698,7 @@ class _WinOverlayState extends State<_WinOverlayBody>
   Widget _buttons(BuildContext context) {
     final l10n = context.localizations;
     final summary = widget.summary;
-    final gap = _layout.buttonsTop == WinStarsShortTokens.buttonsTop
-        ? WinStarsShortTokens.buttonsGap
-        : WinStarsTokens.buttonsGap;
+    final gap = _layout.buttonsGap;
     final canShare =
         summary.dailyStreak != null &&
         widget.share != null &&

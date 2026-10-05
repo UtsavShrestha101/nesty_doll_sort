@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -25,6 +26,7 @@ import 'package:nesty_game/core/services/remote_config/remote_config_service.dar
 import 'package:nesty_game/core/services/save/in_memory_save_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/race/versus_ribbon.dart';
 import 'package:nesty_game/features/chapters/pages/chapters_page.dart';
 import 'package:nesty_game/features/chapters/widgets/level_card.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
@@ -48,9 +50,9 @@ import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_entrance.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
-import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
 import 'package:nesty_game/features/museum/pages/museum_page.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_modal.dart';
+import 'package:nesty_game/features/race/cubit/rival_select_cubit.dart';
 import 'package:nesty_game/features/race/pages/rival_select_page.dart';
 import 'package:nesty_game/features/race/widgets/rival_strip.dart';
 import 'package:nesty_game/features/records/pages/records_page.dart';
@@ -63,6 +65,9 @@ import 'package:nesty_game/features/shop/widgets/skin_grid_card.dart';
 import 'package:nesty_game/features/splash/pages/splash_page.dart';
 import 'package:nesty_game/main_dev.dart' as app;
 import 'package:nesty_render/nesty_render.dart';
+
+import 'support/phone_language.dart';
+import 'support/race_solver.dart';
 
 /// The dev flavor on a simulator or emulator, with every real service
 /// (bundled levels, the skin, the 29 Lottie files, SoLoud's SFX, jingles
@@ -143,6 +148,7 @@ void main() {
     'on level 21, opens the milestone chest and plays each new mechanic '
     'and the daily to level 200',
     (tester) async {
+      pinEnglishPhone(tester);
       // Every service logs its failures through debugPrint in debug builds.
       // The binding checks debugPrint is restored when the body ends, so it
       // is put back here, before the logs are checked.
@@ -153,7 +159,7 @@ void main() {
         debugPrintBefore(message, wrapWidth: wrapWidth);
       };
       try {
-        await _playthrough(binding, tester);
+        await _playthrough(binding, tester, logs);
       } finally {
         debugPrint = debugPrintBefore;
       }
@@ -173,6 +179,7 @@ void main() {
 Future<void> _playthrough(
   IntegrationTestWidgetsFlutterBinding binding,
   WidgetTester tester,
+  List<String> logs,
 ) async {
   final shots = _Screenshots(binding, tester);
   final board = _Board(tester, shots);
@@ -180,6 +187,13 @@ Future<void> _playthrough(
 
   final launch = Stopwatch()..start();
   app.main();
+  // E13 is read from the app's own progress, not from this loop: the loop
+  // waits behind every screenshot (on Android the first one converts the
+  // surface) and behind a busy host. A 4 ms timer notes the first moment
+  // level 1 is playable and the first moment the splash is gone after it
+  // was seen. It uses unguarded finders: `_tester.element` throws from a
+  // timer ("Guarded function conflict").
+  final e13 = _E13Poller(launch)..start();
 
   // Splash (frame 1.1) while the levels, the skin, the Lottie files and
   // the sounds load: first as it opens, then (if it is still up) once
@@ -197,17 +211,40 @@ Future<void> _playthrough(
       routesSeen.addAll([for (final route in router.stackData) route.name]);
   noteRoutes();
   router.addListener(noteRoutes);
-  await shots.take('00_splash');
+  // Phase 5 F-SPL (decision 1 of architecture.md §6): the splash draws
+  // E.19's fallback dolls from its first frame and crossfades to the art.
+  // Shot about 100 ms after the splash is first on screen (the placeholder
+  // dolls, frame 1.1), again once the shelf dolls' art has landed, and
+  // about 1.5 s in if the splash is still up then. Each shot's time since the
+  // splash appeared goes into the report (`splash`).
+  final splashSeen = launch.elapsed;
+  final splashShots = <String, int>{};
+  Future<void> splashShot(String name) async {
+    splashShots[name] = (launch.elapsed - splashSeen).inMilliseconds;
+    await shots.take(name);
+  }
+
+  bool splashUp() => find.byType(SplashPage).evaluate().isNotEmpty;
+  await tester.pumpUntil(
+    () => launch.elapsed - splashSeen >= const Duration(milliseconds: 100),
+    reason: 'the splash 100 ms in',
+    step: const Duration(milliseconds: 4),
+  );
+  if (splashUp()) await splashShot('00_splash');
+  // 00b_splash_loaded (frame 10.8) is shot by faults_test's `splash_loaded`
+  // scenario, which holds the splash until the art is current: here the art
+  // lands only 300-500 ms before the handover, so a shot waiting for it
+  // always hit the transition and, on a slow phone, missed the splash.
   await tester.pumpUntil(
     () =>
-        find.byType(SplashPage).evaluate().isEmpty ||
-        get<ShowcaseDolls>().current.value != null,
-    timeout: const Duration(seconds: 60),
-    reason: 'the splash art',
+        !splashUp() ||
+        launch.elapsed - splashSeen >= const Duration(milliseconds: 1500),
+    timeout: const Duration(seconds: 10),
+    reason: 'the splash 1.5 s in',
+    step: const Duration(milliseconds: 16),
   );
-  if (find.byType(SplashPage).evaluate().isNotEmpty) {
-    await shots.take('00b_splash_loaded');
-  }
+  if (splashUp()) await splashShot('00c_splash_1500ms');
+  binding.reportData = {...?binding.reportData, 'splash': splashShots};
 
   // ── E9 and E13 (m7-design §13; brainstorm §3): a fresh install goes
   // from the splash straight into level 1's tutorial, with no Home under it
@@ -228,14 +265,26 @@ Future<void> _playthrough(
     reason: 'level 1 straight from the splash (E9)',
     step: const Duration(milliseconds: 16),
   );
-  final playable = launch.elapsed;
+  final loopPlayable = launch.elapsed;
   await tester.pumpUntil(
     () => noHome() && find.byType(SplashPage).evaluate().isEmpty,
     timeout: const Duration(seconds: 10),
     reason: "the splash's exit transition to level 1",
     step: const Duration(milliseconds: 16),
   );
-  _reportE13(binding, playable: playable, alone: launch.elapsed);
+  final loopAlone = launch.elapsed;
+  e13.stop();
+  // The poller's checks wait for the end of the playthrough: a clock that
+  // fails costs the run its E13 reading, not every check after this one.
+  _reportE13(
+    binding,
+    playable: e13.playable ?? loopPlayable,
+    alone: e13.alone ?? loopAlone,
+    loopPlayable: loopPlayable,
+    loopAlone: loopAlone,
+    levelsCheckMs: levelsCheckMs(logs),
+    poller: e13,
+  );
   router.removeListener(noteRoutes);
   noteRoutes();
   expect(homeShown, isFalse, reason: 'E9: no Home before level 1');
@@ -292,6 +341,10 @@ Future<void> _playthrough(
   await tester.pumpFor(const Duration(milliseconds: 300));
   // "STEP n OF 3" on all three of level 1's steps (copy.md E; lead note 6).
   expect(find.text('STEP 1 OF 3'), findsOneWidget);
+  // m7-4 8.1 (`layout.tutorial`): the scrim dims the HUD and the booster
+  // bar with a hole that keeps Pause lit and tappable, and the tip sits in
+  // the HUD row beside it, clear of the family counter.
+  _expectTutorialHud(tester, 'STEP 1 OF 3');
   await shots.take('02c_l1_tutorial');
 
   // Tap-tap (spec §2.2): red2 lifts (doll_pick lift, then the wobble
@@ -304,6 +357,12 @@ Future<void> _playthrough(
   await tester.pumpFor(const Duration(milliseconds: 450));
   expect(find.text('STEP 2 OF 3'), findsOneWidget);
   await shots.take('03_selection');
+  // Frame 1.4 (step 2, "Now tap the big one", the target glowing): the
+  // step's card settled, for the fidelity pair (architecture.md §1.3).
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  expect(find.text('STEP 2 OF 3'), findsOneWidget);
+  _expectTutorialHud(tester, 'STEP 2 OF 3');
+  await shots.take('04b2_l1_tutorial_step2');
 
   // …and drops inside red3: doll_move to the hover point 0–267 ms, then
   // doll_nest 267–667 ms with the clack at 537 ms (frame 2.4).
@@ -370,7 +429,7 @@ Future<void> _playthrough(
   // §11). ──
   await _openChapters(tester);
   // Level 1's cell shows its 3 stars (m7-design P3.7).
-  const level1Cell = 'Level 1, won, best 2 moves, 3 of 3 stars';
+  const level1Cell = 'Level 1, 3 stars. Best 2 moves.';
   expect(find.bySemanticsLabel(level1Cell), findsOneWidget);
   await shots.take('01h_chapters');
   final coinsBeforeReplay = save.coins;
@@ -455,10 +514,13 @@ Future<void> _playthrough(
   await shots.take('01b_museum');
   // The next figurine's modal (chapter 1's, still to earn), then a locked
   // one further along (frame 6.3).
-  await _openFigurine(tester, RegExp(r'^The Classic Family, next, '));
+  await _openFigurine(
+    tester,
+    RegExp(r'^The Classic Family, next to come home\.'),
+  );
   await shots.take('01b2_museum_next_modal');
   await _closeFigurine(tester);
-  await _openFigurine(tester, 'Chapter 3, levels 41 to 60, locked');
+  await _openFigurine(tester, 'The Baker Family, not home yet. Chapter 3.');
   await shots.take('01b3_museum_locked_modal');
   await _closeFigurine(tester);
 
@@ -607,7 +669,37 @@ Future<void> _playthrough(
   await tester.pumpFor(const Duration(milliseconds: 300));
 
   // ── Level 2 from Home's PLAY (the first win moved Home on to it). ──
+  // BACKLOG M7 "the gameplay skin lands within the route transition": the
+  // time from the push to the level's own skin on the board (placeholder
+  // dolls until then), and to the route's transition end, reported as
+  // `skinLand` for the device stage to judge (architecture.md §4 row 875).
+  final push = Stopwatch()..start();
   await tester.tap(find.bySemanticsLabel('Play level 2'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameWidget<NestyGame>).evaluate().isNotEmpty &&
+        board.bloc.state.data?.levelNumber == 2 &&
+        board.game.skin != null,
+    timeout: const Duration(seconds: 30),
+    reason: "level 2's skin after the push",
+    step: const Duration(milliseconds: 4),
+  );
+  final skinLand = push.elapsed;
+  await tester.pumpUntil(
+    () {
+      final page = find.byType(GameplayView).evaluate().firstOrNull;
+      return page != null &&
+          (ModalRoute.of(page)?.animation?.isCompleted ?? false);
+    },
+    reason: "level 2's route transition",
+    step: const Duration(milliseconds: 4),
+  );
+  _reportSkinLand(
+    binding,
+    level: 2,
+    skinLand: skinLand,
+    routeDone: push.elapsed,
+  );
   await board.waitForLevel(2);
   await shots.take('07_l2_board');
   await music.expectPlaying(MusicTrack.game);
@@ -621,6 +713,11 @@ Future<void> _playthrough(
     reason: 'the L2 swallow tutorial cue (step 4)',
   );
   await tester.pumpFor(const Duration(milliseconds: 300));
+  expect(
+    find.bySemanticsLabel('Pause').hitTestable(),
+    findsOneWidget,
+    reason: 'Pause stays tappable through the scrim (m7-4 8.1)',
+  );
   await shots.take('08a_l2_tutorial_swallow');
   await board.dragMove('r0c0', 'r1c0');
   await board.waitIdle();
@@ -857,7 +954,7 @@ Future<void> _playthrough(
   );
   await tester.pumpFor(const Duration(milliseconds: 400));
   await shots.take('16b_museum_earned');
-  await _openFigurine(tester, 'The Classic Family, collected');
+  await _openFigurine(tester, 'The Classic Family, home in your Museum');
   await shots.take('16c_museum_earned_modal');
   await _closeFigurine(tester);
   await tester.tap(_nav('Home'));
@@ -966,7 +1063,7 @@ Future<void> _playthrough(
   // E3 (frame 10.1, D188): Share sits on the daily win card, above Back to
   // Daily. It is never tapped here: the OS share sheet can't be dismissed
   // from `flutter drive` (the host tests check the text it hands over).
-  final share = find.bySemanticsLabel("Share today's result");
+  final share = find.bySemanticsLabel('Share today’s result');
   expect(share, findsOneWidget);
   await shots.take('09a3_daily_win');
 
@@ -1167,6 +1264,18 @@ Future<void> _playthrough(
   await shots.take('18_bonus_level_pill');
 
   expect(music.service.failedTracks, isEmpty);
+  // E13's clock (after the splash): it saw level 1 playable, and no later
+  // than the loop did.
+  expect(
+    e13.playable,
+    isNotNull,
+    reason: 'E13: the poller saw level 1 playable (${e13.describe()})',
+  );
+  expect(
+    e13.playable! <= loopPlayable,
+    isTrue,
+    reason: 'E13: the app-side mark is not after the loop',
+  );
 }
 
 /// The rival-1 segment (m7-design P2.13, mode-vs-computer.md "Tests →
@@ -1253,17 +1362,18 @@ Future<void> _raceRival1(
     () => board.state.raceLive,
     reason: 'the race running',
   );
-  final solution = Solver.solve(board.state.board).solution!;
-  for (var i = 0; i < solution.length; i++) {
-    await board.move(solution[i].from, solution[i].to);
-    if (i == 1) {
+  await RaceSolver.play(
+    RaceSolver.line(board.state.board),
+    move: board.move,
+    afterMove: (i) async {
+      if (i != 1) return;
       await tester.pumpFor(const Duration(milliseconds: 300));
       expect(find.text('Undo'), findsOneWidget);
       expect(find.text('Restart'), findsOneWidget);
       expect(find.text('Hint'), findsNothing);
       await shots.take('25c_race_running');
-    }
-  }
+    },
+  );
 
   // 9.4 once the winning batch has played: never 2.8's Continue. Two
   // buttons, New race and Rematch (lead note 9).
@@ -1273,7 +1383,13 @@ Future<void> _raceRival1(
     reason: 'the race win card',
   );
   expect(find.byType(WinOverlay), findsNothing);
-  expect(find.text('You won the race!'), findsOneWidget);
+  // The ribbon's title is painted by the Lottie label (m7-4), not a Text.
+  expect(
+    find.byWidgetPredicate(
+      (w) => w is VersusRibbon && w.title == 'You won the race!',
+    ),
+    findsOneWidget,
+  );
   expect(save.document.coins, coinsBefore + 20, reason: 'race_reward_1');
   expect(save.document.race.rivals[0].wins, 1);
   expect(save.document.race.rivals[1].unlocked, isTrue);
@@ -1283,12 +1399,23 @@ Future<void> _raceRival1(
   expect(find.text('New race'), findsOneWidget);
   expect(find.text('Rematch'), findsOneWidget);
   expect(find.text('Back to races'), findsNothing);
+  // m7-4 (`ui_rival_react`): Pebble's portrait nods (`lose`), and the
+  // versus ribbon wears its named fills (4.3).
+  expect(
+    find.descendant(
+      of: find.byType(RaceWinCard),
+      matching: find.byType(RivalReact),
+    ),
+    findsOneWidget,
+  );
   await shots.take('25d_race_win');
   // Past the first_race badge toast (2.5 s, over the card).
   await tester.pumpFor(const Duration(milliseconds: 3000));
 
   // System back is Back to races; the first win's 9.6 card comes first,
-  // once per rival (Q131, D192).
+  // once per rival (Q131, D192), with jingle_reward as it lands. m7-4 4.1:
+  // [Race Button] races the new rival, [Not now] carries on with what was
+  // asked of 9.4 (here Back to races).
   await tester.binding.handlePopRoute();
   await tester.pumpUntil(
     () => find.byType(RivalUnlockedCard).evaluate().isNotEmpty,
@@ -1296,6 +1423,8 @@ Future<void> _raceRival1(
   );
   await tester.pumpFor(const Duration(milliseconds: 500));
   expect(find.text('New rival unlocked!'), findsOneWidget);
+  expect(find.text('Race Button'), findsOneWidget);
+  expect(find.text('Not now'), findsOneWidget);
   expect(
     find.descendant(
       of: find.byType(RivalUnlockedCard),
@@ -1316,6 +1445,16 @@ Future<void> _raceRival1(
   await tester.pumpFor(const Duration(milliseconds: 600));
   expect(find.text('New'), findsOneWidget, reason: 'rival 2, not raced yet');
   expect(find.text('Start'), findsOneWidget);
+  // m7-4 4.5: the New rival is the pick (9.2b).
+  expect(
+    tester
+        .element(find.byType(RivalSelectView))
+        .read<RivalSelectCubit>()
+        .state
+        .data!
+        .selected,
+    2,
+  );
   await shots.take('25f_rival_select_after');
   await _backFrom(tester, RivalSelectPage);
   await tester.pumpUntil(
@@ -1348,19 +1487,147 @@ void _reportE13(
   IntegrationTestWidgetsFlutterBinding binding, {
   required Duration playable,
   required Duration alone,
+  required Duration loopPlayable,
+  required Duration loopAlone,
+  required int? levelsCheckMs,
+  required _E13Poller poller,
 }) {
+  // The bundle's decode and rules check is CPU only and unchanged between
+  // runs, so its time is the host's speed: a quiet iOS simulator takes about
+  // 200 ms and a quiet emulator about 550 ms (5f-startup). Twice that is a
+  // busy host, and E13 is then flagged, not trusted.
+  final quietMs = Platform.isAndroid ? 550 : 200;
+  final noisy = levelsCheckMs == null || levelsCheckMs > 2 * quietMs;
   final data = {
+    // From the 4 ms poller: the app's own time (5f-startup).
     'launchToLevel1PlayableMs': playable.inMilliseconds,
     'launchToLevel1AloneMs': alone.inMilliseconds,
+    // As the test loop saw them, behind the screenshots (the old reading).
+    'loopPlayableMs': loopPlayable.inMilliseconds,
+    'loopAloneMs': loopAlone.inMilliseconds,
+    'levelsCheckMs': levelsCheckMs,
+    'quietLevelsCheckMs': quietMs,
+    'noisy': noisy,
+    // The poller's health: without a reading the two times above are the
+    // loop's, and the test fails at its end.
+    'pollerSaw': poller.playable != null,
+    'pollerTicks': poller.ticks,
+    'pollerErrors': poller.errors,
+    'pollerFirstError': poller.firstError,
   };
   binding.reportData = {...?binding.reportData, 'e13': data};
   // ignore: avoid_print
   print('NESTY_E13 ${jsonEncode(data)}');
 }
 
+/// `[nesty.levels] checked 200 levels in N ms on …` from [logs], or null.
+int? levelsCheckMs(List<String> logs) {
+  final pattern = RegExp(r'\[nesty\.levels\] checked \d+ levels in (\d+) ms');
+  for (final line in logs) {
+    final match = pattern.firstMatch(line);
+    if (match != null) return int.parse(match.group(1)!);
+  }
+  return null;
+}
+
+/// E13's clock: after every frame the app draws, it notes from the app's own
+/// state the first frame level 1 is playable and the first frame the splash
+/// is gone once it was seen. Per frame, not on a timer: a 4 ms timer walked
+/// the tree only every ~38 ms on a busy host and missed level 1's playable
+/// window before the tutorial locks the board (the iPhone, 2026-10-05 gate).
+/// Its finders are unguarded (`evaluate()` and `read`, not `_tester.element`),
+/// which a frame callback may call, and it never throws.
+final class _E13Poller {
+  _E13Poller(this._clock);
+
+  final Stopwatch _clock;
+  bool _running = false;
+  bool _splashSeen = false;
+
+  Duration? playable;
+  Duration? alone;
+
+  /// How many frames it looked at, how often a look threw, and the first.
+  int ticks = 0;
+  int errors = 0;
+  String? firstError;
+
+  String describe() =>
+      'ticks $ticks, errors $errors'
+      '${firstError == null ? '' : ', first: $firstError'}';
+
+  void start() {
+    _running = true;
+    // A persistent callback can't be removed: once stopped it does nothing.
+    SchedulerBinding.instance.addPersistentFrameCallback((_) {
+      if (!_running) return;
+      ticks++;
+      try {
+        _poll();
+      } on Object catch (error) {
+        errors++;
+        firstError ??= '$error';
+      }
+    });
+  }
+
+  void stop() => _running = false;
+
+  void _poll() {
+    final splashUp = find.byType(SplashPage).evaluate().isNotEmpty;
+    if (splashUp) _splashSeen = true;
+    playable ??= _levelOnePlayable() ? _clock.elapsed : null;
+    if (playable != null && _splashSeen && !splashUp) {
+      alone ??= _clock.elapsed;
+    }
+    if (playable != null && alone != null) stop();
+  }
+
+  /// The same condition as `_Board.playable(1)`.
+  bool _levelOnePlayable() {
+    final views = find.byType(GameplayView).evaluate();
+    if (views.isEmpty) return false;
+    final widgets = find.byType(GameWidget<NestyGame>).evaluate();
+    if (widgets.isEmpty) return false;
+    final data = views.first.read<GameplayBloc>().state.data;
+    if (data == null || data.levelNumber != 1) return false;
+    final game = (widgets.first.widget as GameWidget<NestyGame>).game;
+    final timeline = game?.board.timeline;
+    return game != null &&
+        game.geometry != null &&
+        game.skin != null &&
+        timeline != null &&
+        game.board.board == data.board &&
+        timeline.isIdle &&
+        !timeline.inputLocked;
+  }
+}
+
+/// The gameplay skin's landing after a route push (BACKLOG M7, architecture
+/// §4 row 875): [skinLand] from the tap to the level's own skin on the
+/// board, [routeDone] to the route's transition end, as `reportData`
+/// (`skinLand`, kept by `nesty-test` in `playthrough.json`) and a
+/// `NESTY_SKIN_LAND` log line. Recorded, not held to a threshold here: the
+/// device stage judges it against the 400 ms fade.
+void _reportSkinLand(
+  IntegrationTestWidgetsFlutterBinding binding, {
+  required int level,
+  required Duration skinLand,
+  required Duration routeDone,
+}) {
+  final data = {
+    'level': level,
+    'skinLandMs': skinLand.inMilliseconds,
+    'routeDoneMs': routeDone.inMilliseconds,
+  };
+  binding.reportData = {...?binding.reportData, 'skinLand': data};
+  // ignore: avoid_print
+  print('NESTY_SKIN_LAND ${jsonEncode(data)}');
+}
+
 /// Home's chapter card (frame 2.1, Q92): it opens Chapters.
 Future<void> _openChapters(WidgetTester tester) async {
-  await tester.tap(find.bySemanticsLabel(RegExp(r'Opens chapters\.$')));
+  await tester.tap(find.bySemanticsLabel(RegExp(r'Opens Chapters\.$')));
   await tester.pumpUntil(
     () => find.byType(ChaptersPage).evaluate().isNotEmpty,
     reason: 'Chapters from the chapter card',
@@ -1415,6 +1682,19 @@ Future<void> _backFrom(WidgetTester tester, Type page) async {
 /// (m7-design P3.7).
 String _starsLabel(int count) => '$count of 3 stars';
 
+/// The tutorial's HUD (m7-4 8.1, `layout.tutorial`): Pause takes taps
+/// through the scrim's hole, and the step's tip ([step] its chip) sits in
+/// the HUD row, its top above Pause's bottom.
+void _expectTutorialHud(WidgetTester tester, String step) {
+  final pause = find.bySemanticsLabel('Pause');
+  expect(pause.hitTestable(), findsOneWidget, reason: 'Pause through the hole');
+  expect(
+    tester.getTopLeft(find.text(step)).dy,
+    lessThan(tester.getBottomLeft(pause).dy),
+    reason: 'the tip in the HUD row',
+  );
+}
+
 /// `starsFirstTip`, the one-time tip under the first win below 3 stars.
 const String _starTip =
     'Fewer moves earn more stars. Replay any level from Chapters.';
@@ -1445,9 +1725,9 @@ Finder _nav(String label) => find.descendant(
 );
 
 /// A Museum cabinet figurine's modal (frames 6.2, 6.3), by the niche's
-/// screen-reader label (6.1: "The Classic Family, collected", "The Classic
-/// Family, next, chapter 1, 19 levels to go", "Chapter 3, levels 41 to 60,
-/// locked").
+/// screen-reader label (6.1, copy.md m7-4 A11y: "The Classic Family, home in
+/// your Museum", "The Classic Family, next to come home. 19 levels to go.",
+/// "The Baker Family, not home yet. Chapter 3.").
 Future<void> _openFigurine(WidgetTester tester, Pattern label) async {
   await tester.tap(find.bySemanticsLabel(label));
   await tester.pumpUntil(

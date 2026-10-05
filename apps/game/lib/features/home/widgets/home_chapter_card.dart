@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/icons/icon_uses.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/home/stars_chip.dart';
@@ -114,51 +115,48 @@ class HomeChapterCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _OneLine(
+                  Text(
                     kicker,
                     style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 12,
-                      height: 1.1,
-                      letterSpacing: 12 * 0.06,
+                      fontSize: 11,
+                      height: 1,
+                      letterSpacing: context.script.tracking(11 * 0.08),
                       color: bonus
                           ? AppColorTokens.bonusEdge
                           : palette.accentEdge,
                     ),
                   ),
-                  _OneLine(
+                  // textFit.cardsAndSheets: a card's title wraps (the card
+                  // grows) instead of shrinking to a fraction. A `Text`
+                  // rather than `ShrinkToFitText`: the row above asks this
+                  // column for its intrinsic height, which a LayoutBuilder
+                  // can't give.
+                  Text(
                     title,
-                    style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 22,
-                      height: 1.15,
-                      color: AppColorTokens.textPrimary,
+                    style: context.scriptStyle(
+                      AppTextStyleTokens.cardTitle.copyWith(
+                        fontSize: 17,
+                        height: 1.1,
+                        color: AppColorTokens.textPrimary,
+                      ),
+                      role: ScriptTextRole.title,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 6),
-            StarsChip(earned: stars, total: starsPossible, height: 32),
+            StarsChip(
+              earned: stars,
+              total: starsPossible,
+              height: StarsChip.homeHeight,
+              all: bonus,
+            ),
           ],
         ),
       ),
     );
   }
-}
-
-/// One line of text that scales down to its width instead of cutting (a
-/// `FittedBox`, so the row above can still ask for its intrinsic height).
-class _OneLine extends StatelessWidget {
-  const _OneLine(this.data, {required this.style});
-
-  final String data;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) => FittedBox(
-    fit: BoxFit.scaleDown,
-    alignment: AlignmentDirectional.centerStart,
-    child: Text(data, style: style, maxLines: 1, softWrap: false),
-  );
 }
 
 /// Home's Records button (frame 2.1, `layout.home.recordsButton`): 62 wide,
@@ -209,9 +207,11 @@ class HomeRecordsButton extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
+              // NestyHub:26: Fredoka 700 11, `#6E4526`.
               style: AppTextStyleTokens.cardTitle.copyWith(
-                fontSize: 12,
-                color: AppColorTokens.textPrimary,
+                fontSize: 11,
+                height: 1,
+                color: AppColorTokens.iconBrown,
               ),
               maxLines: 1,
               softWrap: false,

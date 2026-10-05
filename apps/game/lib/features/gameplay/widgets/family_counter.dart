@@ -22,8 +22,10 @@ import 'package:nesty_game/features/gameplay/game/timeline/fx_placement.dart';
 ///
 /// It hugs its text (E.18; `layout.hud.familyCounter`): the pill is
 /// [hugWidth] wide (padding 10 + doll icon 12 + gap 5 + the label + padding
-/// 10: 64 for "4 / 4", 78 for "12 / 12"), so the file's 70 dp pill is scaled
-/// evenly to that width, within [minHug]–[maxHug].
+/// 10: 64 for "4 / 4", 78 for "12 / 12"). The file's pill takes that width
+/// as it is, at any width: `pill_rect` and `glow_rect` resized and the doll
+/// mark moved with them (LOTTIE.md "Tint and width"; m7-4 4.14), with no
+/// scale on the whole counter.
 ///
 /// The widget is the file's 120×60 canvas; the counter's centre is the
 /// canvas centre (LOTTIE.md: (60, 30) = (195, 129) on the reference
@@ -53,10 +55,6 @@ class FamilyCounter extends StatefulWidget {
 
   /// The file's own pill width (`FamilyCounterPillPainter`: 70×26).
   static const double filePillWidth = 70;
-
-  /// How far the file's pill scales to hug a label.
-  static const double minHug = 0.9;
-  static const double maxHug = 1.2;
 
   /// The label's text style for measuring (`LottieLabelStyles.familyCounter`:
   /// Fredoka 700 13).
@@ -149,8 +147,8 @@ class _FamilyCounterState extends State<FamilyCounter> {
     final l10n = context.localizations;
     final label = l10n.familyCounter(widget.done, widget.total);
     final previous = _previous;
-    final hug = (FamilyCounter.hugWidth(label) / FamilyCounter.filePillWidth)
-        .clamp(FamilyCounter.minHug, FamilyCounter.maxHug);
+    final pillWidth = FamilyCounter.hugWidth(label);
+    _controller.params.pillWidth = pillWidth;
     final counter = LottieTextOverlay(
       label: label,
       style: LottieLabelStyles.familyCounter,
@@ -163,7 +161,9 @@ class _FamilyCounterState extends State<FamilyCounter> {
         previousLabel: previous == null
             ? null
             : l10n.familyCounter(previous, widget.total),
-        fallback: const CustomPaint(painter: FamilyCounterPillPainter()),
+        fallback: CustomPaint(
+          painter: FamilyCounterPillPainter(pillWidth: pillWidth),
+        ),
       ),
     );
     // The counter sizes the stack and keeps its place in it, so the
@@ -176,9 +176,9 @@ class _FamilyCounterState extends State<FamilyCounter> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // The pill hugs its label; the sparkle stays 1.5× the trail's, on
-        // the counter's centre.
-        Transform.scale(scale: hug, child: counter),
+        // The pill hugs its label at its own width; the sparkle stays 1.5×
+        // the trail's, on the counter's centre.
+        counter,
         if (_sparkling)
           Positioned(
             left: center.dx - spec.anchor.dx * scale,
@@ -204,7 +204,12 @@ class _FamilyCounterState extends State<FamilyCounter> {
 /// the file's own 70×26 walnut pill and cream doll icon at the canvas
 /// centre, scaled with the canvas; the label is drawn over it.
 class FamilyCounterPillPainter extends CustomPainter {
-  const FamilyCounterPillPainter();
+  const FamilyCounterPillPainter({
+    this.pillWidth = FamilyCounter.filePillWidth,
+  });
+
+  /// The pill's width (the file's 70 unless the label needs more).
+  final double pillWidth;
 
   static final Paint _pill = Paint()..color = const Color(0xFF7B4824);
   static final Paint _edge = Paint()..color = const Color(0xFF4E2C14);
@@ -219,9 +224,10 @@ class FamilyCounterPillPainter extends CustomPainter {
       ..save()
       ..scale(sx, sy)
       ..translate(60, 30);
+    final iconX = -pillWidth / 2 + 14;
     // NestyBoard: `0 3px 0 #4E2C14, 0 0 0 2px #FFF4E0` around a 13-radius
     // pill.
-    const pill = Rect.fromLTWH(-35, -13, 70, 26);
+    final pill = Rect.fromLTWH(-pillWidth / 2, -13, pillWidth, 26);
     canvas
       ..drawRRect(
         RRect.fromRectAndRadius(pill.inflate(2), const Radius.circular(15)),
@@ -238,15 +244,12 @@ class FamilyCounterPillPainter extends CustomPainter {
         RRect.fromRectAndRadius(pill, const Radius.circular(13)),
         _pill,
       )
-      // The file's icon: a head of 8 over an 11×11 body, at (−21, 0).
-      ..drawCircle(const Offset(-21, -4.5), 4, _icon)
+      // The file's icon: a head of 8 over an 11×11 body, 14 in from the
+      // pill's left edge ((−21, 0) at the file's 70).
+      ..drawCircle(Offset(iconX, -4.5), 4, _icon)
       ..drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(
-            center: const Offset(-21, 3.5),
-            width: 11,
-            height: 11,
-          ),
+          Rect.fromCenter(center: Offset(iconX, 3.5), width: 11, height: 11),
           const Radius.circular(5),
         ),
         _icon,
@@ -255,5 +258,6 @@ class FamilyCounterPillPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(FamilyCounterPillPainter oldDelegate) => false;
+  bool shouldRepaint(FamilyCounterPillPainter oldDelegate) =>
+      oldDelegate.pillWidth != pillWidth;
 }

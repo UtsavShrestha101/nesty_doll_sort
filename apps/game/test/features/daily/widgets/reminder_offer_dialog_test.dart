@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoDatePicker;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,12 +16,15 @@ import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/system_settings/fake_system_settings_service.dart';
 import 'package:nesty_game/features/daily/cubit/reminder_offer_cubit.dart';
 import 'package:nesty_game/features/daily/widgets/reminder_offer_dialog.dart';
+import 'package:nesty_game/features/daily/widgets/reminder_time_picker.dart';
 
+import '../../../core/ui/support/ui_harness.dart' show loadBundledFonts;
 import '../../support/screen_harness.dart';
 
 /// The one-time reminder offer (E4; frames 10.2, 10.2c, 10.2d; ui-spec-menus
 /// §6.2; phase 4 architecture §3.9).
 void main() {
+  setUpAll(loadBundledFonts);
   late FakeDatabaseService settings;
   late FakeNotificationService notifications;
   late FakeDailyService daily;
@@ -129,9 +133,142 @@ void main() {
     await pumpDialog(tester);
     await settle(tester);
     expect(
-      find.bySemanticsLabel(RegExp(r'Every day at .*, Change time')),
+      find.bySemanticsLabel(
+        RegExp(r'Reminder time, every day at .*\. Change time\.'),
+      ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the head is Fredoka 700 24/1.15 and balanced: no one-word last '
+      'line (frames 10.2, 10.2d; text-wrap: balance)', (tester) async {
+    await pumpDialog(tester);
+    await settle(tester);
+    final head = tester.widget<Text>(find.text(title));
+    expect(head.style?.fontSize, 24);
+    expect(head.style?.fontWeight, FontWeight.w700);
+    expect(head.style?.height, 1.15);
+    final paragraph = tester.renderObject<RenderParagraph>(find.text(title));
+    final lines = paragraph.getBoxesForSelection(
+      const TextSelection(baseOffset: 0, extentOffset: title.length),
+    );
+    final tops = lines.map((b) => b.top.round()).toSet();
+    expect(tops, hasLength(3));
+    double widest(int top) => lines
+        .where((b) => b.top.round() == top)
+        .map((b) => b.right - b.left)
+        .fold(0, (a, b) => a + b);
+    final widths = tops.map(widest).toList();
+    final spread =
+        widths.reduce((a, b) => a > b ? a : b) -
+        widths.reduce((a, b) => a < b ? a : b);
+    expect(spread, lessThan(80));
+  });
+
+  testWidgets('iOS opens the wheel sheet: Cancel, "Reminder time", Done; Done '
+      'returns the wheel\'s time (frame 10.2b)', (tester) async {
+    TimeOfDay? result;
+    await pumpScreen(
+      tester,
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: () async => result = await showReminderTimePicker(
+            context,
+            initial: const TimeOfDay(hour: 19, minute: 0),
+            platform: TargetPlatform.iOS,
+          ),
+          child: const Text('open'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CupertinoDatePicker), findsOneWidget);
+    expect(find.text('Reminder time'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(result, const TimeOfDay(hour: 19, minute: 0));
+  });
+
+  testWidgets('iOS wheel: Cancel returns null', (tester) async {
+    var called = false;
+    TimeOfDay? result = const TimeOfDay(hour: 1, minute: 1);
+    await pumpScreen(
+      tester,
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: () async {
+            result = await showReminderTimePicker(
+              context,
+              initial: const TimeOfDay(hour: 19, minute: 0),
+              platform: TargetPlatform.iOS,
+            );
+            called = true;
+          },
+          child: const Text('open'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(called, isTrue);
+    expect(result, isNull);
+  });
+
+  testWidgets('iOS wheel: a dragged wheel then Done returns the new time', (
+    tester,
+  ) async {
+    TimeOfDay? result;
+    await pumpScreen(
+      tester,
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: () async => result = await showReminderTimePicker(
+            context,
+            initial: const TimeOfDay(hour: 19, minute: 0),
+            platform: TargetPlatform.iOS,
+          ),
+          child: const Text('open'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    final picker = tester.getRect(find.byType(CupertinoDatePicker));
+    await tester.dragFrom(
+      Offset(picker.left + picker.width * 0.3, picker.center.dy),
+      const Offset(0, -80),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(result, isNotNull);
+    expect(result, isNot(const TimeOfDay(hour: 19, minute: 0)));
+  });
+
+  testWidgets('elsewhere the Material dial opens, titled "Reminder time"', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: () => showReminderTimePicker(
+            context,
+            initial: const TimeOfDay(hour: 19, minute: 0),
+            platform: TargetPlatform.android,
+          ),
+          child: const Text('open'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CupertinoDatePicker), findsNothing);
+    expect(find.text('Reminder time'), findsOneWidget);
   });
 
   testWidgets('a tap on the scrim does nothing', (tester) async {

@@ -88,6 +88,10 @@ class AssetSkinService implements SkinService {
   final Set<SkinRasterizer> _retired = Set.identity();
   SymbolAtlas? _atlas;
   BoardSpriteLibrary? _board;
+
+  /// Chapters 7 to 10's own board wood (m7-4 A.5), loaded the first time a
+  /// level of that theme is prepared; the libraries live to [dispose].
+  final Map<String, Future<BoardSpriteLibrary?>> _themedBoards = {};
   ThemeBackground? _background;
   bool _disposed = false;
   final StreamController<String> _selectedSkinChanges =
@@ -251,19 +255,52 @@ class AssetSkinService implements SkinService {
     }
   }
 
+  /// The board library for [themeId]: the chapter's own wood when its
+  /// `boardArt` has one, else the shared board. Never throws.
+  Future<BoardSpriteLibrary?> _boardFor(String? themeId) async {
+    final shared = _board;
+    if (themeId == null) return shared;
+    String? dir;
+    for (final theme in ChapterThemeTokens.chapters) {
+      if (theme.id == themeId) dir = theme.boardArtDir;
+    }
+    if (dir == null || dir == 'board/') return shared;
+    final themed = await _themedBoards.putIfAbsent(themeId, () async {
+      try {
+        return await BoardSpriteLibrary.load(
+          _bundle,
+          themedPath: 'assets/${dir!.replaceFirst(RegExp(r'/$'), '')}',
+          onError: (error, stack) =>
+              _log('a themed board sprite', error, stack),
+        );
+      } on Object catch (error, stack) {
+        _log('the $themeId board wood did not load', error, stack);
+        return null;
+      }
+    });
+    if (_disposed) return null;
+    return themed ?? shared;
+  }
+
   @override
   Future<LevelSkin> prepareForLevel(
     Level level, {
     required BoardGeometry geometry,
     required double devicePixelRatio,
     required DollSymbols symbols,
+    String? themeId,
   }) async {
     await load();
     final dpr = devicePixelRatio.isFinite && devicePixelRatio > 0
         ? devicePixelRatio
         : 1.0;
     final parts = await _prepareParts(level, geometry, dpr, symbols);
-    final sprites = await _prepareSprites(level, geometry, dpr);
+    final sprites = await _prepareSprites(
+      level,
+      geometry,
+      dpr,
+      await _boardFor(themeId),
+    );
     final unlocks = await _prepareUnlockSymbols(level, geometry, dpr);
     // The renderer owns what it is given, the skin keeps its own handles.
     final DollRenderer renderer = parts != null
@@ -424,8 +461,8 @@ class AssetSkinService implements SkinService {
     Level level,
     BoardGeometry geometry,
     double dpr,
+    BoardSpriteLibrary? library,
   ) async {
-    final library = _board;
     if (library == null || _disposed) return null;
     final sprites = BoardSprites(
       library,
@@ -519,6 +556,10 @@ class AssetSkinService implements SkinService {
     _retired.clear();
     _atlas?.dispose();
     _board?.dispose();
+    for (final themed in _themedBoards.values) {
+      unawaited(themed.then((library) => library?.dispose()));
+    }
+    _themedBoards.clear();
     _background?.dispose();
     _skin = null;
     _atlas = null;

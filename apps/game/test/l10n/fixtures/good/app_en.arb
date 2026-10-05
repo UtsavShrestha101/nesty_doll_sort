@@ -1,0 +1,115 @@
+{
+  "@@locale": "en",
+  "appName": "Nesty",
+  "play": "Play",
+  "@play": {
+    "description": "A button."
+  },
+  "coins": "{count, plural, =1{1 coin} other{{count} coins}}",
+  "@coins": {
+    "description": "Coins.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chaptersStarsSemantics": "{count, plural, =1{1 star of {total}} other{{count} stars of {total}}}",
+  "@chaptersStarsSemantics": {
+    "description": "Stars.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "greeting": "Hello {name}",
+  "@greeting": {
+    "description": "Hi.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pick": "{id, select, a{Alpha} b{Beta} other{}}",
+  "@pick": {
+    "description": "A select.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "raceRivalName": "{number, plural, =1{Pebble} =2{Button} other{Comet}}",
+  "@raceRivalName": {
+    "description": "Rivals.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "chaptersKicker": "LEVELS {first}–{last}",
+  "@chaptersKicker": {
+    "description": "A range.",
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyStreakKeep": "Play today to add to your streak",
+  "@dailyStreakKeep": {
+    "description": "Streak."
+  },
+  "raceLossTitle": "So close!",
+  "@raceLossTitle": {
+    "description": "Loss."
+  },
+  "raceComputerTag": "Computer",
+  "@raceComputerTag": {
+    "description": "Tag."
+  },
+  "raceStripThinking": "Thinking…",
+  "@raceStripThinking": {
+    "description": "Strip."
+  },
+  "badgeHint": "{badge, select, first_family{Nest a whole family.} first_race{Beat the computer in a race.} other{}}",
+  "@badgeHint": {
+    "description": "Badges.",
+    "placeholders": {
+      "badge": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderNotificationBody": "A new puzzle is waiting for you.",
+  "@reminderNotificationBody": {
+    "description": "Reminder."
+  },
+  "winStarsTarget": "{count} moves for 3 stars",
+  "@winStarsTarget": {
+    "description": "Stars.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "raceWinBody": "Every family is complete. {rival} was still sorting.",
+  "@raceWinBody": {
+    "description": "Win.",
+    "placeholders": {
+      "rival": {
+        "type": "String"
+      }
+    }
+  }
+}

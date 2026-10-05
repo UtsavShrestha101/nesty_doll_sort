@@ -47,6 +47,17 @@ const _boardSprites = [
   'tower-base-blank',
 ];
 
+/// Chapters 7–10's own wood (m7-4 A.5): `assets/board/chNN/<name>.svg`.
+final _themedBoardSprites = [
+  for (var ch = 7; ch <= 10; ch++)
+    for (final name in const [
+      'shelf-plank',
+      'slot-stand-blank',
+      'tower-base-blank',
+    ])
+      'ch${ch.toString().padLeft(2, '0')}/$name',
+];
+
 /// The M7 UI art (design m7-3, synced from design/ui/ by
 /// `sync_design_assets`): every file the app draws, by folder.
 final _uiArt = {
@@ -198,7 +209,14 @@ void main() {
       final uiArt = _uiArt.values.fold(0, (n, files) => n + files.length);
       expect(
         svgs,
-        hasLength(_skins.length + 11 + _boardSprites.length + 10 + uiArt),
+        hasLength(
+          _skins.length +
+              11 +
+              _boardSprites.length +
+              _themedBoardSprites.length +
+              10 +
+              uiArt,
+        ),
       );
       for (final path in svgs) {
         final svg = await rootBundle.loadString(path);
@@ -214,6 +232,7 @@ void main() {
   test('board sprites and the ten chapter themes ship', () {
     expectAssets([
       for (final name in _boardSprites) 'assets/board/$name.svg',
+      for (final name in _themedBoardSprites) 'assets/board/$name.svg',
       for (var ch = 1; ch <= 10; ch++)
         'assets/themes/ch${ch.toString().padLeft(2, '0')}/background.svg',
     ]);
@@ -358,16 +377,21 @@ void main() {
     };
     expect(
       families,
-      containsAll(<String>[
+      containsAll(<String>{
         AppFontTokens.displayFamily,
         AppFontTokens.bodyFamily,
         NestyIcons.fontFamily,
-      ]),
+        // Every family a fallback list names is bundled.
+        ...AppFontTokens.displayFallback,
+        ...AppFontTokens.bodyFallback,
+      }),
     );
     expectAssets([
       'assets/fonts/Fredoka-OFL.txt',
       'assets/fonts/Nunito-OFL.txt',
       'assets/fonts/MaterialSymbols-LICENSE.txt',
+      'assets/fonts/Baloo2-OFL.txt',
+      'assets/fonts/MPLUSRounded1c-OFL.txt',
     ]);
   });
 

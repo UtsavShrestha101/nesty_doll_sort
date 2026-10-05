@@ -55,8 +55,8 @@ class _DayCell extends StatelessWidget {
     final String label;
     if (done && !isChest) {
       style = const SurfaceStyle(
-        color: AppColors.dayDoneFace,
-        shadows: [NestyShadow(color: AppColors.dayDoneRing, inset: true)],
+        color: AppColorTokens.dayDoneFace,
+        shadows: [NestyShadow(color: AppColorTokens.dayDoneRing, inset: true)],
       );
       dot = AppColorTokens.success;
       icon = const Color(0xFFFFFFFF);
@@ -67,11 +67,11 @@ class _DayCell extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.dayTodayTop, AppColorTokens.primary],
+          colors: [AppColorTokens.dayTodayTop, AppColorTokens.primary],
         ),
         shadows: [NestyShadow(color: AppColorTokens.primaryEdge, dy: 5)],
       );
-      dot = AppColors.cream;
+      dot = AppColorTokens.cream;
       icon = AppColorTokens.primary;
       glyph = NestyIcons.playArrow;
       label = l10n.dailyToday;
@@ -79,29 +79,33 @@ class _DayCell extends StatelessWidget {
       style = done
           ? const SurfaceStyle(
               gradient: AppGradientTokens.daily,
-              shadows: [NestyShadow(color: AppColors.dayChestOpenEdge, dy: 5)],
+              shadows: [NestyShadow(color: AppColorTokens.dayOpenEdge, dy: 5)],
             )
           : const SurfaceStyle(
-              color: AppColors.dayChestPendingFace,
+              color: AppColorTokens.dayChestFace,
               shadows: [
-                NestyShadow(color: AppColors.dayChestPendingRing, inset: true),
+                NestyShadow(color: AppColorTokens.dayChestRing, inset: true),
               ],
             );
-      dot = done ? AppColors.dayChestOpenDot : AppColors.dayChestPendingDot;
-      icon = AppColors.dayChestPendingIcon;
+      dot = done ? AppColorTokens.dayOpenDot : AppColorTokens.dayChestDot;
+      icon = AppColorTokens.coinText;
       glyph = NestyIcons.redeem;
       label = l10n.dailyDay;
     } else {
       style = const SurfaceStyle(
-        color: AppColors.dayLockedFace,
-        shadows: [NestyShadow(color: AppColors.dayLockedRing, inset: true)],
+        color: AppColorTokens.dayFutureFace,
+        shadows: [
+          NestyShadow(color: AppColorTokens.dayFutureRing, inset: true),
+        ],
       );
-      dot = AppColors.dayLockedDot;
-      icon = AppColors.dayLockedIcon;
+      dot = AppColorTokens.dayFutureDot;
+      icon = AppColorTokens.dayFutureGlyph;
       glyph = NestyIcons.lock;
       label = isTomorrow ? l10n.dailyTomorrow : l10n.dailyDay;
     }
-    final textColor = isToday ? const Color(0xFFFFFFFF) : AppColors.textBrown;
+    final textColor = isToday
+        ? const Color(0xFFFFFFFF)
+        : AppColorTokens.textBrown;
     // One ARB sentence per state (RULES-2), so a locale can reorder it and
     // a screen reader says "Tomorrow" where the strip prints "Tmrw".
     final semanticsState = isChest

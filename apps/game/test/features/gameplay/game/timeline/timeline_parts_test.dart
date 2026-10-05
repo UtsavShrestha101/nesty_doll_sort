@@ -219,6 +219,18 @@ void main() {
   });
 
   group('WinOverlaySchedule', () {
+    test('the coin count-up runs coins@700 to the stars at 1300 (A-CNT)', () {
+      expect(WinOverlaySchedule.winCountUpMs, 600);
+      final s = WinOverlaySchedule.of(MotionSpec.standard, families: 3);
+      expect(
+        s.countUpStartMs + WinOverlaySchedule.winCountUpMs,
+        s.starsStartMs,
+      );
+      expect(s.starsStartMs, 1300);
+      final r = WinOverlaySchedule.of(MotionSpec.reduced, families: 3);
+      expect(r.starsStartMs, 650);
+    });
+
     test('frame 2.8 from the files: win @0, coins and burst @700', () {
       final s = WinOverlaySchedule.of(MotionSpec.standard, families: 3);
       expect(s.cues, const [

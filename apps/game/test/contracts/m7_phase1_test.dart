@@ -138,6 +138,7 @@ void main() {
         FakeDailyService(FakeClock()),
         FakeCatalogRepository(),
         config,
+        FakeDatabaseService(),
       );
       addTearDown(cubit.close);
       await cubit.load();

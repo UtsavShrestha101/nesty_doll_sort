@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nesty_game/core/extensions/a11y_join_extension.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 
@@ -57,7 +58,7 @@ class WinMovesChip extends StatelessWidget {
       ),
     );
     return Semantics(
-      label: newBest ? '$text. ${l10n.winStarsNewBest}' : text,
+      label: newBest ? l10n.joinSentences([text, l10n.winStarsNewBest]) : text,
       excludeSemantics: true,
       child: Stack(
         clipBehavior: Clip.none,
@@ -129,9 +130,9 @@ class WinNotePill extends StatelessWidget {
       child: Padding(
         padding: WinStarsTokens.notePillPadding,
         child: Center(
-          child: Text(
+          // `text-wrap: balance` (frame 11.2): two even lines, no orphan.
+          child: BalancedText(
             text,
-            textAlign: TextAlign.center,
             style: WinStarsTokens.notePillText.copyWith(height: 1.3),
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
+import 'package:nesty_game/features/fx/spinner_pulse.dart';
 
 /// "Setting up the shelves…" while a generated request (a bonus level, the
 /// daily) resolves behind the level just left (frame 12.5; `layout.
@@ -14,7 +15,8 @@ import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 ///
 /// It absorbs touches over the board, but not over the Pause button, which
 /// stays reachable (the top-left corner). One live, busy node for screen
-/// readers. Under reduced motion the spinner rests on frame 0.
+/// readers. Under reduced motion the spinner rests on frame 0 and pulses its
+/// opacity 1 → 0.45 → 1 over 1,600 ms (`motion.spinner`, m7-4 4.17).
 class GeneratingOverlay extends StatefulWidget {
   const GeneratingOverlay({this.library, super.key});
 
@@ -121,14 +123,16 @@ class _GeneratingOverlayState extends State<GeneratingOverlay> {
                         children: [
                           SizedBox.square(
                             dimension: GeneratingTokens.spinnerSize,
-                            child: LottieFxView(
-                              id: FxId.uiSpinner,
-                              controller: _spinner,
-                              library: widget.library,
-                              fallback: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3,
-                                  color: AppColorTokens.primary,
+                            child: SpinnerPulse(
+                              child: LottieFxView(
+                                id: FxId.uiSpinner,
+                                controller: _spinner,
+                                library: widget.library,
+                                fallback: const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    color: AppColorTokens.primary,
+                                  ),
                                 ),
                               ),
                             ),

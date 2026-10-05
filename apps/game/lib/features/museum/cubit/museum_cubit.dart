@@ -92,8 +92,7 @@ class MuseumCubit extends BaseAsyncCubit<MuseumState> {
     required Map<String, LocalDate> collectedDates,
     required bool isNext,
   }) {
-    final start = (chapter.number - 1) * chapter.levels + 1;
-    final done = (document.currentLevel - start).clamp(0, chapter.levels);
+    final done = chapter.doneAt(document.currentLevel);
     // D111 (the owner's simulator review, 2026-09-28): the dev "Jump to a
     // level" sheet (and anything else that moves `currentLevel`/
     // `highestLevel` without going through a normal win) never appends to

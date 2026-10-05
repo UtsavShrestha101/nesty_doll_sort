@@ -21,6 +21,8 @@ class ShopBuyButton extends StatelessWidget {
     this.radius = 16,
     this.edge = 5,
     this.labelSize = 24,
+    this.plainPriceSize,
+    this.plainCoinSize,
     super.key,
   });
 
@@ -34,6 +36,14 @@ class ShopBuyButton extends StatelessWidget {
   final double edge;
   final double labelSize;
 
+  /// A grid card's button (NestyShop:41-44, :71-74): no translucent chip,
+  /// just the coin and the price in Fredoka 700 at this size (15 on a skin,
+  /// 13 on a theme). Null draws the detail page's chip.
+  final double? plainPriceSize;
+
+  /// The coin's size beside a plain price (18 on a skin, 15 on a theme).
+  final double? plainCoinSize;
+
   static const _variant = TactileButtonVariant.primary;
 
   @override
@@ -42,7 +52,7 @@ class ShopBuyButton extends StatelessWidget {
     final enabled = onPressed != null;
     final foreground = enabled
         ? ShopTokens.buyCoinChipText.color!
-        : AppColors.disabledText;
+        : AppColorTokens.disabledText;
     final label = this.label;
     return TactileSurface(
       style: _variant.surface(edge),
@@ -79,36 +89,50 @@ class ShopBuyButton extends StatelessWidget {
               ),
               const SizedBox(width: 10),
             ],
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: enabled ? ShopTokens.buyCoinChipFace : null,
-                borderRadius: BorderRadius.circular(
-                  ShopTokens.buyCoinChipRadius,
+            if (plainPriceSize case final priceSize?)
+              _priceRow(enabled, foreground, priceSize, plainCoinSize ?? 18)
+            else
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: enabled ? ShopTokens.buyCoinChipFace : null,
+                  borderRadius: BorderRadius.circular(
+                    ShopTokens.buyCoinChipRadius,
+                  ),
+                ),
+                child: Padding(
+                  padding: ShopTokens.buyCoinChipPadding,
+                  child: _priceRow(
+                    enabled,
+                    foreground,
+                    ShopTokens.buyCoinChipText.fontSize!,
+                    ShopTokens.buyCoinChipCoinSize,
+                  ),
                 ),
               ),
-              child: Padding(
-                padding: ShopTokens.buyCoinChipPadding,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CoinIcon(
-                      size: ShopTokens.buyCoinChipCoinSize,
-                      disabled: !enabled,
-                    ),
-                    const SizedBox(width: 6),
-                    NestyNumberText(
-                      price,
-                      style: ShopTokens.buyCoinChipText.copyWith(
-                        color: foreground,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
+
+  Widget _priceRow(
+    bool enabled,
+    Color foreground,
+    double fontSize,
+    double coinSize,
+  ) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      CoinIcon(size: coinSize, disabled: !enabled),
+      SizedBox(width: plainPriceSize == null ? 6 : 5),
+      NestyNumberText(
+        price,
+        style: ShopTokens.buyCoinChipText.copyWith(
+          fontSize: fontSize,
+          height: 1,
+          color: foreground,
+        ),
+      ),
+    ],
+  );
 }

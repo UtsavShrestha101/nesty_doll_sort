@@ -118,9 +118,11 @@ class SettingsCubit extends BaseAsyncCubit<SettingsState> {
   }
 
   /// The reminder time row: `showTimePicker`'s new hour and minute.
-  Future<void> setReminderTime({required int hour, required int minute}) async {
-    await _reminder.setTime(hour: hour, minute: minute);
+  /// False when the time could not be stored.
+  Future<bool> setReminderTime({required int hour, required int minute}) async {
+    final stored = await _reminder.setTime(hour: hour, minute: minute);
     _applyReminderStatus();
+    return stored;
   }
 
   void _applyReminderStatus() {

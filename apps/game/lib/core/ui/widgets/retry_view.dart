@@ -6,6 +6,7 @@ import 'package:nesty_game/core/ui/widgets/buttons/tactile_button.dart';
 import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_styles.dart';
+import 'package:nesty_game/core/ui/widgets/text/balanced_text.dart';
 
 /// The tone of an [ErrorCard]'s icon disc (ui-spec-game §1 "ErrorCard"):
 /// the warm orange of the game's own failures, or section 09's indigo for a
@@ -90,6 +91,7 @@ class ErrorCard extends StatelessWidget {
   /// The head's 24 dp Fredoka, line 1.15 (`balance` wraps it in two).
   static const TextStyle headStyle = TextStyle(
     fontFamily: 'Fredoka',
+    fontFamilyFallback: AppFontTokens.displayFallback,
     fontSize: 24,
     fontWeight: FontWeight.w700,
     height: 1.15,
@@ -99,6 +101,7 @@ class ErrorCard extends StatelessWidget {
   /// Nunito 600 16/23 `#7A5234`.
   static const TextStyle bodyStyle = TextStyle(
     fontFamily: 'Nunito',
+    fontFamilyFallback: AppFontTokens.bodyFallback,
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 23 / 16,
@@ -141,10 +144,14 @@ class ErrorCard extends StatelessWidget {
             Semantics(
               header: true,
               liveRegion: true,
-              child: Text(title, textAlign: TextAlign.center, style: headStyle),
+              child: BalancedText(title, style: headStyle),
             ),
             const SizedBox(height: 8),
-            Text(body, textAlign: TextAlign.center, style: bodyStyle),
+            Text(
+              bindLastWord(body),
+              textAlign: TextAlign.center,
+              style: bodyStyle,
+            ),
             const SizedBox(height: 18),
             TactileButton(
               key: primaryKey,

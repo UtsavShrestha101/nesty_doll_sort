@@ -213,9 +213,11 @@ final class _Bundle extends CachingAssetBundle {
   _Bundle(this.blocked);
 
   final bool Function(String key) blocked;
+  final List<String> loaded = [];
 
   @override
   Future<ByteData> load(String key) async {
+    loaded.add(key);
     if (blocked(key)) throw StateError('Unable to load asset: $key');
     return rootBundle.load(key);
   }
@@ -462,6 +464,48 @@ void main() {
     expect(parts.boards, hasLength(2));
     expect(parts.boards, everyElement(isA<BoardSpriteLibrary>()));
     expect(parts.boards.first, same(parts.boards.last));
+  });
+
+  test('chapter 7 to 10 levels draw their own board wood (m7-4 A.5): the '
+      'stand, tower base and plank come from board/chNN, the rest is '
+      'shared; other themes load none', () async {
+    final bundle = _Bundle((_) => false);
+    final service = AssetSkinService(
+      FakeSaveService(),
+      parts: _FakeParts(),
+      bundle: bundle,
+    );
+    addTearDown(service.dispose);
+    Future<void> run(String? themeId) async {
+      final skin = await service.prepareForLevel(
+        tutorial,
+        geometry: _geometryOf(tutorial),
+        devicePixelRatio: 2,
+        symbols: DollSymbols.subtle,
+        themeId: themeId,
+      );
+      skin.dispose();
+    }
+
+    await run('ch03');
+    expect(bundle.loaded.where((k) => k.contains('/board/ch')), isEmpty);
+    await run('ch07');
+    expect(bundle.loaded.where((k) => k.contains('/board/ch07/')).toSet(), {
+      'assets/board/ch07/slot-stand-blank.svg',
+      'assets/board/ch07/tower-base-blank.svg',
+      'assets/board/ch07/shelf-plank.svg',
+    });
+    expect(
+      bundle.loaded,
+      isNot(contains('assets/board/ch07/glass-case-0.svg')),
+    );
+    // Loaded once per theme.
+    final before = bundle.loaded.length;
+    await run('ch07');
+    expect(
+      bundle.loaded.skip(before).where((k) => k.contains('/board/ch07/')),
+      isEmpty,
+    );
   });
 
   test('a missing wood blank reaches the part rasters as unavailable, so '

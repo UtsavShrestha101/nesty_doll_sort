@@ -7,6 +7,7 @@ import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -67,6 +68,7 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
           context.router.root.push(GameplayRoute(request: request)),
         ),
         onDaily: () => unawaited(context.router.root.push(const DailyRoute())),
+        onRelitGlowEnd: context.read<HomeCubit>().relitGlowFinished,
         onMuseum: () =>
             context.tabsRouter.setActiveIndex(MainShellPage.museumIndex),
         onChapters: () =>
@@ -106,6 +108,7 @@ class HomeView extends StatefulWidget {
     required this.onRetry,
     required this.onPlay,
     required this.onDaily,
+    this.onRelitGlowEnd,
     required this.onMuseum,
     required this.onShop,
     required this.onSettings,
@@ -124,6 +127,9 @@ class HomeView extends StatefulWidget {
   final VoidCallback onRetry;
   final ValueChanged<PlayRequest> onPlay;
   final VoidCallback onDaily;
+
+  /// The relit glow ran out (`HomeCubit.relitGlowFinished`).
+  final VoidCallback? onRelitGlowEnd;
   final VoidCallback onMuseum;
   final ValueChanged<ShopTab> onShop;
   final VoidCallback onSettings;
@@ -348,6 +354,7 @@ class _HomeViewState extends State<HomeView> {
                 home: home,
                 height: layout.tilesHeight,
                 onDaily: widget.onDaily,
+                onRelitGlowEnd: widget.onRelitGlowEnd,
                 onRemoveAds: () => widget.onShop(ShopTab.noAds),
                 onVsComputer: widget.onVsComputer,
               ),
@@ -605,6 +612,7 @@ class _TilesRow extends StatelessWidget {
     required this.home,
     required this.height,
     required this.onDaily,
+    required this.onRelitGlowEnd,
     required this.onRemoveAds,
     required this.onVsComputer,
   });
@@ -612,6 +620,7 @@ class _TilesRow extends StatelessWidget {
   final HomeState home;
   final double height;
   final VoidCallback onDaily;
+  final VoidCallback? onRelitGlowEnd;
 
   /// Opens the Shop's No Ads tab (m3-design §10.3).
   final VoidCallback onRemoveAds;
@@ -641,15 +650,24 @@ class _TilesRow extends StatelessWidget {
             ),
             label: l10n.homeDailyTile,
             footer: locked
-                ? Text(l10n.homeDailyLocked, style: _footerStyle)
+                ? Text(
+                    l10n.homeDailyLocked(DailyService.unlockAfterLevel),
+                    style: _footerStyle,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                  )
                 : null,
             // Frame 12.2: a streak of 0 still draws its unlit flame.
-            badge: StreakBadge(days: streak, look: look),
+            badge: StreakBadge(
+              days: streak,
+              look: look,
+              onRelitGlowEnd: onRelitGlowEnd,
+            ),
             locked: locked,
             // The footer says why it is locked; the tile's node reads it
             // too (review R15). An open tile reads its streak.
             semanticValue: locked
-                ? l10n.homeDailyLocked
+                ? l10n.homeDailyLocked(DailyService.unlockAfterLevel)
                 : switch (look) {
                     StreakLook.zero => null,
                     StreakLook.paused => l10n.streakBadgeSemanticsPaused(
@@ -688,10 +706,11 @@ class _TilesRow extends StatelessWidget {
     );
   }
 
-  static final _footerStyle = AppTextStyleTokens.cardTitle.copyWith(
-    fontSize: 13,
+  /// "After Level 2" (NestyHub:39, :43): Nunito 800 12, `#8A5B3A`.
+  static final _footerStyle = AppTextStyleTokens.caption.copyWith(
+    fontSize: 12,
     height: 1,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     color: AppColorTokens.textSecondary,
   );
 }
@@ -723,19 +742,34 @@ class _VsComputerTile extends StatelessWidget {
       leading: _VersusPortrait(locked: locked),
       label: l10n.homeVsComputerTile,
       footer: locked
-          ? FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                lockedLine,
-                style: _TilesRow._footerStyle,
-                maxLines: 1,
-                softWrap: false,
-              ),
+          ? Text(
+              lockedLine,
+              style: _TilesRow._footerStyle,
+              textAlign: TextAlign.center,
+              maxLines: 3,
             )
-          : const FittedBox(fit: BoxFit.scaleDown, child: ComputerTag()),
+          : LayoutBuilder(
+              // The tag drops to its glyph when the full tag is wider than
+              // the tile (textFit short form), instead of scaling the
+              // whole column below the readability floor. The label above
+              // ("vs Computer") keeps the word (rule 5; D271).
+              builder: (context, constraints) => ComputerTag(
+                glyphOnly: ComputerTag.glyphOnlyForRow(
+                  context,
+                  lead: '',
+                  leadStyle: RivalStripTokens.tagText,
+                  gap: 0,
+                  maxWidth: constraints.maxWidth,
+                  minScale: 1,
+                ),
+              ),
+            ),
       locked: locked,
-      semanticLabel: l10n.homeVsComputerSemantics,
-      semanticValue: locked ? lockedLine : null,
+      // Locked, one sentence says so (copy.md A11y `a11y_home_versus_locked`);
+      // open, the tile says what it does (`a11y_home_versus`).
+      semanticLabel: locked
+          ? l10n.homeVsComputerLockedSemantics(home.raceUnlockLevel)
+          : l10n.homeVsComputerSemantics,
       onTap: onTap,
     );
   }

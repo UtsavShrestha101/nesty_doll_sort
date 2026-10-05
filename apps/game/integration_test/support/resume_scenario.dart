@@ -21,18 +21,33 @@ import 'fingerprint.dart';
 /// yellow2 (r1c0), that second move undone, +1 Slot, then blue1 (r0c2) onto
 /// the new stand. None of it completes a set, so the level stays in
 /// progress for the resume to matter.
+///
+/// `--dart-define=NESTY_RESUME_SCENARIO=l1` (phase 5, BACKLOG M7 "E9 device
+/// check", architecture.md §4 row 922) runs the E9 kill instead: a fresh
+/// install, level 1 from the splash, one tutorial move (red2 into red3),
+/// the kill, and a relaunch that must reopen level 1 straight from the
+/// splash (no level won yet, so never Home) with the same board.
 abstract final class ResumeScenario {
-  static const int level = 3;
+  /// `l3` (the default, M3's kill) or `l1` (E9's kill during level 1).
+  static const String scenario = String.fromEnvironment(
+    'NESTY_RESUME_SCENARIO',
+    defaultValue: 'l3',
+  );
+
+  /// E9's scenario: the kill lands during level 1.
+  static const bool duringLevel1 = scenario == 'l1';
+
+  static const int level = duringLevel1 ? 1 : 3;
 
   /// The default `free_undos_per_level` minus the one undo the script
-  /// performs: what `GameplayState.freeUndosLeft` must read after it, in
-  /// both phases (`GameSession.undosUsed` is part of the persisted save,
-  /// m3-design §3.4, so this survives a kill).
+  /// performs (none in `l1`): what `GameplayState.freeUndosLeft` must read
+  /// after it, in both phases (`GameSession.undosUsed` is part of the
+  /// persisted save, m3-design §3.4, so this survives a kill).
   static final int expectedFreeUndosLeft =
-      RemoteConfigKeys.freeUndosPerLevel.defaultValue - 1;
+      RemoteConfigKeys.freeUndosPerLevel.defaultValue - (duringLevel1 ? 0 : 1);
 
-  /// +1 Slot was pressed exactly once.
-  static const int expectedExtraSlotCount = 1;
+  /// +1 Slot was pressed exactly once (never in `l1`).
+  static const int expectedExtraSlotCount = duringLevel1 ? 0 : 1;
 
   /// From a fresh install: the splash opens level 1 straight away (E9,
   /// m7-design §13); its tutorial moves win it (frames 1.3–1.6, the ones
@@ -67,6 +82,15 @@ abstract final class ResumeScenario {
     await board.pauseToHome(level: level);
   }
 
+  /// E9's one move on level 1 (`l1`): the tutorial's step 1, red2 (r0c2)
+  /// into red3 (r0c0), the only move the scripted tutorial accepts. The
+  /// family stays incomplete (red1 is still on r1c1), so the level is in
+  /// progress at the kill.
+  static Future<void> playLevel1(WidgetTester tester, Board board) async {
+    await board.move('r0c2', 'r0c0');
+    await board.waitIdle();
+  }
+
   /// Plays the scripted moves on a freshly opened level 3 board. Only for
   /// phase A: phase B never re-plays them, it only reads what came back.
   static Future<void> play(WidgetTester tester, Board board) async {
@@ -96,6 +120,21 @@ abstract final class ResumeScenario {
   /// The facts that must hold of [board] whether it was just played (phase
   /// A) or just resumed after a kill (phase B).
   static void expectScriptedBoard(GameState board) {
+    if (duringLevel1) {
+      expect(
+        board.slot('r0c0'),
+        equals(OpenSlot(nest: Nest.run(DollColor.red, outer: 3, length: 2))),
+        reason: 'r0c0 holds red3 over red2',
+      );
+      expect(board.slot('r0c2').nests, isEmpty, reason: 'red2 left r0c2');
+      expect(
+        board.slot('r1c1'),
+        equals(OpenSlot(nest: Nest.run(DollColor.red, outer: 1, length: 1))),
+        reason: 'red1 still waits on r1c1',
+      );
+      expect(board.extraSlotCount, expectedExtraSlotCount);
+      return;
+    }
     expect(board.slot('r1c2').nests, isEmpty, reason: 'red1 left r1c2');
     expect(
       board.slot('r2c1'),
@@ -138,6 +177,7 @@ abstract final class ResumeScenario {
   ) {
     final session = board.session!;
     final data = {
+      'scenario': scenario,
       'level': level,
       'freeUndosLeft': board.state.freeUndosLeft,
       'extraSlotCount': session.state.extraSlotCount,

@@ -39,6 +39,7 @@ class GameplayHud extends StatelessWidget {
     this.library,
     this.coinPillKey,
     this.coinBump = 0,
+    this.coinRing = false,
     super.key,
   });
 
@@ -96,6 +97,9 @@ class GameplayHud extends StatelessWidget {
   /// this changes: a chest's coin sprite landed on it (frame 10.3d).
   final int coinBump;
 
+  /// The ring round the coin pill while the chest's coins land.
+  final bool coinRing;
+
   /// The HUD's height below the safe-area top: down to the counter canvas'
   /// bottom (top + 70 + 30).
   static const double height = 100;
@@ -142,10 +146,13 @@ class GameplayHud extends StatelessWidget {
               // A huge balance at 1.3× text shrinks rather than overflow.
               child: BumpScale(
                 trigger: coinBump,
-                child: FittedBox(
-                  key: coinPillKey,
-                  fit: BoxFit.scaleDown,
-                  child: CoinPill(coins: coins),
+                child: RewardRing.pill(
+                  visible: coinRing,
+                  child: FittedBox(
+                    key: coinPillKey,
+                    fit: BoxFit.scaleDown,
+                    child: CoinPill(coins: coins),
+                  ),
                 ),
               ),
             ),
@@ -255,15 +262,27 @@ final class _HudLayout extends MultiChildLayoutDelegate {
       Offset(width - _side - coins.width, top + _coinTop),
     );
 
+    // The pill is centred while it fits between the controls at their
+    // wider one's width (the frames' look). A long tier name or a wide
+    // balance would shrink it to nothing there, so it may take the free
+    // width on its own side instead: it then sits against the narrower
+    // control rather than at the centre (5B-5; build/m7-p5/reports/5b-og.md).
+    final left = _side + pause.width + _pillGap;
+    final right = width - _side - coins.width - _pillGap;
     final side = _side + math.max(pause.width, coins.width);
-    final pillMax = math.max(0.0, width - 2 * side - 2 * _pillGap);
+    final pillMax = math.max(0.0, right - left);
     final pill = layoutChild(
       _HudSlot.level,
       BoxConstraints(maxWidth: pillMax, maxHeight: size.height),
     );
+    final centred = (width - pill.width) / 2;
+    final fitsCentred = pill.width <= width - 2 * side - 2 * _pillGap;
     positionChild(
       _HudSlot.level,
-      Offset((width - pill.width) / 2, top + _pillTop),
+      Offset(
+        fitsCentred ? centred : centred.clamp(left, right - pill.width),
+        top + _pillTop,
+      ),
     );
 
     _layoutCounter(width);

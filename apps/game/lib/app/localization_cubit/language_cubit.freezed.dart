@@ -14,7 +14,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$LanguageState {
 
-/// The locale the app is rendered in (persisted).
+/// The language setting as persisted: [LocaleSetting.system] (follow
+/// the phone; the default) or the code a sheet tap pinned.
+ String get storedLanguageCode;/// The language the app renders in: [storedLanguageCode] resolved by
+/// [AppLocaleResolver] against the phone's languages and the catalogs
+/// present. Always a supported storage-style code (`en`, `pt_BR`).
  String get currentLanguageCode;/// The locale highlighted in a language picker before it's confirmed.
  String get selectedLanguageCode; bool get isLoading;/// The last [LanguageCubit.changeLanguage] failed to persist. The UI maps
 /// this to an ARB string — the state carries no user-facing text.
@@ -29,16 +33,16 @@ $LanguageStateCopyWith<LanguageState> get copyWith => _$LanguageStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LanguageState&&(identical(other.currentLanguageCode, currentLanguageCode) || other.currentLanguageCode == currentLanguageCode)&&(identical(other.selectedLanguageCode, selectedLanguageCode) || other.selectedLanguageCode == selectedLanguageCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.hasError, hasError) || other.hasError == hasError));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LanguageState&&(identical(other.storedLanguageCode, storedLanguageCode) || other.storedLanguageCode == storedLanguageCode)&&(identical(other.currentLanguageCode, currentLanguageCode) || other.currentLanguageCode == currentLanguageCode)&&(identical(other.selectedLanguageCode, selectedLanguageCode) || other.selectedLanguageCode == selectedLanguageCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.hasError, hasError) || other.hasError == hasError));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentLanguageCode,selectedLanguageCode,isLoading,hasError);
+int get hashCode => Object.hash(runtimeType,storedLanguageCode,currentLanguageCode,selectedLanguageCode,isLoading,hasError);
 
 @override
 String toString() {
-  return 'LanguageState(currentLanguageCode: $currentLanguageCode, selectedLanguageCode: $selectedLanguageCode, isLoading: $isLoading, hasError: $hasError)';
+  return 'LanguageState(storedLanguageCode: $storedLanguageCode, currentLanguageCode: $currentLanguageCode, selectedLanguageCode: $selectedLanguageCode, isLoading: $isLoading, hasError: $hasError)';
 }
 
 
@@ -49,7 +53,7 @@ abstract mixin class $LanguageStateCopyWith<$Res>  {
   factory $LanguageStateCopyWith(LanguageState value, $Res Function(LanguageState) _then) = _$LanguageStateCopyWithImpl;
 @useResult
 $Res call({
- String currentLanguageCode, String selectedLanguageCode, bool isLoading, bool hasError
+ String storedLanguageCode, String currentLanguageCode, String selectedLanguageCode, bool isLoading, bool hasError
 });
 
 
@@ -66,9 +70,10 @@ class _$LanguageStateCopyWithImpl<$Res>
 
 /// Create a copy of LanguageState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentLanguageCode = null,Object? selectedLanguageCode = null,Object? isLoading = null,Object? hasError = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? storedLanguageCode = null,Object? currentLanguageCode = null,Object? selectedLanguageCode = null,Object? isLoading = null,Object? hasError = null,}) {
   return _then(_self.copyWith(
-currentLanguageCode: null == currentLanguageCode ? _self.currentLanguageCode : currentLanguageCode // ignore: cast_nullable_to_non_nullable
+storedLanguageCode: null == storedLanguageCode ? _self.storedLanguageCode : storedLanguageCode // ignore: cast_nullable_to_non_nullable
+as String,currentLanguageCode: null == currentLanguageCode ? _self.currentLanguageCode : currentLanguageCode // ignore: cast_nullable_to_non_nullable
 as String,selectedLanguageCode: null == selectedLanguageCode ? _self.selectedLanguageCode : selectedLanguageCode // ignore: cast_nullable_to_non_nullable
 as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,hasError: null == hasError ? _self.hasError : hasError // ignore: cast_nullable_to_non_nullable
@@ -157,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String currentLanguageCode,  String selectedLanguageCode,  bool isLoading,  bool hasError)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String storedLanguageCode,  String currentLanguageCode,  String selectedLanguageCode,  bool isLoading,  bool hasError)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LanguageState() when $default != null:
-return $default(_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoading,_that.hasError);case _:
+return $default(_that.storedLanguageCode,_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoading,_that.hasError);case _:
   return orElse();
 
 }
@@ -178,10 +183,10 @@ return $default(_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String currentLanguageCode,  String selectedLanguageCode,  bool isLoading,  bool hasError)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String storedLanguageCode,  String currentLanguageCode,  String selectedLanguageCode,  bool isLoading,  bool hasError)  $default,) {final _that = this;
 switch (_that) {
 case _LanguageState():
-return $default(_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoading,_that.hasError);case _:
+return $default(_that.storedLanguageCode,_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoading,_that.hasError);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +203,10 @@ return $default(_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String currentLanguageCode,  String selectedLanguageCode,  bool isLoading,  bool hasError)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String storedLanguageCode,  String currentLanguageCode,  String selectedLanguageCode,  bool isLoading,  bool hasError)?  $default,) {final _that = this;
 switch (_that) {
 case _LanguageState() when $default != null:
-return $default(_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoading,_that.hasError);case _:
+return $default(_that.storedLanguageCode,_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoading,_that.hasError);case _:
   return null;
 
 }
@@ -213,10 +218,15 @@ return $default(_that.currentLanguageCode,_that.selectedLanguageCode,_that.isLoa
 
 
 class _LanguageState extends LanguageState {
-  const _LanguageState({this.currentLanguageCode = SettingsDefaults.locale, this.selectedLanguageCode = SettingsDefaults.locale, this.isLoading = false, this.hasError = false}): super._();
+  const _LanguageState({this.storedLanguageCode = SettingsDefaults.locale, this.currentLanguageCode = AppLocaleResolver.fallbackCode, this.selectedLanguageCode = AppLocaleResolver.fallbackCode, this.isLoading = false, this.hasError = false}): super._();
   
 
-/// The locale the app is rendered in (persisted).
+/// The language setting as persisted: [LocaleSetting.system] (follow
+/// the phone; the default) or the code a sheet tap pinned.
+@override@JsonKey() final  String storedLanguageCode;
+/// The language the app renders in: [storedLanguageCode] resolved by
+/// [AppLocaleResolver] against the phone's languages and the catalogs
+/// present. Always a supported storage-style code (`en`, `pt_BR`).
 @override@JsonKey() final  String currentLanguageCode;
 /// The locale highlighted in a language picker before it's confirmed.
 @override@JsonKey() final  String selectedLanguageCode;
@@ -235,16 +245,16 @@ _$LanguageStateCopyWith<_LanguageState> get copyWith => __$LanguageStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LanguageState&&(identical(other.currentLanguageCode, currentLanguageCode) || other.currentLanguageCode == currentLanguageCode)&&(identical(other.selectedLanguageCode, selectedLanguageCode) || other.selectedLanguageCode == selectedLanguageCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.hasError, hasError) || other.hasError == hasError));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LanguageState&&(identical(other.storedLanguageCode, storedLanguageCode) || other.storedLanguageCode == storedLanguageCode)&&(identical(other.currentLanguageCode, currentLanguageCode) || other.currentLanguageCode == currentLanguageCode)&&(identical(other.selectedLanguageCode, selectedLanguageCode) || other.selectedLanguageCode == selectedLanguageCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.hasError, hasError) || other.hasError == hasError));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentLanguageCode,selectedLanguageCode,isLoading,hasError);
+int get hashCode => Object.hash(runtimeType,storedLanguageCode,currentLanguageCode,selectedLanguageCode,isLoading,hasError);
 
 @override
 String toString() {
-  return 'LanguageState(currentLanguageCode: $currentLanguageCode, selectedLanguageCode: $selectedLanguageCode, isLoading: $isLoading, hasError: $hasError)';
+  return 'LanguageState(storedLanguageCode: $storedLanguageCode, currentLanguageCode: $currentLanguageCode, selectedLanguageCode: $selectedLanguageCode, isLoading: $isLoading, hasError: $hasError)';
 }
 
 
@@ -255,7 +265,7 @@ abstract mixin class _$LanguageStateCopyWith<$Res> implements $LanguageStateCopy
   factory _$LanguageStateCopyWith(_LanguageState value, $Res Function(_LanguageState) _then) = __$LanguageStateCopyWithImpl;
 @override @useResult
 $Res call({
- String currentLanguageCode, String selectedLanguageCode, bool isLoading, bool hasError
+ String storedLanguageCode, String currentLanguageCode, String selectedLanguageCode, bool isLoading, bool hasError
 });
 
 
@@ -272,9 +282,10 @@ class __$LanguageStateCopyWithImpl<$Res>
 
 /// Create a copy of LanguageState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentLanguageCode = null,Object? selectedLanguageCode = null,Object? isLoading = null,Object? hasError = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? storedLanguageCode = null,Object? currentLanguageCode = null,Object? selectedLanguageCode = null,Object? isLoading = null,Object? hasError = null,}) {
   return _then(_LanguageState(
-currentLanguageCode: null == currentLanguageCode ? _self.currentLanguageCode : currentLanguageCode // ignore: cast_nullable_to_non_nullable
+storedLanguageCode: null == storedLanguageCode ? _self.storedLanguageCode : storedLanguageCode // ignore: cast_nullable_to_non_nullable
+as String,currentLanguageCode: null == currentLanguageCode ? _self.currentLanguageCode : currentLanguageCode // ignore: cast_nullable_to_non_nullable
 as String,selectedLanguageCode: null == selectedLanguageCode ? _self.selectedLanguageCode : selectedLanguageCode // ignore: cast_nullable_to_non_nullable
 as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,hasError: null == hasError ? _self.hasError : hasError // ignore: cast_nullable_to_non_nullable

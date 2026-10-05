@@ -215,11 +215,21 @@ class _GameplayViewState extends State<GameplayView> {
   /// Each coin sprite that lands bumps the HUD's coin pill (frame 10.3d).
   int _coinBump = 0;
 
+  /// The gold ring round the coin pill from the first coin's landing until
+  /// the last one's, then it fades out over 240 ms (`motion.chest.collect.
+  /// pillRing`, m7-4 1.7; the ring widget owns the 80 and 240 ms fades).
+  bool _coinRing = false;
+
   /// A brief `ui_booster_glow` pulse behind Hint the instant the chest's
   /// hint sprite lands; cleared a moment later by [_hintGlowTimer].
   bool _hintGlowPulse = false;
   int _hintBump = 0;
   Timer? _hintGlowTimer;
+
+  /// The green "+N" tag over the Hint badge as the chest's hint lands,
+  /// held for `gainTag.holdMs` (1,200 ms); 0 shows none.
+  int _hintGain = 0;
+  Timer? _hintGainTimer;
 
   /// The board toasts' queue (the host under this page, at y 152), set on
   /// each build.
@@ -308,6 +318,7 @@ class _GameplayViewState extends State<GameplayView> {
   void dispose() {
     _lifecycle.dispose();
     _hintGlowTimer?.cancel();
+    _hintGainTimer?.cancel();
     unawaited(_raceSub?.cancel());
     // The board disposes its own skin with the game (idempotent).
     _skins.dispose();
@@ -580,9 +591,15 @@ class _GameplayViewState extends State<GameplayView> {
         geometry: geometry,
         devicePixelRatio: _devicePixelRatio,
         symbols: widget.services.database.symbolsMode.dollSymbols,
+        themeId: _boardThemeId(state.play.themeId),
       ),
     );
   }
+
+  /// The theme behind the board: the player's fixed one, else the level's
+  /// own; chapters 7 to 10 draw their own board wood on it (m7-4 A.5).
+  String _boardThemeId(String levelThemeId) =>
+      widget.services.save.document.selectedTheme ?? levelThemeId;
 
   void _onSkinReady(LevelSkin skin) {
     _board.levelSkin = skin;
@@ -703,6 +720,7 @@ class _GameplayViewState extends State<GameplayView> {
       geometry: geometry,
       devicePixelRatio: _devicePixelRatio,
       symbols: widget.services.database.symbolsMode.dollSymbols,
+      themeId: _boardThemeId(next.themeId),
     );
   }
 
@@ -783,6 +801,7 @@ class _GameplayViewState extends State<GameplayView> {
       geometry: geometry,
       devicePixelRatio: _devicePixelRatio,
       symbols: symbols,
+      themeId: _boardThemeId(state.play.themeId),
     );
   }
 
@@ -930,7 +949,12 @@ class _GameplayViewState extends State<GameplayView> {
     setState(() {
       _chestCoinsRevealed = revealed;
       _coinBump++;
+      if (revealed > 0) _coinRing = true;
     });
+    // Once every coin is in, the ring fades out (240 ms, its own).
+    if (revealed >= (_state?.chest?.coins ?? 0)) {
+      setState(() => _coinRing = false);
+    }
   }
 
   /// The chest's hint sprite landed on the Hint booster (step 4): a brief
@@ -940,10 +964,18 @@ class _GameplayViewState extends State<GameplayView> {
   void _onChestHintLanded() {
     if (!mounted) return;
     _hintGlowTimer?.cancel();
+    _hintGainTimer?.cancel();
     setState(() {
       _hintGlowPulse = true;
       _hintBump++;
+      _hintGain = _state?.chest?.hints ?? 1;
     });
+    _hintGainTimer = Timer(
+      const Duration(milliseconds: ChestCollectTokens.gainTagHoldMs),
+      () {
+        if (mounted) setState(() => _hintGain = 0);
+      },
+    );
     _hintGlowTimer = Timer(const Duration(milliseconds: 900), () {
       if (mounted) setState(() => _hintGlowPulse = false);
     });
@@ -1119,7 +1151,7 @@ class _GameplayViewState extends State<GameplayView> {
                       if (state != null) ..._chrome(context, state),
                       if (state == null &&
                           value is AsyncValueError<GameplayState>)
-                        _race == null
+                        _race == null && !widget.request.isGenerated
                             ? Center(
                                 child: RetryView(
                                   exception: value.exception,
@@ -1128,21 +1160,35 @@ class _GameplayViewState extends State<GameplayView> {
                                   ),
                                 ),
                               )
-                            // A race board that couldn't be made (m7-design P2.4):
-                            // Try again, or back to rival select.
+                            // A generated board that couldn't be made: a race's
+                            // (m7-design P2.4, 9.3f: Try again, or back to rival
+                            // select) or a bonus or daily level's (12.6: Try
+                            // again, or Back to Home), never the splash's
+                            // "didn't unpack" card.
                             : Positioned.fill(
                                 key: const ValueKey('raceLoadFailed'),
                                 child: NextLevelFailedCard(
-                                  title: context.localizations.raceFailedTitle,
-                                  body: context.localizations.raceFailedBody,
+                                  title: _race == null
+                                      ? context
+                                            .localizations
+                                            .gameplayFailedTitle
+                                      : context.localizations.raceFailedTitle,
+                                  body: _race == null
+                                      ? context.localizations.gameplayFailedBody
+                                      : context.localizations.raceFailedBody,
                                   retryLabel: context.localizations.retry,
-                                  secondaryLabel:
-                                      context.localizations.raceBackToRivals,
-                                  versus: true,
+                                  secondaryLabel: _race == null
+                                      ? context
+                                            .localizations
+                                            .nextLevelFailedHome
+                                      : context.localizations.raceBackToRivals,
+                                  versus: _race != null,
                                   onRetry: () => _bloc.add(
-                                    GameplayStarted(_race!.request),
+                                    GameplayStarted(widget.request),
                                   ),
-                                  onSecondary: _leaveRace,
+                                  onSecondary: _race == null
+                                      ? widget.onHome
+                                      : _leaveRace,
                                 ),
                               ),
                       // A generated request (bonus, daily) resolves behind a
@@ -1218,18 +1264,6 @@ class _GameplayViewState extends State<GameplayView> {
         ? state.status == GameplayStatus.playing
         : state.acceptsInput;
     return [
-      // Under the HUD (m3-design §10.4): its scrim never dims the pause
-      // button or the coin pill.
-      if (state.tutorial case final cue?)
-        Positioned.fill(
-          key: const ValueKey('tutorialOverlay'),
-          child: TutorialOverlay(
-            cue: cue,
-            board: state.board,
-            geometry: _geometry,
-            library: services.fx,
-          ),
-        ),
       Positioned(
         left: 0,
         right: 0,
@@ -1256,6 +1290,7 @@ class _GameplayViewState extends State<GameplayView> {
             library: services.fx,
             coinPillKey: _coinPillKey,
             coinBump: _coinBump,
+            coinRing: _coinRing,
             onPause: won || (overlay == GameplayOverlay.none && pauseAvailable)
                 ? _openPause
                 : null,
@@ -1293,9 +1328,25 @@ class _GameplayViewState extends State<GameplayView> {
                 hintKey: _hintButtonKey,
                 hintGlow: _hintGlowPulse,
                 hintBump: _hintBump,
+                hintRing: _hintGlowPulse,
+                hintGain: _hintGain,
                 onSlotLimit: () => _onSlotLimitTapped(state),
               ),
       ),
+      // Above the HUD and the booster bar (frames 1.3, 10.8b; phase 5
+      // F-TUT, over m3-design §10.4's "under the HUD"): the scrim dims them
+      // and the card covers the family chip. It is IgnorePointer, so Pause
+      // and the boosters still take taps beneath it.
+      if (state.tutorial case final cue?)
+        Positioned.fill(
+          key: const ValueKey('tutorialOverlay'),
+          child: TutorialOverlay(
+            cue: cue,
+            board: state.board,
+            geometry: _geometry,
+            library: services.fx,
+          ),
+        ),
       Positioned(
         left: SoftStuckBanner.side,
         right: SoftStuckBanner.side,

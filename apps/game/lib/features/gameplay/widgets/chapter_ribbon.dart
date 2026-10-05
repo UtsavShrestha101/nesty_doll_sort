@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
-import 'package:nesty_game/core/ui/lottie/ribbon_tint.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
@@ -16,7 +15,10 @@ import 'package:nesty_render/nesty_render.dart' show ChapterPalette;
 /// chapter (4.7)"; m2-lottie-design §12). The localized label follows the
 /// file's `ribbon` null, fitted to a 312 × 32 box on it (LOTTIE.md v3).
 ///
-/// The band takes the chapter's [palette] (its tails and fold with it).
+/// The ribbon's four named fills take the chapter's [palette] (m7-4 4.15,
+/// LOTTIE.md "Tint and width"): the band its `accent`, the edge its
+/// `accentEdge`, the tails its `ribbonTail` and the fold its `ribbonFold`;
+/// the highlight stays white.
 ///
 /// It plays once when it appears and calls [onDone] when it has finished
 /// (half as long under reduced motion). Without the file (rule 3, R10) a
@@ -67,9 +69,13 @@ class ChapterRibbon extends StatefulWidget {
         centerY: padding.top + centerTop,
       );
 
-  /// The palette filter, for tests.
-  @visibleForTesting
-  static const Key tintKey = Key('chapter-ribbon-tint');
+  /// The colours the file's four named fills take on [palette].
+  static RibbonColors colorsOf(ChapterPalette palette) => RibbonColors(
+    band: palette.accent,
+    edge: palette.accentEdge,
+    tail: palette.ribbonTail,
+    fold: palette.ribbonFold,
+  );
 
   @override
   State<ChapterRibbon> createState() => _ChapterRibbonState();
@@ -89,6 +95,21 @@ class _ChapterRibbonState extends State<ChapterRibbon> {
     _controller
       ..onFinished = _finish
       ..playWhole();
+    _tint();
+  }
+
+  /// Gives the file's named fills the palette's colours (null: as authored).
+  void _tint() {
+    final palette = widget.palette;
+    _controller.params.setRibbonColors(
+      palette == null ? null : ChapterRibbon.colorsOf(palette),
+    );
+  }
+
+  @override
+  void didUpdateWidget(ChapterRibbon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.palette != widget.palette) _tint();
   }
 
   @override
@@ -125,40 +146,35 @@ class _ChapterRibbonState extends State<ChapterRibbon> {
     super.dispose();
   }
 
-  /// [child] through the palette's colour matrix (white stays white).
-  Widget _tinted(Widget child) {
-    final palette = widget.palette;
-    if (palette == null) return child;
-    return ColorFiltered(
-      key: ChapterRibbon.tintKey,
-      colorFilter: RibbonTint.filterOf(palette),
-      child: child,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    final label = l10n.chapterRibbon(
-      widget.number,
-      ChapterProgress.nameOf(l10n, widget.chapterId, widget.number),
+    final name = ChapterProgress.nameOf(l10n, widget.chapterId, widget.number);
+    final fullLabel = l10n.chapterRibbon(widget.number, name);
+    // textFit.chapterRibbon: the name alone when the full line would shrink
+    // below its minScale.
+    final label = RibbonLabel.pick(
+      context,
+      style: LottieLabelStyles.chapterRibbon,
+      full: fullLabel,
+      short: l10n.chapterRibbonShort(name),
+      minScale: TextFitTokens.chapterRibbonMinScale,
     );
     return IgnorePointer(
       child: LottieTextOverlay(
         label: label,
+        semanticLabel: fullLabel,
         style: LottieLabelStyles.chapterRibbon,
-        lottie: _tinted(
-          LottieFxView(
-            id: FxId.uiChapterRibbon,
-            controller: _controller,
-            library: widget.library,
-            label: label,
-            fallback: AnimatedOpacity(
-              opacity: _fading ? 0 : 1,
-              duration: context.uiDuration(UiMotionTokens.modalInMs),
-              child: CustomPaint(
-                painter: ChapterRibbonPainter(palette: widget.palette),
-              ),
+        lottie: LottieFxView(
+          id: FxId.uiChapterRibbon,
+          controller: _controller,
+          library: widget.library,
+          label: label,
+          fallback: AnimatedOpacity(
+            opacity: _fading ? 0 : 1,
+            duration: context.uiDuration(UiMotionTokens.modalInMs),
+            child: CustomPaint(
+              painter: ChapterRibbonPainter(palette: widget.palette),
             ),
           ),
         ),
@@ -178,11 +194,11 @@ final class ChapterRibbonPainter extends CustomPainter {
     : _tail = Paint()
         ..color = palette == null
             ? const Color(0xFF2E7AC7)
-            : Color.lerp(palette.accent, palette.accentEdge, 0.35)!,
+            : palette.ribbonTail,
       _fold = Paint()
         ..color = palette == null
             ? const Color(0xFF1C4F82)
-            : Color.lerp(palette.accentEdge, const Color(0xFF000000), 0.25)!,
+            : palette.ribbonFold,
       _edge = Paint()..color = palette?.accentEdge ?? const Color(0xFF2B6BB0),
       _face = Paint()..color = palette?.accent ?? const Color(0xFF3D8FDE);
 

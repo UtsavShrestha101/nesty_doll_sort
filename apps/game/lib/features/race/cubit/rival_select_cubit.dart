@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:nesty_game/core/base/base_async_cubit.dart';
 import 'package:nesty_game/core/base/base_async_state.dart';
 import 'package:nesty_game/core/models/play_request.dart';
+import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/race/race_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
@@ -17,14 +18,19 @@ part 'rival_select_state.dart';
 /// `race.rivals`, each with its reward, and [begin], which stores the next
 /// raceNo for the race the player chose. It follows [SaveService.changes],
 /// so a rival a race just unlocked shows unlocked on the way back.
+///
+/// The pick lasts for the visit; on a new visit it is the New rival, else
+/// the rival the player last started a race against (m7-4 4.5, kept in the
+/// settings as `lastRival`).
 @injectable
 class RivalSelectCubit extends BaseAsyncCubit<RivalSelectState> {
-  RivalSelectCubit(this._save, this._remoteConfig) {
+  RivalSelectCubit(this._save, this._remoteConfig, this._database) {
     _saveChanges = _save.changes.listen((_) => _refresh());
   }
 
   final SaveService _save;
   final RemoteConfigService _remoteConfig;
+  final DatabaseService _database;
   late final StreamSubscription<void> _saveChanges;
 
   /// The player's own pick this visit (null until a tap): it wins over the
@@ -58,6 +64,9 @@ class RivalSelectCubit extends BaseAsyncCubit<RivalSelectState> {
     }
     final raceNo = _save.beginRace(rival);
     if (raceNo == null) return null;
+    // The next visit starts on this rival unless a newer one is waiting.
+    // A failed write only loses that memory (rule 3).
+    unawaited(_database.setLastRival(rival).catchError((Object _) {}));
     return RacePlay(rival: rival, raceNo: raceNo);
   }
 
@@ -82,19 +91,21 @@ class RivalSelectCubit extends BaseAsyncCubit<RivalSelectState> {
     return RivalSelectState(
       coins: _save.coins,
       rivals: cards,
-      selected: _defaultOr(cards, _picked),
+      selected: _defaultOr(cards, _picked, _database.lastRival),
     );
   }
 
-  /// [picked] while that rival is unlocked, else the newest unlocked rival
-  /// never raced ("New"), else the highest unlocked (the last raced), else
-  /// Pebble (frame 9.2).
-  static int _defaultOr(List<RivalCard> cards, int? picked) {
-    if (picked != null && cards.any((c) => c.number == picked && c.unlocked)) {
-      return picked;
-    }
+  /// [picked] while that rival is unlocked (the visit's own pick), else the
+  /// newest unlocked rival never raced ("New"), else [lastRaced] while it is
+  /// unlocked, else the highest unlocked (an older save with no memory of
+  /// the last race), else Pebble (frame 9.2; m7-4 4.5).
+  static int _defaultOr(List<RivalCard> cards, int? picked, int lastRaced) {
+    bool open(int? number) =>
+        number != null && cards.any((c) => c.number == number && c.unlocked);
+    if (open(picked)) return picked!;
     final fresh = cards.where((c) => c.isNew).lastOrNull;
     if (fresh != null) return fresh.number;
+    if (open(lastRaced)) return lastRaced;
     return cards.where((c) => c.unlocked).lastOrNull?.number ?? 1;
   }
 

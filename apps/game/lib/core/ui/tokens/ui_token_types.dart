@@ -205,3 +205,23 @@ final class ShopSkinColors {
   final Color edge;
   final Color caption;
 }
+
+/// A ribbon's four tinted fills (tokens v4 `winRibbon.default`,
+/// `versus.ribbon`, a chapter's `ribbonTail` / `ribbonFold`; LOTTIE.md "Tint
+/// and width"): `ui_win_ribbon` and `ui_chapter_ribbon` take them through
+/// colour delegates on `WinRibbonTokens`' key paths. `hi_fill` keeps its
+/// authored white.
+@immutable
+final class RibbonColors {
+  const RibbonColors({
+    required this.band,
+    required this.edge,
+    required this.tail,
+    required this.fold,
+  });
+
+  final Color band;
+  final Color edge;
+  final Color tail;
+  final Color fold;
+}

@@ -15,6 +15,7 @@ import 'package:nesty_game/features/shop/widgets/purchase_twinkle_burst.dart';
 import 'package:nesty_game/features/shop/widgets/shop_buy_button.dart';
 import 'package:nesty_game/features/shop/widgets/shop_look.dart';
 import 'package:nesty_game/features/shop/widgets/skin_doll_row.dart';
+import 'package:nesty_game/features/shop/widgets/tag_pop.dart';
 import 'package:nesty_render/nesty_render.dart' show DollSymbols;
 
 /// One Skins-tab card (frame 7.3): [SkinInfo.previewColors]' three dolls on
@@ -86,10 +87,37 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
   bool _prepared = false;
   bool _buying = false;
 
+  /// A purchase tapped on this card is in flight, and whether its
+  /// celebration has played: the card flipping to owned while the buy is
+  /// pending is the swap (a purchase made on the detail screen, under this
+  /// card, plays nothing here).
+  bool _buyPending = false;
+  bool _celebrated = false;
+
+  /// The footer built now is the swap's: it comes in with `motion.tagPop`.
+  bool _popFooter = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _prepare();
+  }
+
+  @override
+  void didUpdateWidget(SkinGridCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The price chip became Equip / Equipped under this card's own tap.
+    if (_buyPending && !oldWidget.owned && widget.owned) _swapped();
+  }
+
+  /// The purchase landed (`motion.purchaseItem`): the new footer pops, the
+  /// haptic fires and three sparkles play, once.
+  void _swapped() {
+    if (_celebrated) return;
+    _celebrated = true;
+    _popFooter = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _popFooter = false);
+    PurchaseTwinkleBurst.celebrate(context);
   }
 
   @override
@@ -128,12 +156,17 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
   Future<void> _buy() async {
     if (_buying) return;
     setState(() => _buying = true);
+    _buyPending = true;
+    _celebrated = false;
     final outcome = await widget.onBuy();
+    _buyPending = false;
     if (!mounted) return;
     setState(() => _buying = false);
     switch (outcome) {
       case PurchaseOutcome.bought:
-        PurchaseTwinkleBurst.celebrate(context);
+        // Normally the card flipped to owned already (above); a state that
+        // lags still gets its celebration.
+        _swapped();
       case PurchaseOutcome.needsCoins:
         unawaited(
           NotEnoughCoinsDialog.show(
@@ -223,8 +256,8 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
               alignment: AlignmentDirectional.centerStart,
               child: Text(
                 l10n.skinNameOf(widget.skin.id),
-                style: AppTextStyles.cardTitle.copyWith(
-                  fontSize: 22,
+                // `shop.cardName` skins: Fredoka 700 16/1.1.
+                style: ShopTokens.cardNameSkin.copyWith(
                   color: AppColorTokens.textPrimary,
                 ),
                 maxLines: 1,
@@ -243,7 +276,7 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
   String _semanticState(AppLocalizations l10n, bool downloading) {
     if (downloading) return l10n.shopDownloading(widget.downloadPercent!);
     if (widget.equipped) return l10n.shopEquipped;
-    if (widget.owned) return l10n.shopOwned;
+    if (widget.owned) return l10n.skinOwnedSemantics;
     return l10n.coinPrice(widget.skin.priceCoins);
   }
 
@@ -280,29 +313,39 @@ class _SkinGridCardState extends State<SkinGridCard> with FollowsSymbolsMode {
       return _DownloadingPill(percent: widget.downloadPercent!);
     }
     if (widget.equipped) {
-      return _StatusPill(
-        label: l10n.shopEquipped,
-        color: AppColorTokens.successEdge,
-        ring: AppColorTokens.successRing,
-        face: AppColorTokens.successTint,
-        icon: NestyIcons.checkCircle,
+      return TagPop(
+        key: const ValueKey('footer-equipped'),
+        animate: _popFooter,
+        child: _StatusPill(
+          label: l10n.shopEquipped,
+          color: AppColorTokens.successEdge,
+          ring: AppColorTokens.successRing,
+          face: AppColorTokens.successTint,
+          icon: NestyIcons.checkCircle,
+        ),
       );
     }
     // Frame 7.3 draws Equip at 34 and the price at 38 in a fixed-height
     // cell: each answers across 48 dp over the gap above it and the card's
     // padding below, instead of growing the card (review R19).
     if (widget.owned) {
-      return TouchSlop(
-        child: _EquipButton(label: l10n.shopEquip, onTap: widget.onEquip),
+      return TagPop(
+        key: const ValueKey('footer-owned'),
+        animate: _popFooter,
+        child: TouchSlop(
+          child: _EquipButton(label: l10n.shopEquip, onTap: widget.onEquip),
+        ),
       );
     }
     return TouchSlop(
       child: ShopBuyButton(
         price: widget.skin.priceCoins,
         onPressed: _buying ? null : _buy,
-        height: 38,
-        radius: 14,
+        height: 34,
+        radius: 13,
         edge: 4,
+        plainPriceSize: 15,
+        plainCoinSize: 18,
       ),
     );
   }
@@ -378,7 +421,7 @@ class _EquipButton extends StatelessWidget {
       style: AppTextStyleTokens.button.copyWith(
         fontSize: 15,
         fontWeight: FontWeight.w600,
-        color: AppColors.iconBrown,
+        color: AppColorTokens.iconBrown,
       ),
     ),
   );

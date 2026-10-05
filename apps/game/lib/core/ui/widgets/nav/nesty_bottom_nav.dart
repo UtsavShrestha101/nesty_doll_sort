@@ -5,6 +5,7 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_styles.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
+import 'package:nesty_game/core/ui/widgets/text/fit_text.dart';
 import 'package:nesty_game/core/ui/widgets/wood/wood_bar.dart';
 
 export 'package:nesty_game/core/ui/widgets/wood/wood_bar.dart';
@@ -13,10 +14,18 @@ export 'package:nesty_game/core/ui/widgets/wood/wood_bar.dart';
 /// localized label (Shop, Home, Museum).
 @immutable
 class NestyBottomNavItem {
-  const NestyBottomNavItem({required this.icon, required this.label});
+  const NestyBottomNavItem({
+    required this.icon,
+    required this.label,
+    this.shortLabel,
+  });
 
   final IconData icon;
   final String label;
+
+  /// The ARB's short form, for a label that doesn't fit at textFit's
+  /// `tabBar.minScale` (a screen reader still hears [label]).
+  final String? shortLabel;
 }
 
 /// "Bottom nav: Wood bar from y = 738. Items Shop · Home · Museum, 80 wide.
@@ -128,7 +137,12 @@ class _NavItemView extends StatelessWidget {
                       ? AppColorTokens.textOnWood
                       : AppColorTokens.textOnWoodMuted,
                 ),
-                child: Text(item.label, maxLines: 1, softWrap: false),
+                child: FitText(
+                  item.label,
+                  short: item.shortLabel,
+                  style: const TextStyle(),
+                  minScale: TextFitTokens.tabBarMinScale,
+                ),
               ),
             ],
           ),

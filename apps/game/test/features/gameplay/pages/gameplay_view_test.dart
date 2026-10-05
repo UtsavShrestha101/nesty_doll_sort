@@ -34,6 +34,7 @@ import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
 import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/milestone_chest_modal.dart';
+import 'package:nesty_game/features/gameplay/overlays/next_level_failed_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
 import 'package:nesty_game/features/gameplay/overlays/tutorial_overlay.dart';
@@ -277,7 +278,7 @@ void main() {
     expect(screen.board.padding, safeAreaOf(const Size(390, 844)));
     expect(screen.board.reduceMotion, isFalse);
     expect(find.text('Level 1'), findsOneWidget);
-    expect(find.bySemanticsLabel('0 of 1 family done'), findsOneWidget);
+    expect(find.bySemanticsLabel('0 of 1 family complete'), findsOneWidget);
     for (final label in ['Undo', 'Hint', '+Slot', 'Restart']) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
@@ -329,12 +330,12 @@ void main() {
     );
     await _win(tester, screen);
     // The bloc has won, but the board is still playing the batch.
-    expect(find.bySemanticsLabel('0 of 1 family done'), findsOneWidget);
+    expect(find.bySemanticsLabel('0 of 1 family complete'), findsOneWidget);
     expect(find.text('Continue'), findsNothing);
 
     screen.board.callbacks.onFamilyLanded(1, 1, 1.5);
     await tester.pump();
-    expect(find.bySemanticsLabel('1 of 1 family done'), findsOneWidget);
+    expect(find.bySemanticsLabel('1 of 1 family complete'), findsOneWidget);
 
     screen.board.callbacks.onWon();
     await _settle(tester);
@@ -353,7 +354,7 @@ void main() {
       (screen.board.applied.last as BoardResetEffect).reason,
       BoardResetReason.start,
     );
-    expect(find.bySemanticsLabel('0 of 1 family done'), findsOneWidget);
+    expect(find.bySemanticsLabel('0 of 1 family complete'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
 
@@ -1416,6 +1417,35 @@ void main() {
       await tester.pump();
       expect(find.byType(TutorialOverlay), findsOneWidget);
     });
+
+    testWidgets('the tutorial overlay paints above the HUD and the booster '
+        'bar, and Pause still takes a tap under its scrim (F-TUT)', (
+      tester,
+    ) async {
+      final screen = await _pump(tester, entries: [entryFor(tutorialLevel)]);
+      screen.board.layOut(screen.state.board);
+      await tester.pump();
+      final key = find.byKey(const ValueKey('tutorialOverlay'));
+      final stack = tester.widget<Stack>(
+        find.ancestor(of: key, matching: find.byType(Stack)).first,
+      );
+      int indexOf(bool Function(Widget child) test) =>
+          stack.children.indexWhere((c) => c is Positioned && test(c.child));
+      final overlay = stack.children.indexWhere(
+        (c) => c.key == const ValueKey('tutorialOverlay'),
+      );
+      final hud = indexOf((c) => c is ValueListenableBuilder<bool>);
+      final bar = indexOf((c) => c is BoosterBar);
+      expect(overlay, isNonNegative);
+      expect(hud, isNonNegative);
+      expect(bar, isNonNegative);
+      expect(overlay, greaterThan(hud));
+      expect(overlay, greaterThan(bar));
+      // It is IgnorePointer: Pause opens beneath the scrim.
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Paused'), findsOneWidget);
+    });
   });
 
   for (final size in screenSizes) {
@@ -1682,8 +1712,23 @@ void main() {
         reason: 'still nothing granted by the modal, mid-flight',
       );
 
-      await tester.pump(const Duration(milliseconds: 1200));
+      bool coinRingVisible() => tester
+          .widget<RewardRing>(
+            find.ancestor(
+              of: find.byType(CoinPill),
+              matching: find.byType(RewardRing),
+            ),
+          )
+          .visible;
+      // m7-4 1.7: the coin pill's gold ring is lit from the first landing
+      // (700 ms) and fades out from the last coin's (1,000 ms), over 240 ms.
+      expect(coinRingVisible(), isTrue);
+      expect(find.byKey(RewardRing.ringKey), findsWidgets);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(coinRingVisible(), isFalse, reason: 'the last coin has landed');
+      await tester.pump(const Duration(milliseconds: 1000));
       await tester.pumpAndSettle();
+      expect(coinRingVisible(), isFalse);
       // Lets the level-load chain `onCollect` kicks off settle too (not
       // itself tied to an animation ticker).
       await tester.pump(const Duration(milliseconds: 200));
@@ -1792,6 +1837,27 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
       expect(screen.homes, hasLength(1));
     });
+  });
+
+  testWidgets('a bonus level that can\'t be made on open shows frame 12.6, '
+      'with Back to Home (the splash\'s card never)', (tester) async {
+    final resolver = ScriptedLevelResolver(entries: const {});
+    final screen = await _pump(
+      tester,
+      request: const PlayRequest.bonus(10),
+      resolver: resolver,
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(NextLevelFailedCard), findsOneWidget);
+    expect(find.text('The shelves need a moment'), findsOneWidget);
+    expect(
+      find.text('This level didn’t set up. Try again, or head back\u00A0home.'),
+      findsOneWidget,
+    );
+    expect(find.text('Try again'), findsOneWidget);
+    await tester.tap(find.text('Back to Home'));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(screen.homes, hasLength(1));
   });
 
   group('a restored out-of-moves board whose intro card was never '
@@ -2037,7 +2103,7 @@ void main() {
       await tester.tap(find.text('+Slot'));
       await tester.pump(const Duration(milliseconds: 400));
       expect(
-        find.text('Two extra slots is the most for one level.'),
+        find.text('2 extra slots is the most for one level.'),
         findsOneWidget,
       );
       expect(screen.state.board.extraSlotCount, 2, reason: 'nothing added');

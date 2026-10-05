@@ -89,6 +89,10 @@ const _frames = <FxId, List<double>>{
   FxId.uiIntroTowers: [0, 60, 120, 200],
   FxId.uiIntroGlass: [0, 60, 130, 200],
   FxId.uiIntroIce: [0, 80, 170, 260],
+  // m7-4: the rival's portrait (idle, family, win, lose) and the Museum
+  // figurine's loop, both at 3× like the UI art.
+  FxId.uiRivalReact: [0, 90, 200, 260, 340],
+  FxId.uiMuseumIdle: [0, 60, 120, 200],
 };
 
 /// The share of touched pixels that must match, where 99 % is out of reach

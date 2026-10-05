@@ -78,14 +78,14 @@ class LevelPill extends StatelessWidget {
       maxLines: 1,
       softWrap: false,
     );
-    final Widget content = switch (kind) {
+    Widget contentFor({required bool compact}) => switch (kind) {
       _Kind.normal || _Kind.bonus => text,
       _Kind.hard || _Kind.superHard => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           text,
           SizedBox(width: kind.gap),
-          TierChip(tier: tier!),
+          TierChip(tier: tier!, compact: compact),
         ],
       ),
       _Kind.daily => Row(
@@ -112,9 +112,42 @@ class LevelPill extends StatelessWidget {
         height: HudTokens.levelPillHeight,
         padding: kind.padding,
         alignment: Alignment.center,
-        child: FittedBox(fit: BoxFit.scaleDown, child: content),
+        child: LayoutBuilder(
+          builder: (context, constraints) => FittedBox(
+            fit: BoxFit.scaleDown,
+            child: contentFor(
+              compact: _compact(context, kind, label, constraints.maxWidth),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  /// textFit hudPills: a tier chip goes compact (HARD to its glyph, SUPER
+  /// HARD to `tierSuperShort`) when the pill's inner width would scale the
+  /// full content below `minScale` 0.85.
+  bool _compact(
+    BuildContext context,
+    _Kind kind,
+    String label,
+    double maxWidth,
+  ) {
+    if (!maxWidth.isFinite || (kind != _Kind.hard && kind != _Kind.superHard)) {
+      return false;
+    }
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: kind.textStyle),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final natural =
+        painter.width +
+        kind.gap +
+        TierChip.widthOf(context, tier!, compact: false);
+    painter.dispose();
+    return maxWidth / natural < TextFitTokens.hudPillsMinScale;
   }
 }
 

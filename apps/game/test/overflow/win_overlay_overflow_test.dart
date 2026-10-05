@@ -236,11 +236,9 @@ void main() {
         );
         await tester.pump(const Duration(seconds: 3));
         await expectAccessibleLayout(tester);
-        // The short cards (16:9) show neither note nor tip (C11).
-        expect(
-          find.byKey(WinOverlay.noteKey),
-          size.height < 760 ? findsNothing : findsOneWidget,
-        );
+        // Every height keeps the note now (m7-4 4.12: the card blends by
+        // height, no 760 switch).
+        expect(find.byKey(WinOverlay.noteKey), findsOneWidget);
       });
 
       testWidgets('the one-time tip fits ${size.width.toInt()}×'
@@ -300,7 +298,7 @@ void main() {
         await expectAccessibleLayout(tester);
         // The button keeps its 48 dp even where the card scales down.
         final button = tester.getRect(
-          find.widgetWithText(TactileButton, 'Back to Chapters'),
+          find.widgetWithText(TactileButton, testL10n.winBackToChapters),
         );
         expect(button.height, greaterThanOrEqualTo(48));
         expect(button.bottom, lessThanOrEqualTo(size.height));

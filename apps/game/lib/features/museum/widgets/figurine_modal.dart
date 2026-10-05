@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_image.dart';
 
@@ -26,6 +27,79 @@ class FigurineModal extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onPlay;
 
+  /// Opens the modal for [chapterId] as a dialog on the root navigator (like
+  /// `LevelCard.show`), so the scrim covers the whole screen, the safe bands
+  /// and the shell's bottom nav included (frame 6.2).
+  ///
+  /// The dialog's own route has no [MuseumCubit] above it, so [cubit] is
+  /// passed in: a save change while the modal is open (a win completing its
+  /// chapter) still reaches it. [onPlay] gets the latest state once the
+  /// dialog has closed.
+  static Future<void> show(
+    BuildContext context, {
+    required MuseumCubit cubit,
+    required String chapterId,
+    required ValueChanged<MuseumState> onPlay,
+  }) {
+    final reduce = context.reduceMotion;
+    return showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: context.localizations.closeSemantics,
+      barrierColor: AppColorTokens.scrim,
+      transitionDuration: Duration(milliseconds: reduce ? 120 : 240),
+      transitionBuilder: (context, animation, _, child) => FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: reduce
+            ? child
+            : ScaleTransition(
+                scale: Tween(begin: 0.96, end: 1.0).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                ),
+                child: child,
+              ),
+      ),
+      // A general dialog's page has no Material above it: a transparent one
+      // gives the text the app's defaults and paints nothing.
+      pageBuilder: (dialogContext, _, _) => Material(
+        type: MaterialType.transparency,
+        child: BlocBuilder<MuseumCubit, AsyncValue<MuseumState>>(
+          bloc: cubit,
+          builder: (context, value) {
+            final state = value.data;
+            if (state == null) return const SizedBox.shrink();
+            for (final entry in state.entries) {
+              if (entry.chapterId != chapterId) continue;
+              return FigurineModal(
+                entry: entry,
+                homeLevelNumber: state.homeLevelNumber,
+                onClose: () => Navigator.of(dialogContext).pop(),
+                onPlay: () {
+                  Navigator.of(dialogContext).pop();
+                  onPlay(state);
+                },
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+
+  /// The card's top under the safe area (frame 6.2: 128 - 59).
+  static const double _frameTop = 69;
+
+  /// [_frameTop], or half the slack on a screen too short for the card at
+  /// its smallest (spotlight 200 + 330 at 1.0x text), so it never overflows.
+  static double _inset(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final smallest =
+        _Spotlight._minHeight + 330 * math.max(1, media.textScaler.scale(1));
+    final slack = media.size.height - media.padding.vertical - smallest;
+    return math.max(0, math.min(_frameTop, slack / 2));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
@@ -37,10 +111,19 @@ class FigurineModal extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const Scrim(),
-          Center(
+          // The scrim is the dialog route's barrier (see [show]).
+          Align(
+            alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22),
+              // The card hangs from the top, as frame 6.2 draws it (top 128
+              // on the 844 frame, 59 of that the status bar): 69 dp under
+              // the safe area, less on a short phone so it still fits.
+              padding: EdgeInsets.fromLTRB(
+                22,
+                MediaQuery.paddingOf(context).top + _inset(context),
+                22,
+                0,
+              ),
               child: ModalCard(
                 onClose: onClose,
                 closeSemanticLabel: l10n.closeSemantics,
@@ -48,7 +131,7 @@ class FigurineModal extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _Spotlight(entry: entry),
+                    _Spotlight(entry: entry, inset: _inset(context)),
                     const SizedBox(height: 16),
                     Semantics(
                       header: true,
@@ -64,9 +147,12 @@ class FigurineModal extends StatelessWidget {
                       Text(
                         flavor,
                         textAlign: TextAlign.center,
-                        style: AppTextStyleTokens.body.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.iconBrown,
+                        style: context.scriptStyle(
+                          AppTextStyleTokens.body.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: AppColorTokens.iconBrown,
+                          ),
+                          role: ScriptTextRole.body,
                         ),
                       ),
                     ],
@@ -75,14 +161,19 @@ class FigurineModal extends StatelessWidget {
                       Text(
                         l10n.museumLockedText(entry.chapterNumber),
                         textAlign: TextAlign.center,
-                        style: AppTextStyleTokens.body.copyWith(
-                          color: AppColors.iconBrown,
+                        style: context.scriptStyle(
+                          AppTextStyleTokens.body.copyWith(
+                            color: AppColorTokens.iconBrown,
+                          ),
+                          role: ScriptTextRole.body,
                         ),
                       ),
                     ],
                     const SizedBox(height: 14),
                     if (earned)
-                      _CollectedChip(collectedOn: entry.collectedOn)
+                      Center(
+                        child: _CollectedChip(collectedOn: entry.collectedOn),
+                      )
                     else ...[
                       _ChapterBar(entry: entry),
                       const SizedBox(height: 16),
@@ -105,26 +196,43 @@ class FigurineModal extends StatelessWidget {
 }
 
 class _Spotlight extends StatelessWidget {
-  const _Spotlight({required this.entry});
+  const _Spotlight({required this.entry, required this.inset});
 
   final MuseumEntry entry;
 
-  static const double _height = 200;
+  /// The card's gap under the safe area, which the panel gives back.
+  final double inset;
+
+  /// The art panel (`layout.museumDetail.spotlight.panel`: 300 tall, radius
+  /// 24); a short phone or a big text size gives some of it back so the card
+  /// still fits (the figurine shrinks with it).
+  static const double _height = MuseumDetailTokens.spotlightPanelHeight;
+  static const double _minHeight = 200;
   static const double _artMax = 272;
 
   @override
   Widget build(BuildContext context) {
     final earned = entry.earned;
+    // The card (title, text, chip or bar and button) takes about 330 dp at
+    // 1.0x text; what is left of the screen is the panel's.
+    final media = MediaQuery.of(context);
+    final room =
+        media.size.height -
+        media.padding.vertical -
+        inset -
+        330 * math.max(1, media.textScaler.scale(1));
     return SizedBox(
-      height: _height,
+      height: room.clamp(_minHeight, _height),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final art = math.min(
             _artMax,
-            math.min(constraints.maxWidth - 32, constraints.maxHeight - 20),
+            math.min(constraints.maxWidth - 32, constraints.maxHeight - 28),
           );
           return ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(MuseumDetailTokens.spotlightPanelRadius),
+            ),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
@@ -146,11 +254,42 @@ class _Spotlight extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Center(
-                    child: FigurineImage(
-                      figurineId: entry.figurineId,
-                      locked: !earned,
-                      size: art,
+                  // The spotlight's cone (NestyShop:110), under the figurine.
+                  Positioned(
+                    top: SpotlightConePainter.top,
+                    left: 0,
+                    right: 0,
+                    height: SpotlightConePainter.height,
+                    child: ExcludeSemantics(
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: CustomPaint(
+                          size: const Size(
+                            SpotlightConePainter.width,
+                            SpotlightConePainter.height,
+                          ),
+                          painter: SpotlightConePainter.shared,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // The art sits 6 dp above the panel's bottom (272 at top 22
+                  // in the 300 panel, NestyShop:111).
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 6,
+                    child: Center(
+                      // The heading under the art names the figurine, so a
+                      // reader hears it once (semantics tour: no label twice
+                      // in a row).
+                      child: ExcludeSemantics(
+                        child: FigurineImage(
+                          figurineId: entry.figurineId,
+                          locked: !earned,
+                          size: art,
+                        ),
+                      ),
                     ),
                   ),
                   PositionedDirectional(
@@ -190,7 +329,7 @@ class _ChapterChip extends StatelessWidget {
           ),
           style: AppTextStyleTokens.cardTitle.copyWith(
             fontSize: 12,
-            color: AppColors.textBrown,
+            color: AppColorTokens.textBrown,
           ),
         ),
       ),
@@ -217,7 +356,8 @@ class _CollectedChip extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColorTokens.successTint,
-        borderRadius: BorderRadius.circular(12),
+        // Frame 6.2: about 147 x 32, radius 16.
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -226,14 +366,14 @@ class _CollectedChip extends StatelessWidget {
           children: [
             const Icon(
               NestyIcons.checkCircle,
-              size: 17,
+              size: 20,
               color: AppColorTokens.successEdge,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: AppTextStyleTokens.cardTitle.copyWith(
-                fontSize: 13,
+                fontSize: 15,
                 color: AppColorTokens.successEdge,
               ),
             ),
@@ -262,14 +402,14 @@ class _ChapterBar extends StatelessWidget {
               l10n.winChapter(entry.chapterNumber),
               style: AppTextStyleTokens.cardTitle.copyWith(
                 fontSize: 13,
-                color: AppColors.textBrown,
+                color: AppColorTokens.textBrown,
               ),
             ),
             Text(
               l10n.homeMuseumProgress(entry.done, entry.total),
               style: AppTextStyleTokens.cardTitle.copyWith(
                 fontSize: 13,
-                color: AppColors.textBrown,
+                color: AppColorTokens.textBrown,
               ),
             ),
           ],
@@ -284,4 +424,40 @@ class _ChapterBar extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The modal's spotlight cone (`layout.museumDetail.spotlight.cone`, drawn in
+/// code): 250×320, white at 55 % fading to 0 down the box, clipped to
+/// `polygon(38% 0, 62% 0, 100% 100%, 0 100%)`, 10 dp above the panel's top.
+/// The path and the paint are built once, never per frame (rule 8).
+class SpotlightConePainter extends CustomPainter {
+  SpotlightConePainter._();
+
+  /// The one instance every modal shares.
+  static final shared = SpotlightConePainter._();
+
+  static const double width = MuseumDetailTokens.spotlightConeWidth;
+  static const double height = MuseumDetailTokens.spotlightConeHeight;
+
+  /// The cone's top, relative to the spotlight's.
+  static const double top = MuseumDetailTokens.spotlightConeTop;
+
+  /// The trapezoid, in the cone's own box.
+  static final Path path = Path()
+    ..moveTo(width * MuseumDetailTokens.spotlightConeTopLeft, 0)
+    ..lineTo(width * MuseumDetailTokens.spotlightConeTopRight, 0)
+    ..lineTo(width, height)
+    ..lineTo(0, height)
+    ..close();
+
+  static final Paint _paint = Paint()
+    ..shader = MuseumDetailTokens.spotlightConeFill.createShader(
+      const Rect.fromLTWH(0, 0, width, height),
+    );
+
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawPath(path, _paint);
+
+  @override
+  bool shouldRepaint(SpotlightConePainter oldDelegate) => false;
 }

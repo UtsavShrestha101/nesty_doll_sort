@@ -1,9 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/theme/app_theme.dart';
+import 'package:nesty_game/core/ui/widgets/text/shrink_to_fit_text.dart';
 import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
@@ -11,6 +14,11 @@ import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_board.dart';
 import 'package:nesty_game/l10n/app_localizations.dart';
 import 'package:nesty_render/nesty_render.dart';
+
+import '../../l10n/support/test_locale.dart';
+
+export '../../l10n/support/test_locale.dart'
+    show testL10n, testLocale, testLocaleCode;
 
 /// The phones every screen is checked on (spec §16, M7 "no layout
 /// overflows"): a small Android, the design's reference, a large iPhone.
@@ -26,13 +34,32 @@ const textScales = [1.0, 1.3];
 /// overflow. Additive to [screenSizes] (which every existing per-widget
 /// `screenSizes` loop keeps using unchanged); `test/overflow/` is the one
 /// suite that sweeps this wider list.
-const overflowScreenSizes = [
+const allOverflowScreenSizes = [
   Size(360, 640),
   Size(390, 844),
   Size(430, 932),
   Size(375, 667),
   Size(768, 1024),
 ];
+
+/// The locales whose overflow run takes every size (build/m7-p5/p5/l10n.md
+/// §6.2): English, German (the longest) and Hindi and Japanese (the
+/// tallest). The others take the two small phones, where a long string
+/// breaks first.
+const fullOverflowMatrixLocales = {'en', 'de', 'hi', 'ja'};
+
+/// `--dart-define=NESTY_OVERFLOW_MATRIX=full` gives every locale every size.
+const overflowMatrix = String.fromEnvironment('NESTY_OVERFLOW_MATRIX');
+
+/// The sizes the overflow suite sweeps in this run's locale ([testLocale];
+/// l10n.md §6.2): [allOverflowScreenSizes] for [fullOverflowMatrixLocales]
+/// or a `full` matrix, else 360×640 and 375×667. Each still runs at both
+/// [textScales].
+final List<Size> overflowScreenSizes =
+    overflowMatrix == 'full' ||
+        fullOverflowMatrixLocales.contains(testLocale.languageCode)
+    ? allOverflowScreenSizes
+    : const [Size(360, 640), Size(375, 667)];
 
 /// Safe areas of each size above (status bar / home indicator). The three
 /// [screenSizes] keep the exact values they always had; [overflowScreenSizes]
@@ -51,7 +78,8 @@ EdgeInsets safeAreaOf(Size size) {
 }
 
 /// Pumps [child] as a whole screen on a [size] phone with its safe areas,
-/// the app theme, English copy, [textScale] and [reduceMotion].
+/// the app theme, the run's copy ([testLocale], English by default, or
+/// [locale]), [textScale] and [reduceMotion].
 Future<void> pumpScreen(
   WidgetTester tester,
   Widget child, {
@@ -59,6 +87,7 @@ Future<void> pumpScreen(
   double textScale = 1,
   bool reduceMotion = false,
   EdgeInsets? padding,
+  Locale? locale,
 }) async {
   tester.view
     ..physicalSize = size
@@ -69,6 +98,7 @@ Future<void> pumpScreen(
     MaterialApp(
       theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
+      locale: checkedLocale(locale),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) => MediaQuery(
@@ -231,6 +261,7 @@ Future<void> expectAccessibleLayout(WidgetTester tester) async {
     handle.dispose();
   }
   expectNoCutText(tester);
+  expectReadableText(tester);
 }
 
 /// No text on screen is cut: an ellipsis, lines past `maxLines`, or a
@@ -258,4 +289,104 @@ void expectNoCutText(WidgetTester tester) {
 
   tester.binding.renderViews.forEach(visit);
   expect(cut, isEmpty, reason: 'text is cut instead of scaled down');
+}
+
+/// The readability floor (build/m7-p5/p5/l10n.md §6.2 item 7): no text is
+/// drawn below this share of its style's size, at the run's text scale, by
+/// a `FittedBox` (or any scale transform) or a `ShrinkToFitText`. Below it
+/// a string gets its short form instead (tokens.json `textFit`: wrap, else
+/// scale to the surface's `minScale`, 0.75 at the least, else the short
+/// form).
+const readableFloor = 0.75;
+
+/// `report` (the default) prints the texts under [readableFloor] and
+/// passes; `gate` fails on them. l10n.md §6.2 runs it as a report until
+/// English passes: in 5B-1 English did not (the HUD's level pill, Home's
+/// chapter card and bonus card, rival select and the rival strip at 360 dp
+/// and 1.3× text, where the short forms are not wired yet), so 5B-5 flips
+/// the default to `gate` once they are. `--dart-define=NESTY_READABILITY=
+/// gate` gates a run now.
+const readabilityMode = String.fromEnvironment(
+  'NESTY_READABILITY',
+  defaultValue: 'gate',
+);
+
+/// Every text on screen drawn below [readableFloor] of its style's size:
+/// the scale its transform to the screen applies (a `FittedBox`'s shrink),
+/// times a `ShrinkToFitText`'s font step, times the text scaler. Text that
+/// is scaled to nothing (an entrance not begun) or offstage is not drawn,
+/// so it is skipped.
+List<String> unreadableText(WidgetTester tester) {
+  final requested = <RenderParagraph, double>{};
+  for (final element in find.byType(ShrinkToFitText).evaluate()) {
+    final widget = element.widget as ShrinkToFitText;
+    final size =
+        DefaultTextStyle.of(element).style.merge(widget.style).fontSize ?? 14;
+    void visit(Element child) {
+      final object = child.renderObject;
+      if (child.widget is RichText && object is RenderParagraph) {
+        requested[object] = size;
+      }
+      child.visitChildren(visit);
+    }
+
+    element.visitChildren(visit);
+  }
+
+  final found = <String>[];
+  final pixelRatio = tester.view.devicePixelRatio;
+  void walk(RenderObject object) {
+    if (object is RenderOffstage && object.offstage) return;
+    if (object is RenderOpacity && object.opacity == 0) return;
+    if (object is RenderParagraph && object.hasSize && object.attached) {
+      final text = object.text.toPlainText().trim();
+      final fontSize = object.text.style?.fontSize;
+      if (text.isNotEmpty &&
+          !_isIconGlyph(text) &&
+          fontSize != null &&
+          fontSize > 0) {
+        final matrix = object.getTransformTo(null);
+        final scale =
+            math.sqrt(
+              matrix.entry(0, 0) * matrix.entry(0, 0) +
+                  matrix.entry(1, 0) * matrix.entry(1, 0),
+            ) /
+            pixelRatio;
+        final shrink = fontSize / (requested[object] ?? fontSize);
+        final scaler = object.textScaler.scale(fontSize) / fontSize;
+        final factor = scale * shrink * scaler;
+        if (scale > 0.05 && factor < readableFloor - 0.005) {
+          found.add(
+            '"${text.replaceAll('\n', ' / ')}" at '
+            '${(factor * 100).toStringAsFixed(0)} % of its '
+            '${(requested[object] ?? fontSize).toStringAsFixed(1)} dp style',
+          );
+        }
+      }
+    }
+    object.visitChildren(walk);
+  }
+
+  tester.binding.renderViews.forEach(walk);
+  return found;
+}
+
+/// An icon font's glyph (Private Use Area), which is not text to read.
+bool _isIconGlyph(String text) => text.runes.every(
+  (rune) =>
+      (rune >= 0xE000 && rune <= 0xF8FF) || rune >= 0xF0000 || rune == 0x20,
+);
+
+/// [unreadableText] is empty, or, in a `report` run, printed.
+void expectReadableText(WidgetTester tester) {
+  final found = unreadableText(tester);
+  if (readabilityMode == 'report') {
+    if (found.isNotEmpty) {
+      debugPrint(
+        'READABILITY ${tester.testDescription}:\n  ${found.join('\n  ')}',
+      );
+    }
+    return;
+  }
+  expect(found, isEmpty, reason: 'text is drawn below the readability floor');
 }

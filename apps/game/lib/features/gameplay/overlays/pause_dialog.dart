@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
@@ -198,24 +199,27 @@ class _PauseDialogState extends State<PauseDialog> {
           value: widget.settings.sound,
           onChanged: widget.onSoundChanged,
           library: widget.library,
+          versus: versus,
         ),
-        const _DashedDivider(),
+        _Divider(versus: versus),
         _ToggleRow(
           icon: NestyIcons.musicNote,
           label: l10n.settingMusic,
           value: widget.settings.music,
           onChanged: widget.onMusicChanged,
           library: widget.library,
+          versus: versus,
         ),
-        const _DashedDivider(),
+        _Divider(versus: versus),
         _ToggleRow(
           icon: NestyIcons.vibration,
           label: l10n.settingHaptics,
           value: widget.settings.haptics,
           onChanged: widget.onHapticsChanged,
           library: widget.library,
+          versus: versus,
         ),
-        if (!versus) const _DashedDivider(),
+        if (!versus) const _Divider(versus: false),
       ],
     );
     return OverlayEntrance(
@@ -271,7 +275,7 @@ class _PauseDialogState extends State<PauseDialog> {
                 decoration: BoxDecoration(
                   color: AppColorTokens.surfaceWhite,
                   borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  border: Border.all(color: const Color(0xFFF0DFC4), width: 2),
+                  border: Border.all(color: AppColorTokens.divider, width: 2),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -357,7 +361,10 @@ class _PauseDialogState extends State<PauseDialog> {
             Text(
               l10n.raceLeaveBody,
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(fontSize: 16),
+              style: context.scriptStyle(
+                AppTextStyles.bodySmall.copyWith(fontSize: 16),
+                role: ScriptTextRole.body,
+              ),
             ),
             const SizedBox(height: 18),
             TactileButton(
@@ -389,30 +396,39 @@ class _RaceHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     final header = l10n.racePauseHeader(l10n.raceRivalName(rival));
+    final style = AppTextStyleTokens.cardTitle.copyWith(
+      fontSize: 17,
+      color: AppColorTokens.textPrimary,
+    );
     return Semantics(
       label: header,
       header: true,
       container: true,
       excludeSemantics: true,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RivalPortrait(number: rival, size: 30),
-            const SizedBox(width: 10),
-            Text(
-              header,
-              style: AppTextStyleTokens.cardTitle.copyWith(
-                fontSize: 17,
-                color: AppColorTokens.textPrimary,
+      child: LayoutBuilder(
+        builder: (context, constraints) => FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RivalPortrait(number: rival, size: 30),
+              const SizedBox(width: 10),
+              Text(header, style: style, maxLines: 1, softWrap: false),
+              const SizedBox(width: 8),
+              // The tag falls to its glyph when the full row would scale
+              // below the readability floor (textFit short form); the
+              // header ("vs Computer · {rival}") keeps the word (D271).
+              ComputerTag(
+                glyphOnly: ComputerTag.glyphOnlyForRow(
+                  context,
+                  lead: header,
+                  leadStyle: style,
+                  gap: 8 + 30 + 10,
+                  maxWidth: constraints.maxWidth,
+                ),
               ),
-              maxLines: 1,
-              softWrap: false,
-            ),
-            const SizedBox(width: 8),
-            ComputerTag.responsive(),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -428,6 +444,7 @@ class _ToggleRow extends StatelessWidget {
     required this.value,
     required this.onChanged,
     required this.library,
+    this.versus = false,
   });
 
   final IconData icon;
@@ -435,6 +452,10 @@ class _ToggleRow extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   final FxLibrary? library;
+
+  /// The race pause's rows (frame 9.7, NestyMeta.dc.html:76): 50 dp tall,
+  /// glyph `#6E4526`, Fredoka 600 17/1 label.
+  final bool versus;
 
   static const double _rowPadding = 11;
 
@@ -447,28 +468,36 @@ class _ToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasFile = library?[FxId.uiToggle];
-    return Padding(
+    final labelStyle = versus
+        ? AppTextStyleTokens.cardTitle.copyWith(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            height: 1,
+            color: AppColorTokens.textPrimary,
+          )
+        : AppTextStyles.row.copyWith(color: AppColorTokens.textPrimary);
+    final row = Padding(
       // NestyOverlay: 11 above and below the 30 px toggle. Its 48 dp touch
       // target already takes (48 − 30) / 2 of each.
-      padding: const EdgeInsets.symmetric(
+      padding: EdgeInsets.symmetric(
         horizontal: 4,
-        vertical: _rowPadding - (_touchHeight - _toggleHeight) / 2,
+        // The race row is a flat 50 dp: the 48 dp touch target fills it.
+        vertical: versus ? 0 : _rowPadding - (_touchHeight - _toggleHeight) / 2,
       ),
       child: Row(
         children: [
           ExcludeSemantics(
-            child: Icon(icon, size: 24, color: AppColorTokens.textSecondary),
+            child: Icon(
+              icon,
+              size: 24,
+              color: versus
+                  ? AppColorTokens.iconBrown
+                  : AppColorTokens.textSecondary,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: ExcludeSemantics(
-              child: Text(
-                label,
-                style: AppTextStyles.row.copyWith(
-                  color: AppColorTokens.textPrimary,
-                ),
-              ),
-            ),
+            child: ExcludeSemantics(child: Text(label, style: labelStyle)),
           ),
           const SizedBox(width: 8),
           NestyToggle(
@@ -483,6 +512,7 @@ class _ToggleRow extends StatelessWidget {
         ],
       ),
     );
+    return versus ? SizedBox(height: 50, child: Center(child: row)) : row;
   }
 }
 
@@ -533,16 +563,25 @@ class _LottieToggleState extends State<LottieToggle> {
   );
 }
 
-/// NestyOverlay's `1px dashed rgba(110,60,25,.2)` row divider.
-class _DashedDivider extends StatelessWidget {
-  const _DashedDivider();
+/// The rows' divider: NestyOverlay's `1px dashed rgba(110,60,25,.2)`, or in
+/// a race (frame 9.7) the solid `1.5px #F0DFC4` (token `divider`).
+class _Divider extends StatelessWidget {
+  const _Divider({required this.versus});
+
+  final bool versus;
 
   @override
-  Widget build(BuildContext context) => const SizedBox(
-    height: 1,
-    width: double.infinity,
-    child: CustomPaint(painter: _DashPainter()),
-  );
+  Widget build(BuildContext context) => versus
+      ? const SizedBox(
+          height: 1.5,
+          width: double.infinity,
+          child: ColoredBox(color: AppColorTokens.divider),
+        )
+      : const SizedBox(
+          height: 1,
+          width: double.infinity,
+          child: CustomPaint(painter: _DashPainter()),
+        );
 }
 
 final class _DashPainter extends CustomPainter {

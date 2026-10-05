@@ -57,16 +57,20 @@ class RaceActionBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   BoosterButton(
+                    kind: BoosterButtonKind.undo,
                     icon: NestyIcons.undo,
                     label: l10n.boosterUndo,
+                    shortLabel: l10n.boosterUndoShort,
                     width: width,
                     badge: const BoosterBadge.infinite(),
                     onPressed: canUndo ? onUndo : null,
                   ),
                   SizedBox(width: between),
                   BoosterButton(
+                    kind: BoosterButtonKind.restart,
                     icon: NestyIcons.restartAlt,
                     label: l10n.restart,
+                    shortLabel: l10n.restartShort,
                     width: width,
                     onPressed: onRestart,
                   ),

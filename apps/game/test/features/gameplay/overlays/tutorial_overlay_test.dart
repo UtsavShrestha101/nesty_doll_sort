@@ -78,6 +78,80 @@ void main() {
     expect(find.byType(TutorialOverlay), findsOneWidget);
   });
 
+  testWidgets('the tip\'s tail is a 22×9 triangle that takes no layout '
+      'height (frame 1.3)', (tester) async {
+    final board = GameState.initial(defaultLevel);
+    await pumpScreen(
+      tester,
+      TutorialOverlay(
+        cue: _tapSource,
+        board: board,
+        geometry: _geometryFor(board),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final tail = find.byKey(const Key('tutorial-tip-tail'));
+    expect(tail, findsOneWidget);
+    expect(tester.getSize(tail), const Size(22, 9));
+    // The card's box ends where the tail starts (1 dp of overlap): the tail
+    // hangs outside the layout, not in its own column slot.
+    final card = tester.getRect(
+      find.ancestor(of: tail, matching: find.byType(Stack)).first,
+    );
+    expect(tester.getRect(tail).top, closeTo(card.bottom - 1, 0.01));
+  });
+
+  testWidgets('level 1\'s tip is spoken as "Step n of 3. {title}" then its '
+      'text (a11y_tut_step)', (tester) async {
+    final handle = tester.ensureSemantics();
+    final board = GameState.initial(defaultLevel);
+    await pumpScreen(
+      tester,
+      TutorialOverlay(
+        cue: _tapSource,
+        board: board,
+        geometry: _geometryFor(board),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.bySemanticsLabel(RegExp(r'^Step 1 of 3\. Tap the small doll')),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel(RegExp('STEP 1 OF 3')), findsNothing);
+    handle.dispose();
+  });
+
+  testWidgets('m7-4 8.1: the scrim has a hole over Pause (10, 56, 60 x 60) '
+      'and the tip sits in the HUD row (left 76, right 16, top 62)', (
+    tester,
+  ) async {
+    final board = GameState.initial(defaultLevel);
+    const size = Size(390, 844);
+    await pumpScreen(
+      tester,
+      TutorialOverlay(
+        cue: _tapSource,
+        board: board,
+        geometry: _geometryFor(board),
+      ),
+      padding: const EdgeInsets.only(top: 59),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      tester.renderObject(find.byType(TutorialOverlay)),
+      paints..path(
+        color: const Color(0x99341A08),
+        includes: const [Offset(200, 30), Offset(300, 90), Offset(5, 90)],
+        excludes: const [Offset(40, 86), Offset(14, 90), Offset(60, 110)],
+      ),
+    );
+    final tip = tester.getRect(find.byType(NestySurface).first);
+    expect(tip.left, 76);
+    expect(tip.right, size.width - 16);
+    expect(tip.top, 62);
+  });
+
   group('Level 1\'s three steps all wear "STEP n OF 3" (copy.md E; lead note '
       '6)', () {
     for (final (step, chip, title) in [

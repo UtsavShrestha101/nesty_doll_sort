@@ -9,6 +9,8 @@ import 'package:nesty_game/core/services/records/badge.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/widgets/race/race_coin_chip.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/overlays/race_result_overlay.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 
@@ -62,7 +64,9 @@ void main() {
         'Computer, and New race then Rematch', (tester) async {
       final calls = <String>[];
       await pumpScreen(tester, win(calls: calls));
-      expect(find.text('You won the race!'), findsOneWidget);
+      final ribbon = tester.ensureSemantics();
+      expect(find.bySemanticsLabel('You won the race!'), findsOneWidget);
+      ribbon.dispose();
       // The chip counts up once the coin bursts (700 ms in); its label says
       // the whole reward.
       expect(find.text('+0 coins'), findsOneWidget);
@@ -76,7 +80,7 @@ void main() {
       expect(find.text('Button'), findsOneWidget);
       expect(find.text('Computer'), findsOneWidget);
       expect(
-        find.text('You completed every family before Button.'),
+        find.text('Every family is complete. Button was still sorting.'),
         findsOneWidget,
       );
       // No moves chip, no stars, no third control.
@@ -98,6 +102,27 @@ void main() {
       await tester.tap(find.text('Rematch'));
       await tester.tap(find.text('New race'));
       expect(calls, ['rematch', 'newRace']);
+      await tester.pump(const Duration(seconds: 2));
+    });
+
+    testWidgets('the ribbon is ui_win_ribbon in the versus fills, and the '
+        'rival\'s portrait nods (ui_rival_react lose)', (tester) async {
+      await pumpScreen(tester, win());
+      final view = tester.widget<LottieFxView>(
+        find.byWidgetPredicate(
+          (w) => w is LottieFxView && w.id == FxId.uiWinRibbon,
+        ),
+      );
+      final params = view.controller!.params;
+      const versus = WinRibbonTokens.versusColors;
+      expect(params.tintOf('band_fill'), versus.band);
+      expect(params.tintOf('edge_fill'), versus.edge);
+      expect(params.tintOf('tail_fill'), versus.tail);
+      expect(params.tintOf('fold_fill'), versus.fold);
+      expect(versus.band, const Color(0xFF4E5FD9));
+      final react = tester.widget<RivalReact>(find.byType(RivalReact));
+      expect(react.reaction, RivalReaction.lose);
+      expect(react.size, 56);
       await tester.pump(const Duration(seconds: 2));
     });
 
@@ -169,7 +194,7 @@ void main() {
       await pumpScreen(tester, win());
       expect(
         find.bySemanticsLabel(
-          'Button, Computer. You completed every family before Button.',
+          'Button, Computer. Every family is complete. Button was still sorting.',
         ),
         findsOneWidget,
       );
@@ -185,7 +210,9 @@ void main() {
         'then New race, and no reward', (tester) async {
       final calls = <String>[];
       await pumpScreen(tester, loss(calls: calls));
-      expect(find.text('So close! Rematch?'), findsOneWidget);
+      final ribbon = tester.ensureSemantics();
+      expect(find.bySemanticsLabel('So close! Rematch?'), findsOneWidget);
+      ribbon.dispose();
       expect(
         find.text('Comet finished first this time. A rematch costs nothing.'),
         findsOneWidget,
@@ -205,6 +232,15 @@ void main() {
       await tester.tap(find.text('Rematch'));
       await tester.tap(find.text('New race'));
       expect(calls, ['rematch', 'newRace']);
+    });
+
+    testWidgets('the rival\'s portrait hops (ui_rival_react win)', (
+      tester,
+    ) async {
+      await pumpScreen(tester, loss());
+      final react = tester.widget<RivalReact>(find.byType(RivalReact));
+      expect(react.reaction, RivalReaction.win);
+      expect(react.number, 3);
     });
 
     testWidgets('jingle_versus_lose at the open, the plain scrim (never the '
@@ -262,19 +298,42 @@ void main() {
       expect(find.text('New rival unlocked!'), findsOneWidget);
       expect(find.text('Button'), findsOneWidget);
       expect(find.text('Computer'), findsOneWidget);
-      expect(find.text('Careful · Slow'), findsOneWidget);
+      expect(find.text('Steady pace'), findsOneWidget);
       expect(find.text('Button is ready to race.'), findsOneWidget);
       final portrait = tester.widget<RivalPortrait>(find.byType(RivalPortrait));
       expect(portrait.size, 128);
       expect(portrait.emphasis, isTrue);
 
-      await tester.tap(find.text('New race'));
+      // Its primary names the rival (m7-4 4.1): "Race Button", not "New
+      // race".
+      expect(find.text('New race'), findsNothing);
+      await tester.tap(find.text('Race Button'));
       await tester.tap(find.text('Not now'));
       expect(calls, ['newRace', 'notNow']);
     });
 
-    testWidgets('no sound and no haptic of its own; the rays turn, and stay '
-        'still under reduced motion', (tester) async {
+    testWidgets('jingle_reward plays once as the card lands, no haptic', (
+      tester,
+    ) async {
+      final jingles = FakeAudioService();
+      await pumpScreen(
+        tester,
+        RivalUnlockedCard(
+          rival: 3,
+          jingles: jingles,
+          onNewRace: () {},
+          onNotNow: () {},
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(jingles.jingles, [Jingle.reward]);
+      await tester.pump(const Duration(seconds: 3));
+      expect(jingles.jingles, [Jingle.reward], reason: 'once');
+    });
+
+    testWidgets('the rays turn, and stay still under reduced motion', (
+      tester,
+    ) async {
       Widget card() =>
           RivalUnlockedCard(rival: 3, onNewRace: () {}, onNotNow: () {});
       await pumpScreen(tester, card());
@@ -301,6 +360,25 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(
         find.bySemanticsLabel('Comet, Computer. Comet is ready to race.'),
+        findsOneWidget,
+      );
+      handle.dispose();
+    });
+
+    // The two sentences join through a11yJoinSentences, never an English
+    // ". " in code (l10n.md §1.2; 5b-copycheck).
+    testWidgets('joins the label in the language\'s own stop (ja)', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpScreen(
+        tester,
+        RivalUnlockedCard(rival: 3, onNewRace: () {}, onNotNow: () {}),
+        locale: const Locale('ja'),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.bySemanticsLabel('コメット、コンピューター。コメットがレースの準備を整えました。'),
         findsOneWidget,
       );
       handle.dispose();

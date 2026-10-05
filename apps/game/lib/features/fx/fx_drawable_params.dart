@@ -1,5 +1,7 @@
 import 'dart:ui' show Color, Offset;
 
+import 'package:nesty_game/core/ui/tokens/ui_token_types.dart'
+    show RibbonColors;
 import 'package:nesty_game/features/fx/fx_image_source.dart';
 
 /// The per-use inputs of one pooled drawable, read by its value delegates
@@ -94,6 +96,49 @@ final class FxDrawableParams {
 
   Color? _tintColor;
 
+  // ── Named tint fills and widths (LOTTIE.md "Tint and width"; m7-4). ──
+
+  /// The colour the clip gives the fill [name] (`FxSpec.tintFills`: a
+  /// ribbon's `band_fill`, `edge_fill`, `tail_fill`, `fold_fill`, the family
+  /// counter's `pill_fill`), or null for the authored one. `hi_fill` stays
+  /// as authored (white).
+  Color? tintOf(String name) => _tints[name];
+
+  /// Sets or clears one tint fill.
+  void setTint(String name, Color? color) {
+    if (color == null) {
+      if (_tints.remove(name) == null) return;
+    } else {
+      if (_tints[name] == color) return;
+      _tints[name] = color;
+    }
+    _revision++;
+  }
+
+  final Map<String, Color> _tints = {};
+
+  /// Recolours a ribbon (`ui_win_ribbon`, `ui_chapter_ribbon`) by its four
+  /// named fills; null restores the authored colours. A ribbon is built from
+  /// named fills, not a colour matrix (m7-4 4.3, 4.15).
+  void setRibbonColors(RibbonColors? colors) {
+    setTint('band_fill', colors?.band);
+    setTint('edge_fill', colors?.edge);
+    setTint('tail_fill', colors?.tail);
+    setTint('fold_fill', colors?.fold);
+  }
+
+  /// The family counter's pill width (`pill_rect` and `glow_rect` through
+  /// `rectangleSize`, the doll mark moved with it); null keeps the authored
+  /// 70.
+  double? get pillWidth => _pillWidth;
+  set pillWidth(double? value) {
+    if (value == _pillWidth) return;
+    _pillWidth = value;
+    _revision++;
+  }
+
+  double? _pillWidth;
+
   // ── Board-space travel (m2-lottie-design §6), in reference units. ──
 
   /// Where the `travel` null starts (null: the authored S).
@@ -169,6 +214,8 @@ final class FxDrawableParams {
     }
     _rimColor = null;
     _tintColor = null;
+    _tints.clear();
+    _pillWidth = null;
     _travelSrc = null;
     _travelDst = null;
     _targetPos = null;

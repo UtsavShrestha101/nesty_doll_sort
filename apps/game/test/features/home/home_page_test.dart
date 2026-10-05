@@ -12,6 +12,8 @@ import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/widgets/home/stars_chip.dart';
+import 'package:nesty_game/core/ui/widgets/home/streak_look.dart';
 import 'package:nesty_game/features/dev/level_picker_sheet.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
@@ -113,6 +115,8 @@ void main() {
 
     expect(find.text('PLAY'), findsOneWidget);
     expect(find.text('Level 56'), findsOneWidget);
+    // NestyHub:290: a label of 9 characters or fewer is set at 36.
+    expect(tester.widget<Text>(find.text('Level 56')).style!.fontSize, 36);
     expect(find.text('HARD'), findsOneWidget);
     expect(find.bySemanticsLabel('Play level 56, Hard'), findsOneWidget);
   });
@@ -166,7 +170,7 @@ void main() {
       onShop: shops.add,
       onSettings: () => settingsOpened = true,
     );
-    await tester.tap(find.bySemanticsLabel('830 coins. Get more coins'));
+    await tester.tap(find.bySemanticsLabel('830 coins. Opens the Shop.'));
     expect(shops, [ShopTab.coins]);
 
     await tester.tap(find.bySemanticsLabel('Settings'));
@@ -184,6 +188,10 @@ void main() {
     );
     expect(find.text('Daily Puzzle'), findsOneWidget);
     expect(find.text('After Level 2'), findsOneWidget);
+    // NestyHub:39: Nunito 800 12.
+    final footer = tester.widget<Text>(find.text('After Level 2'));
+    expect(footer.style!.fontSize, 12);
+    expect(footer.style!.fontWeight, FontWeight.w800);
     await tester.tap(find.text('Daily Puzzle'));
     expect(dailyOpened, isFalse, reason: 'the locked tile ignores taps');
   });
@@ -204,11 +212,11 @@ void main() {
       tester.getSemantics(find.bySemanticsLabel('Daily Puzzle')).value,
       'After Level 2',
     );
+    // One sentence names the tile and why it is locked (copy.md A11y
+    // `a11y_home_versus_locked`).
     expect(
-      tester
-          .getSemantics(find.bySemanticsLabel('vs Computer, computer player'))
-          .value,
-      'After Level 20',
+      find.bySemanticsLabel('vs Computer, locked. After Level 20.'),
+      findsOneWidget,
     );
     handle.dispose();
   });
@@ -277,7 +285,7 @@ void main() {
     expect(find.text('Records'), findsOneWidget);
     expect(
       find.bySemanticsLabel(
-        'Chapter 3, Seaside Market, 39 of 60 stars. Opens chapters.',
+        'Chapter 3, Seaside Market. 39 of 60 stars. Opens Chapters.',
       ),
       findsOneWidget,
     );
@@ -304,6 +312,31 @@ void main() {
     expect(390 - button.right, 16);
   });
 
+  testWidgets('the chapter card\'s type follows NestyHub:25-26 and its chip '
+      'is 30 tall (phase 5)', (tester) async {
+    await pumpHome(
+      tester,
+      state: const AsyncValue.data(
+        data: HomeState(
+          playRequest: PlayRequest.campaign(56),
+          tier: Tier.hard,
+          chapterNumber: 3,
+          chapterId: 'ch03',
+          chapterStars: 39,
+          chapterStarsPossible: 60,
+        ),
+      ),
+    );
+    final kicker = tester.widget<Text>(find.text('CHAPTER 3'));
+    expect(kicker.style!.fontSize, 11);
+    expect(kicker.style!.letterSpacing, closeTo(11 * 0.08, 1e-9));
+    final name = tester.widget<Text>(find.text('Seaside Market'));
+    expect(name.style!.fontSize, 17);
+    expect(name.style!.height, 1.1);
+    expect(tester.getSize(find.byType(StarsChip)).height, 30);
+    expect(tester.widget<Text>(find.text('Records')).style!.fontSize, 11);
+  });
+
   testWidgets('Bonus Endless: the card reads BONUS ENDLESS / Bonus levels '
       'with the whole campaign\'s stars, and PLAY wears BONUS (frame 12.2)', (
     tester,
@@ -326,10 +359,12 @@ void main() {
     expect(find.text('Bonus levels'), findsOneWidget);
     expect(find.text('552/600'), findsOneWidget);
     expect(find.text('Bonus Level 7'), findsOneWidget);
+    // NestyHub:290: a label over 9 characters is set at 28 (f12-2).
+    expect(tester.widget<Text>(find.text('Bonus Level 7')).style!.fontSize, 28);
     expect(find.text('BONUS'), findsOneWidget);
     expect(find.text('HARD'), findsNothing);
     expect(
-      find.bySemanticsLabel('Bonus levels, 552 of 600 stars. Opens chapters.'),
+      find.bySemanticsLabel('Bonus levels. 552 of 600 stars. Opens Chapters.'),
       findsOneWidget,
     );
   });
@@ -424,7 +459,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.bySemanticsLabel('vs Computer, computer player'),
+      find.bySemanticsLabel('vs Computer. Race a computer on the same puzzle.'),
       findsOneWidget,
     );
     await tester.tap(find.text('vs Computer'));
@@ -536,6 +571,69 @@ void main() {
       expect(fade, findsOneWidget);
       await tester.pump(const Duration(milliseconds: 400));
       expect(ring(), isTrue, reason: 'stays after the fade, no loop');
+    });
+
+    testWidgets('the relit glow reports when it is over, once (4.10)', (
+      tester,
+    ) async {
+      var ended = 0;
+      await pumpScreen(
+        tester,
+        HomeView(
+          state: AsyncValue.data(data: streak(relit: true)),
+          onRetry: () {},
+          onPlay: (_) {},
+          onDaily: () {},
+          onRelitGlowEnd: () => ended++,
+          onMuseum: () {},
+          onShop: (_) {},
+          onSettings: () {},
+          library: FakeFxLibrary(),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(ended, 0);
+      await tester.pump(const Duration(seconds: 3));
+      expect(ended, 1);
+    });
+
+    testWidgets('a glow built under a covering route waits for Home to show '
+        '(4.10)', (tester) async {
+      // Home's cubit hears of the relight during the daily's solve, while
+      // the Daily screen covers Home (an offstage route: its tickers are
+      // muted, but their clocks run). The glow must still play once Home
+      // shows, not end unseen.
+      var ended = 0;
+      final covered = ValueNotifier(true);
+      addTearDown(covered.dispose);
+      await pumpScreen(
+        tester,
+        ValueListenableBuilder<bool>(
+          valueListenable: covered,
+          builder: (context, hidden, child) =>
+              TickerMode(enabled: !hidden, child: child!),
+          child: StreakBadge(
+            days: 5,
+            look: StreakLook.relit,
+            onRelitGlowEnd: () => ended++,
+          ),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 6));
+      expect(ended, 0, reason: 'nothing plays while covered');
+      covered.value = false;
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(ended, 0, reason: 'the glow starts when Home shows');
+      final fade = tester.widget<Opacity>(
+        find.descendant(
+          of: find.byType(StreakBadge),
+          matching: find.byType(Opacity),
+        ),
+      );
+      expect(fade.opacity, 1, reason: 'held for glowMs');
+      await tester.pump(const Duration(seconds: 3));
+      expect(ended, 1);
     });
 
     testWidgets('relit under reduce motion is a static ring', (tester) async {

@@ -47,6 +47,12 @@ final class FxSpecFacts {
     required this.colorFills,
   });
 
+  /// The contract's `<part>_fill` names, sorted (`FxSpec.tintFills`).
+  List<String> get tintFills => [...contract.tintFills]..sort();
+
+  /// The contract's `<part>_rect` names, sorted (`FxSpec.sizedRects`).
+  List<String> get sizedRects => [...contract.sizedRects]..sort();
+
   final LottieFileContract contract;
 
   /// The contract's scale nulls, sorted (`FxSpec.scaleNulls`).
@@ -185,8 +191,9 @@ String fxSpecSource(List<FxSpecFacts> facts) {
       'not carry',
     )
     ..writeln(
-      '// (anchor, kind, loop, travel S/T, scale nulls), the LOTTIE.md v3 contract',
+      '// (anchor, kind, loop, travel S/T, scale nulls, named fills and',
     )
+    ..writeln('// rectangles), the LOTTIE.md contract')
     ..writeln(
       '// table in tools/lib/src/fx/lottie_contract.dart. Validation guarantees',
     )
@@ -261,6 +268,16 @@ String fxSpecSource(List<FxSpecFacts> facts) {
     if (f.colorFills.isNotEmpty) {
       b.writeln(
         '    colorFills: [${f.colorFills.map((t) => "'$t'").join(', ')}],',
+      );
+    }
+    if (f.tintFills.isNotEmpty) {
+      b.writeln(
+        '    tintFills: [${f.tintFills.map((t) => "'$t'").join(', ')}],',
+      );
+    }
+    if (f.sizedRects.isNotEmpty) {
+      b.writeln(
+        '    sizedRects: [${f.sizedRects.map((t) => "'$t'").join(', ')}],',
       );
     }
     if (f.scaleNulls.isNotEmpty) {

@@ -361,13 +361,18 @@ typedef FontSpec = ({
   String family,
   int weight,
   double size,
+
+  /// Tokens v4's line height (`24/1.15`, `16/23`) as a multiple of [size]:
+  /// a number below 4 is already a multiple, a larger one is px (CSS
+  /// `line-height`). Null when the value gives none.
+  double? height,
   int? color,
   bool tabular,
   String? tail,
 });
 
 final _fontSpec = RegExp(
-  r'^(Fredoka|Nunito) (\d{3}) (\d+(?:\.\d+)?)'
+  r'^(Fredoka|Nunito) (\d{3}) (\d+(?:\.\d+)?)(?:/(\d+(?:\.\d+)?))?'
   r'(?: (#[0-9A-Fa-f]{3,8}|rgba?\([^)]*\)|white))?( tabular)?'
   r'(?:(?:, |; | (?=on |with ))(.+))?$',
 );
@@ -378,13 +383,20 @@ final _fontSpec = RegExp(
 FontSpec? tryParseFontSpec(String value) {
   final m = _fontSpec.firstMatch(value.trim());
   if (m == null) return null;
+  final size = double.parse(m[3]!);
+  final lineHeight = m[4] == null ? null : double.parse(m[4]!);
   return (
     family: m[1]!,
     weight: int.parse(m[2]!),
-    size: double.parse(m[3]!),
-    color: m[4] == null ? null : parseCssColor(m[4]!),
-    tabular: m[5] != null,
-    tail: m[6],
+    size: size,
+    height: lineHeight == null
+        ? null
+        : lineHeight < 4
+        ? lineHeight
+        : double.parse((lineHeight / size).toStringAsFixed(6)),
+    color: m[5] == null ? null : parseCssColor(m[5]!),
+    tabular: m[6] != null,
+    tail: m[7],
   );
 }
 

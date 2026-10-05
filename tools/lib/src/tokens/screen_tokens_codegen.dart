@@ -5,7 +5,8 @@
 //
 //   number                        double (int for counts and `…Ms`)
 //   `padding` list                EdgeInsets (CSS 1-, 2-, 3- or 4-value order)
-//   2 numbers under a size key    Size;  `origin` Offset;  `points` List<Offset>
+//   2 numbers under a size key    Size;  `origin`, `offset` Offset;
+//                                 `points` List<Offset>;  `rect` (4) Rect
 //   other number lists            List<double> (`hiddenSlots` List<int>)
 //   `#RRGGBB`, `rgba(…)`, `white` Color
 //   `gradient.<name>`             a checked reference to AppGradientTokens
@@ -25,6 +26,23 @@ import 'package:nesty_tools/src/tokens/token_reader.dart';
 
 /// The per-screen sections, tokens.json path → generated class.
 const screenTokenSections = {
+  'layout.tutorial': 'TutorialTokens',
+  'layout.sizeBlend': 'SizeBlendTokens',
+  'layout.settingsRows': 'SettingsRowsTokens',
+  'layout.noCoins': 'NoCoinsTokens',
+  'layout.museumDetail': 'MuseumDetailTokens',
+  'layout.languageSheet': 'LanguageSheetTokens',
+  'toast': 'ToastLayoutTokens',
+  'textFit': 'TextFitTokens',
+  'screenHeader': 'ScreenHeaderTokens',
+  'motion.chest.collect': 'ChestCollectTokens',
+  'motion.rivalReact': 'RivalReactTokens',
+  'motion.museumIdle': 'MuseumIdleTokens',
+  'motion.firstLaunch': 'FirstLaunchTokens',
+  'motion.spinner': 'SpinnerMotionTokens',
+  'motion.purchaseItem': 'PurchaseItemTokens',
+  'motion.relitHome': 'RelitHomeTokens',
+  'motion.relitTwinkle': 'RelitTwinkleTokens',
   'layout.rivalStrip': 'RivalStripTokens',
   'layout.raceBar': 'RaceBarTokens',
   'layout.short169': 'Short169Tokens',
@@ -162,6 +180,9 @@ const _sizeKeys = {
   'screen',
   'viewBox',
   'icon',
+  // Tokens v4 (m7-4): the chest's art box, textFit's text boxes.
+  'artBox',
+  'box',
 };
 
 /// Keys whose string is a glyph of the bundled font.
@@ -172,6 +193,11 @@ const _fontTails = {
   'layout.rivalStrip.tag.text': 'sentence case',
   'layout.museum.cabinet.namePlate': 'on a brass gradient',
   'layout.replayCard.reason': 'with the replay glyph',
+  'layout.noCoins.heading': 'balanced',
+  'shop.cardName.skin': 'one line',
+  'shop.cardName.theme': 'one line, ellipsis',
+  'layout.languageSheet.english':
+      'right, before the radio; not shown on the English row',
 };
 
 /// Prose kept as documentation, with why.
@@ -183,15 +209,82 @@ const _documentedLeaves = {
   'settings.reduceMotion.default':
       'a setting default, never read from tokens: SettingsDefaults.'
       'reduceMotion (rule_tokens_test pins it)',
-  'textLink.minTapHeight':
-      'superseded: text links keep a 48 dp hit box (lead note 3, the '
-      'overflow harness); the look is the rest of TextLinkTokens',
+  'layout.tutorial.chip':
+      'copy: the tutorial card\'s step chip, from the ARB ("STEP {step} OF '
+      '3", copy.md)',
+  'layout.sizeBlend.rule':
+      'the size blend (m7-4 4.7, 4.12), hand-written in HomeLayout and the '
+      'win card\'s CelebrationLayout',
+  'layout.settingsRows.reminderOff':
+      'behaviour of the reminder switch (10.2h), SettingsPage (lane D)',
+  'layout.languageSheet.native':
+      'the language sheet\'s script fonts (font.scripts), 5B',
+  'layout.languageSheet.change':
+      'behaviour: a language change applies at once (m7-4 Choices 9.3), 5B',
+  'toast.app.streakSaved':
+      'the streak-saved banner is the info toast (m7-4 10.7), lane D',
+  'textFit.cardsAndSheets':
+      'the overflow rule of cards and sheets (wrap; 2-line buttons at 1.3×)',
+  'textFit.sheetRows.rule':
+      'the sheet rows\' chip placement (10.9c), hand-written in the rows',
+  'screenHeader.title':
+      'fontSize.screenTitle (AppTextStyleTokens.screenTitle), start-aligned '
+      'beside the button (ScreenHeader, C-HDR); the colour is '
+      'AppColorTokens.textPrimary',
+  'layout.chestCard.artFit.svg':
+      'the chest SVGs\' visible box, the derivation of artFit (design note)',
+  'layout.chestCard.artFit.frames':
+      'the chest\'s top 56 dp below the card top follows from padding top + '
+      'the art box (design note; the chest test measures it)',
+  'layout.chestCard.artFit.superseded':
+      'a design note: the 200×170 box is gone',
+  'layout.rivalSelect.selection':
+      'which rival a visit preselects, as built (m7-4 4.5), RivalSelectPage',
+  'layout.rivalSelect.shortScreen':
+      'the short screen\'s scroll and fade as built (m7-4 Choices 10.4; '
+      'lead note 10: a 16 dp mask, a 12 dp gap), RivalSelectPage',
+  'layout.chapters.progressCount':
+      'the won count right-aligned with the bar (10.4), ChapterSectionCard',
+  'layout.chapters.accordion':
+      'the accordion as built (m7-4 Choices 4.8), ChaptersPage',
 };
 
 /// Prose pinned word for word (the hand-written code follows it).
 const _exactLeaves = {
   'layout.winStars.starsCanvas.lottie': ('ui_stars', 'FxId.uiStars (lane O)'),
   'layout.chestCard.lottie.name': ('ui_chest', 'FxId.uiChest (lane O)'),
+  'motion.rivalReact.lottie': ('ui_rival_react', 'FxId.uiRivalReact'),
+  'motion.rivalReact.reducedMotion': (
+    'frame 0, still',
+    'FxMotionPolicy: an ambient file rests on frame 0',
+  ),
+  'motion.museumIdle.lottie': ('ui_museum_idle', 'FxId.uiMuseumIdle'),
+  'motion.museumIdle.reducedMotion': (
+    'frame 0, still',
+    'FxMotionPolicy: an ambient file rests on frame 0',
+  ),
+  'motion.firstLaunch.reducedMotion': (
+    'cut',
+    'GameplayEntrance: no fade under reduce motion',
+  ),
+  'motion.chest.collect.hintRing.on': (
+    'the Hint badge, as the hint lands',
+    'the booster bar\'s hint ring (lane O, F-CH2)',
+  ),
+  'motion.chest.collect.gainTag.text': (
+    '+{count}',
+    'copy: chest_gain_tag, from the ARB',
+  ),
+  'motion.purchaseItem.swap': (
+    'the price chip becomes Equip / Use with motion.tagPop',
+    'the Shop card\'s purchase (m7-4 4.11), with MotionTokens.tagPop*',
+  ),
+  'motion.purchaseItem.haptic': ('success', 'HapticsService.success'),
+  'motion.relitTwinkle.motion': (
+    'fx_twinkle once at that point when the card lands, then the glyph '
+        'stays; reduce motion: the glyph only',
+    'the relit card\'s twinkle (m7-4 4.17), lane O',
+  ),
   'layout.hintMiddle.arrow': ('unchanged', 'the hint arrow (lane B)'),
   'layout.winStarsShort.notePill': (
     'not shown; the tip waits for a taller screen',
@@ -214,6 +307,29 @@ void _emitLeaf(_Leaf l) {
   final reason = _documentedLeaves[l.path];
   if (reason != null) {
     t.documented(l.path, reason: reason);
+    return;
+  }
+  // Tokens v4 (m7-4): a `note` or `use` leaf is the design's prose about
+  // its section, like a `$note`.
+  if ((l.key == 'note' || l.key == 'use') && t.peek(l.path) is String) {
+    t.documented(l.path, reason: 'a design note, in the design only');
+    return;
+  }
+  // Tokens v4 `textFit.*.short`: one copy.md id (a list is [_emitList]'s),
+  // or prose naming a family of ids (`booster_*_short`).
+  if (t.peek(l.path) case final String value when l.key == 'short') {
+    if (RegExp(r'^[a-z0-9_]+$').hasMatch(value)) {
+      l.add(
+        '[${stringLiteral(value)}]',
+        type: 'List<String>',
+        doc: 'The copy.md id of the short form (the ARB key).',
+      );
+    } else {
+      t.documented(
+        l.path,
+        reason: 'the short forms copy.md names (`## Short forms`), 5B',
+      );
+    }
     return;
   }
   final exact = _exactLeaves[l.path];
@@ -260,6 +376,30 @@ void _emitList(_Leaf l) {
     l.c.add(l.member, '[${offsets.join(', ')}]', type: 'List<Offset>');
     return;
   }
+  // Tokens v4 (m7-4): a tile's [face, glyph] colours.
+  if (list.isNotEmpty && list.every((v) => v is String && isCssColor(v))) {
+    final colors = t.strings(l.path, symbol: l.symbol());
+    l.c.add(
+      l.member,
+      '[${colors.map((v) => colorLiteral(parseCssColor(v))).join(', ')}]',
+      type: 'List<Color>',
+      doc: '`${colors.join(', ')}`.',
+    );
+    return;
+  }
+  // Tokens v4 `textFit.*.short`: the copy.md ids of a surface's short forms.
+  if (l.key == 'short' &&
+      list.isNotEmpty &&
+      list.every((v) => v is String && RegExp(r'^[a-z0-9_]+$').hasMatch(v))) {
+    final ids = t.strings(l.path, symbol: l.symbol());
+    l.c.add(
+      l.member,
+      '[${ids.map(stringLiteral).join(', ')}]',
+      type: 'List<String>',
+      doc: 'The copy.md ids of the short forms (the ARB keys).',
+    );
+    return;
+  }
   if (!list.every((v) => v is num)) {
     throw TokenFormatException(
       l.path,
@@ -271,7 +411,14 @@ void _emitList(_Leaf l) {
     l.c.add(l.member, edgeInsetsLiteral(numbers, l.path));
   } else if (_sizeKeys.contains(l.key) && numbers.length == 2) {
     l.c.add(l.member, sizeLiteral(numbers[0], numbers[1]));
-  } else if (l.key == 'origin' && numbers.length == 2) {
+  } else if (l.key == 'rect' && numbers.length == 4) {
+    // Tokens v4 `layout.tutorial.pauseHole.rect`: x, y, width, height.
+    l.c.add(
+      l.member,
+      'Rect.fromLTWH(${numbers.map(doubleLiteral).join(', ')})',
+      doc: 'x, y, width, height (`$numbers`).',
+    );
+  } else if ((l.key == 'origin' || l.key == 'offset') && numbers.length == 2) {
     l.c.add(l.member, offsetLiteral(numbers[0], numbers[1]));
   } else if (l.key == 'hiddenSlots') {
     if (!numbers.every((n) => n is int)) {
@@ -294,7 +441,7 @@ void _emitString(_Leaf l) {
     l.add(gradientReference(t, value, l.path));
     return;
   }
-  if (value.startsWith('gradient.')) {
+  if (RegExp(r'^gradient\.[a-z][A-Za-z0-9]*$').hasMatch(value)) {
     l.add(gradientReference(t, value.substring(9), l.path));
     return;
   }
@@ -393,7 +540,7 @@ String textStyleLiteral(TokenReader t, FontSpec font, String path) {
       '${font.family} ${font.weight} is not a bundled weight ($weights)',
     );
   }
-  return 'TextStyle(${['fontFamily: ${stringLiteral(font.family)}', 'fontSize: ${doubleLiteral(font.size)}', 'fontWeight: FontWeight.w${font.weight}', if (font.color != null) 'color: ${colorLiteral(font.color!)}', if (font.tabular) 'fontFeatures: [FontFeature.tabularFigures()]'].join(', ')})';
+  return 'TextStyle(${['fontFamily: ${stringLiteral(font.family)}', 'fontSize: ${doubleLiteral(font.size)}', 'fontWeight: FontWeight.w${font.weight}', 'fontFamilyFallback: AppFontTokens.${role}Fallback', if (font.height != null) 'height: ${doubleLiteral(font.height!)}', if (font.height != null) 'leadingDistribution: TextLeadingDistribution.even', if (font.color != null) 'color: ${colorLiteral(font.color!)}', if (font.tabular) 'fontFeatures: [FontFeature.tabularFigures()]'].join(', ')})';
 }
 
 /// A `LinearGradient` for a CSS `linear-gradient(…)`: the angle as the
@@ -444,8 +591,678 @@ CssStroke _strokeOf(_Leaf l, String width, String color) =>
 
 const _numberWords = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5};
 
+/// Checks that `fontSize.<name>` is the style a prose value repeats.
+void _checkFontSize(_Leaf l, String name, int weight, num size, num height) {
+  final base = 'fontSize.$name';
+  if (!l.t.has(base) ||
+      l.t.peek('$base.weight') != weight ||
+      l.t.peek('$base.size') != size ||
+      ((l.t.peek('$base.lineHeight')! as num) / size - height).abs() > 0.01) {
+    throw TokenFormatException(l.path, 'is not $base');
+  }
+}
+
+/// `0 4px 0 {ring}`: a toast's solid edge in its kind's ring colour
+/// (`AppColorTokens.toast<Kind>Ring`), so only its depth is a token.
+void _ringEdge(_Leaf l) {
+  final m = l.match(r'0 (\d+)px 0 \{ring\}');
+  l.add(
+    doubleLiteral(num.parse(m[1]!)),
+    name: '${l.member}Depth',
+    doc:
+        'The solid edge\'s depth under the toast, in its kind\'s ring colour '
+        '(`AppColorTokens.toast<Kind>Ring`).',
+  );
+}
+
+/// A number as the design writes it, with a thousands comma (`1,600`).
+num _designNumber(String text) => num.parse(text.replaceAll(',', ''));
+
+/// `motion.rivalReact.segments.<name>`: `ui_rival_react`'s marker, read from
+/// `FxSpec` (checked against the contract here).
+void _rivalSegment(_Leaf l) {
+  final value = l.t.peek(l.path);
+  final contract = lottieContractOf('ui_rival_react');
+  final marker = contract?.markers.where((m) => m.name == l.key).firstOrNull;
+  if (value is! List<Object?> ||
+      marker == null ||
+      value.length != 2 ||
+      value[0] != marker.start ||
+      value[1] != marker.end) {
+    throw TokenFormatException(l.path, 'is not ui_rival_react\'s marker');
+  }
+  l.t.documented(
+    l.path,
+    reason: 'ui_rival_react\'s marker, read from FxSpec (checked)',
+  );
+}
+
 /// Strict parsers for the prose values whose numbers the app needs.
 final Map<String, void Function(_Leaf)> _specials = {
+  for (final segment in const ['idle', 'family', 'win', 'lose'])
+    'motion.rivalReact.segments.$segment': _rivalSegment,
+  'motion.rivalReact.sound': (l) {
+    final m = l.match(r'(\w+) with (\w+)');
+    final events = l.t.peek('sound.events')! as Map<String, Object?>;
+    if (!events.values.contains(m[1]) ||
+        lottieContractOf(
+          'ui_rival_react',
+        )!.markers.every((x) => x.name != m[2])) {
+      throw TokenFormatException(l.path, 'unknown sound or segment');
+    }
+    l.t.documented(
+      l.path,
+      reason: 'the race\'s rival_complete cue plays with `family` (lane R)',
+    );
+  },
+  'motion.museumIdle.canvas': (l) {
+    final canvas = l.t.number(l.path, symbol: l.symbol());
+    final contract = lottieContractOf('ui_museum_idle')!;
+    if (canvas != contract.width || canvas != contract.height) {
+      throw TokenFormatException(l.path, 'is not ui_museum_idle\'s canvas');
+    }
+    l.c.add(l.member, doubleLiteral(canvas), doc: 'The square canvas, dp.');
+  },
+  'motion.firstLaunch.easing': (l) {
+    final name = l.text;
+    if (!l.t.has('motion.easing.$name')) {
+      throw TokenFormatException(l.path, 'there is no motion.easing.$name');
+    }
+    l.add(
+      'UiMotionTokens.curve${name[0].toUpperCase()}${name.substring(1)}',
+      name: 'curve',
+      type: 'Cubic',
+      doc: 'The first launch\'s fade (`motion.easing.$name`).',
+    );
+  },
+  'motion.spinner.reducedMotion': (l) {
+    final m = l.match(
+      r'frame 0, opacity 1 → ([\d.]+) → 1 over ([\d,]+) ms (\w+), looping '
+      r'\(12\.5, 7\.5\)',
+    );
+    if (!l.t.has('motion.easing.${m[3]}')) {
+      throw TokenFormatException(l.path, 'there is no motion.easing.${m[3]}');
+    }
+    l
+      ..add(
+        doubleLiteral(num.parse(m[1]!)),
+        name: 'reducedMotionMinOpacity',
+        doc:
+            'Under reduce motion `ui_spinner` rests on frame 0 and pulses '
+            'its opacity 1 → this → 1 …',
+      )
+      ..add(
+        '${_designNumber(m[2]!)}',
+        name: 'reducedMotionPulseMs',
+        doc: '… over this, looping, `${m[3]}` (12.5, 7.5).',
+      );
+  },
+  'motion.purchaseItem.sparkles': (l) {
+    final m = l.match(r'(\w+) (fx_sparkle) around the card or the Buy button');
+    final count = _numberWords[m[1]!];
+    if (count == null || lottieContractOf(m[2]!) == null) {
+      throw TokenFormatException(l.path, 'unexpected wording');
+    }
+    l.add(
+      '$count',
+      name: 'sparkleCount',
+      doc: 'This many `fx_sparkle` around the card or the Buy button.',
+    );
+  },
+  'motion.purchaseItem.balance': (l) {
+    final m = l.match(r'the header coins count down over (\d+) ms');
+    l.add(
+      m[1]!,
+      name: 'balanceCountDownMs',
+      doc: 'The header balance counts down over this.',
+    );
+  },
+  'motion.purchaseItem.jingle': (l) {
+    final text = l.t.documentedExact(
+      l.path,
+      'jingle_reward @0',
+      reason: 'Jingle.reward at 0 ms (the Shop)',
+    );
+    if (l.t.peek('sound.events.reward') != text.split(' ').first) {
+      throw TokenFormatException(l.path, 'is not sound.events.reward');
+    }
+  },
+  'motion.relitHome.rule': (l) {
+    final m = l.match(
+      r'the Daily tile badge glows \(color\.(\w+) ring\) on the first Home '
+      r'visit after a relight, in that session or a later one, ([\d,]+) ms '
+      r'then a (\d+) ms fade; never twice',
+    );
+    if (!l.t.has('color.${m[1]}')) {
+      throw TokenFormatException(l.path, 'there is no color.${m[1]}');
+    }
+    l
+      ..add(
+        '${_designNumber(m[2]!)}',
+        name: 'glowMs',
+        doc:
+            'The Daily tile badge glows (`AppColorTokens.${m[1]}` ring) on '
+            'the first Home visit after a relight, in that session or a later '
+            'one, never twice (m7-4 4.10) …',
+      )
+      ..add(m[3]!, name: 'fadeMs', doc: '… then fades over this.');
+  },
+  'motion.relitTwinkle.glyph': (l) {
+    final m = l.match('([a-z0-9_]+), (\\d+) dp, $_color, glow (.+)');
+    l
+      ..add(stringLiteral(m[1]!), name: 'glyph', doc: 'The `${m[1]}` glyph.')
+      ..add(doubleLiteral(num.parse(m[2]!)), name: 'glyphSize')
+      ..add(colorLiteral(parseCssColor(m[3]!)), name: 'glyphColor')
+      ..add(
+        shadowListLiteral(parseBoxShadowList(m[4]!)),
+        name: 'glyphGlow',
+        type: 'List<NestyShadow>',
+      );
+  },
+  'motion.relitTwinkle.place': (l) {
+    final m = l.match(
+      r'the flame disc’s top-right corner, its box (\d+) dp outside the disc '
+      r'\(right −(\d+), top −(\d+)\)',
+    );
+    if (m[1] != m[2] || m[1] != m[3]) {
+      throw TokenFormatException(l.path, 'the offsets disagree');
+    }
+    l.add(
+      doubleLiteral(-num.parse(m[1]!)),
+      name: 'placeInset',
+      doc:
+          'The twinkle\'s box sits at the flame disc\'s top-right corner, '
+          'right and top this far (negative: outside the disc).',
+    );
+  },
+  'motion.chest.collect.pillRing.from': (l) {
+    final m = l.match(r'first coin lands \((\d+) ms\)');
+    if (l.t.peek('motion.chest.collect.coinFlightMs') != int.parse(m[1]!)) {
+      throw TokenFormatException(l.path, 'is not collect.coinFlightMs');
+    }
+    l.add(
+      m[1]!,
+      name: 'pillRingFromMs',
+      doc: 'The ring shows as the first coin lands.',
+    );
+  },
+  'motion.chest.collect.pillRing.until': (l) {
+    final m = l.match(r'(\d+) ms after the last coin \(([\d,]+) ms\)');
+    final c = 'motion.chest.collect';
+    final last =
+        (l.t.peek('$c.coinFlightMs')! as int) +
+        ((l.t.peek('$c.coins')! as int) - 1) *
+            (l.t.peek('$c.coinStaggerMs')! as int);
+    if (l.t.peek('$c.pillRing.outMs') != int.parse(m[1]!) ||
+        _designNumber(m[2]!) != last) {
+      throw TokenFormatException(l.path, 'is not outMs after the last coin');
+    }
+    l.add(
+      '$last',
+      name: 'pillRingLastCoinMs',
+      doc: 'The last coin lands here; the ring fades [pillRingOutMs] after.',
+    );
+  },
+  'motion.chest.collect.gainTag.pop': (l) {
+    if (l.text != 'motion.tagPop' || !l.t.has('motion.tagPop.duration')) {
+      throw TokenFormatException(l.path, 'expected motion.tagPop');
+    }
+    l.t.documented(l.path, reason: 'the pop is MotionTokens.tagPop*');
+  },
+  'motion.chest.collect.trail.spacing': (l) {
+    final m = l.match(r'behind the sprite at path t ((?:−\s?[\d.]+(?:, )?)+)');
+    final values = [
+      for (final v in RegExp(r'−\s?([\d.]+)').allMatches(m[1]!))
+        num.parse(v[1]!),
+    ];
+    if (values.length != l.t.peek('motion.chest.collect.trail.coinDots')) {
+      throw TokenFormatException(l.path, 'one offset per coin dot');
+    }
+    l.add(
+      '[${values.map(doubleLiteral).join(', ')}]',
+      name: 'trailSpacing',
+      type: 'List<double>',
+      doc: 'Each trail dot sits behind the sprite at path t − this.',
+    );
+  },
+  'motion.chest.collect.trail.opacity': (l) {
+    final m = l.match(r'([\d.]+) near the sprite to ([\d.]+) at the tail');
+    l
+      ..add(doubleLiteral(num.parse(m[1]!)), name: 'trailOpacityHead')
+      ..add(doubleLiteral(num.parse(m[2]!)), name: 'trailOpacityTail');
+  },
+  'textLink.pressedToken': (l) {
+    final m = l.match(r'color\.(\w+) \((#[0-9A-Fa-f]{6})\)');
+    if (l.t.peek('color.${m[1]}') != m[2] ||
+        l.t.peek('textLink.pressed') != m[2]) {
+      throw TokenFormatException(l.path, 'is not textLink.pressed');
+    }
+    l.t.documented(
+      l.path,
+      reason: 'TextLinkTokens.pressed is AppColorTokens.${m[1]} (checked)',
+    );
+  },
+  // Tokens v4 (m7-4).
+  'layout.tutorial.scrim': (l) {
+    final m = l.match(
+      '$_color over the whole screen, HUD and booster bar included, except '
+      'the holes',
+    );
+    l.add(
+      colorLiteral(parseCssColor(m[1]!)),
+      doc:
+          'The tutorial scrim, over the HUD and the booster bar too, with a '
+          'hole that keeps Pause lit (m7-4 8.1).',
+    );
+  },
+  'layout.tutorial.tooltip.top': (l) {
+    final m = l.match(r'hud\.top \((\d+); (\d+) on 16:9\)');
+    if (l.t.peek('layout.hud.top') != num.parse(m[1]!)) {
+      throw TokenFormatException(l.path, 'is not layout.hud.top');
+    }
+    l
+      ..add(
+        doubleLiteral(num.parse(m[1]!)),
+        doc: 'The tip sits in the HUD row (`HudTokens.top`).',
+      )
+      ..add(
+        doubleLiteral(num.parse(m[2]!)),
+        name: '${l.member}Short',
+        doc: 'On the 16:9 screen.',
+      );
+  },
+  'layout.settingsRows.blockedActions': (l) {
+    final m = l.match(
+      r'Open phone settings \(secondary chip\) and Turn off \(textLink\), '
+      r'(\d+) dp apart, wrapping under each other when narrow; Turn off sets '
+      r'the reminder to Off \(10\.2h\)',
+    );
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      name: 'blockedActionsGap',
+      doc:
+          'The blocked reminder row\'s two actions, "Open phone settings" '
+          '(a secondary chip) and "Turn off" (a text link), this far apart; '
+          'they wrap under each other when narrow (10.2f, Q158).',
+    );
+  },
+  'layout.settingsRows.divider': (l) {
+    final m = l.match(r'(\d+(?:\.\d+)?)px color\.([a-zA-Z]+)');
+    final color = l.t.peek('color.${m[2]}');
+    if (color is! String) {
+      throw TokenFormatException(l.path, 'there is no color.${m[2]}');
+    }
+    l.add(
+      strokeLiteral((width: double.parse(m[1]!), color: parseCssColor(color))),
+      doc: 'The rows\' divider (`AppColorTokens.${m[2]}`).',
+    );
+  },
+  'layout.noCoins.itemChip.price': (l) {
+    final m = l.match(
+      'gradient\\.(\\w+) pill, (\\d+) tall, $_font with the (\\d+) dp coin: '
+      'the number alone .+',
+    );
+    l
+      ..add(gradientReference(l.t, m[1]!, l.path), name: 'itemChipPriceFill')
+      ..add(
+        doubleLiteral(num.parse(m[2]!)),
+        name: 'itemChipPriceHeight',
+        doc:
+            'The price pill shows the number alone; the coin says the rest '
+            'and screen readers hear "coins" (m7-4 10.1).',
+      )
+      ..add(
+        textStyleLiteral(l.t, _fontOf(l, m[3]!), l.path),
+        name: 'itemChipPriceText',
+      )
+      ..add(doubleLiteral(num.parse(m[4]!)), name: 'itemChipPriceCoin');
+  },
+  'layout.museumDetail.spotlight.panel': (l) {
+    final m = l.match(
+      r'the (\d+)-tall art panel, radius (\d+), overflow hidden',
+    );
+    l
+      ..add(
+        doubleLiteral(num.parse(m[1]!)),
+        name: 'spotlightPanelHeight',
+        doc: 'The art panel the cone is clipped to.',
+      )
+      ..add(doubleLiteral(num.parse(m[2]!)), name: 'spotlightPanelRadius');
+  },
+  'layout.museumDetail.spotlight.cone.clipPath': (l) {
+    final m = l.match(r'polygon\((\d+)% 0,(\d+)% 0,100% 100%,0 100%\)');
+    l
+      ..add(
+        doubleLiteral(int.parse(m[1]!) / 100),
+        name: 'spotlightConeTopLeft',
+        doc: 'The cone\'s top edge runs from this fraction of its width …',
+      )
+      ..add(
+        doubleLiteral(int.parse(m[2]!) / 100),
+        name: 'spotlightConeTopRight',
+        doc: '… to this one; its bottom edge is the full width.',
+      );
+  },
+  'layout.museumDetail.spotlight.cone.fill': (l) {
+    final m = l.match('linear 180°: $_color → $_color');
+    l.add(
+      'LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, '
+      'colors: [${colorLiteral(parseCssColor(m[1]!))}, '
+      '${colorLiteral(parseCssColor(m[2]!))}])',
+    );
+  },
+  'layout.languageSheet.radio': (l) {
+    final m = l.match(
+      '(\\d+), ring ${_nr}px $_color; current: $_color fill with a white check',
+    );
+    l
+      ..add(doubleLiteral(num.parse(m[1]!)), name: 'radioSize')
+      ..add(strokeLiteral(_strokeOf(l, m[2]!, m[3]!)), name: 'radioRing')
+      ..add(
+        colorLiteral(parseCssColor(m[4]!)),
+        name: 'radioCurrentFill',
+        doc: 'The current language\'s radio, with a white check.',
+      );
+  },
+  'layout.languageSheet.maxHeight': (l) {
+    final m = l.match(r'screen − safeTop − (\d+)');
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      name: 'maxHeightInset',
+      doc: 'The sheet is at most the screen − the safe top − this.',
+    );
+  },
+  'layout.languageSheet.scroll': (l) {
+    final m = l.match(
+      'the rows scroll under the pinned title row; a (\\d+) dp fade '
+      '\\($_color\\) at the bottom edge while more rows are below',
+    );
+    l
+      ..add(
+        doubleLiteral(num.parse(m[1]!)),
+        name: 'scrollFadeHeight',
+        doc: 'The fade over the last rows while more are below.',
+      )
+      ..add(colorLiteral(parseCssColor(m[2]!)), name: 'scrollFadeColor');
+  },
+  'toast.app.top': (l) {
+    final m = l.match(r'safeTop \+ (\d+): .+');
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      name: 'appTopBelowSafeTop',
+      doc:
+          'The app toast\'s top is the safe top + this, just under the '
+          'status bar (m7-4 1.5).',
+    );
+  },
+  'toast.app.edge': _ringEdge,
+  'toast.inPlace.edge': _ringEdge,
+  'toast.app.iconDisc.badge': (l) {
+    final m = l.match(r'the badge art at (\d+), no disc');
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      name: 'appBadgeArtSize',
+      doc: 'A badge toast shows the badge art at this size, with no disc.',
+    );
+  },
+  'screenHeader.trailing': (l) {
+    final m = l.match(r'the coin pill \((\d+) tall\) or nothing, at the right');
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      name: 'trailingCoinPillHeight',
+      doc: 'The header\'s trailing coin pill (or nothing).',
+    );
+  },
+  'screenHeader.tabScreen': (l) {
+    final m = l.match(
+      r'the Museum tab has no button: the title sits at left (\d+)',
+    );
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      name: 'tabScreenTitleLeft',
+      doc: 'A tab screen (the Museum) has no button; its title starts here.',
+    );
+  },
+  'layout.rivalStrip.dots.many': (l) {
+    final m = l.match(
+      r'(\d+) or more families: (\d+) dp, (\d+) dp gap \(as built\)',
+    );
+    l
+      ..add(
+        m[1]!,
+        name: 'dotsManyFromFamilies',
+        doc: 'From this many families the dots shrink (as built) …',
+      )
+      ..add(
+        doubleLiteral(num.parse(m[2]!)),
+        name: 'dotsManySize',
+        doc: '… to this, dp …',
+      )
+      ..add(
+        doubleLiteral(num.parse(m[3]!)),
+        name: 'dotsManyGap',
+        doc: '… this far apart.',
+      );
+  },
+  'layout.rivalStrip.narrow.measuredOn': (l) {
+    l.t.documentedExact(
+      l.path,
+      'screen width (as built)',
+      reason: 'the strip\'s narrow test reads the screen width (lane R)',
+    );
+  },
+  'layout.museum.cabinet.collectedIdle': (l) {
+    final text = l.t.documentedExact(
+      l.path,
+      'ui_museum_idle (J.2), random start frame per niche',
+      reason: 'FxId.uiMuseumIdle in each collected niche (m7-4 J.2)',
+    );
+    if (lottieContractOf(text.split(' ').first) == null) {
+      throw TokenFormatException(l.path, 'no Lottie contract ui_museum_idle');
+    }
+  },
+  'layout.museum.nextCard.name': (l) {
+    final m = l.match(
+      r'fontSize\.(\w+) \((Fredoka|Nunito) (\d{3}) (\d+)/([\d.]+)\), up to '
+      r'(two) balanced lines, as 6\.1 draws it',
+    );
+    _checkFontSize(
+      l,
+      m[1]!,
+      int.parse(m[3]!),
+      num.parse(m[4]!),
+      num.parse(m[5]!),
+    );
+    l.add(
+      '2',
+      name: 'nextCardNameMaxLines',
+      doc:
+          'The next card\'s name (`AppTextStyleTokens.${m[1]}`) takes up to '
+          'two balanced lines.',
+    );
+  },
+  'layout.museum.title': (l) {
+    final m = l.match(
+      r'fontSize\.(\w+), left (\d+), top (\d+) \(the tab screen header\)',
+    );
+    if (!l.t.has('fontSize.${m[1]}')) {
+      throw TokenFormatException(l.path, 'there is no fontSize.${m[1]}');
+    }
+    l
+      ..add(
+        doubleLiteral(num.parse(m[2]!)),
+        name: 'titleLeft',
+        doc: 'The tab screen title (`AppTextStyleTokens.${m[1]}`) …',
+      )
+      ..add(
+        doubleLiteral(num.parse(m[3]!)),
+        name: 'titleTop',
+        doc: '… at this top.',
+      );
+  },
+  'layout.chapters.foldedRow.name': (l) {
+    final m = l.match(
+      '$_font, one line; scales down to $_nr \\(([\\d.]+)\\) before it ellipsizes',
+    );
+    final font = _fontOf(l, m[1]!);
+    if ((font.size * double.parse(m[2]!) - double.parse(m[3]!)).abs() > 0.01) {
+      throw TokenFormatException(l.path, 'the scaled size does not match');
+    }
+    l
+      ..add(textStyleLiteral(l.t, font, l.path))
+      ..add(
+        doubleLiteral(num.parse(m[2]!)),
+        name: 'foldedRowNameMinScale',
+        doc: 'One line: it scales down to this before it ellipsizes.',
+      );
+  },
+  'layout.chapters.openScroll': (l) {
+    final m = l.match(
+      r'the current chapter card with at most (\w+) finished rows above it: '
+      r'offset = max\(0, currentCardTop − listTop − min\((\d+), finished\) '
+      r'× (\d+)\)',
+    );
+    if (_numberWords[m[1]!] != int.parse(m[2]!)) {
+      throw TokenFormatException(l.path, 'the row count disagrees');
+    }
+    l
+      ..add(
+        m[2]!,
+        name: 'openScrollFinishedRows',
+        doc:
+            'On open, the list scrolls so at most this many finished rows '
+            'show above the current chapter card: offset = max(0, '
+            'currentCardTop − listTop − min(this, finished) × '
+            '[openScrollRowPitch]).',
+      )
+      ..add(doubleLiteral(num.parse(m[3]!)), name: 'openScrollRowPitch');
+  },
+  'layout.chestCard.lottie.layout': (l) {
+    l.t.documentedExact(
+      l.path,
+      'overlay: the 240×240 canvas takes no layout space and may draw past '
+      'the card top, like the frame rays',
+      reason: 'ChestRewardSequence\'s overflowing slot (lane O, F-CH1)',
+    );
+  },
+  'layout.chestCard.artFit.lottie': (l) {
+    final m = l.match(
+      r'ui_chest draws the same box at (\d+)×(\d+) \(the chest (\d+) dp '
+      r'wide\): play it at ([\d.]+) so it matches the frames',
+    );
+    final scale = l.t.peek('layout.chestCard.lottie.scale');
+    final art = l.t.peek('layout.chestCard.artBox');
+    if (scale != num.parse(m[4]!) ||
+        art is! List<Object?> ||
+        art[0] != (num.parse(m[1]!) * num.parse(m[4]!)).round()) {
+      throw TokenFormatException(
+        l.path,
+        'is not artBox / lottie.scale (layout.chestCard)',
+      );
+    }
+    l.t.documented(
+      l.path,
+      reason:
+          'why ChestCardTokens.lottieScale is the art box over ui_chest\'s '
+          '(checked)',
+    );
+  },
+  'layout.records.statsGrid.cell.value': (l) {
+    final m = l.match('$_font, tabular, one line');
+    final font = _fontOf(l, m[1]!);
+    l.add(
+      textStyleLiteral(l.t, (
+        family: font.family,
+        weight: font.weight,
+        size: font.size,
+        height: font.height,
+        color: font.color,
+        tabular: true,
+        tail: null,
+      ), l.path),
+      doc: 'A stat\'s value, tabular figures, one line.',
+    );
+  },
+  'layout.records.statsGrid.cell.tints.familiesCompleted': (l) {
+    final list = l.t.list(l.path, symbol: l.symbol());
+    final mark = RegExp(r'^doll mark (\d+)×(\d+)$').firstMatch('${list.last}');
+    if (list.length != 3 || mark == null) {
+      throw TokenFormatException(
+        l.path,
+        'expected [face, glyph, doll mark WxH]',
+      );
+    }
+    l.c
+      ..add(
+        l.member,
+        '[${list.take(2).map((v) => colorLiteral(parseCssColor('$v'))).join(', ')}]',
+        type: 'List<Color>',
+        doc: 'The tile\'s face and the doll mark\'s colour (`$list`).',
+      )
+      ..add(
+        '${l.member}MarkSize',
+        sizeLiteral(num.parse(mark[1]!), num.parse(mark[2]!)),
+        doc: 'The family counter\'s doll mark, not a glyph.',
+      );
+    l.t.list(l.path, symbol: '${l.c.name}.${l.member}MarkSize');
+  },
+  'layout.records.statsGrid.cell.tints.stars': (l) {
+    final list = l.t.list(l.path, symbol: l.symbol());
+    final art = RegExp(r'^star art (\d+)$').firstMatch('${list.last}');
+    if (list.length != 2 || art == null) {
+      throw TokenFormatException(l.path, 'expected [face, star art N]');
+    }
+    l.c
+      ..add(
+        l.member,
+        '[${colorLiteral(parseCssColor('${list.first}'))}]',
+        type: 'List<Color>',
+        doc: 'The tile\'s face (`$list`); it shows the star art.',
+      )
+      ..add(
+        '${l.member}ArtSize',
+        doubleLiteral(num.parse(art[1]!)),
+        doc: 'The star art in the tile.',
+      );
+    l.t.list(l.path, symbol: '${l.c.name}.${l.member}ArtSize');
+  },
+  'layout.hintMiddle.clampTop': (l) {
+    final m = l.match(
+      r'the arrow’s highest bob point stays ≥ (\d+) \((\d+) dp under the '
+      r'level pill\); move it down over the doll’s head if needed',
+    );
+    l.add(
+      doubleLiteral(num.parse(m[1]!)),
+      doc:
+          'The hint arrow\'s highest bob point stays at or below this y, '
+          '${m[2]} dp under the level pill; it moves down over the doll\'s '
+          'head if needed (m7-4 5.4).',
+    );
+  },
+  'layout.chestCard.card.height': (l) {
+    final m = l.match(
+      r'from content: (\d+) closed, (\d+) open \(milestone\); (\d+) open '
+      r'with Double it \(day 7\)',
+    );
+    l
+      ..add(
+        doubleLiteral(num.parse(m[1]!)),
+        name: 'cardHeightClosed',
+        doc:
+            'The card\'s height from its content, for the layout tests: '
+            'closed …',
+      )
+      ..add(
+        doubleLiteral(num.parse(m[2]!)),
+        name: 'cardHeightOpen',
+        doc: '… open …',
+      )
+      ..add(
+        doubleLiteral(num.parse(m[3]!)),
+        name: 'cardHeightOpenDoubleIt',
+        doc: '… and the day-7 chest open with Double it.',
+      );
+  },
   'layout.rivalStrip.dots.filled': (l) {
     final m = l.match('$_color \\+ ${_nr}px $_color ring');
     l
@@ -498,9 +1315,13 @@ final Map<String, void Function(_Leaf)> _specials = {
   'layout.chestCard.lottie.anchor': (l) {
     final text = l.t.documented(
       l.path,
-      reason: 'ui_chest\'s anchor, FxSpec.anchor (checked)',
+      reason:
+          'ui_chest\'s anchor, FxSpec.anchor (checked), on the art box\'s '
+          'bottom centre (m7-4 6.4)',
     );
-    final m = RegExp(r'^chest base \((\d+), (\d+)\)$').firstMatch(text);
+    final m = RegExp(
+      r'^chest base \((\d+), (\d+)\) → the art box bottom centre$',
+    ).firstMatch(text);
     final contract = lottieContractOf('ui_chest');
     if (m == null ||
         contract == null ||
@@ -586,30 +1407,6 @@ final Map<String, void Function(_Leaf)> _specials = {
       textStyleLiteral(l.t, _fontOf(l, m[1]!.trim()), l.path),
       doc: 'A locked figurine\'s two lines ("${m[2]}" / "${m[3]}").',
     );
-  },
-  'layout.museum.cabinet.collectedIdle': (l) {
-    final m = l.match('bob (\\d+) dp, $_nr–$_nr s');
-    l
-      ..add(
-        doubleLiteral(num.parse(m[1]!)),
-        name: 'cabinetCollectedIdleBob',
-        doc: 'A collected figurine bobs this far, dp.',
-      )
-      ..add(
-        '${(double.parse(m[2]!) * 1000).round()}',
-        name: 'cabinetCollectedIdleMinPeriodMs',
-        doc: 'Its period, varied between this and the max per figurine.',
-      )
-      ..add(
-        '${(double.parse(m[3]!) * 1000).round()}',
-        name: 'cabinetCollectedIdleMaxPeriodMs',
-      );
-  },
-  'layout.records.statsGrid.cell': (l) {
-    final m = l.match('radius (\\d+), icon (\\d+)');
-    l
-      ..add(doubleLiteral(num.parse(m[1]!)), name: 'statsGridCellRadius')
-      ..add(doubleLiteral(num.parse(m[2]!)), name: 'statsGridCellIcon');
   },
   'layout.rivalSelect.newChip': (l) {
     final m = l.match('gradient\\.(\\w+), (.+)');

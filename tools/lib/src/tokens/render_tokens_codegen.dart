@@ -447,6 +447,36 @@ ConstClass _board(TokenReader t) {
         'On the tall ice, `fx_ice` plays at scale (1, this) from the ice\'s '
         'bottom (LOTTIE.md m7-1).',
   );
+  // Tokens v4 (m7-4 5.1): the pieces scale with the stand; the caps.
+  final overlays = t.string('$lb.overlays', symbol: '$b.tallGlassPitchInset');
+  t.string('$lb.overlays', symbol: '$b.iceMaxOverlap');
+  final om = RegExp(
+    r'^glass, tall glass and ice scale with the stand \(standScale\) about '
+    r'their bottom centre; tall glass capped at pitch − (\d+(?:\.\d+)?); '
+    r'adjacent ice may overlap up to (\d+(?:\.\d+)?) dp \(as rows of 4 do '
+    r'today\)$',
+  ).firstMatch(overlays);
+  if (om == null) {
+    throw TokenFormatException('$lb.overlays', 'unexpected wording');
+  }
+  c.add(
+    'tallGlassPitchInset',
+    doubleLiteral(num.parse(om[1]!)),
+    doc:
+        'Glass, tall glass and ice scale with the stand about their bottom '
+        'centre; the tall glass is at most the pitch − this wide (tokens.json '
+        '`$lb.overlays`).',
+  );
+  c.add(
+    'iceMaxOverlap',
+    doubleLiteral(num.parse(om[2]!)),
+    doc: 'Neighbouring ice may overlap by up to this, dp.',
+  );
+  t.documentedExact(
+    '$lb.glassCaseTopOverlap',
+    'keep: the 0.7 dp under the plank above is inside the plank shadow',
+    reason: 'the glass case keeps its 0.7 dp overlap (m7-4 Choices 5.6)',
+  );
   final hit = t.string('$lb.hitArea', symbol: '$b.minHitExtent');
   final hm = RegExp(r'^whole slot column, min (\d+)$').firstMatch(hit);
   if (hm == null) throw TokenFormatException('$lb.hitArea', 'unexpected');

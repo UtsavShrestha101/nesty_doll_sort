@@ -43,7 +43,7 @@ Map<String, Object?> _asset(Map<String, Object?> json, String id) =>
 
 void main() {
   group('the owner\'s exports', () {
-    test('all 35 validate against the contract with no issue', () {
+    test('all 37 validate against the contract with no issue', () {
       final set = readDesignLottie(_root);
       expect(set.issues, isEmpty);
       expect(set.sources.map((s) => s.name), [
@@ -437,7 +437,7 @@ void main() {
       final missing = _real('doll_nest');
       final rim = _layer(missing, 'target_rim');
       final group = (rim['shapes']! as List<Object?>)[1]! as Map;
-      ((group['it']! as List<Object?>)[1]! as Map)['nm'] = 'rim_fill';
+      ((group['it']! as List<Object?>)[1]! as Map)['nm'] = 'rim';
       expect(_codes(missing, 'doll_nest'), [LottieIssueCodes.fills]);
 
       final stray = _real('fx_sparkle');
@@ -463,6 +463,59 @@ void main() {
       final layer = _real('fx_twinkle');
       _layer(layer, 'twinkle')['nm'] = 'tint';
       expect(_codes(layer, 'fx_twinkle'), [LottieIssueCodes.fills]);
+    });
+
+    test('the m7-4 named fills and rectangles are exactly the contract\'s', () {
+      // "Tint and width": every ribbon fill the delegates key on.
+      for (final name in ['ui_win_ribbon', 'ui_chapter_ribbon']) {
+        expect(lottieContractOf(name)!.tintFills, {
+          'band_fill',
+          'edge_fill',
+          'hi_fill',
+          'tail_fill',
+          'fold_fill',
+        });
+      }
+      expect(lottieContractOf('ui_family_counter')!.sizedRects, {
+        'pill_rect',
+        'glow_rect',
+      });
+
+      void renameAll(Map<String, Object?> layer, String from, String to) {
+        void visit(List<Object?> shapes) {
+          for (final s in shapes.cast<Map<String, Object?>>()) {
+            if (s['nm'] == from) s['nm'] = to;
+            if (s['ty'] == 'gr') visit(s['it']! as List<Object?>);
+          }
+        }
+
+        visit(layer['shapes']! as List<Object?>);
+      }
+
+      // m7-3's ribbons, every fill called `fill`: the tails are lost.
+      final ribbon = _real('ui_win_ribbon');
+      renameAll(_layer(ribbon, 'tail_l'), 'tail_fill', 'fill');
+      renameAll(_layer(ribbon, 'tail_r'), 'tail_fill', 'fill');
+      expect(_codes(ribbon, 'ui_win_ribbon'), [LottieIssueCodes.namedShapes]);
+
+      final counter = _real('ui_family_counter');
+      renameAll(_layer(counter, 'pill'), 'pill_rect', 'rect');
+      expect(_codes(counter, 'ui_family_counter'), [
+        LottieIssueCodes.namedShapes,
+      ]);
+
+      // A `_fill` name on a stroke, and a stray one on a file with none.
+      final stroke = _real('ui_family_counter');
+      (_layer(stroke, 'glow')['shapes']! as List<Object?>).add({
+        'ty': 'st',
+        'nm': 'glow_fill',
+      });
+      expect(_codes(stroke, 'ui_family_counter'), [
+        LottieIssueCodes.namedShapes,
+      ]);
+      final stray = _real('fx_sparkle');
+      renameAll(_layer(stray, 'sparkle'), 'fill', 'gold_fill');
+      expect(_codes(stray, 'fx_sparkle'), [LottieIssueCodes.namedShapes]);
     });
 
     test('the text files name exactly their text layers', () {
@@ -652,6 +705,28 @@ void main() {
         readDesignLottie(root, contracts: table).issues.single,
         startsWith('design/lottie/fx_sparkle.json: notJson'),
       );
+    });
+
+    test('a placeholder PNG is named after an image slot (D50)', () {
+      File(
+        p.join(
+          root.path,
+          designLottieDir,
+          lottiePlaceholderDir,
+          'figurine.png',
+        ),
+      ).writeAsBytesSync([0x89, 0x50]);
+      expect(readDesignLottie(root, contracts: table).issues, isEmpty);
+      File(
+        p.join(root.path, designLottieDir, lottiePlaceholderDir, 'mascot.png'),
+      ).writeAsBytesSync([0x89, 0x50]);
+      File(
+        p.join(root.path, designLottieDir, lottiePlaceholderDir, 'notes.txt'),
+      ).writeAsStringSync('x');
+      expect(readDesignLottie(root, contracts: table).issues, [
+        contains('images/mascot.png: no image slot "mascot"'),
+        contains('images/notes.txt: unexpected file'),
+      ]);
     });
 
     test('prefixes each validation issue with the file', () {

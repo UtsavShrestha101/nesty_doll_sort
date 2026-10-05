@@ -26,6 +26,18 @@ void main() {
       expect(combo.pick, SoundEventPick.comboStep);
     });
 
+    test('no sound: none, with or without a note (tokens v4)', () {
+      for (final value in ['none', 'none (no sound, no haptic)']) {
+        final event = parseSoundEvent(value, maxSteps: 5)!;
+        expect(event.files, isEmpty, reason: value);
+        expect(event.pick, SoundEventPick.single, reason: value);
+      }
+      // A file whose name starts with "none" is still a file.
+      expect(parseSoundEvent('nonesuch', maxSteps: 5)!.files, ['nonesuch']);
+      expect(parseSoundEvent('none (unclosed', maxSteps: 5), isNull);
+      expect(parseSoundEvent('none, quiet', maxSteps: 5), isNull);
+    });
+
     test('anything else is null', () {
       for (final value in [
         'Pick',
@@ -81,6 +93,22 @@ void main() {
         'jingle_versus_win',
       ]);
       expect(files.musicFrames, {'music_game': 3024000, 'music_home': 2940000});
+    });
+
+    test('a none event names no file (tokens v4 reminderSet)', () {
+      final files = soundFilesOf({
+        'motion': {
+          'combo': {'maxSteps': 2},
+        },
+        'sound': {
+          'events': {
+            'pick': 'pick',
+            'reminderSet': 'none (no sound, no haptic)',
+          },
+        },
+      })!;
+      expect(files.sfx, ['pick']);
+      expect(files.jingles, isEmpty);
     });
 
     test('null without a sound section; loud on a bad shape', () {

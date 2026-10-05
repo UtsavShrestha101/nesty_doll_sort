@@ -1,0 +1,17 @@
+# GENERATED — do not edit; run: dart run nesty_tools:gen_font_subsets
+#
+# The Baloo 2 subset (tokens.json font.scripts.deva, locales hi)
+# that tools/fonts/build_fonts.sh cuts with pyftsubset --unicodes-file.
+# The whole Devanagari block (pyftsubset keeps the conjuncts and matras through GSUB/GPOS closure), ZWNJ/ZWJ and the dotted circle the shaper inserts.
+#
+# Whole blocks:
+U+0900-097F # Devanagari
+U+200C-200D # ZWNJ, ZWJ
+U+25CC # dotted circle
+#
+# Characters outside the blocks that Fredoka and Nunito do not draw, from:
+#   apps/game/lib/l10n/app_hi.arb
+#   intl's hi dates (DateFormat.EEEE and MMMd)
+#   flutter/packages/flutter_localizations/lib/src/l10n/material_hi.arb
+#   the autonym हिन्दी (apps/game/lib/features/settings/widgets/language_sheet.dart)
+# (none)

@@ -43,6 +43,10 @@ abstract final class LottieIssueCodes {
   static const missingRef = 'missingRef';
   static const hooks = 'hooks';
   static const fills = 'fills';
+
+  /// A `<part>_fill` or `<part>_rect` the game keys on (LOTTIE.md m7-4
+  /// "Tint and width") is missing, extra or not a fill / rectangle.
+  static const namedShapes = 'namedShapes';
   static const text = 'text';
   static const travel = 'travel';
   static const drop = 'drop';
@@ -124,6 +128,7 @@ final class _Validator {
     }
     _checkHooks();
     _checkFills();
+    _checkNamedShapes();
     _checkText();
     if (contract.kind == LottieKind.boardSpace) _checkTravel();
     if (contract.dropFrom != null) _checkDrop();
@@ -436,6 +441,63 @@ final class _Validator {
         LottieIssueCodes.fills,
         'hook fills are ${_sorted(found)}, expected ${_sorted(contract.fills)} '
         '(LOTTIE.md "Rim", "Tint")',
+      );
+    }
+  }
+
+  // LOTTIE.md m7-4 "Tint and width": the game reaches each `<part>_fill`
+  // with a colour delegate and each `<part>_rect` with a size delegate on
+  // `['**', name]`, so the names are exactly the contract's, each on the
+  // right shape type (a name may repeat: `tail_fill` is on both tails).
+  void _checkNamedShapes() {
+    final fills = <String>{};
+    final rects = <String>{};
+    void visitShapes(List<Map<String, Object?>> shapes, String at) {
+      for (final shape in shapes) {
+        final name = shape['nm'];
+        if (name is String) {
+          for (final (suffix, type, found) in [
+            ('_fill', 'fl', fills),
+            ('_rect', 'rc', rects),
+          ]) {
+            if (!name.endsWith(suffix)) continue;
+            if (shape['ty'] == type) {
+              found.add(name);
+            } else {
+              add(
+                LottieIssueCodes.namedShapes,
+                '$at: "$name" names a ${shape['ty']}, not a $type; the '
+                'delegate on it would miss',
+              );
+            }
+          }
+        }
+        if (shape['ty'] == 'gr') visitShapes(lottieMaps(shape['it']), at);
+      }
+    }
+
+    void visitLayers(List<Map<String, Object?>> layers, String where) {
+      for (final (i, layer) in layers.indexed) {
+        visitShapes(lottieMaps(layer['shapes']), '$where[$i] "${layer['nm']}"');
+      }
+    }
+
+    visitLayers(rootLayers, 'layers');
+    for (final (i, asset) in assets.indexed) {
+      visitLayers(lottieMaps(asset['layers']), 'assets[$i].layers');
+    }
+    if (!_sameSet(fills, contract.tintFills)) {
+      add(
+        LottieIssueCodes.namedShapes,
+        'named fills are ${_sorted(fills)}, expected '
+        '${_sorted(contract.tintFills)} (LOTTIE.md "Tint and width")',
+      );
+    }
+    if (!_sameSet(rects, contract.sizedRects)) {
+      add(
+        LottieIssueCodes.namedShapes,
+        'named rectangles are ${_sorted(rects)}, expected '
+        '${_sorted(contract.sizedRects)} (LOTTIE.md "Tint and width")',
       );
     }
   }

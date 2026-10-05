@@ -170,17 +170,18 @@ void main() {
         counts[a.category] = (counts[a.category] ?? 0) + 1;
       }
       // 7 skins × (svg + json), 11 symbols, 20 board − 2 baked-pip stands
-      // (m7-3 adds the tall glass case's 3), 10 chapter themes, 23 SFX (WAV)
-      // + 2 music loops and 5 jingles (OGG), 35 Lottie files, 10 figurines ×
+      // (m7-3 adds the tall glass case's 3; m7-4 chapters 7–10's own plank,
+      // blank stand and blank tower, 4 × 3), 10 chapter themes, 23 SFX (WAV)
+      // + 2 music loops and 5 jingles (OGG), 37 Lottie files, 10 figurines ×
       // (earned + locked) museum PNGs, and m7-3's UI art: 24 badges, 2
       // chests, 4 rival portraits, 2 sprites, 3 stars.
       expect(counts, {
         'skins': 14,
         'symbols': 11,
-        'board': 18,
+        'board': 30,
         'themes': 10,
         'audio': 30,
-        'lottie': 35,
+        'lottie': 37,
         'museum': 20,
         'ui': 35,
       });
@@ -205,6 +206,11 @@ void main() {
           'audio/jingle_versus_lose.ogg',
           'lottie/fx_glass_unlock_tall.json',
           'lottie/ui_intro_ice.json',
+          'lottie/ui_rival_react.json',
+          'lottie/ui_museum_idle.json',
+          'board/ch07/shelf-plank.svg',
+          'board/ch07/slot-stand-blank.svg',
+          'board/ch10/tower-base-blank.svg',
           'ui/badges/first_family.svg',
           'ui/badges/first_family_locked.svg',
           'ui/rivals/rival_locked.svg',
@@ -222,6 +228,8 @@ void main() {
       expect(destinations, contains('themes/ch06/background.svg'));
       expect(destinations, isNot(contains('board/slot-stand.svg')));
       expect(destinations, isNot(contains('board/tower-base.svg')));
+      expect(destinations, isNot(contains('board/ch07/slot-stand.svg')));
+      expect(destinations, isNot(contains('board/ch09/tower-base.svg')));
       expect(destinations, contains('lottie/doll_pick.json'));
       expect(
         destinations.where((d) => d.startsWith('audio/')),
@@ -641,6 +649,77 @@ void main() {
         ]);
       },
     );
+
+    test('ships a chapter\'s own wood from its tokens boardArt (m7-4 A.5)', () {
+      final root = _fakeRepo();
+      const files = [
+        'shelf-plank.svg',
+        'slot-stand.svg',
+        'slot-stand-blank.svg',
+        'tower-base.svg',
+        'tower-base-blank.svg',
+      ];
+      void tokens(Map<String, Object?> boardArt) =>
+          File(p.join(root.path, 'design/tokens.json')).writeAsStringSync(
+            jsonEncode({
+              'dollColor': {
+                'red': {'symbol': 'heart'},
+              },
+              'theme': {
+                'chapters': {
+                  '1': {
+                    'boardArt': {'dir': 'board/'},
+                  },
+                  '7': {'boardArt': boardArt},
+                },
+              },
+            }),
+          );
+      tokens({'dir': 'board/ch07/', 'files': files});
+      for (final name in files) {
+        File(p.join(root.path, 'design/board/ch07', name))
+          ..createSync(recursive: true)
+          ..writeAsStringSync(_svg('<rect width="1" height="1"/>'));
+      }
+      final plan = _plan(root);
+      expect(plan.issues, isEmpty);
+      expect(
+        _destinationsOf(plan).where((d) => d.startsWith('board/ch07/')),
+        [
+          'board/ch07/shelf-plank.svg',
+          'board/ch07/slot-stand-blank.svg',
+          'board/ch07/tower-base-blank.svg',
+        ],
+        reason: 'the pip-baked stand and tower never ship (spec §10.3)',
+      );
+      expect(plan.assetDirectories, contains('assets/board/ch07/'));
+
+      // A file the tokens don't list, a missing one, and a folder no
+      // chapter names.
+      File(
+        p.join(root.path, 'design/board/ch07/extra-slot.svg'),
+      ).writeAsStringSync(_svg(''));
+      File(p.join(root.path, 'design/board/ch07/shelf-plank.svg')).deleteSync();
+      Directory(p.join(root.path, 'design/board/ch08')).createSync();
+      expect(_plan(root).issues, [
+        contains('design/board/ch07/extra-slot.svg: not in tokens.json'),
+        'design/board/ch07/shelf-plank.svg: missing (tokens.json boardArt)',
+        contains('design/board/ch08: no tokens.json'),
+      ]);
+
+      // A chapter the tokens give its own wood, with no folder.
+      Directory(
+        p.join(root.path, 'design/board/ch07'),
+      ).deleteSync(recursive: true);
+      Directory(p.join(root.path, 'design/board/ch08')).deleteSync();
+      expect(_plan(root).issues, [
+        'design/board/ch07: missing (tokens.json boardArt names it)',
+      ]);
+      tokens({'dir': 'board/chapter7/', 'files': files});
+      expect(_plan(root).issues, [
+        contains('`theme.chapters.7.boardArt` needs a board/chNN/ dir'),
+      ]);
+    });
 
     test('rejects badly named theme and audio files', () {
       final root = _fakeRepo();

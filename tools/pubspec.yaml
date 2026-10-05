@@ -12,6 +12,9 @@ resolution: workspace
 # nesty_render is a Flutter package, but only its Flutter-free
 # `svg_tools.dart` library is imported here, so no dart:ui is compiled.
 dependencies:
+  # gen_font_subsets: intl's ja/hi date strings decide which kanji the
+  # bundled Japanese font keeps (l10n.md §4.4; the reason is in PROGRESS).
+  intl: ^0.20.2
   nesty_core:
     path: ../packages/nesty_core
   nesty_render:

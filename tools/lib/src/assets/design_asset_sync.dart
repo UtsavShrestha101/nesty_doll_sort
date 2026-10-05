@@ -245,6 +245,50 @@ AssetSyncPlan planDesignAssetSync(
     addSvg('board', file, 'board/$name', validateSvg);
   }
 
+  // Tokens v4 (m7-4 A.5): a chapter's own wood, design/board/chNN/ →
+  // board/chNN/, the files its `theme.chapters.N.boardArt` lists (the
+  // pip-baked stand and tower skipped, as above).
+  final themedBoards = _themedBoardArt(repoRoot, issues);
+  final boardDir = Directory(p.join(design.path, 'board'));
+  final boardFolders = boardDir.existsSync()
+      ? (boardDir
+            .listSync()
+            .whereType<Directory>()
+            .where((d) => !p.basename(d.path).startsWith('.'))
+            .toList()
+          ..sort((a, b) => a.path.compareTo(b.path)))
+      : <Directory>[];
+  for (final dir in boardFolders) {
+    final id = p.basename(dir.path);
+    final files = themedBoards[id];
+    if (files == null) {
+      issues.add(
+        'design/board/$id: no tokens.json `theme.chapters.N.boardArt` names '
+        'this folder',
+      );
+      continue;
+    }
+    final found = <String>{};
+    for (final file in filesIn('board/$id')) {
+      final name = p.basename(file.path);
+      if (!files.contains(name)) {
+        issues.add('${rel(file)}: not in tokens.json `boardArt.files` for $id');
+        continue;
+      }
+      found.add(name);
+      if (excludedBoardFiles.contains(name)) continue;
+      addSvg('board', file, 'board/$id/$name', validateSvg);
+    }
+    for (final missing in files.where((f) => !found.contains(f))) {
+      issues.add('design/board/$id/$missing: missing (tokens.json boardArt)');
+    }
+  }
+  for (final id in themedBoards.keys) {
+    if (!boardFolders.any((d) => p.basename(d.path) == id)) {
+      issues.add('design/board/$id: missing (tokens.json boardArt names it)');
+    }
+  }
+
   for (final file in filesIn('themes')) {
     final name = p.basename(file.path);
     final match = _themeName.firstMatch(name);
@@ -438,6 +482,42 @@ AssetSyncPlan planDesignAssetSync(
   }
   assets.sort((a, b) => a.destination.compareTo(b.destination));
   return AssetSyncPlan(assets, issues, outputs: outputs);
+}
+
+/// The chapters with their own board wood (tokens v4
+/// `theme.chapters.N.boardArt`, m7-4 A.5): `chNN` → the files it lists.
+/// A chapter whose `dir` is the shared `board/` has none.
+Map<String, List<String>> _themedBoardArt(
+  Directory repoRoot,
+  List<String> issues,
+) {
+  final tokens = File(p.join(repoRoot.path, 'design', 'tokens.json'));
+  if (!tokens.existsSync()) return const {};
+  final json = jsonDecode(tokens.readAsStringSync());
+  final theme = json is Map<String, Object?> ? json['theme'] : null;
+  final chapters = theme is Map<String, Object?> ? theme['chapters'] : null;
+  if (chapters is! Map<String, Object?>) return const {};
+  final result = <String, List<String>>{};
+  for (final MapEntry(key: n, value: chapter) in chapters.entries) {
+    final art = chapter is Map<String, Object?> ? chapter['boardArt'] : null;
+    if (art is! Map<String, Object?> || art['dir'] == 'board/') continue;
+    final dir = art['dir'];
+    final files = art['files'];
+    final m = dir is String
+        ? RegExp(r'^board/(ch\d{2})/$').firstMatch(dir)
+        : null;
+    if (m == null ||
+        files is! List<Object?> ||
+        !files.every((f) => f is String && _svgName.hasMatch(f))) {
+      issues.add(
+        'design/tokens.json: `theme.chapters.$n.boardArt` needs a '
+        'board/chNN/ dir and SVG files',
+      );
+      continue;
+    }
+    result[m[1]!] = files.cast<String>();
+  }
+  return result;
 }
 
 // Every dollColor symbol named in tokens.json must ship, or a doll would

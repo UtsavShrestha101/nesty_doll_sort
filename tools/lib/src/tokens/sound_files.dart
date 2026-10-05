@@ -32,11 +32,17 @@ final _name = RegExp(r'^[a-z0-9_]+$');
 final _random = RegExp(r'^([a-z0-9_]+(?:\|[a-z0-9_]+)+) \(random\)$');
 final _combo = RegExp(r'^([a-z0-9_]+)_\{comboStep\}$');
 
+/// Tokens v4 (m7-4 4.17): an event that plays nothing, `none`, optionally
+/// with a note in parentheses (`none (no sound, no haptic)`).
+final _none = RegExp(r'^none(?: \([^)]*\))?$');
+
 /// Parses one `sound.events` value: a single file (`pick`), a random pick
 /// (`clack_1|clack_2|clack_3 (random)`) or one file per combo step
-/// (`complete_{comboStep}` → `complete_1` … `complete_<maxSteps>`). Returns
+/// (`complete_{comboStep}` → `complete_1` … `complete_<maxSteps>`), or no
+/// sound at all (`none`, `none (<note>)`: a single pick of no files). Returns
 /// null for any other wording.
 SoundEvent? parseSoundEvent(String value, {required int maxSteps}) {
+  if (_none.hasMatch(value)) return const SoundEvent([], SoundEventPick.single);
   if (_name.hasMatch(value)) return SoundEvent([value], SoundEventPick.single);
   if (_random.firstMatch(value) case final m?) {
     return SoundEvent(m[1]!.split('|'), SoundEventPick.random);

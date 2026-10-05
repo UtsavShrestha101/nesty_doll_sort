@@ -43,7 +43,7 @@ void main() {
               ? ''
               : allSource.substring(classStart, classEnd);
           if (!RegExp(
-            'static const (?:[\\w<>, ]+ )?$member = ',
+            'static const (?:[\\w<>, (){}?]+ )?$member = ',
           ).hasMatch(body)) {
             missing.add('$path → $symbol');
           }
@@ -152,7 +152,6 @@ void main() {
         'motion.purchase.jingle',
         'motion.purchase.headerBalance',
         'layout.winStars.starsCanvas.lottie',
-        'layout.winStarsShort.notePill',
         'layout.chestCard.lottie.name',
         'layout.chestCard.lottie.anchor',
         'layout.hintMiddle.arrow',
@@ -184,7 +183,6 @@ void main() {
             'theme.chapters.$ch.$key',
         'layout.home.chapterCard.accent',
         'layout.home.tiles.order',
-        'color.starEmpty',
         'icons.recordsRival',
         'icons.chestLevel',
         'icons.stars',
@@ -197,9 +195,10 @@ void main() {
         'layout.extraSlot.placement',
         'layout.extraSlot.limitPerLevel',
         'settings.reduceMotion.default',
-        'textLink.minTapHeight',
-        for (final leaf in leafPaths(tokens()['versus'], 'versus')) leaf,
+        for (final leaf in leafPaths(tokens()['versus'], 'versus'))
+          if (!leaf.startsWith('versus.ribbon.')) leaf,
         for (final leaf in leafPaths(tokens()['chest'], 'chest')) leaf,
+        ..._documentedV4(tokens()),
       });
     });
 
@@ -220,6 +219,62 @@ void main() {
       expect(ui, contains('TokenStop.px(14.0)'));
       expect(ui, contains('fontFeatures: [FontFeature.tabularFigures()]'));
       expect(ui, contains('letterSpacing: 0.66'));
+    });
+
+    test('emits the script faces and their fallback on every style', () {
+      final ui = output.files[uiTokensPath]!;
+      expect(ui, contains("static const devaDisplayFamily = 'Baloo2Display';"));
+      expect(
+        ui,
+        contains("static const jpanBodyFamily = 'MPLUSRounded1cBody';"),
+      );
+      expect(
+        ui,
+        contains(
+          'static const Map<int, int> devaBodyWeights = '
+          '{800: 700, 700: 600, 600: 500};',
+        ),
+      );
+      expect(
+        ui,
+        contains(
+          'static const Map<int, int> jpanDisplayWeights = {700: 800, 600: 700};',
+        ),
+      );
+      expect(ui, contains('static const jpanSizeFactor = 0.94;'));
+      expect(ui, contains('static const devaBodyLineHeight = 1.5;'));
+      expect(ui, contains('static const jpanTitleLineHeight = 1.3;'));
+      expect(ui, contains('static const jpanLetterSpacing = 0.0;'));
+      expect(ui, isNot(contains('devaLetterSpacing')));
+      expect(
+        ui,
+        contains(
+          "static const List<String> displayFallback = ['Nunito', "
+          "'Baloo2Display', 'MPLUSRounded1cDisplay'];",
+        ),
+      );
+      expect(
+        ui,
+        contains(
+          "static const List<String> bodyFallback = ['Fredoka', "
+          "'Baloo2Body', 'MPLUSRounded1cBody'];",
+        ),
+      );
+      // Every TextStyle, from the type scale and the screen sections alike,
+      // lists its role's fallback (l10n.md §4.6).
+      final styles = RegExp(r'TextStyle\(([^;]*?)\)').allMatches(ui).toList();
+      expect(styles, isNotEmpty);
+      for (final style in styles) {
+        final body = style[1]!;
+        final role = body.contains("fontFamily: 'Fredoka'")
+            ? 'display'
+            : 'body';
+        expect(
+          body,
+          contains('fontFamilyFallback: AppFontTokens.${role}Fallback'),
+          reason: body,
+        );
+      }
     });
 
     test('spot-checks the audio tokens (design/audio/AUDIO.md)', () {
@@ -363,10 +418,135 @@ void main() {
       expect(ui, contains("static const shareIOS = 'ios_share';"));
       expect(
         ui,
-        contains('fontWeight: FontWeight.w800, color: Color(0xFF9A6A44)'),
+        contains(
+          'fontWeight: FontWeight.w800, '
+          'fontFamilyFallback: AppFontTokens.bodyFallback, '
+          'color: Color(0xFF9A6A44)',
+        ),
       );
-      expect(ui, isNot(contains('starEmpty')), reason: 'an art reference');
-      expect(ui, isNot(contains('minTapHeight')), reason: 'lead note 3: 48');
+      expect(
+        ui,
+        isNot(contains('static const starEmpty =')),
+        reason: 'tokens v3\'s art reference; v4 names colours',
+      );
+    });
+
+    test('spot-checks tokens v4: the board and the themes (m7-4)', () {
+      final render = output.files[renderTokensPath]!;
+      expect(render, isNot(contains('oneShelf')), reason: 'tokens only');
+      expect(render, contains('static const tallGlassPitchInset = 2.0;'));
+      expect(render, contains('static const iceMaxOverlap = 3.0;'));
+      expect(render, contains('static const arrowhead = false;'));
+      expect(render, contains('static const headSize = 0.36;'));
+      expect(render, contains('static const bellySize = 0.2;'));
+      // Chapter 7's own wood and ribbon colours; chapter 1 shares board/.
+      final ch07 = render.substring(
+        render.indexOf('static const ch07 ='),
+        render.indexOf('static const ch08 ='),
+      );
+      expect(ch07, contains('ribbonTail: Color(0xFFAA3A4D)'));
+      expect(ch07, contains('ribbonFold: Color(0xFF681828)'));
+      expect(ch07, contains("boardArtDir: 'board/ch07/'"));
+      final ch01 = render.substring(
+        render.indexOf('static const ch01 ='),
+        render.indexOf('static const ch02 ='),
+      );
+      expect(ch01, contains('ribbonTail: Color(0xFFA46B0B)'));
+      expect(ch01, isNot(contains('boardArtDir')));
+    });
+
+    test('spot-checks tokens v4: the UI (m7-4)', () {
+      final ui = output.files[uiTokensPath]!;
+      expect(ui, contains('static const version = 4;'));
+      expect(ui, contains('static const sunkFace = Color(0xFFF3E6D2);'));
+      expect(
+        ui,
+        contains('static const starEmptyOutline = Color(0xFFDDBE8E);'),
+      );
+      expect(ui, contains('static const scrimLight = Color(0x593C1E0A);'));
+      expect(ui, contains('static const canvas = LinearGradient('));
+      expect(ui, contains('static const List<NestyShadow> coinChipEdge = ['));
+      expect(ui, contains('static const reminderSet = SoundCue([]);'));
+      expect(ui, contains("static const storageError = 'sd_card_alert';"));
+      expect(ui, contains('static const minTapHeight = 48.0;'));
+      expect(ui, contains('static const accentPressed = Color(0xFFA94F12);'));
+      expect(ui, contains('static const cardTop = 168.0;'));
+      expect(ui, contains('static const artBox = Size(156.0, 130.0);'));
+      expect(ui, contains('static const lottieScale = 1.2;'));
+      expect(ui, contains('static const appTopBelowSafeTop = 4.0;'));
+      expect(ui, contains('static const appTopOffset = -1.0;'));
+      expect(ui, contains('static const appEdgeDepth = 4.0;'));
+      expect(ui, contains('static const blockedActionsGap = 18.0;'));
+      expect(
+        ui,
+        contains(
+          'static const pauseHoleRect = Rect.fromLTWH(10.0, 56.0, 60.0, 60.0);',
+        ),
+      );
+      expect(ui, contains('static const winRibbonBox = Size(312.0, 40.0);'));
+      expect(ui, contains('static const gainTagOffset = Offset(12.0, -42.0);'));
+      expect(ui, contains('static const tooltipTopShort = 30.0;'));
+      expect(ui, contains('static const openScrollFinishedRows = 2;'));
+      expect(ui, contains('static const foldedRowNameMinScale = 0.85;'));
+      expect(ui, contains('static const statsGridCellIconTileSize = 36.0;'));
+      expect(ui, contains('static const clampTop = 112.0;'));
+      expect(ui, contains('static const trailingCoinPillHeight = 40.0;'));
+      expect(
+        ui,
+        contains(
+          'static const List<String> winRibbonShort = ['
+          "'win_title_short', 'race_win_title_short',",
+        ),
+      );
+      expect(ui, contains('static const versusColors = RibbonColors('));
+      expect(
+        ui,
+        contains(
+          "static const List<String> bandKeyPath = ['**', 'band_fill'];",
+        ),
+      );
+      expect(ui, contains("'space': (face: Color(0xEBFFFFFF)"));
+      // Line heights: a multiple (24/1.15) and px (16/23).
+      final noCoins = ui.substring(
+        ui.indexOf('abstract final class NoCoinsTokens'),
+      );
+      expect(noCoins, contains('fontSize: 24.0,'));
+      expect(noCoins, contains('height: 1.15,'));
+      expect(noCoins, contains('height: 1.4375,'));
+      // Motion.
+      expect(
+        ui,
+        contains(
+          'static const List<double> trailSpacing = [0.1, 0.2, 0.3, 0.45, 0.6];',
+        ),
+      );
+      expect(ui, contains('static const pillRingLastCoinMs = 1000;'));
+      expect(ui, contains('static const glowMs = 2400;'));
+      expect(ui, contains('static const reducedMotionPulseMs = 1600;'));
+      expect(
+        ui,
+        contains('static const Cubic curve = UiMotionTokens.curveEaseOut;'),
+      );
+      expect(ui, contains('static const stripCanvasDp = 47.5;'));
+      expect(ui, contains('static const sparkleCount = 3;'));
+      expect(ui, contains("static const glyph = 'auto_awesome';"));
+      expect(ui, contains('static const placeInset = -8.0;'));
+      expect(ui, contains('static const familyCounterLottieWidth = 70.0;'));
+    });
+
+    test('every glyph the v4 tokens name is in the bundled font', () {
+      final font = File(
+        p.join(root.path, 'tools/fonts/nesty_symbols.txt'),
+      ).readAsLinesSync().map((l) => l.trim()).toSet();
+      final ui = output.files[uiTokensPath]!;
+      final glyphs = [
+        for (final m in RegExp(
+          r"static const (?:glyph|storageError|contentError) = '([a-z0-9_]+)';",
+        ).allMatches(ui))
+          m[1]!,
+      ];
+      expect(glyphs, containsAll(['auto_awesome', 'sd_card_alert']));
+      expect(font, containsAll(glyphs));
     });
 
     test('is deterministic', () {
@@ -423,10 +603,18 @@ void main() {
           reason: 'layout.board.glassCaseTall.art',
         );
       }
-      final star = RegExp(
-        r'^(ui/\S+\.svg) ',
-      ).firstMatch(at('color.starEmpty')! as String)![1]!;
-      expect(File(p.join(root.path, 'design', star)).existsSync(), isTrue);
+      // Tokens v4 (m7-4 A.5): each chapter's own wood.
+      for (var ch = 7; ch <= 10; ch++) {
+        final dir = at('theme.chapters.$ch.boardArt.dir')! as String;
+        for (final file
+            in (at('theme.chapters.$ch.boardArt.files')! as List<Object?>)) {
+          expect(
+            File(p.join(root.path, 'design', '$dir$file')).existsSync(),
+            isTrue,
+            reason: '$dir$file',
+          );
+        }
+      }
       for (var ch = 1; ch <= 10; ch++) {
         final base = 'theme.chapters.$ch';
         expect(
@@ -683,6 +871,44 @@ void main() {
       );
     });
 
+    test('on script fonts the bundle cannot honour', () {
+      Matcher throwsAt(String path) => throwsA(
+        isA<TokenFormatException>().having((e) => e.path, 'path', path),
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => (at(j, 'font')).remove('scripts')),
+        ),
+        throwsAt('font.scripts'),
+        reason: 'tokens v4 always names the hi/ja faces',
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => at(j, 'font.scripts.deva.weights')['body900'] = 700),
+        ),
+        throwsAt('font.scripts.deva.weights.body900'),
+        reason: 'Nunito 900 is not bundled',
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => at(j, 'font.scripts.jpan.weights')['heavy'] = 700),
+        ),
+        throwsAt('font.scripts.jpan.weights.heavy'),
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => at(j, 'font.scripts.jpan')['lineHeight'] = 'roomy'),
+        ),
+        throwsAt('font.scripts.jpan.lineHeight'),
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => at(j, 'font.scripts.deva')['kerning'] = 'none'),
+        ),
+        throwsAt('font.scripts.deva.kerning'),
+      );
+    });
+
     test('on a text style weight that is not bundled', () {
       expect(
         () => generateDesignTokens(
@@ -859,4 +1085,217 @@ void main() {
       }
     });
   });
+
+  group('tokens v4 fails loudly (m7-4)', () {
+    String mutate(void Function(Map<String, Object?> json) change) {
+      final json = tokens();
+      change(json);
+      return jsonEncode(json);
+    }
+
+    Map<String, Object?> at(Map<String, Object?> json, String path) {
+      Object? node = json;
+      for (final key in path.split('.')) {
+        node = (node! as Map<String, Object?>)[key];
+      }
+      return node! as Map<String, Object?>;
+    }
+
+    Matcher throwsAt(String path) => throwsA(
+      isA<TokenFormatException>().having((e) => e.path, 'path', path),
+    );
+
+    test('on a oneShelf preset that grows fit limits', () {
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'layout.boardPresets.oneShelf')['limits'] = {
+              'vertical': 1,
+            },
+          ),
+        ),
+        throwsAt('layout.boardPresets.oneShelf.limits'),
+      );
+    });
+
+    test('on a chapter\'s board art in another chapter\'s folder', () {
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'theme.chapters.7.boardArt')['dir'] = 'board/ch08/',
+          ),
+        ),
+        throwsAt('theme.chapters.7.boardArt.dir'),
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'theme.chapters.7.boardArt')['files'] = [
+              'shelf-plank.svg',
+            ],
+          ),
+        ),
+        throwsAt('theme.chapters.7.boardArt.files'),
+      );
+    });
+
+    test('on a ribbon key path that is not its fill', () {
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => at(j, 'winRibbon.keyPaths')['band'] = ['**', 'fill']),
+        ),
+        throwsAt('winRibbon.keyPaths.band'),
+      );
+    });
+
+    test('on a ribbon palette without its tail and fold', () {
+      expect(
+        () => generateDesignTokens(
+          mutate((j) => at(j, 'theme.chapters.3.palette').remove('ribbonFold')),
+        ),
+        throwsAt('theme.chapters.3.palette'),
+      );
+    });
+
+    test('on reworded v4 prose the codegen parses', () {
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'layout.fallbackDoll')['head'] =
+                'circle, radius 0.18 h, base color, 3 dp darker bottom',
+          ),
+        ),
+        throwsAt('layout.fallbackDoll.head'),
+        reason: 'the painter reads diameters (m7-4 1.8)',
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'motion.chest.collect.pillRing')['until'] =
+                '240 ms after the last coin (1,200 ms)',
+          ),
+        ),
+        throwsAt('motion.chest.collect.pillRing.until'),
+        reason: 'the last coin lands at 700 + 5 × 60 ms',
+      );
+      expect(
+        () => generateDesignTokens(
+          mutate(
+            (j) => at(j, 'motion.rivalReact.segments')['win'] = [220, 290],
+          ),
+        ),
+        throwsAt('motion.rivalReact.segments.win'),
+        reason: 'not ui_rival_react\'s marker',
+      );
+    });
+  });
 }
+
+/// The documentation-only leaves of tokens v4 (m7-4), each a deliberate
+/// decision of the codegen change that reads v4.
+Set<String> _documentedV4(Map<String, Object?> tokens) => {
+  // Design notes.
+  for (final section in ['color', 'layout.hintArc']) '$section.\$m74',
+  for (final section in [
+    'layout.tutorial',
+    'layout.sizeBlend',
+    'layout.noCoins',
+    'layout.languageSheet',
+    'toast',
+    'textFit',
+    'textFit.sheetRows',
+    'screenHeader',
+    'motion.rivalReact',
+    'motion.museumIdle',
+    'motion.purchaseItem',
+    'motion.relitHome',
+    'motion.relitTwinkle',
+    'winRibbon.keyPaths',
+    'versus.ribbon',
+  ])
+    '$section.\$note',
+  for (final leaf in [
+    'gradient.canvas.use',
+    'layout.tutorial.pauseHole.note',
+    'layout.tutorial.tooltip.note',
+    'layout.settingsRows.segmented.note',
+    'layout.museumDetail.spotlight.cone.note',
+    'toast.app.use',
+    'toast.inPlace.use',
+    'toast.pill.use',
+    'textFit.rivalNames.note',
+    'textFit.chestChips.note',
+    'textFit.chapterRows.note',
+    'textLink.accent.use',
+    'shop.skins.space.tag.note',
+    'theme.chapters.7.boardArt.wood',
+    'theme.chapters.8.boardArt.wood',
+    'theme.chapters.9.boardArt.wood',
+    'theme.chapters.10.boardArt.wood',
+    'icons.familiesCompleted',
+    'icons.shareNote',
+  ])
+    leaf,
+  // Tokens only: no bundled level has one shelf.
+  for (final leaf in leafPaths(
+    (((tokens['layout']! as Map<String, Object?>)['boardPresets']!
+        as Map<String, Object?>)['oneShelf']),
+    'layout.boardPresets.oneShelf',
+  ))
+    leaf,
+  // The script fonts' fallback rule (emitted as the fallback lists) and
+  // their licence notes.
+  r'font.scripts.$note',
+  'font.scripts.deva.source',
+  'font.scripts.jpan.source',
+  // Rules of placement and behaviour the hand-written code follows (some
+  // pinned word for word), and checked cross-references.
+  'layout.board.glassCaseTopOverlap',
+  'layout.boardPresets.fourShelves.pieces',
+  'layout.towerStack.d21',
+  'layout.fallbackDoll.splash',
+  'layout.hud.familyCounter.lottieWidth',
+  'theme.ribbonTint',
+  for (var ch = 7; ch <= 10; ch++) 'theme.chapters.$ch.boardArt.note',
+  'layout.tutorial.chip',
+  'layout.sizeBlend.rule',
+  'layout.settingsRows.reminderOff',
+  'layout.languageSheet.native',
+  'layout.languageSheet.change',
+  'toast.app.streakSaved',
+  'textFit.hudPills.short',
+  'textFit.boosterLabels.short',
+  'textFit.tabBar.short',
+  'textFit.cardsAndSheets',
+  'textFit.sheetRows.rule',
+  'screenHeader.title',
+  'layout.rivalStrip.narrow.measuredOn',
+  'layout.chestCard.lottie.layout',
+  'layout.chestCard.artFit.svg',
+  'layout.chestCard.artFit.frames',
+  'layout.chestCard.artFit.lottie',
+  'layout.chestCard.artFit.superseded',
+  'layout.chapters.progressCount',
+  'layout.chapters.accordion',
+  'layout.museum.cabinet.collectedIdle',
+  'layout.rivalSelect.selection',
+  'layout.rivalSelect.shortScreen',
+  'textLink.pressedToken',
+  'versus.ribbon.hi',
+  'motion.chest.rays',
+  'motion.chest.collect.hintRing.on',
+  'motion.chest.collect.gainTag.text',
+  'motion.chest.collect.gainTag.pop',
+  'motion.rivalReact.lottie',
+  for (final segment in ['idle', 'family', 'win', 'lose'])
+    'motion.rivalReact.segments.$segment',
+  'motion.rivalReact.sound',
+  'motion.rivalReact.reducedMotion',
+  'motion.museumIdle.lottie',
+  'motion.museumIdle.reducedMotion',
+  'motion.firstLaunch.reducedMotion',
+  'motion.purchaseItem.swap',
+  'motion.purchaseItem.jingle',
+  'motion.purchaseItem.haptic',
+  'motion.relitTwinkle.motion',
+};

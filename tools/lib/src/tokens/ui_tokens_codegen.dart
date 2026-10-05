@@ -1,3 +1,4 @@
+import 'package:nesty_tools/src/fonts/bundled_fonts.dart';
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
 import 'package:nesty_tools/src/tokens/screen_tokens_codegen.dart';
@@ -56,6 +57,10 @@ ConstClass _colors(TokenReader t) {
   const name = 'AppColorTokens';
   final c = ConstClass(name, 'App colors (tokens.json `color`).');
   for (final key in t.keys('color')) {
+    if (key.startsWith(r'$')) {
+      t.documented('color.$key', reason: 'a design note');
+      continue;
+    }
     final member = memberName(key);
     final raw = t.peek('color.$key');
     // Tokens v3 names one "colour" by its art: `starEmpty` is the empty
@@ -198,6 +203,19 @@ ConstClass _gradients(TokenReader t) {
               'offPx: ${doubleLiteral(num.parse(m[4]!))})',
           doc: '"$value".',
         );
+      } else if (extra == 'use') {
+        // Tokens v4 (m7-4): where the gradient paints, prose.
+        t.documented(path, reason: 'where it paints, in the design');
+      } else if (extra == 'edge') {
+        // Tokens v4 `gradient.coinChip.edge`: the chip's solid edge, a CSS
+        // box shadow under the gradient.
+        final value = t.string(path, symbol: '$name.${member}Edge');
+        c.add(
+          '${member}Edge',
+          shadowListLiteral(parseBoxShadowList(value)),
+          type: 'List<NestyShadow>',
+          doc: 'The solid edge under [$member]: `$value`.',
+        );
       } else {
         throw TokenFormatException(path, 'unknown gradient field');
       }
@@ -267,7 +285,171 @@ ConstClass _fonts(TokenReader t) {
     'font.mono',
     reason: 'design annotations only, not in the app',
   );
+  _scriptFonts(t, c);
   return c;
+}
+
+/// Tokens v4 (m7-4 9.1) `font.scripts`: the Devanagari and Japanese faces,
+/// bundled by tools/fonts/build_fonts.sh as one family per Latin role (see
+/// `scriptFamilyName`), and the per-glyph fallback every text style lists:
+/// the other Latin family first (a Latin glyph one face lacks comes from
+/// the other rounded face, not the system), then the script families, which
+/// only map their own script. A style's `fontWeight` is its Latin weight;
+/// each script family's files answer it with the weight the tokens map it
+/// to.
+void _scriptFonts(TokenReader t, ConstClass c) {
+  const name = 'AppFontTokens';
+  if (!t.has('font.scripts')) {
+    throw TokenFormatException('font.scripts', 'missing (tokens v4, m7-4 9.1)');
+  }
+  t.documented(
+    r'font.scripts.$note',
+    reason: 'the fallback rule, emitted as the fallback lists',
+  );
+  final latin = {
+    for (final role in fontRoles.keys)
+      role: t.peek('font.$role.family')! as String,
+  };
+  final scriptFamilies = {for (final role in fontRoles.keys) role: <String>[]};
+  for (final script in t.keys('font.scripts')) {
+    if (script.startsWith(r'$')) continue;
+    final base = 'font.scripts.$script';
+    for (final field in t.keys(base)) {
+      const known = {
+        'family',
+        'source',
+        'locales',
+        'weights',
+        'size',
+        'lineHeight',
+        'letterSpacing',
+      };
+      if (!known.contains(field)) {
+        throw TokenFormatException('$base.$field', 'unknown script font field');
+      }
+    }
+    final design = t.string(
+      '$base.family',
+      symbol: '$name.${script}DisplayFamily',
+    );
+    t.string('$base.family', symbol: '$name.${script}BodyFamily');
+    for (final role in fontRoles.keys) {
+      final family = scriptFamilyName(design, role);
+      scriptFamilies[role]!.add(family);
+      c.add(
+        '$script${fontRoles[role]}Family',
+        stringLiteral(family),
+        doc:
+            'The $design face for ${latin[role]} ($role) text: bundled per '
+            'role, its files carry the ${latin[role]} weight they answer.',
+      );
+    }
+    t.documented('$base.source', reason: 'licence note; see the OFL.txt');
+    c.add(
+      '${script}Locales',
+      '[${t.strings('$base.locales', symbol: '$name.${script}Locales').map(stringLiteral).join(', ')}]',
+      type: 'List<String>',
+      doc: 'The locales whose text is in this script.',
+    );
+    final mapped = {for (final role in fontRoles.keys) role: <String>[]};
+    for (final key in t.keys('$base.weights')) {
+      final m = RegExp(r'^(display|body)(\d+)$').firstMatch(key);
+      if (m == null) {
+        throw TokenFormatException(
+          '$base.weights.$key',
+          'expected <role><weight>',
+        );
+      }
+      final role = m[1]!;
+      final from = int.parse(m[2]!);
+      final roleWeights = t.peek('font.$role.weights')! as List<Object?>;
+      if (!roleWeights.contains(from)) {
+        throw TokenFormatException(
+          '$base.weights.$key',
+          '${latin[role]} $from is not a bundled weight ($roleWeights)',
+        );
+      }
+      final to = t.integer(
+        '$base.weights.$key',
+        symbol: '$name.$script${fontRoles[role]}Weights',
+      );
+      _fontWeight(to, '$base.weights.$key');
+      mapped[role]!.add('$from: $to');
+    }
+    for (final role in fontRoles.keys) {
+      c.add(
+        '$script${fontRoles[role]}Weights',
+        '{${mapped[role]!.join(', ')}}',
+        type: 'Map<int, int>',
+        doc:
+            '${latin[role]} weight → $design weight its $role text draws '
+            '(tools/test/fonts checks the bundled files resolve to it).',
+      );
+    }
+    c.add(
+      '${script}SizeFactor',
+      doubleLiteral(
+        t.number('$base.size', symbol: '$name.${script}SizeFactor'),
+      ),
+      doc: 'The font size factor for text in this script.',
+    );
+    final lineHeight = t.string(
+      '$base.lineHeight',
+      symbol: '$name.${script}BodyLineHeight',
+    );
+    final heights = RegExp(
+      r'(\d+(?:\.\d+)?) \(body\) / (\d+(?:\.\d+)?) \(titles\)',
+    ).firstMatch(lineHeight);
+    if (heights == null) {
+      throw TokenFormatException(
+        '$base.lineHeight',
+        'expected "<n> (body) / <n> (titles)" in "$lineHeight"',
+      );
+    }
+    t.string('$base.lineHeight', symbol: '$name.${script}TitleLineHeight');
+    for (final (member, value, what) in [
+      ('BodyLineHeight', heights[1]!, 'body'),
+      ('TitleLineHeight', heights[2]!, 'title'),
+    ]) {
+      c.add(
+        '$script$member',
+        doubleLiteral(double.parse(value)),
+        doc:
+            'The least line height of multi-line $what text in this script: '
+            '"$lineHeight".',
+      );
+    }
+    if (t.has('$base.letterSpacing')) {
+      final spacing = t.string(
+        '$base.letterSpacing',
+        symbol: '$name.${script}LetterSpacing',
+      );
+      final m = RegExp(r'^always (-?\d+(?:\.\d+)?)\b').firstMatch(spacing);
+      if (m == null) {
+        throw TokenFormatException(
+          '$base.letterSpacing',
+          'expected "always <n> …", got "$spacing"',
+        );
+      }
+      c.add(
+        '${script}LetterSpacing',
+        doubleLiteral(double.parse(m[1]!)),
+        doc: 'Letter spacing for text in this script: "$spacing".',
+      );
+    }
+  }
+  for (final role in fontRoles.keys) {
+    final other = latin[fontRoles.keys.firstWhere((r) => r != role)]!;
+    c.add(
+      '${role}Fallback',
+      '[${[other, ...scriptFamilies[role]!].map(stringLiteral).join(', ')}]',
+      type: 'List<String>',
+      doc:
+          'The `fontFamilyFallback` of every ${latin[role]} style: $other '
+          'for a Latin glyph ${latin[role]} lacks, then the script faces '
+          '(each maps only its own script).',
+    );
+  }
 }
 
 String _fontWeight(num weight, String path) {
@@ -326,6 +508,7 @@ ConstClass _textStyles(TokenReader t) {
       'height: ${doubleLiteral(lineHeight / size)}',
       'leadingDistribution: TextLeadingDistribution.even',
       'fontWeight: ${_fontWeight(weight, '$base.weight')}',
+      'fontFamilyFallback: AppFontTokens.${role}Fallback',
     ];
     if (t.has('$base.letterSpacing')) {
       args.add(
@@ -471,6 +654,32 @@ ConstClass _hud(TokenReader t) {
       '${stringLiteral(key)}: ${doubleLiteral(t.number('$p.familyCounter.examples.$key', symbol: '$name.familyCounterWidthExamples'))}',
     );
   }
+  // Tokens v4 (m7-4 6.14): the counter widens through ui_family_counter's
+  // `pill_rect` / `glow_rect` and moves `icon` (FxSpec.sizedRects).
+  final width = t.documented(
+    '$p.familyCounter.lottieWidth',
+    reason:
+        'how the counter Lottie widens (LOTTIE.md "Tint and width"); its '
+        'authored width is HudTokens.familyCounterLottieWidth',
+  );
+  final m = RegExp(r'is authored at (\d+) wide').firstMatch(width);
+  if (m == null ||
+      !width.contains("['**', 'pill_rect']") ||
+      !width.contains('glow_rect') ||
+      !width.contains("transformPosition(['icon']")) {
+    throw TokenFormatException(
+      '$p.familyCounter.lottieWidth',
+      'unexpected wording',
+    );
+  }
+  c.add(
+    'familyCounterLottieWidth',
+    doubleLiteral(num.parse(m[1]!)),
+    doc:
+        '`ui_family_counter`\'s pill is authored this wide: for another '
+        'width w, size `pill_rect` and `glow_rect` to (w, 26) and move '
+        '`icon` by (−w / 2 + 14, 0).',
+  );
   c.add(
     'familyCounterWidthExamples',
     '{${examples.join(', ')}}',
@@ -588,7 +797,9 @@ ConstClass _sound(TokenReader t) {
         SoundEventPick.comboStep =>
           'SoundCue($files, pick: SoundPick.comboStep)',
       },
-      doc: jingle
+      doc: event.files.isEmpty
+          ? '`$value`: no sound (an empty cue plays nothing).'
+          : jingle
           ? '`$value`: a jingle (OGG, in [jingleFiles]; the bus is '
                 '[jingleBus]).'
           : '`$value`.',

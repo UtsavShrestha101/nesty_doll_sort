@@ -141,8 +141,8 @@ List<_SlotRow> _imageSlotRows() {
 void main() {
   final rows = _filesTable();
 
-  test('lists the LOTTIE.md files in table order (35 since m7-3)', () {
-    expect(rows, hasLength(35));
+  test('lists the LOTTIE.md files in table order (37 since m7-4)', () {
+    expect(rows, hasLength(37));
     expect(
       [for (final c in lottieContracts) c.name],
       [for (final r in rows) r.name],
@@ -316,6 +316,48 @@ void main() {
     expect(nulls, containsAll(['glow_pulse', 'shatter_burst', 'arrow_bob']));
     final required = {for (final c in lottieContracts) ...c.requiredLayers};
     expect(required, containsAll(nulls));
+  });
+
+  test('the named fills and rectangles are LOTTIE.md "Tint and width"', () {
+    final section = _section(
+      _read('$designLottieDir/$lottieContractDoc'),
+      'Tint and width',
+    );
+    final fills = {
+      for (final m in RegExp(r"'(\w+_fill)'").allMatches(section)) m[1]!,
+      // "`hi_fill` stays white at its authored opacity": named, not tinted.
+      for (final m in RegExp(r'`(\w+_fill)`').allMatches(section)) m[1]!,
+    };
+    final rects = {
+      for (final m in RegExp(r"'(\w+_rect)'|`(\w+_rect)`").allMatches(section))
+        m[1] ?? m[2]!,
+    };
+    expect(fills, {
+      'band_fill',
+      'edge_fill',
+      'hi_fill',
+      'tail_fill',
+      'fold_fill',
+    });
+    expect(rects, {'pill_rect', 'glow_rect'});
+    expect(
+      [
+        for (final c in lottieContracts)
+          if (c.tintFills.isNotEmpty) c.name,
+      ],
+      ['ui_family_counter', 'ui_win_ribbon', 'ui_chapter_ribbon'],
+    );
+    for (final name in ['ui_win_ribbon', 'ui_chapter_ribbon']) {
+      expect(lottieContractOf(name)!.tintFills, fills, reason: name);
+    }
+    final counter = lottieContractOf('ui_family_counter')!;
+    expect(counter.sizedRects, rects);
+    expect(counter.tintFills, {
+      for (final r in rects) r.replaceAll('_rect', '_fill'),
+    });
+    // "move the doll mark with transformPosition(const ['icon'], …)".
+    expect(section, contains("transformPosition(const ['icon']"));
+    expect(counter.requiredLayers, contains('icon'));
   });
 
   test('the text files are the three LOTTIE.md "Text layers" names', () {

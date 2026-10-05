@@ -189,6 +189,34 @@ void main() {
     );
   });
 
+  test('m7-4: the new files, named fills and rectangles', () {
+    final rival = of('ui_rival_react');
+    expect(rival.markers.map((m) => m.name), ['idle', 'family', 'win', 'lose']);
+    expect(rival.imageLayers.single.assetId, 'rival_portrait');
+    expect(rival.contract.anchor, const LottiePoint(60, 64));
+    final museum = of('ui_museum_idle');
+    expect(museum.contract.loops, isTrue);
+    expect(museum.imageLayers.single.assetId, 'figurine');
+    expect(of('ui_win_ribbon').tintFills, [
+      'band_fill',
+      'edge_fill',
+      'fold_fill',
+      'hi_fill',
+      'tail_fill',
+    ]);
+    expect(of('ui_family_counter').sizedRects, ['glow_rect', 'pill_rect']);
+    expect(of('ui_chest').tintFills, isEmpty);
+    final source = fxSpecSource(facts);
+    expect(source, contains("sizedRects: ['glow_rect', 'pill_rect'],"));
+    expect(
+      RegExp('tintFills:').allMatches(source),
+      hasLength(3),
+      reason: 'the two ribbons and the family counter',
+    );
+    expect(source, contains('FxId.uiRivalReact: FxSpec('));
+    expect(source, contains('slot: FxImageSlot.figurine,'));
+  });
+
   test('emits short literals: no float noise, Offset.zero for (0, 0)', () {
     final source = fxSpecSource(facts);
     expect(source, contains('scale: Offset(0.1953, 0.1953)'));

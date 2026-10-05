@@ -10,29 +10,51 @@
 #   2. boots the device and shows it (the Simulator app, or the emulator window)
 #   3. the playthrough, with its screenshots (integration_test/playthrough_test.dart),
 #      including the race against rival 1 (M7 phase 2), slowed by NESTY_RACE_PACE_MS
-#   4. kill mid-level and resume: phase A, a real kill, phase B, compared (M3)
+#   4. kill mid-level and resume: phase A, a real kill, phase B, compared,
+#      twice: level 3 (M3) and level 1 during its tutorial (E9,
+#      NESTY_RESUME_SCENARIO=l1)
 #   5. the daily puzzle's fingerprint, compared with nesty_core's own level (M3)
 #   6. M7 phase 4's device files (Claude Design's m7-3), each from a fresh
 #      install with its own screenshots:
 #      board        board_layouts_test.dart: levels 31-200's presets, the tall
 #                   glass case, the top-shelf tower, the iced tower's tag, two
 #                   +1 Slots, the tap nudge, the drag hover, the hint's counter
-#      race         race_loss_test.dart twice: `loss` (the rival paced at
+#      race         race_loss_test.dart three times: `loss` (the rival paced at
 #                   NESTY_RACE_PACE_MS=250 finishes first; Rematch, Pause and
-#                   Settings, Leave race's confirm, New race) and `oom` (Out
-#                   of Moves in a race, the rival never finishing)
-#      meta         meta_screens_test.dart: Home, Chapters and the level card,
-#                   the Museum, Records, the Shop's Forest Bear and themes, a
-#                   theme in play (a seeded returning player)
-#      daily_states daily_states_test.dart three times, with NESTY_FAKE_DATE:
-#                   `chest` (a 6-day streak's day-7 chest), `paused` (paused,
-#                   then relit) and `settings` (the toggles, Reduce motion,
-#                   Relaxed mode's free undo, Large symbols on a board)
+#                   Settings, Leave race's confirm, New race), `oom` (Out of
+#                   Moves in a race, the rival never finishing) and `restart`
+#                   (the rival starting over, 9.3c, at 1,000 ms a move)
+#      meta         meta_screens_test.dart three times: `returning` (Home,
+#                   Chapters and the level card, the Museum and a figurine,
+#                   Records, the Shop's Forest Bear, its detail, Ocean in play,
+#                   the themes, a theme in play), `finale` (12.1) and
+#                   `complete` (12.2, and the Museum with all ten families)
+#      daily_states daily_states_test.dart four times, with NESTY_FAKE_DATE:
+#                   `chest` (a 6-day streak's day-7 chest, the offer's time
+#                   picker), `paused` (paused, then relit), `saved` (a freeze
+#                   covers yesterday, 5.2) and `settings` (the toggles, Reduce
+#                   motion, Relaxed mode's toast and free undo, Large symbols)
 #      overlays     overlays_test.dart: the replay's helper note, the milestone
 #                   chest's flights, the 10th bonus chest, the generating card,
-#                   Out of Moves with the free undos spent, the +1 Slot limit,
-#                   soft-stuck with Restart glowing, the intro loops
-#   7. optional, Android only, never in the default run (--only reminder): the
+#                   Out of Moves with the free undos spent, the Undo popup, the
+#                   animated undo, the +1 Slot limit, soft-stuck with Restart
+#                   glowing, the intro loops
+#   7. M7 phase 5's device files, each scenario from a fresh install:
+#      faults       faults_test.dart eight times (NESTY_FAULT_SCENARIO): a race
+#                   that fails to set up, the reminder granted and denied, the
+#                   generating card held, a bonus level that fails, the
+#                   splash's storage and content errors, the splash held once
+#                   its art is in (10.8's 00b shot), each installed
+#                   through the test-only seam bootstrap(beforeRunApp:)
+#      semantics    semantics_tour_test.dart four times (NESTY_A11Y_SCENARIO):
+#                   race, race_loss, game and meta; every screen's semantics in
+#                   traversal order, kept as semantics_<scenario>.json
+#      locales      locales_test.dart three times (NESTY_TEST_LOCALE), one per
+#                   script family: de through the real language picker, hi and
+#                   ja seeded; Home to a race's Leave race, every screen shot
+#                   as l10n-<code>-NN_<screen>, every assertion read from the
+#                   locale's own catalog
+#   8. optional, Android only, never in the default run (--only reminder): the
 #      daily reminder (M7 phase 3), with POST_NOTIFICATIONS granted by
 #      `pm grant` before launch so no OS dialog opens: on in Settings, one
 #      pending reminder; off, none (integration_test/reminder_test.dart)
@@ -41,6 +63,13 @@
 # apps/game/build/nesty-test/<timestamp>/ (or $NESTY_TEST_OUT), and exits 1
 # when any step fails. The dev flavor with real services; the app id is
 # com.futrix.nesty.dev, uninstalled before each fresh step.
+#
+# Devices: NESTY_TEST_IOS_DEVICE and NESTY_TEST_ANDROID_DEVICE are the
+# defaults behind --device. --android-size WxH@dpi (or NESTY_TEST_ANDROID_SIZE)
+# sets the emulator's screen with `adb shell wm size` and `wm density` after
+# boot, and the exit trap resets both, only if this run set them:
+# 1170x2532@480 is 390x844 dp, the iPhone 16e's size (phase 5's fidelity
+# pairs).
 
 set -uo pipefail
 
@@ -50,13 +79,19 @@ Usage: nesty-test [options]
 
   --ios                 run on an iOS simulator (the default)
   --android             run on an Android emulator
-  --device <name|id>    iOS: a simulator name or UDID (default "iPhone 16 Pro")
-                        Android: an AVD name (default flutter_emulator) or a
-                        running serial such as emulator-5554
+  --device <name|id>    iOS: a simulator name or UDID (default
+                        $NESTY_TEST_IOS_DEVICE, else "iPhone 16 Pro")
+                        Android: an AVD name or a running serial such as
+                        emulator-5554 (default $NESTY_TEST_ANDROID_DEVICE,
+                        else flutter_emulator)
+  --android-size <WxH@dpi>
+                        Android: the screen in pixels and its density, set
+                        after boot and reset on exit (default
+                        $NESTY_TEST_ANDROID_SIZE; 1170x2532@480 is 390x844 dp)
   --device-only         skip the host checks (analyze and the test suites)
   --only <steps>        comma-separated subset of: gates,playthrough,resume,daily,
-                        board,race,meta,daily_states,overlays,reminder
-                        (reminder: Android only, and only when named)
+                        board,race,meta,daily_states,overlays,faults,semantics,
+                        locales,reminder (reminder: Android only, and only when named)
   --date <yyyymmdd>     the daily's date (default 20260926, the core golden)
   --headless            Android: start the emulator without a window
   --shutdown            shut the device down at the end if this run booted it
@@ -67,6 +102,12 @@ Examples:
   nesty-test --device-only            skip the host checks
   nesty-test --android --only playthrough
   nesty-test --device-only --only board,race   two of phase 4's device files
+  nesty-test --device-only --only faults,semantics   phase 5's device files
+  nesty-test --device-only --only locales   de, hi and ja on the device (5B)
+  nesty-test --device-only --device 87BDED37-4095-49C4-811A-3E2B7D5FB38B
+                                      the iPhone 16e (390x844), by its UDID
+  nesty-test --android --device-only --android-size 1170x2532@480
+                                      the emulator at 390x844 dp
   nesty-test --android --only reminder   the optional Android reminder check
 USAGE
 }
@@ -74,6 +115,7 @@ USAGE
 # ── Options ────────────────────────────────────────────────────────────────
 PLATFORM=ios
 DEVICE=""
+ANDROID_SIZE="${NESTY_TEST_ANDROID_SIZE:-}"
 DEVICE_ONLY=0
 ONLY=""
 DAILY_DATE="${NESTY_TEST_DATE:-20260926}"
@@ -83,6 +125,8 @@ RACE_PACE_MS=600000
 # race_loss_test's `loss` scenario: fast enough that the computer finishes
 # first while the player never moves.
 RACE_LOSS_PACE_MS=250
+# race_loss_test's `restart` scenario: slow enough to see "Starting over".
+RACE_RESTART_PACE_MS=1000
 HEADLESS=0
 SHUTDOWN=0
 while [ $# -gt 0 ]; do
@@ -90,6 +134,7 @@ while [ $# -gt 0 ]; do
     --ios) PLATFORM=ios ;;
     --android) PLATFORM=android ;;
     --device) DEVICE="${2:?--device needs a value}"; shift ;;
+    --android-size) ANDROID_SIZE="${2:?--android-size needs a value}"; shift ;;
     --device-only) DEVICE_ONLY=1 ;;
     --only) ONLY="${2:?--only needs a value}"; shift ;;
     --date) DAILY_DATE="${2:?--date needs a value}"; shift ;;
@@ -101,11 +146,25 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# The device's default comes from the environment, per platform, so a
+# shell can pin one (never the owner's own simulator) for every run.
+if [ -z "$DEVICE" ]; then
+  if [ "$PLATFORM" = ios ]; then
+    DEVICE="${NESTY_TEST_IOS_DEVICE:-}"
+  else
+    DEVICE="${NESTY_TEST_ANDROID_DEVICE:-}"
+  fi
+fi
+if [ -n "$ANDROID_SIZE" ] && ! [[ "$ANDROID_SIZE" =~ ^[0-9]+x[0-9]+@[0-9]+$ ]]; then
+  echo "nesty-test: --android-size takes WxH@dpi, such as 1170x2532@480 (got $ANDROID_SIZE)" >&2
+  exit 64
+fi
+
 SKIP_DEVICE=0
 wants() {
   [ "$SKIP_DEVICE" = 1 ] && [ "$1" != gates ] && return 1
   # The reminder check is optional: it runs only when --only names it, and
-  # only on Android (iOS skips it: see step 6).
+  # only on Android (iOS skips it: see step 8).
   if [ "$1" = reminder ]; then
     [ "$PLATFORM" = android ] || return 1
     case ",$ONLY," in *",reminder,"*) return 0 ;; *) return 1 ;; esac
@@ -159,11 +218,44 @@ record() { # name PASS|FAIL|SKIP note
 section() { echo; echo "${BOLD}== $1${RESET}"; }
 
 # Runs a command with its output in logs/<name>.log; records PASS or FAIL.
+# A device step can hang at attach: the app launches, but flutter drive never
+# finds its VM service, so its --timeout never starts (twice on the iPhone 16e
+# in the 2026-10-05 M7 gate). Its log then ends at the build line. After
+# ATTACH_HANG_S seconds of silence there, the step is stopped, with its whole
+# process tree, and fails. Override with NESTY_TEST_ATTACH_HANG_S.
+ATTACH_HANG_S="${NESTY_TEST_ATTACH_HANG_S:-480}"
+kill_tree() { # pid: its descendants first, then itself
+  local child
+  for child in $(pgrep -P "$1"); do kill_tree "$child"; done
+  kill -KILL "$1" 2>/dev/null
+}
+watch_attach() { # pid log
+  local pid="$1" log="$2" age last
+  while kill -0 "$pid" 2>/dev/null; do
+    sleep 15
+    [ -f "$log" ] || continue
+    age=$(( $(date +%s) - $(stat -f %m "$log" 2>/dev/null || stat -c %Y "$log") ))
+    last="$(grep -v '^[[:space:]]*$' "$log" | tail -1)"
+    if [ "$age" -ge "$ATTACH_HANG_S" ] &&
+      printf '%s' "$last" | grep -qE 'Xcode build done|Installing .*\.apk'; then
+      echo "nesty-test: stopped after ${age} s at \"${last:0:40}\": flutter drive never attached to the app (no VM service)" >>"$log"
+      kill_tree "$pid"
+      return
+    fi
+  done
+}
+
 run_step() { # name log-name command...
   local name="$1" log="$OUT/logs/$2.log"; shift 2
-  local start=$SECONDS
+  local start=$SECONDS rc pid watcher
   echo "  … $name ${DIM}(log: logs/$(basename "$log"))${RESET}"
-  if "$@" >"$log" 2>&1; then
+  "$@" >"$log" 2>&1 &
+  pid=$!
+  watch_attach "$pid" "$log" &
+  watcher=$!
+  wait "$pid"; rc=$?
+  kill "$watcher" 2>/dev/null; wait "$watcher" 2>/dev/null
+  if [ "$rc" -eq 0 ]; then
     record "$name" PASS "$((SECONDS - start)) s"
     return 0
   fi
@@ -238,10 +330,16 @@ if wants gates; then
   fi
   run_step "nesty_render: flutter test" render bash -c "cd '$ROOT/packages/nesty_render' && flutter test"
   run_step "game: flutter test" game_tests bash -c "cd '$GAME' && flutter test --timeout 90s"
+  # The overflow suite in every other locale (l10n.md §6.2): en/de/hi/ja
+  # run five sizes, the rest the two small phones; English ran above.
+  for code in de es fr hi id ja pt pt_BR tr; do
+    run_step "game: overflow suite in $code" "overflow_$code" bash -c \
+      "cd '$GAME' && flutter test test/overflow --timeout 120s --dart-define=NESTY_TEST_LOCALE=$code"
+  done
   run_step "admin: flutter test" admin_tests bash -c "cd '$ROOT/apps/admin' && flutter test"
   run_step "tools: dart test" tools_tests bash -c "cd '$ROOT/tools' && dart test"
-  run_step "design tokens, icons, assets, FX specs and TODO index are current" drift bash -c \
-    "cd '$ROOT' && dart run nesty_tools:gen_design_tokens --check && dart run nesty_tools:gen_nesty_icons --check && dart run nesty_tools:sync_design_assets --check && dart run nesty_tools:gen_fx_spec --check && dart run nesty_tools:todo_index --check"
+  run_step "design tokens, icons, assets, FX specs, font subsets and TODO index are current" drift bash -c \
+    "cd '$ROOT' && dart run nesty_tools:gen_design_tokens --check && dart run nesty_tools:gen_nesty_icons --check && dart run nesty_tools:sync_design_assets --check && dart run nesty_tools:gen_fx_spec --check && dart run nesty_tools:gen_font_subsets --check && dart run nesty_tools:todo_index --check"
   run_step "level bundle and solver fixtures" levels bash -c \
     "cd '$ROOT' && dart run nesty_tools:nesty_levels bundle check && dart run nesty_tools:nesty_levels fixtures check"
   run_step "admin: flutter build web" admin_web bash -c \
@@ -249,7 +347,7 @@ if wants gates; then
 fi
 
 DEVICE_STEPS=0
-for step in playthrough resume daily board race meta daily_states overlays reminder; do
+for step in playthrough resume daily board race meta daily_states overlays faults semantics locales reminder; do
   if wants "$step"; then DEVICE_STEPS=1; fi
 done
 
@@ -332,6 +430,42 @@ boot_android() {
   echo "  ${GREEN}ready${RESET} $DEVICE_ID (API $(adb -s "$DEVICE_ID" shell getprop ro.build.version.sdk | tr -d '\r'))"
 }
 
+# --android-size: the emulator's screen for this run (`wm size`, `wm
+# density`). restore_android_size, the exit trap, resets only what this run
+# set, so a size set by someone else stays.
+SIZE_SET=0
+DENSITY_SET=0
+apply_android_size() {
+  [ -n "$ANDROID_SIZE" ] || return 0
+  local pixels="${ANDROID_SIZE%@*}" dpi="${ANDROID_SIZE#*@}"
+  if adb -s "$DEVICE_ID" shell wm size "$pixels" >/dev/null 2>&1; then
+    SIZE_SET=1
+  else
+    echo "  ${RED}wm size $pixels failed${RESET}"
+    return 1
+  fi
+  if adb -s "$DEVICE_ID" shell wm density "$dpi" >/dev/null 2>&1; then
+    DENSITY_SET=1
+  else
+    echo "  ${RED}wm density $dpi failed${RESET}"
+    return 1
+  fi
+  echo "  screen: $(adb -s "$DEVICE_ID" shell wm size | tr -d '\r' | tail -1), $(adb -s "$DEVICE_ID" shell wm density | tr -d '\r' | tail -1)"
+}
+
+restore_android_size() {
+  [ -n "$DEVICE_ID" ] || return 0
+  if [ "$SIZE_SET" = 1 ]; then
+    adb -s "$DEVICE_ID" shell wm size reset >/dev/null 2>&1 || true
+    SIZE_SET=0
+  fi
+  if [ "$DENSITY_SET" = 1 ]; then
+    adb -s "$DEVICE_ID" shell wm density reset >/dev/null 2>&1 || true
+    DENSITY_SET=0
+  fi
+}
+trap restore_android_size EXIT
+
 uninstall_app() {
   if [ "$PLATFORM" = ios ]; then
     xcrun simctl terminate "$DEVICE_ID" "$APP_ID" >/dev/null 2>&1 || true
@@ -352,6 +486,10 @@ kill_app() {
 # flutter drive of one integration test on the device (the dev flavor).
 drive() { # target extra-args...
   local target="$1"; shift
+  # flutter drive's debug log of driver commands holds every screenshot's
+  # data and grew to 1.1 GB in one run (the 2026-10-05 gate, under the disk
+  # floor), so each step starts it empty; nothing reads it.
+  : >"$GAME/build/flutter_driver_commands_0.log" 2>/dev/null || true
   (cd "$GAME" && flutter drive --flavor dev \
     --driver test_driver/integration_test.dart \
     --target "integration_test/$target" -d "$DEVICE_ID" "$@")
@@ -371,6 +509,15 @@ if [ "$DEVICE_STEPS" = 1 ]; then
   if [ $? -ne 0 ] || [ -z "$DEVICE_ID" ]; then
     record "boot the $PLATFORM device" FAIL "the device steps were skipped"
     SKIP_DEVICE=1
+  elif [ -n "$ANDROID_SIZE" ]; then
+    if [ "$PLATFORM" = android ]; then
+      if ! apply_android_size; then
+        record "set the screen to $ANDROID_SIZE" FAIL "the device steps were skipped"
+        SKIP_DEVICE=1
+      fi
+    else
+      echo "  --android-size is for Android; iOS runs at the simulator's own size"
+    fi
   fi
 fi
 
@@ -404,17 +551,23 @@ print(f"{playable} ms from main() to the first playable frame, {alone} ms to lev
 fi
 
 # ── 4. Kill mid-level and resume ───────────────────────────────────────────
-if wants resume; then
-  section "Kill mid-level and resume (fresh install)"
+# Each pair from a fresh install: `l3` (M3: level 3 with an undo and a +1
+# Slot, resumed from Home's PLAY) and `l1` (E9: one move on level 1 during
+# its tutorial, reopened by the splash itself).
+resume_pair() { # scenario what
+  local scenario="$1" what="$2" sfx=""
+  [ "$scenario" = l3 ] || sfx="_$scenario"
   uninstall_app
-  if run_step "phase A: play level 3, keep the app running" resume_phase_a \
-    drive resume_phase_a_test.dart --keep-app-running --timeout 600; then
-    response_to "$OUT/resume_a.json"
-    if run_step "kill the app" kill kill_app &&
-      run_step "phase B: relaunch, PLAY, the same board" resume_phase_b \
-        drive resume_phase_b_test.dart --timeout 600; then
-      response_to "$OUT/resume_b.json"
-      if note="$(python3 - "$OUT/resume_a.json" "$OUT/resume_b.json" <<'PY'
+  if run_step "phase A ($scenario): $what, keep the app running" "resume_phase_a$sfx" \
+    drive resume_phase_a_test.dart --dart-define=NESTY_RESUME_SCENARIO="$scenario" \
+      --keep-app-running --timeout 600; then
+    response_to "$OUT/resume_a$sfx.json"
+    if run_step "kill the app ($scenario)" "kill$sfx" kill_app &&
+      run_step "phase B ($scenario): relaunch, the same board" "resume_phase_b$sfx" \
+        drive resume_phase_b_test.dart --dart-define=NESTY_RESUME_SCENARIO="$scenario" \
+          --timeout 600; then
+      response_to "$OUT/resume_b$sfx.json"
+      if note="$(python3 - "$OUT/resume_a$sfx.json" "$OUT/resume_b$sfx.json" <<'PY'
 import json, sys
 a = json.load(open(sys.argv[1]))["resumePhaseA"]
 b = json.load(open(sys.argv[2]))["resumePhaseB"]
@@ -425,12 +578,18 @@ print(f"level {b['level']}, {b['freeUndosLeft']} free undo(s), "
 sys.exit(1 if bad else 0)
 PY
 )"; then
-        record "phase A = phase B" PASS "$note"
+        record "phase A = phase B ($scenario)" PASS "$note"
       else
-        record "phase A = phase B" FAIL "$note"
+        record "phase A = phase B ($scenario)" FAIL "$note"
       fi
     fi
   fi
+}
+
+if wants resume; then
+  section "Kill mid-level and resume (fresh installs)"
+  resume_pair l3 "play level 3"
+  resume_pair l1 "one move on level 1 (E9)"
 fi
 
 # ── 5. The daily puzzle ────────────────────────────────────────────────────
@@ -486,17 +645,25 @@ if wants race; then
   drive_fresh "race_loss_test oom: Out of Moves in a race" race_oom race_oom \
     race_loss_test.dart --dart-define=NESTY_RACE_SCENARIO=oom \
     --dart-define=NESTY_RACE_PACE_MS="$RACE_PACE_MS" --timeout 600
+  drive_fresh "race_loss_test restart: the rival starts over (9.3c)" \
+    race_restart race_restart \
+    race_loss_test.dart --dart-define=NESTY_RACE_SCENARIO=restart \
+    --dart-define=NESTY_RACE_PACE_MS="$RACE_RESTART_PACE_MS" --timeout 600
 fi
 
 if wants meta; then
-  section "Home, Chapters, Museum, Records and the Shop (fresh install)"
-  drive_fresh "meta_screens_test (screenshots meta-*)" meta_screens meta_screens \
-    meta_screens_test.dart --timeout 600
+  section "Home, Chapters, Museum, Records and the Shop (fresh installs)"
+  for scenario in returning finale complete; do
+    drive_fresh "meta_screens_test $scenario (screenshots meta-*)" \
+      "meta_screens_$scenario" "meta_screens_$scenario" \
+      meta_screens_test.dart --dart-define=NESTY_META_SCENARIO="$scenario" \
+      --timeout 600
+  done
 fi
 
 if wants daily_states; then
   section "The daily's states and Settings ($DAILY_DATE, fresh installs)"
-  for scenario in chest paused settings; do
+  for scenario in chest paused saved settings; do
     drive_fresh "daily_states_test $scenario (screenshots d_*)" \
       "daily_states_$scenario" "daily_states_$scenario" \
       daily_states_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" \
@@ -510,7 +677,42 @@ if wants overlays; then
     overlays_test.dart --timeout 1800
 fi
 
-# ── 7. The daily reminder (optional, Android) ──────────────────────────────
+# ── 7. M7 phase 5's device files (fresh installs) ──────────────────────────
+if wants faults; then
+  section "Failure states through the test seam (fresh installs)"
+  for scenario in race_failed reminder_granted reminder_denied generating \
+    bonus_failed storage content splash_loaded; do
+    drive_fresh "faults_test $scenario (screenshots f_*)" \
+      "faults_$scenario" "faults_$scenario" \
+      faults_test.dart --dart-define=NESTY_FAULT_SCENARIO="$scenario" \
+      --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" --timeout 600
+  done
+fi
+
+if wants semantics; then
+  section "Screen readers: the semantics tour (fresh installs)"
+  for scenario in race race_loss game meta; do
+    pace="$RACE_PACE_MS"
+    [ "$scenario" = race_loss ] && pace="$RACE_LOSS_PACE_MS"
+    drive_fresh "semantics_tour_test $scenario (screenshots s_*)" \
+      "semantics_$scenario" "semantics_$scenario" \
+      semantics_tour_test.dart --dart-define=NESTY_A11Y_SCENARIO="$scenario" \
+      --dart-define=NESTY_RACE_PACE_MS="$pace" \
+      --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" --timeout 1200
+  done
+fi
+
+if wants locales; then
+  section "Translations: one run per script family (fresh installs)"
+  for code in de hi ja; do
+    drive_fresh "locales_test $code (screenshots l10n-$code-*)" \
+      "locales_$code" "locales_$code" \
+      locales_test.dart --dart-define=NESTY_TEST_LOCALE="$code" \
+      --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" --timeout 1200
+  done
+fi
+
+# ── 8. The daily reminder (optional, Android) ──────────────────────────────
 case ",$ONLY," in
   *",reminder,"*)
     if [ "$PLATFORM" != android ]; then

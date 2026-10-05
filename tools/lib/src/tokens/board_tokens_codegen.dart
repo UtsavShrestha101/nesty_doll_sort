@@ -298,6 +298,10 @@ ConstClass _boardPresets(TokenReader t) {
     if (key.startsWith(r'$')) continue;
     final base = '$p.$key';
     final symbol = '$name.$key';
+    if (key == 'oneShelf') {
+      _oneShelf(t, base);
+      continue;
+    }
     if (key == 'rowOfFive') {
       c.add(key, _rowOfFive(t, base, symbol, limits, heights), doc: '`$base`.');
       docs(base);
@@ -329,8 +333,45 @@ ConstClass _boardPresets(TokenReader t) {
     ];
     c.add(key, 'BoardPresetToken(${args.join(', ')},)', doc: '`$base`.');
     docs(base);
+    if (t.has('$base.pieces')) {
+      // m7-4 (5.2): "glassCase and ice scale with k (dolls) about the stand
+      // surface" on four shelves, as `layout.board.overlays` says for every
+      // preset: BoardLayout's piece scale (lane B), not a number.
+      t.documentedExact(
+        '$base.pieces',
+        'glassCase and ice scale with k (dolls) about the stand surface',
+        reason: 'the four-shelf pieces\' scale, hand-written in BoardLayout',
+      );
+    }
   }
   return c;
+}
+
+/// m7-4 (5.2): `oneShelf`, "tokens only". No bundled level has one shelf
+/// (the bundle's boards have two or three), and the preset carries no fit
+/// limits or doll heights, so it is documentation: a level with one shelf
+/// keeps BoardLayout's own fallback. Its shape is still checked, so a
+/// changed preset is noticed.
+void _oneShelf(TokenReader t, String base) {
+  final planks = t.peek('$base.planksY');
+  if (planks is! List<Object?> || planks.length != 1 || planks[0] is! num) {
+    throw TokenFormatException('$base.planksY', 'one shelf has one plank');
+  }
+  for (final key in t.keys(base)) {
+    const known = {'planksY', 'slotMaxDollHeight', 'maxSlotsPerRow', 'use'};
+    if (!known.contains(key)) {
+      throw TokenFormatException(
+        '$base.$key',
+        'a new oneShelf field: emit the preset (BoardPresetToken) instead',
+      );
+    }
+  }
+  t.documentedTree(
+    base,
+    reason:
+        'tokens only (m7-4 5.2): no bundled level has one shelf, so no '
+        'BoardPresetToken; BoardLayout keeps its fallback',
+  );
 }
 
 /// A preset's own ice overlay: the tall one (`layout.board.iceOverlayTall`).
@@ -439,6 +480,13 @@ ConstClass _towerStack(TokenReader t) {
       '$p.examples',
       reason: 'the design\'s worked examples, re-derived by lane B\'s test',
     );
+  // m7-4 5.3: true sizes with raised bases; the step rule above stays.
+  t.documented(
+    '$p.d21',
+    reason:
+        'm7-4 5.3 (D21: true sizes, raised bases, ≥ 9 dp step), '
+        'SlotGeometry.towerStack (lane B)',
+  );
   final step = t.number('$p.step', symbol: '$name.step');
   final minStep = t.number('$p.minStep', symbol: '$name.minStep');
   // The pinned rule names both numbers.
@@ -503,6 +551,13 @@ ConstClass _hintArc(TokenReader t) {
     'color',
     colorLiteral(parseCssColor(t.string('$p.color', symbol: '$name.color'))),
   );
+  c.add(
+    'arrowhead',
+    '${t.boolean('$p.arrowhead', symbol: '$name.arrowhead')}',
+    doc:
+        'The arc ends with no arrowhead (m7-4 5.4: '
+        '${t.documented('$p.\$m74', reason: 'a design note, in the doc')}).',
+  );
   return c;
 }
 
@@ -513,19 +568,21 @@ ConstClass _fallbackDoll(TokenReader t) {
     name,
     'The procedural doll drawn when a skin can\'t load (tokens v3 `$p`, '
     '${t.documented('$p.\$note', reason: 'the design item id')}; spec '
-    '§12.5). Sizes are fractions of the doll height h (w: its width).',
+    '§12.5). Sizes are fractions of the doll height h (w: its width); the '
+    'head, face and belly are diameters (m7-4 8). On the splash: '
+    '${t.documentedExact('$p.splash', 'three cherry (red) fallback dolls, as 1.1; 12.12’s three colours only show the recipe', reason: 'the splash dolls (lane O, frame 1.1)')}.',
   );
   final head = _match(
     t,
     '$p.head',
     '$name.headSize',
-    r'circle, (\d*\.\d+) h, base color, (\d+) dp darker bottom',
+    r'circle, diameter (\d*\.\d+) h, base color, (\d+) dp darker bottom',
   );
   t.string('$p.head', symbol: '$name.headShade');
   c.add(
     'headSize',
     doubleLiteral(double.parse(head[1]!)),
-    doc: 'The head circle (`${t.peek('$p.head')}`).',
+    doc: 'The head circle\'s diameter (`${t.peek('$p.head')}`).',
   );
   c.add(
     'headShade',
@@ -536,13 +593,13 @@ ConstClass _fallbackDoll(TokenReader t) {
     t,
     '$p.face',
     '$name.faceSize',
-    r'cream (#[0-9A-Fa-f]{6}) disc, (\d*\.\d+) h',
+    r'cream (#[0-9A-Fa-f]{6}) disc, diameter (\d*\.\d+) h',
   );
   t.string('$p.face', symbol: '$name.faceColor');
   c.add(
     'faceSize',
     doubleLiteral(double.parse(face[2]!)),
-    doc: 'The face disc.',
+    doc: 'The face disc\'s diameter.',
   );
   c.add('faceColor', colorLiteral(parseCssColor(face[1]!)));
   final body = _match(
@@ -566,12 +623,14 @@ ConstClass _fallbackDoll(TokenReader t) {
     t,
     '$p.belly',
     '$name.bellySize',
-    r'cream disc (\d*\.\d+) h with the symbol in ink',
+    r'cream disc, diameter (\d*\.\d+) h, with the symbol in ink',
   );
   c.add(
     'bellySize',
     doubleLiteral(double.parse(belly[1]!)),
-    doc: 'The belly disc, the face colour, with the symbol in ink.',
+    doc:
+        'The belly disc\'s diameter, the face colour, with the symbol in '
+        'ink.',
   );
   c.add(
     'noDetails',
@@ -613,7 +672,20 @@ ConstClass _chapterThemes(TokenReader t) {
     'onAccent',
     'soft',
     'ink',
+    'ribbonTail',
+    'ribbonFold',
   ];
+  // m7-4 4.15: the chapter ribbon's tint, from each palette.
+  t.documentedExact(
+    '$p.ribbonTint',
+    'ui_chapter_ribbon: band = palette.accent, edge = palette.accentEdge, '
+        'tail = ribbonTail, fold = ribbonFold, label shadow = ribbonFold; same '
+        'key paths as winRibbon. The one-line Lottie stays; 4.7’s two-line '
+        'plate is superseded',
+    reason:
+        'ChapterPalette.accent / accentEdge / ribbonTail / ribbonFold on '
+        'WinRibbonTokens\' key paths (lane O)',
+  );
   final members = <String>[];
   final keys = t.keys('$p.chapters');
   for (final (i, key) in keys.indexed) {
@@ -667,6 +739,7 @@ ConstClass _chapterThemes(TokenReader t) {
         'figurine',
         'palette',
         'thumb',
+        'boardArt',
       };
       if (!known.contains(key)) {
         throw TokenFormatException('$base.$key', 'unknown theme field');
@@ -696,11 +769,13 @@ ConstClass _chapterThemes(TokenReader t) {
         'the crop must be inside the art at the thumbBox ratio',
       );
     }
+    final boardArt = _boardArt(t, base, id, symbol);
     c.add(
       id,
       'ChapterThemeToken(chapter: $n, id: ${stringLiteral(id)}, '
       'palette: ChapterPalette(${colors.join(', ')}), '
-      'thumb: Rect.fromLTWH(${thumb.map(doubleLiteral).join(', ')}),)',
+      'thumb: Rect.fromLTWH(${thumb.map(doubleLiteral).join(', ')}),'
+      '${boardArt == null ? '' : ' boardArtDir: ${stringLiteral(boardArt)},'})',
       doc: 'Chapter $n, "$chapterName" (`$base`).',
     );
     members.add(id);
@@ -712,4 +787,54 @@ ConstClass _chapterThemes(TokenReader t) {
     doc: 'Every chapter theme, in chapter order.',
   );
   return c;
+}
+
+/// The shared board art folder (tokens v4 `theme.chapters.N.boardArt.dir`).
+const sharedBoardArtDir = 'board/';
+
+/// The themed wood pieces a chapter may override (m7-4 A.5), in
+/// tokens.json order. The sync ships the `-blank` stand and tower; the
+/// pip-baked `slot-stand.svg` and `tower-base.svg` never ship (spec §10.3).
+const themedBoardArtFiles = [
+  'shelf-plank.svg',
+  'slot-stand.svg',
+  'slot-stand-blank.svg',
+  'tower-base.svg',
+  'tower-base-blank.svg',
+];
+
+/// `theme.chapters.N.boardArt` (tokens v4, m7-4 A.5): the folder of the
+/// chapter's own wood, or null for the shared `board/` art.
+String? _boardArt(TokenReader t, String base, String id, String symbol) {
+  final art = '$base.boardArt';
+  if (!t.has(art)) return null;
+  final dir = t.string('$art.dir', symbol: symbol);
+  if (dir == sharedBoardArtDir) {
+    if (t.keys(art).join(',') != 'dir') {
+      throw TokenFormatException(art, 'the shared art has only a dir');
+    }
+    return null;
+  }
+  if (dir != 'board/$id/') {
+    throw TokenFormatException('$art.dir', 'expected board/ or board/$id/');
+  }
+  if (t.keys(art).join(',') != 'dir,wood,files,note') {
+    throw TokenFormatException(art, 'expected dir, wood, files, note');
+  }
+  final files = t.strings('$art.files', symbol: symbol);
+  if (files.join(',') != themedBoardArtFiles.join(',')) {
+    throw TokenFormatException(
+      '$art.files',
+      'expected ${themedBoardArtFiles.join(', ')} (the sync ships them from '
+          'design/board/$id/)',
+    );
+  }
+  t
+    ..documented('$art.wood', reason: 'the art\'s description')
+    ..documentedExact(
+      '$art.note',
+      'A.5: the shared shapes and sizes; extra-slot, glass and ice stay shared',
+      reason: 'only the wood pieces are themed (BoardSprite, lane B)',
+    );
+  return 'board/$id/';
 }

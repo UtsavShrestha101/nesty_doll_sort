@@ -14,7 +14,27 @@ List<ConstClass> uiV3Classes(TokenReader t) {
   _documentRules(t);
   return [
     for (final MapEntry(key: path, value: name) in screenTokenSections.entries)
-      path == 'shop' ? _shop(t) : screenTokens(t, path, className: name),
+      switch (path) {
+        'shop' => _shop(t),
+        // The v3 counts and timings are ChestMotionTokens'.
+        'motion.chest.collect' => screenTokens(
+          t,
+          path,
+          className: name,
+          skip: {
+            for (final key in const [
+              'coinFlightMs',
+              'coinStaggerMs',
+              'coins',
+              'hintFlightMs',
+              'targetBump',
+              'targetBumpMs',
+            ])
+              '$path.$key',
+          },
+        ),
+        _ => screenTokens(t, path, className: name),
+      },
     _stars(t),
     _chest(t),
     _rival(t),
@@ -22,26 +42,31 @@ List<ConstClass> uiV3Classes(TokenReader t) {
     _chaptersFadeIn(t),
     _purchase(t),
     _icons(t),
+    _winRibbon(t),
   ];
 }
 
 /// `versus.*` and `chest.*`: the owner's rules, repeated by the design.
 void _documentRules(TokenReader t) {
-  t
-    ..documentedTree(
-      'versus',
+  // Every `versus` leaf but the ribbon's colours (tokens v4, m7-4 4.3),
+  // which `WinRibbonTokens` emits.
+  for (final key in t.keys('versus')) {
+    if (key == 'ribbon') continue;
+    t.documentedTree(
+      'versus.$key',
       reason:
           'rules, never read from tokens: RemoteConfigKeys (race unlock and '
           'rewards), RaceRules and the bloc\'s race mode (spec-prop §7.7, '
           'D93); rule_tokens_test pins the numbers',
-    )
-    ..documentedTree(
-      'chest',
-      reason:
-          'rules, never read from tokens: MilestoneChest and '
-          'RemoteConfigKeys (chest_coins, chest_hints, streak7_reward; '
-          'spec-prop §7.3, §7.4); rule_tokens_test pins the numbers',
     );
+  }
+  t.documentedTree(
+    'chest',
+    reason:
+        'rules, never read from tokens: MilestoneChest and '
+        'RemoteConfigKeys (chest_coins, chest_hints, streak7_reward; '
+        'spec-prop §7.3, §7.4); rule_tokens_test pins the numbers',
+  );
 }
 
 ConstClass _shop(TokenReader t) {
@@ -53,11 +78,29 @@ ConstClass _shop(TokenReader t) {
     skip: const {'shop.skins'},
   );
   final entries = <String>[];
+  final tags = <String>[];
   for (final id in t.keys('$p.skins')) {
     final base = '$p.skins.$id';
     const symbol = 'ShopTokens.skins';
-    if (t.keys(base).join(',') != 'card,panel,edge,caption') {
-      throw TokenFormatException(base, 'expected card, panel, edge, caption');
+    final keys = t.keys(base).join(',');
+    if (keys != 'card,panel,edge,caption' &&
+        keys != 'card,panel,edge,caption,tag') {
+      throw TokenFormatException(
+        base,
+        'expected card, panel, edge, caption (and a tag)',
+      );
+    }
+    if (keys.endsWith(',tag')) {
+      // Tokens v4 (m7-4 4.11): a skin whose caption needs its own chip.
+      if (t.keys('$base.tag').join(',') != 'face,text,note') {
+        throw TokenFormatException('$base.tag', 'expected face, text, note');
+      }
+      t.documented('$base.tag.note', reason: 'the contrast, a design note');
+      tags.add(
+        '${stringLiteral(id)}: (face: '
+        '${colorLiteral(parseCssColor(t.string('$base.tag.face', symbol: 'ShopTokens.skinTags')))}, '
+        'text: ${colorLiteral(parseCssColor(t.string('$base.tag.text', symbol: 'ShopTokens.skinTags')))})',
+      );
     }
     String colors(String key) {
       final list = t.strings('$base.$key', symbol: symbol);
@@ -82,6 +125,15 @@ ConstClass _shop(TokenReader t) {
     doc:
         'Each skin\'s Shop card and detail panel colours, by catalog skin id '
         '(tokens.json `$p.skins`).',
+  );
+  c.add(
+    'skinTags',
+    '{${tags.join(', ')}}',
+    type: 'Map<String, ({Color face, Color text})>',
+    doc:
+        'The caption chip of a skin whose caption would not read on its '
+        'card (m7-4 4.11: Space\'s white chip), by catalog skin id; other '
+        'skins keep the caption colour.',
   );
   return c;
 }
@@ -145,6 +197,12 @@ ConstClass _chest(TokenReader t) {
   t.documentedTree(
     '$p.segments',
     reason: 'ui_chest\'s markers, read from FxSpec (a test pins them)',
+  );
+  t.documented(
+    '$p.rays',
+    reason:
+        'm7-4 4.7: ui_chest sways its own rays; the card draws none over the '
+        'Lottie (lane O)',
   );
   final ms = _ints(t, c, p);
   final n = _doubles(t, c, p);
@@ -212,6 +270,24 @@ ConstClass _toast(TokenReader t) {
     doc: 'A result card\'s toasts leave with it.',
   );
   _doubles(t, c, p)('badgeToastTop', 'badgeToastTop');
+  // Tokens v4 (m7-4 1.5).
+  final appTop = t.string('$p.appTop', symbol: 'ToastTokens.appTopOffset');
+  final m2 = RegExp(r'^safeTop ([+−]) (\d+)$').firstMatch(appTop);
+  if (m2 == null) throw TokenFormatException('$p.appTop', 'unexpected wording');
+  c.add(
+    'appTopOffset',
+    doubleLiteral((m2[1] == '−' ? -1 : 1) * num.parse(m2[2]!)),
+    doc:
+        'The app toast\'s motion top: the safe top + this (`$appTop`). '
+        '`ToastLayoutTokens.appTopBelowSafeTop` is its resting place.',
+  );
+  for (final key in const ['relaxedOncePerLaunch', 'slotLimitOncePerLevel']) {
+    c.add(
+      key,
+      '${t.boolean('$p.$key', symbol: 'ToastTokens.$key')}',
+      doc: 'tokens.json `$p.$key`.',
+    );
+  }
   return c;
 }
 
@@ -287,5 +363,80 @@ ConstClass _icons(TokenReader t) {
     type: 'Map<String, String>',
     doc: 'Every glyph use, by its tokens.json key.',
   );
+  return c;
+}
+
+/// `winRibbon` and `versus.ribbon` (tokens v4, m7-4 4.3, 4.15; LOTTIE.md
+/// "Tint and width"): the ribbons' fill colours and the key paths that reach
+/// them. The chapter ribbon's colours are each chapter's palette
+/// (`ChapterPalette.accent`, `accentEdge`, `ribbonTail`, `ribbonFold`).
+ConstClass _winRibbon(TokenReader t) {
+  const name = 'WinRibbonTokens';
+  final c = ConstClass(
+    name,
+    'The ribbons\' tints (tokens.json `winRibbon`, `versus.ribbon`): '
+    '${t.documented('winRibbon.keyPaths.\$note', reason: 'prose, in the class doc')}. '
+    '`ui_win_ribbon` is tinted [defaultColors] (as authored) or, on the '
+    'race\'s result cards (9.4, 9.5), [versusColors].',
+  );
+  const fills = ['band', 'edge', 'tail', 'fold'];
+  String colors(String base, String member) {
+    for (final key in t.keys(base)) {
+      if (!key.startsWith(r'$') &&
+          !fills.contains(key) &&
+          !(base == 'versus.ribbon' && (key == 'hi' || key == 'label'))) {
+        throw TokenFormatException('$base.$key', 'unknown ribbon fill');
+      }
+    }
+    final args = [
+      for (final key in fills)
+        '$key: ${colorLiteral(parseCssColor(t.string('$base.$key', symbol: '$name.$member')))}',
+    ];
+    return 'RibbonColors(${args.join(', ')})';
+  }
+
+  c.add(
+    'defaultColors',
+    colors('winRibbon.default', 'defaultColors'),
+    doc: 'The win ribbon as authored (tokens.json `winRibbon.default`).',
+  );
+  t.documented('versus.ribbon.\$note', reason: 'the design frames');
+  c.add(
+    'versusColors',
+    colors('versus.ribbon', 'versusColors'),
+    doc: 'The race\'s result ribbon (tokens.json `versus.ribbon`).',
+  );
+  t.documentedExact(
+    'versus.ribbon.hi',
+    'unchanged',
+    reason: '`hi_fill` keeps its authored white (no delegate)',
+  );
+  final label = t.string('versus.ribbon.label', symbol: '$name.versusLabel');
+  final m = RegExp(
+    r'^(#[0-9A-Fa-f]{6}) \(([\d.]+):1 on the band\)$',
+  ).firstMatch(label);
+  if (m == null) {
+    throw TokenFormatException('versus.ribbon.label', 'unexpected wording');
+  }
+  c.add(
+    'versusLabel',
+    colorLiteral(parseCssColor(m[1]!)),
+    doc: 'The label on the race ribbon (`$label`).',
+  );
+  for (final key in t.keys('winRibbon.keyPaths')) {
+    if (key.startsWith(r'$')) continue;
+    final path = 'winRibbon.keyPaths.$key';
+    final member = '${memberName(key)}KeyPath';
+    final parts = t.strings(path, symbol: '$name.$member');
+    if (parts.length != 2 || parts[0] != '**' || parts[1] != '${key}_fill') {
+      throw TokenFormatException(path, "expected ['**', '${key}_fill']");
+    }
+    c.add(
+      member,
+      '[${parts.map(stringLiteral).join(', ')}]',
+      type: 'List<String>',
+      doc: 'The colour delegate\'s key path to the `${key}_fill` fills.',
+    );
+  }
   return c;
 }

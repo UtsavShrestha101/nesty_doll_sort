@@ -65,6 +65,8 @@ LottieSourceSet readDesignLottie(
     if (entry is Directory) {
       if (name != lottiePlaceholderDir) {
         issues.add('$designLottieDir/$name: unexpected folder');
+      } else {
+        issues.addAll(_checkPlaceholders(entry));
       }
       continue;
     }
@@ -112,4 +114,28 @@ LottieSourceSet readDesignLottie(
     );
   }
   return LottieSourceSet(sources, issues);
+}
+
+/// The placeholder PNGs never ship (PROGRESS D50), but each is named after
+/// the image slot it stands in for (`<slot id>.png`), so a new placeholder
+/// with no slot (m7-4's `figurine`, `rival_portrait` before their slots)
+/// is noticed.
+List<String> _checkPlaceholders(Directory images) {
+  final issues = <String>[];
+  final files = images.listSync().whereType<File>().toList()
+    ..sort((a, b) => a.path.compareTo(b.path));
+  for (final file in files) {
+    final name = p.basename(file.path);
+    if (name.startsWith('.')) continue;
+    final at = '$designLottieDir/$lottiePlaceholderDir/$name';
+    if (p.extension(name) != '.png') {
+      issues.add('$at: unexpected file (placeholders are PNGs)');
+    } else if (lottieImageSlotOf(p.basenameWithoutExtension(name)) == null) {
+      issues.add(
+        '$at: no image slot "${p.basenameWithoutExtension(name)}" (LOTTIE.md '
+        '"Image slots"); add it to tools/lib/src/fx/lottie_contract.dart',
+      );
+    }
+  }
+  return issues;
 }

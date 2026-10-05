@@ -139,7 +139,8 @@ final class LottieImageSlot {
 /// declared at 3× their dp size (layers at 33.33 %, anchor ×3): glow ring
 /// 116×52 dp, hint arrow 40×50, extra slot 90×34, glass case 86×143, tall
 /// glass case 93×152, unlock symbol 12×12, ice 96×160. The UI art of m7-3 is
-/// at 3× too: stars 44×44 (glow 73.3), chest 130×108.3.
+/// at 3× too: stars 44×44 (glow 73.3), chest 130×108.3; and m7-4's rival
+/// portrait 96×96 and Museum figurine 62×62.
 const lottieImageSlots = [
   LottieImageSlot('doll_lid', 512, 768),
   LottieImageSlot('doll_body', 512, 768),
@@ -178,6 +179,11 @@ const lottieImageSlots = [
   LottieImageSlot('family_2_body', 512, 768),
   LottieImageSlot('freed_lid', 512, 768),
   LottieImageSlot('freed_body', 512, 768),
+  // m7-4 (LOTTIE.md "Image slots"): the rival's portrait in
+  // `ui_rival_react` (96 dp at 3×) and the collected figurine in
+  // `ui_museum_idle` (62 dp at 3×).
+  LottieImageSlot('rival_portrait', 288, 288),
+  LottieImageSlot('figurine', 186, 186),
 ];
 
 /// The slot for [id], or null.
@@ -209,6 +215,8 @@ final class LottieFileContract {
     this.requiredLayers = const {},
     this.scaleNulls = const {},
     this.fills = const {},
+    this.tintFills = const {},
+    this.sizedRects = const {},
     this.textLayers = const [],
   });
 
@@ -278,6 +286,18 @@ final class LottieFileContract {
   /// Exactly the [lottieHookFills] the file has.
   final Set<String> fills;
 
+  /// Exactly the fills named `<part>_fill` the file has (LOTTIE.md m7-4
+  /// "Tint and width"): the ribbons' `band_fill`, `edge_fill`, `hi_fill`,
+  /// `tail_fill` and `fold_fill`, the family counter's `pill_fill` and
+  /// `glow_fill`. The game reaches each through a colour delegate on
+  /// `['**', '<name>']`, so every one must be a fill.
+  final Set<String> tintFills;
+
+  /// Exactly the rectangles named `<part>_rect` the file has (LOTTIE.md
+  /// "Tint and width": the family counter's `pill_rect` and `glow_rect`,
+  /// which `ValueDelegate.rectangleSize` widens). Each must be a rectangle.
+  final Set<String> sizedRects;
+
   /// Exactly the text layer names; only the three text files have any.
   final List<String> textLayers;
 }
@@ -290,12 +310,24 @@ const _moverTargetParts = {
   'target_lid',
   'target_body',
 };
+
+/// The ribbons' named fills (LOTTIE.md m7-4 "Tint and width"): `band_fill`,
+/// `edge_fill` and `hi_fill` on `band`, `tail_fill` and `fold_fill` on
+/// `tail_l` and `tail_r`.
+const _ribbonFills = {
+  'band_fill',
+  'edge_fill',
+  'hi_fill',
+  'tail_fill',
+  'fold_fill',
+};
 const _travelS = LottiePoint(100, 500);
 const _travelT = LottiePoint(300, 500);
 
-/// The 35 files, in LOTTIE.md "Files" order (the game's `FxId` order): the
+/// The 37 files, in LOTTIE.md "Files" order (the game's `FxId` order): the
 /// 29 of v3, then m7-3's `fx_glass_unlock_tall` (after `fx_glass_unlock`)
-/// and its five `ui_*` files (last).
+/// and its five `ui_*` files, then m7-4's `ui_rival_react` and
+/// `ui_museum_idle` (last).
 const lottieContracts = [
   LottieFileContract(
     'doll_pick',
@@ -576,8 +608,12 @@ const lottieContracts = [
     kind: LottieKind.segmented,
     anchor: LottiePoint(60, 30),
     markers: [LottieMarker('bump', 0, 12)],
-    // The localized count follows `counter` (§12).
-    requiredLayers: {'counter'},
+    // The localized count follows `counter` (§12). m7-4 ("Tint and
+    // width"): the pill widens through `pill_rect` and `glow_rect`, and the
+    // doll mark `icon` moves with it (`transformPosition`).
+    requiredLayers: {'counter', 'icon'},
+    tintFills: {'pill_fill', 'glow_fill'},
+    sizedRects: {'pill_rect', 'glow_rect'},
     textLayers: ['count_new', 'count_old'],
   ),
   LottieFileContract(
@@ -626,6 +662,7 @@ const lottieContracts = [
     kind: LottieKind.inPlace,
     anchor: LottiePoint(205, 55),
     requiredLayers: {'ribbon'},
+    tintFills: _ribbonFills,
     textLayers: ['label', 'label_shadow'],
   ),
   LottieFileContract(
@@ -636,6 +673,7 @@ const lottieContracts = [
     kind: LottieKind.inPlace,
     anchor: LottiePoint(205, 50),
     requiredLayers: {'ribbon'},
+    tintFills: _ribbonFills,
     textLayers: ['label', 'label_shadow'],
   ),
   LottieFileContract(
@@ -782,6 +820,40 @@ const lottieContracts = [
     },
     roles: {LottieRole.family, LottieRole.family2, LottieRole.freed},
     sizesAuthored: true,
+  ),
+  // m7-4 (C.6): the rival's portrait reacting, on the strip (the canvas at
+  // 47.5 dp) and the race's result cards. `idle` loops as a segment; the
+  // file itself plays once. Every move is on the `react` null and the
+  // portrait's `react_size` under it.
+  LottieFileContract(
+    'ui_rival_react',
+    width: 120,
+    height: 120,
+    frames: 380,
+    kind: LottieKind.segmented,
+    anchor: LottiePoint(60, 64),
+    markers: [
+      LottieMarker('idle', 0, 180),
+      LottieMarker('family', 180, 40),
+      LottieMarker('win', 220, 80),
+      LottieMarker('lose', 300, 80),
+    ],
+    imageAssets: {'rival_portrait'},
+    requiredLayers: {'react', 'react_size'},
+  ),
+  // m7-4 (J.2): a collected figurine's idle in its Museum niche, started
+  // at a random frame per niche; the bob is on the `bob` null.
+  LottieFileContract(
+    'ui_museum_idle',
+    width: 90,
+    height: 90,
+    frames: 240,
+    kind: LottieKind.inPlace,
+    anchor: LottiePoint(45, 80),
+    markers: [LottieMarker('loop', 0, 240)],
+    loops: true,
+    imageAssets: {'figurine'},
+    requiredLayers: {'bob'},
   ),
 ];
 

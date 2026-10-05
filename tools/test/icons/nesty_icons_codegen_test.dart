@@ -14,11 +14,19 @@ void main() {
   test('the glyph list is exactly the design README icon lists', () {
     final readme = read('design/README.md');
     final v1 = RegExp(r'Glyphs used: (.*?)\. m7 adds').firstMatch(readme);
+    // m7-4 (7.1): "m7 adds 19 glyphs (I.10): …, layers. m7-3 adds 2 for the
+    // splash errors: sd_card_alert (storage) and inventory_2 (content)."
     final m7 = RegExp(
-      r'm7 adds \(I\.10\): (.*?)\. The full map',
+      r'm7 adds (\d+) glyphs \(I\.10\): (.*?)\. m7-3 adds',
+    ).firstMatch(readme);
+    final splash = RegExp(
+      r'm7-3 adds (\d+) for the splash errors: (.*?)\. The full map',
     ).firstMatch(readme);
     expect(v1, isNotNull, reason: 'README wording changed');
     expect(m7, isNotNull, reason: 'README wording changed');
+    expect(splash, isNotNull, reason: 'README wording changed');
+    final m7Items = m7![2]!.split(', ');
+    expect(m7Items, hasLength(int.parse(m7[1]!)), reason: 'the stated count');
     final first = v1![1]!.split(',').map((s) => s.trim()).toList();
     // "share (iOS: ios_share), …, all_inclusive (unlimited Undo) redeem
     // (chests)": each glyph, with the iOS one from its parenthesis, and
@@ -26,7 +34,7 @@ void main() {
     final added = <String>[];
     for (final m in RegExp(
       r'([a-z][a-z0-9_]*)(?: \(([^)]*)\))?',
-    ).allMatches(m7![1]!)) {
+    ).allMatches(m7[2]!)) {
       for (final glyph in [
         m[1]!,
         if (m[2] case final note? when note.startsWith('iOS: '))
@@ -36,9 +44,16 @@ void main() {
       }
     }
     expect(added, hasLength(18), reason: 'the m7 list (D171 says 17)');
-    // The splash errors' two glyphs (phase 4 lead note 2): in the pinned
-    // font, not yet in the README or tokens.json `icons`.
-    const splashErrors = ['sd_card_alert', 'inventory_2'];
+    // The splash errors' two glyphs (phase 4 lead note 2; in the README and
+    // tokens.json `icons` since m7-4).
+    final splashErrors = [
+      for (final m in RegExp(
+        r'([a-z][a-z0-9_]*) \(\w+\)',
+      ).allMatches(splash![2]!))
+        m[1]!,
+    ];
+    expect(splashErrors, ['sd_card_alert', 'inventory_2']);
+    expect(splashErrors, hasLength(int.parse(splash[1]!)));
     expect(parseGlyphList(read(glyphListPath)), [
       ...first,
       ...added,

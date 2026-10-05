@@ -8,17 +8,20 @@ The design handoff in `design/` is the source of truth for **look, layout, motio
 
 ## Current state (keep current: see "Keeping this file current")
 
-As of 2026-09-30. The full table is PROGRESS "Status"; the next steps are PROGRESS "Next step".
+As of 2026-10-05. The full table is PROGRESS "Status"; the next steps are PROGRESS "Next step". Detail for each line below is in PROGRESS and BACKLOG.
 
 - **Done:** M0 (skeleton), M1 (`nesty_core`).
-- **Code complete, acceptance waits on the owner's physical-device checks:** M2 (levels 1–30 playable on the design art), M3 (save, economy, chapters, Museum, Bonus Endless, Daily + streak, tutorial, Home, Settings, Shop).
-- **In progress: M7**, moved ahead of M4–M6 by the owner (D90). It is 100% offline: levels 31–200, chapter themes 7–10, vs Computer (D93), eight engagement features under the respect rules (D92), star ratings (D125, `docs/plans/star-rating.md`). Plan: `docs/plans/plan-m7.md`; design (authoritative): `docs/plans/m7-design.md`; work list: BACKLOG "M7"; art and copy request: `docs/plans/claude-design-request-m7.md`.
-  - Phase 1 is integrated (2026-09-28, D113–D124): levels 31–200, E1, E2, E5–E9, E12–E14 and the owner's simulator review; its device run passed on both platforms (D126–D131).
-  - Phase 2 (vs Computer) is integrated (2026-09-28, D132–D142, m7-design "Phase 2"): the race core, the save's race API and `RaceRules`, `RaceCubit` and the bloc's race mode, rival select and the race screens as `TODO(design)` stand-ins, and the playthrough's rival-1 segment; its device run passed on both platforms (D143).
-  - Phase 3 (star ratings, the daily share card, the opt-in reminder) is integrated (2026-09-29, D144–D161, m7-design P3.1–P3.15): `StarRating` and the bundle's `par` in core, the save's schema-2 star and solve fields with the load-time backfill, the bloc's stars, `StarRow` on the win card, Chapters and Records, `ShareService` and the solved card's Share, `NotificationService`, `DailyReminder`, the one-time offer and Settings' rows, four new packages and AGP 8.12.1, as `TODO(design)` stand-ins; its device run passed on both platforms (D162).
-  - Phase 5's review pass is done in two rounds (2026-09-29, D163–D167, PROGRESS "M7 review pass"). Round 1: five lenses, five findings, four fixed and one deferred to Claude Design's I.2. Round 2: four deeper lenses and the rest of the accessibility audit, 33 findings, 32 fixed and one left to the owner (screen-reader play on the board, Q154); the overflow suite now also checks 48 dp targets, labels and cut text. The pass-and-play proposal awaits the owner: `docs/plans/pass-and-play-proposal.md`. The device run after the review passed on both platforms (D168). Left for the close: the VoiceOver and TalkBack pass, the fidelity audit (starting from D209's list in BACKLOG M7), translations, the `/milestone M7` gate.
-  - Phase 4 (Claude Design's m7-3 delivery, in `design/` since D171; D172 keeps the +1 Slot on the bottom shelf) is integrated (2026-09-30, D173–D208, m7-design P4.1–P4.10): its tooling stage (tokens v3, the 35 Lottie files, the UI art, the generated Android notification icon, the 68-glyph font), its contracts stage (the frozen shapes, `core/ui/art/`, the toast queue, `SystemSettingsService`, copy.md in the ARB), then five lanes (the board's presets and tall pieces, section 09's race, Home, Chapters, the Museum, Records and the Shop, the daily and Settings, the overlays) and the integrator (the cross-lane edits, the playthrough on m7-3, five new device files in `nesty-test`). Its device run passed on both platforms (D209: every `nesty-test` device check on the iPhone 16 Pro simulator and the API 35 emulator, plus `--android --only reminder`). The design gaps are in `claude-design-request-m7.md` "Follow-up after m7-3".
-- **Then:** M4 (Firebase content), M5 (admin), M6 (ads + IAP), M8 (release).
+- **Code complete, acceptance waits on the owner's physical-device checks:** M2 (levels 1–30 on the design art), M3 (save, economy, chapters, Museum, Bonus Endless, Daily + streak, tutorial, Home, Settings, Shop).
+- **Code complete 2026-10-05, acceptance waits on the owner: M7**, ahead of M4–M6 by the owner (D90). 100% offline: levels 31–200, chapter themes 7–10, vs Computer (D93), eight engagement features under the respect rules (D92), star ratings (D125). Plan `docs/plans/plan-m7.md`, design `docs/plans/m7-design.md`, work list BACKLOG "M7".
+  - Phases 1–3 (levels 31–200 and the engagement features, vs Computer, star ratings, the share card and the reminder) are integrated, each with its device run passed on both platforms (D113–D162).
+  - Phase 4 (Claude Design's m7-3, in `design/` since D171; D172 keeps the +1 Slot on the bottom shelf) is integrated, its device run passed (D173–D209).
+  - Phase 5, the close (2026-10-01 to 2026-10-05): the review pass (D163–D168), 5A (D210–D234), m7-4 wired, device-run, audited and fixed (D241–D258) and 5B, the translations, are done as of 2026-10-05: nine locales (en + es, pt-BR, id, hi, de, fr, tr, ja), the Baloo 2 and M PLUS Rounded 1c script fonts, the text fit, the language sheet and the locale tests (D261–D267, Q175–Q181; PROGRESS "Phase 5, 5B"). The results of the 5B and 5f device reruns are still being added.
+  - 5C: the review and its fixes (D271) and the `/milestone M7` gate, passed on both devices with its reruns (PROGRESS "Phase 5, 5C").
+  - Left with the owner: the design sign-off (Q161), the VoiceOver pass (`docs/plans/voiceover-checklist.md`) and Claude Design's follow-up (§1–§14).
+- **Next, starting now with M7's sign-offs open (D268, Q182's defaults, D272):** the daily gift, a 7-day login reward that counts claims, so a missed day never moves it back. Plan `docs/plans/plan-login-gift.md`, work list BACKLOG "Daily gift". It runs ahead of the local habits.
+- **Then, still local (D237):** the habit proposals in `docs/plans/local-habits-brainstorm.md` (Q162 asks which to build), then the engagement proposals in `docs/plans/engagement-research.md` (D259; Q173 asks which) and the kid path's local part (D260), which must land before M4, and the themes, characters and story proposals in `docs/plans/themes-characters-story.md` (D270; Q184 asks which; original characters only, no licensed IP). None starts until M7 is closed.
+- **Audience (D260):** under-13s are a target too (a mixed audience). Every player under 13 or of unknown age gets the kid path: an age question, a parent area, and child-safe analytics, ads and purchases. Its items are in BACKLOG, Q174 holds the defaults, and spec §1 and §17 wait for the owner's paste (engagement-research §6.4).
+- **At the end:** M4 (Firebase content), M5 (admin), M6 (ads + IAP), M8 (release on production Firebase). D90 put M7 ahead of M4–M6; D237 keeps that backend work after the local habits as well.
 - The admin is still the M0 skeleton: sign-in and a shell whose nine spec §15 sections are "Coming in M5" placeholders.
 
 ## Repository layout (Dart pub workspace)
@@ -39,20 +42,20 @@ nesty/
     README.md                #   components, board layout, screens by frame id, motion, sound, owner decisions
     tokens.json              #   every color, gradient, type, radius, spacing, shadow, layout, motion, sound, haptic value
     skins/<id>/              #   7 layered 512×768 doll skins + skin.json; classic/renders/ holds reference renders
-    board/  symbols/         #   board pieces (stand, plank, glass, ice, hint, glow…); 11 color symbols
+    board/  symbols/         #   board pieces (stand, plank, glass, ice, hint, glow…) + ch07–ch10/ (those chapters' own wood); 11 color symbols
     themes/                  #   ch01–ch10 chapter backgrounds, 1290×2796
     museum/  store/          #   figurines (use museum/png/) and app-icon art; their SVGs don't render in flutter_svg
     audio/                   #   23 SFX (WAV, spec §11.3 names), 2 music loops + 5 jingles (OGG); AUDIO.md is the contract
-    lottie/                  #   35 Lottie animations + images/; LOTTIE.md (v3, m7-3) is the contract the tools validate against
+    lottie/                  #   37 Lottie animations + images/; LOTTIE.md (m7-4) is the contract the tools validate against
     ui/                      #   M7 UI art (badges, chest, rivals, sprites, stars) + notification/ (the Android small icon); icons/ stays empty
-    copy.md  DELIVERY.md     #   M7 copy by id, and the m7-3 delivery notes and "Choices"
+    copy.md  DELIVERY.md     #   M7 copy by id, and the m7-4 delivery notes and "Choices"
     generator/               #   nesty-doll.js, nesty-sfx.js, nesty-music.js: reference doll-tint, SFX and music algorithms
     prototypes/              #   *.dc.html design references; open "Nesty App Flow.dc.html" in a browser
   packages/nesty_core/       # PURE DART: models, rules, session, codec, validator, solver, simulator, generator, PRNG
   packages/nesty_render/     # Flutter (no Flame): board layout, doll renderers, skin cache, palette, svg_tools
   apps/game/                 # Flutter + Flame mobile game (dev/stg/prod flavors)
     assets/                  #   synced from design/ + level bundle; generated, never hand-edit
-    integration_test/        #   on-device checks via `flutter drive`: playthrough, resume A/B, daily fingerprint, board layouts, race loss, meta screens, daily states, overlays, the optional Android reminder check; `support/seeded_save.dart` seeds a save
+    integration_test/        #   on-device checks via `flutter drive`: playthrough, resume A/B, daily fingerprint, board layouts, race loss, meta screens, daily states, overlays, faults, the semantics tour, the optional Android reminder check; `support/seeded_save.dart` seeds a save, `support/fault_services.dart` installs a fault through `bootstrap(beforeRunApp:)`
   apps/admin/                # Flutter Web admin panel
   firebase/                  # firestore.rules, storage.rules, firestore.indexes.json, firebase.json
   tools/                     # nesty_tools workspace member: design pipelines, level CLI, TODO index (tools/README.md)
@@ -76,7 +79,7 @@ Read this before exploring; open the files it names instead of scanning folders.
 - Gameplay flow: `features/gameplay/bloc/gameplay_bloc.dart` (a `BaseAsyncBloc` wrapping `GameSession`: pick, drop, undo, hint, boosters, tutorial; a race's player board, with `RaceCubit` beside it; a campaign win's stars; `tap_policy.dart`'s nudge of an unpickable slot) → `features/gameplay/game/nesty_game.dart` (Flame: `components/` board, slot, nest, FX layer) → `game/timeline/board_timeline.dart` plays each move's `MoveEvent`s in core's order. Overlays (win, out of moves, pause, chapter complete, tutorial, the milestone chest, a race's results in `RaceResultLayer`) are Flutter widgets in `features/gameplay/overlays/`; HUD (with a race's rival strip in its top row), booster bar and the race's action bar in `widgets/`; `pages/gameplay_entrance.dart` is the route's transition (the first launch's fade).
 - Other features: `splash`, `shell` (tabs), `home` (`widgets/`: the chapter card, the Records button, `HomeLayout`'s 2.1/2.1b blend), `daily` (the reminder offer dialog, the streak card's looks; the Share button is on the daily win card since D188), `museum`, `shop`, `settings`, `chapters` (the chapter accordion and the level card, M7 E7; `cubit/chapter_star_tally.dart` is the one place Home and Chapters total the stars), `records` (Records and badges, M7 E8), `race` (vs Computer: rival select, `RaceCubit`; the race plays on the gameplay page, M7 phase 2), `fx` (Lottie library, `fx_spec.gen.dart`; `fx/chest/` is the chest opening both chests share), `dev` (level picker).
 - Levels: `tools/levels/` → `nesty_levels bundle build` → `assets/levels/bundle.json` → `core/repository/bundled_level_repository.dart` (decodes and checks rules 1–7 on a worker isolate); `LevelResolver` maps a play request to a level (bundled, a replay, Bonus Endless, the daily or a race).
-- UI kit: `core/ui/` (theme, `tokens/ui_tokens.gen.dart`, `icons/nesty_icons.gen.dart` with `icons/icon_uses.dart` naming each use's glyph, shared widgets; `widgets/stars/star_row.dart` is every star surface's one swap point; `widgets/feedback/toast_queue.dart` is the toast queue, one host at the app root). `core/ui/art/` is the m7-3 UI art: `UiArt` (the stars, the chest, the sprites, the rivals, the badges), `UiArtLibrary` (rasters once per size, real and fake), `UiArtImage` and `UiArtImageSource` for the Lottie slots, and `theme_thumbnail_loader.dart` (the themes' crops for the Shop and Chapters: an LRU, a scope and a shared asset loader, no DI binding). `widgets/home/` holds `StarsChip`, `TextLink` (48 dp) and `StreakLook`; `widgets/race/` the `ComputerTag` and `RivalPortrait` every rival surface uses.
+- UI kit: `core/ui/` (theme, `tokens/ui_tokens.gen.dart`, `icons/nesty_icons.gen.dart` with `icons/icon_uses.dart` naming each use's glyph, shared widgets; `widgets/stars/star_row.dart` is every star surface's one swap point; `widgets/feedback/toast_queue.dart` is the toast queue, one host at the app root). `core/ui/art/` is the m7-3 UI art: `UiArt` (the stars, the chest, the sprites, the rivals, the badges), `UiArtLibrary` (rasters once per size, real and fake), `UiArtImage` and `UiArtImageSource` for the Lottie slots, and `theme_thumbnail_loader.dart` (the themes' crops for the Shop and Chapters: an LRU, a scope and a shared asset loader, no DI binding). `widgets/home/` holds `StarsChip`, `TextLink` (48 dp) and `StreakLook`; `widgets/race/` the `ComputerTag`, `RivalPortrait` and `RivalReact` (`ui_rival_react`) every rival surface uses; `widgets/sheet/sheet_row.dart` the sheets' rows and `SheetRowChip` (moves under the line, never shrinks); `widgets/layout/cream_page.dart` the `CreamPage` gradient every menu page paints; `widgets/text/balanced_text.dart` the `BalancedText` (`text-wrap: balance`) and `bindLastWord` that modal heads and `ErrorCard` bodies use; `widgets/text/fit_text.dart` the `FitText` (textFit's order: wrap, scale, short form) and `shrink_to_fit_text.dart` the wrapping scaler; `theme/locale_script.dart` the `LocaleScriptScope`, the script's size factor and line heights (Devanagari, Japanese); `widgets/coins/reward_ring.dart` the chest flights' `RewardRing`.
 
 **Services** (`apps/game/lib/core/services/<name>/`, interface + real + fake; which env gets which is on each class's `@LazySingleton(as: …, env: …)`):
 
@@ -87,7 +90,7 @@ Read this before exploring; open the files it names instead of scanning folders.
 | `DatabaseService` | `HiveDatabaseService` (settings + save boxes; in-memory fallback) | done |
 | `DailyService` | `StreakDailyService` (both envs) | done |
 | `SolverService`, `LevelGeneratorService` | isolate implementations | done |
-| `SkinService` | `AssetSkinService` (bundled skins) | done; M4 adds Storage downloads |
+| `SkinService` | `AssetSkinService` (bundled skins; chapters 7–10's own board wood by `themeId`) | done; M4 adds Storage downloads |
 | `FxLibrary` (`features/fx/`) | `AssetFxLibrary` (bundled Lottie) | done |
 | `AudioService` (SFX + jingles), `MusicService` | SoLoud | done |
 | `HapticsService`, `AppClock`, `AppInfoService`, `LinkLauncher` | system / package_info / url_launcher | done |
@@ -116,6 +119,7 @@ cd packages/nesty_core && dart test                     # core rules/solver test
 cd packages/nesty_core && dart test -p node test/parity test/generator/golden_test.dart   # web parity (CI also runs chrome + dart2wasm)
 cd packages/nesty_render && flutter test
 cd apps/<game|admin> && flutter test                    # cubit + widget tests on fake services
+cd apps/game && flutter test test/overflow --dart-define=NESTY_TEST_LOCALE=<code>   # the overflow suite in one locale (de es fr hi id ja pt pt_BR tr; nesty-test and CI loop all nine)
 flutter analyze                                         # at repo root; zero issues (CI adds --fatal-infos --fatal-warnings)
 cd apps/game && flutter run --flavor dev -t lib/main_dev.dart                                    # game: dev|stg|prod
 cd apps/admin && flutter run -d chrome -t lib/main_dev.dart --dart-define=NESTY_FAKE_SERVICES=true  # admin
@@ -125,11 +129,12 @@ dart run nesty_tools:gen_design_tokens                  # design/tokens.json →
 dart run nesty_tools:sync_design_assets                 # design/ art, UI art, audio, Lottie → apps/game/assets, + the Android notification icon (validated)
 dart run nesty_tools:gen_fx_spec                        # design/lottie + the Lottie contract → features/fx/fx_spec.gen.dart
 dart run nesty_tools:gen_nesty_icons                    # NestyIcons from the bundled icon-font subset
+dart run nesty_tools:gen_font_subsets                   # tools/fonts/subset/{hi,ja}.txt (the script fonts' characters) from the ARBs, intl and Flutter's material ARBs; then build_fonts.sh
 dart run nesty_tools:todo_index                         # regenerate docs/TODO_INDEX.md from TODO(<tag>) markers
 dart run nesty_tools:nesty_levels bundle build|check    # tools/levels → assets/levels/bundle.json; check = CI gate
 dart run nesty_tools:nesty_levels validate|solve|simulate|report|generate|fixtures check   # --help for flags
 tools/fonts/build_fonts.sh [--verify]                   # rebuild the bundled fonts from pinned upstream (network)
-tools/scripts/nesty-test [--android] [--device-only] [--only <check>]   # CI's host checks + on-device checks (--only board,race,meta,daily_states,overlays: phase 4's files; --android --only reminder: the optional reminder check); --help
+tools/scripts/nesty-test [--android] [--device <name|udid>] [--android-size WxH@dpi] [--device-only] [--only <check>]   # CI's host checks + on-device checks (--only board,race,meta,daily_states,overlays: phase 4's files; faults,semantics,locales: phase 5's; --android --only reminder: the optional reminder check; NESTY_TEST_IOS_DEVICE / NESTY_TEST_ANDROID_DEVICE default --device); --help
 ```
 
 - The `nesty_tools:` scripts run from any directory of the repo. Each takes `--check` (write nothing, exit 1 on drift), which CI runs; details in `tools/README.md`.
@@ -163,7 +168,7 @@ Detailed, path-scoped rules load automatically from `.claude/rules/` when you to
 - **Local storage:** Hive via `hive_ce`, in `apps/game` only (the admin keeps its data in Firestore). Boxes (settings and save) are opened once in bootstrap (`DatabaseModule`, `@preResolve`) and reached only through `DatabaseService` and `SaveService`. If Hive can't open, the game falls back to in-memory storage. Box names (`HiveBoxes`), typeIds (`HiveTypeIds`) and field indexes are a contract with players' devices: never rename a box, never reuse an id or index, and never assign 200/201 (reserved by `hive_ce_flutter`). Every new save field is a schema step with a migration in `save_migrations.dart`.
 - **Flavors:** dev, stg, prod. `lib/main_<flavor>.dart` sets `FlavorConfig`, then calls `bootstrap()`. Android uses product flavors, iOS uses `Debug-/Profile-/Release-<flavor>` build configurations with one scheme per flavor. Bundle ids are `com.futrix.nesty`, `.dev` and `.stg`.
 - **Generated files are committed and never hand-edited** (the `block-generated` hook and the settings deny-list refuse it); CI fails if any is stale. build_runner and gen-l10n make `*.freezed.dart`, `*.g.dart`, `*.gr.dart`, `di.config.dart` and `lib/l10n/app_localizations*.dart`. `nesty_tools` makes `*.gen.dart`, `docs/TODO_INDEX.md`, `apps/game/assets/` (synced art, audio, Lottie, fonts) and `assets/levels/bundle.json`. Change the source and re-run the generator.
-- **l10n:** each app's `lib/l10n/app_en.arb` is the source of truth (English only so far). Read strings with `context.localizations.someKey`. Every key has a description.
+- **l10n:** each app's `lib/l10n/app_en.arb` is the source of truth. The game has nine catalogs (en, es, pt, pt_BR as a regional overlay of pt, id, hi, de, fr, tr, ja; every key translated, `test/l10n/` checks them); the admin is English only. The `locale` setting is `system` (follow the phone) or a pinned code, resolved by `app/localization_cubit/app_locale_resolver.dart` (`AppLocaleResolver`, also used by the reminder); the language sheet is `features/settings/widgets/language_sheet.dart`. Read strings with `context.localizations.someKey`. Every key has a description.
 - **Imports:** `package:` imports only. `lib/core/common_imports.dart` is each app's barrel.
 
 ## Code style
@@ -202,6 +207,25 @@ Detailed, path-scoped rules load automatically from `.claude/rules/` when you to
   4. Update `docs/PROGRESS.md` with what was done, decisions made and open questions.
   5. Bring this file current (next section), "Current state" first.
 - New decisions go in the PROGRESS decisions log as the next `D<n>`, new owner questions as the next `Q<n>`.
+- **Working within Claude's usage limits** (owner, D238). Quality comes first: a cheaper model or a smaller chunk never skips a test, a gate, a review or a design check.
+  - Pick the model per task: Sonnet for well-specified lanes, screenshot judging, test runs and docs; Haiku for mechanical sweeps; the session's model (Opus) for planning, cross-cutting design, hard debugging, judging conflicts between lanes, and reviewing translations and player-facing copy (on 2026-10-04 Sonnet reviewers missed about 100 translation errors that an Opus pass caught, D240).
+  - Split large work into chunks (one feature area, or about 30 screenshots), and run independent chunks as parallel agents that own disjoint files; a last serial stage integrates and runs the gate.
+  - Save as you go: every stage keeps its checkpoint file and appends its findings to its report after each batch, so a session or weekly limit loses nothing. Never leave results only in an agent's context or final message.
+  - Keep contexts small: read files by range, view each screenshot once, run long device and build steps as background scripts instead of agents that poll, and start a fresh agent from the saved files instead of resuming a huge one.
+  - Keep big output out of context: tests run with `-r failures-only` (or `| tail -n 40`), and verbose searches and logs go to a subagent (`code-explorer`, `test-runner`) that returns a summary. Don't delegate a small edit: each agent pays for its own fresh context (D240).
+  - Set effort per task: low for mechanical stages (format, copy, merge, reruns), the default for most work, high only for the hardest judging or debugging. Use the agent call's effort or the agent's `effort:` frontmatter (D240).
+  - Keep the prompt cache warm (D240):
+    - pick the model and effort at the start of a session or stage;
+    - mid-task, don't switch models, toggle fast mode or add or remove MCP servers, because each one invalidates the cache;
+    - compact only at a task break, using "Compact instructions" below;
+    - between unrelated tasks, `/clear`;
+    - after two failed corrections, rewind or clear and restate the task with what was learned.
+- **Be proactive** (owner, D239). Don't wait to be told what the work already implies; do it within the owner's standing instructions and these rules.
+  - Start whatever can run now: work that doesn't depend on what is in progress, in parallel where files don't conflict (a separate folder when a device run is using the tree), and prepare the next stage's prompts and scripts while the current one runs.
+  - Fix what you find on the way (a bug, a stale doc, a missing test or TEST_COVERAGE row, a broken shot), each with its test, and record it; don't leave it for the owner to notice.
+  - Ship the default and record a question (`Q<n>`, BACKLOG "Owner inputs needed") instead of blocking on an owner decision that has a sensible default.
+  - Still stop and ask for: an ambiguous game rule, anything outward-facing or hard to reverse (commits, pushes, deleting outside the repo and the scratchpad), and whatever these rules leave to the owner (`GAME_SPEC.md`, `design/`, the rules in this file).
+- **Local first, backend last** (owner, D269; D237's order). The game works 100% locally before any backend: nothing that needs a server, an account, Firebase, ads, analytics delivery or a store purchase starts before M4, and such items live in BACKLOG's M4–M8 sections. Anything the admin will control later (levels, chapters, skins and prices, rewards and tracks, race parameters, changeable copy) is read today through a repository or a `RemoteConfigService` key with a bundled default, never hard-coded in a widget or cubit, so M4 and M5 swap the source without touching features.
 - Dolls render from the design skins (PROGRESS D23). The procedural placeholder painter (spec §12.5) stays as the fallback when a skin can't load.
 
 ## Keeping this file current
@@ -216,6 +240,16 @@ Every session starts from this file instead of reading the repo, so a stale line
 - **Facts vs rules.** Any session keeps the facts current: Current state, the layout, the Code map and its table, and Commands. The Hard rules, Conventions, Workflow, Git and the source-of-truth order change only when the owner asks, with the decision in PROGRESS.
 - **Keep it short.** One line per item. Point to the doc that holds the detail (PROGRESS, BACKLOG, a README, `.claude/rules/`, a plan) instead of copying it. Delete what is no longer true.
 - **Checked by a test.** `tools/test/claude_md_test.dart` (in `cd tools && dart test`, CI and the `/milestone` gate) fails when a workspace member, top-level folder, `nesty_tools` script, `.claude/rules` file, game feature folder or DI-bound interface is missing from this file. It can't check the prose, so before finishing a task, re-read the sections it touched and fix them.
+
+## Compact instructions
+
+When compacting (`/compact` or auto-compact), keep (D240):
+- the current milestone, phase and stage, the working folder (`build/m7-p5/` for M7 phase 5) and every checkpoint and report path in use;
+- the background agents and scripts still running, what each writes, and what runs next;
+- the owner's standing constraints and latest instructions, verbatim: no commits until asked, the protected simulator UDID, the 20 GB disk floor, and anything they said this session;
+- the next free `D<n>` and `Q<n>`, the open owner questions, and any decision made but not yet logged.
+
+Drop file dumps, test logs and screenshot descriptions; those live in the reports.
 
 ## Git
 

@@ -652,7 +652,8 @@ per string: `- <id>: <text>`.
 Written 2026-09-30 by the M7 phase 4 integrator, from the gaps the
 contracts stages and the five lanes found while building
 `nesty-design-m7-3` into the game (PROGRESS D173–D208; architecture lead
-note 13). The request above is fully delivered; this is a separate,
+note 13). Sections 8–12 came later, from phase 4's device run, phase 5's
+fidelity audit, phase 5's own device run and the m7-4 device run. The request above is fully delivered; this is a separate,
 smaller prompt. Paste everything below the line into Claude Design, in the
 same Nesty project.
 
@@ -673,7 +674,7 @@ Deliver the answers as `nesty-design-m7-4`, cumulative and in m7-3's format
 (the "Delivery" section of the round's request: the whole handoff root,
 `tokens.json`, `README.md`, `LOTTIE.md`, `AUDIO.md` and the App Flow file
 whole). In DELIVERY.md, list only what changed, and put each "keep" under
-"Choices". A partial delivery is fine; items 1, 2 and 3 unblock the most.
+"Choices". A partial delivery is fine; items 1, 2, 3 and 9 unblock the most.
 
 #### 1. Tokens (`tokens.json`)
 
@@ -901,3 +902,240 @@ Each has a default the game ships; answer "keep" or change it.
    DELIVERY counted 17.
 2. The toast colours, the text link's pressed state and the icons above
    also appear in README's "Components": keep the two in step.
+
+#### 8. From the device run (both platforms, 2026-09-30)
+
+The game ran every screen on an iPhone and an Android phone, and these still
+differ from the frames. Each has a default the game ships; answer "keep" or
+change it.
+1. **The tutorial's scrim** (1.3, 1.4, 10.8b). The frames dim the HUD and
+   the booster bar too. The game leaves them bright, so Pause stays
+   reachable during a tutorial step. Keep, or dim them and say how Pause is
+   reached. The "STEP 1 OF 3" chip also touches the family counter under
+   the level pill: give the gap.
+2. **Rival select's locked cards** (9.2). The game's page is a flat colour,
+   and on it the locked card's fill (`surfaceSunk` at 70 %) disappears. The
+   frame's page is a gradient. Give the locked card a fill or ring that
+   shows on a flat page, or give the page's gradient as a token.
+3. **The chest card** (10.3b, 10.3c, 5.6). With `ui_chest`'s 200×200 canvas
+   the art box is about 80 dp taller than in the frames, so the closed chest
+   sits low in a tall card. Give the card's height and the chest's place in
+   it (see also 6.4).
+4. **Chapters on open** (10.4). The game scrolls so the current chapter's
+   card is at the top, and the finished chapters' rows sit above it, out of
+   view. The frame shows them above it on screen. Where should it scroll to?
+   Also: the frame fades a locked cell's number (which token?), and "60
+   won" sits beside "Level 61 of 200" instead of right-aligned.
+5. **Records' families cell** (10.6). The frame reads "{count} of 10
+   Families home", which is the Museum's count, in a grid of lifetime
+   records. The game shows the families the player has completed on won
+   boards, as a plain count labelled "Families completed", while the owner
+   decides (Q159). Send the copy and glyph for "Families completed", or
+   confirm the Museum's count.
+6. **The race's paused strip** (9.7). The frame keeps the thinking dots;
+   the game shows a still "Thinking…" while paused, because the rival
+   isn't moving. Keep?
+7. **The daily win's Share glyph.** The game draws `icons.shareIOS`
+   (`ios_share`) on iOS and `share` on Android; the frame shows `share`.
+   Confirm per platform.
+
+#### 9. Translations
+
+The game is being translated into Spanish, Brazilian Portuguese,
+Indonesian, Hindi, German, French, Turkish and Japanese (es, pt-BR, id, hi,
+de, fr, tr, ja), from copy.md's English. Two things need you:
+1. **Fonts for Hindi and Japanese.** Fredoka and Nunito have no Devanagari
+   or Japanese characters, so those lines would fall back to the phone's
+   system font. Pick a rounded, friendly face for each script that sits
+   well beside Fredoka (titles) and Nunito (body). It must be open-licensed
+   (OFL) so the game can bundle it; for example Baloo 2 for Devanagari and
+   M PLUS Rounded 1c for Japanese. Give the weights, and any size or
+   line-height change per script, in `tokens.json` (a `font` entry per
+   script). The game subsets each font to the characters it uses.
+2. **The longest lines.** German runs about 30 % longer than English, and
+   Hindi and Japanese need taller lines. Say which surfaces may wrap, scale
+   down or shorten, with a minimum scale: the win ribbon, the chapter
+   ribbon, the HUD pills, the booster labels, the tab bar, the rival names
+   and the chest chips. Where a surface can't grow, give a short form in
+   copy.md (for example a booster label).
+3. **The language sheet** (8.2) with all nine languages live. Draw it:
+   each row's native name beside its English name (the Hindi and Japanese
+   rows too), the current language, and the sheet on a 731 dp phone, where
+   it scrolls. The game puts the native name on the left in its script's
+   font, then the English name, and applies a change at once. Should a
+   change ask first?
+
+#### 10. From the fidelity audit (2026-10-01)
+
+The game compared every frame with its own screens. Each item below has the
+default the game now builds; answer "keep" or change it.
+1. **Type sizes with no token.** Where `tokens.json` has no value, the game
+   now takes the size from the scene's CSS (`NestyHub`, `NestyMeta`,
+   `NestyShop`), which is smaller than what it drew before: the Shop's skin
+   card names 16 (it drew 22), Not enough coins' heading 24 (30), Records'
+   stat value 20 and label 11.5 (24 and 14), the Museum's title 26 (34),
+   the rival cards' names 20 (26). Add these to `tokens.json` (a type entry
+   per surface), or confirm the CSS is the spec. 7.4c's price chip now shows
+   the number alone ("2,500"), as the CSS draws it; a screen reader still
+   hears "coins".
+2. **Header titles.** Rival select, Chapters, Records and Settings put the
+   title on the left, 12 dp after the back or close button, as their scenes'
+   CSS does; Daily and the Shop centre it; the Museum's sits on the left with
+   no button. The game follows that. Confirm, and add a `screenHeader` token
+   for the two alignments.
+3. **The figurine detail's spotlight cone** (6.2, 6.3). The game draws it
+   from `NestyShop.dc.html`'s CSS: 250×320 from 10 dp above the box, white at
+   55 % fading to 0, clipped to the cone polygon. Confirm, or send it as an
+   asset.
+4. **Rival select on short phones** (9.2; this extends 8.2). Below about
+   760 dp the list scrolls under the pinned hint. The game fades the list's
+   last 16 dp while it can scroll further, and leaves a 12 dp gap above the
+   hint. Keep?
+5. **The chest's size** (10.3b, 5.6; this extends 6.4 and 8.3). In
+   `ui_chest`'s 200×200 canvas the closed chest draws about 101 dp wide;
+   LOTTIE.md says 130, and 10.3b's art box is 156×130. The game gives the
+   art the frame's 130 dp tall slot, lets the canvas overflow upward for the
+   burst, and keeps the card's top at `layout.chestCard.card.top` 214 (10.3b
+   draws 168; see 6.4). At what size should the chest draw?
+6. **The splash's fallback dolls** (1.1, E.19). The game draws the
+   fallback doll from the first frame until the skin loads, then
+   cross-fades to the art. Are the three shelf dolls red, like 1.1's cherry
+   dolls (the game ships red), or red, blue and green, as 12.12 shows?
+7. **"Streak saved!"** (5.2). The frame draws a blue banner over the streak
+   card and a "0 left" freeze chip. The game shows only the toast. Should
+   the banner ship, and with which tokens (face, ring, glyph disc)?
+
+#### 11. From phase 5's device run (2026-10-01)
+
+The fidelity pass built the screens from the scenes' CSS, then looked at
+what the frames leave open. Each item below says what the game ships; answer
+"keep" or change it. None changes a rule, a price or a reward.
+1. **The undo's motion.** No frame draws one. The game flies the moved doll
+   back along its own path, `doll_move` reversed: 260 ms, one `whoosh`,
+   130 ms under reduce motion. Draw an undo (a short path, a different
+   ease, a sound), or keep.
+2. **The wobble before a move.** A picked doll wobbles, and when it is
+   dropped the wobble snaps into `doll_move`'s first frame. The game ships
+   the snap (`motion.pick.cancelSettle`, 160 ms, is only for a cancel). Give
+   a settle time before a move, or keep the snap.
+3. **The relit streak card's twinkles** (10.7b). The frame places two
+   stars, at about (+44, -6) and (+52, +4) from the flame disc, and gives no
+   size. The game draws two Lottie twinkles at 22 and 14 dp. Give the sizes
+   (and whether it is one glyph at 22), or keep.
+4. **The Museum's Play button** (6.1, NestyHub:110). The scene draws it 36
+   tall. The game's smallest tactile size is `compact`, 38, so it ships 38
+   inside a 48 dp touch box. Add a 36 size as a token, or keep 38.
+5. **Chapters' "levels to go"** (10.4). The scene puts it inline, at the right
+   of the progress bar. The game puts it under the bar so it can grow at
+   1.3x text without cutting the bar. Keep, or say how it should sit when
+   the text is large.
+6. **The figurine modal's spotlight height** (6.2, 6.3). NestyShop:107 draws
+   the spotlight 300 tall. The game draws 200, so the modal is shorter than
+   the frame on a 731 dp phone. Give the height, or keep 200.
+7. **Where Chapters scrolls on open** (extends 8.4). The game now keeps up to
+   three folded chapter rows above the open card, fewer on a short phone (it
+   needs 311 dp under them). Add `layout.chapters.scroll.foldedAbove: 3`, or
+   change the rule.
+8. **Frame-only colours, a second list** (extends 1.2). `#FFF6E6` (the open
+   chapter's won cell, NestyHub:310), `#C4AE92` (the locked cell's lock) and
+   `#FFEFD6` (the Museum's next niche name) are in no token. The game draws
+   `surfaceWhite`, `lockedCellText` at 80 % and white. Also `#8A5B3A`, the
+   locked line on rival select and its hint, which the game draws as
+   `#8A6A4E`. Give each a name in `color`, or say the game's pick is right.
+9. **A type token per surface** (extends 10.1). The sizes the game now takes
+   from the CSS have no home: Chapters' rows 10, 15 and 11 and its cells 16;
+   the Museum's 11, 20 and 12; Records' 20, 11.5, 16 and 18; the Shop's 16,
+   14, 15 and 13; Home's 11 and 17. Add a `type` entry per surface, or confirm
+   the CSS is the spec.
+10. **The all-home Museum card** (6.1c). NestyHub:113 draws
+    `ui/badges/museum_full.svg` at 92. The game draws a brass disc with the
+    count. Should the badge art replace the disc?
+
+#### 12. From the m7-4 device run (2026-10-04)
+
+The game now draws m7-4. Its device run on both platforms and the fidelity
+audit (123 frame pairs, then a re-judge of the 31 that were fixed) left the
+items below. Each says what the game ships; answer "keep" or change it. None
+changes a rule, a price or a reward.
+1. **The versus and Daily win ribbons' width** (9.4, 9.5, 5.4). `ui_win_ribbon`
+   draws a 336 x 56 dp band, with tails to 380 dp on a 390 phone (5 dp from
+   the edge). The App Flow CSS draws a 290 x 56 body with tails to 334 dp
+   (NestyMeta:20: left and right 44 plus the 6 dp inset). The game ships the
+   Lottie as it is. Confirm which is right and, if the CSS is, send the file
+   with a 290 band, or `band_rect` and `tail` named rects so the game can set
+   the width, as `ui_chapter_ribbon` has them.
+2. **The open chest's rays** (10.3c). The rays read paler and narrower than
+   the frame's (about #FFD98A at 55 %, saturated). They are in `ui_chest.json`,
+   and the game changes no Lottie. Raise the rays' alpha and width in the file,
+   or keep.
+3. **Two things the game adds to toasts and a card** (9.4, 9.6, 10.6b, 9.7b).
+   The badge toast shows the title only in the frames; the game adds the
+   badge's earned line (copy.md G.8, "You nested your first family."), and the
+   race win's "You beat the computer in a race.". Frame 9.7b draws the rival's
+   portrait without the Computer tag; the game adds the tag, because every
+   rival surface says Computer. Keep, or redraw 9.4, 9.6, 9.7b and 10.6b with
+   them.
+4. **The freeze chip's wording** (5.2, 5.2b, 10.7). DELIVERY 7 ships "0 left".
+   "Left" counts down a loss and is on the game's respect deny-list, so the
+   game ships "No freeze" at zero and "{count} streak freeze(s)" otherwise,
+   in the same chip width. Confirm that, or give a zero-state line without
+   "left".
+5. **The splash's top** (1.1, 10.8, 12.10, 12.11). The frames draw a flat
+   cream-to-peach top. The game draws the chapter 1 theme art, so its blurred
+   arch and halo show in the top 200 dp. Is the arch meant, or should a top
+   fade cover it? Give the fade's value if so.
+6. **The Restart glow** (12.7, under "Suggested"). The frame draws a crisp
+   orange ring of about 3 dp. The game uses the soft gold glow the Undo has
+   (3.4). Give the token (colour, width, blur), or keep the soft glow.
+7. **Where a modal sits** (6.2, 6.3, 7.4c). The frames draw the Museum's detail
+   and "Not enough coins" at a fixed top (128 and about 220 dp). The game
+   centres them. Add `layout.museumDetail.cardTop` and the coins dialog's top,
+   or keep centring.
+8. **The generating card** (12.5, 12.6, 12.10). The frame draws an orange arc
+   on a cream track in a wider, off-centre card at y 360. The game ships
+   `ui_spinner` (purple, 44 dp) in a 236 dp card centred in the safe area, so
+   its top is 348 dp on an iPhone and 325 dp on an Android with a 24 dp inset.
+   Recolour the spinner or keep, and give `layout.generating.top` as an
+   absolute value or keep the safe-area rule.
+9. **The tutorial hand** (1.3, 1.4, 1.6, 10.8b). `ui_tap_hand` is about 67 dp
+   (LOTTIE.md); the frames' CSS hand is about 40 dp. The game ships the
+   Lottie. Send a smaller hand or keep.
+10. **The chest card at 10 of 10** (12.4). The card drops its "N levels to the
+    chest" line once the chest is due. Confirm that is meant.
+11. **The case-break shatter** (2.7). On iOS the shatter reads as a rectangular
+    frost slab, not a dome. Confirm the slab is intended, or redraw it as a
+    dome.
+
+#### 13. From the translations (2026-10-05)
+
+The game now ships in nine languages (en, es, pt-BR, id, hi, de, fr, tr, ja).
+One gap needs you.
+
+1. **Fredoka for Turkish.** The Fredoka build bundled at the pin lacks the
+   Turkish letters ğ Ğ İ ş Ş (and the rupee sign ₹); Nunito covers the Turkish
+   ones, so Turkish titles draw those letters in Nunito in the middle of a
+   word. Send a Fredoka build with Latin Extended-A (OFL allows it, under a new
+   name if modified), or pick another rounded display face that covers it, and
+   say which. The game rebuilds its fonts from a pin (`build_fonts.sh`), so a
+   source and a version are enough.
+
+#### 14. From the review (2026-10-05)
+
+The race strip (frame 9.3) must always show the word "Computer" beside the
+rival's name at 360 dp and wider; under 360 dp the glyph alone stays (your
+README's rule). In Spanish, Portuguese, French, Indonesian and Japanese,
+and at 1.3× text, the name and the tag don't fit one line beside 8 dots, so
+the game now has two forms of its own (D271). Please draw them with 9.3:
+
+1. **The count without dots.** The family count ("3/8") stands alone in the
+   right column when a long name and the tag need the room, and in every race
+   above 8 families (9.3 draws at most 8 dots).
+2. **The tag on the second line.** When even that is short (a long name at
+   360 dp, or 1.3× text), the name has the first line and the Computer tag
+   takes the second, in place of the state line ("Thinking", "Starting
+   over", "Finished"). The portrait's motion and the screen reader still
+   carry the state.
+
+Say whether the state line should come back elsewhere in that form (for
+example as a small glyph beside the tag), or whether the count's dots
+should shrink instead.

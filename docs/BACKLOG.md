@@ -6,7 +6,7 @@ This file records what is left. In-code markers are indexed separately in
 [TODO_INDEX.md](TODO_INDEX.md), which `dart run nesty_tools:todo_index` generates from
 `TODO(<tag>)` comments. Never edit it by hand.
 
-Last updated: 2026-09-30 (D209, Q159: phase 4's device run passed on both platforms; its item, the race-loss segment, the day-7 chest on a device and `nesty-test`'s device gaps ticked; the fidelity audit's list, two design gaps, Q159 and the reminder phone check added. Before that: D202–D208, Q158: phase 4 integrated: the lanes' and the integrator's phase-4 items ticked with their evidence, the delivered design items ticked, the device-pending ones annotated, the lanes' deferrals and Q158 added. Before that: D179–D201, Q156–Q157: phase 4's contracts stage: a phase-4 subsection with the five lanes' items, the design-delivered items, gaps and owner inputs ticked or annotated with their m7 P4.n section, and the design-answered questions ticked. Before that: D171–D172: the M7 delivery is in `design/`; the import item ticked, and phase 4 wires it in. Before that: D170: the HUD's "Replay" tag removed. Before that: D169: `nesty-test` covers every feature; its device gaps are an M7 item. Before that: M7 phase 5, the device run after the review: both platforms pass, dated notes on the audit, the VoiceOver and TalkBack pass, the race-loss segment and the reminder phone check, D168. Before that: M7 review pass, round 2: the accessibility audit ticked, and new items for the device VoiceOver and TalkBack pass, screen-reader board play (R12, Q154), R7's Android note and `shopOwned`'s copy; the pass-and-play proposal linked; Q154–Q155. Before that: M7 review pass, round 1: R2's paused-streak follow-up and R4's accent swap added under M7, the accessibility audit annotated with what is left, Q153. Before that: M7 phase 3 integrated: star ratings, the share card and the reminder, D156–D161, Q149–Q151; the phase-2 rival strip item done; the device run is next. Before that: M7 phase 3's contracts frozen, D144–D155, Q137–Q148. Before that: M7 phase 2 done: vs Computer integrated, D132–D142, and passed on both devices, D143, Q124–Q136. Before that: M7 phase 1 device stage: device-pass confirmed on both platforms, two app bugs fixed, Decisions D126–D131 and Questions Q121–Q123 added, eight deferrals proposed. Before that, star ratings added by the owner: D125, Q116–Q120. Earlier today: M7 phase 1 integrated, D113–D124, Q99–Q115; D92–D93; D90. M3 code complete; acceptance pending the owner's two physical-device checks).
+Last updated: 2026-10-05 (D272, D273: Q185 and Q183 answered; the Wednesday Claude Design send-off item; Gradle reports ignored. Before that: M7 code complete: the `/milestone M7` gate's results ticked or moved in M7 (5C), 13 classified items ticked or moved, Q185, a v1.1 item for Japanese one-character lines. Before that: D270's second pass: the themes, characters and story section checked against the code. TC4 is split into TC4a and TC4b; TC11–TC14, TC-FX and TC-DATA are added; the TC-L line is added under Later; ER8, ER9 and the diorama item are annotated; Q184 is widened. Before that: D271: M7 5C, the review: its fixes ticked, the race strip keeps the word "Computer", the strip's design ask, the device look and the gate pending. Before that: D270, Q183–Q184: the themes, characters and story proposals and the loss-card question. Before that: D269: local first, backend last; ER11b Game Center and Play Games moved to M8. Before that: D268, Q182: the daily gift, a login reward the owner asked for and approved: its section split into the plan's work items, Q182 answered with the defaults, the spec-paste and design-prompt owner inputs, and the M4 analytics and M8 PEGI items extended. Before that: 2026-10-05 (D261–D267, Q175–Q181: M7 phase 5B, the translations: the English-freeze and translations items ticked with their evidence, 5B's deferrals and the fidelity re-shoots added (the device run's results are pending), the 5B questions Q175–Q181. Before that: 2026-10-04 (D259–D260, Q173–Q174: the engagement research and the kid path: a new section after the local habits with the kid path's local items and proposals ER1–ER11; the kid path's analytics (M4), ads, purchases and age signals (M6); the store-listing item changed by D260, and the age-assurance and PEGI items (M8); Q86's item annotated; a legal-check owner input; Q173 and Q174. Before that: 2026-10-04 (D235–D258, Q168–Q172: M7 phase 5's m7-4 stage: the wiring, the device run, the TalkBack pass and the fidelity fixes ticked with their evidence; Q158 and Q159 answered; Q154 under v1.1; the 5f reruns' results, 5f-fj-2 and E13's re-measure are marked for the lead. Before that: 2026-10-01 (D210–D234, Q160–Q161: M7 phase 5A built: the fidelity items, B-SHARE, relit twinkles, chapter themes 7–10 and the animation polish ticked with their evidence; the device-run items (the fidelity audit, TalkBack, the skin landing, E9's `l1`) annotated as built and unrun, because the device stage stopped on disk; tabular figures moved to M8; the VoiceOver checklist, Q160, Q161 and phase 5's design questions added; the citation of the wiped scratchpad report fixed. Before that: 2026-09-30, D209 and Q159: phase 4's device run passed on both platforms; its item, the race-loss segment, the day-7 chest on a device and `nesty-test`'s device gaps ticked; the fidelity audit's list, two design gaps, Q159 and the reminder phone check added. Before that: D202–D208, Q158: phase 4 integrated: the lanes' and the integrator's phase-4 items ticked with their evidence, the delivered design items ticked, the device-pending ones annotated, the lanes' deferrals and Q158 added. Before that: D179–D201, Q156–Q157: phase 4's contracts stage: a phase-4 subsection with the five lanes' items, the design-delivered items, gaps and owner inputs ticked or annotated with their m7 P4.n section, and the design-answered questions ticked. Before that: D171–D172: the M7 delivery is in `design/`; the import item ticked, and phase 4 wires it in. Before that: D170: the HUD's "Replay" tag removed. Before that: D169: `nesty-test` covers every feature; its device gaps are an M7 item. Before that: M7 phase 5, the device run after the review: both platforms pass, dated notes on the audit, the VoiceOver and TalkBack pass, the race-loss segment and the reminder phone check, D168. Before that: M7 review pass, round 2: the accessibility audit ticked, and new items for the device VoiceOver and TalkBack pass, screen-reader board play (R12, Q154), R7's Android note and `shopOwned`'s copy; the pass-and-play proposal linked; Q154–Q155. Before that: M7 review pass, round 1: R2's paused-streak follow-up and R4's accent swap added under M7, the accessibility audit annotated with what is left, Q153. Before that: M7 phase 3 integrated: star ratings, the share card and the reminder, D156–D161, Q149–Q151; the phase-2 rival strip item done; the device run is next. Before that: M7 phase 3's contracts frozen, D144–D155, Q137–Q148. Before that: M7 phase 2 done: vs Computer integrated, D132–D142, and passed on both devices, D143, Q124–Q136. Before that: M7 phase 1 device stage: device-pass confirmed on both platforms, two app bugs fixed, Decisions D126–D131 and Questions Q121–Q123 added, eight deferrals proposed. Before that, star ratings added by the owner: D125, Q116–Q120. Earlier today: M7 phase 1 integrated, D113–D124, Q99–Q115; D92–D93; D90. M3 code complete; acceptance pending the owner's two physical-device checks).
 
 ## How this file works
 
@@ -49,6 +49,11 @@ Last updated: 2026-09-30 (D209, Q159: phase 4's device run passed on both platfo
     [plans/mode-vs-computer.md](plans/mode-vs-computer.md) (D93).
     `spec-prop` is [plans/spec-proposals-m7.md](plans/spec-proposals-m7.md),
     the spec text for the owner to paste.
+  - `local-habits` is
+    [plans/local-habits-brainstorm.md](plans/local-habits-brainstorm.md) (D237).
+  - `engagement-research` is
+    [plans/engagement-research.md](plans/engagement-research.md) (D259, D260),
+    and `ERn` is one of its proposals. The kid path is its §6.
   - A path is a file in this repo.
 - **One place per item.** Implementation items go in the milestone that builds
   them. Anything only the owner can supply or decide goes in
@@ -408,110 +413,7 @@ design gaps the M3 stand-ins cover moved to M7 (see "Design gaps").
 - [x] Music by screen: the daily puzzle's and the bonus levels' boards play `music_game`; Daily, Museum, Shop, Skin detail and Settings play `music_home` (`MusicRouteObserver.trackFor`) — `TODO(M3)` in `music_route_observer.dart`, AUDIO.md "Music rules"; m3 §10.1 (the route tree already gives it, pinned by `music_route_observer_test`; the `TODO(M3)` comment is the shell-home-settings lane's) (done 2026-09-28)
 - [x] Settings' Music and Sound toggles only write `DatabaseService` (the music follows `musicEnabledChanges`, as Pause's do); a music volume control, if one is designed, calls `MusicService.setVolume`, which applies at once (Q66 asks whether it should fade) — frame 8.1, AUDIO.md "Music rules"; m3 §10.2 (no volume slider is designed, so none is built) (done 2026-09-28)
 
-## M4 — Firebase content — after M7 (D90)
-
-Acceptance (§18): with airplane mode on first launch, the game is fully
-playable. Levels published in the admin appear on the next app resume.
-
-- [ ] Firebase init at the `TODO(M4)` in both bootstraps, failing silently offline. The owner runs `flutterfire configure` first (Q12) — §14, CLAUDE.md rule 3, `apps/game/lib/bootstrap.dart`
-- [ ] Crashlytics: uncaught errors, plus non-fatals for `runGuarded` failures, the Hive fallback and level-validation failures — §14.4, D17
-- [ ] `FirebaseRemoteConfigService` over the hard-coded defaults, with prices and rewards read from it — §9.4, CLAUDE.md rule 6
-- [ ] `FirebaseAnalyticsService`, with every §14.4 event sent from the feature it belongs to — §14.4
-- [ ] When sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` once — m3 §6.2, D72
-- [ ] Synced levels carry their `par` for the star rating. A level without one shows no stars, and a new version keeps the level's best stars (Q117) — spec-prop §7.10, D125
-- [ ] Level sync — §13.4:
-  - `levels_cache.json` with `manifestVersion`.
-  - Runs on launch and on resume when online, without blocking: the splash kicks it off unawaited, with the Remote Config refresh (`TODO(M4)` in `splash_cubit.dart`).
-  - Pages of 200, each level validated, then an atomic swap.
-  - Cache entries override bundled ones by `id`.
-  - Never swaps the level in progress.
-- [ ] Skin and theme download from Storage (`skins/{id}/v{n}/{group}.svg|png`), then rasterize and cache. The card shows a spinner (frame 7.5), and a failure keeps the current skin — §13.5
-- [ ] Disk raster cache (PNG) for skin layers — §12.2, plan P3 (deferred from M2)
-- [ ] PNG layer sets accepted by the game's skin loader — §12.2
-- [ ] A Storage skin loader that builds `SkinLayers` from the admin's pre-split per-group SVGs (the `SkinLayers(Map)` constructor is ready) — §13.5, §14.2, r2 report
-- [ ] Daily overrides from `dailyOverrides/{yyyymmdd}` — §7.5, §14.1
-- [ ] Chapter, theme, skin and museum metadata (names, flavor text, prices) from Firestore — §14.1; overlaid on `CatalogRepository` (`TODO(M4)` in `bundled_catalog_repository.dart`), m3 §9.1
-- [ ] When level sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` then (`PlayEntry.completesChapter` sees only the bundle it was resolved from) — m3 §6.2, D72
-- [ ] `connectivity_plus` to re-sync on reconnect, with its reason in PROGRESS — §13.2, §9.1
-- [ ] Airplane-mode tests with failing network services, plus a fresh-install device check — §18 M4
-- [ ] Install `firebase-tools` (it needs a JDK) and verify `firebase emulators:start` from `firebase/`, including the Auth emulator — PROGRESS M0 "Not verified yet"
-
-## M5 — Admin panel — after M7 (D90)
-
-Acceptance (§18): the owner can build, solve, simulate, playtest and publish a
-level, and upload a skin that then shows up in the game.
-
-- [ ] `FirebaseAuthService` (email and password), with "Not authorized" when there is no `admins/{uid}`. Delete `UnconfiguredAuthService` — §15, `apps/admin/lib/core/services/auth/unconfigured_auth_service.dart`
-- [ ] Dashboard — §15 #1
-- [ ] Publishing a level computes its par with the admin's solver (the optimal length) and stores it with the level, for the star rating — spec-prop §7.10, D125
-- [ ] Levels list: table, filters, search, drag reorder, and bulk publish, unpublish and archive — §15 #2
-- [ ] Level editor — §15 #3:
-  - Shelf builder, slot types plus ice, doll palette.
-  - Live validation.
-  - Solve with animated playback, and Simulate.
-  - Playtest, a CustomPainter on nesty_render.
-  - Save Draft (bumps `version`) and Publish.
-- [ ] Generator page: the §6.5 params plus count and seed, preview cards, and accept into drafts — §15 #4
-- [ ] Chapters CRUD with theme and museum assignment — §15 #5
-- [ ] Skin upload — §15 #6, §12.2:
-  - Split the SVG with `xml` and strip its metadata.
-  - Check the group ids, the artboard and disallowed features. Reuse `package:nesty_render/svg_tools.dart` (`stripSvgMetadata`, `validateSkinSvg`, `validateSkinManifest`, the same checks the asset sync runs), and map its stable issue codes to admin ARB strings.
-  - Preview all colors × sizes, including the lid lift.
-  - Set price and status.
-- [ ] Theme and museum-item upload with preview — §15 #7
-- [ ] Daily overrides calendar — §15 #8
-- [ ] Export bundle, plus a headless `export_level_bundle` in tools — §15 #9, tools/README.md. Write through `LevelBundleCodec.encodeString` and apply `nesty_levels bundle check`'s checks; when bundling moves to a Firestore export, revisit BundlePolicy's M2 layout limits (Q36) and whether `tools/levels/` stays the source of the first levels — bundle report
-- [ ] Map every `LevelIssue` code and its args to ARB messages (the `field`/`expected` value sets are documented on `LevelCodec`, each code's args on `IssueCodes`, the generator's on `Generator.checkParams`) — §15, codec and generator reports
-- [ ] Step long core work with `await` so the admin page never blocks: `Solver.start(...).advance(n)` for rule 8 (exhaustive proofs take 2.3 s VM / 3.5 s dart2js, Q32), a stepped `Simulator` API (up to ~90 ms per 19-slot board in dart2js) and awaits between generated levels (up to ~350 ms each in dart2js); show every attempt with `Generator.buildAttempt` — §15, solver/simulator/generator reports
-- [ ] Re-check the admin generator's params against the design's 64 MB. Q33 was confirmed on 2026-09-26 as no cap for now; cap them or scale the budget if the admin hits it — design §5, review DETERMINISM-005
-- [ ] Admin level editor and playtest preview on `DebugBoardPainter`: an adapter from a nesty_core `Level`/`GameState` to `Map<String, DebugSlot>`, and bundle Fredoka (tag and badge text) or accept the fallback font — §15 #3, r3 report
-- [ ] A `nesty_levels tune` command (or an admin Generator feature) that hill-climbs a fixed skeleton (rows, tower positions and depths, empties, colors) toward a target tier by swapping nests and re-cutting sets; that is how L16–L30 were found — §6.5, §15, levels report
-- [ ] Publishing batch: bump `config/manifest.levelsVersion` and `publishedCount`, and renumber `order` — §15
-- [ ] Final security rules, including the Q20 gaps, with emulator-backed rules tests. The first Storage deploy must grant it Firestore access — §14.3, Q20, firebase/README.md
-- [ ] Orientation and colors in `apps/admin/web/manifest.json` — Q21
-- [ ] Swap `BundledUnlockSymbolRasterizer` for nesty_render's `SymbolRaster.rasterize(atlas, color, pixelsPerUnit: fs × dpr)` (the atlas cell 1:1, with its `FxRaster` scale and origin), removing the `TODO(M5)` in `apps/game/lib/core/services/skin/unlock_symbol_rasterizer.dart`, before the first locked levels (L31+) ship (moved from M2: no M2 level has a lock) — render and services reports
-- [ ] Author or generate levels 31–200 (chapters 1–10) and export the 200-level launch bundle. Follow the §3.7 schedule (locks at L31, ice at L51, maxSize 5 at L71, maxSize 6 from L121) and the §6.6 pattern — §7.1, §3.7, §13.4
-- [ ] Use `json_annotation` and `json_serializable`, or remove them — PROGRESS "Package reasons"
-- [ ] Acceptance walkthrough with the owner, on emulators or stg — §18 M5
-
-## M6 — Monetization — after M7 (D90)
-
-Acceptance (§18): every §9.1 pacing rule is unit-tested with a fake clock.
-Offline ad buttons fall back to coins correctly.
-
-- [ ] Put the AdMob App IDs in `Info.plist` and `AndroidManifest.xml` before adding `google_mobile_ads` (test IDs in debug) — PROGRESS "Notes for later milestones", CLAUDE.md rule 5
-- [ ] `AdMobAdsService` — §9.1, CLAUDE.md rule 5:
-  - Test unit IDs in debug; real ones through `--dart-define`.
-  - Preload one rewarded and one interstitial ad, and reload after each is shown and on reconnect.
-  - 3 s timeout.
-  - Drop `AppEnv.real` from the fake.
-- [ ] Interstitial pacing, with fake-clock tests (frame 2.10) — §9.1, §18 M6:
-  - None before level 8, then one every 3 wins.
-  - At least 90 s since any ad, and a 5-minute session grace.
-  - Off when `adsRemoved` is set.
-  - Only on Win → Continue.
-- [ ] Rewarded placements: booster popups (3.2, 3.3), out of moves +1 slot (3.5), win ×3 (2.8 → 2.9 "Reward added"), and the daily chest's "Double it" (5.6). M2 built `RewardedAdButton` (with its "Reward added" state) and `BoosterBadge.ad()`, both unused until then — §9.1, UI lane report
-- [ ] `GameplayBloc` listens to `SaveService.changes`, so a wallet change during a level (a rewarded booster, the Shop) refreshes the coins and the booster counts; today they refresh only on the bloc's own transitions — bloc report
-- [ ] Offline, ad buttons switch to coin prices (frame 3.7). With no coins the button is disabled with "Connect to watch an ad" (frame 3.8). A widget test uses a no-fill fake — §9.1, §18 M6
-- [ ] Home banner behind `home_banner_enabled` (default off), and no banner in gameplay — §9.1
-- [ ] `StorePurchaseService` (`in_app_purchase`): the 6 products, with receipts checked on the client. Drop `AppEnv.real` from the fake — §9.2
-- [ ] Shop Coins tab (7.1: Starter Pack and 3 packs; 7.2: thank-you) and No Ads tab (7.8) — §9.2
-- [ ] Remove Ads offer after the 3rd interstitial (frame 7.9, `remove_ads_offer_after_interstitials`), then Home without the tile and a toast (7.10) — §9.2
-- [ ] Restore Purchases in Settings, with a toast (frame 8.3) — §9.2, §17
-- [ ] UMP consent before ads start, where required (frame 1.2). The Privacy choices row re-opens it (frame 8.1) — §9.3, D19
-- [ ] ATT pre-prompt (8.5) and system prompt (8.6) after the first Level 3 win, with the purpose string in `Info.plist` — §9.3
-- [ ] Rate prompt (`in_app_review`) after the `rate_prompt_level` win, if the player hasn't failed in the last 3 levels (frame 8.7) — §10.2 #16
-- [ ] `adCounters` in the save: winsSinceInterstitial, lastAdAt, interstitialsShown — §13.3
-- [ ] `AdsService` calls `MusicService.pauseForAd()` before every interstitial or rewarded show and `resumeAfterAd()` in a `finally` when it closes; with the app's own trip to the background during an Android ad, the pause reasons don't double up — `TODO(M6)` in `music_service.dart`, audio A5
-- [ ] A completed purchase calls `JingleCues.reward()` — `TODO(M6)` in `jingle_cues.dart`, Q62
-- [ ] The respect rules hold for every ad and purchase surface (spec-prop §1.1):
-  - no offer shown because the player failed or got stuck, and no countdown or limited-time offer;
-  - the real-money price shown before the purchase flow, and no forcing an oversized coin pack (EU CPC key principles, March 2025);
-  - a test per placement.
-  - D92, brainstorm §5
-- [ ] Ads for players of unknown age: non-personalized by default, and whether to read Apple's Declared Age Range API (Q86). The game may be "likely to be accessed by children" whatever its rating — D92, brainstorm §1
-
-## M7 — Art and polish, plus the offline game: content, modes and engagement — in progress (started 2026-09-28, D90–D93, plan [plans/plan-m7.md](plans/plan-m7.md))
+## M7 — Art and polish, plus the offline game: content, modes and engagement — code complete 2026-10-05, acceptance waits on the owner (started 2026-09-28, D90–D93, plan [plans/plan-m7.md](plans/plan-m7.md))
 
 Acceptance (§18): matches the design screens, with no layout overflows on 5
 screen sizes. Most of the original M7 integration moved into M2 (D23).
@@ -548,29 +450,71 @@ file (m7 P4.3–P4.7), then the integrator and the device stage.
 - [x] Lane D, the daily and Settings: the reminder's steps and Settings' rows, the segmented Reduce motion, the rotation, "Open phone settings" (the native side), the streak's looks, the day-7 chest, the share text's owner; drop `PuzzleCard.onShare`; `integration_test/daily_states_test.dart` and `reminder_test.dart` — m7 P4.6, D188–D190 (`TODO(M7)` in `daily_page.dart`) (done 2026-09-30: lane D, D207; the daily, settings, reminder and system-settings suites and three overflow sweeps; `daily_states_test.dart` wired as `daily_states` (`chest`, `paused`, `settings`); `reminder_test.dart` updated)
 - [x] Lane O, the overlays: the win card and `ui_stars`, the helper note and the tip's deferral, the daily win card's Share, the chest moment, the splash's fade and error views, 12.5–12.9, relaxed mode, the tutorial, the intro loops, the ribbon, the toasts' scoped hosts; `integration_test/overlays_test.dart` — m7 P4.7, D187, D191, D194, D195 (done 2026-09-30: lane O, D208; the overlay, win card, chest, splash and HUD suites and their overflow sweeps; `overlays_test.dart` wired as `overlays`)
 - [x] The integrator: the new device files in `tools/scripts/nesty-test` and TEST_COVERAGE's rows, the playthrough's finder updates (copy.md m7-3 changed "Start race", "You win!", "Back to rivals", "Quit race", "Reminder time" and the Share button's place; `integration_test/playthrough_test.dart`, `reminder_test.dart`), "Follow-up after m7-3" in `claude-design-request-m7.md` (lead note 13: C7, C8, the splash glyphs, the toast colours, `textLink.pressed`, `shopOwned`) — m7 P4.2, lead notes 12, 13 (done 2026-09-30: D202; `nesty-test` step 6 and its `--only` names, docs/TEST_COVERAGE.md, the playthrough on m7-3 (analyze clean), "Follow-up after m7-3" written; `test_coverage_test` passes)
-- [x] The device stage: every new file and the playthrough on the iPhone 16 Pro simulator and the API 35 emulator, and `--android --only reminder` — m7 P4.10 (done 2026-09-30: D209: every check passes on both platforms, iOS run 9 and Android runs 1 and 2, plus the reminder check; `scratchpad/m7/reports/device-p4.md`)
+- [x] The device stage: every new file and the playthrough on the iPhone 16 Pro simulator and the API 35 emulator, and `--android --only reminder` — m7 P4.10 (done 2026-09-30: D209: every check passes on both platforms, iOS run 9 and Android runs 1 and 2, plus the reminder check; PROGRESS D209)
   - 2026-09-30 (phase 4 integrated, D202): `nesty-test --device-only` runs them all from fresh installs (`--only playthrough,resume,daily,board,race,meta,daily_states,overlays`); what each must show is in the integrator's report (`scratchpad/m7/reports/integrator-p4.md`)
 
 Left from phase 4 (the lanes' deferrals, 2026-09-30):
 
-- [ ] Fidelity audit: the tutorial scrim leaves the HUD and booster bar bright (frames 1.3, 10.8b), and the step chip touches the family counter — device run p4, D209
-- [ ] Fidelity audit: rival select's locked cards are invisible on the flat page (9.2), and the list's clipped edge under the pinned hint on 731 dp phones — device run p4, D209
-- [ ] Fidelity audit: the chest card's art box is about 80 dp taller than 10.3b, 10.3c and 5.6, so the closed chest floats low — device run p4, D209
-- [ ] Fidelity audit: Chapters opens with the current chapter at the top (10.4 shows the finished rows above it); locked cells' numbers aren't faded; "60 won" isn't right-aligned — device run p4, D209
-- [ ] Fidelity audit: the rest of D209's list (the paused strip's static "Thinking…", the iOS Share glyph, the coin pill's missing glow during the chest's flights, the splash dolls hidden until the skin loads) — `scratchpad/m7/reports/device-p4.md` §5, D209
-- [ ] design: Records' "Families completed" cell, its copy and glyph (`TODO(design)` in `records_page.dart`; Q159) — device run p4, D209
+- [x] Fidelity audit: the tutorial scrim leaves the HUD and booster bar bright (frames 1.3, 10.8b), and the step chip touches the family counter — device run p4, D209 (done 2026-10-01: F-TUT, D214: the tutorial overlay sits above the HUD and the booster bar, and Pause stays live through `IgnorePointer` (`gameplay_view_test`: the stack order, Pause under the scrim; `tutorial_overlay_overflow_test`). The frames' device comparison waits for the device run (5a-dev, blocked on disk: 16 GB free of the 20 GB floor).)
+- [x] Fidelity audit: rival select's locked cards are invisible on the flat page (9.2), and the list's clipped edge under the pinned hint on 731 dp phones — device run p4, D209 (done 2026-10-01: F-RS1 and F-RS2, D218: the locked card is `sunkFace` with the inset `sunkShadow`, on `CreamPage`; the list ends in a 16 dp `ShaderMask` fade only while it scrolls, with a 12 dp gap above the hint (`rival_select_page_test` at 411x731 with 1.3x text and at 390x844). The frames' device comparison waits for the device run (5a-dev, blocked on disk: 16 GB free of the 20 GB floor).)
+- [x] Fidelity audit: the chest card's art box is about 80 dp taller than 10.3b, 10.3c and 5.6, so the closed chest floats low — device run p4, D209 (done 2026-10-01: F-CH1, D215: a 200x130 art slot with the 200x200 canvas overflowing upward, the card top still 214 (`chest_reward_sequence_test`). The frames' device comparison waits for the device run (5a-dev, blocked on disk: 16 GB free of the 20 GB floor).)
+- [x] Fidelity audit: Chapters opens with the current chapter at the top (10.4 shows the finished rows above it); locked cells' numbers aren't faded; "60 won" isn't right-aligned — device run p4, D209 (done 2026-10-01: F-CHAP, D230: three folded rows stay above the open card (fewer on a short phone), locked cells take `lockedCellFace` and `lockedCellText`, and "N won" ends at the card edge (`chapters_page_test`, group "phase 5 fidelity"). The frames' device comparison waits for the device run (5a-dev, blocked on disk: 16 GB free of the 20 GB floor).)
+- [x] Fidelity audit: the rest of D209's list (the paused strip's static "Thinking…", the iOS Share glyph, the coin pill's missing glow during the chest's flights, the splash dolls hidden until the skin loads) — `scratchpad/m7/reports/device-p4.md` §5, D209 (done 2026-10-01: F-SPL, D210: the splash draws the fallback doll from the first frame and cross-fades (`splash_page_test`); F-CH2, D217: the coin pill and Hint badge rings and the trail dots (`reward_ring_test`, `chest_reward_sequence_test`, `gameplay_view_test`). The paused strip and the share glyph stay as built until Claude Design answers follow-up 8.6 and 8.7. The citation of the wiped scratchpad report is replaced by PROGRESS D209. The frames' device comparison waits for the device run (5a-dev, blocked on disk: 16 GB free of the 20 GB floor).)
+- [x] design: Records' "Families completed" cell, its copy and glyph (`TODO(design)` in `records_page.dart`; Q159) — device run p4, D209 (done 2026-10-04: m7-4's DELIVERY 8.5 answered it: "Families completed" with the family counter's doll mark; `meta-06-records` asserts the label and a `DollMark`, 5d-i)
 - [ ] design: where a capped win says why on a short phone, since the helper note has no room there (11.2d, C11) — device run p4, D209
 - [ ] Claude Design's answers to "Follow-up after m7-3" (`docs/plans/claude-design-request-m7.md`): the tokens, copy ids, screen-reader strings and looks to confirm; take `nesty-design-m7-4` through the import checks — integrator, lead note 13, D202
 - [ ] Rows of 5 and 6 with tall pieces: a tall case, its ice and a row of 6 are undesigned (the case is capped at the pitch − 2 dp, a 96-wide ice can overlap a neighbour by up to 2.4 dp), and `fourShelves` has no glass or ice sizes — lane B, `TODO(design)` in `board_geometry.dart`, `board_layout.dart`, `shelf_presets.dart`; follow-up §5
-- [ ] Device check of the board's short motions: the empty stand's dip, the padlock ping, the tag pop and the hover glow (16–240 ms). `board_layouts_test` polls their tweens and shoots before and after — lane B, the device stage
-- [ ] The relit twinkles (10.7b) on the daily win card: `StreakCard(relit:)` is built, the two `fx_twinkle` sparkles aren't placed — lanes D and O, follow-up §4.17
-- [ ] 12.6's failed card over the theme art only; the board stays dimmed behind it today — lane O, follow-up §4.13
+- [x] Device check of the board's short motions: the empty stand's dip, the padlock ping, the tag pop and the hover glow (16–240 ms). `board_layouts_test` polls their tweens and shoots before and after — lane B, the device stage (done 2026-10-05: `board_layouts_test` passes on the iPhone 16e and the Android emulator in the `/milestone M7` gate, its polls and before/after shots included)
+  - 2026-10-01 (phase 5A): `board_layouts_test` polls and shoots them; the run has not happened (disk).
+- [x] The relit twinkles (10.7b) on the daily win card: `StreakCard(relit:)` is built, the two `fx_twinkle` sparkles aren't placed — lanes D and O, follow-up §4.17 (done 2026-10-01: F-REL, D228: `DailyStreakCard` places two `fx_twinkle`s at (+44, -6) and (+52, +4), 22 and 14 dp, with the `relitGlow` spread (`win_chapter_card_test`). The sizes are the build's choice (follow-up 11.3).)
+- [x] 12.6's failed card over the theme art only; the board stays dimmed behind it today — lane O, follow-up §4.13 (done 2026-10-05: recorded by design, DELIVERY Choices 4.13 (5f-fj-2: f9-3f, f12-6 "by design"))
 - [ ] The chest flights' gold ring on the coin pill and their 6 dp trail dots, once Claude Design gives the values — lane O, follow-up §1.7
+  - 2026-10-01 (phase 5A): the ring and the trail dots are built from the frame 10.3d estimate (D217, `TODO(design)` FU 1.7 in `reward_ring.dart` and `reward_flight.dart`); left: Claude Design's values.
 - [ ] The family counter's hug with a width-free pill (the file's 70 dp pill scales 0.9–1.2 today) — lane O, follow-up §4.14
 - [ ] The chapter ribbon: frame 4.7's two-line plate, or named fills on `ui_chapter_ribbon` to recolour it exactly (a colour matrix tints it today) — lane O, `TODO(design)` in `ribbon_tint.dart`; follow-up §4.15
 - [ ] 12.5's reduce-motion spinner: a still frame 0 today; the proposal's slow pulse isn't specced — lane O, follow-up §4.17
-- [ ] Drop `DailyCubit.share` and its `ShareService` constructor argument (the solved card has no Share since D188) once the contract tests stop building it with five arguments — lane D, D207
-- [ ] A way to turn a blocked reminder off in the app, if the owner wants one (Q158) — lane D, D207 (owner)
+- [x] Drop `DailyCubit.share` and its `ShareService` constructor argument (the solved card has no Share since D188) once the contract tests stop building it with five arguments — lane D, D207 (done 2026-10-01: B-SHARE: `DailyCubit.share` and its `ShareService` argument are gone; the contract, cubit, page and overflow tests and `di.config.dart` are updated.)
+- [x] A way to turn a blocked reminder off in the app, if the owner wants one (Q158) — lane D, D207 (owner) (done 2026-10-04: the owner said "Build it" on 2026-10-01; the blocked row has a Turn off link (10.2f) and 10.2h's Off row, D244; `faults reminder_denied` asserts the link's 48 dp and `f_settings_turned_off`, passed on both platforms in 5d-dev)
+
+### Phase 5, m7-4: the device run and its fixes (2026-10-04, D235–D258)
+
+Evidence: PROGRESS "Phase 5, m7-4" and its Verification; the audit is
+`build/m7-p5/reports/5d-aud.md`, the re-judge `5f-fj-1.md`.
+- [x] Wire Claude Design's m7-4: tokens v4, `ui_rival_react` and `ui_museum_idle`, chapters 7–10's board wood, copy.md m7-4 in the English ARB, the game's and the menus' answers — m7-4, D235, D241–D245 (done 2026-10-04: four lanes and 5d-i; the device steps re-shot or added; 5d-dev's run passed after its fixes; the 5f run's reruns are pending, see PROGRESS Verification)
+- [x] The TalkBack pass on the API 35 emulator — D224 (done 2026-10-04: `talkback.sh`'s 4th run, scenarios race, race_loss, game, meta: 26 of 36 screens match node for node, the other 10 expected; T1 fixed, D249; T2 recorded, Q171; the verdicts are at the top of `reports/talkback.md`)
+- [x] T1: a toast stays up 10 s while a screen reader is on — TalkBack pass (done 2026-10-04: D249, `toast_geometry_test` "T1")
+- [x] Fidelity: the wordmark's doll over the "e", frames 1.1, 10.8, 12.10 — 5d-aud (done 2026-10-04: 5f-fj-1 judged f1-1 and f12-12 fixed; D251, `splash_page_test`)
+- [x] Fidelity: the tutorial tip's tail, frames 1.3 and 10.8b — 5d-aud (done 2026-10-04: 5f-fj-1 judged f1-3 and f10-8b fixed; D255)
+- [x] Fidelity: the Daily page's lit streak card face, frame 5.5 — 5d-aud (done 2026-10-04: 5f-fj-1 judged f5-5 fixed; D247, `streak_card_test`)
+- [x] Fidelity: the Museum's cabinet and next chip, the skin detail's gaps, frames 6.1b and 7.4 — 5d-aud (done 2026-10-04: 5f-fj-1 judged f6-1b and f7-4 fixed; D248)
+- [x] Fidelity: rival select's locked ring, the portrait's inner ring, the versus pause rows and the leave card, frames 9.2, 9.6, 9.7, 9.7b (iOS) — 5d-aud (done 2026-10-04: 5f-fj-1 judged f9-2, f9-6, f9-7 and f9-7b (iOS) fixed; D250, D253)
+- [x] Fidelity: the chest card's art size, frames 10.3b and 10.3c — 5d-aud (done 2026-10-04: 5f-fj-1 judged f10-3b fixed and f10-3c fixed with a small residual; D255, `chest_reward_sequence_test`)
+- [x] Fidelity: Out of Moves' Undo row, frames 10.9b and 12.8 — 5d-aud (done 2026-10-04: 5f-fj-1 judged f10-9b and f12-8 fixed; D252)
+- [x] Fidelity: the win card's stars frames 11.2b, 11.2c, 11.3, 11.4, 11.4b — 5d-aud (done 2026-10-04: 5f-fj-1 judged them fixed or matched; the shots are at the empty-stars instant)
+- [x] The 16 unread ARB keys m7-4 added: wired, or retired with their reason — 5d-i (done 2026-10-04: D257, `arb_keys_m7_test`; only the 11 short forms stay unread, 5B's)
+- [x] The frames the reruns re-shot (f2-3, f2-4, f2-5, f2-6, f6-1c, f8-4, f10-8 on Android, f9-7b on Android, the daily and settings shots) judged — 5f-fj-2; M7 (the reruns are pending, the lead appends the verdicts) (done 2026-10-05: the verdicts are in `build/m7-p5/reports/5f-fj-2.md` (30 frames; reruns green); the gate re-judges the residuals in 5C)
+- [ ] Versus ribbon: the `ui_win_ribbon` band is 336 dp where frames 9.4 and 9.5 draw a ~290 dp body (f9-4, f9-5 still differ); only a new Lottie fixes it — Claude Design request 12.1; M7
+- [x] E13 on a warm Android emulator: 10,025 ms in the 5f run (5d-dev: 3,906; iPhone 2,483 then 3,169), probably a freshly booted emulator; the playthrough rerun re-measures it — M7 (the lead appends the number) (done 2026-10-05: 6,569 ms on a warm emulator with the host quiet (`noisy` false: levels check 590 ms against 550), alone after every other run; the gate's 12,150 ms was a busy host (2,496); iPhone 3,700 ms; `runs/gate-android-quiet`)
+  - 2026-10-05 (5f-startup, 5f-e13): no app regression. The rise followed the host-speed control (`levelsCheckMs`, r = 0.90 over 14 launches) on a busy host, and the new fonts cost nothing measurable; E13 is now timed by a 4 ms in-app poller and its record carries `levelsCheckMs`, `quietLevelsCheckMs` and `noisy`. The warm-emulator number is still the lead's to append
+- [ ] The frame-only colours still in `AppColors` with `TODO(design)` (the lit streak card's peach, the spotlight panel, `cabinetDrop`, `rowDash`, `segmentedTrackShade`): add them to tokens.json, then move the call sites; asked in "Follow-up after m7-3" §11 — D244, lane M
+- [ ] design: m7-4's device-run asks to Claude Design, "Follow-up after m7-3" §12 (the ribbon band, the chest's rays, the badge toast's second line, 9.7b's Computer tag, the splash's arch, the Restart glow, the Museum all-home badge, the modals' anchor) — 5d-aud C, 5f-fb, 5f-fj-1; each ships its default
+- [ ] The toast over the win ribbon on screens under about 800 dp, and "Selected" on a picked rival card (Q171, Q172), and the owner's sign-off on the by-design pairs (5d-aud D lists) — D250; M7 (owner)
+- [x] The English freeze for 5B and the translations' integration (5B-5 and after) — D240, `prompts/5b-integrate-additions.txt`; M7 (done 2026-10-05: the English freeze is 5b-copy's sha256 `1162e29f…`; the nine ARBs integrated by 5b-int, phases A, B1 and B2; D261–D267; the device run's results are pending, the lead appends them)
+- [x] 5B's device run (`nesty-test --device-only --only locales,board,meta,faults,playthrough`, iPhone 16e and Android at 390x844, `build/m7-p5/runs/5b.status`): **pending (the lead appends the results)**, with the fidelity re-shoots 5f-fix2 lists: `b_05_family_complete`, `meta-02-chapters`, `meta-05b-museum-modal`, `01b3_museum_locked_modal`, `f_splash_storage`, `f_splash_content`, `00b_splash_loaded` (now in `faults`) and the skin detail shot (Forest Bear, f7-4b) — 5f-fix2, 5f-e13; M7 (done 2026-10-05: the 5B run stopped on iOS (`objective_c.framework`, stale native assets after an iOS release build); after a `flutter clean`, the `/milestone M7` gate's device stage covered it: locales, board, meta, faults and the playthrough pass on both platforms, with the reruns in PROGRESS "Phase 5, 5C")
+- [x] The visual review of the locales' screenshots (`l10n-<code>-NN_<screen>`) and the E13 re-measure on a warm Android emulator, after the device run — 5B; M7 (the lead appends) (done 2026-10-05: 94 shots (de, hi, ja on both platforms) all ok, ja's "DAY" and "NEW" being the translation review's choices (`reports/5c-loc-*.md`); E13 re-measured as the item above)
+- [ ] design: Fredoka at the pin lacks the Turkish ğ Ğ İ ş Ş (and ₹), so Turkish display text falls back to Nunito mid-word; the coverage test passes because the fallback chain covers them. Ask Claude Design for a Fredoka build with Latin Extended-A, or the owner picks another face (`TODO(design)`; "Follow-up after m7-3" §13) — 5b-fonts, D262; M7
+- [x] Per-locale tuning of the Shop's tall-script slack (a flat +2 dp today) and the Hindi and Japanese line heights, if the device run shows a clip — 5b-om, D263; M7 (done 2026-10-05: not needed; the gate's 94 locale shots (de, hi, ja on both platforms) show no clip (`build/m7-p5/reports/5c-loc-*.md`))
+- [x] After a new kanji lands in `app_ja.arb` (or any Japanese copy), rerun `gen_font_subsets`, `tools/fonts/build_fonts.sh` (needs the network) and `--verify`; the font coverage test fails until then — 5b-fonts, D262; M7 (done 2026-10-05: a standing procedure, written in `.claude/rules/l10n.md` ("A new Japanese kanji needs `gen_font_subsets`, then `tools/fonts/build_fonts.sh`") and enforced by the font coverage test)
+- [ ] A VoiceOver and TalkBack pass in German, Hindi and Japanese on a phone whose own language differs (a German game on an English phone is read with an English voice; Flutter sets no per-node locale here) — 5B risk 9; the owner (join the checklist [plans/voiceover-checklist.md](plans/voiceover-checklist.md))
+
+### Phase 5, 5C: the review and the gate (2026-10-05, D271)
+
+- [x] `/review` with the security scanner and the ethics lens, and its verified findings fixed — `build/m7-p5/reports/5c-*.md`, PROGRESS "Phase 5, 5C"; M7 (done 2026-10-05: security clean, no P0, 10 code findings fixed, the es/pt/ja "computer rival" wording)
+- [x] The race strip keeps the word "Computer" at 360 dp and up: the dots, then the state line give way (`_StripRoom`), and `computer_word_test` checks 9 locales at 360 and 390 dp, 1.0× and 1.3× — 5c-eth P1, D271; M7 (done 2026-10-05)
+- [ ] design: the race strip's two new forms, the count without dots (a long name, or above 8 families) and the tag on the second line in place of the state line (a long name at 360 dp or 1.3× text). Ask Claude Design to draw them with frame 9.3 (`TODO(design)` in `rival_strip.dart`; "Follow-up after m7-3" §14) — D271; M7
+- [x] Look at the strip's count-only and two-line forms, the Home vs Computer tile and the race Pause header in es and ja at 1.3× on a device — 5c-fix; M7 (the locale screenshots of the gate's device run) (done 2026-10-05: ja on both devices at 1.0× shows the word on every rival surface (`5c-loc-*`); es and 1.3× are checked on the host, readable, uncut and with the word (`computer_word_test`, the overflow suite in gate mode); how the two new strip forms should look is Claude Design's §14)
+- [x] The `/milestone M7` gate (`build/m7-p5/bin/m7_gate.sh all`: host, the four builds, `nesty-test --device-only` on iOS and Android from fresh installs, which also runs the 11 English-pinned checks for the first time): **pending (the lead appends the result)** — M7 (done 2026-10-05: host, the four builds and both devices pass, with the reruns of the test fixes; PROGRESS "Phase 5, 5C")
+- [x] The loss card's `ui_rival_react` `win` hop with confetti (9.5): keep as designed (default), play `idle` or the `lose` nod, or ask Claude Design for a gentler segment — 5c-eth P1, Q183; M7 (owner) (done 2026-10-05: the owner keeps it as designed, D273)
 
 ### Offline content (D90)
 
@@ -592,7 +536,7 @@ Left from phase 4 (the lanes' deferrals, 2026-09-30):
 - [x] The glass (L31) and ice (L51) intro cards, the museum figurines 3–10, chapter complete and the chapter ribbons play through chapters 2–10 offline (a playthrough segment per new mechanic) — §3.7, §7.2, D90
   - 2026-09-28: the device run passed on the iPhone 16 Pro simulator and the API 35 emulator (device stage): L16's towers card (4.1), L31's glass card (4.2) and case, L51's ice card (4.3) and shatter, L71's size 5, L130's size 6 and its chest, L200 into chapter 10 complete and All Levels Done; the Daily runs after L31, so each schedule level shows its own card
 - [ ] The owner plays the ten flagged levels (L31, L51, L71, L130, L40, L60, L81, L160, L170, L200), then L131 and L132, and the H/S table, and names any to re-tune (casual 0/300 on L200; smart 75 % on L60) — levels lane report and its review fixes, brainstorm §4 "Human review", Q107 (owner)
-- [ ] Chapter themes 7–10: the art once Claude Design delivers it (chapters 7–10 reuse ch01–ch04 today, `themeIds[(N - 1) % 6]`, Q38), their Shop theme cards and prices, and real thumbnails on every theme card — §7.4, §12.4, frame 7.7, D90
+- [x] Chapter themes 7–10: the art once Claude Design delivers it (chapters 7–10 reuse ch01–ch04 today, `themeIds[(N - 1) % 6]`, Q38), their Shop theme cards and prices, and real thumbnails on every theme card — §7.4, §12.4, frame 7.7, D90 (done 2026-10-01: the art (D176), `ChapterTheme` ch07–ch10 with their palettes (D199), the crops on every theme card (D206), and the prices at Q156's default 2,000; the owner's own prices stay Q156)
   - 2026-09-30 (phase 4, m7 P4.1, P4.5): the art is synced (D176), `ChapterTheme` has ch07–ch10 with their palettes, and each chapter takes its own theme (D199); ch07–ch10 sell at 2,000 each until the owner prices them (Q156). Left: lane M's thumbnails (A.4) and the owner's prices
   - 2026-09-30 (phase 4 integrated): lane M's theme crops are on every theme card (`ThemeThumbnailLoader`, D206). Left: the owner's prices (Q156)
 - [x] The catalog copy the design doesn't supply: figurine names 4–10 and 9 flavor texts, 5 skin descriptions, chapter names 7–10 (Q73), from Claude Design, approved by the owner — §7.2, §7.4, D90 (done 2026-09-30: copy.md G.1–G.4 in the ARB, C4b, D196; final, D198)
@@ -661,8 +605,6 @@ proposed for the owner to add to GAME_SPEC.md; Claude never edits it.
   - owner D169
   - 2026-09-30 (phase 4, m7 P4.3–P4.7): each lane's new device file closes its part: `board_layouts_test`, `race_loss_test`, `meta_screens_test`, `daily_states_test` (with `seedSave`) and `overlays_test`. What a lane can't make reliable stays here with its reason
   - 2026-09-30 (phase 4 integrated): every part has its device step in `nesty-test` (D202): gameplay (undo past the free ones and soft-stuck in `overlays_test`, relaxed undo in `daily_states_test settings`, the 10th bonus chest in `overlays_test`); Settings (`daily_states_test settings`); Shop (`meta_screens_test`: buying Forest Bear, using ch07); Daily (`daily_states_test chest` and `paused`); race (`race_loss_test`). Left: their device runs; what a run can't make reliable stays here with its reason
-- [ ] Local player vs player (pass-and-play on one device), if the owner wants it offline: a proposal after vs Computer (the basis: alternating turns on one board, a family scoring for whoever completes it; brainstorm §6) — D90
-  - 2026-09-29: the proposal is written, with no code: [plans/pass-and-play-proposal.md](plans/pass-and-play-proposal.md). It sets out three rule options for the owner to pick from (a shared board with alternating moves, the same board one player after the other, or co-op), how each fits the respect rules, what each reuses, a rough effort, and eight open questions. Next: the owner's answer
 
 ### Engagement (D92)
 
@@ -753,6 +695,7 @@ before it's merged, and its lane report records the answers.
   - 2026-09-28 device run: the iOS simulator 2,349 ms to playable and 2,609 ms to level 1 alone on screen (from `main()`); the API 35 emulator 3,582–17,336 ms, too variable to use; both times in `e13.json` beside the screenshots and in `nesty-test`'s E13 row; left: the owner's seconds (Q114).
   - brainstorm §3, D92
   - 2026-09-28: the playthrough reports it (`NESTY_E13`, `playthrough.json`; `nesty-test` prints it), from `main()` to L1's first playable frame, with no screen in between (D123, Q114); left: a device run and the owner's seconds
+  - 2026-10-05 (the `/milestone M7` gate): iPhone 16e 3,700 ms; the warm emulator 6,569 ms (not noisy); main() to level 1 playable, no screen between (E9 passes on both). Left: the owner's seconds on a physical phone
 - [x] E14, reduce motion in Settings: on, off or system, with sounds and haptics at full strength. It feeds `FxDrawableParams.reducedMotion`, which follows the OS today — spec-prop §16, §16, D92 (done 2026-09-28: the `reduceMotion` setting, D99; the app root's `MediaQuery` override, D108; the Settings row and its three-way sheet; the board swaps its `MotionSpec` mid-level)
 
 ### Star rating (owner 2026-09-28, D125)
@@ -817,9 +760,6 @@ stand-ins ship until Claude Design's section K lands.
   - 2026-09-29: the integrator's steps are in m7 P3.13 (L1 at 3★, the L1 replay in 4 moves at 2★ with the target line and no "New best!", Chapters keeping 3★, Records' "Stars"), with the share and offer screenshots of E3 and E4
   - 2026-09-29: written (D161): `06a_win_stars` (L1's 3 stars), Chapters' "Level 1, won, best 2 moves, 3 of 3 stars" (`01h_chapters`), the replay `r0c2>r0c1 r0c1>r1c2 r1c2>r0c0 r1c1>r0c0` checked with `Rules.tryMove` ("Moves 4 · Best 2", 2 stars, "3 stars at 3 moves or fewer", no "New best!", `levelStars` still 3; `01j_replay_win`), Chapters keeping 3★, Records' "3/600" (`01k2_records_stars`). Left: the device run (the phase-3 device run item above)
   - 2026-09-29: run on both devices, all PASS (D162)
-- [ ] Before release, a levels-tool report of the smart and casual bots' star shares per chapter at the default slack, so the owner can tune the two keys — star-rating.md
-  - 2026-09-29: `nesty_levels report --stars` is stars-core's (m7 P3.3); left after it: the owner reads it
-  - 2026-09-29: built (D157); at 20/60 over all levels, the casual bot's wins are 24.0 / 47.9 / 27.9 % at 3★/2★/1★ and the smart bot's 98.6 / 1.3 / 0.0 %; the per-chapter table is in `tools/levels/README.md` "Par and the star shares". Left: the owner reads it and tunes the keys
 - [x] The replay card's line about the hint or +1 Slot cap, if design request K.4 asks for one (nothing is built for it today) — stars-ui, Q145, design request K.4 (done 2026-09-30: lane O: the helper note on `starsCapped`, which wins over the tip (`win_overlay_test`); D191, D208)
   - 2026-09-30 (phase 4, m7 P4.7): copy.md G.11's `starsHelperNote`, shown on `GameplayState.starsCapped` (Q145 answered, D191). Left: lane O draws it
 - [x] Phase 3's stand-ins, each with `TODO(design)`, against Claude Design's delivery: the painted star (K.1, K.6), the reveal and its clack cues (K.3), the offer card and the Settings reminder rows (I.2), the time picker (I.2 leaves it open), the Share and reminder glyphs (none in the subset, I.10), the Android notification icon traced from the doll art (I.2 "Delivery") — m7 P3.7, P3.9, P3.10, design request K, I.1, I.2, I.10 (done 2026-09-30: lane O's star art and `ui_stars` reveal, lane D's reminder dialog, Settings rows and `notificationAccent`, `IconUses` for the Share and reminder glyphs, the generated notification icon (C4a); the platform time picker stays, as I.2 leaves it open; D188, D190, D191, D207, D208)
@@ -851,6 +791,9 @@ stand-ins ship until Claude Design's section K lands.
   - 2026-09-30 (phase 4 integrated): wired into `nesty-test` (`--only daily_states`, scenario `chest`, `NESTY_FAKE_DATE`). Left: its device run
 
 - [ ] Fidelity pass, screen by screen, against every App Flow frame (01–08) with `ui-designer`, then owner sign-off — §18 M7
+  - 2026-10-04 (m7-4 device run): the audit of 123 pairs (5d-aud) and its fixes are done (D247–D258); 5f-fj-1 re-judged 31 frames (20 fixed, 8 by design, 2 still differing, 0 regressions). The owner's sign-off on the by-design pairs (5d-aud's D lists) is still open. See "Phase 5, m7-4" below.
+  - 2026-10-05: 5f-fj-2 judged the reruns' frames; the `/milestone M7` gate re-shot the 16 frames still open and 5c-rj judged them: 15 fixed, f2-6 by design, none still differing (`build/m7-p5/reports/5c-rj.md`). E13's warm-emulator number is 6,569 ms. Left: the owner's sign-off (Q161)
+  - 2026-10-01 (phase 5A): 5A built the fixes of the scene-CSS audit (D211–D219, D229–D231): the cream page, the headers, the locked looks, the type pass and the Museum, Records, Shop and Settings, each with a host test; the device comparison against all 116 in-scope frames (`pairs.txt`, `pair.mjs`) has not run, because 5a-dev stopped on disk. Left: that run, the audit and its fixes, then the owner's sign-off (Q161).
 - [x] Home's shelf after a skin equip: `ShowcaseDolls` keys its art on the pixel ratio and the symbols mode, not the skin, and nothing tells it about `SkinService.selectSkin`, so after an equip in the Shop the Home shelf keeps the old skin until the app restarts (found by reading the code while fixing D91; not yet seen on a device) — §7.4, D58, D91 (done 2026-09-28: `ShowcaseDolls` follows `SkinService.selectedSkinChanges`, D109; `showcase_dolls_test.dart`)
 - [ ] Tune the haptic patterns, including the multi-pulse success, on real devices (moved from M3: it needs the owner's hands on real phones; `TODO(M7)` in `system_haptics_service.dart`) — §11.2, PROGRESS "Notes for later milestones"
 - [x] The Daily puzzle card's preview: draw the chapter background under its plank (NestyMenus isDaily, `backgrounds/ch3-seaside-market.svg` at center 42%/cover). `SkinService.background` is the one full-screen raster, so it needs a small per-card theme raster (`TODO(M7)` in `features/daily/widgets/puzzle_card.dart`) — frame 5.1, M3 review FIDELITY-2 (done 2026-09-28: `DailyBackgroundLoader` and `DailyThemeBackground`, the menus lane; `daily_background_loader_test.dart`)
@@ -858,21 +801,20 @@ stand-ins ship until Claude Design's section K lands.
 - [x] A restored out-of-moves board whose intro card was never dismissed shows the card over the reopened sheet, whose rows wait for "Got it" (`TODO(M7)` in `gameplay_view.dart`) — M3 review CORRECTNESS-1 follow-up (done 2026-09-28: the sheet waits for the card, the gameplay-ui lane; `gameplay_view_test`)
 - [x] Overflow tests on small Android, standard phone, tall phone, small iPhone and iPad portrait, at 1.0× and 1.3× text — §18 M7, §16 (done 2026-09-28: `test/overflow/`, 21 files over `overflowScreenSizes` × `textScales`, D121; every screen and overlay, the real Chapters and Records grids, the chest modals open and closed, the win card variants, the new Settings rows and the Daily states, paused included)
 - [ ] Sweep the fully navigated bottom-nav shell (Home under the real router) for overflow at the five sizes, beside today's chrome-and-`HomeView` sweep, if Q112 says so — overflow lane report
-- [ ] Animation polish: tune by feel each clip's playback speed (never the JSON), the hand-coded tweens of lottie §9 (`TODO(M7)`), the wobble snap into `doll_move` (settle it before the move), an animated undo (`BoardResetEffect(undo)` cuts today), re-placing the clips in flight during a +1 Slot re-pitch, the coin count-up (700–1300 ms) guess, and the intro-card loops. The tower reveal's drop now comes from `doll_reveal` (D60) — §11.1, lottie §7, §9, timeline report
+- [x] Animation polish: tune by feel each clip's playback speed (never the JSON), the hand-coded tweens of lottie §9 (`TODO(M7)`), the wobble snap into `doll_move` (settle it before the move), an animated undo (`BoardResetEffect(undo)` cuts today), re-placing the clips in flight during a +1 Slot re-pitch, the coin count-up (700–1300 ms) guess, and the intro-card loops. The tower reveal's drop now comes from `doll_reveal` (D60) — §11.1, lottie §7, §9, timeline report (done 2026-10-01: dispositions: each clip's playback speed is pinned by `fx_playback_speed_test` and the files stay untouched; the §9 tweens match `tokens.json` (the invalid shake, the re-pitch) and the clips in flight follow a re-pitch (`board_hot_path_test`); the coin count-up is `stars.startMs` minus the coins' start, 600 ms (D220); the intro loops are in (D208); the animated undo flies back (D221, D227, `board_timeline_undo_test`); the wobble snap into `doll_move` stays as built, since the design has no settle before a move (follow-up 11.2); the haptic patterns equal `tokens.haptics` and their feel is the owner's)
 - [x] Swap in the designer's Lottie re-export when it arrives (done 2026-09-27: Claude Design v3, imported in the post-M2 round, D59, D60) — re-export, lottie §18, D43:
   - re-sync (`sync_design_assets`) and regenerate `fx_spec.gen.dart` (`gen_fx_spec`). Any change to a length, a marker, the canvas or a hook fails validation until `tools/lib/src/fx/lottie_contract.dart` is updated, and its test also reads LOTTIE.md, so LOTTIE.md must agree;
   - before any lottie upgrade, rerun `fx_compensation_test`, `fx_travel_test` and `fx_workarounds_test`: they pin lottie 3.6.1's internals;
   - remove each workaround whose cause is fixed (hold fix, padlock hide, settle ramp, reveal silhouette hide, animated-scale callbacks);
   - keep the equivalence tests green.
-- [ ] Tabular figures for coins and counters. Fredoka's digits are proportional and it has no `tnum` feature, so `AppTextStyleTokens.number`'s `FontFeature.tabularFigures()` does nothing (Nunito's digits are already fixed-width). Build the approach the owner picks (Q29) in `NestyNumberText` (`TODO(M7)` there and in `app_text_styles.dart`) (moved from M2: the approach waits on the owner) — design/README.md "Typography & icons", tokens.json `fontSize.number.tabular`, tools/fonts audit
 - [x] +1 Slot plays `button` twice: the booster's tactile feedback and the timeline's `ExtraSlotAddedEffect` cue (m2-lottie-design §7 lists the cue). Keep one — review fix pass (done 2026-09-28: the timeline's cue is gone, D116, Q110; `board_timeline_boosters_test`)
 - [x] Final audio: replace the placeholder WAVs, normalize levels, re-check the clack pitch offset, and add the music loops (done 2026-09-27: the SFX v2 WAVs baked at 0 semitones, the two OGG loops and three jingles, D61) — §11.3, D19, services report
 - [ ] Final mix by ear on a mid-range Android and an iPhone: `SfxMix.gains`, the music's 0.5 and the ducks, the jingles over ducked music. The worst realistic stack has about 0.14 dB of headroom: keep the cues staggered, and turn on SoLoud's limiter only if clipping is heard — audio plan §2 "Clipping", audio audit §5
-- [ ] Optional: keep Nesty's music off while another app plays audio (iOS `secondaryAudioShouldBeSilencedHint`) — Q61, audio plan
 - [x] The `ui_extra_slot` loop starts at its rest pose (96 %, 75 % opacity) when the 300 ms re-pitch ends, after the static pad drew the stand at 100 %: a small pop. Start it at frame 24 (100 %) or fade it in — lottie lane report, `board_pieces_l9_test.dart` (done 2026-09-28: it starts at frame 24, `FxTiming.extraSlotRestFrame`, D116)
 - [x] The `ui_extra_slot` loop's opacity is still about 88 % at frame 24 (its opacity ramps on a slower curve than its scale and reaches 100 % near frame 44): a smaller pop than before. Take Claude Design's E.21 or crossfade it in, with the animation polish pass — board-fx report, Q111, `board_pieces_l9_test.dart` (done 2026-09-30: lane B: the loop starts on the `rest` marker (frame 0, the static pad's pose), settles and stops under a doll and restarts when empty (`board_pieces_l9_test`); D184, D204)
   - 2026-09-30 (phase 4, m7 P4.3): m7-3's file rests on frame 0 (the `rest` marker; D178, D184). Left: lane B
-- [ ] Device check: the gameplay skin lands within the route transition (`prepareForLevel` starts on the board's first layout; placeholder dolls show until it lands) — screens report
+- [x] Device check: the gameplay skin lands within the route transition (`prepareForLevel` starts on the board's first layout; placeholder dolls show until it lands) — screens report (done 2026-10-05: iPhone 130 ms with the route done at 422 ms; the warm emulator 659 ms with the route done at 660 ms, so it lands inside the transition, which the emulator runs slower than its 400 ms)
+  - 2026-10-01 (phase 5A): the playthrough records `skinLand` (`skinLandMs` from the tap on "Play level 2" to the skin on the board); 5a-dev judges it against 400 ms once the run happens.
 - [x] Integrate chapter themes 7–10, per-theme shelf and stand art, and `palette` accents once supplied — §12.4 (done 2026-09-30: ch07–ch10 and every palette in `ChapterTheme`, D199; per-theme shelf and stand art is not needed, every theme shares the wood (DELIVERY A.5))
 - [x] Importing a Claude Design delivery (phase 4) (done 2026-09-30: `nesty-design-m7-3`, the whole round, passed every check below and is in `design/`, copied at the owner's request, D171). The request's "Delivery: the download folder" fixes the format:
   - check the folder against it: the layout, the names, `DELIVERY.md`, the SVG subset, every sound named in `tokens.json`, and every Lottie with its LOTTIE.md row;
@@ -888,9 +830,8 @@ stand-ins ship until Claude Design's section K lands.
 - [ ] `shopOwned` ("Owned", read to a screen reader after an owned skin card's name) is a stand-in that the design request's copy list doesn't name: ask Claude Design for it with the next copy request, or confirm "Owned" — M7 review R14
   - 2026-09-30 (phase 4): `shopOwned` ("Owned") is not in copy.md m7-3 either; ask in the next Claude Design copy request
   - 2026-09-30 (phase 4 integrated): asked in `claude-design-request-m7.md` "Follow-up after m7-3" §2.1
-- [ ] Translations: es, pt-BR, id, hi, de, fr, tr, ja — §16
+- [x] Translations: es, pt-BR, id, hi, de, fr, tr, ja — §16 (done 2026-10-05: nine catalogs, the script fonts, the fit, the language sheet and the locale tests, D261–D267; the device run's results are pending)
 - [x] The Flame board's "+N" tower tag and the ice badge's digits through ARB, with the locale's text direction, handed to `SlotDecor` when the board is built (`TODO(M7)` in `slot_decor.dart`). Every launch language writes "+3" the same way today — §16, review PERF-RULES-3 (done 2026-09-28: `BoardLabels` from `boardTowerHidden`/`boardIceCount`, D116; `slot_decor_test`, `board_tree_test`, and `gameplay_view_test`'s non-English label)
-- [ ] A silent load-time catch-up that writes `museum`/`museumCollected` for a chapter whose levels are all won (like the badges' grant on load), so the stored Museum agrees with the one the screens derive (D118) — menus lane report
 - [x] Accessibility audit: semantics labels, 48 dp targets, reduced motion, large symbols — §16 (done 2026-09-29: rounds 1 and 2 of the M7 review pass together cover every screen and overlay, and every fix is in except screen-reader play on the board, which is the owner's call (R12, Q154, the item below); D165)
   - 2026-09-29 (M7 review pass, D164): the ui lens audited the M7 surfaces (Chapters, Records, rival select, the race board and rival strip, the race action bar, the race win and loss cards, the milestone and day-7 chests, `StarRow`, the reminder offer and its Settings rows, the board decor; the table is in PROGRESS "M7 review pass"). One failure, fixed: the race win and loss cards now read "Rival N, Computer" (R1). Left: the pre-M7 screens (splash, Home, Daily, the Museum, the Shop, Settings' other rows, the gameplay HUD and booster bar, the win, out-of-moves, pause, tutorial and intro overlays, the dev level picker); a text-scale check of Records, the race action bar, the race cards and `StarRow`, which the audit didn't run on its own; and a VoiceOver and TalkBack pass on a device, since a host test proves the semantics tree, not what a reader says
   - 2026-09-29 (M7 review pass round 2, D165): the a11y lens audited every pre-M7 screen and overlay and ran the four text-scale checks (the per-screen table is in PROGRESS "Round 2"). 23 findings (R7, R11–R29, R36–R38), all fixed but R12:
@@ -904,9 +845,8 @@ stand-ins ship until Claude Design's section K lands.
   - 2026-09-29 (device run after the review, D168): the fixes hold on the iPhone 16 Pro simulator and the API 35 emulator. The integration tests' semantics finders all pass under R11's modal overlays and R13's single labels. The screenshots show the 48 dp targets and the scaled-down texts without overlaps or unreadable text. One side effect was fixed: R23's win button stood wider than the scaled card, and it now takes the card's width
 - [ ] The VoiceOver and TalkBack pass on a device (the race cards' "Rival N, Computer" first) — the close's device stage, M7 review
   - 2026-09-29 (D168): not in the device run after the review, which ran `nesty-test` only. The iOS simulator has no VoiceOver. TalkBack is installed on the API 35 emulator (`com.google.android.marvin.talkback`), so the Android half can run there; VoiceOver needs a physical iPhone
-- [ ] Screen-reader play on the board: a semantics layer over the Flame board (one node per slot from BoardGeometry, labelled from core's GameState, its tap through the board's input policy), the tutorial card as a live region, and Claude Design copy for the colour names and slot states. `TODO(v1.1)` at `gameplay_board.dart`, the question's default — M7 review R12 (owner decision, Q154)
-- [ ] With Android's "Remove animations" on, the in-app Reduce motion "Off" can't restore full motion: AnimationControllers run at 5 % under SemanticsBinding.disableAnimations; use AnimationBehavior.preserve on the app's own controllers. `TODO(v1.1)` in `reduce_motion_override.dart` — M7 review R7 note (D167)
-- [ ] Re-check `UIRequiresFullScreen` (deprecated in iPadOS 26) together with the iPad orientation decision — Q16
+  - 2026-10-01 (phase 5A): 5A built `semantics_tour_test` (four scenarios, holds, a traversal dump) and `talkback.sh` (D224); neither has run. The VoiceOver half is the owner's: `docs/plans/voiceover-checklist.md`.
+  - 2026-10-04: the TalkBack half is done, see "Phase 5, m7-4" below (its tick). What stays open here is the VoiceOver half and the owner's listening checks.
 - [x] The badge toast on the win card: clear of the ribbon title, and gone with the card (today it covers "Level Complete!" and stays over Home's Chapters/Records row, chapter complete and All Levels Done). The same on 9.4: the 9.6 "New rival unlocked!" toast covers "You win!" and stays over rival select. Toasts stack at one spot, so a second toast 350 ms later hides the first (the `first_race` badge toast under 9.6's, and 2.8's with two badges): queue them (Q136). Its text's yellow double underline (MaterialApp's fallback style) is fixed (D162) — device stage, m7 §12, design request I.6, C.9, Q131 (done 2026-09-30: the toast queue (D187), lane O's scoped `ToastHost` at top 60 on the win card and lane R's on 9.4 and 9.5: one at a time, leaving with the card; 9.6 is a card, not a toast (`win_overlay_test`, `race_result_overlay_test`); D205, D208)
   - 2026-09-29 (D168): unchanged in the device run after the review. "Badge earned!" still covers the ribbon on 2.8 (`06a`, `20c`, `24`), and 9.6's toast covers "You win!" (`25d`), on both platforms
   - 2026-09-30 (phase 4, m7 P4.1, P4.7): the toast queue is in (D187; Q122 and Q136 answered). Left: lane O's scoped host at top 60 on the win card, lane R's on the race cards
@@ -919,13 +859,301 @@ stand-ins ship until Claude Design's section K lands.
   - 2026-09-30 (phase 4, m7 P4.3): hidden while iced, popping in with the shatter (`layout.icedTower`, D183). Left: lane B
 - [x] The Museum shelf labels' size and wrap (they scale down to fit now) — with J.2, `TODO(design)` in museum_cabinet.dart (done 2026-09-30: lane M: two lines at 11 px ("Chapter N" / "Levels a–b"; `museum_page_test`, the overflow sweep); D206)
   - 2026-09-30 (phase 4, m7 P4.5): two lines at 11 px (Q123 answered, D193). Left: lane M
-- [ ] Optional E9 device check: kill the app during L1 and relaunch; it must reopen L1 — integrator-p1, m7 §13
+- [x] Optional E9 device check: kill the app during L1 and relaunch; it must reopen L1 — integrator-p1, m7 §13 (done 2026-10-05: `phase A (l1)`, the kill and `phase B (l1)` pass on both platforms in the gate (level 1, 2 free undos, 0 extra slots))
+  - 2026-10-01 (phase 5A): `NESTY_RESUME_SCENARIO=l1` is built in `resume_phase_a/b_test` (one tutorial move, kill, relaunch into level 1 with the same board); its run is pending. If it isn't reliable, it moves to v1.1 with the reason.
 
-## M8 — Release prep
+## Local habits — proposals, after M7 and before any backend (D237)
 
-Acceptance (§18): release builds run on real Android and iOS devices with
-production Firebase.
+Not a milestone and not a rule. The reasoning is
+[plans/local-habits-brainstorm.md](plans/local-habits-brainstorm.md). Nothing
+here is built until M7 is closed and the owner answers Q162. Spec §7.5 and
+GAME_SPEC.md stay as they are until the owner approves a proposal.
 
+- [ ] Welcome back: if the app was last opened two or more days ago, one warm card on Home (the streak is resting, today's puzzle is ready, one tap plays it; no "you lost" line). Needs one stored open-date. No new core rule — local-habits 1, Q162, D237
+- [ ] A month of played days on the Daily: a solved day is lit and a missed day is blank, never a red mark or a "missed" label. The streak rules do not change — local-habits 2, Q162, D237
+- [ ] The last 7 dailies, playable from `DifficultyCurve.dailyParams`, with no server. An old day does not move the streak, grant or spend a freeze, or pay the daily coins again. Needs spec-prop text before any code, because spec §7.5 says one puzzle per day — local-habits 3, Q162, D237
+- [ ] Home-screen widget: today's puzzle and the streak count, tap opens the Daily, offline. WidgetKit and AppWidget in three flavors, plus a package (its rule-9 reason in PROGRESS). Optional, and only after the three above — local-habits 4, Q162, D237 (moved from Later: brainstorm §6 left it for the native cost)
+- [ ] Today's visitor (optional, not in the Q162 default): the date picks one bundled skin, the same doll on every phone that day, drawn on the daily card and named in the share line. A greeting, not a collectible: missing the day does not lose a doll. No new core rule — local-habits "Wider concepts", D237
+- [ ] A spoiler-free picture share (optional, not in the Q162 default): a small local image of how many families were nested, with no board, beside E3's text share. No server — local-habits "Wider concepts", D237
+- [ ] Local player vs player (pass-and-play on one device), if the owner wants it offline: a proposal after vs Computer (the basis: alternating turns on one board, a family scoring for whoever completes it; brainstorm §6) — D90 (moved from M7, 2026-10-05: a local proposal waiting on the owner, not in M7's ✅ line; D237 orders local work after M7 (5c-classify))
+  - 2026-09-29: the proposal is written, with no code: [plans/pass-and-play-proposal.md](plans/pass-and-play-proposal.md). It sets out three rule options for the owner to pick from (a shared board with alternating moves, the same board one player after the other, or co-op), how each fits the respect rules, what each reuses, a rough effort, and eight open questions. Next: the owner's answer
+
+## Daily gift (login reward) — approved, after M7 and before the local habits (D268, Q182)
+
+The owner asked for a daily and weekly login reward on 2026-10-05 and approved the plan the same day with Q182's defaults:
+- it starts after M7 closes, ahead of the local habits;
+- Home gets a button with a dot, and no popup;
+- the track is 20 · 30 · 1 hint · 40 · 50 · 1 hint · 100 coins + 1 extra slot;
+- the kid path gets the same gift.
+
+The rule is the plan's §7.5b text until the owner pastes it into the spec. The plan is [plans/plan-login-gift.md](plans/plan-login-gift.md), the research [plans/login-gift-research.md](plans/login-gift-research.md), and the design request [plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md). Nothing starts until M7 is closed.
+
+- [ ] Claude Design's delivery for section 13 (the gift button on 2.1/2.1b, the sheet and its four tile states, the claim, Day 7's chest, a new track, reduce motion, the `gift` tokens, the glyph and the copy), imported into `design/` by the owner and synced with `sync_design_assets` — the design prompt, D268
+- [ ] `LoginGiftRules` in `lib/core/services/login_gift/`, pure, beside `MilestoneChest`. It covers:
+  - the track, and the next day from the claim count;
+  - one claim per local date (`AppClock`);
+  - no claim on a date before the latest one seen;
+  - the wrap after Day 7;
+  - locked until the Daily unlocks.
+
+  Tested by `login_gift_rules_test`: gaps of 1, 3 and 30 days keep the day; a clock wound back; a clock wound forward then back — plan-login-gift, D268
+- [ ] `RemoteConfigKey<String>` in the service, its fake, the defaults and `all`, then `login_gift_track` with a fallback to the default when malformed (rule 6) — plan-login-gift, D268
+- [ ] Save schema 3 (`migrations-engineer`):
+  - `LoginGiftProgress {claims, lastClaim, latestSeen}` in `SaveDocument`;
+  - the 2→3 step in `save_migrations.dart`;
+  - `SaveService.claimLoginGift(today)`, which writes the claim, the coins and the boosters in one update, in the Hive save and the fake.
+
+  Tested by the migration test and the contract tests. — plan-login-gift, D268
+- [ ] `LoginGiftCubit` (`BaseAsyncCubit`, a freezed state: the track, the next day, `canClaim`) in `features/login_gift/cubit/`, with `bloc_test` — plan-login-gift, D268
+- [ ] The UI in `features/login_gift/widgets/` and Home:
+  - `GiftButton` with its dot;
+  - `GiftSheet` with seven `GiftDayTile`s;
+  - the claim's `RewardFlight` to the coin pill, and Day 7 through `ChestRewardSequence`;
+  - reduce motion and screen-reader labels;
+  - `TODO(design)` stand-ins until the delivery.
+
+  Widget tests: all seven gifts visible before claiming, and no countdown text. — plan-login-gift, D268
+- [ ] Strings: about 8 keys in the nine catalogs. Then the Opus translation review (D240), the overflow suite in nine locales, and `gen_font_subsets` + `build_fonts.sh` if hi or ja need new glyphs — plan-login-gift, D268
+- [ ] `test/ethics/login_gift_respect_test.dart` checks that:
+  - the gift paths use no ad, purchase or `Random`;
+  - nothing lowers `claims`;
+  - the copy has no loss or countdown words.
+
+  On the `stars_gate_nothing_test` pattern. — plan-login-gift, D268
+- [ ] On a device (the D169 rule):
+  - `integration_test/login_gift_test.dart` with the `ready`, `claimed`, `day7` and `clock_back` scenarios (`NESTY_FAKE_DATE` and a seeded save);
+  - `nesty-test --only gift`, also in README and CLAUDE.md Commands;
+  - the playthrough's Home shot;
+  - its TEST_COVERAGE row;
+  - a pass on the iOS simulator and the Android emulator.
+
+  — plan-login-gift, D268
+- [ ] `login_gift_claim {day, claims}` logged through `AnalyticsService` (the fake until M4; M4's `FirebaseAnalyticsService` item sends it) — plan-login-gift, D268
+- [ ] CLAUDE.md's Code map: `features/login_gift`, `services/login_gift/` and the Remote Config string key. Current state when the work starts and ends — D268
+
+## Engagement research and the kid path — after the local habits (D259, D260)
+
+Not a milestone. The reasoning, the age matrix and every source are in
+[plans/engagement-research.md](plans/engagement-research.md). Two kinds of
+item live here:
+- **The kid path** (decided, D260): under-13s are a target too, so Nesty is
+  a mixed audience.
+  - Its local part lands after M7 and the local habits, and before M4,
+    because M4's analytics must not start before a player's age is known.
+  - Its M4, M6 and M8 parts are in those sections.
+  - Its details are Q174's defaults.
+- **Proposals ER1–ER11** (D259):
+  - Nothing is built until M7 is closed and the owner answers Q173.
+  - A picked proposal becomes spec-prop text before any code.
+  - Each also needs Claude Design's frames and copy, host tests, a
+    `nesty-test` step and a TEST_COVERAGE row (D169).
+
+### The kid path (decided, D260)
+
+- [ ] A neutral age question: month and year with no default, asked after the first win so L1 stays instant (E9, E13), kept only on the device, never blocking a child. Under 13, or unanswered, means the kid path. Store age signals replace it where available (M6). Claude Design draws it (engagement-research §6.5) — engagement-research §6, D260, Q174
+- [ ] A parent area behind a parental gate: the daily reminder and its time, sharing, links out (privacy policy, support) and, from M6, purchases. On the kid path a child is never offered the reminder, and Share and the Settings links ask for a grown-up first. Claude Design draws the gate and the area (§6.5) — engagement-research §6, D260, Q174
+
+### Proposals (Q173)
+
+- [ ] ER1 Free Play by difficulty: Easy, Medium or Hard endless boards at the player's stage, from a new seed range. Pays nothing, never moves `currentLevel`, and never counts toward the chest, the Museum or stars. Reuses the Bonus Endless path in `default_level_resolver.dart` and the generator's tiers. Needs spec-prop text (its unlock, seeds and what it counts) — engagement-research ER1, Q173, D259
+- [ ] ER2 Milestones you can feel: tiered lifetime milestones (dolls, families, dailies, levels), each with a short ceremony, the next one shown in Records, and a share card. Pays nothing, and nothing counts consecutive days. Reuses `SaveRecords`, `BadgeRules` and the chest FX. Needs spec-prop §7.8 text and a save step — engagement-research ER2, Q173, D259
+- [ ] ER3 Your month in dolls: a recap on a new month's first open, and a yearly one in January, with a play-style persona, shareable as a picture (it picks the local habits' picture share). Never compares players or shames a quiet month. Needs per-month counters (a save step) — engagement-research ER3, Q173, D259
+- [ ] ER4 Challenge codes: after a win or the daily, share a short code (the board's id or seed, the generator version, the moves). The recipient plays the same board offline and compares privately. No accounts, server, free text or strangers, and it pays nothing. Needs spec-prop text (the code format, levels not reached yet, other generator versions) — engagement-research ER4, Q173, D259
+- [ ] ER5 Healthy-play kit: today's levels and minutes on the pause sheet, this week's time in Records, and an optional break card at a level's end (off by default; on the kid path a grown-up sets it). Nothing locks — engagement-research ER5, Q173, D259
+- [ ] ER6 Doll Workshop: mix the face, apron detail and shine from owned skins, plus stamps from the Sergiev Posad, Semyonov and Polkhov-Maidan schools. All 7 skins share one layer geometry and the same tinted masks, so game colours never change. The made doll plays as a skin. Needs Claude Design's check of which mixes work, a composite skin id in the cache key, and a save step — engagement-research ER6, Q173, D259
+- [ ] ER7 Larger text: menus follow the system text size up to 2.0× (not 1.3×) and reflow. The harness and the overflow suite add 2.0×. Needs the owner's change to spec §16 and Claude Design's large-text variants — engagement-research ER7, Q173, D259
+- [ ] ER8 Seasons that come back: the date dresses Home, the daily card and the backgrounds each season, every year. Nothing to buy, nothing expires, and no seasonal-only reward. If picked, it replaces Later's seasonal skins and weekend events (§19). Needs art per season. TC10 and themes-characters-story §6's region-aware calendar extend it (D270) — engagement-research ER8, Q173, D259
+- [ ] ER9 Stories of the doll families: a short illustrated beat at each chapter's start and end (20 beats), re-readable in the Museum. Needs Claude Design's illustrations and copy. TC4a absorbs it if picked (D270) — engagement-research ER9, Q173, D259
+- [ ] ER10 Family profiles: up to 4 local players on one phone, each with their own progress, streak, Museum and Records. Owned skins, purchases and settings stay device-wide. Needs new save boxes (the existing one becomes profile 1, never renamed) and migrations — engagement-research ER10, Q173, D259, D260
+- [ ] ER11a Icon actions: long-press the app icon for "Today's puzzle" and "Continue level N", offline (`quick_actions`, with its rule-9 reason) — engagement-research ER11, Q173, D259
+
+The research also supports these existing items, which stay where they are:
+- pass-and-play, with option C first (M7);
+- the widget and the picture share (Local habits);
+- the level-sharing code (Later), with ER4 as its first step;
+- the Museum diorama (Later);
+- about 20 new levels a week (Later).
+
+## Themes, characters and story — proposals, after the local habits and beside the engagement research's wave 2 (D270, Q184)
+
+The owner asked on 2026-10-05 for themes, animations and characters "like Marvel, Power Rangers, Barbie" and a story mode. The analysis and research are in [plans/themes-characters-story.md](plans/themes-characters-story.md). Its second pass (same day) checked the first against the code and added TC11–TC14, TC-FX and TC-DATA.
+- Licensed characters can't be used without a licence (Later, TC-L). These are original characters in those genres, all local (D269), all within the respect rules (D92) and the kid path (D260).
+- A **character** (a persona) is earned and never sold. A **skin** (a look with no persona) may be sold for coins (themes-characters-story §2).
+- None of this is a rule: Q184 picks what to build. Anything that changes a rule needs owner-approved spec-prop text first.
+
+- [ ] TC7 Character animation layer: idle blinks, sway and yawn on the board's dolls, tap squish and the "home" bounce. Flame tweens with no game truth (rule 10) and no per-frame allocation (rule 8), off under reduce motion, paused when idle 30 s or backgrounded. Per-theme celebration variants need TC-FX. Needs a Claude Design motion spec — themes-characters-story TC7, §5, Q184
+- [ ] TC8 The Computer with a personality: a wave at the start, "nice one" when the player completes a family first, a polite bow (not a celebration) when it wins. These are two segments beside `ui_rival_react`'s. Always "Computer". Resolves Q183 if the owner agrees — TC8, Q183, Q184
+- [ ] TC1 The Nest Keeper mascot: greets on Home, voices the tutorial, cheers wins, comforts after out of moves (never "you failed"), sleeps after long play (a natural break). One segmented Lottie and a wordless babble voice. A character, so never sold and never in the Shop, ads, purchases or loss offers. Its name is the owner's (Q184) — TC1
+- [ ] TC4a Story panels and the Storybook ("The Long Way Home", told as hide-and-seek): about 32 wordless panels.
+  - The panels play at one-time events, so there is no save step:
+    - The prologue plays after Level 2's first win. The trigger is a per-level first-win flag in `_win`, not `tutorialDone`.
+    - Each homecoming plays in `_openChapterComplete`, keyed on `completedChapterId` (not `PlayEntry.completesChapter`).
+    - The next chapter's arrival plays before its first level.
+    - Midpoint pages are Storybook-only, because the chest owns level 10.
+  - Never in races, the daily, Bonus Endless or replays. One tap skips.
+  - A Storybook button goes in the figurine dialog. `story` keys join `checkedPrefixes`.
+  - It absorbs ER9. Needs spec-prop lines (§7.2, §9.1, §10.1, §11.3, §15, §16) and Claude Design's panels — themes-characters-story §4, TC4, ER9
+- [ ] TC4b The town map: the campaign as the story's journey, from an optional Story entry (a §10.2 line). After TC4a — themes-characters-story §4.3
+- [ ] TC13 Little Ones: on the first win of each chapter's levels 3, 7, 13 and 17, a tiny named friend bobs out of the smallest doll. Those levels stay clear of the chest, the chapter's end and the rate prompt.
+  - Each is shown beforehand by name and silhouette.
+  - They live in a Museum drawer, with no counter, collect-all badge, notification, randomness or stars.
+  - Collected means the level is won, so there is no save step.
+  - One reveal Lottie with a new `FxImageSlot`.
+  - It replaces Later's sticker album. Needs spec-prop §7.2 or §7.8 — TC13
+- [ ] TC2 The Nest Squad: one hero look tinted per family colour, with five named lead colours.
+  - A badge ring frames the colour symbol outside r 96 (the Large disc) and still reads in Subtle mode.
+  - A 1.2 s "suit up" (TC-FX).
+  - Earned at a named chapter's end (Q184). Never random, never sold.
+  - Names and emblems get a legal check (Owner inputs) — TC2
+- [ ] TC3 The Atelier: fashion and dress-up doll skins, a runway celebration after a chapter win (TC-FX), and Atelier stamps for ER6's Doll Workshop. No outfit scores or comparison. Original designs only — TC3, ER6
+- [ ] TC11 Pop Stage: a band skin (every colour, never a trio) and a harmony celebration where each completed family sings a wordless note. Optionally a pitch per `DollColor` (needs §11.3 and §16 text). No lyrics, votes or fans — TC11
+- [ ] TC5 Folk-tale chapters: Firebird Grove, the Kind Grandmother of the Woods (a friendly Baba Yaga helper), Snow Maiden's Winter. Each is a theme, a skin and 3 story beats, with pan-folk framing and a sensitivity review. The ten chapters are fixed today, so new lands come with levels 201+ in M4 (the default) or as Shop-only themes (Q184) — TC5
+- [ ] TC9 Themed booster animations (look only): Undo, Hint and +1 Slot wear the equipped theme's motion. Costs, counts and effects unchanged. Needs TC-FX — TC9
+- [ ] TC12 Moonlight Dolls: a spooky-cute skin with no persona (ghost-sheet capes, lantern lids, a soft boo-poof). Never scary. On sale for coins all year; only TC10's free looks return each Halloween — TC12
+- [ ] TC6 World Dolls chapters, matched to the locales where possible: Channapatna, kokeshi and daruma, Otomí Lele, and Karagöz and wayang golek for ch07's beats, plus wycinanki, Dala and alebrije. Each with a sensitivity reviewer, a Museum credit and "inspired by" framing. The new-lands route is as TC5's — TC6
+- [ ] TC10 Costume days that come back every year (with ER8), on the region-aware calendar (Hinamatsuri, Holi, Diwali, Children's Days and more), with a "Seasonal looks" toggle. No countdown, nothing to buy, nothing expires — TC10, §6
+- [ ] TC14 Nest House: the Museum as a dollhouse with a room per family. Furniture arrives at fixed chapter points and is placed freely (a save step), never bought with stars. Its lift is unproven: after TC4a, and only with post-release data. Replaces Later's Museum diorama — TC14
+- [ ] TC-FX FX variants keyed by theme or skin, with a base fallback, loaded lazily. Today each `FxId` has exactly one Lottie. `gen_fx_spec`, LOTTIE.md and `sync_design_assets` learn variants, with a host test. Comes with the first of TC2, TC3, TC9, TC11 or TC12 — themes-characters-story TC-FX, §2
+- [ ] TC-DATA The catalog's new data:
+  - `characters`, `storyBeats`, `littleOnes`, `fxVariants` and `calendar` on `CatalogRepository`, as bundled Dart constants in `BundledCatalogRepository` and the fake (there is no catalog JSON);
+  - a pure `StoryRules`;
+  - the Remote Config key `story_beats_enabled` (default true).
+
+  Admin-editable in M5, Firestore-served in M4 — themes-characters-story §9, D269
+- [ ] The Claude Design request for the picked items, paste-ready with a character bible and a babble voice — themes-characters-story §10
+
+## M4 — Firebase content — after Local habits (D90, D237)
+
+Not started. Starts only after M7 is closed and the Local habits the
+owner picks (Q162) are done. The engagement proposals the owner picks
+(Q173) come first too, and the kid path's local part (the age question and
+the parent area, D260) must, because analytics waits for the age answer.
+Firebase, the admin, purchases and the other backend work stay at the end
+(D237).
+
+Acceptance (§18): with airplane mode on first launch, the game is fully
+playable. Levels published in the admin appear on the next app resume.
+
+- [ ] Firebase init at the `TODO(M4)` in both bootstraps, failing silently offline. The owner runs `flutterfire configure` first (Q12) — §14, CLAUDE.md rule 3, `apps/game/lib/bootstrap.dart`
+- [ ] Crashlytics: uncaught errors, plus non-fatals for `runGuarded` failures, the Hive fallback and level-validation failures — §14.4, D17
+- [ ] `FirebaseRemoteConfigService` over the hard-coded defaults, with prices and rewards read from it — §9.4, CLAUDE.md rule 6
+- [ ] `FirebaseAnalyticsService`, with every §14.4 event sent from the feature it belongs to — §14.4. The daily gift's `login_gift_claim` too (D268)
+- [ ] When sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` once — m3 §6.2, D72
+- [ ] Synced levels carry their `par` for the star rating. A level without one shows no stars, and a new version keeps the level's best stars (Q117) — spec-prop §7.10, D125
+- [ ] Level sync — §13.4:
+  - `levels_cache.json` with `manifestVersion`.
+  - Runs on launch and on resume when online, without blocking: the splash kicks it off unawaited, with the Remote Config refresh (`TODO(M4)` in `splash_cubit.dart`).
+  - Pages of 200, each level validated, then an atomic swap.
+  - Cache entries override bundled ones by `id`.
+  - Never swaps the level in progress.
+- [ ] Skin and theme download from Storage (`skins/{id}/v{n}/{group}.svg|png`), then rasterize and cache. The card shows a spinner (frame 7.5), and a failure keeps the current skin — §13.5
+- [ ] Disk raster cache (PNG) for skin layers — §12.2, plan P3 (deferred from M2)
+- [ ] PNG layer sets accepted by the game's skin loader — §12.2
+- [ ] A Storage skin loader that builds `SkinLayers` from the admin's pre-split per-group SVGs (the `SkinLayers(Map)` constructor is ready) — §13.5, §14.2, r2 report
+- [ ] Daily overrides from `dailyOverrides/{yyyymmdd}` — §7.5, §14.1
+- [ ] Chapter, theme, skin and museum metadata (names, flavor text, prices) from Firestore — §14.1; overlaid on `CatalogRepository` (`TODO(M4)` in `bundled_catalog_repository.dart`), m3 §9.1
+- [ ] When level sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` then (`PlayEntry.completesChapter` sees only the bundle it was resolved from) — m3 §6.2, D72
+- [ ] `connectivity_plus` to re-sync on reconnect, with its reason in PROGRESS — §13.2, §9.1
+- [ ] Airplane-mode tests with failing network services, plus a fresh-install device check — §18 M4
+- [ ] Install `firebase-tools` (it needs a JDK) and verify `firebase emulators:start` from `firebase/`, including the Auth emulator — PROGRESS M0 "Not verified yet"
+- [ ] Analytics and crash data by age (the kid path, D260): nothing is collected before the age answer, and ad-ID collection is off for everyone. For players under 13 and of unknown age, analytics stays off until the owner's legal check, and crash reports run only for the app's own operation. Play Families allows no AAID or other device identifier from them — engagement-research §6.2–§6.3, D260, Q174
+
+## M5 — Admin panel — after Local habits (D90, D237)
+
+Not started. Starts only after M4. The admin is backend, so it stays
+at the end with Firebase (D237).
+
+Acceptance (§18): the owner can build, solve, simulate, playtest and publish a
+level, and upload a skin that then shows up in the game.
+
+- [ ] `FirebaseAuthService` (email and password), with "Not authorized" when there is no `admins/{uid}`. Delete `UnconfiguredAuthService` — §15, `apps/admin/lib/core/services/auth/unconfigured_auth_service.dart`
+- [ ] Dashboard — §15 #1
+- [ ] Publishing a level computes its par with the admin's solver (the optimal length) and stores it with the level, for the star rating — spec-prop §7.10, D125
+- [ ] Levels list: table, filters, search, drag reorder, and bulk publish, unpublish and archive — §15 #2
+- [ ] Level editor — §15 #3:
+  - Shelf builder, slot types plus ice, doll palette.
+  - Live validation.
+  - Solve with animated playback, and Simulate.
+  - Playtest, a CustomPainter on nesty_render.
+  - Save Draft (bumps `version`) and Publish.
+- [ ] Generator page: the §6.5 params plus count and seed, preview cards, and accept into drafts — §15 #4
+- [ ] Chapters CRUD with theme and museum assignment — §15 #5
+- [ ] Skin upload — §15 #6, §12.2:
+  - Split the SVG with `xml` and strip its metadata.
+  - Check the group ids, the artboard and disallowed features. Reuse `package:nesty_render/svg_tools.dart` (`stripSvgMetadata`, `validateSkinSvg`, `validateSkinManifest`, the same checks the asset sync runs), and map its stable issue codes to admin ARB strings.
+  - Preview all colors × sizes, including the lid lift.
+  - Set price and status.
+- [ ] Theme and museum-item upload with preview — §15 #7
+- [ ] Daily overrides calendar — §15 #8
+- [ ] Export bundle, plus a headless `export_level_bundle` in tools — §15 #9, tools/README.md. Write through `LevelBundleCodec.encodeString` and apply `nesty_levels bundle check`'s checks; when bundling moves to a Firestore export, revisit BundlePolicy's M2 layout limits (Q36) and whether `tools/levels/` stays the source of the first levels — bundle report
+- [ ] Map every `LevelIssue` code and its args to ARB messages (the `field`/`expected` value sets are documented on `LevelCodec`, each code's args on `IssueCodes`, the generator's on `Generator.checkParams`) — §15, codec and generator reports
+- [ ] Step long core work with `await` so the admin page never blocks: `Solver.start(...).advance(n)` for rule 8 (exhaustive proofs take 2.3 s VM / 3.5 s dart2js, Q32), a stepped `Simulator` API (up to ~90 ms per 19-slot board in dart2js) and awaits between generated levels (up to ~350 ms each in dart2js); show every attempt with `Generator.buildAttempt` — §15, solver/simulator/generator reports
+- [ ] Re-check the admin generator's params against the design's 64 MB. Q33 was confirmed on 2026-09-26 as no cap for now; cap them or scale the budget if the admin hits it — design §5, review DETERMINISM-005
+- [ ] Admin level editor and playtest preview on `DebugBoardPainter`: an adapter from a nesty_core `Level`/`GameState` to `Map<String, DebugSlot>`, and bundle Fredoka (tag and badge text) or accept the fallback font — §15 #3, r3 report
+- [ ] A `nesty_levels tune` command (or an admin Generator feature) that hill-climbs a fixed skeleton (rows, tower positions and depths, empties, colors) toward a target tier by swapping nests and re-cutting sets; that is how L16–L30 were found — §6.5, §15, levels report
+- [ ] Publishing batch: bump `config/manifest.levelsVersion` and `publishedCount`, and renumber `order` — §15
+- [ ] Final security rules, including the Q20 gaps, with emulator-backed rules tests. The first Storage deploy must grant it Firestore access — §14.3, Q20, firebase/README.md
+- [ ] Orientation and colors in `apps/admin/web/manifest.json` — Q21
+- [ ] Swap `BundledUnlockSymbolRasterizer` for nesty_render's `SymbolRaster.rasterize(atlas, color, pixelsPerUnit: fs × dpr)` (the atlas cell 1:1, with its `FxRaster` scale and origin), removing the `TODO(M5)` in `apps/game/lib/core/services/skin/unlock_symbol_rasterizer.dart`, before the first locked levels (L31+) ship (moved from M2: no M2 level has a lock) — render and services reports
+- [ ] Author or generate levels 31–200 (chapters 1–10) and export the 200-level launch bundle. Follow the §3.7 schedule (locks at L31, ice at L51, maxSize 5 at L71, maxSize 6 from L121) and the §6.6 pattern — §7.1, §3.7, §13.4
+- [ ] Use `json_annotation` and `json_serializable`, or remove them — PROGRESS "Package reasons"
+- [ ] Acceptance walkthrough with the owner, on emulators or stg — §18 M5
+
+## M6 — Monetization — after Local habits (D90, D237)
+
+Not started. Starts only after M5. Ads and purchases stay at the end
+(D237).
+
+Acceptance (§18): every §9.1 pacing rule is unit-tested with a fake clock.
+Offline ad buttons fall back to coins correctly.
+
+- [ ] Put the AdMob App IDs in `Info.plist` and `AndroidManifest.xml` before adding `google_mobile_ads` (test IDs in debug) — PROGRESS "Notes for later milestones", CLAUDE.md rule 5
+- [ ] `AdMobAdsService` — §9.1, CLAUDE.md rule 5:
+  - Test unit IDs in debug; real ones through `--dart-define`.
+  - Preload one rewarded and one interstitial ad, and reload after each is shown and on reconnect.
+  - 3 s timeout.
+  - Drop `AppEnv.real` from the fake.
+- [ ] Interstitial pacing, with fake-clock tests (frame 2.10) — §9.1, §18 M6:
+  - None before level 8, then one every 3 wins.
+  - At least 90 s since any ad, and a 5-minute session grace.
+  - Off when `adsRemoved` is set.
+  - Only on Win → Continue.
+- [ ] Rewarded placements: booster popups (3.2, 3.3), out of moves +1 slot (3.5), win ×3 (2.8 → 2.9 "Reward added"), and the daily chest's "Double it" (5.6). M2 built `RewardedAdButton` (with its "Reward added" state) and `BoosterBadge.ad()`, both unused until then — §9.1, UI lane report
+- [ ] `GameplayBloc` listens to `SaveService.changes`, so a wallet change during a level (a rewarded booster, the Shop) refreshes the coins and the booster counts; today they refresh only on the bloc's own transitions — bloc report
+- [ ] Offline, ad buttons switch to coin prices (frame 3.7). With no coins the button is disabled with "Connect to watch an ad" (frame 3.8). A widget test uses a no-fill fake — §9.1, §18 M6
+- [ ] Home banner behind `home_banner_enabled` (default off), and no banner in gameplay — §9.1
+- [ ] `StorePurchaseService` (`in_app_purchase`): the 6 products, with receipts checked on the client. Drop `AppEnv.real` from the fake — §9.2
+- [ ] Shop Coins tab (7.1: Starter Pack and 3 packs; 7.2: thank-you) and No Ads tab (7.8) — §9.2
+- [ ] Remove Ads offer after the 3rd interstitial (frame 7.9, `remove_ads_offer_after_interstitials`), then Home without the tile and a toast (7.10) — §9.2
+- [ ] Restore Purchases in Settings, with a toast (frame 8.3) — §9.2, §17
+- [ ] UMP consent before ads start, where required (frame 1.2). The Privacy choices row re-opens it (frame 8.1) — §9.3, D19
+- [ ] ATT pre-prompt (8.5) and system prompt (8.6) after the first Level 3 win, with the purpose string in `Info.plist` — §9.3
+- [ ] Rate prompt (`in_app_review`) after the `rate_prompt_level` win, if the player hasn't failed in the last 3 levels (frame 8.7) — §10.2 #16
+- [ ] `adCounters` in the save: winsSinceInterstitial, lastAdAt, interstitialsShown — §13.3
+- [ ] `AdsService` calls `MusicService.pauseForAd()` before every interstitial or rewarded show and `resumeAfterAd()` in a `finally` when it closes; with the app's own trip to the background during an Android ad, the pause reasons don't double up — `TODO(M6)` in `music_service.dart`, audio A5
+- [ ] A completed purchase calls `JingleCues.reward()` — `TODO(M6)` in `jingle_cues.dart`, Q62
+- [ ] The respect rules hold for every ad and purchase surface (spec-prop §1.1):
+  - no offer shown because the player failed or got stuck, and no countdown or limited-time offer;
+  - the real-money price shown before the purchase flow, and no forcing an oversized coin pack (EU CPC key principles, March 2025);
+  - a test per placement.
+  - D92, brainstorm §5
+- [ ] Ads for players of unknown age: non-personalized by default, and whether to read Apple's Declared Age Range API (Q86). The game may be "likely to be accessed by children" whatever its rating — D92, brainstorm §1
+  - 2026-10-04 (D260): under-13s are now a target, so Play Families decides this. A player of unknown age gets the kid path's ads (the next item) until the age question is answered or a store signal arrives. Q174 holds the rest
+- [ ] Ads by age (the kid path, D260):
+  - Requests for players under 13 and of unknown age are child-directed with max ad content rating G (GMA SDK Android ≥ 20.6.0, iOS ≥ 7.67.0, so no ad ID is sent), from Families self-certified sources only, and never personalized.
+  - §9.1's pacing stays, so there is no ad at launch. Every ad is closeable within 5 s. No rewarded placements on the kid path.
+  - EU players under their country's consent age get the under-age-of-consent tag.
+  - Expect lower fill.
+  - engagement-research §6, D260, Q174, Q86
+- [ ] Purchases by age (the kid path, D260): the paid Shop tabs (7.1, 7.8), the starter pack and the Remove Ads offer (7.9) sit behind the parental gate, and a child is shown no purchase offer. Coins are always shown apart from real money — engagement-research §6, D260, Q174
+- [ ] Store age signals: read Apple's Declared Age Range (iOS 26+) and Google Play's Age Signals where available (`age_range_signals`, with its rule-9 reason), only to protect and never to market. The age question stays the fallback — engagement-research §6.2, D260, Texas SB 2420
+
+## M8 — Release prep — after M6 (D237)
+
+It stays last. Acceptance (§18) is a release build on real Android and iOS
+devices with production Firebase, which lands in M4.
+
+- [ ] ER11b Game Center and Play Games, with M4/M8 (network and accounts): achievements that mirror the badges and ER2, and a friends-only daily-moves leaderboard for iOS 26 Challenges and Activities. Sign-in is optional, Google Play's pre-loss Streaks notifications are never used, and it is off on the kid path. Check `games_services`'s maintenance first — engagement-research ER11, Q173, D259 (moved from "Engagement research and the kid path" on 2026-10-05: it needs accounts and the network, and the owner keeps every backend task last, D269)
 - [ ] App icons: flatten the 1024 App Store icon (App Store Connect rejects alpha), and add an Android adaptive icon and a 512 px Play icon. `sync_design_assets` doesn't copy `design/store/` (its SVG uses unsupported features), so the launcher icons are generated separately — §18 M8, audit, `design/store/icon_1024.png`
 - [ ] Native splash (the Android 12 splash API and the iOS LaunchScreen) matching frame 1.1 — §18 M8
 - [ ] Store screenshot support: a clean capture mode — §18 M8
@@ -935,9 +1163,17 @@ production Firebase.
 - [ ] Android release signing with the upload key (`key.properties` kept out of git) — `apps/game/android/app/build.gradle.kts`
 - [ ] iOS profile and release builds, `flutter build ipa` and Xcode Archive. Run `flutter build ipa --flavor <f> -t lib/main_<f>.dart` first, or the D8 guard fails the build — D8, PROGRESS M0 "Not verified yet"
 - [ ] Privacy policy URL in both store listings, and a final check of the Settings link — §9.3, §17
-- [ ] Store listing copy and screenshots in an adult and family tone, with no kid-coded language. The target audience (13+) is declared accurately in Play Console. The IARC, Data Safety and App Privacy answers match D92: local notifications only, opt-in; no tracking before M6 — §1, §17, D92
+- [ ] Store listing copy and screenshots in a family tone for every age. Play Console declares the under-13 age bands Q174 picks (default 9–12) plus 13+, under the Families policy. On the App Store, Nesty stays out of the Kids Category, so no name, subtitle, icon, screenshot or description implies children are the main audience (guidelines 2.3.8, 5.1.4). The IARC, PEGI, Data Safety and App Privacy answers match D260 and the kid path: local notifications only, opt-in, and nothing tracks a child — §1, §17, D92, D260 (changed 2026-10-04: D260 replaced "13+ declared" and "no kid-coded language")
+- [ ] Age-assurance laws: Texas SB 2420 is in force, and Apple applies it from 4 Jun 2026. Assign the age rating, and notify the stores before any later "significant change" (new ads, purchases or data categories), which re-asks Texas parents. M6's ads and purchases ship in the first public release (D237's order). Recheck Utah (6 May 2027), Louisiana (1 Jul 2027) and California AB 1043 (1 Jan 2027) before release — engagement-research §6.2, D260
+- [ ] IARC and PEGI answers under PEGI's June 2026 interactive-risk criteria. The daily, the streak, the chests and the daily gift (D268) are a reward for returning (at least PEGI 7). Keep no penalty for not returning and no time-limited offer (each at least 12), and no paid randomness (16) — engagement-research §5, §6.2, D92, D260
 - [ ] The share card gains the store link once the listings exist — D92 E3
+- [ ] Tabular figures for coins and counters (Q29: Fredoka has no `tnum`; pick a fixed-width digit layout, Nunito digits, or a patched Fredoka; `NestyNumberText` is the one place) — moved from M7 (2026-10-01, D225): Q29 is unanswered; the markers are `TODO(M8)` in `app_text_styles.dart` and `nesty_number_text.dart`; design/README.md "Typography & icons", tokens.json `fontSize.number.tabular`, tools/fonts audit
 - [ ] Acceptance on real devices with production Firebase (owner) — §18 M8
+- [ ] A native reader of each language before the store release (Q180, default none) — 5B; M8 (owner) (moved from M7, 2026-10-05: Q180, a store-release step (5c-classify))
+- [ ] Before release, a levels-tool report of the smart and casual bots' star shares per chapter at the default slack, so the owner can tune the two keys — star-rating.md (moved from M7, 2026-10-05: "before release"; the report is built (`report --stars`), only the owner's reading and tuning are left (5c-classify))
+  - 2026-09-29: `nesty_levels report --stars` is stars-core's (m7 P3.3); left after it: the owner reads it
+  - 2026-09-29: built (D157); at 20/60 over all levels, the casual bot's wins are 24.0 / 47.9 / 27.9 % at 3★/2★/1★ and the smart bot's 98.6 / 1.3 / 0.0 %; the per-chapter table is in `tools/levels/README.md` "Par and the star shares". Left: the owner reads it and tunes the keys
+- [ ] Re-check `UIRequiresFullScreen` (deprecated in iPadOS 26) together with the iPad orientation decision — Q16 (moved from M7, 2026-10-05: Q16, a release platform setting (5c-classify))
 
 ## v1.1
 
@@ -949,7 +1185,12 @@ production Firebase.
 - [ ] Gold in the solver, the simulator and the generator, the L101 intro, intro card 4.8 with its "v1.1" chip, and the admin palette — §3.5, §3.7, frame 4.8
 - [ ] A `Nest` model and view for a nest that holds the golden doll among other dolls; `NestCode.toNest` drops the gold today (`TODO(v1.1)` in `packages/nesty_core/lib/src/rules/engine/nest_code.dart`); accept gold in the validator (`TODO(v1.1)` in `lib/src/validator/level_checks.dart`) and decide how gold counts toward rule 4 — §3.5, D22, kernel and codec reports
 - [ ] Gold levels in `test/simulator/support/sim_levels.dart`, gold in `simref.py`, and new parity values (a `Generator.version` bump) — §3.5, simulator report
+- [ ] Screen-reader play on the board (Q154): a semantics layer over the Flame board, one node per slot from `BoardGeometry`, with Claude Design's strings; the marker is `TODO(v1.1)` at `gameplay_board.dart:147` — M7 review R12, Q154 default, 5f-fd (the marker was already `TODO(v1.1)`, D258; listed here by 5f-fe, 2026-10-04)
 - [ ] Rasterize the gold mask layers only for levels (or previews) that show gold: a gold flag through `DollRenderer.prepare` and the `SkinCache` key. Today every prepared height rasterizes them (23 % of layer bytes) — review RENDER-7
+- [ ] The Not-enough-coins dialog's top anchor (the figurine modal hangs from the top at safe top + 69; the dialog stays centred) and `text-wrap: pretty` on the Museum modal's flavor and locked text (they would break about six exact-string tests) — 5f-fix2; M7 (low value) (moved from M7, 2026-10-05: polish, about 35 dp on one dialog; `text-wrap: pretty` would also change six exact-string tests (5c-classify))
+- [ ] Screen-reader play on the board: a semantics layer over the Flame board (one node per slot from BoardGeometry, labelled from core's GameState, its tap through the board's input policy), the tutorial card as a live region, and Claude Design copy for the colour names and slot states. `TODO(v1.1)` at `gameplay_board.dart`, the question's default — M7 review R12 (owner decision, Q154) (moved from M7, 2026-10-05: Q154's default and D258; the marker is `TODO(v1.1)` already (5c-classify))
+- [ ] With Android's "Remove animations" on, the in-app Reduce motion "Off" can't restore full motion: AnimationControllers run at 5 % under SemanticsBinding.disableAnimations; use AnimationBehavior.preserve on the app's own controllers. `TODO(v1.1)` in `reduce_motion_override.dart` — M7 review R7 note (D167) (moved from M7, 2026-10-05: already `TODO(v1.1)` at reduce_motion_override.dart (5c-classify))
+- [ ] Japanese lines that end with one character alone (族 on a Museum plaque, Records and Museum lines): `bindLastWord` joins the last word only where words are spaced; give CJK a word joiner (U+2060) before the last character, with tests in ja — the gate's locale review (`build/m7-p5/reports/5c-loc-ios2.md`, `5c-loc-and2.md`), 2026-10-05
 
 ## Later (spec §19)
 
@@ -958,11 +1199,12 @@ production Firebase.
 - [ ] Server-side receipt verification (Cloud Functions) — §19, §9.2
 - [ ] Ad mediation (AppLovin MAX or ironSource) — §19, §9.1
 - [x] Relaxed mode with unlimited undo — §19 (moved to M7 "Engagement" as E6: the owner approved it for v1, D92)
-- [ ] Home-screen widget for the daily and the streak (WidgetKit and AppWidget in all three flavors, plus a package) — brainstorm §6, D92
+- [x] Home-screen widget for the daily and the streak — brainstorm §6, D92 (moved 2026-10-02 to "Local habits", D237)
 - [ ] A weekly puzzle, par and stars, no-undo challenges and time attack: revisit after M7 with the best-moves data (stars make a win feel like a failure, and speed pressure is off-brand) — brainstorm §6, D92
-- [ ] A Museum diorama or a sticker album (large art cost), a Daily Duel against the computer, a ghost race against your own best, and a welcome-back recap — brainstorm §6, D92, D93
+- [ ] A Museum diorama or a sticker album (large art cost), a Daily Duel against the computer, and a ghost race against your own best — brainstorm §6, D92, D93 (welcome-back moved 2026-10-02 to "Local habits", D237; if picked, TC14 Nest House replaces the diorama and TC13 Little Ones the album, D270)
 - [ ] Doll micro-expressions (new face layers in all 7 skins), a dyslexia-friendly font option, and a favourite family on Home (ask Claude Design where it sits) — brainstorm §6, D92
 - [ ] Online player vs player (matchmaking, a shared board or a race over the network): after the Firebase milestones — D90
+- [ ] TC-L A licensed collaboration (Marvel-, Power Rangers- or Barbie-class characters): only after M8, with a publisher. It brings the licensor's minimum guarantee and royalty (typically 15–20%), approvals on every asset, and a kid-path and respect-rule review. Not planned work — themes-characters-story §0, TC-L, D270
 - [ ] Seasonal skins — §19
 - [ ] True 3D renderer behind `DollRenderer` once Flutter GPU is stable — §19, §12.6
 - [ ] Level-sharing code for friends — §19
@@ -974,6 +1216,8 @@ production Firebase.
 - [ ] Symbol atlas pages rasterize only the active symbols mode, if memory matters (both sizes cost ≈0.24 MB per height at DPR 3) — r2 report
 - [ ] Crop the doll part rasters to their alpha bounds, if memory matters: `FxRaster.origin` already compensates a crop, and it would roughly halve the ≈0.54 MB per part at 150 dp × DPR 3 — lottie §3, §4
 - [ ] Theme background on tablets: 768×1024 @2 is 12.6 MB; cap the raster at the art's native pixel count or lower the pixel ratio on large screens if the iPad budget matters — r3 report
+- [ ] Optional: keep Nesty's music off while another app plays audio (iOS `secondaryAudioShouldBeSilencedHint`) — Q61, audio plan (moved from M7, 2026-10-05: optional (Q61), not in M7's ✅ line (5c-classify))
+- [ ] A silent load-time catch-up that writes `museum`/`museumCollected` for a chapter whose levels are all won (like the badges' grant on load), so the stored Museum agrees with the one the screens derive (D118) — menus lane report (moved from M7, 2026-10-05: the screens derive the Museum from won levels (D118), so nothing visible disagrees; a save-schema step not worth M7 (5c-classify))
 
 ## Owner inputs needed
 
@@ -982,6 +1226,15 @@ names the milestone it blocks.
 
 ### Content and assets
 
+- [ ] **Wednesday 2026-10-07, when Claude Design is back: send the M7 design follow-up.** It is paste-ready in [plans/claude-design-request-m7.md](plans/claude-design-request-m7.md) "Follow-up after m7-3", §1–§14, and holds every design change M7 still needs. Highlights:
+  - §11: phase 5's ten questions (the undo's motion, Q160; the chest flights' values; the colours tokens.json lacks);
+  - §12: the m7-4 device run's asks: the versus ribbon band (12.1: 336 dp where 9.4 and 9.5 draw about 290), the chest's rays, the badge toast's second line, 9.7b's Computer tag, the splash's arch;
+  - §13: a Fredoka build with the Turkish letters;
+  - §14: the race strip's two new forms (D271).
+
+  Send with it the daily gift's prompt ([plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md), the item below). The themes request (themes-characters-story §7) waits for Q184's picks. Then import the delivery through the checks in BACKLOG M7 "Importing a Claude Design delivery" — owner, 2026-10-05
+
+- [ ] Send [plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md) to Claude Design, then drop the delivery into `design/`. It blocks the daily gift's final look, not its start (`TODO(design)` stand-ins) — D268
 - [x] Music: `music_home` and `music_game`, seamless loops of 60–90 s — §11.3 (done 2026-09-26: Claude Design's audio export, 66.7 s and 68.6 s OGG loops, plus three jingles; D61)
 - [x] Optional: final SFX to replace the 17 placeholder WAVs — §11.3, D19 (done 2026-09-26: the SFX v2 WAVs, D61)
 - [ ] Listening check: `jingle_reward` reaches −17 RMS through up to 8.1 dB of limiting (`jingle_chapter` 4.5 dB, `jingle_oom` 2.5 dB). Compare the three in `design/prototypes/Nesty Soundtrack.dc.html` (serve `design/` over http); if `jingle_reward` sounds squashed, ask Claude Design for a gentler master — v3 issue 3 (M7)
@@ -1086,6 +1339,8 @@ takes the designs when they arrive.
 - [x] A text-link style in tokens.json ("Back to Home" on 4.9 uses `buttonSmall` at 16, `TODO(design)` in `features/gameplay/overlays/overlay_text_link.dart`) — frame 4.9, M3 review FIDELITY-11 (M7) (done 2026-09-30: delivered in m7-3: tokens v3 `textLink`, with a 48 dp hit box (D201); lane O, m7 P4.7)
 - [x] Tokens for the 5.6 and 8.1 colours now in `AppColors` (`chestGlow`, `chestShadow`, `symbolsCardSelectedFace`, `symbolsCardRing`), with the item above on `app_colors.dart` — M3 review FIDELITY-8, FIDELITY-12 (M7) (done 2026-09-30: delivered in m7-3: `chestModal.*` and `settings.colorSymbolCards`; lanes O and D, m7 P4.6, P4.7)
 - [x] The M7 phase-1 stand-ins, built in the design's system with `TODO(design)` until Claude Design's section I and J frames land: Chapters (10.4, `chapter_section_card.dart`, `chapter_level_cell.dart`), Records and its badge glyphs (10.6, I.6, `badge_toast.dart`, the best-moves link icon in `records_page.dart`), the win card's moves line, the replay card (10.5; the HUD's "Replay" tag was removed, D170; its reason line sits on the coin pill's cream surface since D162), the milestone and day-7 chest opening (10.3, `chest_reward_sequence.dart`), the relaxed "∞" badge and the always-free Undo row (10.9), the paused streak (10.7), the Settings rows and the reduce-motion sheet (10.2), the vs Computer tile's glyph and colour (9.1, C.8, `home_page.dart`), the Museum's clarity pass (J.2) and the "Not enough coins" dialog (J.3, G.10) — m7 §15, §15.10, design request C, I, J (M7) (done 2026-09-30: delivered in m7-3: sections I and J; lanes M, O and D, m7 P4.5–P4.7)
+- [ ] design: phase 5's ten questions to Claude Design, "Follow-up after m7-3" §11 (the undo's motion, the wobble settle before a move, the relit card's twinkle sizes, the Museum's Play at 36, Chapters' "levels to go" inline, the spotlight's 300, `layout.chapters.scroll.foldedAbove`, four frame-only colours, a type token per surface, the all-home card's badge art); each ships its default — phase 5A, lanes B, O, M, RD
+- [ ] design: the undo's motion (`TODO(design): Q160` in `timeline_plans.dart`) and the chest flights' values (`TODO(design)` FU 1.7 in `reward_ring.dart`, `reward_flight.dart`) — lanes B and O, D217, D221
 
 ### Copy to confirm
 
@@ -1102,6 +1357,11 @@ takes the designs when they arrive.
 - [ ] Create the 6 §9.2 products in Play Console and App Store Connect — §9.2 (M6)
 - [ ] App Privacy and Data Safety forms, the target-audience declaration, and a legal check — §17 (M8)
 - [ ] Production Firebase project and signing material (upload keystore, Apple certificates) — §18 M8 (M8)
+- [ ] A legal check of the kid path: COPPA's amended rule for a mixed audience, the Play Families declaration, a UK Children's Code DPIA, GDPR Art. 8 consent ages and Texas SB 2420 — §17, D260 (M4: its analytics default waits on it; M8)
+
+### Device checks (the owner's phone)
+
+- [ ] The VoiceOver pass on a physical iPhone, with [plans/voiceover-checklist.md](plans/voiceover-checklist.md) (turn it on, the screens in the semantics tour's order with what each must say, what to report, the known limit Q154) — M7 review R12, phase 5 (owner)
 
 ### Decisions
 
@@ -1222,10 +1482,33 @@ takes the designs when they arrive.
 - [ ] Q155: should the reminder load `timezone`'s `latest_all` (about 380 KB and 3 ms more) instead of P3.10's `latest_10y`, so the 132 backward-link zone ids resolve in Dart too? Default: keep `latest_10y`; the platform already gets the device's own id since R9 (M7, D166, review R9)
 - [ ] Q156: the ch07–ch10 theme prices, which no source sets? Default: 2,000 each, the top of spec §7.3's theme range (M7, D199)
 - [ ] Q157: the splash's "Nesty needs about 60 MB" (copy.md E `splash_storage_body`)? Default: copy.md's line with 60 in `SplashCopy.storageMegabytes` (M7, D196)
-- [ ] Q158: a reminder the OS blocked has no off switch in the app (Settings draws the toggle off and opens the phone's settings, frame 10.2f), so it starts as asked if notifications are allowed later. Add a "Turn off" link on the blocked row? Default: no extra control (M7, D190, D207)
-- [ ] Q159: Records' families cell shows the rule's plain count, "Families completed" (every family a won board completed), not frame 10.6's "N of 10 Families home", which is the Museum's count. Keep it, or show the Museum's count? Default: the plain count (M7, D209)
+- [x] Q158: a reminder the OS blocked has no off switch in the app (Settings draws the toggle off and opens the phone's settings, frame 10.2f), so it starts as asked if notifications are allowed later. Add a "Turn off" link on the blocked row? Default: no extra control (M7, D190, D207) (done 2026-10-04: answered "Build it" on 2026-10-01; D235, D244)
+- [x] Q159: Records' families cell shows the rule's plain count, "Families completed" (every family a won board completed), not frame 10.6's "N of 10 Families home", which is the Museum's count. Keep it, or show the Museum's count? Default: the plain count (M7, D209) (done 2026-10-04: answered by the design, DELIVERY 8.5: "Families completed" with the doll mark)
+- [ ] Q160: the undo's motion. No frame draws one. Default: the moved doll flies back along its own path, `doll_move` reversed (260 ms, `whoosh`, 130 ms under reduce motion), with `TODO(design): Q160`. Or keep the cut until Claude Design draws one? (M7, D221, D227)
+- [ ] Q161: close M7 with the owner-only items open? The "matches the design screens" acceptance needs your sign-off and several checks need a phone (VoiceOver, a real reminder, the haptic feel, the final mix, the ten flagged levels). Default: M7 is "code complete, acceptance waits on the owner", as M2 and M3 are (D90); M4 doesn't start until you say so (M7, phase 5)
+- [ ] Q162: which local habits to build after M7, if any? Welcome back, a month of played days, the last 7 dailies playable, and a home-screen widget. Default: the first three in that order, and the widget only after them. None starts until M7 is closed. Firebase, the admin and purchases stay after that (D237) — local-habits, D237
+- [ ] Q168: the freeze chip reads "0 left" in frames 5.2 and 7 of DELIVERY, and "left" is on the respect deny-list. Default: "No freeze" and "{count} streak freeze(s)" (M7, D242, D247; D110, Q95)
+- [ ] Q169: the deepest tower silhouette sits 10.42 dp under the HUD where tokens' worked example says 10.8. Default: keep 10.42 (M7, D243)
+- [ ] Q170: on four shelves the ice reaches about 13 dp into the plank above (the design's own numbers); the check is skipped for that preset and no level uses four shelves. Default: accept (M7, D243)
+- [ ] Q171: the badge toast sits over the win ribbon on screens under about 800 dp (TalkBack T2). Default: no change (M7, D250)
+- [ ] Q172: a picked rival card reads "Selected" and is also a checked radio, so TalkBack may say both. Default: as copy.md says (M7, D250)
+- [ ] Q173: which engagement proposals to build after the local habits, and in what order? Default: wave 1 first (ER1 Free Play, ER2 milestones, ER3 the monthly recap, ER4 challenge codes, ER5 the healthy-play kit), then the wave 2 items you pick (ER6–ER9), with ER10 and ER11 later. None starts until M7 is closed (after M7, D259) — engagement-research
+- [ ] Q174: the kid path's details. Defaults: Play bands 9–12 plus 13+; the age question after the first win, with store signals where available; kid-path ads child-directed, G and certified, with no rewarded placements; purchases behind the parental gate; the reminder and sharing turned on by a grown-up; analytics off for under-13 and unknown age until the legal check; not in Apple's Kids Category. Or no ads on the kid path, or younger bands? (the local phase, M4, M6, M8; D260) — engagement-research §6
+- [ ] Q175: Spanish neutral Latin American and every `pt_*` phone to Brazilian Portuguese? Default: yes (M7, D261)
+- [ ] Q176: a "Phone's language" row in the language sheet? Default: no, a fresh install follows the phone and a tap pins (M7, D261)
+- [ ] Q177: rival names as translated meanings (Guijarro, Kiesel, コイシ…) or Pebble, Button, Comet everywhere? Default: translated (M7, D265)
+- [ ] Q178: the registers, French "tu" in particular? Default: tu, as built (M7, D265)
+- [ ] Q179: Hindi: everyday Hindi with the English game words (default), or formal Hindi? (M7, D265)
+- [ ] Q180: a native reader of each language before the store release? Default: no; two Opus review passes are the check (M8, D240)
+- [ ] Q181: the HUD level pill sits a few dp off-centre at 360 dp with a five-digit balance and a long tier instead of scaling under the 0.75 floor. Default: as built (M7, D263)
+- [x] Q182: the daily gift (D268): (a) when, (b) button or daily sheet, (c) the track, (d) the kid path (answered 2026-10-05: the owner approved the plan with the defaults: after M7 and before the local habits; a Home button with a dot and no popup; 20 · 30 · hint · 40 · 50 · hint · 100 + slot; the same gift for everyone)
+- [ ] Paste the daily gift's rule into GAME_SPEC.md (plan-login-gift §7.5b, a §7.3 row and the §9.4 key `login_gift_track`), or keep it as the approved text, as Q85 does for M7 (D268)
 - [x] Q30–Q38: the M1 and render decisions to confirm (towerless grading, expert-only generated levels, solver targets, admin memory, the curve table, the recorded defaults, bundle policy, authored levels, render defaults) (done 2026-09-26: the owner confirmed the recorded defaults, D52)
 - [ ] Update GAME_SPEC.md for this round's deviations, or keep them recorded only in PROGRESS? They are §2.2 tap policy (D22), §3.6 extra-slot placement (D22), §13.5 bundled art (D20), the §12.3/§13.3 symbols value (Q4), and the §12.3/§13.3 default symbols mode, now `large` (D91) — D19–D22, D91
+- [x] Q183: the 9.5 race-loss card plays the Computer's `win` hop with confetti over the player's loss (the ethics lens's P1). Ship the design as delivered (default), or switch to TC8's polite bow? (M7 phase 5; themes-characters-story §11) (answered 2026-10-05: keep as designed, D273)
+- [ ] Q184: which themes, characters and story proposals (TC1–TC14) to build and in what order; TC-FX and TC-DATA come with the items that need them. Also: the mascot's name, and the squad's names and chapter, after a legal check; the route for new lands in TC5 and TC6 (default: with M4's weekly levels); whether the story keeps the tokens' figurine pairing (default: yes, as its plot); and whether passed beats replay in the flow (default: no, the Storybook only). Default order: wave 1 (TC7, TC8, TC1), then TC4a, then TC13 (themes-characters-story §11, D270)
+- [x] Q185: may the daily gift start before M7's owner sign-offs (the design sign-off Q161, the VoiceOver pass, Claude Design's follow-up)? Default: it starts when the owner says so, without waiting for them, as D90 did for M2 and M3 — PROGRESS Q185 (answered 2026-10-05: start it next, D272)
+- [ ] A lawyer's clearance for any hero-squad or fashion-doll names, emblems and designs, including Claude Design's generated art, before they ship (TC2, TC3; themes-characters-story §0) — M8 at the latest
 
 ## Tech debt
 
@@ -1267,6 +1550,7 @@ takes the designs when they arrive.
 - [ ] `winRewardFor` lives in the bloc's `features/gameplay/bloc/win_reward.dart`, and `core/repository/fake_level_resolver.dart` (and the M3 `DefaultLevelResolver`) import it from there. Move it next to `RemoteConfigKeys` if more of core needs it — m3 §6.2
 - [ ] Deleting `apps/game/build/` alone leaves `apps/game/.dart_tool/flutter_build/` stamps that say the iOS native assets (objective_c's framework) are built, so the next iOS build fails with "NativeAssetsManifest.json references objective_c, which was not found". Clean both (`flutter clean`, or remove `.dart_tool/flutter_build` too); README "Troubleshooting" says so — fix-and-close verification
 - [ ] GameplayPage keeps the bloc of its first request when the router reuses its page for another GameplayRoute (a replaceAll from one level page to another); no app path does it today — M7 device stage, daily_fingerprint_test
+- [ ] `block-generated` hook could also guard `tools/fonts/subset/*.txt` (generated by `gen_font_subsets`); optional — 5b-fonts; M7 (moved from M7, 2026-10-05: optional tooling, not M7 scope (5c-classify))
 
 ## Closed questions
 

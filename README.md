@@ -176,6 +176,7 @@ nothing and fails on drift:
 dart run nesty_tools:gen_design_tokens    # design/tokens.json → *.gen.dart token files
 dart run nesty_tools:sync_design_assets   # design/ art, UI art, audio, Lottie → apps/game/assets, + the Android notification icon
 dart run nesty_tools:gen_nesty_icons      # NestyIcons from the bundled icon font
+dart run nesty_tools:gen_font_subsets     # the hi/ja font subset lists (tools/fonts/subset/); then build_fonts.sh
 dart run nesty_tools:todo_index           # docs/TODO_INDEX.md from TODO(<tag>) markers
 tools/fonts/build_fonts.sh [--verify]     # bundled fonts from pinned upstream (network)
 ```
@@ -197,6 +198,7 @@ flutter analyze                               # the policy is zero issues
 cd packages/nesty_core   && dart test         # must always pass
 cd packages/nesty_render && flutter test
 cd apps/game             && flutter test      # cubit + widget tests on fake services
+cd apps/game             && flutter test test/overflow --dart-define=NESTY_TEST_LOCALE=de   # the overflow suite in one locale (de es fr hi id ja pt pt_BR tr; nesty-test and CI loop all nine)
 cd apps/admin            && flutter test
 cd tools                 && dart test         # nesty_tools
 ```
@@ -206,9 +208,10 @@ shell has it as the `nesty-test` alias) runs the host checks, then boots an
 iPhone 16 Pro simulator and shows it,
 installs the app fresh and runs the on-device checks below: the
 playthrough with its screenshots, the kill-and-resume, the daily
-fingerprint against nesty_core's own level, and M7 phase 4's five files
-(board layouts, race loss, meta screens, daily states, overlays), each from
-a fresh install. It prints a PASS/FAIL summary
+fingerprint against nesty_core's own level, M7 phase 4's five files
+(board layouts, race loss, meta screens, daily states, overlays) and phase
+5's two (failure states, the screen readers' tour), each scenario from a
+fresh install. It prints a PASS/FAIL summary
 and exits 1 if any step failed; logs, screenshots and `summary.txt` go to
 `apps/game/build/nesty-test/<timestamp>/` (`latest` links the newest run).
 
@@ -225,8 +228,13 @@ generated files:
 It stops early, with a message, when the disk has less than 8 GB free
 (`NESTY_TEST_MIN_FREE_GB` changes that). A full disk otherwise fails the
 playthrough deep inside `flutter drive`. A step whose log shows "No space
-left on device" says so. Only the newest 5 runs are kept in
-`apps/game/build/nesty-test/` (`NESTY_TEST_KEEP_RUNS`).
+left on device" says so. Each device step starts `flutter drive`'s
+command log (`build/flutter_driver_commands_0.log`, which holds every
+screenshot's data) empty. A step that hangs at attach (the app is up, but
+`flutter drive` never connects, so its `--timeout` never starts) is stopped
+and fails after 8 minutes at its build line (`NESTY_TEST_ATTACH_HANG_S`).
+Only the newest 5 runs are kept in `apps/game/build/nesty-test/`
+(`NESTY_TEST_KEEP_RUNS`).
 
 [docs/TEST_COVERAGE.md](docs/TEST_COVERAGE.md) lists what checks each
 feature, on the host and on a device. Every new feature adds its device step
@@ -236,11 +244,24 @@ and its row there (CLAUDE.md "Testing", D169).
 tools/scripts/nesty-test                    # everything, on the iPhone 16 Pro simulator
 tools/scripts/nesty-test --device-only      # skip the host checks
 tools/scripts/nesty-test --android          # the flutter_emulator AVD, with its window
-tools/scripts/nesty-test --device "iPhone 15 Pro Max" --only playthrough
+tools/scripts/nesty-test --device 87BDED37-4095-49C4-811A-3E2B7D5FB38B --only playthrough   # the iPhone 16e (390x844), by UDID
 tools/scripts/nesty-test --device-only --only board,race,meta,daily_states,overlays   # phase 4's files
+tools/scripts/nesty-test --device-only --only faults,semantics   # phase 5's files
+tools/scripts/nesty-test --device-only --only locales            # de, hi, ja on a device (5B)
+tools/scripts/nesty-test --android --android-size 1170x2532@480 --device-only   # the emulator at 390x844 dp
 tools/scripts/nesty-test --android --only reminder   # the optional Android reminder check
 tools/scripts/nesty-test --help             # every option
 ```
+
+`--device` takes a simulator name or UDID (iOS) or an AVD name or running
+serial (Android). Pass a UDID when several simulators share a name, and
+never one that is in use for something else. `NESTY_TEST_IOS_DEVICE` and
+`NESTY_TEST_ANDROID_DEVICE` set the default behind `--device` for each
+platform. `--android-size WxH@dpi` (or `NESTY_TEST_ANDROID_SIZE`) sets the
+emulator's screen with `adb shell wm size` and `wm density` after boot, and
+the exit trap resets both, only if the run set them: `1170x2532@480` is 390
+x 844 dp, the iPhone 16e's size, for side-by-side comparisons with the
+design frames.
 
 The on-device checks run the dev flavor with every real service (Hive, the
 isolate solver and generator, SoLoud, the Lottie files) on a booted
@@ -358,20 +379,63 @@ $T --target integration_test/race_loss_test.dart \
   --dart-define=NESTY_RACE_SCENARIO=loss --dart-define=NESTY_RACE_PACE_MS=250
 $T --target integration_test/race_loss_test.dart \
   --dart-define=NESTY_RACE_SCENARIO=oom --dart-define=NESTY_RACE_PACE_MS=600000
-$T --target integration_test/meta_screens_test.dart   # Home, Chapters, Museum, Records, Shop
+$T --target integration_test/race_loss_test.dart \
+  --dart-define=NESTY_RACE_SCENARIO=restart --dart-define=NESTY_RACE_PACE_MS=1000
+$T --target integration_test/meta_screens_test.dart \
+  --dart-define=NESTY_META_SCENARIO=returning   # or finale, complete
 $T --target integration_test/daily_states_test.dart \
-  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, settings
-$T --target integration_test/overlays_test.dart   # the win card, chests, 12.5-12.9, intro loops
+  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, saved, settings
+$T --target integration_test/overlays_test.dart   # the win card, chests, 12.5-12.9, the undo, intro loops
 ```
 
 `board_layouts_test` finds its levels by scanning the bundle (a size-5, the
 tall preset, a tall glass case, a top-shelf tower, an iced tower, two +1
-Slots). `race_loss_test`'s `loss` lets the computer finish first, then
-Rematch, Pause with Settings, Leave race's confirm and New race; `oom`
-seeds rival 1 at race 5, so Start makes race 6 (races 1–5's roomy boards
-reach no dead end), and walks core's shortest line to Out of Moves. `daily_states_test`'s `chest` seeds a
-6-day streak and opens the day-7 chest, `paused` relights a paused flame,
-and `settings` toggles every row and plays a relaxed board.
+Slots), then opens chapters 7–10's first levels for their ribbons and their
+own shelf wood. `race_loss_test`'s `loss` lets the computer finish first,
+then Rematch, Pause with Settings, Leave race's confirm and New race, with
+the rival's portrait reacting on the strip and the card; `oom` seeds rival 1
+at race 5, so Start makes race 6 (races 1–5's roomy boards reach no dead
+end), walks core's shortest line to Out of Moves and shoots the sheet at
+1.3× text too; `restart` races rival 2's race 39 at stage 20, the race whose
+rival restarts first (its 7th step), and shoots the strip's "Starting over"
+(9.3c), around it checking rival select's pick on a new visit (the rival
+last raced). `meta_screens_test`'s `returning` walks a returning player's
+screens (a purchase with no card included), `finale` shoots Home with level
+60's Super Hard PLAY (12.1) and `complete` Home past level 200 and the
+Museum with all ten families (12.2, 6.1c). `daily_states_test`'s `chest`
+seeds a 6-day streak and opens the day-7 chest and the offer's time picker,
+`paused` relights a paused flame and sees Home's badge glow once, `saved`
+lets a freeze cover yesterday (the toast and the streak card's freeze line,
+5.2), and `settings` toggles every row and plays a relaxed board.
+`overlays_test` replays level 1 three ways (1, 2 and 3 stars) for the win
+card's heights. The resume pair also runs with
+`--dart-define=NESTY_RESUME_SCENARIO=l1` on both phases (E9): one move on
+level 1 during its tutorial, the kill, and the splash reopening level 1
+with the same board.
+
+M7 phase 5's two device files run one scenario per launch, each from a
+fresh install. `faults_test` (screenshots `f_`) installs a fault through
+the test-only seam `bootstrap(beforeRunApp:)`: decorators in
+`integration_test/support/fault_services.dart`, registered over the real
+services with GetIt's `allowReassignment`, and nothing in `lib/`. Its
+reminder scenarios go on to Settings: `reminder_granted` the Time row, a
+new time's app-wide toast and the switch off and on, `reminder_denied` the
+blocked row's Turn off.
+`semantics_tour_test` (screenshots `s_`) walks each screen's semantics tree
+in traversal order and writes it to the response data (`semantics`). It
+fails on a tap target with no label, a label read twice in a row, a rival
+named without "Computer", or a page reachable under a modal overlay. With
+`--dart-define=NESTY_A11Y_HOLD=1` it waits on each screen for a TalkBack
+pass:
+
+```bash
+$T --target integration_test/faults_test.dart \
+  --dart-define=NESTY_FAULT_SCENARIO=storage   # or content, race_failed, generating,
+                                               # bonus_failed, reminder_granted, reminder_denied
+$T --target integration_test/semantics_tour_test.dart \
+  --dart-define=NESTY_A11Y_SCENARIO=game        # or meta (with NESTY_FAKE_DATE), race
+                                                # (NESTY_RACE_PACE_MS=600000), race_loss (=250)
+```
 
 The daily reminder's optional Android check (M7 phase 3) turns "Daily
 reminder" on in Settings and expects the one pending reminder, then off and

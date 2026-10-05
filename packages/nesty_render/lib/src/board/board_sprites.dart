@@ -94,6 +94,29 @@ enum BoardSprite {
 
   const BoardSprite(this.assetName, this.designSize);
 
+  /// The three pieces a chapter's own board wood replaces (tokens v4
+  /// `theme.chapters.N.boardArt`, m7-4 A.5).
+  bool get isThemedWood =>
+      this == slotStand || this == towerBase || this == shelfPlank;
+
+  /// The glass cases and the ice: pieces drawn at a slot's overlay scale
+  /// (`SlotGeometry.overlayFurnitureScale`), which follows the dolls' fit
+  /// factor on four shelves (m7-4 5.2).
+  bool get isOverlay => switch (this) {
+    glassCase0 ||
+    glassCase1 ||
+    glassCase2 ||
+    glassCaseTall0 ||
+    glassCaseTall1 ||
+    glassCaseTall2 ||
+    ice0 ||
+    ice1 ||
+    ice2 ||
+    ice3 ||
+    iceShatter => true,
+    _ => false,
+  };
+
   /// The tall case's box on the reference board: `GlassCaseTallTokens`'
   /// ratios × the 150-unit reference doll, rounded as the tokens' own
   /// example ("93×152 for h 150"), which is also the tall frames' Lottie
@@ -243,20 +266,33 @@ final class BoardSpriteLibrary {
   BoardSpriteLibrary._(this._pictures, this.failures, this.onError);
 
   /// Loads `<basePath>/<name>.svg` for every [BoardSprite] from [bundle]:
-  /// the game's `assets/board/`.
+  /// the game's `assets/board/`. With [themedPath] (a chapter's
+  /// `assets/board/chNN`) its stand, tower base and plank come from there.
   static Future<BoardSpriteLibrary> load(
     AssetBundle bundle, {
     String basePath = 'assets/board',
+    String? themedPath,
     void Function(Object error, StackTrace stack)? onError,
   }) async {
     final texts = <BoardSprite, String>{};
     final failures = <BoardSprite, Object>{};
     Future<void> read(BoardSprite sprite) async {
       try {
-        texts[sprite] = await bundle.loadString(
-          '$basePath/${sprite.fileName}',
-          cache: false,
-        );
+        // A chapter's own wood (m7-4 A.5) replaces the stand, tower base
+        // and plank; a themed file that fails falls back to the shared one.
+        final themed = themedPath != null && sprite.isThemedWood;
+        try {
+          texts[sprite] = await bundle.loadString(
+            '${themed ? themedPath : basePath}/${sprite.fileName}',
+            cache: false,
+          );
+        } on Object {
+          if (!themed) rethrow;
+          texts[sprite] = await bundle.loadString(
+            '$basePath/${sprite.fileName}',
+            cache: false,
+          );
+        }
       } on Object catch (error, stack) {
         failures[sprite] = error;
         _report(onError, error, stack, 'board sprite ${sprite.name}');
@@ -653,7 +689,7 @@ final class BoardSprites extends ChangeNotifier {
           slot.usesTallCase
               ? BoardSprite.glassCaseTall0
               : BoardSprite.glassCase0,
-          scale,
+          slot.overlayFurnitureScale,
         );
       }
       for (final sprite in extra) {
@@ -743,9 +779,12 @@ final class BoardSprites extends ChangeNotifier {
   BoardSpriteImage? standFor(SlotGeometry slot) =>
       image(BoardSprite.standFor(slot.kind), slot.furnitureScale);
 
-  /// [sprite] at [slot]'s furniture scale.
-  BoardSpriteImage? forSlot(BoardSprite sprite, SlotGeometry slot) =>
-      image(sprite, slot.furnitureScale);
+  /// [sprite] at [slot]'s furniture scale: the glass cases and the ice at
+  /// its overlay scale (`SlotGeometry.overlayFurnitureScale`).
+  BoardSpriteImage? forSlot(BoardSprite sprite, SlotGeometry slot) => image(
+    sprite,
+    sprite.isOverlay ? slot.overlayFurnitureScale : slot.furnitureScale,
+  );
 
   /// Every shelf plank of [geometry], drawn first (NestyBoard:12).
   void drawPlanks(Canvas canvas, BoardGeometry geometry) {

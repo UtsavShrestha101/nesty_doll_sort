@@ -212,6 +212,8 @@ final class ChapterPalette {
     required this.onAccent,
     required this.soft,
     required this.ink,
+    required this.ribbonTail,
+    required this.ribbonFold,
   });
 
   final Color band;
@@ -221,6 +223,12 @@ final class ChapterPalette {
   final Color onAccent;
   final Color soft;
   final Color ink;
+
+  /// The chapter ribbon's tails and their folds (tokens v4, m7-4 4.15):
+  /// `ui_chapter_ribbon`'s `tail_fill` and `fold_fill` (LOTTIE.md "Tint and
+  /// width"); its band is [accent] and its edge [accentEdge].
+  final Color ribbonTail;
+  final Color ribbonFold;
 }
 
 /// One chapter theme (tokens v3 `theme.chapters.N`): its id (the catalog's
@@ -232,6 +240,7 @@ final class ChapterThemeToken {
     required this.id,
     required this.palette,
     required this.thumb,
+    this.boardArtDir,
   });
 
   /// 1-based.
@@ -245,4 +254,11 @@ final class ChapterThemeToken {
   /// The Shop card crop, in art px, at `ChapterThemeTokens.thumbBox`'s
   /// ratio.
   final Rect thumb;
+
+  /// The chapter's own board wood (tokens v4 `boardArt`, m7-4 A.5), the
+  /// folder under `assets/` that holds its themed `shelf-plank.svg`,
+  /// `slot-stand-blank.svg` and `tower-base-blank.svg` (`board/ch07/`), or
+  /// null when the chapter uses the shared `board/` art. The other pieces
+  /// (extra slot, glass, ice) stay shared.
+  final String? boardArtDir;
 }

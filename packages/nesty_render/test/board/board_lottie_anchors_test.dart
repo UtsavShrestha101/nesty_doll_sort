@@ -236,10 +236,13 @@ void main() {
       final middle = g.slot('r0c1');
       final fs = middle.furnitureScale;
       expect(middle.hintArrowCenterX(3), middle.centerX);
-      // D62's downward nudge is gone for this case.
+      // D62's 16 dp cap is gone for this case, but `hintMiddle.clampTop`
+      // (m7-4 5.4) holds: the arrow's highest bob point stays at 112 (4 dp
+      // under the level pill), moved down over the doll's head.
+      expect(peakOf(middle, 3).top, closeTo(59 + 49 + 4, 1e-9));
       expect(
         middle.hintArrowCenterY(3),
-        closeTo(middle.dollTopY(3) - 33 * fs, 1e-9),
+        greaterThan(middle.dollTopY(3) - 33 * fs),
       );
       expect(middle.hintNeedsCounter(3), isTrue);
       // Its top reaches the counter's pill, which fades.

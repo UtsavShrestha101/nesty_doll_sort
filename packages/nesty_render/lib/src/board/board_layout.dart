@@ -115,6 +115,8 @@ abstract final class BoardLayout {
             plankAboveRef: r == 0 ? null : preset.plankTops[r - 1],
             iceHeightRef: preset.iceHeight,
             tallIce: preset.tall,
+            // Four shelves: the glass and the ice follow the dolls' k.
+            overlayK: preset.piecesFollowK ? result.k : 1,
           ),
       ];
       index += n;

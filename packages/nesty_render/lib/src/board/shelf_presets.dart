@@ -15,6 +15,7 @@ final class ShelfPreset {
     required this.designed,
     this.iceHeight = 160,
     this.tall = false,
+    this.piecesFollowK = false,
   });
 
   /// Plank top y per shelf, top to bottom, on the 390×844 reference screen.
@@ -35,6 +36,11 @@ final class ShelfPreset {
   /// The size-6 preset (`threeShelvesTall`): its taller ice is played
   /// stretched.
   final bool tall;
+
+  /// Four shelves: the glass case and the ice scale with the dolls' fit
+  /// factor k about the stand surface (tokens.json `layout.boardPresets.
+  /// fourShelves.pieces`, m7-4 5.2).
+  final bool piecesFollowK;
 
   int get shelfCount => plankTops.length;
 }
@@ -75,13 +81,14 @@ abstract final class ShelfPresets {
     tall: true,
   );
 
-  // TODO(design): fourShelves draws no glass or ice; pieces scale with the
-  // dolls (a stand's furniture scale follows its pitch only, so a glass case
-  // or ice on 4 shelves reaches the shelf above; no bundled level uses it).
+  /// Four shelves (optional; no bundled level uses it): the glass case and
+  /// the ice scale with k about the stand surface (m7-4 5.2), so they stay
+  /// under the shelf above.
   static final four = ShelfPreset(
     plankTops: BoardPresetTokens.fourShelves.plankTops,
     maxDollHeight: BoardPresetTokens.fourShelves.slotMaxDollHeight,
     designed: true,
+    piecesFollowK: true,
   );
 
   /// The preset for [shape]: the shelf count, and `maxSize` 6 on three

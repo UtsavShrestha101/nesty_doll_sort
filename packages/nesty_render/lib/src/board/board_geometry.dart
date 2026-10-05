@@ -128,8 +128,14 @@ final class SlotGeometry {
     double? plankAboveRef,
     double iceHeightRef = _K.iceHeight,
     bool tallIce = false,
+    double overlayK = 1,
   }) {
     final q = pieceScale;
+    // The glass case and the ice scale with the stand (`q`) about their
+    // bottom centre, and on four shelves also with the dolls' factor
+    // [overlayK] about the stand surface (tokens.json `layout.boardPresets.
+    // fourShelves.pieces`, m7-4 5.1, 5.2): 1 on every other preset.
+    final qo = q * overlayK;
     final tower = shape.kind == SlotShapeKind.tower;
     final standBottomRef = plankTopRef + _K.standBottomInset;
     final standTopRef =
@@ -138,8 +144,11 @@ final class SlotGeometry {
     // The ice's bottom is 16.5 below the plank's top on every stand (the
     // design's `it = pt + 16.5 − height`, a tower's too), its top the
     // preset's height above.
-    final iceBottomRef = standBottomRef + _K.iceBottomBelowStandBottom * q;
-    final iceTopRef = iceBottomRef - iceHeightRef * q;
+    // On four shelves the ice's bottom keeps its distance below the stand
+    // surface scaled by [overlayK], so the ice scales about that surface.
+    final iceBottom0Ref = standBottomRef + _K.iceBottomBelowStandBottom * q;
+    final iceBottomRef = surfaceRef + (iceBottom0Ref - surfaceRef) * overlayK;
+    final iceTopRef = iceBottomRef - iceHeightRef * qo;
 
     // The tall glass case (m7-3 `layout.board.glassCaseTall`): a sealed
     // size-5 or size-6 doll, taller than a normal case was drawn for
@@ -163,12 +172,13 @@ final class SlotGeometry {
     final caseHeight = tallCase
         ? math.min(
             sealedHeight,
-            (fit.length(pitchRef) - 2 * fit.scale) /
+            (fit.length(pitchRef) -
+                    BoardTokens.tallGlassPitchInset * fit.scale) /
                 GlassCaseTallTokens.widthPerHeight,
           )
         : 0.0;
-    final caseTopRef = surfaceRef - _K.glassCaseTopAboveSurface * q;
-    final lockedBaseRef = caseTopRef + _K.lockedDollBaseBelowCaseTop * q;
+    final caseTopRef = surfaceRef - _K.glassCaseTopAboveSurface * qo;
+    final lockedBaseRef = caseTopRef + _K.lockedDollBaseBelowCaseTop * qo;
 
     final pitch = fit.length(pitchRef);
     final centerX = fit.x(centerXRef);
@@ -199,6 +209,7 @@ final class SlotGeometry {
       pitch: pitch,
       pieceScale: q,
       furnitureScale: fit.scale * q,
+      overlayFurnitureScale: fit.scale * qo,
       plankTop: fit.y(plankTopRef),
       standRect: Rect.fromLTRB(
         fit.x(centerXRef - _K.standWidth / 2 * q),
@@ -228,10 +239,10 @@ final class SlotGeometry {
       glassCaseRect: tallCase
           ? _tallCaseRect(centerX, fit.y(surfaceRef), caseHeight)
           : box(
-              centerXRef - _K.glassCaseWidth / 2 * q,
+              centerXRef - _K.glassCaseWidth / 2 * qo,
               caseTopRef,
-              _K.glassCaseWidth * q,
-              _K.glassCaseHeight * q,
+              _K.glassCaseWidth * qo,
+              _K.glassCaseHeight * qo,
             ),
       lockedDollBaseY: tallCase ? fit.y(surfaceRef) : fit.y(lockedBaseRef),
       padlockSymbolCenter: Offset(
@@ -241,20 +252,20 @@ final class SlotGeometry {
                   GlassCaseTallTokens.lockCenter *
                       GlassCaseTallTokens.heightPerHeight *
                       caseHeight
-            : fit.y(caseTopRef + _K.padlockCenterBelowCaseTop * q),
+            : fit.y(caseTopRef + _K.padlockCenterBelowCaseTop * qo),
       ),
-      padlockSymbolSize: fit.length(_K.padlockSymbolSize * q),
+      padlockSymbolSize: fit.length(_K.padlockSymbolSize * qo),
       iceRect: box(
-        centerXRef - _K.iceWidth / 2 * q,
+        centerXRef - _K.iceWidth / 2 * qo,
         iceTopRef,
-        _K.iceWidth * q,
-        iceHeightRef * q,
+        _K.iceWidth * qo,
+        iceHeightRef * qo,
       ),
       iceBadgeRect: box(
-        centerXRef + _K.iceBadgeOffsetX * q,
-        iceTopRef + _K.iceBadgeOffsetY * q,
-        _K.iceBadgeSize * q,
-        _K.iceBadgeSize * q,
+        centerXRef + _K.iceBadgeOffsetX * qo,
+        iceTopRef + _K.iceBadgeOffsetY * qo,
+        _K.iceBadgeSize * qo,
+        _K.iceBadgeSize * qo,
       ),
       hitRect: Rect.fromLTRB(
         centerX - hitHalfWidth,
@@ -264,19 +275,20 @@ final class SlotGeometry {
       ),
       glassCompositionOrigin: tallCase
           ? Offset(
-              centerX - glassTallCompositionAnchor.dx * fit.scale * q,
-              fit.y(surfaceRef) - glassTallCompositionAnchor.dy * fit.scale * q,
+              centerX - glassTallCompositionAnchor.dx * fit.scale * qo,
+              fit.y(surfaceRef) -
+                  glassTallCompositionAnchor.dy * fit.scale * qo,
             )
           : Offset(
-              centerX - glassCompositionAnchor.dx * fit.scale * q,
-              fit.y(lockedBaseRef) - glassCompositionAnchor.dy * fit.scale * q,
+              centerX - glassCompositionAnchor.dx * fit.scale * qo,
+              fit.y(lockedBaseRef) - glassCompositionAnchor.dy * fit.scale * qo,
             ),
       iceCompositionOrigin: Offset(
-        centerX - iceCompositionAnchor.dx * fit.scale * q,
+        centerX - iceCompositionAnchor.dx * fit.scale * qo,
         fit.y(iceBottomRef) -
             iceCompositionAnchor.dy *
                 fit.scale *
-                q *
+                qo *
                 (tallIce ? BoardTokens.iceTallFxScaleY : 1),
       ),
       iceFxScaleY: tallIce ? BoardTokens.iceTallFxScaleY : 1,
@@ -284,7 +296,7 @@ final class SlotGeometry {
           fit.y(iceBottomRef) -
           _iceDollAboveBottom *
               fit.scale *
-              q *
+              qo *
               (tallIce ? BoardTokens.iceTallFxScaleY : 1),
       pipScale: fit.scale,
       // The tower stack (m7-3 `layout.towerStack`), in reference units: the
@@ -345,6 +357,7 @@ final class SlotGeometry {
     required this.pitch,
     required this.pieceScale,
     required this.furnitureScale,
+    required this.overlayFurnitureScale,
     required this.plankTop,
     required this.standRect,
     required this.surfaceY,
@@ -405,6 +418,13 @@ final class SlotGeometry {
   /// (`BoardFit.scale × pieceScale`). The stand sprite is
   /// `90 × furnitureScale` wide, the "+N" tag text `12 × furnitureScale`.
   final double furnitureScale;
+
+  /// [furnitureScale] for the glass case and the ice (and their
+  /// compositions and sprites): the same on every preset but four shelves,
+  /// where those pieces also follow the dolls' fit factor k about the stand
+  /// surface (`fourShelves.pieces`, m7-4 5.2), so a case or ice no longer
+  /// reaches the shelf above.
+  final double overlayFurnitureScale;
 
   /// Top of this slot's shelf plank.
   final double plankTop;
@@ -579,7 +599,14 @@ final class SlotGeometry {
     final rest =
         dollTopY(size) +
         (_K.hintArrowOffsetY + _K.hintArrowHeight / 2) * furnitureScale;
-    if (hintNeedsCounter(size)) return rest;
+    if (hintNeedsCounter(size)) {
+      // Frame 3.1b keeps the rest pose, but never above `hintMiddle.
+      // clampTop` (m7-4 5.4): down over the doll's head if it must.
+      final clamp =
+          _hud.rowBottom - _K.hudRowBottomInset + _K.hintClampTopInset;
+      final lift = clamp - _arrowPeak(size);
+      return lift > 0 ? rest + lift : rest;
+    }
     final ceiling = _hud.rowBottom + _K.hintArrowHudGap;
     final drop = ceiling - _arrowPeak(size);
     if (drop <= 0) return rest;
@@ -683,7 +710,12 @@ final class SlotGeometry {
         : (topSize > _dollHeights.length ? _dollHeights.length : topSize);
     final scale = furnitureScale / pieceScale;
     final topHeightRef = _dollHeights[size - 1] / scale;
-    final room = (iced ? _towerRoomIcedRef : _towerRoomRef) - topHeightRef;
+    // D21's true sizes (`layout.towerStack.d21`, m7-4 5.3): the deepest
+    // silhouette's visible top, surface − N·step − h·drawnHeight, stays at
+    // or under the limit, so the room is worked out in drawn units.
+    final room =
+        ((iced ? _towerRoomIcedRef : _towerRoomRef) - topHeightRef) *
+        BoardFitTokens.drawnHeight;
     final n = buried < 1 ? 1 : buried;
     var stepRef = math.min(TowerStackTokens.step, room / n);
     var drawn = buried;

@@ -501,7 +501,7 @@ final class DebugBoardPainter extends CustomPainter {
   /// The blue ice counter (NestyBoard:17/180); none once the ice is gone.
   void _paintIceBadge(Canvas canvas, SlotGeometry slot, DebugSlot contents) {
     if (contents.ice <= 0) return;
-    final s = slot.furnitureScale;
+    final s = slot.overlayFurnitureScale;
     final rect = slot.iceBadgeRect;
     final center = rect.center;
     final radius = rect.width / 2;

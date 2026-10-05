@@ -176,19 +176,21 @@ void main() {
         BoardViewport.reference,
       ).slot('r0c1');
       expect(top.surfaceY, closeTo(294.3, tol));
-      // Size-4 top (117), 3 buried: step 10.8.
+      // Size-4 top (117), 3 buried: the design's example says 10.8; d21
+      // (m7-4 5.3) keeps the 8 dp clearance with true sizes, so the step is
+      // worked out in drawn units: 10.8 x 0.9661.
       final a = top.towerStack(4, 3);
-      expect(a.step, closeTo(10.8, 0.05));
+      expect(a.step, closeTo(10.8 * 0.9661, 0.05));
       expect(a.drawn, 3);
       expect(
         top.buriedBaseY(1, buried: 3, topSize: 4),
         closeTo(294.3 - a.step, tol),
       );
-      // Size-3 top (99): 16.8.
-      expect(top.towerStack(3, 3).step, closeTo(16.8, 0.05));
+      // Size-3 top (99): 16.8 x 0.9661.
+      expect(top.towerStack(3, 3).step, closeTo(16.8 * 0.9661, 0.05));
       // Fewer nests keep the designed 18.
       expect(top.towerStack(4, 1).step, 18);
-      expect(top.towerStack(4, 2).step, closeTo(16.18, 0.05));
+      expect(top.towerStack(4, 2).step, closeTo(16.18 * 0.9661, 0.05));
     });
 
     test('hit rects span the column and the band between plank bottoms', () {

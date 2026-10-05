@@ -215,6 +215,12 @@ abstract final class BoardLayoutConstants {
       BoardTokens.hudTop - BoardTokens.referenceSafeTop + hudPauseButtonHeight;
   static const hudPauseButtonHeight = 48.0;
 
+  /// `layout.hintMiddle.clampTop` (m7-4 5.4): the arrow's highest bob point
+  /// stays 4 below the level pill, which ends 49 below the safe top (112 on
+  /// the 59 dp reference). Over the family counter the arrow keeps its rest
+  /// pose, so this is the only clamp it gets.
+  static const hintClampTopInset = 49.0 + hintArrowHudGap;
+
   /// `ui_family_counter`'s own walnut pill, 70 × 26, centred on the
   /// counter (LOTTIE.md v3); it ends at [hudBottomInset].
   static const familyCounterPillWidth = 70.0;

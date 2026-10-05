@@ -85,8 +85,9 @@ void _expectNoCollisions(BoardGeometry g, String label) {
           reason: '$label: ${s.id}',
         );
       }
-      // Frozen stands: the ice stays under the plank above. (fourShelves
-      // draws no glass or ice: TODO(design) in ShelfPresets.)
+      // Frozen stands: the ice stays under the plank above. On four shelves
+      // the ice follows k (m7-4 5.2) and still reaches into the plank above
+      // by what the design's 160-tall ice cannot lose: board_overlays_m74.
       if (r > 0 && !identical(g.preset, ShelfPresets.four)) {
         expect(
           s.iceRect.top,

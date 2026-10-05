@@ -1,7 +1,7 @@
 // GENERATED — do not edit; run dart run nesty_tools:gen_design_tokens
 //
-// Source: design/tokens.json (tokens v3).
-// Nesty: Doll Sort design tokens v3. Source of truth for colors, type,
+// Source: design/tokens.json (tokens v4).
+// Nesty: Doll Sort design tokens v4. Source of truth for colors, type,
 // spacing, radii, shadows, layout, motion, sound and haptics. Keys under
 // dollColor match nesty_core DollColor ids.
 
@@ -14,7 +14,7 @@ import 'package:nesty_render/src/tokens/render_token_types.dart';
 /// Which design/tokens.json these render tokens were generated from.
 abstract final class RenderTokensInfo {
   /// tokens.json `meta.version`.
-  static const version = 3;
+  static const version = 4;
 }
 
 /// Per-`DollColor` design colors (tokens.json `dollColor`). Keyed by the
@@ -322,6 +322,14 @@ abstract final class BoardTokens {
   /// (LOTTIE.md m7-1).
   static const iceTallFxScaleY = 1.05;
 
+  /// Glass, tall glass and ice scale with the stand about their bottom centre;
+  /// the tall glass is at most the pitch − this wide (tokens.json
+  /// `layout.board.overlays`).
+  static const tallGlassPitchInset = 2.0;
+
+  /// Neighbouring ice may overlap by up to this, dp.
+  static const iceMaxOverlap = 3.0;
+
   /// Hit area: "whole slot column, min 48".
   static const minHitExtent = 48.0;
 
@@ -592,19 +600,27 @@ abstract final class HintArcTokens {
   static const width = 3.0;
 
   static const color = Color(0xFFF2893B);
+
+  /// The arc ends with no arrowhead (m7-4 5.4: the dashed cubic arch is right;
+  /// frame 3.1’s dotted quadratic is superseded).
+  static const arrowhead = false;
 }
 
 /// The procedural doll drawn when a skin can't load (tokens v3
-/// `layout.fallbackDoll`, E.19, drawn in code; spec §12.5). Sizes are
-/// fractions of the doll height h (w: its width).
+/// `layout.fallbackDoll`, E.19, drawn in code; all sizes are diameters, h =
+/// doll height; spec §12.5). Sizes are fractions of the doll height h (w: its
+/// width); the head, face and belly are diameters (m7-4 8). On the splash:
+/// three cherry (red) fallback dolls, as 1.1; 12.12’s three colours only show
+/// the recipe.
 abstract final class FallbackDollTokens {
-  /// The head circle (`circle, 0.36 h, base color, 3 dp darker bottom`).
+  /// The head circle's diameter (`circle, diameter 0.36 h, base color, 3 dp
+  /// darker bottom`).
   static const headSize = 0.36;
 
   /// Its darker bottom band, dp.
   static const headShade = 3.0;
 
-  /// The face disc.
+  /// The face disc's diameter.
   static const faceSize = 0.19;
 
   static const faceColor = Color(0xFFFFF3E0);
@@ -615,7 +631,7 @@ abstract final class FallbackDollTokens {
   /// Its width ÷ the doll width.
   static const bodyWidth = 0.52;
 
-  /// The belly disc, the face colour, with the symbol in ink.
+  /// The belly disc's diameter, the face colour, with the symbol in ink.
   static const bellySize = 0.2;
 
   /// No painted details or shine.
@@ -659,6 +675,8 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFFCECD9),
       ink: Color(0xFF6A4405),
+      ribbonTail: Color(0xFFA46B0B),
+      ribbonFold: Color(0xFF65420A),
     ),
     thumb: Rect.fromLTWH(105.0, 700.0, 1080.0, 506.0),
   );
@@ -675,6 +693,8 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFE7F0F8),
       ink: Color(0xFF3C4F62),
+      ribbonTail: Color(0xFF526A83),
+      ribbonFold: Color(0xFF2B3C4D),
     ),
     thumb: Rect.fromLTWH(105.0, 640.0, 1080.0, 506.0),
   );
@@ -691,6 +711,8 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFD9F4FB),
       ink: Color(0xFF105664),
+      ribbonTail: Color(0xFF067488),
+      ribbonFold: Color(0xFF05414D),
     ),
     thumb: Rect.fromLTWH(105.0, 560.0, 1080.0, 506.0),
   );
@@ -707,6 +729,8 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFDCEBFA),
       ink: Color(0xFF194F81),
+      ribbonTail: Color(0xFF2B6BA9),
+      ribbonFold: Color(0xFF1C426A),
     ),
     thumb: Rect.fromLTWH(105.0, 700.0, 1080.0, 506.0),
   );
@@ -723,6 +747,8 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFEEECFF),
       ink: Color(0xFF4F4080),
+      ribbonTail: Color(0xFF6451A3),
+      ribbonFold: Color(0xFF382862),
     ),
     thumb: Rect.fromLTWH(105.0, 560.0, 1080.0, 506.0),
   );
@@ -739,6 +765,8 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFE4F4E1),
       ink: Color(0xFF275B22),
+      ribbonTail: Color(0xFF3C7F35),
+      ribbonFold: Color(0xFF1B4B17),
     ),
     thumb: Rect.fromLTWH(105.0, 700.0, 1080.0, 506.0),
   );
@@ -755,8 +783,11 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFFFE8E9),
       ink: Color(0xFF812A39),
+      ribbonTail: Color(0xFFAA3A4D),
+      ribbonFold: Color(0xFF681828),
     ),
     thumb: Rect.fromLTWH(105.0, 600.0, 1080.0, 506.0),
+    boardArtDir: 'board/ch07/',
   );
 
   /// Chapter 8, "Autumn Bandstand" (`theme.chapters.8`).
@@ -771,8 +802,11 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFFFEADF),
       ink: Color(0xFF7C3503),
+      ribbonTail: Color(0xFFAA4F12),
+      ribbonFold: Color(0xFF672C04),
     ),
     thumb: Rect.fromLTWH(105.0, 680.0, 1080.0, 506.0),
+    boardArtDir: 'board/ch08/',
   );
 
   /// Chapter 9, "Castle Library" (`theme.chapters.9`).
@@ -787,8 +821,11 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFF9E8FA),
       ink: Color(0xFF67396A),
+      ribbonTail: Color(0xFF7F4583),
+      ribbonFold: Color(0xFF49204C),
     ),
     thumb: Rect.fromLTWH(105.0, 620.0, 1080.0, 506.0),
+    boardArtDir: 'board/ch09/',
   );
 
   /// Chapter 10, "Sunrise Lookout" (`theme.chapters.10`).
@@ -803,8 +840,11 @@ abstract final class ChapterThemeTokens {
       onAccent: Color(0xFFFFFFFF),
       soft: Color(0xFFDAF6F0),
       ink: Color(0xFF055A50),
+      ribbonTail: Color(0xFF10776B),
+      ribbonFold: Color(0xFF04443D),
     ),
     thumb: Rect.fromLTWH(105.0, 720.0, 1080.0, 506.0),
+    boardArtDir: 'board/ch10/',
   );
 
   /// Every chapter theme, in chapter order.

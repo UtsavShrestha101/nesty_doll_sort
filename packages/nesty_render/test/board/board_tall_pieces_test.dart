@@ -188,21 +188,30 @@ void main() {
       );
     });
 
-    test('top shelf, size-4 top, 3 buried: step 10.8, the deepest ends at '
-        'y 150', () {
-      final s = g.slot('r0c1');
-      final stack = s.towerStack(4, 3);
-      expect(stack.step, closeTo(10.8, 0.05));
-      expect(stack.drawn, 3);
-      expect(s.surfaceY, closeTo(312 - 17.7, 1e-9));
-      // hRoom − topHeight = 3 steps, and hRoom is what reaches y 150.
-      final hRoom = (s.surfaceY - 150) / 0.9661;
-      expect(hRoom, closeTo(149.4, 0.05));
-      expect(117 + 3 * stack.step, closeTo(hRoom, 1e-6));
-    });
+    test(
+      'top shelf, size-4 top, 3 buried: step 10.8 x 0.9661 (d21), the deepest ends at '
+      'y 150',
+      () {
+        final s = g.slot('r0c1');
+        final stack = s.towerStack(4, 3);
+        expect(stack.step, closeTo(10.8 * 0.9661, 0.05));
+        expect(stack.drawn, 3);
+        expect(s.surfaceY, closeTo(312 - 17.7, 1e-9));
+        // hRoom − topHeight = 3 steps, and hRoom is what reaches y 150.
+        final hRoom = (s.surfaceY - 150) / 0.9661;
+        expect(hRoom, closeTo(149.4, 0.05));
+        // d21: the deepest visible top, N steps + the top's drawn height up,
+        // lands exactly on the limit.
+        expect(3 * stack.step + 117 * 0.9661, closeTo(s.surfaceY - 150, 1e-6));
+        expect(hRoom, closeTo(149.4, 0.05));
+      },
+    );
 
     test('top shelf, size-3 top: 16.8; middle shelf, size-1 top: 18', () {
-      expect(g.slot('r0c1').towerStack(3, 3).step, closeTo(16.8, 0.05));
+      expect(
+        g.slot('r0c1').towerStack(3, 3).step,
+        closeTo(16.8 * 0.9661, 0.05),
+      );
       expect(g.slot('r1c1').towerStack(1, 3).step, 18);
     });
 
@@ -266,7 +275,7 @@ void main() {
       // A size-4 top under the same ice is squeezed to one silhouette.
       final tight = s.towerStack(4, 3, iced: true);
       expect(tight.drawn, 1);
-      expect(tight.step, closeTo(hRoom - 117, 1e-6));
+      expect(tight.step, closeTo((hRoom - 117) * 0.9661, 1e-6));
       expect(tight.step, lessThan(open.step));
     });
   });

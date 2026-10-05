@@ -5,6 +5,7 @@ description: |
   summary, never the full log. Spawned by /test, /review and /debug.
 tools: Read, Bash, Grep, Glob
 model: haiku
+effort: low
 ---
 
 You are a fast test runner. Run the tests, summarize, and hand off failures.

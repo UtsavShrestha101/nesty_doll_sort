@@ -153,3 +153,6 @@ database-debug.log
 pubsub-debug.log
 # Local emulator exports (firebase emulators:export ./emulator-data).
 /firebase/emulator-data/
+
+# Gradle build reports under each app's android folder
+/apps/*/android/build/

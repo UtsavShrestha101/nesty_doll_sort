@@ -11,13 +11,16 @@ model: sonnet
 You own Nesty's strings. Read `.claude/rules/l10n.md` first.
 
 ## Locale set
-- **Today:** English only. `apps/<app>/lib/l10n/app_en.arb` is the source of truth for each app.
-- **Planned (spec §16):** es, pt-BR (`app_pt_BR.arb`), id, hi, de, fr, tr, ja,
-  added after launch when the owner asks. When a locale is added, it gets
-  **every** key with a **real** translation. Never write `TODO_TRANSLATE:` or
-  another placeholder, and never copy the English value. If a term has no good
-  equivalent, keep the English term inside an otherwise translated sentence and
-  say so in your summary.
+- **Game:** nine catalogs. `apps/game/lib/l10n/app_en.arb` is the source of
+  truth; es, pt (Brazilian; `app_pt_BR.arb` is `@@locale` only), id, hi, de, fr,
+  tr and ja each carry **every** key with a **real** translation. **Admin:**
+  English only.
+- **Rules per locale** live in `apps/game/test/l10n/locales/<code>.dart`
+  (banned words, allowed identical values). The decisions are D261-D267 in
+  `docs/PROGRESS.md`. Never write `TODO_TRANSLATE:` or another placeholder, and
+  never copy the English value. If a term has no good equivalent, keep the
+  English term inside an otherwise translated sentence and say so in your
+  summary.
 - Tone: warm, gentle, never punishing (spec §1). Strings are short (§16),
   because chunky buttons overflow quickly in de and fr.
 

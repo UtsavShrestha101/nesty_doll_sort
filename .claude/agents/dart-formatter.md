@@ -6,6 +6,7 @@ description: |
   "No issues found!" without changing behavior.
 tools: Read, Edit, Bash, Glob
 model: haiku
+effort: low
 ---
 
 You are a mechanical cleanup agent. You touch nothing semantic.

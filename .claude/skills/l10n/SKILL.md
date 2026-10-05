@@ -11,8 +11,10 @@ argument-hint: "<game|admin> keyName:\"English value\" | old -> new | key=update
 
 ## File layout (per app)
 - Source of truth: `apps/<app>/lib/l10n/app_en.arb`, configured by `apps/<app>/l10n.yaml`
-- Other locales: `apps/<app>/lib/l10n/app_<code>.arb`. Today there are none;
-  spec §16 plans es, pt-BR, id, hi, de, fr, tr and ja.
+- Other locales: `apps/<app>/lib/l10n/app_<code>.arb`. The game has es, pt
+  (Brazilian; `app_pt_BR.arb` is `@@locale` only), id, hi, de, fr, tr and ja;
+  the admin has none. Each locale's respect and allow lists are in
+  `apps/game/test/l10n/locales/<code>.dart`.
 - Generated (never edit): `apps/<app>/lib/l10n/app_localizations*.dart`
 
 ## Inputs

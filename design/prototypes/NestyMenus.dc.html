@@ -7,8 +7,8 @@
 </head>
 <body>
 <x-dc>
-<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes nm-idle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(-2deg)}60%{transform:translateY(0) rotate(1.5deg)}}@keyframes nm-load{0%{width:18%}100%{width:92%}}@keyframes nm-tw{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}</style></helmet>
-<div style="position:relative;width:390px;height:844px;border-radius:46px;overflow:hidden;background:{{ bg }};box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&amp;family=M+PLUS+Rounded+1c:wght@500;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes nm-idle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(-2deg)}60%{transform:translateY(0) rotate(1.5deg)}}@keyframes nm-load{0%{width:18%}100%{width:92%}}@keyframes nm-tw{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}</style></helmet>
+<div style="position:relative;width:390px;height:{{ frameH }}px;border-radius:46px;overflow:hidden;background:{{ bg }};box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
 
 <sc-if value="{{ isSplash }}" hint-placeholder-val="{{ false }}">
 <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 55% at 50% 40%,rgba(255,250,235,.75),rgba(255,240,210,.2) 70%,rgba(0,0,0,0))"></div>
@@ -71,19 +71,23 @@
 </div>
 </sc-if>
 
-<sc-if value="{{ hasHeader }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:62px;height:48px;display:flex;align-items:center;justify-content:space-between;z-index:10">
+<sc-if value="{{ hasHeader }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:62px;height:48px;display:flex;align-items:center;gap:12px;z-index:10">
 <div style="width:46px;height:46px;border-radius:17px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 8px 12px rgba(90,50,20,.18);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 700">{{ leftIcon }}</div>
-<div style="font:700 26px/1 'Fredoka',sans-serif;color:#5B3A21">{{ heading }}</div>
+<div style="flex:1;min-width:0;font:700 26px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ heading }}</div>
 <sc-if value="{{ showCoins }}" hint-placeholder-val="{{ false }}"><div style="height:40px;padding:0 14px 0 6px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;display:flex;align-items:center;gap:7px;font:700 16px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums"><div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -2px 0 rgba(120,70,0,.35)"></div>{{ coins }}</div></sc-if>
 <sc-if value="{{ noCoins }}" hint-placeholder-val="{{ false }}"><div style="width:46px"></div></sc-if>
 </div></sc-if>
 
 <sc-if value="{{ isDaily }}" hint-placeholder-val="{{ false }}">
-<div style="position:absolute;left:16px;right:16px;top:126px;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:24px;background:linear-gradient(180deg,#FFB27A,#F2702B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #B8501A">
+<sc-if value="{{ streakLit }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:16px;right:16px;top:126px;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:24px;background:linear-gradient(180deg,#FFB27A,#F2702B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #B8501A">
 <div style="width:64px;height:64px;flex:none;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:46px;color:#FFF6E6;font-variation-settings:'FILL' 1">local_fire_department</div>
 <div style="flex:1;min-width:0"><div style="font:700 36px/1 'Fredoka',sans-serif;color:#fff">{{ streakN }}</div><div style="margin-top:4px;font:700 14px/1.25 'Nunito',sans-serif;color:#FFEBDA">{{ streakSub }}</div></div>
 <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:14px;background:#DCEFFF;box-shadow:0 3px 0 #9CC4EA;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#3E8EDE;font-variation-settings:'FILL' 1,'wght' 600">ac_unit</span><span style="font:700 11px/1 'Fredoka',sans-serif;color:#326497;white-space:nowrap">{{ freeze }}</span></div>
-</div>
+</div></sc-if>
+<sc-if value="{{ streakPaused }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:126px;display:flex;align-items:center;gap:12px;padding:14px;border-radius:24px;background:#FFF9EE;box-shadow:inset 0 2px 0 #fff,0 6px 0 #D8B07A">
+<div style="width:56px;height:56px;flex:none;border-radius:50%;background:linear-gradient(180deg,#F1E3CC,#DCC6A4);box-shadow:0 3px 0 #B99A7A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:34px;color:#9A6A44;font-variation-settings:'FILL' 1">local_fire_department</div>
+<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 28px/1 'Fredoka',sans-serif;color:#5B3A21">{{ streakN }}</span><span style="height:22px;padding:0 9px;border-radius:11px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #D8B07A;color:#7A5234;font:800 11px/22px 'Nunito',sans-serif">Paused</span><div style="margin-left:auto;display:flex;align-items:center;gap:3px;height:24px;padding:0 8px 0 5px;border-radius:12px;background:#DCEFFF;box-shadow:0 2px 0 #9CC4EA;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:16px;color:#3E8EDE;font-variation-settings:'FILL' 1,'wght' 600">ac_unit</span><span style="font:700 11px/1 'Fredoka',sans-serif;color:#326497;white-space:nowrap">{{ freeze }}</span></div></div><div style="margin-top:6px;font:700 13px/1.35 'Nunito',sans-serif;color:#7A5234;text-wrap:pretty">{{ streakSub }}</div></div>
+</div></sc-if>
 <div style="position:absolute;left:16px;right:16px;top:240px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
 <sc-for list="{{ days }}" as="d" hint-placeholder-count="7"><div style="height:{{ d.hgt }}px;border-radius:16px;background:{{ d.bg }};box-shadow:{{ d.sh }};display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0;box-sizing:border-box;transform:translateY({{ d.lift }}px)"><span style="font:700 10.5px/1 'Fredoka',sans-serif;color:{{ d.lc }}">{{ d.label }}</span><div style="width:28px;height:28px;border-radius:50%;background:{{ d.dot }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:19px;color:{{ d.ic }};font-variation-settings:'FILL' 1,'wght' 700">{{ d.icon }}</div><span style="font:700 13px/1 'Fredoka',sans-serif;color:{{ d.lc }}">{{ d.n }}</span></div></sc-for>
 </div>
@@ -144,8 +148,9 @@
 <div style="position:absolute;left:0;right:0;bottom:0;border-radius:34px 34px 0 0;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 -10px 30px rgba(60,25,5,.3);padding:14px 20px 36px;display:flex;flex-direction:column;align-items:center;z-index:21">
 <div style="width:44px;height:5px;border-radius:3px;background:rgba(110,70,40,.25)"></div>
 <div style="margin-top:16px;align-self:stretch;display:flex;align-items:center;justify-content:space-between"><span style="font:700 26px/1 'Fredoka',sans-serif">Language</span><span style="font:700 16px/1 'Fredoka',sans-serif;color:#C4631E">Done</span></div>
-<div style="margin-top:12px;align-self:stretch;display:flex;flex-direction:column">
-<sc-for list="{{ langs }}" as="l" hint-placeholder-count="9"><div style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px dashed rgba(110,60,25,.18)"><span style="flex:1;font:700 16px/1.2 'Nunito',sans-serif;color:#5B3A21">{{ l.name }}</span><span style="font:600 13px/1 'Nunito',sans-serif;color:#9A6A44">{{ l.en }}</span><div style="width:24px;height:24px;border-radius:50%;box-sizing:border-box;border:{{ l.ring }};background:{{ l.fill }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:17px;color:#fff;font-variation-settings:'wght' 700">{{ l.check }}</div></div></sc-for>
+<div style="position:relative;margin-top:12px;align-self:stretch;display:flex;flex-direction:column;max-height:{{ langListH }}px;overflow:hidden">
+<sc-for list="{{ langs }}" as="l" hint-placeholder-count="9"><div style="display:flex;align-items:center;gap:12px;min-height:56px;flex:none;padding:0 4px;box-sizing:border-box;border-bottom:1px dashed rgba(110,60,25,.18)"><span style="flex:1;font:{{ l.fw }} {{ l.fs }}px/1.3 {{ l.ff }};color:#5B3A21">{{ l.name }}</span><span style="font:600 13px/1 'Nunito',sans-serif;color:#9A6A44">{{ l.en }}</span><div style="width:24px;height:24px;border-radius:50%;box-sizing:border-box;border:{{ l.ring }};background:{{ l.fill }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:17px;color:#fff;font-variation-settings:'wght' 700">{{ l.check }}</div></div></sc-for>
+<sc-if value="{{ langFade }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;bottom:0;height:16px;background:linear-gradient(180deg,rgba(252,235,208,0),#FCEBD0)"></div></sc-if>
 </div>
 </div></sc-if>
 
@@ -154,7 +159,7 @@
 <div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:32"></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;splash&quot;,&quot;consent&quot;,&quot;home&quot;,&quot;homeNoAds&quot;,&quot;daily&quot;,&quot;dailySaved&quot;,&quot;dailyDone&quot;,&quot;dailyChest&quot;,&quot;settings&quot;,&quot;language&quot;,&quot;settingsRestored&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;splash&quot;,&quot;consent&quot;,&quot;home&quot;,&quot;homeNoAds&quot;,&quot;daily&quot;,&quot;dailySaved&quot;,&quot;dailyPaused&quot;,&quot;dailyDone&quot;,&quot;dailyChest&quot;,&quot;settings&quot;,&quot;language&quot;,&quot;languageShort&quot;,&quot;settingsRestored&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 const P = 'skins/classic/preview/';
 const R = Math.round;
 const d = (c, cx, base, h, dur, delay) => ({ bgi: `url(${P}doll-${c}.svg)`, w: R(h * 2 / 3), h, x: R(cx - h / 3), y: R(base - h * 742 / 768), dur, delay });
@@ -174,15 +179,16 @@ const days = key => DAYS[key].map((s, i) => {
 });
 const DAILY = {
   daily: { streakN: '4 days', streakSub: 'Play today to keep your streak', freeze: '1 freeze', days: 'base', chestSub: '3 days to go, counting today', dPlay: true },
-  dailySaved: { streakN: '4 days', streakSub: 'Play today to keep your streak', freeze: '0 left', days: 'base', chestSub: '3 days to go, counting today', dPlay: true, savedToast: true },
-  dailyDone: { streakN: '5 days', streakSub: 'Done for today. See you tomorrow!', freeze: '1 freeze', days: 'done', chestSub: '2 days to go', dDone: true },
+  dailySaved: { streakN: '4 days', streakSub: 'A freeze kept your flame lit.', freeze: '0 left', days: 'base', chestSub: '3 days to go, counting today', dPlay: true, savedToast: true },
+  dailyPaused: { streakN: '4 days', paused: true, streakSub: 'Your 4-day streak is resting. Solve today’s puzzle to light it again.', freeze: '0 left', days: 'base', chestSub: '3 days to go, counting today', dPlay: true },
+  dailyDone: { streakN: '5 days', streakSub: 'Your flame is lit. See you tomorrow.', freeze: '1 freeze', days: 'done', chestSub: '2 days to go', dDone: true },
   dailyChest: { streakN: '7 days', streakSub: 'A full week!', freeze: '1 freeze', days: 'chest', chestSub: 'Opened today', dDone: true, isChest: true },
 };
 class Component extends DCLogic {
   renderVals() {
     const s = this.props.scene || 'home';
     const dl = DAILY[s];
-    const isSettings = ['settings', 'language', 'settingsRestored'].includes(s);
+    const isSettings = ['settings', 'language', 'languageShort', 'settingsRestored'].includes(s);
     const isHome = s === 'home' || s === 'homeNoAds';
     const light = s === 'splash' || s === 'consent' || isHome;
     return {
@@ -191,14 +197,14 @@ class Component extends DCLogic {
       isSplash: s === 'splash' || s === 'consent', showLoad: s === 'splash', isConsent: s === 'consent',
       isHome, adsGone: s === 'homeNoAds', showAdsTile: s === 'home', tileCols: s === 'homeNoAds' ? 'repeat(2,minmax(0,1fr))' : 'repeat(3,minmax(0,1fr))',
       hasHeader: !!dl || isSettings, leftIcon: isSettings ? 'close' : 'arrow_back', heading: isSettings ? 'Settings' : 'Daily', showCoins: !!dl, noCoins: isSettings, coins: s === 'dailyChest' ? '1,240' : s === 'dailyDone' ? '880' : '830',
-      isDaily: !!dl, streakN: dl ? dl.streakN : '', streakSub: dl ? dl.streakSub : '', freeze: dl ? dl.freeze : '', chestSub: dl ? dl.chestSub : '',
+      isDaily: !!dl, streakLit: !(dl && dl.paused), streakPaused: !!(dl && dl.paused), streakN: dl ? dl.streakN : '', streakSub: dl ? dl.streakSub : '', freeze: dl ? dl.freeze : '', chestSub: dl ? dl.chestSub : '',
       days: dl ? days(dl.days) : [], dPlay: !!(dl && dl.dPlay), dDone: !!(dl && dl.dDone), savedToast: !!(dl && dl.savedToast), isChest: !!(dl && dl.isChest),
       dailyDolls: ['grape', 'sunflower', 'cherry', 'lagoon', 'bubblegum'].map((c, i) => doll(c, [74, 58, 86, 48, 66][i])),
       chestCoins: [[52, 20, 26], [86, 6, 30], [124, 18, 24], [70, 44, 22], [110, 40, 28], [36, 50, 18], [146, 46, 20]].map(([x, y, s2]) => ({ x, y, s: s2 })),
-      isSettings, restoredToast: s === 'settingsRestored', isLang: s === 'language',
+      isSettings, restoredToast: s === 'settingsRestored', isLang: s === 'language' || s === 'languageShort', frameH: s === 'languageShort' ? 731 : 844, langListH: s === 'languageShort' ? 496 : 520, langFade: s === 'languageShort',
       toggles: [['volume_up', 'Sound', true], ['music_note', 'Music', false], ['vibration', 'Haptics', true]].map(([icon, label, on], i) => ({ icon, label, track: on ? '#46A758' : '#D9C2A0', knob: on ? 27 : 3, bd: i < 2 ? '1px dashed rgba(110,60,25,.2)' : 'none' })),
       links: [['translate', 'Language', 'English'], ['restore', 'Restore Purchases', ''], ['admin_panel_settings', 'Privacy choices', ''], ['shield', 'Privacy Policy', ''], ['mail', 'Support', 'Email us']].map(([icon, label, value], i) => ({ icon, label, value, bd: i < 4 ? '1px dashed rgba(110,60,25,.2)' : 'none' })),
-      langs: LANGS.map(([name, en], i) => ({ name, en: i === 0 ? '' : en, ring: i === 0 ? '0' : '2px solid #D8B07A', fill: i === 0 ? '#F2893B' : 'transparent', check: i === 0 ? 'check' : '' })),
+      langs: LANGS.map(([name, en], i) => ({ name, en: i === 0 ? '' : en, ff: en === 'Hindi' ? "'Baloo 2',sans-serif" : en === 'Japanese' ? "'M PLUS Rounded 1c',sans-serif" : "'Nunito',sans-serif", fw: en === 'Hindi' ? 600 : 700, fs: en === 'Japanese' ? 15 : 16, ring: i === 0 ? '0' : '2px solid #D8B07A', fill: i === 0 ? '#F2893B' : 'transparent', check: i === 0 ? 'check' : '' })),
       idle: [d('tangerine', 58, 384, 104, 3.2, 0), d('leaf', 128, 384, 70, 2.6, .5), d('cherry', 206, 384, 128, 3.6, .2), d('sky', 284, 384, 88, 2.9, .9), d('grape', 348, 384, 60, 2.4, 1.3)],
       twinkles: [{ x: 96, y: 206, s: 16, delay: 0 }, { x: 250, y: 190, s: 20, delay: .8 }, { x: 330, y: 262, s: 14, delay: 1.5 }, { x: 36, y: 290, s: 12, delay: 2 }],
       trio: [d('cherry', 128, 578, 76, 2.6, .4), d('cherry', 195, 578, 108, 3, 0), d('cherry', 262, 578, 58, 2.3, .8)],

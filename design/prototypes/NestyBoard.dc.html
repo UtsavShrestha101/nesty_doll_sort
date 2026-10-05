@@ -10,7 +10,7 @@
 <helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>@keyframes nb-pulse{0%,100%{opacity:.75;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}@keyframes nb-glow{0%,100%{box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 0 0 3px #FFE08A,0 0 14px 4px rgba(255,205,80,.6)}50%{box-shadow:inset 0 2px 0 #fff,0 5px 0 #CFA36A,0 0 0 4px #FFE08A,0 0 26px 10px rgba(255,205,80,.9)}}@keyframes nb-hand{0%,15%{transform:translate(0,0)}60%,75%{transform:translate(var(--hx),var(--hy))}100%{transform:translate(0,0)}}@keyframes nb-tap{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(6px) scale(.92)}}@keyframes nb-ring{0%{transform:scale(.4);opacity:.95}100%{transform:scale(1.6);opacity:0}}@keyframes nb-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes nb-wob{0%{transform:rotate(-3deg) scale(1.05)}100%{transform:rotate(3deg) scale(1.05)}}@keyframes nb-tw{0%,100%{opacity:.35;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}@keyframes nb-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}</style></helmet>
 <div style="position:relative;width:390px;height:{{ frameH }}px;border-radius:{{ rad }};overflow:hidden;background:{{ bg }};box-shadow:{{ bezel }};flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
 <div style="position:absolute;left:0;top:0;width:390px;height:844px;transform:{{ boardTf }};transform-origin:195px 150px">
-<sc-for list="{{ planks }}" as="p" hint-placeholder-count="3"><div style="position:absolute;left:{{ p.i }}px;right:{{ p.i }}px;top:{{ p.y }}px;height:40px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 40px"></div></sc-for>
+<sc-for list="{{ planks }}" as="p" hint-placeholder-count="3"><div style="position:absolute;left:{{ p.i }}px;right:{{ p.i }}px;top:{{ p.y }}px;height:40px;background:url({{ plankArt }}) repeat-x 0 0/auto 40px"></div></sc-for>
 <sc-for list="{{ pieces }}" as="q" hint-placeholder-count="0"><div style="position:absolute;left:{{ q.x }}px;top:{{ q.y }}px;width:{{ q.w }}px;height:{{ q.h }}px;background:{{ q.bgi }} center/100% 100% no-repeat;opacity:{{ q.op }};clip-path:{{ q.cp }};transform:{{ q.tf }};transform-origin:50% 96%;border-radius:{{ q.br }};-webkit-mask:{{ q.mask }};mask:{{ q.mask }};animation:{{ q.anim }}"></div></sc-for>
 <sc-for list="{{ pips }}" as="pp" hint-placeholder-count="0"><div style="position:absolute;left:{{ pp.x }}px;top:{{ pp.y }}px;width:6px;height:6px;border-radius:50%;background:{{ pp.bg }};box-shadow:{{ pp.sh }}"></div></sc-for>
 <sc-for list="{{ locks }}" as="lk" hint-placeholder-count="0"><div style="position:absolute;left:{{ lk.x }}px;top:{{ lk.y }}px;width:12px;height:12px;background:{{ lk.ink }};-webkit-mask:url({{ lk.icon }}) center/contain no-repeat;mask:url({{ lk.icon }}) center/contain no-repeat"></div></sc-for>
@@ -46,7 +46,7 @@
 <div style="flex:1;min-width:0"><div style="font:700 16px/1.1 'Fredoka',sans-serif;color:#5B3A21">Hmm, this looks stuck</div><div style="font:700 12px/1.3 'Nunito',sans-serif;color:#8A5B3A">Try Undo? You can keep playing too.</div></div>
 <div style="height:38px;padding:0 14px;border-radius:14px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;display:flex;align-items:center;gap:4px;color:#fff;font:700 15px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1,'wght' 700">undo</span>Undo</div>
 </div></sc-if>
-<sc-if value="{{ bRibbon }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:150px;display:flex;justify-content:center;z-index:12"><div style="position:relative;padding:10px 26px 11px;border-radius:14px;background:{{ rbBg }};box-shadow:{{ rbSh }};text-align:center;color:#fff"><div style="font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.16em;color:{{ rbLbl }}">{{ rbNum }}</div><div style="margin-top:4px;font:700 22px/1 'Fredoka',sans-serif;text-shadow:{{ rbTs }}">{{ rbName }}</div></div></div></sc-if>
+<sc-if value="{{ bRibbon }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:27px;right:27px;top:150px;height:58px;z-index:12"><div style="position:absolute;left:-14px;top:18px;width:44px;height:40px;background:{{ rbTail }};clip-path:polygon(0 0,100% 0,100% 100%,0 100%,12px 50%)"></div><div style="position:absolute;right:-14px;top:18px;width:44px;height:40px;background:{{ rbTail }};clip-path:polygon(0 0,100% 0,calc(100% - 12px) 50%,100% 100%,0 100%)"></div><div style="position:absolute;left:6px;top:44px;width:24px;height:14px;background:{{ rbFold }};clip-path:polygon(0 0,100% 0,100% 100%)"></div><div style="position:absolute;right:6px;top:44px;width:24px;height:14px;background:{{ rbFold }};clip-path:polygon(0 0,100% 0,0 100%)"></div><div style="position:absolute;left:6px;right:6px;top:0;height:44px;border-radius:14px;background:{{ rbBg }};box-shadow:{{ rbSh }};display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:700 {{ rbFs }}px/1 'Fredoka',sans-serif;text-shadow:{{ rbTs }};white-space:nowrap">{{ rbText }}</div></div></sc-if>
 </div>
 <div style="position:absolute;left:0;top:0;width:390px;height:844px;transform:{{ barTf }};z-index:9">
 
@@ -64,7 +64,7 @@
 
 <sc-if value="{{ tut }}" hint-placeholder-val="{{ false }}">
 <svg width="390" height="844" style="position:absolute;left:0;top:0;z-index:14"><path d="{{ tutPath }}" fill="rgba(52,26,8,.6)" fill-rule="evenodd"></path><path d="{{ tutArc }}" fill="none" stroke="#FFF4E0" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 10"></path><path d="{{ tutHead }}" fill="#FFF4E0"></path></svg>
-<div style="position:absolute;left:28px;right:28px;top:124px;padding:14px 18px 16px;border-radius:22px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 12px 24px rgba(60,25,5,.3);z-index:15;text-align:center">
+<div style="position:absolute;left:76px;right:16px;top:62px;padding:14px 18px 16px;border-radius:22px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 12px 24px rgba(60,25,5,.3);z-index:15;text-align:center">
 <div style="display:inline-flex;padding:4px 10px;border-radius:9px;background:#F2893B;color:#fff;font:700 11px/1 'Fredoka',sans-serif;letter-spacing:.08em">{{ tipStep }}</div>
 <div style="margin-top:8px;font:700 22px/1.15 'Fredoka',sans-serif;color:#5B3A21">{{ tipTitle }}</div>
 <div style="margin-top:6px;font:600 15px/1.4 'Nunito',sans-serif;color:#7A5234;text-wrap:pretty">{{ tipText }}</div>
@@ -88,7 +88,8 @@ const INK = { cherry: '#A43434', tangerine: '#AD6028', sunflower: '#92710D', lea
 const SYM = { cherry: 'heart', tangerine: 'flower', sunflower: 'sun', leaf: 'leaf', lagoon: 'wave', sky: 'drop', grape: 'star', bubblegum: 'bow', midnight: 'moon', cocoa: 'acorn', gold: 'crown' };
 const BG = { 1: ['ch1-sunny-toy-shop', '#F4D29C'], 2: ['ch2-rainy-cafe-corner', '#BFC6CC'], 3: ['ch3-seaside-market', '#F3E6CF'], 4: ['ch4-snowy-cabin', '#E7EDF2'], 5: ['ch5-night-carnival', '#3B3470'], 6: ['ch6-spring-garden-shed', '#DCEBC8'], 7: ['ch7-puppet-theater', '#F2D7C6'], 8: ['ch8-autumn-bandstand', '#F8DDBB'], 9: ['ch9-castle-library', '#E6DDEE'], 10: ['ch10-sunrise-lookout', '#F4D2C6'] };
 const CHAP = { 4: ['Snowy Cabin', '#6FA8DC', '#3E7FC0', '#2B5E93', '#DCEBFA', 'rgba(20,50,90,.35)', 'rgba(30,60,100,.3)'], 7: ['Puppet Theater', '#DE6676', '#C24D5F', '#93283D', '#FFE8E9', 'rgba(110,25,40,.4)', 'rgba(110,25,40,.3)'], 8: ['Autumn Bandstand', '#DC7A44', '#C16229', '#90410A', '#FFEADF', 'rgba(110,50,10,.4)', 'rgba(110,50,10,.3)'], 9: ['Castle Library', '#AD6EB1', '#945798', '#6B346F', '#F9E8FA', 'rgba(75,30,80,.4)', 'rgba(75,30,80,.3)'], 10: ['Sunrise Lookout', '#3AA697', '#148D7F', '#016359', '#DAF6F0', 'rgba(5,70,60,.4)', 'rgba(5,70,60,.3)'] };
-const RIB = n => { const c = CHAP[n]; return { rbNum: 'CHAPTER ' + n, rbName: c[0], rbBg: `linear-gradient(180deg,${c[1]},${c[2]})`, rbSh: `inset 0 2px 0 rgba(255,255,255,.4),0 5px 0 ${c[3]},0 12px 22px ${c[6]}`, rbLbl: c[4], rbTs: `0 2px 0 ${c[5]}` }; };
+const RT = { 4: ['#2B6BA9', '#1C426A'], 7: ['#AA3A4D', '#681828'], 8: ['#AA4F12', '#672C04'], 9: ['#7F4583', '#49204C'], 10: ['#10776B', '#04443D'] };
+const RIB = n => { const c = CHAP[n], t = `CHAPTER ${n} · ${c[0]}`; return { rbText: t, rbFs: Math.min(20, Math.round(3000 / (t.length * 0.62)) / 10), rbBg: `linear-gradient(180deg,${c[1]},${c[2]})`, rbSh: `inset 0 2px 0 rgba(255,255,255,.4),0 5px 0 ${c[3]},0 12px 22px ${c[6]}`, rbTail: RT[n][0], rbFold: RT[n][1], rbTs: `0 2px 0 ${c[5]}` }; };
 const F = [0.42, 0.54, 0.66, 0.78, 0.89, 1];
 const R = Math.round;
 const L3 = { N: 4, Hs: 150, planks: [312, 498, 684] }, L2 = { N: 3, Hs: 140, planks: [430, 650] }, L5 = { N: 5, Hs: 150, planks: [312, 498, 684] };
@@ -227,6 +228,7 @@ const RACEMID = () => [
 ];
 
 function build(cfg) {
+  const WB = cfg.ch >= 7 ? `${B}ch${String(cfg.ch).padStart(2, '0')}/` : B;
   const { N, Hs, planks } = cfg.lay, rows = cfg.rows, P = `skins/${cfg.skin || 'classic'}/preview/`, iceH = cfg.lay.iceH || 160;
   const used = planks.slice(0, rows.length), pitchY = used.length > 1 ? Math.min(...used.slice(1).map((y, i) => y - used[i])) : Infinity;
   const hFit = Math.min((pitchY - 54.7) / AB, (used[0] - 162.7) / AB, ...rows.map(rw => (Math.min(swOf(rw.length), spOf(rw.length)) - 8) / 0.5353));
@@ -248,7 +250,7 @@ function build(cfg) {
       const sl = s0 || {}, cx = 195 + (i - (n - 1) / 2) * sp, tw = sl.tower, sh0 = (tw ? 39 : 34) * ss, top = pt + 9 - sh0, surf = top + 12.3 * ss;
       const h = sl.c ? hOf(sl.s[0]) : 0, p = g.pos[r + '-' + i] = { cx, pt, surf, top, h, dt: surf - h * 742 / 768 };
       if (sl.extra) g.extraPos = p;
-      img(B + (sl.extra ? 'extra-slot.svg' : tw ? 'tower-base-blank.svg' : 'slot-stand-blank.svg'), cx - 45 * ss, top, 90 * ss, sh0, { anim: sl.extra ? 'nb-pulse 1.6s ease-in-out infinite' : 'none' });
+      img((sl.extra ? B : WB) + (sl.extra ? 'extra-slot.svg' : tw ? 'tower-base-blank.svg' : 'slot-stand-blank.svg'), cx - 45 * ss, top, 90 * ss, sh0, { anim: sl.extra ? 'nb-pulse 1.6s ease-in-out infinite' : 'none' });
       if (!sl.extra) { const py = top + (tw ? 31.9 : 24) * ss - 3; for (let k = 0; k < N; k++) { const on = sl.c && sl.s.includes(N - k); g.pips.push({ x: R(cx - (N - 1) * 3.9 + k * 7.8 - 3), y: R(py), bg: on ? PAL[sl.c] : '#2C170A', sh: on ? '0 0 0 1px rgba(255,240,215,.95)' : 'inset 0 1px 1px rgba(0,0,0,.6)' }); } }
       if (sl.puff) [[-26, -16, 22], [6, -28, 28], [28, -12, 18], [-6, -6, 16]].forEach(([dx, dy, d]) => add('radial-gradient(circle at 40% 35%,#FFFDF5,#F1DFC2 62%,rgba(241,223,194,0) 71%)', cx + dx - d / 2, surf + dy - d / 2, d, d, { br: '50%' }));
       if (!sl.c) return;
@@ -351,9 +353,10 @@ function scene(name) {
   }
   return d;
 }
+const PAUSE_HOLE = 'M32 56H48A22 22 0 0 1 70 78V94A22 22 0 0 1 48 116H32A22 22 0 0 1 10 94V78A22 22 0 0 1 32 56Z';
 const TIPS = {
-  tut1a: ['STEP 1 OF 2', 'Tap the small doll', 'Dolls nest into the same color, one size bigger.'],
-  tut1b: ['STEP 2 OF 2', 'Now tap the big one', 'The small doll drops inside with a clack.'],
+  tut1a: ['STEP 1 OF 3', 'Tap the small doll', 'Dolls nest into the same color, one size bigger.'],
+  tut1b: ['STEP 2 OF 3', 'Now tap the big one', 'The small doll drops inside with a clack.'],
   tut2: ['NEW MOVE', 'Big can swallow small', 'Drop a big doll onto the next size down and it closes right over it.'],
 };
 const ARC = { guide: { c: '#F2893B', u: 'rgba(255,250,240,.95)', w: 4, uw: 8, dash: '2 10' }, trail: { c: '#FFCF4A', u: 'rgba(255,255,255,.8)', w: 5, uw: 9, dash: '1 12' } };
@@ -374,7 +377,7 @@ class Component extends DCLogic {
       rvCount: rc ? `${rc.count}/${rc.total}` : '', rvDots: rc ? Array.from({ length: rc.total }, (_, i) => ({ bg: i < rc.count ? '#4E5FD9' : '#EAD3B0', sh: i < rc.count ? '0 0 0 1.5px #FFFDF7' : 'inset 0 1px 1px rgba(90,45,15,.3)' })) : [],
       rad: bare ? '0' : short ? '30px' : '46px', bezel: bare ? 'none' : '0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35)', chrome: !bare && !short,
       bg: `url(backgrounds/${bgc[0]}.svg) center top/390px auto no-repeat,${bgc[1]}`,
-      lvl: this.props.lvl || d.hud.lvl, coins: d.hud.coins, fam: d.hud.fam,
+      plankArt: d.ch >= 7 ? `skins/classic/board/ch${String(d.ch).padStart(2, '0')}/shelf-plank.svg` : 'skins/classic/board/shelf-plank.svg', lvl: this.props.lvl || d.hud.lvl, coins: d.hud.coins, fam: d.hud.fam,
       isNormal: (this.props.tier || d.hud.tier) === 'normal', isHard: (this.props.tier || d.hud.tier) === 'hard', isSuper: (this.props.tier || d.hud.tier) === 'super', isDaily: (this.props.tier || d.hud.tier) === 'daily', isBonus: (this.props.tier || d.hud.tier) === 'bonus',
       famTf: d.famGlow ? 'scale(1.14)' : 'none',
       famSh: 'inset 0 1px 0 rgba(255,210,160,.5),0 3px 0 #4E2C14,0 0 0 2px #FFF4E0' + (d.famGlow ? ',0 0 0 5px rgba(255,224,138,.9),0 0 22px 8px rgba(255,205,80,.75)' : ''),
@@ -392,7 +395,7 @@ class Component extends DCLogic {
       else { a = [S.cx - 10, S.dt - 8]; e = [T.cx + 24, T.dt - 6]; c = [(a[0] + e[0]) / 2, Math.min(a[1], e[1]) - 30]; }
       const cv = curve(a, c, e), tapP = d.tut === 'tut1b' ? T : S, tx = tapP.cx, ty = tapP.surf - tapP.h * .4;
       const [tipStep, tipTitle, tipText] = TIPS[d.tut];
-      Object.assign(out, { tutPath: 'M0 0H390V844H0Z' + hole(S) + hole(T), tutArc: cv.d, tutHead: cv.h, tipStep, tipTitle, tipText,
+      Object.assign(out, { tutPath: 'M0 0H390V844H0Z' + PAUSE_HOLE + hole(S) + hole(T), tutArc: cv.d, tutHead: cv.h, tipStep, tipTitle, tipText,
         tapRing: !two, ringX: R(tx - 22), ringY: R(ty - 22), handX: R(tx - 24), handY: R(ty - 6),
         hdx: two ? R(T.cx - S.cx) : 0, hdy: two ? R((T.surf - T.h * .4) - ty) : 0, handAnim: two ? 'nb-hand 2.4s ease-in-out infinite' : 'nb-tap 1.2s ease-in-out infinite' });
     }

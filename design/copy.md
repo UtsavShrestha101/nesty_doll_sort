@@ -1,6 +1,17 @@
 # Nesty copy (m7)
 
-All the new copy for the m7 round, one line per string: `- <id>: <text>`. Ids are the request's ids where it gives them (badge ids, rival numbers, chapter numbers, museum file ids) and short slugs otherwise. Placeholders in braces are filled by the game: `{count}`, `{moves}`, `{date}`, `{day}`, `{time}`, `{rival}`, `{level}`, `{chapter}`, `{first}`, `{last}`, `{total}`, `{price}`, `{glyphs}`. A plural is two lines, `one:` and `other:`. Curly quotes and the `·` separator are part of the strings.
+All the new copy for the m7 round, one line per string: `- <id>: <text>`. Ids are the request's ids where it gives them (badge ids, rival numbers, chapter numbers, museum file ids) and short slugs otherwise. Placeholders in braces are filled by the game: `{count}`, `{moves}`, `{date}`, `{day}`, `{time}`, `{rival}`, `{level}`, `{chapter}`, `{first}`, `{last}`, `{total}`, `{price}`, `{glyphs}`, `{badge}`, `{best}`, `{step}`, `{name}`, `{skill}`, `{booster}`, `{title}`, `{size}`, `{levels}`, `{how}`, `{contents}`, `{label}`, `{value}`. A plural is two lines, `one:` and `other:`. Curly quotes and the `·` separator are part of the strings.
+
+## Changes in m7-4
+- **Placeholders for fixed numbers:** `daily_locked`, `rival_locked_mode`, `museum_intro`, `chapter_stars_total`, `records_stars_value` and `splash_storage_body` take the number from the game; `oom_undo_spent` and `slot_limit` are plurals now.
+- **Rival lines:** `rival_n_skill` names a pace (Gentle, Steady, Lively), so no rival is called slow and no two read alike.
+- **New ids for strings the frames already drew:** `strip_ready`, `race_pause_title`, `reminder_picker_title`, `relaxed_free_chip`, `museum_all_home_sub`, `museum_next_chip`, `gen_busy`, `tut_step_1_title` / `_body`, `tut_step_2_title` / `_body`. New strings: `rival_unlocked_race` and `rival_unlocked_later` (9.6), `settings_reminder_turn_off` (10.2f).
+- **Records:** `records_families` is “Families completed”, a lifetime count shown with the family counter’s doll mark. `records_families_value` is withdrawn.
+- **A11y:** every screen-reader string is in `## A11y`. The ones from G.5, G.9 and G.11 moved there unchanged, next to new labels for the icon-only controls.
+- **Short forms:** `## Short forms` lists the fallbacks tokens.json → `textFit` names.
+- **Respect rules:** `rival_2_personality`, `rival_3_personality`, `race_win_body` and `race_quit_body` are rewritten without “Slow”, “Quick”, “before”, “ends” or “lost”, so no exemptions are needed (frames updated).
+- **More ids:** `chest_gain_tag`, the Daily chest row (`daily_chest_*`), `chapter_stars_total_all`, `reminder_not_now`; `museum_intro` takes `{levels}`. `records_three_star_levels` is withdrawn (no cell in 10.6).
+- **A11y, second pass:** badge how-to lines (read only by a screen reader), the finale level, the chest’s contents, Share, the notification channel, Home’s cards and tile, the Museum’s niches and count, Records’ cells and race rows, rival select’s Beaten and Start, Reduce motion, the reminder time chip and “+Slot, 2 of 2 used”.
 
 ## G.1
 Figurine family names, keyed by the museum file id (`museum/<id>.svg`).
@@ -49,29 +60,30 @@ vs Computer. Every rival surface also carries the “Computer” tag and its gly
 - tag_computer: Computer
 - rival_1_name: Pebble
 - rival_1_personality: Takes its time and enjoys every doll along the way.
-- rival_1_skill: Relaxed · Slow
+- rival_1_skill: Gentle pace
 - rival_2_name: Button
-- rival_2_personality: Checks each move twice before it makes it.
-- rival_2_skill: Careful · Slow
+- rival_2_personality: Checks each move twice, then makes it.
+- rival_2_skill: Steady pace
 - rival_3_name: Comet
-- rival_3_personality: Quick, tidy and hard to catch.
-- rival_3_skill: Careful · Quick
+- rival_3_personality: Lively, tidy and hard to catch.
+- rival_3_skill: Lively pace
 - rival_reward:
   - one: Win {count} coin
   - other: Win {count} coins
 - rival_locked: Beat {rival} to unlock
-- rival_locked_mode: After Level 20
+- rival_locked_mode: After Level {level}
 - mode_title: vs Computer
 - mode_sub: Race a computer on the same puzzle
 - race_start: Start
 - race_start_hint: Same puzzle, two boards. Complete every family first.
+- strip_ready: Ready when you are
 - strip_thinking: Thinking…
 - strip_starting_over: Starting over
 - strip_families: {count}/{total}
 - strip_finished: Finished
 - strip_after_you_won: You finished first
 - race_win_title: You won the race!
-- race_win_body: You completed every family before {rival}.
+- race_win_body: Every family is complete. {rival} was still sorting.
 - race_win_coins:
   - one: +{count} coin
   - other: +{count} coins
@@ -81,21 +93,18 @@ vs Computer. Every rival surface also carries the “Computer” tag and its gly
 - race_new: New race
 - rival_unlocked_title: New rival unlocked!
 - rival_unlocked_body: {rival} is ready to race.
+- rival_unlocked_race: Race {rival}
+- rival_unlocked_later: Not now
 - race_quit_title: Leave this race?
-- race_quit_body: The race ends here. No coins, and nothing lost.
+- race_quit_body: The race stops here. No coins, and you keep everything.
 - race_quit_yes: Leave race
 - race_quit_no: Keep racing
-- a11y_race_start: Race started against {rival}, a computer player.
-- a11y_rival_family: The computer completed a family: {count} of {total}
-- a11y_rival_starting_over: The computer is starting over.
-- a11y_rival_finished: The computer completed every family.
-- a11y_race_won: You won the race.
-- a11y_race_lost: The computer finished first.
 
 
 Screen labels (m7-2):
 - home_tile_versus: vs Computer
 - rival_new: New
+- race_pause_title: vs Computer · {rival}
 - race_pause_rival: {rival} is paused too.
 - race_pause_leave: Leave race
 - race_failed_title: The shelves need a moment
@@ -127,7 +136,7 @@ The template, three lines:
   - other: Solved in {moves} moves
 - share_button: Share
 
-Example: `Nesty Daily · Sep 30` / `❤️ 💧 🍃 ⭐ 🌙` / `Solved in 18 moves · Day 12 🔥`. Use `share_line_3_no_streak` when the streak is 0 or paused.
+Example: `Nesty Daily · Sep 30` / `❤️ 💧 🍃 ⭐ 🌙` / `Solved in 18 moves · Day 12 🔥`. Use `share_line_3_no_streak` when the streak is 0 or paused. `{date}` is the locale’s abbreviated month and day (`MMMd`): “Sep 30”, “30. Sept.”, “9月30日”.
 
 ## G.7
 Daily reminder (I.2).
@@ -135,20 +144,27 @@ Daily reminder (I.2).
 - reminder_offer_body: One quiet note a day, at a time you pick. You can turn it off in Settings.
 - reminder_time_chip: Every day at {time}
 - reminder_change_time: Change time
+- reminder_picker_title: Reminder time
 - reminder_yes: Yes, remind me
 - reminder_no: No thanks
 - reminder_set: Reminder set for {time}.
 - reminder_denied_title: Notifications are off for Nesty
 - reminder_denied_body: Turn them on in your phone’s settings, and your note will arrive at {time}.
+- reminder_not_now: Not now
 - settings_reminder: Daily reminder
 - settings_reminder_on: Every day at {time}
 - settings_reminder_off: Off
 - settings_reminder_blocked: Off in your phone’s settings
 - settings_open_phone_settings: Open phone settings
+- settings_reminder_turn_off: Turn off
+- notification_channel_name: Daily puzzle
+- notification_channel_description: One note a day when a new daily puzzle is ready.
 - notification_title: Nesty
 - notification_1: Today’s puzzle is on the shelf.
 - notification_2: A fresh daily puzzle is ready when you are.
 - notification_3: New dolls are waiting to be nested. Today’s puzzle is ready.
+
+`{time}` is the proposed time: the hour the player solved the daily, rounded down to the hour. 7:00 PM in the frames is only an example.
 
 - settings_reminder_time: Time
 - settings_reduce_motion: Reduce motion
@@ -208,7 +224,7 @@ Relaxed mode (I.2).
 - relaxed_sub: Unlimited free undo
 - relaxed_on: Relaxed mode is on. Undo as often as you like.
 - relaxed_undo_row: Free, as often as you like
-- a11y_undo_unlimited: Undo, unlimited
+- relaxed_free_chip: Free
 
 Gentle streak (I.7). A missed day never lowers the number, and a freeze keeps the flame lit.
 - streak_days:
@@ -226,7 +242,7 @@ Gentle streak (I.7). A missed day never lowers the number, and a freeze keeps th
 - chest_double: Double it
 ## G.10
 Lines the stand-ins ship as placeholders, confirmed or replaced.
-- museum_intro: Every chapter has a doll family. Win all 20 of its levels to bring that family home.
+- museum_intro: Every chapter has a doll family. Win all {levels} of its levels to bring that family home.
 - museum_next_to_go:
   - one: {count} level to go
   - other: {count} levels to go
@@ -236,6 +252,10 @@ Lines the stand-ins ship as placeholders, confirmed or replaced.
 - museum_locked_shelf: Chapter {chapter} · Levels {first}–{last}
 - museum_locked_shelf_short: Ch {chapter} · {first}–{last}
 - museum_all_home: Every family is home.
+- museum_all_home_sub: Full House · all {count} families
+- museum_next_chip:
+  - one: {count} to go
+  - other: {count} to go
 - chapters_progress: Level {level} of {total}
 - coins_needed_title: A few more coins
 - coins_needed_body:
@@ -253,26 +273,23 @@ Lines the stand-ins ship as placeholders, confirmed or replaced.
 - chapters_won: {count} won
 - records_title: Records
 - records_levels_won: Levels won
-- records_families: Families home
-- records_families_value: {count} of 10
+- records_families: Families completed
 - records_dolls_nested: Dolls nested
 - records_dailies: Daily puzzles solved
 - records_longest_streak: Longest streak
 - records_races: Races won
 - records_best_moves: Best moves by level
-- records_stars_value: {count} of 600
+- records_stars_value: {count} of {total}
 ## G.11
 Star rating (K). Stars sit inside the celebration and never replace it.
-- a11y_stars: {count} of 3 stars
-- a11y_stars_new_best: New best, {count} of 3 stars
 - replay_target: 3 stars at {moves} moves or fewer
 - new_best: New best!
 - stars_tip: Fewer moves earn more stars. Replay any level from Chapters.
 - stars_helper_note: Wins with a hint or an extra slot earn up to 2 stars.
-- chapter_stars_total: {count}/60
+- chapter_stars_total: {count}/{total}
+- chapter_stars_total_all: {count}/{total}
 - chapter_all_three_stars: Every level at 3 stars
 - records_stars: Stars
-- records_three_star_levels: Levels with 3 stars
 - moves_line: Moves {moves} · Best {best}
 - moves_line_first: Moves {moves}
 - level_best: Best {best}
@@ -288,23 +305,177 @@ The Forest Bear skin (`skins/forest-bear`).
 
 ## E
 States that needed new lines (m7-3).
-- daily_locked: After Level 2
+- daily_locked: After Level {level}
 - home_bonus_badge: BONUS
 - home_bonus_kicker: BONUS ENDLESS
 - home_bonus_name: Bonus levels
 - bonus_win_label: Bonus Level {level}
+- gen_busy: Setting up the shelves…
+- chest_gain_tag: +{count}
+- daily_chest_title:
+  - one: Day 7 chest · {count} coin
+  - other: Day 7 chest · {count} coins
+- daily_chest_to_go:
+  - one: {count} day to go
+  - other: {count} days to go
+- daily_chest_to_go_today:
+  - one: {count} day to go, counting today
+  - other: {count} days to go, counting today
+- daily_chest_opened: Opened today
 - gen_failed_title: The shelves need a moment
 - gen_failed_body: This level didn’t set up. Try again, or head back home.
 - gen_failed_retry: Try again
 - gen_failed_home: Back to Home
 - stuck_restart: Try Restart? You can keep playing too.
-- oom_undo_spent: Your 2 free undos are used
-- slot_limit: Two extra slots is the most for one level.
+- oom_undo_spent:
+  - one: Your {count} free undo is used
+  - other: Your {count} free undos are used
+- slot_limit:
+  - one: One extra slot is the most for one level.
+  - other: {count} extra slots is the most for one level.
 - tut_step_chip: STEP {step} OF 3
+- tut_step_1_title: Tap the small doll
+- tut_step_1_body: Dolls nest into the same color, one size bigger.
+- tut_step_2_title: Now tap the big one
+- tut_step_2_body: The small doll drops inside with a clack.
 - tut_step_3_title: Finish the family
 - tut_step_3_body: Put the last doll in. A family is done when every size is nested.
 - splash_storage_title: Your phone is nearly full
-- splash_storage_body: Nesty needs about 60 MB to set up the shelves. Free some space, then try again.
+- splash_storage_body: Nesty needs about {size} MB to set up the shelves. Free some space, then try again.
 - splash_content_title: The shelves didn’t unpack
 - splash_content_body: Something went wrong while loading. Try again, or restart Nesty.
 - splash_retry: Try again
+
+## A11y
+Screen-reader strings for the m7 screens. Announcements (the rival’s progress, toasts, “Reminder set”) are polite: read once, after the current speech, and they never move focus. Buttons with visible text use that text; these cover icon-only controls and states the eye reads from colour or position.
+
+Moved here unchanged:
+- a11y_race_start: Race started against {rival}, a computer player.
+- a11y_rival_family: The computer completed a family: {count} of {total}
+- a11y_rival_starting_over: The computer is starting over.
+- a11y_rival_finished: The computer completed every family.
+- a11y_race_won: You won the race.
+- a11y_race_lost: The computer finished first.
+- a11y_undo_unlimited: Undo, unlimited
+- a11y_stars: {count} of 3 stars
+- a11y_stars_new_best: New best, {count} of 3 stars
+
+Board and HUD:
+- a11y_pause: Pause
+- a11y_coins:
+  - one: {count} coin. Opens the Shop.
+  - other: {count} coins. Opens the Shop.
+- a11y_family_counter: {count} of {total} families complete
+- a11y_booster_undo:
+  - one: Undo, {count} left
+  - other: Undo, {count} left
+- a11y_booster_hint:
+  - one: Hint, {count} left
+  - other: Hint, {count} left
+- a11y_booster_slot:
+  - one: Extra slot, {count} left
+  - other: Extra slot, {count} left
+- a11y_booster_price: {booster}, {price} coins
+- a11y_booster_ad: {booster}, watch a video
+- a11y_booster_slot_used: +Slot, {count} of {total} used
+- a11y_booster_suggested: {booster}, suggested
+- a11y_booster_restart: Restart the level
+- a11y_tut_step: Step {step} of 3. {title}
+
+Screens:
+- a11y_back: Back
+- a11y_close: Close
+- a11y_settings: Settings
+- a11y_streak:
+  - one: {count}-day streak
+  - other: {count}-day streak
+- a11y_streak_paused:
+  - one: {count}-day streak, paused
+  - other: {count}-day streak, paused
+- a11y_freezes:
+  - one: {count} streak freeze left
+  - other: {count} streak freezes left
+- a11y_rival_card: {rival}, computer rival. {skill}.
+- a11y_rival_locked: Locked computer rival. Beat {rival} to unlock.
+- a11y_rival_selected: Selected
+- a11y_rival_strip: {rival}, computer: {count} of {total} families
+- a11y_chapter_row: Chapter {chapter}, {name}. {count} of {total} stars.
+- a11y_chapter_locked: Chapter {chapter}, {name}. Locked.
+- a11y_level_won:
+  - one: Level {level}, {count} star. Best {best} moves.
+  - other: Level {level}, {count} stars. Best {best} moves.
+- a11y_level_current: Level {level}, next to play
+- a11y_level_locked: Level {level}, locked
+- a11y_level_chest: A chest at this level
+- a11y_figurine_home: {name}, home in your Museum
+- a11y_figurine_locked: {name}, not home yet. Chapter {chapter}.
+- a11y_badge_earned: {badge}, earned
+- a11y_badge_locked: {badge}, not earned yet. {how}
+
+More screens:
+- a11y_level_finale: The last level of the chapter
+- a11y_chest_contents: Chest. Inside: {contents}.
+- a11y_share_daily: Share today’s result
+- a11y_home_chapter: Chapter {chapter}, {name}. {count} of {total} stars. Opens Chapters.
+- a11y_home_bonus: Bonus levels. {count} of {total} stars. Opens Chapters.
+- a11y_home_versus: vs Computer. Race a computer on the same puzzle.
+- a11y_home_versus_locked: vs Computer, locked. After Level {level}.
+- a11y_figurine_next:
+  - one: {name}, next to come home. {count} level to go.
+  - other: {name}, next to come home. {count} levels to go.
+- a11y_museum_count: {count} of {total} families home
+- a11y_record_cell: {label}: {value}
+- a11y_race_row:
+  - one: {rival}, computer. {count} win.
+  - other: {rival}, computer. {count} wins.
+- a11y_race_row_locked: {rival}, computer. Locked.
+- a11y_rival_beaten: Beaten
+- a11y_race_start_button: Start race against {rival}
+- a11y_reduce_motion_group: Reduce motion
+- a11y_reminder_time_chip: Reminder time, every day at {time}. Change time.
+- a11y_skin_owned: Owned
+
+`{contents}` joins the chest’s chip labels with commas (“100 coins, 1 hint”). `a11y_skin_owned` is read after the skin’s name; the card itself shows Equip. `a11y_booster_suggested` is for 12.7’s glowing Restart: nothing reads “Suggested” on screen, the ring alone marks it.
+
+Badge how-to, read after `a11y_badge_locked` as `{how}`. They are for screen readers only; the visible line stays “Not earned yet”.
+- first_family_how: Nest a whole family.
+- glass_breaker_how: Open a glass case.
+- ice_melter_how: Free a doll from the ice.
+- tall_order_how: Win a level with size-5 dolls.
+- grand_nest_how: Win a level with size-6 dolls.
+- level_100_how: Win level {level}.
+- level_200_how: Win level {level}.
+- dailies_7_how: Solve {count} daily puzzles.
+- dailies_30_how: Solve {count} daily puzzles.
+- first_race_how: Beat the computer in a race.
+- all_rivals_how: Beat every computer rival.
+- museum_full_how: Bring every family home to your Museum.
+
+## Short forms
+Fallbacks for tight surfaces (tokens.json → `textFit`). The game uses a short form only when the full string doesn’t fit at the surface’s minimum scale. The full strings from earlier rounds are listed so each short form has its pair. Where English needs no shortening the two are the same; translators may shorten them.
+- win_title: Level Complete!
+- win_title_short: Complete!
+- race_win_title_short: You won!
+- race_lose_title_short: So close!
+- chapter_ribbon: CHAPTER {chapter} · {name}
+- chapter_ribbon_short: {name}
+- tier_hard: HARD
+- tier_super: SUPER HARD
+- tier_super_short: SUPER
+- tier_bonus: BONUS
+- booster_undo: Undo
+- booster_undo_short: Undo
+- booster_hint: Hint
+- booster_hint_short: Hint
+- booster_slot: +Slot
+- booster_slot_short: +1
+- booster_restart: Restart
+- booster_restart_short: Restart
+- tab_shop: Shop
+- tab_shop_short: Shop
+- tab_home: Home
+- tab_home_short: Home
+- tab_museum: Museum
+- tab_museum_short: Museum
+
+HARD and BONUS have no short form: they drop to their glyph. The booster bar and 12.9 read “+Slot”; the sheets keep “+1 Slot” as their title.

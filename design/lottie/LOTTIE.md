@@ -2,9 +2,19 @@
 
 ## Changes
 
+### m7-4 (2026-09-30, Claude Design)
+Three files changed; timing, anchors, canvases and markers are unchanged everywhere.
+- **`ui_win_ribbon`, `ui_chapter_ribbon`: fill names.** Every fill was called `fill`. They are now `band_fill`, `edge_fill` and `hi_fill` (layer `band`) and `tail_fill` and `fold_fill` (layers `tail_l`, `tail_r`), so one key path reaches each colour. See "Tint and width".
+- **`ui_chest`: the chest’s box.** `chest_closed` and `chest_open` are 390×325 px at 33.33 %, a 130×108 dp box: the SVGs’ 180×150 viewBox. The visible chest fills x 20–160 and y 14–146.5 of that viewBox, so it draws 101 dp wide in the Lottie at 100 %. The frames draw the same box at 156×130 (chest 121 dp, its top 56 dp below the card top on 10.3b), so play `ui_chest` at 1.2 on the card (`layout.chestCard.artFit`). The 200×170 box was the pre-m7 chest card, no longer in the flow.
+- **`ui_family_counter`: rect names.** The pill and glow rectangles are `pill_rect` and `glow_rect` (fills `pill_fill`, `glow_fill`), so the game can widen the pill.
+- **`ui_chest`: seamless `open_idle`.** The rays' sway ended at −6° on frame 410 but started the loop at about −1° on frame 290, so every loop jumped. The rays now turn 0 → −6° over `open` (252–290), then −6 → 6 → −6° (290 → 350 → 410), and their opacity is 70 % on both 290 and 410. The loop has no jump; everything else in the file is unchanged.
+- **Intro loops, for the record.** `ui_intro_*` draw no NEW tag, no title and no digits: no “+2” or “+1” tags in the shapes or the image art, because the loops show the rule by motion (the card text says it). The ice counter is pips (`pip_1`, `pip_2` on `counter_badge`), never a number; the glass case hangs from `case_size` at 80 % and the padlock symbol is scaled to match (26.67 %, 9.6 dp) under `lock`, which is not a child of `case_size`, so resize the two together; `family_size` and `family_2_size` shrink the completing family into its nest and grow it back for the loop, and `mover_size` squashes the tower's top nest as it lands. These three are animated; don't override them.
+
 ### m7-3 (2026-09-30, Claude Design)
-Three new files and one fix; the other 31 are unchanged.
+Five new files and one fix; the other 31 are unchanged.
 - **`ui_intro_towers`, `ui_intro_glass`, `ui_intro_ice` (new, D).** Looping animations for the intro cards 4.1–4.3, on the card's 302×230 illustration box, with no text layers. The plank and stands are shapes; dolls, the wood blank, glass case frames, the padlock symbol and ice frames are image slots, filled like the board's (the roles are in Image slots). Every scale and position change sits on a null; image layers only fade. The ice counter shows pips, not a number. Each loop ends on its first frame.
+- **`ui_rival_react` (new, C.6).** The rival's portrait reacting: `idle` breathes (loop), `family` pops with an indigo ring and two sparkles when the computer completes a family, `win` hops with confetti bits when it finishes first, `lose` gives a friendly nod when the player wins. Canvas 120×120, portrait 96 dp at (60, 64); scale it to 47.5 dp for the 38 dp strip portrait.
+- **`ui_museum_idle` (new, J.2).** A collected figurine's idle in its Museum niche: a 3 dp bob, a shadow that breathes with it and two twinkles. Canvas 90×90, figurine 62 dp standing at (45, 80). Start each niche at a random frame.
 - **`ui_extra_slot` (E.21).** The pulse now starts and ends at the static pad's pose (100 % scale, 100 % opacity), with a `rest` marker at frame 0: 100 → 104 % (24) → 96 % (72) → 100 % (96), opacity 100 → 80 → 100. The hand-off from the static pad no longer pops, so the game can start at frame 0.
 
 ### m7-2 (2026-09-30, Claude Design)
@@ -42,7 +52,7 @@ Built from v2, which stays the baseline, with the owner's answers to the v2 ques
 
 ---
 
-For Claude Code. **Owner decision (2026-09-26): every animation in the design ships as Lottie.** This folder has 35 files (10 doll, 9 fx, 11 ui) that cover every animation in the flow (`prototypes/Nesty App Flow.dc.html`) and in `prototypes/Nesty Motion & Sound.dc.html`. Watch them all in `prototypes/Lottie FX.dc.html`. Timings come from `tokens.json` → `motion`. Sounds and haptics come from `tokens.json` → `sound` and `haptics`.
+For Claude Code. **Owner decision (2026-09-26): every animation in the design ships as Lottie.** This folder has 37 files (10 doll, 9 fx, 11 ui) that cover every animation in the flow (`prototypes/Nesty App Flow.dc.html`) and in `prototypes/Nesty Motion & Sound.dc.html`. Watch them all in `prototypes/Lottie FX.dc.html`. Timings come from `tokens.json` → `motion`. Sounds and haptics come from `tokens.json` → `sound` and `haptics`.
 
 **Not Lottie:** widget transitions that wrap live content, such as button press, sheet in, modal in, tab lift and banners. They stay Flutter animations using `tokens.motion.ui`. Combo is sound-only. The dashed hint arc and the tutorial arc are static paths.
 
@@ -95,6 +105,8 @@ For Claude Code. **Owner decision (2026-09-26): every animation in the design sh
 | `ui_intro_towers` | 302×230 | the intro card's illustration box (4.1) | 240 f, loop | `loop` 0–240 |
 | `ui_intro_glass` | 302×230 | the intro card's illustration box (4.2) | 240 f, loop | `loop` 0–240 |
 | `ui_intro_ice` | 302×230 | the intro card's illustration box (4.3) | 300 f, loop | `loop` 0–300 |
+| `ui_rival_react` | 120×120 | portrait center (60, 64); in the rival strip scale the canvas to 47.5 dp on the 38 dp portrait | 380 f | `idle` 0–180 (loop), `family` 180–220, `win` 220–300, `lose` 300–380; rest = frame 0 |
+| `ui_museum_idle` | 90×90 | figurine base (45, 80) on the niche floor | 240 f, loop | `loop` 0–240; random start frame per niche |
 
 ## When each one plays
 Play events in `MoveEvent` order. The board timeline starts each file, and a Lottie never changes game state. Times are ms from the event.
@@ -124,6 +136,8 @@ Play events in `MoveEvent` order. The board timeline starts each file, and a Lot
 | Skin downloading (7.5) | `ui_spinner` | none | none |
 | Tutorial 1.3 / 1.4, 1.6 | `ui_tap_hand`, `ui_drag_hand` | none | none |
 | Mechanic intro card (4.1–4.3) | `ui_intro_towers`, `ui_intro_glass` or `ui_intro_ice`, looping while the card is open. Reduce motion: frame 0, still | none | none |
+| Race: rival strip and result cards | `ui_rival_react` `idle` (loop); `family` when the computer completes a family; `win` on 9.5, `lose` on 9.4; back to `idle`. Reduce motion: frame 0 | `rival_complete` with `family` | none |
+| Museum (6.1) | `ui_museum_idle` on each collected figurine, random phase. Reduce motion: frame 0 | none | none |
 | Win overlay with stars (11.2, 11.3) | `ui_stars` when the coin count-up ends (1,300 ms): `star_1` … `star_n` back to back, then `flourish` if n = 3. `fx_coin_burst` and `coins` keep @700. Reduce motion: the last frame of `star_n` at once | `star_n` at the start of each segment (reduce motion: the highest one only) | light per star, success after the flourish |
 | Milestone or day-7 chest shown (10.3b, 5.6) | `ui_chest` `arrive`, then `idle` (loop) | none | none |
 | Chest Open tapped | `ui_chest` `wiggle`, then `open`, then `open_idle` (loop); the content chips pop in 150 ms apart. Reduce motion: a 200 ms crossfade from `idle` to the last frame of `open`, no wiggle | `chest_wiggle` @0, `chest_open` @483 (segment `open`), `jingle_reward` @733 | medium @483 |
@@ -147,12 +161,14 @@ Every doll and board piece is an image slot. The game fills each one with its ow
 | `chest_closed`, `chest_open` | `ui/chest/chest_closed.svg`, `chest_open.svg` at 390×325 px (130×108 dp), in `ui_chest` |
 | `mover`, `revealed` (lid and body) + `doll_silhouette` | `ui_intro_towers`: the top nest (any color), the doll revealed under it (another color), and the wood blank of the buried nest, at 512×768 |
 | `family`, `family_2`, `freed` (lid and body) | `ui_intro_glass` and `ui_intro_ice`: the families that complete (their color is the padlock's symbol in glass), and the freed doll inside the case or ice, at 512×768 |
+| `rival_portrait` | `ui/rivals/rival_n.svg` at 288×288 px (96 dp at 100 %), in `ui_rival_react` |
+| `figurine` | the collected family's `museum/<id>.svg` at 186×186 px (62 dp), in `ui_museum_idle` |
 | `glass_case_0/1/2`, `unlock_symbol`, `ice_0`, `ice_1`, `ice_shatter` | the same rasters as the board files (258×429, 36×36, 288×480) |
 
 Return every raster at exactly its asset's declared `w`×`h` in pixels, because lottie-flutter draws an image at its own pixel size. Board pieces are declared at 3× and their layers are at 33.33 % with the anchor ×3, so 3× art stays sharp and the on-screen size is the dp size above. Doll layers are 512×768 at 19.53 %.
 
 ## Doll size, rim and tint
-- **Size:** every doll has a null named `<role>_size`, where role is `doll`, `mover` or `target`. At 100 % the doll is 150 dp tall (size 6 on a 3-shelf board). Override it with `ValueDelegate.transformScale(const ['doll_size'], value: Offset(k, k))`, where k = dollHeight / 150. In `doll_nest` and `doll_swallow`, `mover_size` sits inside `target_size`, so give it moverHeight / targetHeight. Lift, hop, shake and arc distances stay in absolute dp. Lid lift and squash follow the doll's size.
+- **Size:** every doll has a null named `<role>_size`, where role is `doll`, `mover` or `target`. At 100 % the doll is 150 dp tall (size 6 on a 3-shelf board). Override it with `ValueDelegate.transformScale(const ['doll_size'], value: Offset(k, k))`, where k = dollHeight / 150. In `doll_nest` and `doll_swallow`, `mover_size` sits inside `target_size`, so give it moverHeight / targetHeight. Lift, hop, shake and arc distances stay in absolute dp. Lid lift and squash follow the doll's size. **Exception:** in `ui_intro_towers`, `ui_intro_glass` and `ui_intro_ice`, `mover_size`, `family_size` and `family_2_size` are authored and animated; never override them (the loops are drawn at the card's fixed size).
 - **Case size:** `fx_glass_unlock_tall` also has a `case_size` null. Give it the same scale as `doll_size` (h / 150) with `ValueDelegate.transformScale(const ['case_size'], …)`, so the case, flash, shards, glints and padlock grow with the doll.
 - **Hover points:** nest ends the move with the mover's base 0.50 × target height above the target base, and swallow uses 1.06 × target height.
 - **Rim:** fills named `rim_tint` take `DollSwatch.rimColor`. In `doll_nest` and `doll_swallow` the drawing order, bottom to top, is: host rim (`target_rim` / `mover_rim`), guest doll, host body, host lid. This is intended (owner, 2026-09-26). The rim is the back lip of the opening and the host body is the front wall, which covers the guest's lower half, so only the rim's upper half shows. The hidden front half would be about 2 dp tall on a 150 dp doll. `generator/nesty-doll.js` draws one open doll on its own with the whole rim above the body; that is not the nesting order.
@@ -197,6 +213,22 @@ lottie-flutter skips a position callback while two consecutive keyframes are equ
 `ui_family_counter`, `ui_win_ribbon` and `ui_chapter_ribbon` use Fredoka Bold text layers. Swap the text with `LottieDelegates(text: (initial) => …)`, keyed by the authored text:
 - Family counter: `'1 / 4'` → the current count, `'2 / 4'` → the count after the bump. The two swap at the peak.
 - Ribbons: `'Level Complete!'` and `'CHAPTER 4 · Snowy Cabin'` → the localized ARB strings. The game hides these text layers and draws its own localized text over the band. Both bands are 336 wide. Keep the text inside a 312 × 40 dp box (win) or a 312 × 32 dp box (chapter), centred on the ribbon anchor. That holds about 26 characters at Fredoka Bold 24 (win) and 20 (chapter); shrink the font for longer strings.
+
+## Tint and width
+Both ribbons are authored orange (win) and blue (chapter 4). Tint them with colour delegates on the fill names; the text layers stay hidden (see Text layers).
+
+```dart
+List<ValueDelegate> ribbonTint(RibbonColors c) => [
+  ValueDelegate.color(const ['**', 'band_fill'], value: c.band),
+  ValueDelegate.color(const ['**', 'edge_fill'], value: c.edge),
+  ValueDelegate.color(const ['**', 'tail_fill'], value: c.tail),
+  ValueDelegate.color(const ['**', 'fold_fill'], value: c.fold),
+];
+```
+
+- **Win ribbon:** `tokens.winRibbon.default` (as authored). **vs Computer (9.4, 9.5):** `tokens.versus.ribbon`: band #4E5FD9, edge #3242A8, tail #4250C6, fold #1F297F.
+- **Chapter ribbon:** band = `palette.accent`, edge = `palette.accentEdge`, tail = `palette.ribbonTail`, fold = `palette.ribbonFold` (tokens.json → `theme.chapters.n.palette`). `hi_fill` stays white at its authored opacity.
+- **Family counter width:** the pill is 70 × 26. For a wider count, set `ValueDelegate.rectangleSize(const ['**', 'pill_rect'], value: Offset(w, 26))`, the same for `glow_rect`, and move the doll mark with `ValueDelegate.transformPosition(const ['icon'], value: Offset(-w / 2 + 14, 0))`. The corner radius stays 13.
 
 ## Rendering contract
 - At rest the board draws sprites. While a doll animation plays, hide that doll's sprite and let the Lottie draw it. The first and last frames match the rest pose.

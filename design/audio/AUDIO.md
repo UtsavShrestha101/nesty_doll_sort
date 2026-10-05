@@ -48,10 +48,12 @@ SFX peaks are at or below −0.4 dBFS. Their relative levels are intentional, so
 | File | Plays when | Music |
 |---|---|---|
 | `jingle_chapter` | The Chapter complete overlay (4.6) opens | Fades out over 400 ms first. `music_game` fades back in over 2000 ms when the next level opens |
-| `jingle_reward` | A figurine joins the Museum, a skin or theme unlocks, the daily chest opens, a purchase completes | Ducks to 0.4, back over 800 ms when the jingle ends |
+| `jingle_reward` | A figurine joins the Museum, a skin or theme unlocks, the daily chest opens, a purchase completes, a new rival unlocks (9.6, as the card lands) | Ducks to 0.4, back over 800 ms when the jingle ends |
 | `jingle_oom` | The Out of moves sheet opens (3.5, 3.7) | Ducks to 0.4 while the sheet is open |
 | `jingle_versus_win` | The race is won (9.4). C major, bright | Ducks to 0.3 while the result is up, back over 800 ms after the next tap |
 | `jingle_versus_lose` | The computer finishes first (9.5). F major, gentle, never sad | Ducks to 0.3 while the result is up, back over 800 ms after the next tap |
+
+“Reminder set” (10.2c) is silent: no sound and no haptic.
 
 Jingles use the SFX bus: they follow the Sound toggle and the SFX volume, not the Music toggle. Load them with `LoadMode.memory`, like the SFX.
 

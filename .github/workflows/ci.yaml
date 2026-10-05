@@ -93,6 +93,19 @@ jobs:
         working-directory: apps/game
         run: flutter test
 
+      # The overflow suite in every other locale (build/m7-p5/p5/l10n.md
+      # section 6.2): en, de, hi and ja take five sizes, the rest the two
+      # small phones. English ran above.
+      - name: Test game overflow in every other locale
+        working-directory: apps/game
+        run: |
+          set -euo pipefail
+          for code in de es fr hi id ja pt pt_BR tr; do
+            echo "::group::overflow $code"
+            flutter test test/overflow --dart-define=NESTY_TEST_LOCALE="$code"
+            echo "::endgroup::"
+          done
+
       - name: Test admin
         working-directory: apps/admin
         run: flutter test
@@ -138,13 +151,14 @@ jobs:
       # --check fails when fx_spec.gen.dart differs from design/lottie;
       # todo_index also rejects `TODO`/`FIXME` comments that carry no
       # milestone tag).
-      - name: Regenerate design tokens and icons; check design assets, FX specs and TODO index
+      - name: Regenerate design tokens and icons; check design assets, FX specs, font subsets and TODO index
         run: |
           set -euo pipefail
           dart run nesty_tools:gen_design_tokens
           dart run nesty_tools:gen_nesty_icons
           dart run nesty_tools:sync_design_assets --check
           dart run nesty_tools:gen_fx_spec --check
+          dart run nesty_tools:gen_font_subsets --check
           dart run nesty_tools:todo_index --check
 
       # The game's bundled levels (tools/levels/README.md): bundle.json is

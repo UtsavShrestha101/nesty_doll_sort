@@ -1,87 +1,64 @@
-# nesty-design-m7-4
+# nesty-design-m7-5
 
-Cumulative handoff root: every m7-3 file plus the changes below. Answers follow the request’s numbering; every “keep” is under Choices.
+Cumulative handoff root: every m7-4 file plus the changes below. Nothing here changes a game rule: prices, rewards, limits, unlocks and the gift track stay as the game has them.
 
-## Files changed
-| path | what changed |
-|---|---|
-| `tokens.json` | v4. Changed values: `textLink.minTapHeight` 44 → 48, `layout.chestCard.card.top` 214 → 168, `color.starEmpty` → `starEmptyOutline` + `starEmptyTop` / `starEmptyBottom`. New: the frame colours, `toast`, `screenHeader`, `textFit`, `font.scripts`, `layout.tutorial`, `layout.languageSheet`, `layout.museumDetail`, `layout.noCoins`, `layout.sizeBlend` and the entries named below. |
-| `copy.md` | “Changes in m7-4” at the top; placeholders, rewritten race lines, new ids, `## A11y`, `## Short forms`; `records_families_value` and `records_three_star_levels` withdrawn |
-| `prototypes/NestyBoard.dc.html` | tutorial (tip in the HUD row, Pause hole, STEP n OF 3); one-line chapter ribbon |
-| `prototypes/NestyMenus.dc.html` | `dailyPaused`; freeze line on 5.2; `streak_lit` on 5.5; left-aligned header; language sheet with script fonts and 56 dp rows; `languageShort` (731 dp) |
-| `prototypes/NestyMeta.dc.html` | 9.6 [Race Button]; rival pace lines; new race lines; “+Slot” on 12.9; `oomRelaxedLarge` |
-| `prototypes/NestyHub.dc.html` | rival lines, locked-card ring; `settingsOff`, Turn off, 48-tall segmented control; Families completed; Chapters scroll and name fit |
-| `prototypes/NestyShop.dc.html` | left-aligned header |
-| `prototypes/Nesty App Flow.dc.html` | new frames 5.2b, 8.2b, 10.2h, 10.9c (139 frames); notes |
-| `lottie/ui_win_ribbon.json`, `ui_chapter_ribbon.json`, `ui_family_counter.json`, `ui_chest.json` | named fills and rects; `ui_chest` loop fix |
-| `lottie/LOTTIE.md`, `audio/AUDIO.md`, `README.md` | as below |
+## Part 1 · The daily gift (App Flow section 13)
 
-## 1 · Tokens
-1. `icons.storageError` sd_card_alert, `icons.contentError` inventory_2.
-2. All in `color` under the `AppColors` names. Toast kinds: `toastSuccess*`, `toastInfo*`, `toastBadge*` (+ `toastWarn*`). Peach card: `streakCard*` hold the frame values, #FFF1DE → #FFE2C2, edge #E3AE8C (your samples were close). Divider #F0DFC4 (`divider`). Locked row name `textLocked` #8A6A4E. Splash error dim `scrimLight` rgba(60,30,10,0.35). Disabled booster `disabledFace` / `disabledShade`, its label and “+1” in `disabledText`, the limit badge `limitBadge*`. Tile tints: `layout.records.statsGrid.cell.tints` and `layout.settingsRows.iconTiles`.
-3. `starEmptyOutline` #DDBE8E; the art reference left the colour map.
-4. `textLink`: 48 dp box, `pressed` #6E4526 (= `computerTagText`), `accent` #C4631E / #A94F12.
-5. **Changed:** the app-wide toast sits **4 dp under the safe top** (y 58 in the frames, whose status bar is 54), not 58 below it. Geometry in `toast.app`, `toast.inPlace`, `toast.pill`, with icon discs per kind.
-6. `motion.firstLaunch`, as shipped.
-7. `motion.chest.collect.pillRing`, `hintRing`, `gainTag`, `trail`. **Rays: no full turn.** `ui_chest` sways them ±6°; drop the 24 s turn and draw no rays over the Lottie.
-8. Diameters, as the game reads them (`layout.fallbackDoll`).
+**New files**
+- `prototypes/NestyGift.dc.html`: the 17 frames of section 13 (scenes `homeReady` … `rmChest`).
+- `ui/gift/gift_glyph.svg`: the gift button glyph, a small SVG (24 × 24, filled `#6E4526`, drawn to sit with the FILL 1 / weight 600 icons). It is not `redeem`.
+- `ui/chest/chip_slot.svg`: the “+1 slot” chip disc, 30 dp, in the coin and hint discs’ style (green gradient, 2 dp bottom shade, white add box).
+- `ui/sprites/slot_flight.svg`: the extra slot’s flight sprite, 48 dp, in `hint_flight`’s style. Day 7’s slot flies.
+- `audio/gift_claim.wav`: 0.80 s, −7.7 dBFS peak. Plays on Claim.
+- The three SVGs are also under `prototypes/ui/` for the frames.
 
-## 2 · Copy
-1. `strip_ready`, `race_pause_title`, `gen_busy`, `relaxed_free_chip`, `chest_gain_tag`, `museum_all_home_sub`, `daily_chest_title` / `_to_go` / `_to_go_today` / `_opened`, `chapter_stars_total_all`, and its own `reminder_not_now`. “Owned” is screen-reader only (`a11y_skin_owned`; the card shows Equip). “Suggested” isn’t on screen: the ring marks 12.7’s Restart, and `a11y_booster_suggested` reads it.
-2. Placeholders: `museum_intro` `{levels}`, `oom_undo_spent` and `slot_limit` plurals with `{count}`, `records_stars_value` `{total}`; also `daily_locked`, `rival_locked_mode`, `chapter_stars_total`, `splash_storage_body`.
-3. Rewritten, so no exemptions: `rival_1/2/3_skill` Gentle / Steady / Lively pace; `rival_2_personality` “Checks each move twice, then makes it.”; `rival_3_personality` “Lively, tidy and hard to catch.”; `race_win_body` “Every family is complete. {rival} was still sorting.”; `race_quit_body` “The race stops here. No coins, and you keep everything.” Frames updated.
-5. Frames 1.3, 1.4, 10.8b read OF 3.
+**Changed files**
+- `prototypes/Nesty App Flow.dc.html`: section 13 (13.1, 13.1b, 13.3, 13.3b, 13.5, 13.4, 13.2, 13.5b, 13.5c, 13.6, 13.6b, 13.6c, 13.6d, 13.7, 13.8, 13.5r, 13.6r).
+- `prototypes/NestyHub.dc.html`: two additive props, `gift` (`ready` / `rest`) and `coins`. Unset, every existing frame draws as before.
+- `tokens.json`: `gift` (button, ready dot, sheet, the four tile states, tally, claim, chest, reduce motion, 16:9 values under `gift.short`), `layout.home.giftButton`, `layout.homeShort.giftButton`, `chest.slotChip`, `type.gift`, `color.gift*` and `color.slotDisc*`, `sound.events.giftClaim`, `haptics.giftClaim`, `textFit.giftChestTitle`, `textFit.giftSheet`.
+- `copy.md`: `## Daily gift` and its short forms.
+- `audio/AUDIO.md`: `## SFX m7-5`. `generator/nesty-sfx.js` (and `prototypes/nesty-sfx.js`): `gift_claim`.
+- `lottie/LOTTIE.md`: two rows in “When each one plays”. No new Lottie.
 
-## 3 · Screen-reader strings
-All in `copy.md` → `## A11y`: badge how-to lines (`<badge>_how`, read after “not earned yet”, **screen reader only**), level cells including `a11y_level_finale`, chapter rows, `a11y_chest_contents`, `a11y_share_daily`, `notification_channel_name` / `_description`, Home’s chapter card, Bonus card and vs Computer tile, the Museum’s niches and count, Records cells and race rows, `a11y_rival_beaten`, `a11y_race_start_button`, `a11y_reduce_motion_group`, `a11y_reminder_time_chip`, `a11y_booster_slot_used` (“+Slot, 2 of 2 used”).
+**Decisions**
+- **Placement:** in the top row, left of the gear, 6 dp apart, as the game draws it. Home’s top row is where the small personal controls live, and it keeps the gift away from the Daily Puzzle tile and its flame. The short phone (13.1b) uses the same row at y 26; nothing else on 2.1b moves.
+- **Ready mark:** a 12 dp gold dot with a 2.5 dp cream ring, static. Gold reads as a treat rather than an alert.
+- **Sheet:** the stand-in’s grid, kept and finished. It is a grid in a sheet, so it can’t be read as 5.1’s strip. Done days sink and keep their gift at half strength with a green check; today has a 3 dp orange ring (the Claim colour); later days are plain white tiles. Day 7 is the wide tile with the closed chest and both rewards as chips.
+- **Where a hint or a slot goes:** a tally slides out under the coin pill for the flight and steps its count up, then slides back after 1.2 s. The player sees the gift arrive and the new total. The booster itself waits in the booster bar.
+- **Day 7 chest:** the 5.6 card and `ui_chest`, titled “Day 7 gift” (short form “Day 7”). No gift-specific tint: the house orange of 10.3b and 5.6. “A week of gifts” is withdrawn: it doesn’t fit, and the track counts claims, not weeks. Open, then Collect; no Double it.
+- **Sound:** one short sound of its own, `gift_claim`. Without it a hint day would be silent, and `coins` would be wrong for a hint. Coin days add `coins` as the first coin lands; Day 7 reuses the chest’s sounds.
 
-## 4 · Frames and looks
-1. Interposes before 9.4’s chosen action (any button or back), once per rival; [Race {rival}] races the new rival, [Not now] carries on with 9.4’s action. `jingle_reward` plays as the card lands.
-3. Fills named (`band_fill`, `edge_fill`, `hi_fill`, `tail_fill`, `fold_fill`); versus colours in `versus.ribbon`. No separate file needed.
-5. The pick lasts for the visit (as built). On a new visit: the New rival, else the last rival raced.
-10. Yes: the first Home visit after a relight, in any session, once (`motion.relitHome`).
-11. Space’s chip: white 92 % with #2A2766. Skin or theme bought: no card; the price chip turns into Equip / Use with a pop, three sparkles, the coins count down, `jingle_reward`, success haptic (`motion.purchaseItem`).
-12. Keep the helper note on 16:9 (tip or helper, never both) and drop the 760 switch: the card blends by height like Home (`layout.sizeBlend`).
-14. The pill takes any width: `pill_rect` / `glow_rect` with `rectangleSize`, the icon moved with `transformPosition` (LOTTIE.md → Tint and width). The 0.9–1.2 scale can go.
-15. The Lottie stays; 4.7 is redrawn one-line; fills named as in 4.3, palette `ribbonTail` / `ribbonFold` per chapter.
-16. 10.2h draws the Off row; 10.2f gets a Turn off link; the segmented control is 48 tall.
-17. 5.2b (paused card before the solve); 5.2’s streak card reads “A freeze kept your flame lit.”; relit twinkle at the flame disc’s top-right (`motion.relitTwinkle`); “Reminder set” stays silent; 12.5 under reduce motion: a slow pulse (`motion.spinner`).
+## Part 2 · The questions from the m7-4 runs
 
-## 5 · Board
-1. Glass, tall glass and ice scale with the stand; tall case capped at pitch − 2; neighbouring ice may overlap up to 3 dp. A second +1 Slot goes to the next shelf up; a row of 6 only when every row holds 5 (`layout.extraSlot`, `board.overlays`).
-2. `fourShelves.pieces` scale with k; `boardPresets.oneShelf` added (tokens only).
-3. True sizes with raised bases (D21), but keep the 8 dp: a smaller step, or fewer silhouettes (`towerStack.d21`).
-4. The tokens’ arch with no arrowhead is right (3.1 superseded). `hintMiddle.clampTop`: the arrow’s highest point stays ≥ 112, moving down over the doll if needed.
+**Changed**
+1. **Frame-only colours** (`color`, `$m75`): new `museumNextName` #FFEFD6, `trackShade`, `segmentEdge`, `rowDash`, `shadowWarm`, plus `shadow.cabinet`, `shadow.segmentTrack`, `shadow.segmentSelected`. Already named in m7-4: the toast kinds are `toastSuccess*`, `toastInfo*`, `toastBadge*`; the lit streak card is `streakCardTop` / `Bottom` / `Edge` (no frame draws #FFF2E6, #FFE7D0 or #E6B79A); the divider is `divider`; the won cell is `tileCream`; the lock is `lockGlyph`; the spotlight panel is `spotlightPanel`; the icons’ brown is `iconBrown`. The rival-select locked line is `textSecondary` (#8A5B3A), as the frame draws it.
+2. **Type per surface:** a new `type` block for Home, Chapters, the Museum, Records, the Shop and the gift. The CSS stays the spec; these names index it.
+3. **The chest flights:** the values were in `motion.chest.collect` since m7-4. The ring is `pillRing`: `0 0 0 4px rgba(255,214,110,.8), 0 0 18px 6px rgba(255,205,80,.6)`, on in 80 ms as the first coin lands (700 ms), off over 240 ms after the last. The trail is 6 dp `#FFF1C9` dots, 5 behind the coins and 3 behind the hint, 0.95 to 0.35, fading in 200 ms.
+5. **Win ribbons:** the CSS is right. `ui_win_ribbon` now draws a 290 × 56 band with tails to 334, and its rects are named `band_rect`, `edge_rect` and `hi_rect` (also in `ui_chapter_ribbon`). `tokens.winRibbon.size`.
+6. **Chest rays:** `ui_chest`’s rays are #FFD98A, at about 57 % at the peak, and 1.3× wider. The loop is unchanged.
+7. **Chapter ribbon:** the Lottie stays and 4.7 is one line drawn over it. Recolour it with the named fills from m7-4 (`band_fill`, `edge_fill`, `tail_fill`, `fold_fill`) and the chapter palette, not a colour matrix. Its rects now have names for width.
+8. **Tutorial hand:** no new file; play `ui_tap_hand` at 0.6 on its fingertip (`layout.tutorial.hand`).
+9. **Case-break shatter:** the flash in `fx_glass_unlock` and `fx_glass_unlock_tall` is now a dome, not a rounded slab.
+10. **Generating card:** `ui_spinner` is recoloured to the frame’s orange arc on a cream track (also used in 7.5). The 12.5 frame’s card was 272 wide by mistake (padding outside its 236); it is now 236.
+11. **Splash top:** a fade covers the chapter-1 arch: `layout.splash.topFade`, solid `#FBEAD0` to 120 dp, clear at 240 dp.
+14. **Wobble before a move:** the wobble eases to 0 over the first 80 ms of `doll_move`, overlapped, so the move starts at once without a snap (`motion.pick.wobbleToMoveMs`).
+16. **Race strip:** both forms drawn, 9.3h (the count without dots) and 9.3i (the tag on the second line), in `prototypes/NestyStrip.dc.html`. In 9.3i the state comes back as a 16 dp glyph after the tag (`more_horiz`, `replay`, `check_circle`); the dots never shrink. `layout.rivalStrip.forms`.
+18. **Figurine spotlight:** 300 tall, 200 on phones under 760 dp (`layout.museumDetail.spotlight`).
+21. **Chapters on open:** `layout.chapters.scroll.foldedAbove: 3`, with the game’s rule for short phones.
+22. **Capped win on 16:9:** the reason takes the tip’s row, with the families at 64 dp (new frame 11.2g, scene `winShortCap`).
+26. **Freeze chip at zero:** the game is right. “No freeze” at zero, “{count} streak freeze(s)” otherwise; 5.2b now draws “No freeze”, and `copy.md` has both strings.
+28. **Turkish titles:** Baloo 2 v1.700 (`Baloo2[wght].ttf` from google/fonts, the file Hindi already pins) for every Fredoka role in `tr`, whole strings. It covers ğ Ğ İ ş Ş and ₹. `font.scripts.latnTr`.
 
-## 6 · Lottie and art
-1. LOTTIE.md “Doll size” now names the three authored `_size` nulls; never override them.
-2. Documented: 26.67 %, 9.6 dp, under `lock`, matched to the 80 % case.
-3. No digits anywhere: no “+2” / “+1” tags in the loops or their art; ice counts with pips.
-4. The 180×150 SVG is right; the 200×170 box was the pre-m7 card. The card top is 168 (`layout.chestCard`).
-5. 10.9c: German at 1.3×; the Free chip moves under the sub instead of shrinking (`textFit.sheetRows`).
-
-## 7 · Housekeeping
-1. README’s glyph list: comma fixed, “19 glyphs” stated, plus the two splash glyphs.
-2. README “Components” matches the tokens (text link, toasts, screen header).
-
-## 8 · Device run
-1. Dim the HUD and the bar too, with a hole that keeps Pause lit and tappable; the tip moves into the HUD row (left 76, right 16, top 62), so it no longer meets the counter (`layout.tutorial`).
-2. A 1.5 px #E2CBA6 ring on the locked card, and the page gradient as `gradient.canvas`.
-3. `layout.chestCard`: top 168 / 176, padding 44/22/22, art box 156×130, `ui_chest` at 1.2 overlaying it.
-4. Scroll so the current card has at most two finished rows above it (`chapters.openScroll`). Locked number #B99A7A (`chapters.lockedCell.number`). The won count is right-aligned, flush with the bar.
-5. “Families completed” (`records_families`) with the family counter’s doll mark.
-
-## 9 · Translations
-1. `font.scripts`: Baloo 2 (Devanagari), M PLUS Rounded 1c (Japanese), both OFL, with weights, size and line heights.
-2. `textFit` per surface plus `## Short forms` in copy.md.
-3. 8.2 and the new 8.2b (731 dp, scrolling) show all nine languages with their script fonts (`layout.languageSheet`).
-
-## 10 · Fidelity audit
-1. In tokens: `shop.cardName` (skins 16, themes 14), `layout.noCoins` (heading 24, body 16, item name 18), `layout.records.statsGrid.cell`, `layout.museum` title and next-card name (up to two balanced lines). 7.4c’s chip shows the number alone; the coin says the rest, and screen readers hear “coins”.
-2. **One alignment:** the title sits on the left, beside the button, on every screen. Daily, the Shop, the Museum detail and Skin detail are redrawn (`screenHeader`).
-3. Drawn in code: `layout.museumDetail.spotlight` (250 × 320 cone, 38–62 % top edge, white 55 % → 0).
-5. The visible chest is 101 dp inside a 130 dp box in `ui_chest`; at the card’s 1.2 it is 121 dp, and its top sits 56 dp below the card top. Your 55 is right (`layout.chestCard.artFit`).
-7. 5.2’s blue banner is the app toast (info kind): ship it as `toast.app`, with the “0 left” chip on the streak card.
-
-## Choices (keep what the game ships)
-2.4 drop “Levels with 3 stars” (id withdrawn). 2.6 the locale’s `MMMd`. 2.7 7:00 PM is an example; the hour of the solve. 4.2 Keep racing closes the whole Pause. 4.4 screen width; 6 dp dots, 2 dp gap. 4.6 the empty plank; 9.3f’s tone and 52 dp refresh. 4.7 the straight blend for Home. 4.8 the accordion and the 1.3× marks as built. 4.9 Best moves by level opens Chapters. 4.13 the dimmed board behind 12.6. 4.18 toast timing. 5.5 only the unlock symbol pings. 5.6 the 0.7 dp overlap. 8.6 a still “Thinking…”. 8.7 ios_share on iOS, share on Android. 9.3 a language change applies at once, no confirmation. 10.4 the fade and padding on short phones. 10.6 red (cherry) fallback dolls on the splash.
+**Choices (keep)**
+4. The Restart suggestion keeps the Undo’s soft gold glow (3.4), so every suggested booster looks the same.
+10. The generating card stays centred in the safe area (no `layout.generating.top`).
+12. The all-home Museum card: `museum_full.svg` at 92 dp is its centrepiece.
+13. The undo: `doll_move` reversed, 260 ms, one `whoosh`, 130 ms under Reduce motion.
+15. The relit twinkles at 22 and 14 dp.
+17. The “Not enough coins” dialog stays centred; `layout.noCoins.top` now says so.
+19. The Museum’s Play button at 38 inside a 48 dp box.
+20. Chapters’ “levels to go” under the bar.
+23. The board pieces at their limits: the tall case capped at the pitch − 2 dp, a 96-wide ice overlapping by up to 2.4 dp, and `fourShelves` pieces scaled with the dolls.
+24. The badge toast’s earned line, the race win’s line and the Computer tag on 9.7b’s portrait.
+25. The chest card at 10 of 10 drops its “N levels to the chest” line.
+27. “Owned” (`a11y_skin_owned`).

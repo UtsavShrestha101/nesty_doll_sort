@@ -179,8 +179,8 @@ const days = key => DAYS[key].map((s, i) => {
 });
 const DAILY = {
   daily: { streakN: '4 days', streakSub: 'Play today to keep your streak', freeze: '1 freeze', days: 'base', chestSub: '3 days to go, counting today', dPlay: true },
-  dailySaved: { streakN: '4 days', streakSub: 'A freeze kept your flame lit.', freeze: '0 left', days: 'base', chestSub: '3 days to go, counting today', dPlay: true, savedToast: true },
-  dailyPaused: { streakN: '4 days', paused: true, streakSub: 'Your 4-day streak is resting. Solve today’s puzzle to light it again.', freeze: '0 left', days: 'base', chestSub: '3 days to go, counting today', dPlay: true },
+  dailySaved: { streakN: '4 days', streakSub: 'A freeze kept your flame lit.', freeze: 'No freeze', days: 'base', chestSub: '3 days to go, counting today', dPlay: true, savedToast: true },
+  dailyPaused: { streakN: '4 days', paused: true, streakSub: 'Your 4-day streak is resting. Solve today’s puzzle to light it again.', freeze: 'No freeze', days: 'base', chestSub: '3 days to go, counting today', dPlay: true },
   dailyDone: { streakN: '5 days', streakSub: 'Your flame is lit. See you tomorrow.', freeze: '1 freeze', days: 'done', chestSub: '2 days to go', dDone: true },
   dailyChest: { streakN: '7 days', streakSub: 'A full week!', freeze: '1 freeze', days: 'chest', chestSub: 'Opened today', dDone: true, isChest: true },
 };

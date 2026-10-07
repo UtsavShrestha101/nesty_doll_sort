@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"></helmet>
+<div style="position:relative;width:390px;height:{{ frameH }}px;border-radius:{{ frameR }};overflow:hidden;background:#F3E6CF;box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+<sc-if value="{{ tall }}" hint-placeholder-val="{{ true }}"><dc-import name="NestyHub" scene="home" gift="{{ gift }}" coins="{{ coins }}" hint-size="390px,844px" style="position:absolute;left:0;top:0"></dc-import></sc-if>
+<sc-if value="{{ short }}" hint-placeholder-val="{{ false }}"><dc-import name="NestyHub" scene="homeShort" gift="{{ gift }}" coins="{{ coins }}" hint-size="390px,693px" style="position:absolute;left:0;top:0"></dc-import></sc-if>
+<sc-if value="{{ dimOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:{{ dimBg }};z-index:30"></div></sc-if>
+<sc-if value="{{ holeOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:10px;top:{{ holeY }}px;width:122px;height:54px;border-radius:27px;box-shadow:0 0 0 1400px rgba(60,30,10,.55);z-index:30"></div></sc-if>
+<sc-if value="{{ ringOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;top:{{ topY }}px;width:110px;height:44px;border-radius:22px;box-shadow:0 0 0 4px rgba(255,214,110,.8),0 0 18px 6px rgba(255,205,80,.6);z-index:31"></div></sc-if>
+
+<sc-if value="{{ sheetOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;bottom:0;border-radius:34px 34px 0 0;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 -10px 30px rgba(60,25,5,.3);padding:{{ padT }}px 20px {{ padB }}px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;z-index:32">
+<div style="width:44px;height:5px;flex:none;border-radius:3px;background:rgba(110,70,40,.25)"></div>
+<div style="margin-top:{{ titleMt }}px;height:{{ titleH }}px;font:700 {{ titleFs }}px/1.1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap">Daily gift</div>
+<div style="margin-top:{{ subMt }}px;height:{{ subH }}px;font:600 {{ subFs }}px/1.35 'Nunito',sans-serif;color:#7A5234;text-align:center">One gift a day, at your own pace.</div>
+<div style="margin-top:{{ gridMt }}px;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:{{ gap }}px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="6"><div style="position:relative;height:{{ tileH }}px;border-radius:22px;background:{{ d.bg }};box-shadow:{{ d.sh }};transform:translateY({{ d.lift }}px);display:flex;flex-direction:column;padding:11px 12px 10px;box-sizing:border-box">
+<div style="font:800 13px/1 'Nunito',sans-serif;color:{{ d.lc }}">{{ d.label }}</div>
+<sc-if value="{{ d.done }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:8px;top:7px;width:22px;height:22px;border-radius:50%;background:#46A758;box-shadow:inset 0 -2px 0 #2F7A3E;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:16px;color:#FFFFFF;font-variation-settings:'FILL' 1,'wght' 700">check</div></sc-if>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;opacity:{{ d.op }}"><div style="width:{{ artS }}px;height:{{ artS }}px;flex:none;background:url({{ d.art }}) center/contain no-repeat"></div><div style="font:700 {{ amtFs }}px/1 'Fredoka',sans-serif;color:#5B3A21;font-variant-numeric:tabular-nums">{{ d.amt }}</div></div>
+</div></sc-for>
+</div>
+<div style="position:relative;margin-top:{{ gap }}px;width:100%;height:{{ d7H }}px;flex:none;border-radius:24px;background:{{ d7.bg }};box-shadow:{{ d7.sh }};transform:translateY({{ d7.lift }}px);display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;box-sizing:border-box">
+<div style="width:{{ d7ArtW }}px;height:{{ d7ArtH }}px;flex:none;background:url(ui/chest/chest_closed.svg) center/contain no-repeat;opacity:{{ d7.op }}"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:7px">
+<div style="font:800 13px/1 'Nunito',sans-serif;color:{{ d7.lc }}">Day 7</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;opacity:{{ d7.op }}">
+<div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 4px;border-radius:16px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #EAD3B0;font:700 15px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap"><div style="width:24px;height:24px;background:url(ui/sprites/coin_flight.svg) center/contain no-repeat"></div>+100 coins</div>
+<div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 4px;border-radius:16px;background:#FFFDF7;box-shadow:inset 0 0 0 1.5px #EAD3B0;font:700 15px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap"><div style="width:24px;height:24px;background:url(ui/chest/chip_slot.svg) center/contain no-repeat"></div>+1 slot</div>
+</div></div>
+<sc-if value="{{ d7.done }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:10px;top:9px;width:22px;height:22px;border-radius:50%;background:#46A758;box-shadow:inset 0 -2px 0 #2F7A3E;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:16px;color:#FFFFFF;font-variation-settings:'FILL' 1,'wght' 700">check</div></sc-if>
+</div>
+<sc-if value="{{ claimOn }}" hint-placeholder-val="{{ false }}"><div style="margin-top:{{ footMt }}px;width:100%;height:{{ btnH }}px;flex:none;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;font:700 21px/1 'Fredoka',sans-serif;color:#FFFFFF;text-shadow:0 2px 0 rgba(150,60,10,.35)">Claim</div></sc-if>
+<sc-if value="{{ lineOn }}" hint-placeholder-val="{{ false }}"><div style="margin-top:{{ footMt }}px;width:100%;height:{{ btnH }}px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center"><sc-if value="{{ line1On }}" hint-placeholder-val="{{ false }}"><div style="font:700 17px/1.15 'Fredoka',sans-serif;color:#5B3A21">{{ line1 }}</div></sc-if><div style="font:700 15px/1.3 'Nunito',sans-serif;color:#8A5B3A;text-wrap:balance">{{ line2 }}</div></div></sc-if>
+</div></sc-if>
+
+<sc-if value="{{ cardOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:28px;right:28px;top:176px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 7px 0 #D8B07A,0 24px 48px rgba(60,25,5,.35);padding:44px 22px 22px;display:flex;flex-direction:column;align-items:center;z-index:34">
+<div style="position:absolute;left:50%;top:-24px;transform:translateX(-50%);height:46px;padding:0 24px;border-radius:23px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #C4631E;display:flex;align-items:center;font:700 21px/1 'Fredoka',sans-serif;color:#FFFFFF;text-shadow:0 2px 0 rgba(150,60,10,.35);white-space:nowrap;z-index:3">Day 7 gift</div>
+<sc-if value="{{ raysOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;top:-26px;width:270px;height:270px;border-radius:50%;background:repeating-conic-gradient(rgba(255,200,90,.55) 0deg 9deg,rgba(255,200,90,0) 9deg 24deg);-webkit-mask:radial-gradient(circle closest-side,#000 20%,transparent 68%);mask:radial-gradient(circle closest-side,#000 20%,transparent 68%);opacity:{{ raysOp }};z-index:0"></div></sc-if>
+<div style="position:relative;width:156px;height:130px;flex:none;z-index:1"><div style="position:absolute;inset:0;background:url(ui/chest/chest_closed.svg) center/contain no-repeat;opacity:{{ closedOp }}"></div><div style="position:absolute;inset:0;background:url(ui/chest/chest_open.svg) center/contain no-repeat;opacity:{{ openOp }}"></div></div>
+<div style="margin-top:14px;font:600 15px/1.4 'Nunito',sans-serif;color:#7A5234;text-align:center;text-wrap:pretty;z-index:1">A chest for Day 7. Here’s what’s inside.</div>
+<div style="margin-top:14px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;z-index:1">
+<div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 16px 0 7px;border-radius:22px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;font:700 17px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap"><div style="width:30px;height:30px;background:url(ui/sprites/coin_flight.svg) center/contain no-repeat"></div>+100 coins</div>
+<div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 16px 0 7px;border-radius:22px;background:#FFFDF7;box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A;font:700 17px/1 'Fredoka',sans-serif;color:#5B3A21;white-space:nowrap"><div style="width:30px;height:30px;background:url(ui/chest/chip_slot.svg) center/contain no-repeat"></div>+1 slot</div>
+</div>
+<div style="margin-top:20px;width:100%;height:58px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;font:700 21px/1 'Fredoka',sans-serif;color:#FFFFFF;text-shadow:0 2px 0 rgba(150,60,10,.35);z-index:1">{{ cardBtn }}</div>
+</div></sc-if>
+
+<sc-if value="{{ tallyOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;top:{{ tallyY }}px;height:36px;padding:0 13px 0 5px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 4px 0 #D8B07A,0 8px 14px rgba(60,25,5,.25);display:flex;align-items:center;gap:7px;font:700 17px/1 'Fredoka',sans-serif;color:#5B3A21;font-variant-numeric:tabular-nums;opacity:{{ tallyOp }};z-index:36">
+<sc-if value="{{ tallyHint }}" hint-placeholder-val="{{ false }}"><div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#FFE7A0,#F5C518);box-shadow:inset 0 -2px 0 #C9960A{{ tallyRing }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:17px;color:#8C5E12;font-variation-settings:'FILL' 1,'wght' 600">lightbulb</div></sc-if>
+<sc-if value="{{ tallySlot }}" hint-placeholder-val="{{ false }}"><div style="width:26px;height:26px;border-radius:50%;background:url(ui/chest/chip_slot.svg) center/contain no-repeat;box-shadow:0 0 0 0 transparent{{ tallyRing }}"></div></sc-if>
+{{ tallyN }}</div></sc-if>
+<sc-for list="{{ tags }}" as="g" hint-placeholder-count="0"><div style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;padding:3px 8px;border-radius:10px;background:#46A758;box-shadow:0 2px 0 #2F7A3E;color:#FFFFFF;font:700 13px/1 'Fredoka',sans-serif;opacity:{{ g.o }};z-index:37">{{ g.t }}</div></sc-for>
+<sc-for list="{{ dots }}" as="dt" hint-placeholder-count="0"><div style="position:absolute;left:{{ dt.x }}px;top:{{ dt.y }}px;width:6px;height:6px;border-radius:50%;background:#FFF1C9;opacity:{{ dt.o }};z-index:38"></div></sc-for>
+<sc-for list="{{ sprites }}" as="f" hint-placeholder-count="0"><div style="position:absolute;left:{{ f.x }}px;top:{{ f.y }}px;width:{{ f.s }}px;height:{{ f.s }}px;background:url({{ f.src }}) center/contain no-repeat;transform:rotate({{ f.r }}deg);filter:drop-shadow(0 3px 3px rgba(60,25,5,.3));z-index:39"></div></sc-for>
+
+<sc-if value="{{ sbTall }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 34px 0 40px;box-sizing:border-box;font:700 16px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:24px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.7"><div style="width:80%;height:100%;background:currentColor;border-radius:2px"></div></div></div></sc-if>
+<sc-if value="{{ sbShort }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:20px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box;font:700 12px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:20px;height:10px;border:1.2px solid currentColor;border-radius:3px;padding:1.2px;box-sizing:border-box;opacity:.7"><div style="width:80%;height:100%;background:currentColor;border-radius:1.5px"></div></div></div></sc-if>
+<sc-if value="{{ islandOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#120B06;z-index:41"></div></sc-if>
+<sc-if value="{{ hiOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:42"></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;homeReady&quot;,&quot;homeShortReady&quot;,&quot;homeRest&quot;,&quot;sheetReady&quot;,&quot;sheetShort&quot;,&quot;sheetClaimed&quot;,&quot;claimCoins&quot;,&quot;claimHint&quot;,&quot;claimHintEnd&quot;,&quot;day7Ready&quot;,&quot;day7Chest&quot;,&quot;day7Open&quot;,&quot;day7Collect&quot;,&quot;newTrack&quot;,&quot;waiting&quot;,&quot;rmClaim&quot;,&quot;rmChest&quot;],&quot;default&quot;:&quot;sheetReady&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const R = Math.round;
+const COIN = 'ui/sprites/coin_flight.svg', HINT = 'ui/sprites/hint_flight.svg', SLOT = 'ui/sprites/slot_flight.svg';
+const TRACK = [{ c: 20 }, { c: 30 }, { h: 1 }, { c: 40 }, { c: 50 }, { h: 1 }];
+const TALL = { frameH: 844, frameR: '46px', padT: 14, titleMt: 18, titleFs: 30, titleH: 33, subMt: 4, subFs: 15, subH: 20, gridMt: 16, tileH: 100, gap: 10, d7H: 112, footMt: 16, btnH: 58, padB: 40, artS: 34, amtFs: 24, d7ArtW: 108, d7ArtH: 90, topY: 66 };
+const SHORT = { frameH: 693, frameR: '30px', padT: 12, titleMt: 12, titleFs: 26, titleH: 29, subMt: 2, subFs: 14, subH: 19, gridMt: 12, tileH: 86, gap: 8, d7H: 96, footMt: 12, btnH: 54, padB: 20, artS: 30, amtFs: 22, d7ArtW: 92, d7ArtH: 77, topY: 28 };
+const LOOK = {
+  D: { bg: '#FCEBD0', sh: 'inset 0 2px 4px rgba(90,45,15,.14)', lc: '#9A6A44', op: .5, done: true, lift: 0 },
+  T: { bg: '#FFFDF7', sh: 'inset 0 2px 0 #fff,0 0 0 3px #F2893B,0 4px 0 3px #C4631E,0 0 0 9px rgba(242,137,59,.16)', lc: '#C4631E', op: 1, done: false, lift: -2 },
+  L: { bg: '#FFFDF7', sh: 'inset 0 2px 0 #fff,0 5px 0 #D8B07A', lc: '#8A5B3A', op: 1, done: false, lift: 0 },
+};
+const curve = (p0, c, p1, t) => [(1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0], (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1]];
+const fly = (p0, c, p1, list, src) => list.map(([t, s, r]) => { const [x, y] = curve(p0, c, p1, t); return { x: R(x - s / 2), y: R(y - s / 2), s, src, r: r || 0 }; });
+const trail = (p0, c, p1, ts) => ts.map((t, i) => { const [x, y] = curve(p0, c, p1, t); return { x: R(x - 3), y: R(y - 3), o: +(0.35 + i * 0.6 / Math.max(1, ts.length - 1)).toFixed(2) }; });
+const TODAY = 'Today’s gift is yours.';
+const S = {
+  homeReady: { gift: 'ready', coins: '830' },
+  homeShortReady: { short: true, gift: 'ready', coins: '830' },
+  homeRest: { gift: 'rest', coins: '870' },
+  sheetReady: { gift: 'ready', coins: '830', sheet: 'DDDTLL', d7: 'L', foot: 'claim' },
+  sheetShort: { short: true, gift: 'ready', coins: '830', sheet: 'DDDTLL', d7: 'L', foot: 'claim' },
+  sheetClaimed: { gift: 'rest', coins: '870', sheet: 'DDDDLL', d7: 'L', foot: 'line', line1: TODAY, line2: 'Tomorrow: 50 coins' },
+  claimCoins: { gift: 'rest', coins: '850', sheet: 'DDDDLL', d7: 'L', foot: 'line', line1: TODAY, line2: 'Tomorrow: 50 coins', hole: true, ring: true, fx: 'coins' },
+  claimHint: { gift: 'rest', coins: '930', sheet: 'DDDDDD', d7: 'L', foot: 'line', line1: TODAY, line2: 'Tomorrow: 100 coins + 1 extra slot', tally: ['hint', '2', 1], fx: 'hint' },
+  claimHintEnd: { gift: 'rest', coins: '930', sheet: 'DDDDDD', d7: 'L', foot: 'line', line1: TODAY, line2: 'Tomorrow: 100 coins + 1 extra slot', tally: ['hint', '3', 1, true], tags: [['+1', 86, 124, 1]] },
+  day7Ready: { gift: 'ready', coins: '930', sheet: 'DDDDDD', d7: 'T', foot: 'claim' },
+  day7Chest: { gift: 'rest', coins: '930', card: 'closed' },
+  day7Open: { gift: 'rest', coins: '930', card: 'open' },
+  day7Collect: { gift: 'rest', coins: '980', light: true, ring: true, fx: 'chest', tally: ['slot', '1', 1] },
+  newTrack: { gift: 'ready', coins: '1,030', sheet: 'TLLLLL', d7: 'L', foot: 'claim' },
+  waiting: { gift: 'rest', coins: '870', sheet: 'DDDDLL', d7: 'L', foot: 'wait', line2: 'Next gift: 50 coins' },
+  rmClaim: { gift: 'rest', coins: '870', sheet: 'DDDDLL', d7: 'L', foot: 'line', line1: TODAY, line2: 'Tomorrow: 50 coins', hole: true, ring: true },
+  rmChest: { gift: 'rest', coins: '930', card: 'fade' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const name = S[this.props.scene] ? this.props.scene : 'sheetReady';
+    const sc = S[name], K = sc.short ? SHORT : TALL, sheetOn = !!sc.sheet, cardOn = !!sc.card;
+    const out = { ...K, tall: !sc.short, short: !!sc.short, gift: sc.gift || '', coins: sc.coins || '830', sheetOn, cardOn, days: [], d7: LOOK.L,
+      dimOn: (sheetOn || cardOn || !!sc.light) && !sc.hole, dimBg: sc.light ? 'rgba(60,30,10,.18)' : 'rgba(60,30,10,.55)', holeOn: !!sc.hole, holeY: K.topY - 5, ringOn: !!sc.ring,
+      claimOn: sc.foot === 'claim', lineOn: sc.foot === 'line' || sc.foot === 'wait', line1On: !!sc.line1, line1: sc.line1 || '', line2: sc.line2 || '',
+      raysOn: sc.card === 'open' || sc.card === 'fade', raysOp: sc.card === 'fade' ? .5 : 1, closedOp: sc.card === 'open' ? 0 : sc.card === 'fade' ? .5 : 1, openOp: sc.card === 'open' ? 1 : sc.card === 'fade' ? .5 : 0, cardBtn: sc.card === 'closed' ? 'Open' : 'Collect',
+      tallyOn: !!sc.tally, tallyY: K.topY + 54, tallyHint: !!sc.tally && sc.tally[0] === 'hint', tallySlot: !!sc.tally && sc.tally[0] === 'slot', tallyN: sc.tally ? sc.tally[1] : '', tallyOp: sc.tally ? sc.tally[2] : 1, tallyRing: sc.tally && sc.tally[3] ? ',0 0 0 3px #FFE08A,0 0 14px 4px rgba(255,205,80,.7)' : '',
+      tags: (sc.tags || []).map(([t, x, y, o]) => ({ t, x, y: y - (sc.short ? 38 : 0), o })), dots: [], sprites: [],
+      sbTall: !sc.short && (sheetOn || cardOn || !!sc.hole), sbShort: !!sc.short && sheetOn, sbc: sc.light ? '#3A2414' : '#FFF4E0', islandOn: !sc.short && (sheetOn || cardOn || !!sc.hole), hiOn: !sc.short && (sheetOn || cardOn || !!sc.light), hi: sheetOn ? 'rgba(40,20,8,.75)' : 'rgba(255,240,215,.85)' };
+    if (sheetOn) {
+      out.days = sc.sheet.split('').map((st, i) => { const g = TRACK[i]; return { ...LOOK[st], label: `Day ${i + 1}`, art: g.c ? COIN : HINT, amt: String(g.c || g.h) }; });
+      out.d7 = LOOK[sc.d7];
+    }
+    const H = K.frameH, sheetH = K.padT + 5 + K.titleMt + K.titleH + K.subMt + K.subH + K.gridMt + 2 * K.tileH + 2 * K.gap + K.d7H + K.footMt + K.btnH + K.padB;
+    const gridTop = H - sheetH + K.padT + 5 + K.titleMt + K.titleH + K.subMt + K.subH + K.gridMt;
+    const cell = (col, row) => [20 + 55 + col * 120, gridTop + K.tileH / 2 + row * (K.tileH + K.gap)];
+    const pill = [39, K.topY + 22], tallyDisc = [34, K.topY + 72];
+    if (sc.fx === 'coins') { const p0 = cell(0, 1), c = [175, 300]; out.sprites = fly(p0, c, pill, [[.4, 30, 0], [.56, 28, 25], [.72, 27, 50], [.88, 25, 75]], COIN); out.dots = trail(p0, c, pill, [.1, .18, .26, .33]); }
+    if (sc.fx === 'hint') { const p0 = cell(2, 1), c = [300, 240]; out.sprites = fly(p0, c, tallyDisc, [[.64, 40, -10]], HINT); out.dots = trail(p0, c, tallyDisc, [.22, .34, .46]); }
+    if (sc.fx === 'chest') { const p0 = [195, 290], c = [190, 140]; const p1 = [195, 300], c2 = [80, 330];
+      out.sprites = fly(p0, c, pill, [[.3, 30, 0], [.44, 29, 20], [.58, 28, 40], [.7, 27, 60], [.82, 26, 80], [.92, 24, 100]], COIN).concat(fly(p1, c2, tallyDisc, [[.62, 40, -8]], SLOT));
+      out.dots = trail(p0, c, pill, [.06, .12, .18, .24]).concat(trail(p1, c2, tallyDisc, [.25, .37, .49])); }
+    return out;
+  }
+}
+</script>
+</body>
+</html>

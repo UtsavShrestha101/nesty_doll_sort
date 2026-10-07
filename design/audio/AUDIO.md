@@ -1,6 +1,6 @@
 # Audio
 
-For Claude Code. Everything Nesty plays: 2 music loops, 5 jingles and 23 SFX. Hear them all in `prototypes/Nesty Soundtrack.dc.html`: it plays these exact files by default, and its live-synth mode can mute each part of a loop. Values live in `tokens.json` → `sound`. The SFX cue for each animation stays in `lottie/LOTTIE.md` and `prototypes/Nesty Motion & Sound.dc.html`.
+For Claude Code. Everything Nesty plays: 2 music loops, 5 jingles and 24 SFX. Hear them all in `prototypes/Nesty Soundtrack.dc.html`: it plays these exact files by default, and its live-synth mode can mute each part of a loop. Values live in `tokens.json` → `sound`. The SFX cue for each animation stays in `lottie/LOTTIE.md` and `prototypes/Nesty Motion & Sound.dc.html`.
 
 The band is a small wooden folk set: balalaika, marimba, music box, bayan, nylon guitar, pluck bass, spoons, shaker, tambourine and a soft frame drum. Everything is in C major or F major, so the combo chimes (C6 D6 E6 G6 A6) always fit the chords under them. `generator/nesty-music.js` and `generator/nesty-sfx.js` synthesize every file. They are references only; the app plays the files.
 
@@ -15,7 +15,7 @@ The band is a small wooden folk set: balalaika, marimba, music box, bayan, nylon
 | `jingle_oom.ogg` | one-shot | 4.380 s | OGG Vorbis q4, 44.1 kHz stereo | 51 KB |
 | `jingle_versus_win.ogg` | one-shot | 4.42 s | OGG Vorbis q4, 44.1 kHz stereo | 67 KB |
 | `jingle_versus_lose.ogg` | one-shot | 4.28 s | OGG Vorbis q4, 44.1 kHz stereo | 51 KB |
-| 23 × `*.wav` | SFX | 0.15–2.0 s | WAV 44.1 kHz mono 16-bit | 1.5 MB total |
+| 24 × `*.wav` | SFX | 0.15–2.0 s | WAV 44.1 kHz mono 16-bit | 1.6 MB total |
 
 ## Levels
 
@@ -98,6 +98,16 @@ Six new SFX in the same wooden set, WAV 44.1 kHz mono 16-bit. Their events are i
 | `rival_complete` | 0.45 s | −6.7 dBFS | The computer completes a family during a race: its strip dot fills. Two soft wood notes, G5 → C6, quieter than `complete_n` so it never competes with the player's own chime |
 
 The three star files rise E6 → G6 → C7, so a 1-, 2- or 3-star win always ends on a note of the C chord. Play them on the SFX bus at full SFX volume; `rival_complete` also plays at full volume (its level is baked in).
+
+## SFX m7-5
+
+One new SFX for the daily gift (section 13), in the same wooden set, WAV 44.1 kHz mono 16-bit. Its event is `sound.events.giftClaim`; the haptic is `haptics.giftClaim`.
+
+| File | Length | Peak | Plays when |
+|---|---|---|---|
+| `gift_claim` | 0.80 s | −7.7 dBFS | Claim is tapped on the gift sheet (13.5), every day of the track. A soft ribbon pull, then two music-box notes G6 → C7 over a marimba C6. On a coin day `coins` follows as the first coin lands; a hint or a slot adds nothing. Day 7 goes on with `chest_wiggle`, `chest_open` and `jingle_reward` exactly as 5.6 |
+
+Music doesn’t duck for `gift_claim` (it is shorter than a duck). The Day 7 chest uses the Reward row of the music rules. `generator/nesty-sfx.js` renders it as `gift_claim`.
 
 ## flutter_soloud 4.1.7 sketch
 

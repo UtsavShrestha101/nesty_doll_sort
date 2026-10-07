@@ -2,6 +2,11 @@
 
 All the new copy for the m7 round, one line per string: `- <id>: <text>`. Ids are the request's ids where it gives them (badge ids, rival numbers, chapter numbers, museum file ids) and short slugs otherwise. Placeholders in braces are filled by the game: `{count}`, `{moves}`, `{date}`, `{day}`, `{time}`, `{rival}`, `{level}`, `{chapter}`, `{first}`, `{last}`, `{total}`, `{price}`, `{glyphs}`, `{badge}`, `{best}`, `{step}`, `{name}`, `{skill}`, `{booster}`, `{title}`, `{size}`, `{levels}`, `{how}`, `{contents}`, `{label}`, `{value}`. A plural is two lines, `one:` and `other:`. Curly quotes and the `·` separator are part of the strings.
 
+## Changes in m7-5
+- **Daily gift (new, App Flow section 13):** every string is in `## Daily gift`, its screen-reader lines included (`gift_a11y_*`), and its short forms are in `## Short forms`. It never says streak, missed, lose, reset, start over, ends or today only.
+- **Streak freeze chip:** `streak_freeze_chip` and `streak_freeze_chip_none` are the strings the game ships (“{count} streak freeze(s)”, “No freeze”). The paused Daily (5.2b) now draws “No freeze”, in the same chip width.
+- **Confirmed:** `a11y_skin_owned` is “Owned”, read after the skin’s name.
+
 ## Changes in m7-4
 - **Placeholders for fixed numbers:** `daily_locked`, `rival_locked_mode`, `museum_intro`, `chapter_stars_total`, `records_stars_value` and `splash_storage_body` take the number from the game; `oom_undo_spent` and `slot_limit` are plurals now.
 - **Rival lines:** `rival_n_skill` names a pace (Gentle, Steady, Lively), so no rival is called slow and no two read alike.
@@ -237,6 +242,10 @@ Gentle streak (I.7). A missed day never lowers the number, and a freeze keeps th
 - streak_relit_body: Your {count}-day streak is glowing again.
 - streak_freeze_used: A freeze kept your flame lit.
 - streak_zero: Solve today’s puzzle to light your first flame.
+- streak_freeze_chip:
+  - one: {count} streak freeze
+  - other: {count} streak freezes
+- streak_freeze_chip_none: No freeze
 
 - chest_streak_body: Seven days in a row. Here’s what’s inside.
 - chest_double: Double it
@@ -346,8 +355,58 @@ States that needed new lines (m7-3).
 - splash_content_body: Something went wrong while loading. Try again, or restart Nesty.
 - splash_retry: Try again
 
+## Daily gift
+Section 13 (m7-5). One gift a day from a 7-day track that counts claims, not dates. The voice is warm and calm: no clock, no “today only”, nothing about missing a day, and no streak words, so it never reads as the Daily puzzle. `{n}` is the day or the amount, `{gift}` one of the gift phrases below.
+
+Visible:
+- gift_sheet_title: Daily gift
+- gift_sheet_sub: One gift a day, at your own pace.
+- gift_day: Day {n}
+- gift_claim: Claim
+- gift_claimed_today: Today’s gift is yours.
+- gift_tomorrow: Tomorrow: {gift}
+- gift_next: Next gift: {gift}
+
+`gift_tomorrow` follows `gift_claimed_today` once today’s gift is claimed (13.4). `gift_next` is the waiting line when the phone’s clock went back (13.8): it shows alone, with no Claim button and no date.
+
+Gift phrases, the values of `{gift}`:
+- gift_coins:
+  - one: {n} coin
+  - other: {n} coins
+- gift_hints:
+  - one: {n} hint
+  - other: {n} hints
+- gift_slots:
+  - one: {n} extra slot
+  - other: {n} extra slots
+- gift_join: {first} + {second}
+
+Day 7 joins its two phrases with `gift_join`: “100 coins + 1 extra slot”, so the line reads “Tomorrow: 100 coins + 1 extra slot”.
+
+The Day 7 chest (13.6), which keeps `chest_open`, `chest_collect` and `chest_coins` from G.9:
+- gift_chest_title: Day 7 gift
+- gift_chest_body: A chest for Day 7. Here’s what’s inside.
+- gift_chest_slot_chip:
+  - one: +{count} slot
+  - other: +{count} slots
+
+Screen reader:
+- gift_a11y_button_ready: Daily gift. A gift is ready.
+- gift_a11y_button: Daily gift
+- gift_a11y_tile: Day {n}, {gift}. {state}
+- gift_a11y_state_done: Claimed
+- gift_a11y_state_today: Today’s gift
+- gift_a11y_state_later: Coming up
+- gift_a11y_chest_contents: {first}, {second}
+- gift_a11y_claimed: Gift claimed: {gift}.
+- gift_a11y_added: {gift} added. You have {count}.
+
+`gift_a11y_tile` reads, for example, “Day 4, 40 coins. Today’s gift.” The Day 7 tile and the chest read their two phrases joined by `gift_a11y_chest_contents`, “100 coins, 1 extra slot”, which fills `{contents}` in `a11y_chest_contents` (“Chest. Inside: 100 coins, 1 extra slot.”). `gift_a11y_claimed` is a polite announcement once the claim lands; `gift_a11y_added` is read when a hint or an extra slot reaches the tally, with the new total (“1 hint added. You have 3.”). Home never announces a ready gift by itself; the button label carries it.
+
 ## A11y
 Screen-reader strings for the m7 screens. Announcements (the rival’s progress, toasts, “Reminder set”) are polite: read once, after the current speech, and they never move focus. Buttons with visible text use that text; these cover icon-only controls and states the eye reads from colour or position.
+
+The Daily gift’s screen-reader strings (`gift_a11y_*`) sit with the rest of its copy in `## Daily gift`.
 
 Moved here unchanged:
 - a11y_race_start: Race started against {rival}, a computer player.
@@ -479,3 +538,17 @@ Fallbacks for tight surfaces (tokens.json → `textFit`). The game uses a short 
 - tab_museum_short: Museum
 
 HARD and BONUS have no short form: they drop to their glyph. The booster bar and 12.9 read “+Slot”; the sheets keep “+1 Slot” as their title.
+
+Daily gift (m7-5), for a German text about 30 % longer:
+- gift_sheet_title: Daily gift
+- gift_sheet_title_short: Gifts
+- gift_chest_title: Day 7 gift
+- gift_chest_title_short: Day 7
+- gift_slots_short:
+  - one: {n} slot
+  - other: {n} slots
+- gift_chest_slot_chip_short:
+  - one: +{count}
+  - other: +{count}
+
+The chest ribbon takes `gift_chest_title_short` when the full title doesn’t fit at 0.85 on a 360 dp phone (“Tag-7-Geschenk” fits; longer translations don’t). Day 7’s phrase uses `gift_slots_short` when “Tomorrow: …” would wrap past two lines. The “+1 slot” chip falls back to “+1” beside its disc, as `booster_slot_short` does. Tile amounts are numbers and never shorten.

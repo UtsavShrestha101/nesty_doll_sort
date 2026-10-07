@@ -81,6 +81,13 @@
     chest_wiggle: (c, o, t) => { [0, 0.16, 0.32].forEach((dt, i) => {
       const k = semis(i * 3); noise(c, o, t + dt, { f: 380 * k, f2: 620 * k, q: 6, a: 0.03, d: 0.09, v: 0.42, off: 0.1 + i * 0.2 });
       wood(c, o, t + dt + 0.07, 520 * k, 0.34, 0.9); }); },
+    // m7-5: the daily gift is claimed (13.5): a ribbon pull, then two music-box notes G6 → C7 over a soft marimba C6
+    gift_claim: (c, o, t) => {
+      noise(c, o, t, { f: 2600, f2: 5200, q: 0.9, a: 0.025, d: 0.11, v: 0.13, off: 0.15 });
+      noise(c, o, t + 0.045, { f: 1700, f2: 3900, q: 1.3, a: 0.02, d: 0.08, v: 0.09, off: 0.45 });
+      partials(c, o, t + 0.07, 1568, BOX, 0.18);
+      partials(c, o, t + 0.17, 2093, BOX, 0.21); partials(c, o, t + 0.17, 1046.5, MARIMBA(1046.5), 0.16, 0.002);
+      noise(c, o, t + 0.18, { type: 'highpass', f: 7000, a: 0.03, d: 0.32, v: 0.03 }); },
     rival_complete: (c, o, t) => { wood(c, o, t, 784, 0.24, 1.1); wood(c, o, t + 0.09, 1047, 0.26, 1.1); partials(c, o, t + 0.09, 2093, BOX, 0.07); },
   };
   /* Spec file list → generator + params + export length (s) */
@@ -108,6 +115,7 @@
     ['chest_open', 'chest_open', {}, 1.1, 'Chest lid opens (m7)', 'medium'],
     ['chest_wiggle', 'chest_wiggle', {}, 0.6, 'Chest wiggles before it opens: three rising creaks (m7)', 'light'],
     ['rival_complete', 'rival_complete', {}, 0.45, 'The computer rival completes a family (m7)', null],
+    ['gift_claim', 'gift_claim', {}, 0.8, 'The daily gift is claimed: Claim tapped (m7-5)', 'light'],
   ].map(([file, fn, params, len, event, haptic]) => ({ file, fn, params, len, event, haptic }));
 
   function ensure() {

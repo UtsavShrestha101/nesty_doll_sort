@@ -2,6 +2,16 @@
 
 ## Changes
 
+### m7-5 (2026-10-07, Claude Design)
+Six files changed; timing, anchors, canvases and markers are unchanged everywhere.
+- **`ui_win_ribbon`: 290 wide.** The frames are right (9.4, 9.5, 5.4): the band is 290 × 56 and the tails reach ±167, so the ribbon is 334 dp at rest and fits a 360 dp phone with 13 dp to spare. The highlight is 274 wide. The rects are named `band_rect`, `edge_rect` and `hi_rect`, so the game can set a width with `ValueDelegate.rectangleSize`; move `tail_l` / `tail_r` by the same half-difference. Keep the text in a 266 × 40 box. Never draw it wider than the screen − 70.
+- **`ui_chapter_ribbon`: rect names only.** The same `band_rect`, `edge_rect`, `hi_rect`; the band stays 336. It stays the spec for 4.7: one line, `chapter_ribbon` (or `chapter_ribbon_short`), drawn by the game over the band. Recolour it with the named fills (m7-4) and the chapter palette, not a colour matrix: `band_fill` = accent, `edge_fill` = accentEdge, `tail_fill` = ribbonTail, `fold_fill` = ribbonFold. On a phone narrower than 406 dp, set its band to screen − 70.
+- **`ui_chest`: rays.** The five rays are #FFD98A at 80 % (about 57 % at the open peak with the layer’s 72 %) and 1.3× wider (about 19° each), closer to the frames. The opacity keys are untouched, so `open_idle` still loops without a jump.
+- **`ui_spinner`: the frames’ colours.** An orange arc (#F2893B, 30 % of the turn) on a #EAD3B0 track, stroke 2.2 (6 dp when played at 44 dp, as `layout.generating` says). This also recolours 7.5’s download spinner, on purpose: one spinner everywhere.
+- **`fx_glass_unlock`, `fx_glass_unlock_tall`: a dome flash.** The `flash` layer was a rounded rect (86 × 143, radius 18), so it lit up as a frosted slab around the dome. It is now a path in the case’s shape: a round top with the radius of half the width, straight sides and 10 dp bottom corners. Same size, place, opacity and timing.
+- **`ui_tap_hand`: unchanged.** Play it at 0.6 on its fingertip anchor (48, 32), so the hand is 40 dp as in 1.3, 1.4, 1.6 and 10.8b (`layout.tutorial.hand`).
+- **The daily gift (section 13) adds no Lottie.** Its claim flies the sprites (`coin_flight`, `hint_flight` and the new `ui/sprites/slot_flight.svg`) and Day 7 plays `ui_chest` exactly as 5.6. See the two new rows in “When each one plays”.
+
 ### m7-4 (2026-09-30, Claude Design)
 Three files changed; timing, anchors, canvases and markers are unchanged everywhere.
 - **`ui_win_ribbon`, `ui_chapter_ribbon`: fill names.** Every fill was called `fill`. They are now `band_fill`, `edge_fill` and `hi_fill` (layer `band`) and `tail_fill` and `fold_fill` (layers `tail_l`, `tail_r`), so one key path reaches each colour. See "Tint and width".
@@ -93,7 +103,7 @@ For Claude Code. **Owner decision (2026-09-26): every animation in the design sh
 | `ui_hint_arrow` | 60×80 | arrow center at rest (30, 45), placed at (slot cx, doll top − 33) | 54 f, loop | |
 | `ui_extra_slot` | 110×50 | stand center (55, 25) | 96 f, loop | `rest` = frame 0 (matches the static pad) |
 | `ui_booster_glow` | 130×110 | booster center (65, 55); draw it behind the button | 84 f, loop | |
-| `ui_win_ribbon` | 410×110 | ribbon center (205, 55); band 336 wide | 18 f, then hold | |
+| `ui_win_ribbon` | 410×110 | ribbon center (205, 55); band 290 wide, tails to ±167 (m7-5) | 18 f, then hold | |
 | `ui_chapter_ribbon` | 410×100 | ribbon center (205, 50); band 336 wide | 156 f | |
 | `ui_toggle` | 54×30 | toggle box | 22 f | `on` 0–11, `off` 11–22; rest off = 0, on = 11 |
 | `ui_spinner` | 16×16 | center | 54 f, loop | |
@@ -143,6 +153,8 @@ Play events in `MoveEvent` order. The board timeline starts each file, and a Lot
 | Chest Open tapped | `ui_chest` `wiggle`, then `open`, then `open_idle` (loop); the content chips pop in 150 ms apart. Reduce motion: a 200 ms crossfade from `idle` to the last frame of `open`, no wiggle | `chest_wiggle` @0, `chest_open` @483 (segment `open`), `jingle_reward` @733 | medium @483 |
 | Chest Collect (10.3d) | no Lottie: 6 `ui/sprites/coin_flight` fly to the coin pill (700 ms, 60 ms apart) and `hint_flight` to the Hint button (650 ms), whose badge bumps 1.3×. Reduce motion: no flights, the counts update | `coins` @0 | light as the hint lands |
 | Race: the computer completes a family | none (the strip dot fills, `motion.rivalDot`) | `rival_complete` | none |
+| Daily gift claimed (13.5) | no Lottie: one `coin_flight` per 10 coins (2–6) flies to the coin pill (700 ms, 60 ms apart); a hint or slot flies with `hint_flight` / `slot_flight` into the tally under the pill (650 ms). Reduce motion: no flights, the counts update (`gift.reducedMotion`) | `gift_claim` @0, `coins` as the first coin lands | light @0, light as a hint or slot lands |
+| Daily gift, Day 7 (13.6) | `ui_chest` as the day-7 chest row above; Collect as Chest Collect | as the chest rows | as the chest rows |
 
 ## Image slots
 Every doll and board piece is an image slot. The game fills each one with its own raster through `LottieDelegates(image: (composition, asset) => …)`, keyed by `asset.id`. `images/*.png` are placeholders (Cherry classic doll and board art) so that the files also play standalone. Each one is exactly its asset's declared size.
@@ -212,7 +224,7 @@ lottie-flutter skips a position callback while two consecutive keyframes are equ
 ## Text layers
 `ui_family_counter`, `ui_win_ribbon` and `ui_chapter_ribbon` use Fredoka Bold text layers. Swap the text with `LottieDelegates(text: (initial) => …)`, keyed by the authored text:
 - Family counter: `'1 / 4'` → the current count, `'2 / 4'` → the count after the bump. The two swap at the peak.
-- Ribbons: `'Level Complete!'` and `'CHAPTER 4 · Snowy Cabin'` → the localized ARB strings. The game hides these text layers and draws its own localized text over the band. Both bands are 336 wide. Keep the text inside a 312 × 40 dp box (win) or a 312 × 32 dp box (chapter), centred on the ribbon anchor. That holds about 26 characters at Fredoka Bold 24 (win) and 20 (chapter); shrink the font for longer strings.
+- Ribbons: `'Level Complete!'` and `'CHAPTER 4 · Snowy Cabin'` → the localized ARB strings. The game hides these text layers and draws its own localized text over the band. The win band is 290 wide and the chapter band 336 (m7-5). Keep the text inside a 266 × 40 dp box (win) or a 312 × 32 dp box (chapter), centred on the ribbon anchor. That holds about 26 characters at Fredoka Bold 24 (win) and 20 (chapter); shrink the font for longer strings.
 
 ## Tint and width
 Both ribbons are authored orange (win) and blue (chapter 4). Tint them with colour delegates on the fill names; the text layers stay hidden (see Text layers).

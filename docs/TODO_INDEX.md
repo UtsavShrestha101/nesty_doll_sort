@@ -51,7 +51,7 @@ _None._
 - `apps/game/lib/core/services/remote_config/remote_config_service.dart:6` — add `FirebaseRemoteConfigService` (firebase_remote_config) for the real env; it sets `RemoteConfigKeys.defaults` as in-app defaults and falls back to them on any fetch error. Keys are `int`, `bool` and, since the daily …
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
-- `docs/BACKLOG.md:914` — names `getString`
+- `docs/BACKLOG.md:924` — names `getString`
 
 ## M5 — Admin panel
 

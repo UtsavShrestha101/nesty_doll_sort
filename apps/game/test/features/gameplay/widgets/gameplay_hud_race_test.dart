@@ -61,13 +61,50 @@ void main() {
     );
   });
 
-  testWidgets('a strip taller than the row scales down instead of '
-      'overflowing', (tester) async {
+  testWidgets('a strip taller than 58 scales down instead of overflowing', (
+    tester,
+  ) async {
     await pumpUi(
       tester,
       hud(strip: const SizedBox(key: ValueKey('tall'), height: 64)),
     );
     expect(tester.takeException(), isNull);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('tall'))).height,
+      64,
+      reason: 'laid out at its own height, then scaled',
+    );
+  });
+
+  testWidgets('a strip grown to 58 (9.3i at large text) keeps its height, '
+      'and the family counter moves down with it', (tester) async {
+    Future<(Rect, Offset)> layout(double height) async {
+      await pumpUi(
+        tester,
+        hud(
+          strip: SizedBox(
+            key: const ValueKey('strip'),
+            height: height,
+            child: const ColoredBox(color: Color(0xFFFF0000)),
+          ),
+        ),
+      );
+      return (
+        tester.getRect(find.byKey(const ValueKey('strip'))),
+        tester.getCenter(find.byType(FamilyCounter)),
+      );
+    }
+
+    final (normal, counter) = await layout(RivalStripTokens.height);
+    final (grown, moved) = await layout(RivalStripTokens.formsHeightAt13);
+    expect(RivalStripTokens.formsHeightAt13, 58);
+    expect(grown.height, 58);
+    expect(grown.top, normal.top);
+    // The counter follows the strip down, but its pill stops at the
+    // board's HUD line (bottom 142 + 8 = BoardFitTokens.hudClearY).
+    expect(58 - RivalStripTokens.height, greaterThan(8));
+    expect(moved.dy - counter.dy, 8);
+    expect(moved.dx, counter.dx);
   });
 
   testWidgets('off a race the level and coin pills show', (tester) async {

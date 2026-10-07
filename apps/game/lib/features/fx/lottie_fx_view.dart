@@ -1,6 +1,7 @@
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/ui/lottie/lottie_label.dart';
 import 'package:nesty_game/features/fx/fx_drawable.dart';
 import 'package:nesty_game/features/fx/fx_drawable_params.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
@@ -163,6 +164,7 @@ class LottieFxView extends StatefulWidget {
     this.images,
     this.label,
     this.previousLabel,
+    this.labelStyle,
     this.fit = BoxFit.contain,
     this.alignment = Alignment.center,
     this.fallback,
@@ -181,6 +183,11 @@ class LottieFxView extends StatefulWidget {
 
   final String? label;
   final String? previousLabel;
+
+  /// The label's style when it isn't the file's own (`FxTextHook.style`): a
+  /// ribbon narrowed for the screen (`FxRibbon.labelFor`, m7-5).
+  final LottieLabelStyle? labelStyle;
+
   final BoxFit fit;
   final Alignment alignment;
 
@@ -320,10 +327,17 @@ class _LottieFxViewState extends State<LottieFxView>
       return;
     }
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
+    final style = widget.labelStyle ?? hook.style;
     var overlay = _overlay;
-    if (overlay == null || overlay.textDirection != direction) {
+    if (overlay == null ||
+        overlay.textDirection != direction ||
+        overlay.style != style) {
       overlay?.dispose();
-      overlay = _overlay = FxTextOverlay(hook, textDirection: direction);
+      overlay = _overlay = FxTextOverlay(
+        hook,
+        textDirection: direction,
+        style: style,
+      );
     }
     overlay
       ..label = label
@@ -372,6 +386,7 @@ class _LottieFxViewState extends State<LottieFxView>
       source: widget.images,
       label: widget.label,
       previousLabel: widget.previousLabel,
+      revision: _controller.params.revision,
     );
     // Its own layer (rule 8): a playing or looping clip repaints only
     // itself at 60 fps, and a resting one replays its recorded layer when
@@ -406,12 +421,17 @@ final class _FxPainter extends CustomPainter {
     required this.source,
     required this.label,
     required this.previousLabel,
+    required this.revision,
   }) : super(repaint: controller);
 
   // Not painted directly: a resting view repaints when they change.
   final FxImageSource? source;
   final String? label;
   final String? previousLabel;
+
+  /// The params' revision at build: a resting clip whose inputs changed
+  /// (a ribbon's band width) repaints.
+  final int revision;
 
   final FxDrawable? clip;
   final LottieFxController controller;
@@ -475,5 +495,6 @@ final class _FxPainter extends CustomPainter {
       oldDelegate.canvas != canvas ||
       !identical(oldDelegate.source, source) ||
       oldDelegate.label != label ||
-      oldDelegate.previousLabel != previousLabel;
+      oldDelegate.previousLabel != previousLabel ||
+      oldDelegate.revision != revision;
 }

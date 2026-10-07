@@ -406,5 +406,61 @@
   "recordsStatSemantics": "{label}: {value}",
   "recordsBadgesCount": "{earned}/{total}",
   "a11yJoinList": "{first}, {second}",
-  "a11yJoinSentences": "{first}. {second}"
+  "a11yJoinSentences": "{first}. {second}",
+
+  "giftTitle": "Tagesgeschenk",
+
+  "giftDay": "Tag {day}",
+
+  "giftClaim": "Einsammeln",
+
+  "giftClaimedLine": "Das heutige Geschenk gehört dir.",
+
+  "giftTomorrow": "Morgen: {gift}",
+
+  "giftNext": "Nächstes Geschenk: {gift}",
+
+  "giftButtonReadySemantics": "Tagesgeschenk. Ein Geschenk liegt bereit.",
+
+  "giftButtonSemantics": "Tagesgeschenk",
+
+  "giftTileSemantics": "Tag {day}, {gift}. {state}",
+
+  "giftTileDone": "Erhalten",
+
+  "giftTileToday": "Heute",
+
+  "giftTileLater": "Kommt noch",
+
+  "giftChestTitle": "Tag-7-Geschenk",
+
+  "giftChestBody": "Eine Truhe für Tag 7. Das steckt drin.",
+
+  "giftCoins": "{count, plural, one{{count} Münze} other{{count} Münzen}}",
+
+  "giftHints": "{count, plural, one{{count} Tipp} other{{count} Tipps}}",
+
+  "giftSlots": "{count, plural, one{{count} zusätzlicher Platz} other{{count} zusätzliche Plätze}}",
+
+  "giftRewardPair": "{first} + {second}",
+
+  "chestContentsSlot": "{count, plural, one{+{count} Platz} other{+{count} Plätze}}",
+
+  "chestContentsSlotSemantics": "{coins, plural, one{{coins} Münze} other{{coins} Münzen}}, {slots, plural, one{{slots} zusätzlicher Platz} other{{slots} zusätzliche Plätze}}",
+
+  "giftSubtitle": "Ein Geschenk pro Tag, ganz in deinem Tempo.",
+
+  "giftTitleShort": "Geschenke",
+
+  "giftChestTitleShort": "Tag 7",
+
+  "giftSlotsShort": "{count, plural, one{{count} Platz} other{{count} Plätze}}",
+
+  "chestContentsSlotShort": "+{count}",
+
+  "giftA11yChestContents": "{first}, {second}",
+
+  "giftA11yClaimed": "Geschenk eingesammelt: {gift}.",
+
+  "giftA11yAdded": "{gift} hinzugefügt. Du hast {count}."
 }

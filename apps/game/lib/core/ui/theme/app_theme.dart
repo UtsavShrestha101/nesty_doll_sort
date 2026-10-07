@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nesty_game/core/ui/theme/app_text_styles.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
 /// The single (light) theme, built from `design/tokens.json` (the generated
@@ -15,9 +16,19 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 /// picker).
 abstract final class AppTheme {
   /// Built once: ThemeData is large and App rebuilds on locale changes.
-  static final ThemeData light = _buildLight();
+  static final ThemeData light = _buildLight(LocaleScript.latin);
 
-  static ThemeData _buildLight() {
+  static final _byScript = <LocaleScript, ThemeData>{LocaleScript.latin: light};
+
+  /// The theme for [locale]'s script: the same, but in Turkish the Material
+  /// roles that are Fredoka draw in Baloo 2 (whole strings, m7-5 item 28).
+  /// One theme per script, built on first use.
+  static ThemeData forLocale(Locale locale) {
+    final script = LocaleScript.forLocale(locale);
+    return _byScript.putIfAbsent(script, () => _buildLight(script));
+  }
+
+  static ThemeData _buildLight(LocaleScript script) {
     const scheme = ColorScheme.light(
       primary: AppColorTokens.primary,
       onPrimary: Colors.white,
@@ -45,7 +56,7 @@ abstract final class AppTheme {
       // Material text that takes the default family, such as the time
       // picker. The token styles below carry their own role's list.
       fontFamilyFallback: AppFontTokens.bodyFallback,
-      textTheme: _textTheme,
+      textTheme: _textTheme(script),
       scaffoldBackgroundColor: AppColorTokens.canvasCream,
       canvasColor: AppColorTokens.canvasCream,
       disabledColor: AppColorTokens.disabledText,
@@ -66,24 +77,25 @@ abstract final class AppTheme {
   /// Material roles → the token scale. Every entry sets `letterSpacing`, so
   /// Material's English-like geometry (e.g. bodyLarge +0.5) never leaks in
   /// when the theme is localized.
-  static final TextTheme _textTheme = TextTheme(
-    displayLarge: _role(AppTextStyles.display),
-    displayMedium: _role(AppTextStyles.h1),
-    displaySmall: _role(AppTextStyles.sheetTitle),
-    headlineLarge: _role(AppTextStyles.h2),
-    headlineMedium: _role(AppTextStyles.screenTitle),
-    headlineSmall: _role(AppTextStyles.cardTitle),
-    titleLarge: _role(AppTextStyles.button),
-    titleMedium: _role(AppTextStyles.hudLevel),
-    titleSmall: _role(AppTextStyles.buttonSmall),
-    bodyLarge: _role(AppTextStyles.body),
-    bodyMedium: _role(AppTextStyles.bodySmall),
-    bodySmall: _role(AppTextStyles.caption),
-    labelLarge: _role(AppTextStyles.row),
-    labelMedium: _role(AppTextStyles.boosterLabel),
-    labelSmall: _role(AppTextStyles.tierChip),
-  );
-
-  static TextStyle _role(TextStyle style) =>
-      style.copyWith(letterSpacing: style.letterSpacing ?? 0);
+  static TextTheme _textTheme(LocaleScript script) {
+    TextStyle role(TextStyle style) =>
+        script.display(style).copyWith(letterSpacing: style.letterSpacing ?? 0);
+    return TextTheme(
+      displayLarge: role(AppTextStyles.display),
+      displayMedium: role(AppTextStyles.h1),
+      displaySmall: role(AppTextStyles.sheetTitle),
+      headlineLarge: role(AppTextStyles.h2),
+      headlineMedium: role(AppTextStyles.screenTitle),
+      headlineSmall: role(AppTextStyles.cardTitle),
+      titleLarge: role(AppTextStyles.button),
+      titleMedium: role(AppTextStyles.hudLevel),
+      titleSmall: role(AppTextStyles.buttonSmall),
+      bodyLarge: role(AppTextStyles.body),
+      bodyMedium: role(AppTextStyles.bodySmall),
+      bodySmall: role(AppTextStyles.caption),
+      labelLarge: role(AppTextStyles.row),
+      labelMedium: role(AppTextStyles.boosterLabel),
+      labelSmall: role(AppTextStyles.tierChip),
+    );
+  }
 }

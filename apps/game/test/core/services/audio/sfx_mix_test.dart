@@ -33,6 +33,8 @@ void main() {
       SoundEffect.chestWiggle: 'chest_wiggle',
       SoundEffect.chestOpen: 'chest_open',
       SoundEffect.rivalComplete: 'rival_complete',
+      // m7-5: the daily gift's Claim (AUDIO.md "SFX m7-5").
+      SoundEffect.giftClaim: 'gift_claim',
     });
   });
 

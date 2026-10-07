@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
-import 'package:nesty_game/core/ui/colors/app_colors.dart';
 import 'package:nesty_game/core/ui/icons/nesty_icons.gen.dart';
 import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
@@ -483,14 +482,12 @@ class SettingsSegmentedRow<T> extends StatelessWidget {
 
   static const _trackStyle = SurfaceStyle(
     color: AppColorTokens.surfaceTrack,
-    shadows: [
-      NestyShadow(color: AppColors.segmentedTrackShade, inset: true, dy: 2),
-    ],
+    shadows: AppShadowTokens.segmentTrack,
   );
 
   static const _thumbStyle = SurfaceStyle(
     gradient: AppGradientTokens.surface,
-    shadows: [NestyShadow(color: AppColorTokens.surfaceEdge, dy: 3)],
+    shadows: AppShadowTokens.segmentSelected,
   );
 
   @override
@@ -660,7 +657,7 @@ final class _DashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.rowDash
+      ..color = AppColorTokens.rowDash
       ..strokeWidth = 1;
     var x = 0.0;
     while (x < size.width) {

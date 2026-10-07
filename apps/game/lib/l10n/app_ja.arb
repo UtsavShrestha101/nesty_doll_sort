@@ -406,5 +406,61 @@
   "recordsStatSemantics": "{label}：{value}",
   "recordsBadgesCount": "{earned}/{total}",
   "a11yJoinList": "{first}、{second}",
-  "a11yJoinSentences": "{first}。{second}"
+  "a11yJoinSentences": "{first}。{second}",
+
+  "giftTitle": "毎日のプレゼント",
+
+  "giftDay": "{day}日目",
+
+  "giftClaim": "受け取る",
+
+  "giftClaimedLine": "今日のプレゼントは受け取りました。",
+
+  "giftTomorrow": "明日：{gift}",
+
+  "giftNext": "次のプレゼント：{gift}",
+
+  "giftButtonReadySemantics": "毎日のプレゼント。受け取れるプレゼントがあります。",
+
+  "giftButtonSemantics": "毎日のプレゼント",
+
+  "giftTileSemantics": "{day}日目、{gift}。{state}",
+
+  "giftTileDone": "受け取り済み",
+
+  "giftTileToday": "今日のプレゼント",
+
+  "giftTileLater": "これから",
+
+  "giftChestTitle": "7日目のプレゼント",
+
+  "giftChestBody": "7日目の宝箱です。中身を見てみましょう。",
+
+  "giftCoins": "{count, plural, other{{count}コイン}}",
+
+  "giftHints": "{count, plural, other{{count}ヒント}}",
+
+  "giftSlots": "{count, plural, other{追加マス{count}つ}}",
+
+  "giftRewardPair": "{first}と{second}",
+
+  "chestContentsSlot": "{count, plural, other{+{count}マス}}",
+
+  "chestContentsSlotSemantics": "{coins, plural, other{{coins}コイン}}、{slots, plural, other{追加マス{slots}つ}}",
+
+  "giftSubtitle": "1日1つのプレゼント。マイペースでどうぞ。",
+
+  "giftTitleShort": "プレゼント",
+
+  "giftChestTitleShort": "7日目",
+
+  "giftSlotsShort": "{count, plural, other{{count}マス}}",
+
+  "chestContentsSlotShort": "+{count}",
+
+  "giftA11yChestContents": "{first}、{second}",
+
+  "giftA11yClaimed": "プレゼントの{gift}を受け取りました。",
+
+  "giftA11yAdded": "{gift}が加わりました。合計は{count}です。"
 }

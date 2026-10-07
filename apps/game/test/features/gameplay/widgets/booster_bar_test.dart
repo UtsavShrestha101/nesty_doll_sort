@@ -337,6 +337,41 @@ void main() {
       expect(tester.getSize(find.byType(BoosterGlow)), const Size(130, 110));
     });
 
+    testWidgets('the suggested Restart (12.7) keeps the Undo\'s soft gold '
+        'glow: the same ui_booster_glow, behind Restart (m7-5 Choice 4)', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: BoosterBar(
+              model: BoosterBarModel.of(
+                _state(softStuck: true, canUndo: false),
+              ),
+              library: FakeFxLibrary(),
+              onUndo: () {},
+              onHint: () {},
+              onExtraSlot: () {},
+              onRestart: () {},
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(BoosterGlow), findsOneWidget);
+      expect(
+        tester.getCenter(find.byType(BoosterGlow)),
+        tester.getCenter(find.byType(BoosterButton).last),
+      );
+      expect(tester.getSize(find.byType(BoosterGlow)), const Size(130, 110));
+      // No crisp ring of its own: nothing but the glow marks it.
+      expect(
+        tester.widget<BoosterButton>(find.byType(BoosterButton).last).suggested,
+        isTrue,
+      );
+    });
+
     testWidgets('relaxed mode draws the all_inclusive glyph on Undo (frame '
         '10.9; E6)', (tester) async {
       await pumpScreen(
@@ -507,12 +542,12 @@ void main() {
       final ring = find.byKey(RewardRing.ringKey);
       expect(tester.getSize(ring), const Size.square(38));
       expect(tester.getCenter(ring), offsetMoreOrLessEquals(badge));
-      final decoration =
-          tester.widget<DecoratedBox>(ring).decoration as BoxDecoration;
-      expect(decoration.shape, BoxShape.circle);
-      expect(decoration.boxShadow, [
-        for (final s in ChestCollectTokens.hintRingShadow) s.toBoxShadow(),
-      ]);
+      // A ring round the circle, never over the badge (m7-5: painted
+      // outside its shape, as 10.3d's CSS draws it).
+      final painter =
+          tester.widget<CustomPaint>(ring).painter! as RingGlowPainter;
+      expect(painter.circle, isTrue);
+      expect(painter.shadows, ChestCollectTokens.hintRingShadow);
       expect(
         tester
             .widget<AnimatedOpacity>(

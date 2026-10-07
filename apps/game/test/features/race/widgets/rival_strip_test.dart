@@ -290,11 +290,24 @@ void main() {
             width < 360 ? findsNothing : findsOneWidget,
           );
           expect(find.byIcon(IconUses.computerTag), findsOneWidget);
+          // 9.3i: when the tag takes the second line, the state is a glyph
+          // after it, and at large text the strip grows to 58.
+          final secondLine = find
+              .byKey(RivalStripForm.tagLineKey)
+              .evaluate()
+              .isNotEmpty;
           expect(
             find.textContaining('Thinking'),
-            width < 340 ? findsNothing : findsOneWidget,
+            width < 340 || secondLine ? findsNothing : findsOneWidget,
           );
-          expect(tester.getSize(find.byType(RivalStripView)).height, 48);
+          if (secondLine) {
+            expect(width, greaterThanOrEqualTo(360));
+            expect(find.byIcon(IconUses.raceStripThinking), findsOneWidget);
+          }
+          expect(
+            tester.getSize(find.byType(RivalStripView)).height,
+            secondLine && scale > 1.1 ? 58 : 48,
+          );
           // Screen readers always hear "Computer", whatever is drawn.
           final handle = tester.ensureSemantics();
           expect(
@@ -306,6 +319,284 @@ void main() {
       );
     }
   }
+
+  group('the forms (layout.rivalStrip.forms, m7-5: 9.3h, 9.3i)', () {
+    Future<RivalStripForm> formAt(
+      WidgetTester tester, {
+      required int rival,
+      required int total,
+      double width = 360,
+      double scale = 1,
+      Locale locale = const Locale('en'),
+      RivalActivity activity = RivalActivity.thinking,
+    }) async {
+      await pumpUi(
+        tester,
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 76, right: 16),
+            child: RivalStripView(
+              data: dataOf(
+                rival: rival,
+                activity: activity,
+                rivalSets: 3,
+                totalSets: total,
+              ),
+            ),
+          ),
+        ),
+        width: width,
+        textScale: scale,
+        locale: locale,
+        reduceMotion: true,
+      );
+      expect(tester.takeException(), isNull);
+      if (find.byKey(RivalStripForm.tagLineKey).evaluate().isNotEmpty) {
+        return RivalStripForm.tagSecondLine;
+      }
+      return find.byKey(const ValueKey('rivalDot-0')).evaluate().isEmpty
+          ? RivalStripForm.countOnly
+          : RivalStripForm.full;
+    }
+
+    testWidgets('9.3: Pebble on 390 with 4 families: the full form, the '
+        'dots 8 dp', (tester) async {
+      expect(
+        await formAt(tester, rival: 1, total: 4, width: 390),
+        RivalStripForm.full,
+      );
+      expect(
+        tester.getSize(find.byKey(const ValueKey('rivalDot-0'))).width,
+        greaterThanOrEqualTo(RivalStripTokens.formsDotsMinSize),
+      );
+    });
+
+    testWidgets('9.3h: more than 8 families always drops the dots, the '
+        'count stands alone at the 9.3 size', (tester) async {
+      expect(RivalStripTokens.formsFullMaxDots, 8);
+      expect(
+        await formAt(tester, rival: 1, total: 10, width: 430),
+        RivalStripForm.countOnly,
+      );
+      expect(find.text('3/10'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.text('3/10')).style!.fontSize,
+        RivalStripTokens.formsCountOnlyText.fontSize,
+      );
+      // The state line stays under the name.
+      expect(find.textContaining('Thinking'), findsOneWidget);
+    });
+
+    testWidgets('9.3h: fr at 360, "Bouton" and "Ordinateur" with 8 families '
+        'need the room: the count alone', (tester) async {
+      expect(
+        await formAt(tester, rival: 2, total: 8, locale: const Locale('fr')),
+        RivalStripForm.countOnly,
+      );
+      expect(find.text('Ordinateur'), findsOneWidget);
+    });
+
+    testWidgets('9.3i: en at 360 and 1.3× text, Button: the tag on the second '
+        'line, the strip 58 tall', (tester) async {
+      expect(
+        await formAt(tester, rival: 2, total: 8, scale: 1.3),
+        RivalStripForm.tagSecondLine,
+      );
+      expect(find.text('Button'), findsOneWidget);
+      expect(find.text('Computer'), findsOneWidget);
+      expect(tester.getSize(find.byType(RivalStripView)).height, 58);
+      // The name is drawn at full size: the form made the room.
+      final name = tester.getSize(find.text('Button'));
+      final scaled = tester.getRect(find.text('Button'));
+      expect(scaled.width, closeTo(name.width, 0.5));
+    });
+
+    testWidgets('ja at 360, Comet: at 1.0× the script’s 0.94 size lets the '
+        'count stand alone (9.3h); at 1.3× the tag takes the second line '
+        '(9.3i)', (tester) async {
+      // Japanese draws at 0.94 (tokens `font.scripts.jpan.size`), measured
+      // as the app draws it, so its 1.0× strip is the count-only form.
+      expect(
+        await formAt(tester, rival: 3, total: 8, locale: const Locale('ja')),
+        RivalStripForm.countOnly,
+      );
+      expect(tester.getSize(find.byType(RivalStripView)).height, 48);
+      expect(
+        await formAt(
+          tester,
+          rival: 3,
+          total: 8,
+          locale: const Locale('ja'),
+          scale: 1.3,
+        ),
+        RivalStripForm.tagSecondLine,
+      );
+    });
+
+    testWidgets('the name is never shrunk to keep a form: a name that would '
+        'need scaling takes the next form', (tester) async {
+      // 9.3i's own case: at 1.3× "Button" only fit beside the tag and the
+      // count when shrunk to 0.76 (the pre-m7-5 rule).
+      expect(
+        await formAt(tester, rival: 2, total: 8, scale: 1.3),
+        isNot(RivalStripForm.countOnly),
+      );
+    });
+
+    testWidgets('under 360 dp the tag is its glyph and the form is never the '
+        'second line (the README rule)', (tester) async {
+      for (final scale in const [1.0, 1.3]) {
+        expect(
+          await formAt(tester, rival: 2, total: 8, width: 359, scale: scale),
+          isNot(RivalStripForm.tagSecondLine),
+        );
+        expect(find.text('Computer'), findsNothing);
+      }
+    });
+  });
+
+  group("9.3i's state glyph after the tag", () {
+    Future<void> second(
+      WidgetTester tester,
+      RivalStripData data, {
+      bool reduceMotion = false,
+      double scale = 1.3,
+    }) => pumpUi(
+      tester,
+      Align(
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 76, right: 16),
+          child: RivalStripView(data: data),
+        ),
+      ),
+      width: 360,
+      textScale: scale,
+      reduceMotion: reduceMotion,
+    );
+
+    test('the tokens name the glyphs IconUses draws', () {
+      expect(
+        NestyIcons.byName[RivalStripTokens.formsStateGlyphThinking],
+        IconUses.raceStripThinking,
+      );
+      expect(
+        NestyIcons.byName[RivalStripTokens.formsStateGlyphStartingOver],
+        IconUses.raceStripStartingOver,
+      );
+      expect(
+        NestyIcons.byName[RivalStripTokens.formsStateGlyphFinished],
+        IconUses.raceStripFinished,
+      );
+      expect(IconUses.raceStripThinking, NestyIcons.moreHoriz);
+    });
+
+    for (final (activity, glyph, color) in [
+      (
+        RivalActivity.thinking,
+        IconUses.raceStripThinking,
+        RivalStripTokens.formsStateGlyphThinkingColor,
+      ),
+      (
+        RivalActivity.startingOver,
+        IconUses.raceStripStartingOver,
+        RivalStripTokens.formsStateGlyphStartingOverColor,
+      ),
+      (
+        RivalActivity.finished,
+        IconUses.raceStripFinished,
+        RivalStripTokens.formsStateGlyphFinishedColor,
+      ),
+    ]) {
+      testWidgets('$activity: its glyph, 16 dp × the text scale, 5 dp after '
+          'the tag, in its colour', (tester) async {
+        await second(
+          tester,
+          dataOf(rival: 2, activity: activity, totalSets: 8),
+          reduceMotion: true,
+        );
+        final icon = find.byIcon(glyph);
+        expect(icon, findsOneWidget);
+        final widget = tester.widget<Icon>(icon);
+        expect(widget.color, color);
+        expect(widget.size, closeTo(16 * 1.3, 1e-9));
+        final tag = tester.getRect(find.byType(ComputerTag));
+        expect(
+          tester.getRect(icon).left - tag.right,
+          closeTo(RivalStripTokens.formsStateGlyphGap, 0.5),
+        );
+        expect(find.textContaining('Thinking'), findsNothing);
+        expect(find.text('Starting over'), findsNothing);
+        expect(find.text('Finished'), findsNothing);
+      });
+    }
+
+    testWidgets('thinking pulses with the dots\' 1.2 s turn; a hold and '
+        'reduced motion keep it still', (tester) async {
+      Finder pulse() => find.byKey(RivalStripForm.pulseKey);
+      await second(
+        tester,
+        dataOf(rival: 2, activity: RivalActivity.thinking, totalSets: 8),
+      );
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(pulse(), findsWidgets);
+      double opacity() =>
+          tester.widget<FadeTransition>(pulse().first).opacity.value;
+      final a = opacity();
+      await tester.pump(
+        const Duration(
+          milliseconds: RivalStripTokens.stateThinkingPeriodMs ~/ 2,
+        ),
+      );
+      final b = opacity();
+      expect((a - b).abs(), greaterThan(0.3), reason: 'it pulses');
+      expect(b, greaterThanOrEqualTo(0.3 - 1e-9));
+
+      await second(
+        tester,
+        dataOf(
+          rival: 2,
+          activity: RivalActivity.thinking,
+          totalSets: 8,
+          held: true,
+        ),
+      );
+      expect(pulse(), findsNothing);
+      await second(
+        tester,
+        dataOf(rival: 2, activity: RivalActivity.thinking, totalSets: 8),
+        reduceMotion: true,
+      );
+      expect(pulse(), findsNothing);
+    });
+
+    testWidgets('no glyph before the start, or once the player finished '
+        'first', (tester) async {
+      await second(tester, dataOf(rival: 2, totalSets: 8));
+      expect(find.byKey(RivalStripForm.tagLineKey), findsOneWidget);
+      for (final glyph in [
+        IconUses.raceStripThinking,
+        IconUses.raceStripStartingOver,
+        IconUses.raceStripFinished,
+      ]) {
+        expect(find.byIcon(glyph), findsNothing);
+      }
+      await second(
+        tester,
+        dataOf(
+          rival: 2,
+          activity: RivalActivity.thinking,
+          totalSets: 8,
+          rivalSets: 3,
+          over: true,
+        ),
+        reduceMotion: true,
+      );
+      expect(find.byIcon(IconUses.raceStripThinking), findsNothing);
+      expect(find.byIcon(IconUses.raceStripFinished), findsNothing);
+    });
+  });
 
   testWidgets('Start is announced once, naming the computer '
       '(a11y_race_start)', (tester) async {

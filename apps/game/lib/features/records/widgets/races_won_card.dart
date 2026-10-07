@@ -102,10 +102,7 @@ class _RivalRow extends StatelessWidget {
                   Text(
                     name,
                     // NestyHub:137: Fredoka 600 16/1; a locked rival `#A48B72`.
-                    style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 16,
-                      height: 1,
-                      fontWeight: FontWeight.w600,
+                    style: RecordsTypeTokens.rowName.copyWith(
                       color: unlocked
                           ? AppColorTokens.textPrimary
                           : AppColorTokens.disabledText,
@@ -119,9 +116,7 @@ class _RivalRow extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               unlocked && wins > 0 ? count : '–',
-              style: AppTextStyleTokens.number.copyWith(
-                fontSize: 18,
-                height: 1,
+              style: RecordsTypeTokens.rowValue.copyWith(
                 color: unlocked && wins > 0
                     ? AppColorTokens.textPrimary
                     : AppColorTokens.disabledText,

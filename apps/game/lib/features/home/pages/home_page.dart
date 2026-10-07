@@ -7,20 +7,27 @@ import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
+import 'package:nesty_game/core/services/haptics/haptics_service.dart';
+import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/widgets/home/streak_look.dart';
 import 'package:nesty_game/features/dev/level_picker_sheet.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_game/features/gameplay/game/timeline/feedback_sink.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
 import 'package:nesty_game/features/gameplay/widgets/theme_background_view.dart';
 import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
 import 'package:nesty_game/features/home/widgets/home_chapter_card.dart';
 import 'package:nesty_game/features/home/widgets/home_layout.dart';
+import 'package:nesty_game/features/login_gift/cubit/login_gift_cubit.dart';
+import 'package:nesty_game/features/login_gift/widgets/gift_anchors.dart';
+import 'package:nesty_game/features/login_gift/widgets/gift_button.dart';
 import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
@@ -46,8 +53,22 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
       RepositoryProvider.value(value: get<ShowcaseDolls>()),
       RepositoryProvider.value(value: get<LevelRepository>()),
       RepositoryProvider.value(value: get<DatabaseService>()),
+      // The daily gift's claim sounds and Day 7 jingle (frame 13.5, 13.6).
+      RepositoryProvider.value(value: get<JingleCues>()),
+      RepositoryProvider<FeedbackSink>.value(
+        value: ServiceFeedbackSink(
+          audio: get<AudioService>(),
+          haptics: get<HapticsService>(),
+        ),
+      ),
     ],
-    child: BlocProvider(create: (_) => get<HomeCubit>()..load(), child: this),
+    child: MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => get<HomeCubit>()..load()),
+        BlocProvider(create: (_) => get<LoginGiftCubit>()..load()),
+      ],
+      child: this,
+    ),
   );
 
   @override
@@ -202,6 +223,11 @@ class _HomeViewState extends State<HomeView> {
     ];
   }();
 
+  /// The coin pill's face and its coin, where the daily gift's coins fly
+  /// and its tally hangs (frames 13.5, 13.5b, 13.6d).
+  final _coinPillKey = GlobalKey();
+  final _coinDiscKey = GlobalKey();
+
   static final ValueNotifier<LevelSkin?> _noSkin = ValueNotifier(null);
 
   @override
@@ -310,14 +336,27 @@ class _HomeViewState extends State<HomeView> {
             ),
             Positioned(
               left: 16,
-              right: 16,
+              // The gear's 48 dp target reaches 1 dp past its 46 dp face, so
+              // the face sits 16 from the edge and the gift's 68 (16 + 46 +
+              // 6; `layout.home.giftButton`).
+              right: 16 - _Header.targetMargin,
               // The row is 48 (its targets, review R18), 1 px over the
-              // frame's 46 on each side, so the faces stay where they were.
-              top: padding.top + 5 - 1,
-              child: _Header(
+              // frame's 46 on each side, so the faces stay where they were:
+              // the gear's (and the gift's) top 64 on 844 and 26 on 16:9
+              // (`layout.home.giftButton`, `layout.homeShort.giftButton`).
+              top:
+                  padding.top +
+                  _Header.faceTop(layout.t) -
+                  _Header.targetMargin,
+              child: _GiftCoinCap(
                 coins: home.coins,
-                onAdd: () => widget.onShop(ShopTab.coins),
-                onSettings: widget.onSettings,
+                builder: (coins) => _Header(
+                  coins: coins,
+                  coinPillKey: _coinPillKey,
+                  coinDiscKey: _coinDiscKey,
+                  onAdd: () => widget.onShop(ShopTab.coins),
+                  onSettings: widget.onSettings,
+                ),
               ),
             ),
             Positioned(
@@ -473,20 +512,65 @@ class _PlayButtonFor extends StatelessWidget {
   }
 }
 
+/// While a daily gift's coins are in the air, Home's pill shows at most
+/// the balance before the claim plus those landed so far
+/// (`LoginGiftState.coinsCap`), so it ticks up as they land and never dips
+/// if the balance refreshes a frame late. Without a gift cubit (a test of
+/// the view alone) it shows [coins] as they are.
+class _GiftCoinCap extends StatelessWidget {
+  const _GiftCoinCap({required this.coins, required this.builder});
+
+  final int coins;
+  final Widget Function(int coins) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = maybeLoginGiftCubit(context);
+    if (cubit == null) return builder(coins);
+    return BlocSelector<LoginGiftCubit, AsyncValue<LoginGiftState>, int?>(
+      bloc: cubit,
+      selector: (value) => value.data?.coinsCap,
+      builder: (context, cap) =>
+          builder(cap == null ? coins : math.min(coins, cap)),
+    );
+  }
+}
+
 /// Home's header (NestyMenus: top 64 on a 59 safe area): the coin pill (its
 /// "+" opens the Shop's Coins tab), the 30 px wordmark and the 46 px
-/// settings gear. The row is 48 tall so both controls get a 48 dp target
+/// settings gear, with the daily gift's button beside the gear once it
+/// unlocks (frame 13.1). The row is 48 tall so both controls get a 48 dp target
 /// (spec §10.3, review R18); their faces keep the frame's sizes.
 class _Header extends StatelessWidget {
   const _Header({
     required this.coins,
+    required this.coinPillKey,
+    required this.coinDiscKey,
     required this.onAdd,
     required this.onSettings,
   });
 
   final int coins;
+
+  /// The coin pill's face and its coin disc, read live when a gift's
+  /// coins fly (`GiftAnchors`).
+  final GlobalKey coinPillKey;
+  final GlobalKey coinDiscKey;
   final VoidCallback onAdd;
   final VoidCallback onSettings;
+
+  /// How far a 48 dp target reaches past its 46 dp face on each side.
+  static const double targetMargin =
+      (GiftButtonTokens.touch - GiftButtonTokens.size) / 2;
+
+  /// The faces' top under the safe area: the gear's and the gift's top 64
+  /// on 844 (a 59 status bar) and 26 on 16:9 (a 20 one), blended on Home's
+  /// [HomeLayout.t] like the rest of Home.
+  static double faceTop(double t) {
+    const tall = HomeTokens.giftButtonTop - 59;
+    const short = HomeShortTokens.giftButtonTop - HomeShortTokens.statusBar;
+    return tall + (short - tall) * t;
+  }
 
   /// Kept clear on each side of the wordmark, so a huge balance at 1.3×
   /// text shrinks before it touches it (the wordmark stays centred).
@@ -501,7 +585,12 @@ class _Header extends StatelessWidget {
           Flexible(
             child: Align(
               alignment: AlignmentDirectional.centerStart,
-              child: _CoinPillTarget(coins: coins, onAdd: onAdd),
+              child: _CoinPillTarget(
+                coins: coins,
+                onAdd: onAdd,
+                pillKey: coinPillKey,
+                coinKey: coinDiscKey,
+              ),
             ),
           ),
           const SizedBox(width: _gap),
@@ -510,12 +599,36 @@ class _Header extends StatelessWidget {
           Flexible(
             child: Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: IconTactileButton(
-                icon: NestyIcons.settings,
-                semanticLabel: context.localizations.settings,
-                onPressed: onSettings,
-                size: 46,
-                iconSize: 27,
+              // The gift and the gear keep their 46 dp faces on a 360 dp
+              // phone at 1.3× text (`gift.button.narrow`); only a narrower
+              // one scales them down together before they could push the
+              // centred wordmark.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GiftButton(
+                      anchors: GiftAnchors(
+                        pill: () => globalRectOfKey(coinPillKey),
+                        coin: () => globalRectOfKey(coinDiscKey),
+                      ),
+                    ),
+                    // 6 dp between the faces (`gift.button.gapToGear`):
+                    // both 48 dp targets reach 1 dp past their faces.
+                    const SizedBox(
+                      width: GiftButtonTokens.gapToGear - targetMargin * 2,
+                    ),
+                    IconTactileButton(
+                      icon: NestyIcons.settings,
+                      semanticLabel: context.localizations.settings,
+                      onPressed: onSettings,
+                      size: 46,
+                      iconSize: 27,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -530,10 +643,19 @@ class _Header extends StatelessWidget {
 /// text: the target and the button's screen-reader node sit outside the
 /// scale, and a touch anywhere in it presses the pill (review R18).
 class _CoinPillTarget extends StatelessWidget {
-  const _CoinPillTarget({required this.coins, required this.onAdd});
+  const _CoinPillTarget({
+    required this.coins,
+    required this.onAdd,
+    this.pillKey,
+    this.coinKey,
+  });
 
   final int coins;
   final VoidCallback onAdd;
+
+  /// Keys on the pill's face and its coin, for the gift's flights.
+  final Key? pillKey;
+  final Key? coinKey;
 
   @override
   Widget build(BuildContext context) {
@@ -550,9 +672,21 @@ class _CoinPillTarget extends StatelessWidget {
       onTap: activate,
       child: ExcludeSemantics(
         child: TouchTarget(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: CoinPill(coins: coins, onAdd: onAdd),
+          child: LayoutBuilder(
+            builder: (context, constraints) => FittedBox(
+              fit: BoxFit.scaleDown,
+              child: CoinPill(
+                key: pillKey,
+                coins: coins,
+                onAdd: onAdd,
+                coinKey: coinKey,
+                compact: CoinPill.homeNeedsCompact(
+                  context,
+                  coins,
+                  constraints.maxWidth,
+                ),
+              ),
+            ),
           ),
         ),
       ),

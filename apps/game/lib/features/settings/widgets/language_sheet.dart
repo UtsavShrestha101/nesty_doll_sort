@@ -181,7 +181,7 @@ final class _DashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.rowDash
+      ..color = AppColorTokens.rowDash
       ..strokeWidth = 1;
     for (var x = 0.0; x < size.width; x += 7) {
       canvas.drawLine(

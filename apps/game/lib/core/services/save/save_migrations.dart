@@ -14,7 +14,9 @@ typedef SaveMigration = Map<String, Object?> Function(Map<String, Object?> raw);
 /// step 0 only stamps schema 1 and the decoder fills every default. Step 1
 /// is M7's (docs/plans/m7-design.md §3.3): it derives the gentle streak's
 /// `daily.lit` and `daily.run` and the records a schema-1 save already
-/// implies; `save_migrations_test` migrates a real schema-1 document.
+/// implies. Step 2 is the daily gift's (docs/plans/plan-login-gift.md
+/// §7.5b): it only stamps schema 3. `save_migrations_test` migrates a real
+/// document of each older schema (`fixtures/schema<n>_document.json`).
 abstract final class SaveMigrations {
   /// The schema an absent document counts as.
   static const int noDocument = 0;
@@ -24,6 +26,7 @@ abstract final class SaveMigrations {
   static final Map<int, SaveMigration> steps = Map.unmodifiable({
     noDocument: (Map<String, Object?> raw) => {...raw, 'schema': 1},
     1: _schema1To2,
+    2: _schema2To3,
   });
 
   /// Schema 1 → 2 (m7-design §3.3). Schema 1's `daily.streak` was the
@@ -77,6 +80,20 @@ abstract final class SaveMigrations {
       },
     };
   }
+
+  /// Schema 2 → 3 (plan-login-gift §7.5b; D268): the daily gift's
+  /// `loginGift`. No save before schema 3 has a gift, so there is nothing
+  /// to derive: the step only stamps the schema, and the decoder's default
+  /// (no claim yet, no date seen) starts the track at Day 1 on the first
+  /// open after the update. Every schema-2 key is kept as it was, for the
+  /// decoder to read leniently. That includes a `loginGift` a schema-2 app
+  /// carried as an unknown key (m3-design §3.3) after a downgrade from
+  /// schema 3, so the claims made before it survive the round trip. Never
+  /// throws.
+  static Map<String, Object?> _schema2To3(Map<String, Object?> raw) => {
+    ...raw,
+    'schema': 3,
+  };
 
   /// [raw], of schema [from], migrated step by step to
   /// `SaveDocument.currentSchema`. A document already at (or past) it comes

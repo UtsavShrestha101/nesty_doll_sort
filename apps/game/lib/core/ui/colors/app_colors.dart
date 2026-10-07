@@ -56,33 +56,15 @@ abstract final class AppColors {
   /// colour (m7-4 1.7), so this is [ChestCollectTokens.trailColor].
   static const trailDot = ChestCollectTokens.trailColor;
 
-  // ── Frame values with no token ──
-
   /// The figurine detail's art panel, a radial gradient (NestyShop `mBg`,
-  /// frame 6.2 earned; 6.3 a duller one for a locked family). Tokens v4's
-  /// `spotlight*` colours name the cone's and the shelf's lights, not this.
-  // TODO(design): a token for the figurine panel's two gradients.
+  /// frame 6.2 earned; 6.3 a duller one for a locked family). tokens.json's
+  /// `spotlightPanel` (white 55 %) is the cone's fill, not this.
+  // TODO(design): m7-5 named no token for the figurine panel's two gradients;
+  // the frame's `mBg` values stay here (BACKLOG "Design gaps").
   static const spotlightEarnedTop = Color(0xFFFFF6DC);
   static const spotlightEarnedMid = Color(0xFFF2D29E);
   static const spotlightEarnedEdge = Color(0xFFE2B478);
   static const spotlightLockedTop = Color(0xFFF7EBD6);
   static const spotlightLockedMid = Color(0xFFE8D3B0);
   static const spotlightLockedEdge = Color(0xFFD9BE93);
-
-  /// The Museum cabinet's drop shadow (NestyHub:116): `0 8 16
-  /// rgba(60,25,5,.3)`.
-  // TODO(design): a token for the cabinet's drop shadow.
-  static const cabinetDrop = Color(0x4D3C1905);
-
-  /// The dashed row divider of an untiled settings card (the Pause toggles,
-  /// frame 8.1): `rgba(110,60,25,.2)`. Tokens v4's `divider` is the tiled
-  /// Settings' solid line instead.
-  // TODO(design): a token for the Pause card's dashed divider (m7-4 gave
-  // `divider` to the tiled Settings line only).
-  static const rowDash = Color(0x336E3C19);
-
-  /// The segmented control's track, an inset 0 2 4 shadow:
-  /// `rgba(90,45,15,.25)` (NestyHub:160).
-  // TODO(design): a token for the segmented track's inset shadow.
-  static const segmentedTrackShade = Color(0x405A2D0F);
 }

@@ -2624,4 +2624,205 @@ class AppLocalizationsEn extends AppLocalizations {
 
     return '$earnedString/$totalString';
   }
+
+  @override
+  String get giftTitle => 'Daily gift';
+
+  @override
+  String giftDay(int day) {
+    final intl.NumberFormat dayNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String dayString = dayNumberFormat.format(day);
+
+    return 'Day $dayString';
+  }
+
+  @override
+  String get giftClaim => 'Claim';
+
+  @override
+  String get giftClaimedLine => 'Today’s gift is yours.';
+
+  @override
+  String giftTomorrow(String gift) {
+    return 'Tomorrow: $gift';
+  }
+
+  @override
+  String giftNext(String gift) {
+    return 'Next gift: $gift';
+  }
+
+  @override
+  String get giftButtonReadySemantics => 'Daily gift. A gift is ready.';
+
+  @override
+  String get giftButtonSemantics => 'Daily gift';
+
+  @override
+  String giftTileSemantics(int day, String gift, String state) {
+    final intl.NumberFormat dayNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String dayString = dayNumberFormat.format(day);
+
+    return 'Day $dayString, $gift. $state';
+  }
+
+  @override
+  String get giftTileDone => 'Claimed';
+
+  @override
+  String get giftTileToday => 'Today’s gift';
+
+  @override
+  String get giftTileLater => 'Coming up';
+
+  @override
+  String get giftChestTitle => 'Day 7 gift';
+
+  @override
+  String get giftChestBody => 'A chest for Day 7. Here’s what’s inside.';
+
+  @override
+  String giftCoins(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString coins',
+      one: '1 coin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String giftHints(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString hints',
+      one: '1 hint',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String giftSlots(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString extra slots',
+      one: '1 extra slot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String giftRewardPair(String first, String second) {
+    return '$first + $second';
+  }
+
+  @override
+  String chestContentsSlot(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '+$countString slots',
+      one: '+1 slot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chestContentsSlotSemantics(int coins, int slots) {
+    final intl.NumberFormat coinsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String coinsString = coinsNumberFormat.format(coins);
+    final intl.NumberFormat slotsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String slotsString = slotsNumberFormat.format(slots);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      coins,
+      locale: localeName,
+      other: '$coinsString coins',
+      one: '1 coin',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      slots,
+      locale: localeName,
+      other: '$slotsString extra slots',
+      one: '1 extra slot',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get giftSubtitle => 'One gift a day, at your own pace.';
+
+  @override
+  String get giftTitleShort => 'Gifts';
+
+  @override
+  String get giftChestTitleShort => 'Day 7';
+
+  @override
+  String giftSlotsShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString slots',
+      one: '1 slot',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chestContentsSlotShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '+$countString';
+  }
+
+  @override
+  String giftA11yChestContents(String first, String second) {
+    return '$first, $second';
+  }
+
+  @override
+  String giftA11yClaimed(String gift) {
+    return 'Gift claimed: $gift.';
+  }
+
+  @override
+  String giftA11yAdded(String gift, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$gift added. You have $countString.';
+  }
 }

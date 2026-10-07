@@ -77,9 +77,12 @@ final _uiArt = {
       'tall_order',
     ]) ...[badge, '${badge}_locked'],
   ],
-  'chest': ['chest_closed', 'chest_open'],
+  // m7-5: the +1 slot chip's disc, the gift button's glyph and the slot's
+  // flight sprite (App Flow section 13).
+  'chest': ['chest_closed', 'chest_open', 'chip_slot'],
+  'gift': ['gift_glyph'],
   'rivals': ['rival_1', 'rival_2', 'rival_3', 'rival_locked'],
-  'sprites': ['coin_flight', 'hint_flight'],
+  'sprites': ['coin_flight', 'hint_flight', 'slot_flight'],
   'stars': ['star_empty', 'star_filled', 'star_glow'],
 };
 
@@ -112,8 +115,8 @@ void main() {
         SoundTokens.musicHome,
       ]);
       // m7-3: 23 SFX (the stars, the chest, the rival) and 5 jingles (the
-      // race's win and loss).
-      expect(SoundTokens.allFiles, hasLength(23));
+      // race's win and loss); m7-5 adds the gift's claim.
+      expect(SoundTokens.allFiles, hasLength(24));
       expect(
         SoundTokens.allFiles,
         containsAll([
@@ -123,6 +126,7 @@ void main() {
           'chest_wiggle',
           'chest_open',
           'rival_complete',
+          'gift_claim',
         ]),
       );
       expect(SoundTokens.jingleFiles, [
@@ -248,7 +252,7 @@ void main() {
       for (final MapEntry(key: folder, value: files) in _uiArt.entries)
         for (final file in files) 'assets/ui/$folder/$file.svg',
     };
-    expect(expected, hasLength(35));
+    expect(expected, hasLength(38));
     expect(assets.where((a) => a.startsWith('assets/ui/')).toSet(), expected);
     expect(
       assets.where(
@@ -396,10 +400,11 @@ void main() {
   });
 
   test('NestyIcons covers the design README glyph list once each', () {
-    // 48 of v1, 18 m7 adds (I.10) and the splash errors' two (lead note 2).
-    expect(NestyIcons.byName, hasLength(68));
+    // 48 of v1, 18 m7 adds (I.10), the splash errors' two (lead note 2) and
+    // m7-5's race strip state glyph (more_horiz, 9.3i).
+    expect(NestyIcons.byName, hasLength(69));
     final codepoints = NestyIcons.byName.values.map((i) => i.codePoint);
-    expect(codepoints.toSet(), hasLength(68));
+    expect(codepoints.toSet(), hasLength(69));
     expect(
       NestyIcons.byName.values.every(
         (i) => i.fontFamily == NestyIcons.fontFamily,

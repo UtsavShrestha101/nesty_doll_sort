@@ -121,6 +121,42 @@ void main() {
     expect(b.top - a.top, inInclusiveRange(0, 6));
   });
 
+  test('a wobbling doll dropped mid-wobble: doll_move starts at its tilt '
+      'and eases it out over 80 ms (m7-5 item 14)', () async {
+    final h = await harness();
+    await h.select('r0c2');
+    // The lift (7 frames) and 6 frames into the wobble: about −3°.
+    await h.run(13 * 1000 / 60);
+    // The angle is captured as the pick draws (every frame in the game).
+    await h.render();
+    final pickClip = h.timeline.selectionClip!;
+    final pick = h.board.fx.componentOf(pickClip.id)!;
+    final tilt = pick.drawable.params.pickRotation;
+    expect(tilt, lessThan(-1), reason: 'mid-wobble');
+    final result = h.session.move('r0c2', 'r0c1') as MoveApplied;
+    h.game.apply(MoveAppliedEffect(result: result), h.state);
+    await h.tick();
+    final move = h.commandsOf<StartClip>().last.clip;
+    expect(move.fx, FxId.dollMove);
+    expect(move.params.unwindOf, pickClip.id);
+    final flight = h.board.fx.componentOf(move.id)!;
+    expect(flight.drawable.params.unwindFrom, tilt);
+    // The pick handed over in the same update.
+    expect(h.board.fx.componentOf(pickClip.id), isNull);
+  });
+
+  test('a doll dropped before it wobbles (still lifting, or dragged) starts '
+      'its move upright', () async {
+    final h = await harness();
+    await h.select('r0c2');
+    await h.run(50);
+    final result = h.session.move('r0c2', 'r0c1') as MoveApplied;
+    h.game.apply(MoveAppliedEffect(result: result), h.state);
+    await h.tick();
+    final move = h.commandsOf<StartClip>().last.clip;
+    expect(h.board.fx.componentOf(move.id)!.drawable.params.unwindFrom, isNull);
+  });
+
   test('a clip and a sprite never both draw one doll, and the doll never '
       'vanishes, through a whole move', () async {
     final h = await harness();

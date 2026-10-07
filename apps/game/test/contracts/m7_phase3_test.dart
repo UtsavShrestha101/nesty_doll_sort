@@ -251,6 +251,9 @@ void main() {
     });
   });
 
+  // Schema 2's phase-3 fields. Since schema 3 (plan-login-gift §7.5b) a
+  // `'schema': 2` document below is read through the 2 → 3 step, so these
+  // also hold the fields through the migration.
   group('the codec (schema 2, P3.4)', () {
     test('round-trips the phase-3 fields', () {
       final date = LocalDate(2026, 9, 28);

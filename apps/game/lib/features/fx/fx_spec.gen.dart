@@ -664,6 +664,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     kind: FxKind.inPlace,
     textLayers: ['label', 'label_shadow'],
     tintFills: ['band_fill', 'edge_fill', 'fold_fill', 'hi_fill', 'tail_fill'],
+    sizedRects: ['band_rect', 'edge_rect', 'hi_rect'],
   ),
   // ui_chapter_ribbon: 156 f (2600 ms), 410×100.
   FxId.uiChapterRibbon: FxSpec(
@@ -675,6 +676,7 @@ const Map<FxId, FxSpec> fxSpecs = {
     kind: FxKind.inPlace,
     textLayers: ['label', 'label_shadow'],
     tintFills: ['band_fill', 'edge_fill', 'fold_fill', 'hi_fill', 'tail_fill'],
+    sizedRects: ['band_rect', 'edge_rect', 'hi_rect'],
   ),
   // ui_toggle: 22 f (367 ms), 54×30.
   FxId.uiToggle: FxSpec(

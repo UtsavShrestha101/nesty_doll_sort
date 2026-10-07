@@ -406,5 +406,61 @@
   "recordsStatSemantics": "{label}: {value}",
   "recordsBadgesCount": "{earned}/{total}",
   "a11yJoinList": "{first}, {second}",
-  "a11yJoinSentences": "{first}. {second}"
+  "a11yJoinSentences": "{first}. {second}",
+
+  "giftTitle": "Hadiah harian",
+
+  "giftDay": "Hari {day}",
+
+  "giftClaim": "Ambil",
+
+  "giftClaimedLine": "Hadiah hari ini sudah jadi milikmu.",
+
+  "giftTomorrow": "Besok: {gift}",
+
+  "giftNext": "Hadiah berikutnya: {gift}",
+
+  "giftButtonReadySemantics": "Hadiah harian. Ada hadiah yang siap diambil.",
+
+  "giftButtonSemantics": "Hadiah harian",
+
+  "giftTileSemantics": "Hari {day}, {gift}. {state}",
+
+  "giftTileDone": "Sudah diambil",
+
+  "giftTileToday": "Hadiah hari ini",
+
+  "giftTileLater": "Akan datang",
+
+  "giftChestTitle": "Hadiah hari ke-7",
+
+  "giftChestBody": "Peti untuk hari ke-7. Ini isinya.",
+
+  "giftCoins": "{count, plural, other{{count} koin}}",
+
+  "giftHints": "{count, plural, other{{count} petunjuk}}",
+
+  "giftSlots": "{count, plural, other{{count} tempat ekstra}}",
+
+  "giftRewardPair": "{first} + {second}",
+
+  "chestContentsSlot": "{count, plural, other{+{count} tempat}}",
+
+  "chestContentsSlotSemantics": "{coins, plural, other{{coins} koin}}, {slots, plural, other{{slots} tempat ekstra}}",
+
+  "giftSubtitle": "Satu hadiah sehari, santai saja.",
+
+  "giftTitleShort": "Hadiah",
+
+  "giftChestTitleShort": "Hari 7",
+
+  "giftSlotsShort": "{count, plural, other{{count} tempat}}",
+
+  "chestContentsSlotShort": "+{count}",
+
+  "giftA11yChestContents": "{first}, {second}",
+
+  "giftA11yClaimed": "Hadiah diambil: {gift}.",
+
+  "giftA11yAdded": "{gift} ditambahkan. Kamu punya {count}."
 }

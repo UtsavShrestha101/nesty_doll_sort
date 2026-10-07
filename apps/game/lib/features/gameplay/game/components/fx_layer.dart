@@ -140,6 +140,15 @@ class FxLayer extends Component {
     final component = pool.acquire();
     if (component == null) return;
     _configure(component, clip.fx, clip.params, clip.slotId, geometry);
+    // A flight that takes over from a wobbling doll starts at its tilt
+    // (m7-5 item 14): the pick clip is still live in this frame.
+    final unwindOf = clip.params.unwindOf;
+    if (unwindOf != null) {
+      final tilt = _byClip[unwindOf]?.component.drawable.params.pickRotation;
+      component.drawable.params.unwindFrom = tilt == null || tilt == 0
+          ? null
+          : tilt;
+    }
     _place(component, clip.placement, geometry);
     _play(component, command.segment, lateMs + command.phaseMs);
     final live = _LiveClip(clip, component, pool);

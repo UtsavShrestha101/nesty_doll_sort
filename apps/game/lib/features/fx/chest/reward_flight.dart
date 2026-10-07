@@ -34,7 +34,8 @@ final class RewardFlightHandle {
 }
 
 /// Flies [count] copies of [spriteBuilder] from [from]'s centre to [to]'s
-/// centre along a short upward arc (`tokens.json` `easing.fly`, the same
+/// centre along a short upward arc, or the quadratic path through [control]
+/// when given (`tokens.json` `easing.fly`, the same
 /// curve the doll completion flight uses), staggered [stagger] apart
 /// (m7-design chest sequence step 4: "staggered about 40 ms"). Drawn in the
 /// nearest [Overlay] (the shop's `PurchaseTwinkleBurst` precedent), so a
@@ -73,6 +74,7 @@ final class RewardFlight {
     Duration stagger = const Duration(milliseconds: 40),
     Duration flightDuration = const Duration(milliseconds: 520),
     double arcHeight = 90,
+    Offset? control,
     bool trail = false,
     int trailDots = 5,
     void Function(int index)? onLanded,
@@ -97,16 +99,19 @@ final class RewardFlight {
     );
     final start = from.center;
     final end = to.center;
-    // The arc's apex: the midpoint, lifted (a shallow parabola, not the
-    // straight line a linear lerp would fly).
-    final control = Offset.lerp(start, end, 0.5)! - Offset(0, arcHeight);
+    // The arc's control point: [control] when the design names one (the
+    // daily gift's quadratic paths, `gift.claim.coins.path`), else the
+    // midpoint, lifted (a shallow parabola, not the straight line a linear
+    // lerp would fly).
+    final bend =
+        control ?? Offset.lerp(start, end, 0.5)! - Offset(0, arcHeight);
     // The path itself, by its own parameter p (0 at the start, 1 at the
     // target); the trail's dots sit on it behind the sprite.
     Offset pathAt(double p) {
       final q = 1 - p;
       return Offset(
-        q * q * start.dx + 2 * q * p * control.dx + p * p * end.dx,
-        q * q * start.dy + 2 * q * p * control.dy + p * p * end.dy,
+        q * q * start.dx + 2 * q * p * bend.dx + p * p * end.dx,
+        q * q * start.dy + 2 * q * p * bend.dy + p * p * end.dy,
       );
     }
 

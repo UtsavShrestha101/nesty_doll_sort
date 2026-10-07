@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
 /// What a text's role needs of its line height in a tall script
@@ -23,6 +24,10 @@ enum ScriptTextRole {
 ///   1.5 (body) and 1.3 (titles), no tracking (tracking breaks a headline).
 /// * Japanese (M PLUS Rounded 1c): size 0.94, wrapped text no tighter than
 ///   1.6 and 1.3, letter spacing always 0.
+/// * Turkish (Baloo 2 for every Fredoka role, m7-5 item 28): Fredoka has no
+///   ğ Ğ İ ş Ş, so a display style draws in [AppFontTokens.latnTrFamily],
+///   the whole string, never per glyph; Nunito (body) stays; size 1.0,
+///   titles 1.15.
 /// * Everything else (Latin): untouched.
 ///
 /// The face itself needs no code: every generated style lists both script
@@ -36,11 +41,26 @@ final class LocaleScript {
     this.sizeFactor,
     this.bodyLineHeight,
     this.titleLineHeight,
-    this.dropsTracking,
-  );
+    this.dropsTracking, [
+    this.wholeStringDisplay = false,
+  ]);
 
   /// Latin: no change.
   static const latin = LocaleScript._(1, 0, 0, false);
+
+  /// Turkish: Latin letters, but the display role draws in Baloo 2.
+  static const _turkish = LocaleScript._(
+    AppFontTokens.latnTrSizeFactor,
+    0,
+    AppFontTokens.latnTrTitleLineHeight,
+    false,
+    true,
+  );
+
+  /// The script of the UI language, for the styles that have no
+  /// [BuildContext] ([AppTextStyles]). [LocaleScriptScope] keeps it current
+  /// at the app root, so every reader below it sees the language it draws.
+  static LocaleScript current = latin;
 
   static const _devanagari = LocaleScript._(
     AppFontTokens.devaSizeFactor,
@@ -61,6 +81,7 @@ final class LocaleScript {
     final code = locale.languageCode;
     if (AppFontTokens.devaLocales.contains(code)) return _devanagari;
     if (AppFontTokens.jpanLocales.contains(code)) return _japanese;
+    if (AppFontTokens.latnTrLocales.contains(code)) return _turkish;
     return latin;
   }
 
@@ -79,8 +100,48 @@ final class LocaleScript {
   /// Whether tracked (letter-spaced) text loses its tracking.
   final bool dropsTracking;
 
+  /// Whether the display role (Fredoka) draws in
+  /// [AppFontTokens.latnTrFamily] instead (Turkish).
+  final bool wholeStringDisplay;
+
   /// Whether this is not Latin.
   bool get isTall => bodyLineHeight > 0;
+
+  /// [base] with its Fredoka family swapped for Baloo 2, whole string, when
+  /// this script asks for it. Every other script swaps it back: a style
+  /// derived from a token while Turkish was current (a `static final`)
+  /// draws in Fredoka again once the language changes. Any other style is
+  /// returned as it is. The weight goes through `latnTrDisplayWeights` (and
+  /// back), the file of that family that answers it.
+  TextStyle display(TextStyle base) {
+    if (wholeStringDisplay) {
+      if (base.fontFamily != AppFontTokens.displayFamily) return base;
+      return _face(
+        base,
+        AppFontTokens.latnTrFamily,
+        AppFontTokens.latnTrDisplayWeights,
+      );
+    }
+    if (base.fontFamily != AppFontTokens.latnTrFamily) return base;
+    return _face(base, AppFontTokens.displayFamily, {
+      for (final MapEntry(:key, :value)
+          in AppFontTokens.latnTrDisplayWeights.entries)
+        value: key,
+    });
+  }
+
+  static TextStyle _face(TextStyle base, String family, Map<int, int> weights) {
+    final weight = base.fontWeight?.value;
+    return base.copyWith(
+      fontFamily: family,
+      fontWeight: weight == null
+          ? null
+          : FontWeight.values.firstWhere(
+              (w) => w.value == (weights[weight] ?? weight),
+              orElse: () => base.fontWeight!,
+            ),
+    );
+  }
 
   /// [base] as the script wants it for [role]: tracking removed where the
   /// script drops it, and a wrapping role's line height lifted to the
@@ -90,6 +151,7 @@ final class LocaleScript {
     ScriptTextRole role = ScriptTextRole.singleLine,
   }) {
     if (this == latin) return base;
+    base = display(base);
     final floor = switch (role) {
       ScriptTextRole.singleLine => 0.0,
       ScriptTextRole.body => bodyLineHeight,
@@ -131,7 +193,12 @@ class LocaleScriptScope extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final factor = LocaleScript.of(context).sizeFactor;
+    final script = LocaleScript.of(context);
+    // The context-free styles (AppTextStyles) read this; every descendant
+    // builds after it, and a language change rebuilds the app.
+    LocaleScript.current = script;
+    DisplayFace.use(script, script.display);
+    final factor = script.sizeFactor;
     if (factor == 1) return child;
     final media = MediaQuery.of(context);
     return MediaQuery(

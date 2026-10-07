@@ -48,11 +48,25 @@ final class FxTextHook {
 /// captured transform, with one cached `TextPainter` per label (laid out
 /// only when its text changes: rule 8). Owned by one view.
 final class FxTextOverlay {
-  FxTextOverlay(this.hook, {this.textDirection = TextDirection.ltr})
-    : _label = LottieLabelPainter(hook.style, textDirection: textDirection),
-      _previous = LottieLabelPainter(hook.style, textDirection: textDirection);
+  FxTextOverlay(
+    this.hook, {
+    this.textDirection = TextDirection.ltr,
+    LottieLabelStyle? style,
+  }) : style = style ?? hook.style,
+       _label = LottieLabelPainter(
+         style ?? hook.style,
+         textDirection: textDirection,
+       ),
+       _previous = LottieLabelPainter(
+         style ?? hook.style,
+         textDirection: textDirection,
+       );
 
   final FxTextHook hook;
+
+  /// The label's style: the hook's, or a ribbon's for its band width
+  /// (`FxRibbon.labelFor`, m7-5).
+  final LottieLabelStyle style;
 
   /// The labels' direction (Flutter text also fixes Lottie's hard-coded
   /// LTR, §12).
@@ -94,7 +108,7 @@ final class FxTextOverlay {
 
   /// Paints the label at the null's rest position and scale 1 (no
   /// composition: the file failed to load, rule 3).
-  void paintAtRest(Canvas canvas) => _label.paint(canvas, hook.style.restNull);
+  void paintAtRest(Canvas canvas) => _label.paint(canvas, style.restNull);
 
   // ── End of hot path. ──
 

@@ -134,7 +134,15 @@ final class LocaleRules {
   static const _after = r'(?![\p{L}\p{M}])';
   static const _indonesianClitics = '(?:nya|lah|kah|pun|mu|ku)?';
 
-  RegExp _patternFor(String entry) {
+  /// Each rules' compiled patterns by entry: a Unicode-property RegExp
+  /// costs a compile, and every key of a catalog asks for every entry (the
+  /// Hindi checks took minutes uncached). Keyed by the const rules object.
+  static final _patterns = Expando<Map<String, RegExp>>();
+
+  RegExp _patternFor(String entry) =>
+      (_patterns[this] ??= {}).putIfAbsent(entry, () => _compile(entry));
+
+  RegExp _compile(String entry) {
     var word = entry;
     var stem = false;
     var anywhere = false;

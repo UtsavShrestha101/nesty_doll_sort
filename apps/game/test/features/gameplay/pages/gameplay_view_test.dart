@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/material.dart';
@@ -29,6 +28,7 @@ import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/fx_ribbon.dart';
 import 'package:nesty_game/features/gameplay/bloc/board_effect.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/overlays/booster_buy_popup.dart';
@@ -56,10 +56,6 @@ import '../../support/screen_harness.dart';
 import '../bloc/support/bloc_fixtures.dart';
 import '../bloc/support/scripted_level_resolver.dart';
 import '../bloc/support/scripted_solver_service.dart';
-
-/// Half the chapter ribbon's width at rest on its canvas: 380 dp (LOTTIE.md
-/// v3 "Ribbons": 336 band + 22 dp tails each side).
-const double _ribbonRestHalfWidth = 190;
 
 /// A stand-in for a locale Nesty doesn't ship yet (l10n.md: "English only
 /// today"): every key it doesn't override still reads the real English ARB
@@ -1482,22 +1478,17 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         expectNoLayoutErrors(tester);
         final ribbon = tester.getRect(find.byType(ChapterRibbon));
-        // The canvas 1:1 on the design's 390 dp screen, scaled down on
-        // narrower ones and never up (LOTTIE.md v3 "Ribbons").
-        final ribbonScale = math.min(1.0, size.width / 390);
-        expect(
-          ribbon.size,
-          within(distance: 1e-9, from: ChapterRibbon.canvas * ribbonScale),
-        );
+        // The canvas 1:1 on every screen; a phone narrower than 406 dp
+        // narrows the band to the screen − 70 instead (LOTTIE.md m7-5).
+        expect(ribbon.size, within(distance: 1e-9, from: ChapterRibbon.canvas));
         expect(ribbon.center.dx, closeTo(size.width / 2, 1e-9));
-        // The ribbon at rest is 380 dp of the canvas' width: on screen.
-        // Only its 106 % pop may pass a 390 dp edge, by up to 6 dp.
+        // The ribbon at rest, its tails included, is on screen with room
+        // for the 106 % pop.
+        final band = FxRibbon.chapter.bandWidthFor(size.width);
+        final half = FxRibbon.chapter.reachFor(band) / 2;
+        expect(ribbon.center.dx - half * 1.06, greaterThanOrEqualTo(-1e-9));
         expect(
-          ribbon.center.dx - _ribbonRestHalfWidth * ribbonScale,
-          greaterThanOrEqualTo(-1e-9),
-        );
-        expect(
-          ribbon.center.dx + _ribbonRestHalfWidth * ribbonScale,
+          ribbon.center.dx + half * 1.06,
           lessThanOrEqualTo(size.width + 1e-9),
         );
         // Over the top shelf, clear of the HUD's family counter.

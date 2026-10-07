@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// **'A full week!'**
   String get dailyStreakWeek;
 
-  /// The Daily streak card's freeze count. Not in copy.md m7-3: M3's line, kept.
+  /// The Daily streak card's freeze chip (frame 5.1, and 5.2b's "No freeze"). copy.md m7-5 `streak_freeze_chip` and `streak_freeze_chip_none`.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =0{No freeze} =1{1 freeze} other{{count} freezes}}'**
@@ -2559,6 +2559,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{earned}/{total}'**
   String recordsBadgesCount(int earned, int total);
+
+  /// copy.md ## Daily gift `gift_sheet_title`. Title of the daily gift sheet on Home (plan-login-gift 7.5b, frame 13.2). The 7-day login reward, not the Daily puzzle: never say streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily gift'**
+  String get giftTitle;
+
+  /// copy.md ## Daily gift `gift_day`. Label of one tile of the 7-day gift track (plan-login-gift 7.5b, frame 13.2). Sibling of dailyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}'**
+  String giftDay(int day);
+
+  /// copy.md ## Daily gift `gift_claim`. Button that claims today's gift in the daily gift sheet (plan-login-gift 7.5b). Translations use the catalog's chest Collect word (dailyChestCollect), which the Day 7 gift chest also shows; it may sit in a short button.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim'**
+  String get giftClaim;
+
+  /// copy.md ## Daily gift `gift_claimed_today`. Calm line in the sheet once today's gift is claimed (plan-login-gift 7.5b). No urgency.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s gift is yours.'**
+  String get giftClaimedLine;
+
+  /// copy.md ## Daily gift `gift_tomorrow`. Calm preview of the next gift after claiming today's, shown in the sheet. Not a deadline. {gift} is a giftCoins/giftHints/giftSlots phrase or giftRewardPair.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow: {gift}'**
+  String giftTomorrow(String gift);
+
+  /// copy.md ## Daily gift `gift_next`. Preview of the next gift, shown in the sheet when the player is waiting for the next day. Not a deadline. {gift} is a reward phrase.
+  ///
+  /// In en, this message translates to:
+  /// **'Next gift: {gift}'**
+  String giftNext(String gift);
+
+  /// copy.md ## Daily gift `gift_a11y_button_ready`. Screen-reader label of Home's gift button while a gift is ready to claim (plan-login-gift 7.5b, frame 13.1).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily gift. A gift is ready.'**
+  String get giftButtonReadySemantics;
+
+  /// copy.md ## Daily gift `gift_a11y_button`. Screen-reader label of Home's gift button when nothing is waiting (plan-login-gift 7.5b, frame 13.1).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily gift'**
+  String get giftButtonSemantics;
+
+  /// copy.md ## Daily gift `gift_a11y_tile`. One screen-reader phrase for a day tile of the gift sheet (plan-login-gift 7.5b). {gift} is a reward phrase; {state} is giftTileDone, giftTileToday or giftTileLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day}, {gift}. {state}'**
+  String giftTileSemantics(int day, String gift, String state);
+
+  /// copy.md ## Daily gift `gift_a11y_state_done`. State of a gift day already claimed, used in giftTileSemantics' {state} (plan-login-gift 7.5b).
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed'**
+  String get giftTileDone;
+
+  /// copy.md ## Daily gift `gift_a11y_state_today`. State of the gift day that can be claimed today, used in giftTileSemantics' {state} (plan-login-gift 7.5b). May sit in a small tile: keep it short; a plain 'Today' is fine.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s gift'**
+  String get giftTileToday;
+
+  /// copy.md ## Daily gift `gift_a11y_state_later`. State of a later gift day, used in giftTileSemantics' {state}. A calm 'later on the track': not locked, missed or 'soon' (plan-login-gift 7.5b, D92). May sit in a small tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming up'**
+  String get giftTileLater;
+
+  /// copy.md ## Daily gift `gift_chest_title`. Title of the Day 7 gift chest modal over Home (plan-login-gift 7.5b, frame 13.4). Not a streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Day 7 gift'**
+  String get giftChestTitle;
+
+  /// copy.md ## Daily gift `gift_chest_body`. Body of the Day 7 gift chest modal (plan-login-gift 7.5b, frame 13.4).
+  ///
+  /// In en, this message translates to:
+  /// **'A chest for Day 7. Here’s what’s inside.'**
+  String get giftChestBody;
+
+  /// copy.md ## Daily gift `gift_coins`. Coins reward phrase inside gift copy (plan-login-gift 7.5b); composed into giftTomorrow, giftNext, giftTileSemantics and giftRewardPair.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 coin} other{{count} coins}}'**
+  String giftCoins(int count);
+
+  /// copy.md ## Daily gift `gift_hints`. Hint booster reward phrase inside gift copy (plan-login-gift 7.5b). Use the language's existing word for hint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hint} other{{count} hints}}'**
+  String giftHints(int count);
+
+  /// copy.md ## Daily gift `gift_slots`. Extra-slot booster reward phrase inside gift copy (plan-login-gift 7.5b). Use the language's existing word for extra slot.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 extra slot} other{{count} extra slots}}'**
+  String giftSlots(int count);
+
+  /// copy.md ## Daily gift `gift_join`. Joins two reward phrases, as in '100 coins + 1 extra slot', for Day 7 (plan-login-gift 7.5b). Also read aloud inside giftTileSemantics; use the language's natural joiner (ja: と).
+  ///
+  /// In en, this message translates to:
+  /// **'{first} + {second}'**
+  String giftRewardPair(String first, String second);
+
+  /// copy.md ## Daily gift `gift_chest_slot_chip`. An extra-slot chip of the Day 7 gift chest, shown with its promised amount (plan-login-gift 7.5b, frame 13.4). Sibling of chestContentsCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{+1 slot} other{+{count} slots}}'**
+  String chestContentsSlot(int count);
+
+  /// copy.md ## Daily gift `gift_chest_slot_chip` area. (superseded by giftA11yChestContents; kept until the gift lane drops its use). Day 7 gift chest contents as one screen-reader phrase, joined by a comma ("100 coins, 1 extra slot"). Sibling of chestContentsSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{coins, plural, =1{1 coin} other{{coins} coins}}, {slots, plural, =1{1 extra slot} other{{slots} extra slots}}'**
+  String chestContentsSlotSemantics(int coins, int slots);
+
+  /// copy.md ## Daily gift `gift_sheet_sub`. Calm line under the daily gift sheet title (plan-login-gift 7.5b, frame 13.2). No clock, no deadline.
+  ///
+  /// In en, this message translates to:
+  /// **'One gift a day, at your own pace.'**
+  String get giftSubtitle;
+
+  /// copy.md ## Daily gift `gift_sheet_title_short`. Fallback for giftTitle when it does not fit (tokens.json textFit; the tab-bar and sheet header).
+  ///
+  /// In en, this message translates to:
+  /// **'Gifts'**
+  String get giftTitleShort;
+
+  /// copy.md ## Daily gift `gift_chest_title_short`. Fallback for giftChestTitle on the chest ribbon when it does not fit at 0.85 on a 360 dp phone (frame 13.4).
+  ///
+  /// In en, this message translates to:
+  /// **'Day 7'**
+  String get giftChestTitleShort;
+
+  /// copy.md ## Daily gift `gift_slots_short`. Day 7 phrase for giftSlots when "Tomorrow: ..." would wrap past two lines (frame 13.2). Tile amounts never shorten.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 slot} other{{count} slots}}'**
+  String giftSlotsShort(int count);
+
+  /// copy.md ## Daily gift `gift_chest_slot_chip_short`. Fallback for chestContentsSlot beside its disc: just "+1" (like boosterExtraSlotShort).
+  ///
+  /// In en, this message translates to:
+  /// **'+{count}'**
+  String chestContentsSlotShort(int count);
+
+  /// copy.md ## Daily gift `gift_a11y_chest_contents`. Screen-reader join of the Day 7 chest's two phrases, e.g. "100 coins, 1 extra slot"; fills the contents of the chest label (frame 13.4). {first} and {second} are giftCoins and giftSlots phrases.
+  ///
+  /// In en, this message translates to:
+  /// **'{first}, {second}'**
+  String giftA11yChestContents(String first, String second);
+
+  /// copy.md ## Daily gift `gift_a11y_claimed`. Polite screen-reader announcement once a claim lands. {gift} is a gift phrase. Never moves focus.
+  ///
+  /// In en, this message translates to:
+  /// **'Gift claimed: {gift}.'**
+  String giftA11yClaimed(String gift);
+
+  /// copy.md ## Daily gift `gift_a11y_added`. Read when a hint or an extra slot reaches the tally, with the new total. {gift} is a gift phrase, {count} the new total. Catalogs keep it neutral in gender.
+  ///
+  /// In en, this message translates to:
+  /// **'{gift} added. You have {count}.'**
+  String giftA11yAdded(String gift, int count);
 }
 
 class _AppLocalizationsDelegate

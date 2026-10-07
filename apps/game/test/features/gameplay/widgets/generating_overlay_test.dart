@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/fx/spinner_pulse.dart';
 import 'package:nesty_game/features/gameplay/widgets/generating_overlay.dart';
 
@@ -8,9 +11,9 @@ import '../../../core/ui/support/ui_harness.dart';
 import '../../support/screen_harness.dart';
 
 /// "Setting up the shelves…" while a generated request resolves (frame
-/// 12.5; `layout.generating`): the dim, the 236-wide card at top 360, the
-/// spinner and the line, touches absorbed but Pause reachable, and one busy
-/// live node.
+/// 12.5; `layout.generating`): the dim, the 236-wide card centred in the
+/// safe area (m7-5 Choice 10), the spinner with no tint over it and the
+/// line, touches absorbed but Pause reachable, and one busy live node.
 void main() {
   setUpAll(loadBundledFonts);
 
@@ -44,20 +47,65 @@ void main() {
     ),
   );
 
-  testWidgets('the card: 236 wide, top 360 of the design, centred, with the '
-      'line and no number', (tester) async {
+  testWidgets('the card: 236 wide, centred in the safe area, with the line '
+      'and no number', (tester) async {
     await pumpScreen(tester, stage((_) {}));
     await tester.pump();
     final card = tester.getRect(find.byKey(GeneratingOverlay.cardKey));
+    expect(card.width, GeneratingTokens.cardWidth);
     expect(card.width, 236);
-    expect(card.top, closeTo(360, 0.5));
+    final safe = safeAreaOf(const Size(390, 844));
     expect(card.center.dx, closeTo(195, 0.5));
+    expect(card.center.dy, closeTo((safe.top + 844 - safe.bottom) / 2, 0.5));
+    // The frame's top 360 is about that centre on 844.
+    expect(card.top, closeTo(360, 16));
     expect(find.text('Setting up the shelves…'), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
     expect(
       find.byType(CircularProgressIndicator),
       findsOneWidget,
       reason: 'the fallback ring while ui_spinner is missing (rule 3)',
+    );
+  });
+
+  for (final size in overflowScreenSizes) {
+    testWidgets('centred in the safe area on '
+        '${size.width.toInt()}×${size.height.toInt()}', (tester) async {
+      await pumpScreen(tester, stage((_) {}), size: size);
+      await tester.pump();
+      final card = tester.getRect(find.byKey(GeneratingOverlay.cardKey));
+      final safe = safeAreaOf(size);
+      expect(card.center.dx, closeTo(size.width / 2, 0.5));
+      expect(
+        card.center.dy,
+        closeTo((safe.top + size.height - safe.bottom) / 2, 0.5),
+      );
+    });
+  }
+
+  testWidgets('the spinner plays in its own colours: no tint or colour '
+      'filter over it (m7-5 item 10)', (tester) async {
+    await pumpScreen(tester, stage((_) {}));
+    await tester.pump();
+    final view = tester.widget<LottieFxView>(
+      find.byWidgetPredicate(
+        (w) => w is LottieFxView && w.id == FxId.uiSpinner,
+      ),
+    );
+    expect(view.controller!.params.tintColor, isNull);
+    expect(
+      find.ancestor(
+        of: find.byType(LottieFxView),
+        matching: find.byType(ColorFiltered),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.ancestor(
+        of: find.byType(LottieFxView),
+        matching: find.byType(ShaderMask),
+      ),
+      findsNothing,
     );
   });
 

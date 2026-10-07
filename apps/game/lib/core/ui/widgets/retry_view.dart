@@ -89,13 +89,15 @@ class ErrorCard extends StatelessWidget {
   static const Key primaryKey = Key('error-card-primary');
 
   /// The head's 24 dp Fredoka, line 1.15 (`balance` wraps it in two).
-  static const TextStyle headStyle = TextStyle(
-    fontFamily: 'Fredoka',
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    height: 1.15,
-    color: Color(0xFF5B3A21),
+  static TextStyle get headStyle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      fontSize: 24,
+      fontWeight: FontWeight.w700,
+      height: 1.15,
+      color: Color(0xFF5B3A21),
+    ),
   );
 
   /// Nunito 600 16/23 `#7A5234`.

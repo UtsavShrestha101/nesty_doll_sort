@@ -340,7 +340,7 @@ class _SkinDetailViewState extends State<SkinDetailView> {
               child: Text(
                 bindLastWord(description),
                 style: context.scriptStyle(
-                  AppTextStyles.body,
+                  ShopTypeTokens.description,
                   role: ScriptTextRole.body,
                 ),
                 textAlign: TextAlign.center,
@@ -352,9 +352,7 @@ class _SkinDetailViewState extends State<SkinDetailView> {
           const SizedBox(height: 20),
           Text(
             l10n.balanceLine(data.coins),
-            style: AppTextStyles.caption.copyWith(
-              color: AppColorTokens.textBrown,
-            ),
+            style: ShopTypeTokens.balance,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),

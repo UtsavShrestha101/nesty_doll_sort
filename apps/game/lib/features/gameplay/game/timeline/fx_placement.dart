@@ -196,6 +196,7 @@ final class FxClipParams {
     this.revealDrop,
     this.shake = true,
     this.opacity = 1,
+    this.unwindOf,
   });
 
   /// No doll, no travel: glows, dust, sparkles, the hint arrow, the stand.
@@ -251,6 +252,12 @@ final class FxClipParams {
   /// (`motion.dragHover`, E.14).
   final double opacity;
 
+  /// `doll_move` on a drop: the id of the `doll_pick` clip it takes over
+  /// from. The board starts the flight tilted as that clip's wobble last
+  /// drew and eases the tilt to 0 over its first 80 ms
+  /// (`motion.pick.wobbleToMoveMs`, m7-5 item 14).
+  final int? unwindOf;
+
   @override
   bool operator ==(Object other) =>
       other is FxClipParams &&
@@ -269,7 +276,8 @@ final class FxClipParams {
       other.tint == tint &&
       other.revealDrop == revealDrop &&
       other.shake == shake &&
-      other.opacity == opacity;
+      other.opacity == opacity &&
+      other.unwindOf == unwindOf;
 
   @override
   int get hashCode => Object.hash(
@@ -289,6 +297,7 @@ final class FxClipParams {
     revealDrop,
     shake,
     opacity,
+    unwindOf,
   );
 
   @override

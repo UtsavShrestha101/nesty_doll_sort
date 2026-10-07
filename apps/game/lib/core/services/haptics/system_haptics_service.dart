@@ -21,7 +21,10 @@ abstract final class HapticPatterns {
   static List<(Duration delayBefore, HapticPulse pulse)> of(
     HapticPattern pattern,
   ) => switch (pattern) {
-    HapticPattern.pick || HapticPattern.iceCrack => _light,
+    // tokens: giftClaim = "HapticFeedback.lightImpact" (m7-5).
+    HapticPattern.pick ||
+    HapticPattern.iceCrack ||
+    HapticPattern.giftClaim => _light,
     HapticPattern.nest || HapticPattern.unlock => _medium,
     // tokens: complete = "success", win = "success".
     HapticPattern.complete || HapticPattern.win => _success,

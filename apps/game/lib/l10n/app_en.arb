@@ -964,7 +964,7 @@
 
   "dailyFreezes": "{count, plural, =0{No freeze} =1{1 freeze} other{{count} freezes}}",
   "@dailyFreezes": {
-    "description": "The Daily streak card's freeze count. Not in copy.md m7-3: M3's line, kept.",
+    "description": "The Daily streak card's freeze chip (frame 5.1, and 5.2b's \"No freeze\"). copy.md m7-5 `streak_freeze_chip` and `streak_freeze_chip_none`.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -3463,6 +3463,271 @@
         "type": "int",
         "format": "decimalPattern",
         "example": "12"
+      }
+    }
+  },
+
+  "giftTitle": "Daily gift",
+  "@giftTitle": {
+    "description": "copy.md ## Daily gift `gift_sheet_title`. Title of the daily gift sheet on Home (plan-login-gift 7.5b, frame 13.2). The 7-day login reward, not the Daily puzzle: never say streak."
+  },
+
+  "giftDay": "Day {day}",
+  "@giftDay": {
+    "description": "copy.md ## Daily gift `gift_day`. Label of one tile of the 7-day gift track (plan-login-gift 7.5b, frame 13.2). Sibling of dailyDay.",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+
+  "giftClaim": "Claim",
+  "@giftClaim": {
+    "description": "copy.md ## Daily gift `gift_claim`. Button that claims today's gift in the daily gift sheet (plan-login-gift 7.5b). Translations use the catalog's chest Collect word (dailyChestCollect), which the Day 7 gift chest also shows; it may sit in a short button."
+  },
+
+  "giftClaimedLine": "Today’s gift is yours.",
+  "@giftClaimedLine": {
+    "description": "copy.md ## Daily gift `gift_claimed_today`. Calm line in the sheet once today's gift is claimed (plan-login-gift 7.5b). No urgency."
+  },
+
+  "giftTomorrow": "Tomorrow: {gift}",
+  "@giftTomorrow": {
+    "description": "copy.md ## Daily gift `gift_tomorrow`. Calm preview of the next gift after claiming today's, shown in the sheet. Not a deadline. {gift} is a giftCoins/giftHints/giftSlots phrase or giftRewardPair.",
+    "placeholders": {
+      "gift": {
+        "type": "String",
+        "example": "50 coins"
+      }
+    }
+  },
+
+  "giftNext": "Next gift: {gift}",
+  "@giftNext": {
+    "description": "copy.md ## Daily gift `gift_next`. Preview of the next gift, shown in the sheet when the player is waiting for the next day. Not a deadline. {gift} is a reward phrase.",
+    "placeholders": {
+      "gift": {
+        "type": "String",
+        "example": "1 hint"
+      }
+    }
+  },
+
+  "giftButtonReadySemantics": "Daily gift. A gift is ready.",
+  "@giftButtonReadySemantics": {
+    "description": "copy.md ## Daily gift `gift_a11y_button_ready`. Screen-reader label of Home's gift button while a gift is ready to claim (plan-login-gift 7.5b, frame 13.1)."
+  },
+
+  "giftButtonSemantics": "Daily gift",
+  "@giftButtonSemantics": {
+    "description": "copy.md ## Daily gift `gift_a11y_button`. Screen-reader label of Home's gift button when nothing is waiting (plan-login-gift 7.5b, frame 13.1)."
+  },
+
+  "giftTileSemantics": "Day {day}, {gift}. {state}",
+  "@giftTileSemantics": {
+    "description": "copy.md ## Daily gift `gift_a11y_tile`. One screen-reader phrase for a day tile of the gift sheet (plan-login-gift 7.5b). {gift} is a reward phrase; {state} is giftTileDone, giftTileToday or giftTileLater.",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      },
+      "gift": {
+        "type": "String",
+        "example": "50 coins"
+      },
+      "state": {
+        "type": "String",
+        "example": "Claimed"
+      }
+    }
+  },
+
+  "giftTileDone": "Claimed",
+  "@giftTileDone": {
+    "description": "copy.md ## Daily gift `gift_a11y_state_done`. State of a gift day already claimed, used in giftTileSemantics' {state} (plan-login-gift 7.5b)."
+  },
+
+  "giftTileToday": "Today’s gift",
+  "@giftTileToday": {
+    "description": "copy.md ## Daily gift `gift_a11y_state_today`. State of the gift day that can be claimed today, used in giftTileSemantics' {state} (plan-login-gift 7.5b). May sit in a small tile: keep it short; a plain 'Today' is fine."
+  },
+
+  "giftTileLater": "Coming up",
+  "@giftTileLater": {
+    "description": "copy.md ## Daily gift `gift_a11y_state_later`. State of a later gift day, used in giftTileSemantics' {state}. A calm 'later on the track': not locked, missed or 'soon' (plan-login-gift 7.5b, D92). May sit in a small tile."
+  },
+
+  "giftChestTitle": "Day 7 gift",
+  "@giftChestTitle": {
+    "description": "copy.md ## Daily gift `gift_chest_title`. Title of the Day 7 gift chest modal over Home (plan-login-gift 7.5b, frame 13.4). Not a streak."
+  },
+
+  "giftChestBody": "A chest for Day 7. Here’s what’s inside.",
+  "@giftChestBody": {
+    "description": "copy.md ## Daily gift `gift_chest_body`. Body of the Day 7 gift chest modal (plan-login-gift 7.5b, frame 13.4)."
+  },
+
+  "giftCoins": "{count, plural, =1{1 coin} other{{count} coins}}",
+  "@giftCoins": {
+    "description": "copy.md ## Daily gift `gift_coins`. Coins reward phrase inside gift copy (plan-login-gift 7.5b); composed into giftTomorrow, giftNext, giftTileSemantics and giftRewardPair.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "50"
+      }
+    }
+  },
+
+  "giftHints": "{count, plural, =1{1 hint} other{{count} hints}}",
+  "@giftHints": {
+    "description": "copy.md ## Daily gift `gift_hints`. Hint booster reward phrase inside gift copy (plan-login-gift 7.5b). Use the language's existing word for hint.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "giftSlots": "{count, plural, =1{1 extra slot} other{{count} extra slots}}",
+  "@giftSlots": {
+    "description": "copy.md ## Daily gift `gift_slots`. Extra-slot booster reward phrase inside gift copy (plan-login-gift 7.5b). Use the language's existing word for extra slot.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "giftRewardPair": "{first} + {second}",
+  "@giftRewardPair": {
+    "description": "copy.md ## Daily gift `gift_join`. Joins two reward phrases, as in '100 coins + 1 extra slot', for Day 7 (plan-login-gift 7.5b). Also read aloud inside giftTileSemantics; use the language's natural joiner (ja: と).",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "example": "100 coins"
+      },
+      "second": {
+        "type": "String",
+        "example": "1 extra slot"
+      }
+    }
+  },
+
+  "chestContentsSlot": "{count, plural, =1{+1 slot} other{+{count} slots}}",
+  "@chestContentsSlot": {
+    "description": "copy.md ## Daily gift `gift_chest_slot_chip`. An extra-slot chip of the Day 7 gift chest, shown with its promised amount (plan-login-gift 7.5b, frame 13.4). Sibling of chestContentsCoins.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "chestContentsSlotSemantics": "{coins, plural, =1{1 coin} other{{coins} coins}}, {slots, plural, =1{1 extra slot} other{{slots} extra slots}}",
+  "@chestContentsSlotSemantics": {
+    "description": "copy.md ## Daily gift `gift_chest_slot_chip` area. (superseded by giftA11yChestContents; kept until the gift lane drops its use). Day 7 gift chest contents as one screen-reader phrase, joined by a comma (\"100 coins, 1 extra slot\"). Sibling of chestContentsSemantics.",
+    "placeholders": {
+      "coins": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      },
+      "slots": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "giftSubtitle": "One gift a day, at your own pace.",
+  "@giftSubtitle": {
+    "description": "copy.md ## Daily gift `gift_sheet_sub`. Calm line under the daily gift sheet title (plan-login-gift 7.5b, frame 13.2). No clock, no deadline."
+  },
+
+  "giftTitleShort": "Gifts",
+  "@giftTitleShort": {
+    "description": "copy.md ## Daily gift `gift_sheet_title_short`. Fallback for giftTitle when it does not fit (tokens.json textFit; the tab-bar and sheet header)."
+  },
+
+  "giftChestTitleShort": "Day 7",
+  "@giftChestTitleShort": {
+    "description": "copy.md ## Daily gift `gift_chest_title_short`. Fallback for giftChestTitle on the chest ribbon when it does not fit at 0.85 on a 360 dp phone (frame 13.4)."
+  },
+
+  "giftSlotsShort": "{count, plural, =1{1 slot} other{{count} slots}}",
+  "@giftSlotsShort": {
+    "description": "copy.md ## Daily gift `gift_slots_short`. Day 7 phrase for giftSlots when \"Tomorrow: ...\" would wrap past two lines (frame 13.2). Tile amounts never shorten.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "chestContentsSlotShort": "+{count}",
+  "@chestContentsSlotShort": {
+    "description": "copy.md ## Daily gift `gift_chest_slot_chip_short`. Fallback for chestContentsSlot beside its disc: just \"+1\" (like boosterExtraSlotShort).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
+      }
+    }
+  },
+
+  "giftA11yChestContents": "{first}, {second}",
+  "@giftA11yChestContents": {
+    "description": "copy.md ## Daily gift `gift_a11y_chest_contents`. Screen-reader join of the Day 7 chest's two phrases, e.g. \"100 coins, 1 extra slot\"; fills the contents of the chest label (frame 13.4). {first} and {second} are giftCoins and giftSlots phrases.",
+    "placeholders": {
+      "first": {
+        "type": "String",
+        "example": "100 coins"
+      },
+      "second": {
+        "type": "String",
+        "example": "1 extra slot"
+      }
+    }
+  },
+
+  "giftA11yClaimed": "Gift claimed: {gift}.",
+  "@giftA11yClaimed": {
+    "description": "copy.md ## Daily gift `gift_a11y_claimed`. Polite screen-reader announcement once a claim lands. {gift} is a gift phrase. Never moves focus.",
+    "placeholders": {
+      "gift": {
+        "type": "String",
+        "example": "50 coins"
+      }
+    }
+  },
+
+  "giftA11yAdded": "{gift} added. You have {count}.",
+  "@giftA11yAdded": {
+    "description": "copy.md ## Daily gift `gift_a11y_added`. Read when a hint or an extra slot reaches the tally, with the new total. {gift} is a gift phrase, {count} the new total. Catalogs keep it neutral in gender.",
+    "placeholders": {
+      "gift": {
+        "type": "String",
+        "example": "1 hint"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
       }
     }
   }

@@ -225,3 +225,34 @@ final class RibbonColors {
   final Color tail;
   final Color fold;
 }
+
+/// The display face of the current locale (m7-5 item 28): Turkish draws
+/// every Fredoka role in Baloo 2, whole strings, because Fredoka has no
+/// ğ Ğ İ ş Ş. The generated Fredoka styles are getters through [of];
+/// `LocaleScriptScope` sets the mapping with [use]. Each style's mapped copy
+/// is cached, so reading a token in a frame makes no new object.
+abstract final class DisplayFace {
+  static Object? _owner;
+  static TextStyle Function(TextStyle) _map = _same;
+  static final _cache = Map<TextStyle, TextStyle>.identity();
+
+  static TextStyle _same(TextStyle style) => style;
+
+  /// Maps every display style through [map] from now on; [owner] (the
+  /// locale's script) keeps a rebuild with the same script from clearing
+  /// the cache.
+  static void use(Object owner, TextStyle Function(TextStyle) map) {
+    if (identical(owner, _owner)) return;
+    _owner = owner;
+    _map = map;
+    _cache.clear();
+  }
+
+  /// [style], a const style, in the current locale's display face (cached
+  /// by identity).
+  static TextStyle of(TextStyle style) => _cache[style] ??= _map(style);
+
+  /// [style], one built on the fly (a fitted size), in the current locale's
+  /// display face; not cached, so a new style never grows the cache.
+  static TextStyle apply(TextStyle style) => _map(style);
+}

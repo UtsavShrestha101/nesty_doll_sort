@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/theme/app_theme.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/widgets/text/shrink_to_fit_text.dart';
 import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
@@ -96,7 +97,9 @@ Future<void> pumpScreen(
   final safe = padding ?? safeAreaOf(size);
   await tester.pumpWidget(
     MaterialApp(
-      theme: AppTheme.light,
+      // The app's own locale wiring (app.dart): the script's theme, and
+      // its size factor and display face under the run's text scale.
+      theme: AppTheme.forLocale(checkedLocale(locale)),
       debugShowCheckedModeBanner: false,
       locale: checkedLocale(locale),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -108,7 +111,7 @@ Future<void> pumpScreen(
           padding: safe,
           viewPadding: safe,
         ),
-        child: child!,
+        child: LocaleScriptScope(child: child!),
       ),
       home: child,
     ),
@@ -353,7 +356,13 @@ List<String> unreadableText(WidgetTester tester) {
             ) /
             pixelRatio;
         final shrink = fontSize / (requested[object] ?? fontSize);
-        final scaler = object.textScaler.scale(fontSize) / fontSize;
+        // The script's size factor (Japanese draws at 0.94, tokens
+        // `font.scripts.jpan.size`) is the design's size for that script,
+        // not a shrink: the floor is measured against it.
+        final scaler =
+            object.textScaler.scale(fontSize) /
+            fontSize /
+            LocaleScript.current.sizeFactor;
         final factor = scale * shrink * scaler;
         if (scale > 0.05 && factor < readableFloor - 0.005) {
           found.add(

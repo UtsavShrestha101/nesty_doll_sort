@@ -33,11 +33,13 @@ void main() {
       final move = startOf(batch, FxClipPurpose.move).clip;
       expect(batch.commands.map((c) => c.toString()), [
         // Same-frame hand-off: doll_pick stops as doll_move starts, and
-        // the source already shows what it holds now (§10.1).
-        '@0.0 stop $pick',
+        // the source already shows what it holds now (§10.1). The pick
+        // stops just after the flight starts, so the flight takes its
+        // wobble's tilt (m7-5 item 14).
         '@0.0 play $glow FxSegment(103.0–113.0 ×1.0)',
         '@0.0 sync $red3',
         '@0.0 start $move FxSegment(0.0–16.0 ×1.0)',
+        '@0.0 stop $pick',
         '@166.7 stop $glow',
         // The nest shows on the target when it lands.
         '@266.7 stop $move',
@@ -67,6 +69,7 @@ void main() {
         offsetNear(refX(dst.centerX), refY(dst.surfaceY)),
       );
       expect(move.hides, isEmpty, reason: 'the source synced at 0');
+      expect(move.params.unwindOf, pick.id, reason: 'the wobble hands over');
       expect(only<SyncSlot>(batch, (c) => c.slotId == empty).state, h.state);
       expect(h.timeline.selectedSlotId, isNull);
     });

@@ -9,9 +9,12 @@ import 'package:nesty_game/features/fx/spinner_pulse.dart';
 /// "Setting up the shelves…" while a generated request (a bonus level, the
 /// daily) resolves behind the level just left (frame 12.5; `layout.
 /// generating`; m3-design §6.4 item 1, §10.8): the old board dims
-/// (`rgba(60,30,10,.28)`) under a cream card, 236 wide at top 360, holding
-/// the `ui_spinner` at 44 and the line in Fredoka 700 17. No progress
-/// number.
+/// (`rgba(60,30,10,.28)`) under a cream card, 236 wide (its 18 dp side
+/// padding inside) and centred in the safe area (m7-5 Choice 10: the
+/// frame's top 360 is that centre on 844), holding the `ui_spinner` at 44
+/// and the line in Fredoka 700 17. No progress number. The spinner is drawn
+/// in the file's own colours (its orange arc on a cream track, m7-5): no
+/// tint or colour filter goes over it.
 ///
 /// It absorbs touches over the board, but not over the Pause button, which
 /// stays reachable (the top-left corner). One live, busy node for screen
@@ -72,7 +75,8 @@ class _GeneratingOverlayState extends State<GeneratingOverlay> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    final top = MediaQuery.paddingOf(context).top;
+    final safe = MediaQuery.paddingOf(context);
+    final top = safe.top;
     return Positioned.fill(
       child: Stack(
         children: [
@@ -99,9 +103,8 @@ class _GeneratingOverlayState extends State<GeneratingOverlay> {
           ),
           IgnorePointer(
             child: Padding(
-              padding: EdgeInsets.only(top: top + 360 - 59),
+              padding: EdgeInsets.only(top: top, bottom: safe.bottom),
               child: Align(
-                alignment: Alignment.topCenter,
                 child: Semantics(
                   container: true,
                   liveRegion: true,
@@ -114,10 +117,7 @@ class _GeneratingOverlayState extends State<GeneratingOverlay> {
                         GeneratingTokens.cardRadius,
                       ),
                       width: GeneratingTokens.cardWidth,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 22,
-                      ),
+                      padding: GeneratingTokens.cardPadding,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [

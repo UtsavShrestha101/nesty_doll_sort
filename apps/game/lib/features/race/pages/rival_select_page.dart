@@ -546,7 +546,9 @@ class _Details extends StatelessWidget {
                   style: AppTextStyleTokens.button.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    color: AppColorTokens.textLocked,
+                    // `textSecondary` (#8A5B3A), as frame 9.2 draws it (m7-5
+                    // item 1).
+                    color: AppColorTokens.textSecondary,
                   ),
                 ),
               ),

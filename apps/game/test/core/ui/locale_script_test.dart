@@ -16,7 +16,7 @@ void main() {
         LocaleScript.forLocale(const Locale('ja')).sizeFactor,
         AppFontTokens.jpanSizeFactor,
       );
-      for (final code in ['en', 'es', 'de', 'fr', 'tr', 'id']) {
+      for (final code in ['en', 'es', 'de', 'fr', 'id']) {
         expect(LocaleScript.forLocale(Locale(code)), LocaleScript.latin);
       }
       expect(
@@ -24,6 +24,76 @@ void main() {
         LocaleScript.latin,
       );
     });
+  });
+
+  group('Turkish (Baloo 2 for every Fredoka role, m7-5 item 28)', () {
+    final tr = LocaleScript.forLocale(const Locale('tr'));
+    const title = TextStyle(
+      fontFamily: AppFontTokens.displayFamily,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      fontWeight: FontWeight.w700,
+      fontSize: 20,
+      height: 1,
+    );
+    const body = TextStyle(
+      fontFamily: AppFontTokens.bodyFamily,
+      fontFamilyFallback: AppFontTokens.bodyFallback,
+      fontWeight: FontWeight.w600,
+      fontSize: 16,
+      height: 1.2,
+    );
+
+    test('its own script, size 1, no tracking change', () {
+      expect(tr, isNot(LocaleScript.latin));
+      expect(tr.sizeFactor, AppFontTokens.latnTrSizeFactor);
+      expect(tr.sizeFactor, 1);
+      expect(tr.isTall, isFalse);
+      expect(tr.dropsTracking, isFalse);
+      expect(tr.tracking(0.5), 0.5);
+      expect(LocaleScript.forLocale(const Locale('tr', 'TR')), tr);
+    });
+
+    test('a Fredoka style takes the whole-string family, weights mapped', () {
+      for (final MapEntry(key: from, value: to)
+          in AppFontTokens.latnTrDisplayWeights.entries) {
+        final out = tr.display(
+          title.copyWith(fontWeight: FontWeight.values[from ~/ 100 - 1]),
+        );
+        expect(out.fontFamily, AppFontTokens.latnTrFamily);
+        expect(out.fontWeight, FontWeight.values[to ~/ 100 - 1]);
+      }
+      expect(AppFontTokens.latnTrFamily, 'Baloo2LatnTr');
+    });
+
+    test('a Nunito style stays Nunito; other scripts leave Fredoka alone', () {
+      expect(tr.display(body), same(body));
+      expect(tr.style(body).fontFamily, AppFontTokens.bodyFamily);
+      expect(LocaleScript.latin.display(title), same(title));
+      expect(
+        LocaleScript.forLocale(const Locale('hi')).display(title),
+        same(title),
+      );
+    });
+
+    test(
+      'titles floor at 1.15 when they wrap; a single line keeps its own',
+      () {
+        expect(tr.style(title).height, 1, reason: 'single-line keeps it');
+        expect(
+          tr.style(title, role: ScriptTextRole.title).height,
+          AppFontTokens.latnTrTitleLineHeight,
+        );
+        expect(
+          tr.style(title, role: ScriptTextRole.title).fontFamily,
+          AppFontTokens.latnTrFamily,
+        );
+        expect(
+          tr.style(body, role: ScriptTextRole.body).height,
+          1.2,
+          reason: 'no body floor in Turkish',
+        );
+      },
+    );
   });
 
   group('style', () {

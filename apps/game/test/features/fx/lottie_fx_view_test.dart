@@ -11,6 +11,7 @@ import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_drawable_params.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
+import 'package:nesty_game/features/fx/fx_ribbon.dart';
 import 'package:nesty_game/features/fx/fx_text_overlay.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 
@@ -103,23 +104,44 @@ void main() {
       overlay.dispose();
     });
 
-    for (final (id, box, label) in const [
+    for (final (id, box, label, band) in const [
       (
         FxId.uiWinRibbon,
-        Rect.fromLTWH(205 - 156, 55 - 20, 312, 40),
+        Rect.fromLTWH(205 - 133, 55 - 20, 266, 40),
         'STUFE ABGESCHLOSSEN – HERVORRAGEND GEMACHT!',
+        null,
       ),
       (
         FxId.uiChapterRibbon,
         Rect.fromLTWH(205 - 156, 50 - 16, 312, 32),
         'KAPITEL 10 · VERSCHNEITE BERGHÜTTE AM WALDRAND',
+        null,
+      ),
+      // A 320 dp phone: both bands are 250 (the screen − 70), the boxes 226
+      // and 226 (m7-5).
+      (
+        FxId.uiWinRibbon,
+        Rect.fromLTWH(205 - 113, 55 - 20, 226, 40),
+        'STUFE ABGESCHLOSSEN – HERVORRAGEND GEMACHT!',
+        250.0,
+      ),
+      (
+        FxId.uiChapterRibbon,
+        Rect.fromLTWH(205 - 113, 50 - 16, 226, 32),
+        'KAPITEL 10 · VERSCHNEITE BERGHÜTTE AM WALDRAND',
+        250.0,
       ),
     ]) {
-      test('${id.fileName}: a long all-caps label is drawn inside its v3 '
-          'text box on the anchor, scaled down to fit', () async {
+      test('${id.fileName}${band == null ? '' : ' on a $band band'}: a long '
+          'all-caps label is drawn inside its text box on the anchor, scaled '
+          'down to fit', () async {
         TestWidgetsFlutterBinding.ensureInitialized();
         final hook = FxTextHook.of(id)!;
-        final overlay = FxTextOverlay(hook)..label = label;
+        final ribbon = FxRibbon.of(id)!;
+        final overlay = FxTextOverlay(
+          hook,
+          style: band == null ? null : ribbon.labelFor(band),
+        )..label = label;
         final params = FxDrawableParams()
           ..textNullPosition = hook.style.restNull
           ..textNullScale = 1;
@@ -135,7 +157,11 @@ void main() {
         expect(drawn.top, greaterThanOrEqualTo(box.top - 1));
         // The hard shadow sits 2 below the letters.
         expect(drawn.bottom, lessThanOrEqualTo(box.bottom + 3));
-        expect(drawn.width, greaterThan(300), reason: 'fitted, not tiny');
+        expect(
+          drawn.width,
+          greaterThan(box.width - 12),
+          reason: 'fitted, not tiny',
+        );
         expect(drawn.center.dx, closeTo(hook.style.restNull.dx, 1));
         overlay.dispose();
       });

@@ -56,11 +56,31 @@ abstract final class IconUses {
   /// `redeem`: a chest (the milestone and day-7 chests' chips and rows).
   static const IconData chest = NestyIcons.redeem;
 
+  /// `check`: a claimed day on the daily gift's track.
+  static const IconData giftDayDone = NestyIcons.check;
+
+  /// `lightbulb`: a hint, in a gift tile and a chest chip.
+  static const IconData rewardHint = NestyIcons.lightbulb;
+
+  /// `add_box`: an extra slot (the +1 Slot booster's glyph), in a gift tile
+  /// and a chest chip.
+  static const IconData rewardSlot = NestyIcons.addBox;
+
   /// `replay`: a replay (the replay win card's reason line).
   static const IconData replay = NestyIcons.replay;
 
   /// `logout`: Leave race (frame 9.7).
   static const IconData leaveRace = NestyIcons.logout;
+
+  /// `more_horiz`: the race strip's "thinking" glyph after the tag (9.3i,
+  /// `layout.rivalStrip.forms.stateGlyph`).
+  static const IconData raceStripThinking = NestyIcons.moreHoriz;
+
+  /// `replay`: the race strip's "starting over" glyph after the tag (9.3i).
+  static const IconData raceStripStartingOver = NestyIcons.replay;
+
+  /// `check_circle`: the race strip's "finished" glyph after the tag (9.3i).
+  static const IconData raceStripFinished = NestyIcons.checkCircle;
 
   /// `refresh`: Try again on a failure card.
   static const IconData retry = NestyIcons.refresh;

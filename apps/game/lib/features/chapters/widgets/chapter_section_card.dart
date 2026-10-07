@@ -145,21 +145,12 @@ class _FoldedRow extends StatelessWidget {
                       overflowLines: 2,
                       minFontScale: _foldedNameScale(context),
                       textAlign: TextAlign.start,
-                      style: AppTextStyleTokens.cardTitle.copyWith(
-                        fontSize: 15,
-                        height: 1.1,
-                        color: AppColorTokens.textPrimary,
-                      ),
+                      style: ChaptersTypeTokens.rowName,
                     ),
                     if (section.perfect)
                       Text(
                         l10n.chaptersAllThreeStars,
-                        style: AppTextStyleTokens.caption.copyWith(
-                          fontSize: 11,
-                          height: 1,
-                          fontWeight: FontWeight.w800,
-                          color: AppColorTokens.successEdge,
-                        ),
+                        style: ChaptersTypeTokens.rowSub,
                         maxLines: 3,
                       ),
                   ],
@@ -195,12 +186,10 @@ bool _roomForFamily(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= 380 &&
     MediaQuery.textScalerOf(context).scale(1) < 1.15;
 
-/// NestyHub:74: Fredoka 700 10, +0.08 em, `#9A6A44`.
-final _kickerStyle = AppTextStyleTokens.cardTitle.copyWith(
-  fontSize: 10,
+/// `type.chapters.rowKicker` (Fredoka 700 10/1 `#9A6A44`, caps) with the
+/// scene's +0.08 em the token leaves to the CSS (NestyHub:75).
+final _kickerStyle = ChaptersTypeTokens.rowKicker.copyWith(
   letterSpacing: 10 * 0.08,
-  height: 1.1,
-  color: AppColorTokens.textMuted,
 );
 
 /// A locked chapter: the sunk surface, the theme crop greyed, the family
@@ -249,9 +238,7 @@ class _LockedRow extends StatelessWidget {
                       overflowLines: 2,
                       minFontScale: _foldedNameScale(context),
                       textAlign: TextAlign.start,
-                      style: AppTextStyleTokens.cardTitle.copyWith(
-                        fontSize: 15,
-                        height: 1.1,
+                      style: ChaptersTypeTokens.rowName.copyWith(
                         color: AppColorTokens.textLocked,
                       ),
                     ),
@@ -387,11 +374,7 @@ class _OpenCard extends StatelessWidget {
                                 maxLines: 2,
                                 minFontScale: 0.7,
                                 textAlign: TextAlign.start,
-                                style: AppTextStyleTokens.cardTitle.copyWith(
-                                  fontSize: 15,
-                                  height: 1.1,
-                                  color: AppColorTokens.textPrimary,
-                                ),
+                                style: ChaptersTypeTokens.rowName,
                               ),
                             const SizedBox(height: 6),
                             _AccentBar(

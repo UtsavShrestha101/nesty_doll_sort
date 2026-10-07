@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
+import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_render/nesty_render.dart';
 
@@ -227,14 +228,16 @@ final class SlotDecor {
   ) => TextPainter(
     text: TextSpan(
       text: text,
-      style: TextStyle(
-        // Bundled by the game (pubspec fonts).
-        fontFamily: 'Fredoka',
-        fontFamilyFallback: AppFontTokens.displayFallback,
-        fontWeight: FontWeight.w700,
-        fontSize: fontSize,
-        height: height,
-        color: color,
+      style: DisplayFace.apply(
+        TextStyle(
+          // Bundled by the game (pubspec fonts).
+          fontFamily: 'Fredoka',
+          fontFamilyFallback: AppFontTokens.displayFallback,
+          fontWeight: FontWeight.w700,
+          fontSize: fontSize,
+          height: height,
+          color: color,
+        ),
       ),
     ),
     textDirection: direction,

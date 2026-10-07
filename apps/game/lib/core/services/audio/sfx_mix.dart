@@ -43,6 +43,7 @@ abstract final class SfxMix {
     'complete_3': 1,
     'complete_4': 1,
     'complete_5': 1,
+    'gift_claim': 1,
     'ice_crack': 1,
     'ice_shatter': 1,
     'jingle_chapter': 1,
@@ -93,6 +94,7 @@ abstract final class SfxMix {
     SoundEffect.chestWiggle => SoundTokens.chestWiggle,
     SoundEffect.chestOpen => SoundTokens.chestOpen,
     SoundEffect.rivalComplete => SoundTokens.rivalComplete,
+    SoundEffect.giftClaim => SoundTokens.giftClaim,
   };
 
   /// The token cue behind [jingle] (tokens.json `sound.events`).

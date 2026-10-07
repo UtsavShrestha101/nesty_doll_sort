@@ -378,55 +378,60 @@ void main() {
       return count;
     }
 
-    testWidgets('with room to scroll, at most two finished rows sit above the '
-        'current card (`chapters.openScroll`, m7-4 8.4)', (tester) async {
-      // Ten chapters, chapters 1-5 won, level 101 (chapter 6) current: the
-      // list can scroll far enough for the rule to bind.
-      final ten = FakeCatalogRepository(
-        chapters: [
-          for (var n = 1; n <= 10; n++)
-            ChapterInfo(
-              id: n < 10 ? 'ch0$n' : 'ch10',
-              number: n,
-              themeId: n < 10 ? 'ch0$n' : 'ch10',
-              figurine: const FigurineInfo(
-                id: 'classic',
-                number: 1,
-                artAsset: 'assets/museum/01-classic.png',
-                lockedArtAsset: 'assets/museum/01-classic-locked.png',
+    testWidgets(
+      'with room to scroll, at most three finished rows sit above the '
+      'current card (`chapters.scroll.foldedAbove`, m7-5 21)',
+      (tester) async {
+        // Ten chapters, chapters 1-5 won, level 101 (chapter 6) current: the
+        // list can scroll far enough for the rule to bind.
+        final ten = FakeCatalogRepository(
+          chapters: [
+            for (var n = 1; n <= 10; n++)
+              ChapterInfo(
+                id: n < 10 ? 'ch0$n' : 'ch10',
+                number: n,
+                themeId: n < 10 ? 'ch0$n' : 'ch10',
+                figurine: const FigurineInfo(
+                  id: 'classic',
+                  number: 1,
+                  artAsset: 'assets/museum/01-classic.png',
+                  lockedArtAsset: 'assets/museum/01-classic-locked.png',
+                ),
               ),
-            ),
-        ],
-      );
-      final twoHundred = FakeLevelRepository(
-        entries: [
-          for (var order = 1; order <= 200; order++)
-            entryFor(levelFrom(tutorialLevelJson), order: order),
-        ],
-      );
-      final cubit = ChaptersCubit(
-        FakeSaveService(
-          initial: const SaveDocument(currentLevel: 101, highestLevel: 101),
-        ),
-        twoHundred,
-        ten,
-      );
-      await pumpChapters(tester, cubit, viewSize: const Size(390, 844));
-      await tester.pumpAndSettle();
-      final list = tester.getRect(find.byType(ListView));
-      final current = tester.getRect(find.byKey(const ValueKey('ch06')));
-      var count = 0;
-      for (final id in ['ch01', 'ch02', 'ch03', 'ch04', 'ch05']) {
-        final r = tester.getRect(find.byKey(ValueKey(id), skipOffstage: false));
-        if (r.top >= list.top - 0.5 && r.bottom <= current.top) count++;
-      }
-      expect(count, 2);
-      // The first of the two starts at the list's top.
-      expect(
-        tester.getRect(find.byKey(const ValueKey('ch04'))).top,
-        closeTo(list.top, 0.5),
-      );
-    });
+          ],
+        );
+        final twoHundred = FakeLevelRepository(
+          entries: [
+            for (var order = 1; order <= 200; order++)
+              entryFor(levelFrom(tutorialLevelJson), order: order),
+          ],
+        );
+        final cubit = ChaptersCubit(
+          FakeSaveService(
+            initial: const SaveDocument(currentLevel: 101, highestLevel: 101),
+          ),
+          twoHundred,
+          ten,
+        );
+        await pumpChapters(tester, cubit, viewSize: const Size(390, 844));
+        await tester.pumpAndSettle();
+        final list = tester.getRect(find.byType(ListView));
+        final current = tester.getRect(find.byKey(const ValueKey('ch06')));
+        var count = 0;
+        for (final id in ['ch01', 'ch02', 'ch03', 'ch04', 'ch05']) {
+          final r = tester.getRect(
+            find.byKey(ValueKey(id), skipOffstage: false),
+          );
+          if (r.top >= list.top - 0.5 && r.bottom <= current.top) count++;
+        }
+        expect(count, 3);
+        // The first of the three starts at the list's top.
+        expect(
+          tester.getRect(find.byKey(const ValueKey('ch03'))).top,
+          closeTo(list.top, 0.5),
+        );
+      },
+    );
 
     testWidgets('a short list shows what is there: three finished rows when '
         'nothing can scroll', (tester) async {

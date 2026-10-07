@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/ui/theme/app_theme.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/core/ui/widgets/tactile/tactile_feedback.dart';
 import 'package:nesty_game/l10n/app_localizations.dart';
 
@@ -63,7 +64,9 @@ Future<void> pumpUi(
   }
   await tester.pumpWidget(
     MaterialApp(
-      theme: AppTheme.light,
+      // The app's own locale wiring (app.dart): the script's theme, and
+      // its size factor and display face under the run's text scale.
+      theme: AppTheme.forLocale(checkedLocale(locale)),
       debugShowCheckedModeBanner: false,
       locale: checkedLocale(locale),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -73,7 +76,7 @@ Future<void> pumpUi(
           textScaler: TextScaler.linear(textScale),
           disableAnimations: reduceMotion,
         ),
-        child: child!,
+        child: LocaleScriptScope(child: child!),
       ),
       home: Scaffold(body: body),
     ),

@@ -34,9 +34,10 @@ final class SeededSettings {
 }
 
 /// Starts a device check from a known save (phase 4 architecture §6.6,
-/// §7.3): writes [document] (schema 2, as `SaveDocumentCodec.write` makes it)
-/// and [settings] into the app's own Hive boxes, then closes them, so the
-/// `app.main()` that follows loads them as a returning player's.
+/// §7.3): writes [document] (at `SaveDocument.currentSchema`, as
+/// `SaveDocumentCodec.write` makes it) and [settings] into the app's own
+/// Hive boxes, then closes them, so the `app.main()` that follows loads
+/// them as a returning player's.
 ///
 /// Call it before `app.main()`, from a fresh install (`nesty-test` installs
 /// fresh), e.g. a 6-day streak for the day-7 chest, past Level 20 for vs

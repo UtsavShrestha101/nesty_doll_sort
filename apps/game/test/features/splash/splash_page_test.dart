@@ -9,6 +9,7 @@ import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/lottie_doll.dart';
+import 'package:nesty_game/features/gameplay/widgets/theme_background_view.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
 import 'package:nesty_game/features/splash/pages/splash_page.dart';
 import 'package:nesty_render/nesty_render.dart' show DollPainter;
@@ -54,6 +55,45 @@ void main() {
 
   SemanticsData loaderSemantics(WidgetTester tester) =>
       tester.getSemantics(find.bySemanticsLabel('Loading…')).getSemanticsData();
+
+  testWidgets('layout.splash.topFade (m7-5 item 11): solid #FBEAD0 down to '
+      '120 dp, clear at 240, over the theme art and under the logo', (
+    tester,
+  ) async {
+    await pumpSplash(tester);
+    final fade = find.byKey(SplashView.topFadeKey);
+    expect(tester.getRect(fade), const Rect.fromLTWH(0, 0, 390, 240));
+    final box = tester.widget<DecoratedBox>(
+      find.descendant(of: fade, matching: find.byType(DecoratedBox)),
+    );
+    final gradient =
+        (box.decoration as BoxDecoration).gradient! as LinearGradient;
+    expect(gradient.colors, const [
+      Color(0xFFFBEAD0),
+      Color(0xFFFBEAD0),
+      Color(0x00FBEAD0),
+    ]);
+    expect(gradient.stops, [0, 0.5, 1]);
+    expect(gradient.begin, Alignment.topCenter);
+    expect(gradient.end, Alignment.bottomCenter);
+    // Its place in the page's stack: after the theme art, before the block
+    // with the wordmark.
+    final stack = tester.widget<Stack>(
+      find.ancestor(of: fade, matching: find.byType(Stack)).first,
+    );
+    int indexOf(bool Function(Widget) test) => stack.children.indexWhere(test);
+    final art = indexOf((w) => w is ThemeBackgroundView);
+    final fadeAt = indexOf((w) => w.key == SplashView.topFadeKey);
+    final block = indexOf((w) => w is LayoutBuilder);
+    expect(art, greaterThanOrEqualTo(0));
+    expect(fadeAt, greaterThan(art));
+    expect(block, greaterThan(fadeAt));
+    // It takes no touches.
+    expect(
+      find.descendant(of: fade, matching: find.byType(IgnorePointer)),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('frame 1.1: the wordmark, DOLL SORT, three cherry dolls, the '
       'loader and its caption', (tester) async {

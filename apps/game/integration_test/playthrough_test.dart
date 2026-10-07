@@ -50,6 +50,7 @@ import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_entrance.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
+import 'package:nesty_game/features/login_gift/widgets/gift_button.dart';
 import 'package:nesty_game/features/museum/pages/museum_page.dart';
 import 'package:nesty_game/features/museum/widgets/figurine_modal.dart';
 import 'package:nesty_game/features/race/cubit/rival_select_cubit.dart';
@@ -911,6 +912,12 @@ Future<void> _playthrough(
   await board.pauseToHome(level: 3);
   await tester.pumpFor(const Duration(milliseconds: 700));
   await shots.take('13_home_after');
+  // The daily gift (frame 13.1): level 2's win unlocked it, so Home's
+  // header wears the button with its ready dot. Not tapped: the claim has
+  // its own check (`login_gift_test.dart`) and later steps stay as they were.
+  expect(find.byType(GiftButton), findsOneWidget);
+  expect(find.byKey(GiftButton.dotKey), findsOneWidget);
+  await shots.take('13b_home_gift_ready');
   await music.expectPlaying(MusicTrack.home);
 
   // ── Level 21 opens chapter 2: its ribbon (frame 4.7) plays over the

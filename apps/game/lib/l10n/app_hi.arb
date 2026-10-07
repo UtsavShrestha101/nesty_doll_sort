@@ -406,5 +406,61 @@
   "recordsStatSemantics": "{label}: {value}",
   "recordsBadgesCount": "{earned}/{total}",
   "a11yJoinList": "{first}, {second}",
-  "a11yJoinSentences": "{first}। {second}"
+  "a11yJoinSentences": "{first}। {second}",
+
+  "giftTitle": "रोज़ का तोहफ़ा",
+
+  "giftDay": "दिन {day}",
+
+  "giftClaim": "लें",
+
+  "giftClaimedLine": "आज का तोहफ़ा आपका है।",
+
+  "giftTomorrow": "कल: {gift}",
+
+  "giftNext": "अगला तोहफ़ा: {gift}",
+
+  "giftButtonReadySemantics": "रोज़ का तोहफ़ा। एक तोहफ़ा तैयार है।",
+
+  "giftButtonSemantics": "रोज़ का तोहफ़ा",
+
+  "giftTileSemantics": "दिन {day}, {gift}। {state}",
+
+  "giftTileDone": "ले लिया",
+
+  "giftTileToday": "आज का तोहफ़ा",
+
+  "giftTileLater": "आने वाला",
+
+  "giftChestTitle": "दिन 7 का तोहफ़ा",
+
+  "giftChestBody": "दिन 7 के लिए एक संदूक। देखें अंदर क्या है।",
+
+  "giftCoins": "{count, plural, one{{count} सिक्का} other{{count} सिक्के}}",
+
+  "giftHints": "{count, plural, one{{count} हिंट} other{{count} हिंट}}",
+
+  "giftSlots": "{count, plural, one{{count} अतिरिक्त जगह} other{{count} अतिरिक्त जगहें}}",
+
+  "giftRewardPair": "{first} + {second}",
+
+  "chestContentsSlot": "{count, plural, one{+{count} जगह} other{+{count} जगहें}}",
+
+  "chestContentsSlotSemantics": "{coins, plural, one{{coins} सिक्का} other{{coins} सिक्के}}, {slots, plural, one{{slots} अतिरिक्त जगह} other{{slots} अतिरिक्त जगहें}}",
+
+  "giftSubtitle": "रोज़ एक तोहफ़ा, आपकी अपनी रफ़्तार से।",
+
+  "giftTitleShort": "तोहफ़े",
+
+  "giftChestTitleShort": "दिन 7",
+
+  "giftSlotsShort": "{count, plural, one{{count} जगह} other{{count} जगहें}}",
+
+  "chestContentsSlotShort": "+{count}",
+
+  "giftA11yChestContents": "{first}, {second}",
+
+  "giftA11yClaimed": "तोहफ़ा ले लिया: {gift}।",
+
+  "giftA11yAdded": "जोड़ा गया: {gift}। कुल {count}।"
 }

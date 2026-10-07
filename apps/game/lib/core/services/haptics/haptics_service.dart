@@ -25,6 +25,11 @@ enum HapticPattern {
 
   /// Selection click on buttons and toggles.
   button,
+
+  /// Light tick on the daily gift's Claim, and as a gift's hint or slot
+  /// lands in Home's tally (tokens `haptics.giftClaim`, `gift.claim.haptic`;
+  /// m7-5).
+  giftClaim,
 }
 
 /// Plays haptics. Implementations respect the player's haptics setting

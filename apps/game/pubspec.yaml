@@ -94,9 +94,11 @@ flutter:
     - assets/themes/ch09/
     - assets/themes/ch10/
     # The M7 UI art (m7-3): badges, chests, rival portraits, the chest
-    # moment's flight sprites and the stars, from design/ui/.
+    # moment's flight sprites and the stars, from design/ui/; m7-5 adds the
+    # daily gift's glyph (gift/), the slot chip and the slot's sprite.
     - assets/ui/badges/
     - assets/ui/chest/
+    - assets/ui/gift/
     - assets/ui/rivals/
     - assets/ui/sprites/
     - assets/ui/stars/
@@ -159,6 +161,18 @@ flutter:
           weight: 700
         - asset: assets/fonts/Baloo2Body-Bold.ttf
           weight: 800
+    # Turkish (tr): Fredoka lacks ğ Ğ İ ş Ş, so in tr every Fredoka role draws
+    # in this Baloo 2 face, whole strings, never per glyph (tokens.json
+    # font.scripts.latnTr, m7-5 item 28; AppFontTokens.latnTrFamily). Latin +
+    # Latin Extended-A; each file answers the Fredoka weight (usWeightClass).
+    - family: Baloo2LatnTr
+      fonts:
+        - asset: assets/fonts/Baloo2LatnTr-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Baloo2LatnTr-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Baloo2LatnTr-Bold.ttf
+          weight: 700
     - family: MPLUSRounded1cDisplay
       fonts:
         - asset: assets/fonts/MPLUSRounded1cDisplay-Bold.ttf

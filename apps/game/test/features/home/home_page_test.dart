@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/base/base_async_state.dart';
@@ -9,7 +10,14 @@ import 'package:nesty_game/core/flavor/flavor.dart';
 import 'package:nesty_game/core/flavor/flavor_config.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
+import 'package:nesty_game/core/services/analytics/fake_analytics_service.dart';
+import 'package:nesty_game/core/services/clock/fake_clock.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
+import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
+import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/core/services/skin/fake_skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/widgets/home/stars_chip.dart';
@@ -22,6 +30,10 @@ import 'package:nesty_game/features/home/cubit/home_cubit.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart';
 import 'package:nesty_game/features/home/widgets/home_chapter_card.dart';
+import 'package:nesty_game/features/login_gift/cubit/login_gift_cubit.dart';
+import 'package:nesty_game/features/login_gift/widgets/gift_button.dart';
+import 'package:nesty_game/features/login_gift/widgets/gift_sheet.dart';
+import 'package:nesty_game/features/login_gift/widgets/gift_tally.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
 
 import '../../core/ui/support/ui_harness.dart';
@@ -33,6 +45,11 @@ import '../support/screen_harness.dart';
 /// "+" opens the Shop), the small wordmark, the gear (Settings), five idling
 /// dolls under twinkles, PLAY with the level and its tier badge, and the
 /// Daily / Museum / Remove Ads tiles. The dev flavor adds the level picker.
+/// A tactile button's face (its 46 dp surface inside the 48 dp target).
+Rect faceOf(WidgetTester tester, Finder button) => tester.getRect(
+  find.descendant(of: button, matching: find.byType(GestureDetector)).first,
+);
+
 void main() {
   setUpAll(() async {
     await loadBundledFonts();
@@ -70,25 +87,32 @@ void main() {
     FakeLevelRepository? repository,
     Size size = const Size(390, 844),
     double textScale = 1,
+    LoginGiftCubit? gift,
+    EdgeInsets? padding,
   }) async {
+    Widget view(Widget child) =>
+        gift == null ? child : BlocProvider.value(value: gift, child: child);
     await pumpScreen(
       tester,
-      HomeView(
-        state: state,
-        onRetry: onRetry ?? () {},
-        onPlay: onPlay ?? (_) {},
-        onDaily: onDaily ?? () {},
-        onMuseum: onMuseum ?? () {},
-        onChapters: onChapters ?? () {},
-        onRecords: onRecords ?? () {},
-        onVsComputer: onVsComputer ?? () {},
-        onShop: onShop ?? (_) {},
-        onSettings: onSettings ?? () {},
-        library: FakeFxLibrary(),
-        levels: repository,
+      view(
+        HomeView(
+          state: state,
+          onRetry: onRetry ?? () {},
+          onPlay: onPlay ?? (_) {},
+          onDaily: onDaily ?? () {},
+          onMuseum: onMuseum ?? () {},
+          onChapters: onChapters ?? () {},
+          onRecords: onRecords ?? () {},
+          onVsComputer: onVsComputer ?? () {},
+          onShop: onShop ?? (_) {},
+          onSettings: onSettings ?? () {},
+          library: FakeFxLibrary(),
+          levels: repository,
+        ),
       ),
       size: size,
       textScale: textScale,
+      padding: padding,
     );
     await tester.pump();
   }
@@ -119,6 +143,241 @@ void main() {
     expect(tester.widget<Text>(find.text('Level 56')).style!.fontSize, 36);
     expect(find.text('HARD'), findsOneWidget);
     expect(find.bySemanticsLabel('Play level 56, Hard'), findsOneWidget);
+  });
+
+  group('the daily gift button (frame 13.1)', () {
+    Future<LoginGiftCubit> giftCubit(int highestLevel) async {
+      final cubit = LoginGiftCubit(
+        FakeSaveService(initial: SaveDocument(highestLevel: highestLevel)),
+        FakeClock(),
+        FakeRemoteConfigService(),
+        FakeAnalyticsService(),
+      );
+      await cubit.load();
+      return cubit;
+    }
+
+    testWidgets('hidden while locked: the gear is alone', (tester) async {
+      final cubit = await giftCubit(1);
+      await pumpHome(tester, gift: cubit);
+      expect(find.byType(GiftButton), findsOneWidget);
+      expect(find.byKey(GiftButton.faceKey), findsNothing);
+      expect(find.byIcon(NestyIcons.settings), findsOneWidget);
+      await tester.runAsync(cubit.close);
+    });
+
+    testWidgets('shown with its dot when ready, between the wordmark and the '
+        'gear; the wordmark stays centred', (tester) async {
+      final cubit = await giftCubit(5);
+      await pumpHome(tester, gift: cubit);
+      expect(find.byKey(GiftButton.faceKey), findsOneWidget);
+      expect(find.byKey(GiftButton.dotKey), findsOneWidget);
+      final gift = tester.getRect(find.byKey(GiftButton.faceKey));
+      final gear = tester.getRect(find.byIcon(NestyIcons.settings));
+      expect(gift.right, lessThanOrEqualTo(gear.left + 24));
+      final wordmark = tester.getCenter(find.byType(Wordmark));
+      expect(wordmark.dx, closeTo(195, 1));
+      await tester.runAsync(cubit.close);
+    });
+
+    testWidgets('on the smallest phone at 1.3x text both header buttons keep '
+        'their full size (a 48 dp target), apart, and the wordmark centred', (
+      tester,
+    ) async {
+      final cubit = await giftCubit(5);
+      await pumpHome(
+        tester,
+        gift: cubit,
+        size: const Size(360, 640),
+        textScale: 1.3,
+      );
+      final buttons = find.byType(IconTactileButton);
+      final gift = tester.getRect(find.byKey(GiftButton.faceKey));
+      final gear = tester.getRect(
+        find.ancestor(of: find.byIcon(NestyIcons.settings), matching: buttons),
+      );
+      for (final rect in [gift, gear]) {
+        expect(rect.width, greaterThanOrEqualTo(48));
+        expect(rect.height, greaterThanOrEqualTo(48));
+      }
+      // `gift.button.narrow`: both faces stay 46, 6 apart.
+      final giftFace = faceOf(tester, find.byKey(GiftButton.faceKey));
+      final gearFace = faceOf(
+        tester,
+        find.ancestor(of: find.byIcon(NestyIcons.settings), matching: buttons),
+      );
+      expect(giftFace.size, const Size.square(46));
+      expect(gearFace.size, const Size.square(46));
+      expect(gearFace.left - giftFace.right, closeTo(6, 0.01));
+      expect(tester.getCenter(find.byType(Wordmark)).dx, closeTo(180, 1));
+      await tester.runAsync(cubit.close);
+    });
+
+    testWidgets('the pill shows min(balance, cap) while a claim\'s coins fly', (
+      tester,
+    ) async {
+      final save = FakeSaveService(
+        initial: const SaveDocument(highestLevel: 5, coins: 100),
+      );
+      final cubit = LoginGiftCubit(
+        save,
+        FakeClock(),
+        FakeRemoteConfigService(),
+        FakeAnalyticsService(),
+      );
+      await cubit.load();
+      AsyncValue<HomeState> home(int coins) => AsyncValue.data(
+        data: HomeState(
+          playRequest: const PlayRequest.campaign(56),
+          tier: Tier.hard,
+          coins: coins,
+        ),
+      );
+      cubit.claim();
+      // The balance is already 120; the pill waits at 100.
+      await pumpHome(tester, gift: cubit, state: home(save.coins));
+      expect(find.text('100'), findsOneWidget);
+      cubit.coinsLanded(10);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('110'), findsOneWidget);
+      cubit.releaseCoins();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('120'), findsOneWidget);
+      await tester.runAsync(cubit.close);
+    });
+
+    testWidgets('13.1 / 13.1b: the gift\'s face sits left of the gear, '
+        'right 68 and top 64 on 844, top 26 on 16:9', (tester) async {
+      final cubit = await giftCubit(5);
+      await pumpHome(tester, gift: cubit);
+      var face = faceOf(tester, find.byKey(GiftButton.faceKey));
+      expect(face, const Rect.fromLTWH(390 - 68 - 46, 64, 46, 46));
+      var gear = faceOf(
+        tester,
+        find.ancestor(
+          of: find.byIcon(NestyIcons.settings),
+          matching: find.byType(IconTactileButton),
+        ),
+      );
+      expect(gear, const Rect.fromLTWH(390 - 16 - 46, 64, 46, 46));
+
+      // A 16:9 phone's Home, its body above the tab bar (2.1b's nav at
+      // 587) as the shell lays it out.
+      await pumpHome(
+        tester,
+        gift: cubit,
+        size: const Size(390, 587),
+        padding: const EdgeInsets.only(top: 20),
+      );
+      face = faceOf(tester, find.byKey(GiftButton.faceKey));
+      expect(face.top, closeTo(26, 0.01));
+      expect(face.right, closeTo(390 - 68, 0.01));
+      gear = faceOf(
+        tester,
+        find.ancestor(
+          of: find.byIcon(NestyIcons.settings),
+          matching: find.byType(IconTactileButton),
+        ),
+      );
+      expect(gear.top, closeTo(26, 0.01));
+      await tester.runAsync(cubit.close);
+    });
+
+    for (final (name, size, padding, tallyTop) in [
+      ('844', const Size(390, 844), null, 120.0),
+      // 16:9: Home's body above the tab bar (2.1b's nav at 587).
+      ('16:9', const Size(390, 587), const EdgeInsets.only(top: 20), 82.0),
+    ]) {
+      testWidgets('13.5c on $name: a hint day\'s tally hangs under the pill '
+          '(left 16, top $tallyTop) and its +1 never covers "CHAPTER n"', (
+        tester,
+      ) async {
+        final yesterday = LocalDate.fromDateTime(
+          FakeClock.defaultNow,
+        ).addDays(-1);
+        final save = FakeSaveService(
+          initial: SaveDocument(
+            highestLevel: 5,
+            coins: 930,
+            loginGift: LoginGiftProgress(
+              claims: 2,
+              lastClaim: yesterday,
+              latestSeen: yesterday,
+            ),
+          ),
+        );
+        final cubit = LoginGiftCubit(
+          save,
+          FakeClock(),
+          FakeRemoteConfigService(),
+          FakeAnalyticsService(),
+        );
+        await cubit.load();
+        final hintsBefore = save.boosterCount(BoosterKind.hint);
+        await pumpHome(
+          tester,
+          gift: cubit,
+          size: size,
+          padding: padding,
+          state: const AsyncValue.data(
+            data: HomeState(
+              playRequest: PlayRequest.campaign(56),
+              tier: Tier.hard,
+              coins: 930,
+              chapterNumber: 3,
+              chapterId: 'ch03',
+              dailyUnlocked: true,
+            ),
+          ),
+        );
+        final pill = tester.getRect(find.byType(CoinPill));
+        await tester.tap(find.byType(GiftButton));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.tap(find.byKey(GiftSheet.claimKey));
+        await tester.pump();
+        // The hint is in the air: the tally has slid out with the old count.
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byKey(GiftTally.boxKey), findsOneWidget);
+        expect(find.text('$hintsBefore'), findsOneWidget);
+        await tester.pump(const Duration(milliseconds: 500));
+        final box = tester.getRect(find.byKey(GiftTally.boxKey));
+        expect(box.left, closeTo(16, 0.01));
+        expect(box.top, closeTo(pill.top + 54, 0.01));
+        expect(box.top, closeTo(tallyTop, 1.01));
+        expect(box.height, 36);
+        // Landed: the new total and the +1 tag.
+        expect(find.text('${hintsBefore + 1}'), findsOneWidget);
+        final tag = tester.getRect(find.byKey(GiftTally.tagKey));
+        final kicker = tester.getRect(
+          find
+              .descendant(
+                of: find.byType(HomeChapterCard),
+                matching: find.byType(Text),
+              )
+              .first,
+        );
+        expect(
+          tag.overlaps(kicker),
+          isFalse,
+          reason: 'the tag $tag covers the kicker $kicker',
+        );
+        // It holds 1.2 s, slides back and is gone.
+        await tester.pump(const Duration(milliseconds: 1300));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byKey(GiftTally.boxKey), findsNothing);
+        await tester.runAsync(cubit.close);
+      });
+    }
+
+    testWidgets('without a gift cubit Home still draws (older tests)', (
+      tester,
+    ) async {
+      await pumpHome(tester);
+      expect(find.byKey(GiftButton.faceKey), findsNothing);
+    });
   });
 
   testWidgets('the same seeded shelf on every visit', (tester) async {

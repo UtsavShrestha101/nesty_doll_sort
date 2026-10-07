@@ -48,6 +48,8 @@ void main() {
     expect(await timelineOf(HapticPattern.unlock), ['mediumImpact']);
     expect(await timelineOf(HapticPattern.iceCrack), ['lightImpact']);
     expect(await timelineOf(HapticPattern.button), ['selectionClick']);
+    // m7-5: tokens `haptics.giftClaim` is "HapticFeedback.lightImpact".
+    expect(await timelineOf(HapticPattern.giftClaim), ['lightImpact']);
   });
 
   test('success (complete, win) is medium, then light 80 ms later', () async {

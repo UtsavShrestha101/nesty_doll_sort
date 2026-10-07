@@ -132,6 +132,7 @@ extension _Plans on BoardTimeline {
     required double at,
     String? slotId,
     List<String> hides = const [],
+    int? unwindOf,
   }) {
     final segment = FxSegment.whole(
       _spec(FxId.dollMove),
@@ -147,6 +148,7 @@ extension _Plans on BoardTimeline {
         dollScale: LottieGeometry.roleScale(_height(nest.outerSize), _s),
         travelFrom: from,
         travelTo: to,
+        unwindOf: unwindOf,
       ),
       slotId: slotId,
       hides: hides,
@@ -344,11 +346,14 @@ extension _Plans on BoardTimeline {
     final gDst = _geometry.slotOrNull(dst);
 
     // 0: the lifted nest hands over from doll_pick to doll_move in the same
-    // frame; its glow goes out.
+    // frame; its glow goes out. The pick stops after the flight starts, so
+    // the flight can take the wobble's tilt from it and ease it out
+    // (m7-5 item 14, motion.pick.wobbleToMoveMs).
     final selection = _selection;
+    _Track? handOff;
     if (selection != null) {
       if (selection.slotId == src) {
-        b.command(StopClip(0, selection.pick.clip), track: selection.pick);
+        handOff = selection.pick;
         _glowOut(b, selection.glow, 0);
       } else {
         _planSettle(b, selection);
@@ -382,10 +387,21 @@ extension _Plans on BoardTimeline {
         final targetHeight = _height(into.target.outerSize);
         to = _ref(gDst.centerX, gDst.surfaceY - fraction * targetHeight);
       }
-      landed = _flight(b, moving, from, to, at: 0, slotId: src);
+      landed = _flight(
+        b,
+        moving,
+        from,
+        to,
+        at: 0,
+        slotId: src,
+        unwindOf: handOff?.clip.id,
+      );
       if (into != null) {
         landed = _planNest(b, into, gDst, at: landed);
       }
+    }
+    if (handOff != null) {
+      b.command(StopClip(0, handOff.clip), track: handOff);
     }
     if (completed == null) b.command(SyncSlot(landed, dst, board));
     b
@@ -1198,8 +1214,9 @@ extension _Plans on BoardTimeline {
   /// snapshot was applied at 0. The source's restored top sprite hides until
   /// it lands and both stands are reserved for the flight. A second undo
   /// cancels this flight with everything else and plays its own: the board
-  /// is on core's state from the first frame either way (rule 10).
-  // TODO(design): Q160, no frame draws the undo motion.
+  /// is on core's state from the first frame either way (rule 10). Claude
+  /// Design keeps this motion (m7-5 Choice 13, Q160): `doll_move` reversed,
+  /// 260 ms, one `whoosh`, 130 ms under Reduce motion.
   void _planUndoFlight(_Batch b, BoardResetEffect e) {
     final undo = e.undo;
     if (undo == null) return;

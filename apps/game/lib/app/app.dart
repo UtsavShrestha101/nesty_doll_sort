@@ -82,7 +82,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         builder: (context, languageState) => MaterialApp.router(
           title: FlavorConfig.values.appTitle,
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
+          theme: AppTheme.forLocale(languageState.locale),
           // Always the resolved language (never null), so Flutter's own
           // matching, whose fallback is `supportedLocales.first`, never
           // picks a different one; the callback answers as the resolver

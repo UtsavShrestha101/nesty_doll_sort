@@ -48,6 +48,11 @@ class TutorialOverlay extends StatelessWidget {
 
   final FxLibrary? library;
 
+  /// The tap hand's box (`ui_tap_hand`'s canvas at `TutorialTokens.handScale`),
+  /// for tests.
+  @visibleForTesting
+  static const Key tapHandKey = Key('tutorial-tap-hand');
+
   @override
   Widget build(BuildContext context) {
     final geometry = this.geometry;
@@ -521,6 +526,12 @@ class _Hand extends StatelessWidget {
   static const Size _tapCanvas = Size(128, 144);
   static const Offset _tapFingertip = Offset(48, 32);
 
+  /// The tap hand plays at `layout.tutorial.hand.scale` (0.6) about its
+  /// fingertip, so the hand is 40 dp as in 1.3, 1.4 and 10.8b (m7-5 item 8;
+  /// LOTTIE.md m7-5 "ui_tap_hand: unchanged"). Its fallback glyph scales
+  /// with it.
+  static const double _tapScale = TutorialTokens.handScale;
+
   static const Widget _glyph = Icon(
     NestyIcons.touchApp,
     size: _glyphSize,
@@ -539,24 +550,30 @@ class _Hand extends StatelessWidget {
           : _GlyphDragHand(from: point, to: dragTo);
     }
     return Positioned(
-      left: point.dx - _tapFingertip.dx,
-      top: point.dy - _tapFingertip.dy,
-      width: _tapCanvas.width,
-      height: _tapCanvas.height,
+      key: TutorialOverlay.tapHandKey,
+      left: point.dx - _tapFingertip.dx * _tapScale,
+      top: point.dy - _tapFingertip.dy * _tapScale,
+      width: _tapCanvas.width * _tapScale,
+      height: _tapCanvas.height * _tapScale,
       child: _HandLoop(
         id: FxId.uiTapHand,
         library: library,
-        // The glyph's fingertip on the canvas's.
-        fallback: Stack(
-          children: [
-            Positioned(
-              left: _tapFingertip.dx - _glyphFingertip.dx,
-              top: _tapFingertip.dy - _glyphFingertip.dy,
-              width: _glyphSize,
-              height: _glyphSize,
-              child: _glyph,
+        // The glyph's fingertip on the canvas's, scaled with the canvas.
+        fallback: FittedBox(
+          child: SizedBox.fromSize(
+            size: _tapCanvas,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: _tapFingertip.dx - _glyphFingertip.dx,
+                  top: _tapFingertip.dy - _glyphFingertip.dy,
+                  width: _glyphSize,
+                  height: _glyphSize,
+                  child: _glyph,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

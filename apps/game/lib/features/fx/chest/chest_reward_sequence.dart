@@ -82,14 +82,19 @@ class ChestRewardSequence extends StatefulWidget {
     this.openBody,
     this.caption,
     this.hints = 0,
+    this.slots = 0,
     this.feedback,
     this.jingleCues,
     this.library,
     this.uiArt,
     this.coinTarget,
     this.hintTarget,
+    this.slotTarget,
     this.onCoinsRevealed,
     this.onHintLanded,
+    this.onSlotLanded,
+    this.onCollectStart,
+    this.cardTop,
     this.closedChestSize = 130,
     this.openChestSize = 200,
     super.key,
@@ -115,6 +120,12 @@ class ChestRewardSequence extends StatefulWidget {
   /// Zero hides the hint chip and its flight entirely (the day-7 chest).
   final int hints;
 
+  /// Extra slots the chest holds (the daily gift's Day 7, plan-login-gift
+  /// section 7.5b); zero hides the chip. With a [slotTarget] Collect flies
+  /// `slot_flight` to it (frame 13.6d: Home's tally); without one the slot
+  /// joins the player's boosters in place.
+  final int slots;
+
   /// Dismisses the sequence once Collect has finished; grants nothing.
   final VoidCallback onCollect;
 
@@ -128,8 +139,26 @@ class ChestRewardSequence extends StatefulWidget {
 
   final RewardFlightTarget? coinTarget;
   final RewardFlightTarget? hintTarget;
+
+  /// Where the slot flies (the daily gift's tally disc), read live at
+  /// Collect, after [onCollectStart].
+  final RewardFlightTarget? slotTarget;
   final ValueChanged<int>? onCoinsRevealed;
   final VoidCallback? onHintLanded;
+
+  /// The slot sprite landed (or, with nothing to fly to or under reduced
+  /// motion, Collect resolved it in place).
+  final VoidCallback? onSlotLanded;
+
+  /// Collect was pressed, before any sprite flies: the daily gift shows
+  /// its tally here so the slot has somewhere to land.
+  final VoidCallback? onCollectStart;
+
+  /// The card's top on the 390×844 reference; null is the milestone
+  /// chest's `cardTop` (168), or `cardTopDay7` (176) with [streakRibbon].
+  /// The daily gift's Day 7 passes `cardTopDay7` with the house ribbon
+  /// (`gift.chest.tint`: none).
+  final double? cardTop;
 
   /// Kept for the callers of the earlier stand-in; the Lottie's box
   /// ([chestCanvas]) sets the chest's size now.
@@ -194,8 +223,10 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
   final List<Timer> _timers = [];
   final GlobalKey _coinChipKey = GlobalKey();
   final GlobalKey _hintChipKey = GlobalKey();
+  final GlobalKey _slotChipKey = GlobalKey();
   RewardFlightHandle? _coinFlight;
   RewardFlightHandle? _hintFlight;
+  RewardFlightHandle? _slotFlight;
 
   final LottieFxController _chest = LottieFxController(FxId.uiChest);
   final LottieFxController _dustPuff = LottieFxController(FxId.fxDustPuff);
@@ -370,19 +401,22 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     setState(() => _phase = ChestSequencePhase.collecting);
     _exitFade.forward();
     _cue(SoundEffect.coins);
+    widget.onCollectStart?.call();
     if (_reduceMotion) {
       widget.onCoinsRevealed?.call(widget.coins);
       if (widget.hints > 0) widget.onHintLanded?.call();
+      if (widget.slots > 0) widget.onSlotLanded?.call();
       _at(ChestRewardSequence.exitFadeMs.toDouble(), widget.onCollect);
       return;
     }
-    var pending = 2;
+    var pending = 3;
     void oneDone() {
       if (--pending == 0 && mounted) widget.onCollect();
     }
 
     _collectCoins(oneDone);
     _collectHint(oneDone);
+    _collectSlot(oneDone);
   }
 
   Rect? _globalRectOf(GlobalKey key) {
@@ -461,11 +495,49 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
     );
   }
 
+  /// The slot (the daily gift's Day 7): `slot_flight` at 40 over 650 ms
+  /// to [ChestRewardSequence.slotTarget] with the hint's three-dot trail and
+  /// a light haptic as it lands (`gift.claim.slot`, frame 13.6d).
+  void _collectSlot(VoidCallback done) {
+    if (widget.slots <= 0) {
+      done();
+      return;
+    }
+    final from = _globalRectOf(_slotChipKey);
+    final to = widget.slotTarget?.call();
+    if (from == null || to == null) {
+      widget.onSlotLanded?.call();
+      done();
+      return;
+    }
+    _slotFlight = RewardFlight.launch(
+      context,
+      from: from,
+      to: to,
+      count: 1,
+      trail: true,
+      trailDots: ChestCollectTokens.trailHintDots.round(),
+      spriteBuilder: (context) => _Sprite(
+        UiArt.slotFlight,
+        size: GiftClaimTokens.slotSpriteSize,
+        library: widget.uiArt,
+      ),
+      vsync: this,
+      flightDuration: const Duration(milliseconds: GiftClaimTokens.slotMs),
+      onLanded: (_) {
+        widget.onSlotLanded?.call();
+        _cue(null, HapticPattern.pick);
+      },
+      onAllLanded: done,
+    );
+  }
+
   @override
   void dispose() {
     _cancelTimers();
     _coinFlight?.dispose();
     _hintFlight?.dispose();
+    _slotFlight?.dispose();
     _chest.dispose();
     _dustPuff.dispose();
     _pop.dispose();
@@ -500,9 +572,10 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
           right: ChestCardTokens.cardRight,
           top:
               top +
-              (widget.streakRibbon
-                  ? ChestCardTokens.cardTopDay7
-                  : ChestCardTokens.cardTop) -
+              (widget.cardTop ??
+                  (widget.streakRibbon
+                      ? ChestCardTokens.cardTopDay7
+                      : ChestCardTokens.cardTop)) -
               59,
           bottom: 8,
           child: FadeTransition(
@@ -699,36 +772,77 @@ class _ChestRewardSequenceState extends State<ChestRewardSequence>
         label: l10n.chestContentsCoins(widget.coins),
       ),
     );
-    final chips = <Widget>[coinChip];
-    if (widget.hints > 0) {
-      chips
-        ..add(const SizedBox(width: ChestCardTokens.contentsGap))
-        ..add(
-          _popping(
-            2,
-            RewardChip(
-              key: _hintChipKey,
-              kind: RewardChipKind.hint,
-              label: l10n.chestContentsHint(widget.hints),
-            ),
+    final others = <Widget>[
+      if (widget.slots > 0)
+        _popping(
+          2,
+          RewardChip(
+            key: _slotChipKey,
+            kind: RewardChipKind.slot,
+            label: l10n.chestContentsSlot(widget.slots),
+            short: l10n.chestContentsSlotShort(widget.slots),
           ),
-        );
-    }
+        ),
+      if (widget.hints > 0)
+        _popping(
+          2,
+          RewardChip(
+            key: _hintChipKey,
+            kind: RewardChipKind.hint,
+            label: l10n.chestContentsHint(widget.hints),
+          ),
+        ),
+    ];
+    final Widget arranged = widget.slots > 0
+        // Three chips, or two with long labels, wrap onto a second line
+        // instead of shrinking below the readable size (the daily gift's
+        // Day 7: coins and a slot).
+        ? Wrap(
+            alignment: WrapAlignment.center,
+            spacing: ChestCardTokens.contentsGap,
+            runSpacing: 8,
+            children: [coinChip, ...others],
+          )
+        : FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                coinChip,
+                for (final chip in others) ...[
+                  const SizedBox(width: ChestCardTokens.contentsGap),
+                  chip,
+                ],
+              ],
+            ),
+          );
     return Semantics(
       liveRegion: _isOpen,
       // "Chest. Inside: 100 coins, 1 hint." (copy.md A11y `a11y_chest_contents`).
-      label: l10n.chestSemantics(
-        widget.hints > 0
-            ? l10n.chestContentsSemantics(widget.coins, widget.hints)
-            : l10n.coinsSemantics(widget.coins),
-      ),
-      child: ExcludeSemantics(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(mainAxisSize: MainAxisSize.min, children: chips),
-        ),
-      ),
+      label: l10n.chestSemantics(_contentsSemantics(l10n)),
+      child: ExcludeSemantics(child: arranged),
     );
+  }
+
+  String _contentsSemantics(AppLocalizations l10n) {
+    if (widget.slots <= 0) {
+      return widget.hints > 0
+          ? l10n.chestContentsSemantics(widget.coins, widget.hints)
+          : l10n.coinsSemantics(widget.coins);
+    }
+    if (widget.hints <= 0) {
+      // "100 coins, 1 extra slot" (copy.md `gift_a11y_chest_contents`).
+      return l10n.giftA11yChestContents(
+        l10n.giftCoins(widget.coins),
+        l10n.giftSlots(widget.slots),
+      );
+    }
+    // Coins, hints and slots (no gift holds all three today): the coins and
+    // hints phrase, then the slots, through the ARB's list separator.
+    return l10n.joinList([
+      l10n.chestContentsSemantics(widget.coins, widget.hints),
+      l10n.giftSlots(widget.slots),
+    ]);
   }
 
   /// Chip [n] (1-based) pops when the lid goes: scale 0.82 → 1 and opacity
@@ -828,17 +942,27 @@ class _Sprite extends StatelessWidget {
 }
 
 /// Which chip a [RewardChip] is.
-enum RewardChipKind { coin, hint }
+enum RewardChipKind { coin, hint, slot }
 
 /// One contents chip of a chest (ui-spec-game §1 "Chip"; `layout.chestCard.
 /// contents`): 44 tall, radius 22, a 30 dp disc (the coin's face, or the
-/// hint's lightbulb on `#FFE7A0 → #F5C518`), then Fredoka 700 18 `#5B3A21`
+/// hint's lightbulb on `#FFE7A0 → #F5C518`, or the slot's box on green), then Fredoka 700 18 `#5B3A21`
 /// on `#FFFDF7`.
 class RewardChip extends StatelessWidget {
-  const RewardChip({required this.kind, required this.label, super.key});
+  const RewardChip({
+    required this.kind,
+    required this.label,
+    this.short,
+    super.key,
+  });
 
   final RewardChipKind kind;
   final String label;
+
+  /// The label's short form (the slot chip's "+1", copy.md "Short forms"),
+  /// drawn when the full one doesn't fit the row at textFit.chestChips'
+  /// 0.85; null only scales.
+  final String? short;
 
   static const _style = SurfaceStyle(
     color: Color(0xFFFFFDF7),
@@ -849,7 +973,27 @@ class RewardChip extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) => NestySurface(
+  Widget build(BuildContext context) {
+    final short = this.short;
+    if (short == null) return _chip(label);
+    // The chip's room: the row's width less its disc, gap and padding.
+    const chrome = 7 + ChestCardTokens.contentsIcon + 10 + 16;
+    return LayoutBuilder(
+      builder: (context, constraints) => _chip(
+        FitText.pick(
+          full: label,
+          short: short,
+          style: DefaultTextStyle.of(context).style.merge(_labelStyle),
+          maxWidth: constraints.maxWidth - chrome,
+          scaler: MediaQuery.textScalerOf(context),
+          direction: Directionality.of(context),
+          minScale: TextFitTokens.chestChipsMinScale,
+        ),
+      ),
+    );
+  }
+
+  Widget _chip(String shown) => NestySurface(
     style: _style,
     radius: BorderRadius.circular(ChestCardTokens.contentsChipRadius),
     height: ChestCardTokens.contentsChipHeight,
@@ -882,17 +1026,26 @@ class RewardChip extends StatelessWidget {
               color: Color(0xFF8C5E12),
             ),
           ),
+          // `chest.slotChip`: ui/chest/chip_slot.svg at 30, the coin and
+          // hint discs' size (frame 13.6b).
+          RewardChipKind.slot => UiArtImage.square(
+            UiArt.chipSlot,
+            extent: ChestSlotChipTokens.discSize,
+          ),
         },
         const SizedBox(width: 10),
         Text(
-          label,
-          style: AppTextStyleTokens.number.copyWith(
-            fontSize: 18,
-            height: 1,
-            color: const Color(0xFF5B3A21),
-          ),
+          shown,
+          semanticsLabel: shown == label ? null : label,
+          style: _labelStyle,
         ),
       ],
     ),
+  );
+
+  static final TextStyle _labelStyle = AppTextStyleTokens.number.copyWith(
+    fontSize: 18,
+    height: 1,
+    color: const Color(0xFF5B3A21),
   );
 }

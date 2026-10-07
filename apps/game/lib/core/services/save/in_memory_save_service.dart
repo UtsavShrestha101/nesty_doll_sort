@@ -11,6 +11,8 @@ import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/login_gift/login_gift_reward.dart';
+import 'package:nesty_game/core/services/login_gift/login_gift_rules.dart';
 import 'package:nesty_game/core/services/records/badge_rules.dart';
 import 'package:nesty_game/core/services/records/record_rules.dart';
 import 'package:nesty_game/core/services/records/star_rules.dart';
@@ -640,6 +642,61 @@ class InMemorySaveService implements SaveService {
   void writeDaily(DailyProgress daily, {int addCoins = 0}) {
     RangeError.checkNotNegative(addCoins, 'addCoins');
     update((d) => d.copyWith(daily: daily, coins: d.coins + addCoins));
+  }
+
+  // --- Daily gift (plan-login-gift §7.5b; D268) ---------------------------
+
+  @override
+  LoginGiftGrant? claimLoginGift(LocalDate today) {
+    try {
+      final track = LoginGiftRules.trackOf(_remoteConfig);
+      LoginGiftGrant? grant;
+      // The grant is decided on the document the update applies to, so the
+      // pay and the claim can't disagree (one update, m3-design §3.5).
+      update((d) {
+        grant = LoginGiftRules.grantFor(d, today, track);
+        final reward = grant?.reward;
+        if (reward == null) return d;
+        // Boosters are a stored count, so they are added even with the
+        // dev flavor's unlimited boosters.
+        return d.copyWith(
+          coins: d.coins + math.max(0, reward.coins),
+          inventory: d.inventory.copyWith(
+            hint: d.inventory.hint + math.max(0, reward.hints),
+            slot: d.inventory.slot + math.max(0, reward.slots),
+          ),
+          loginGift: LoginGiftRules.claimed(d.loginGift, today),
+        );
+      });
+      return grant;
+    } on Object catch (error, stack) {
+      // Rule 3: no gift today is the safe answer; nothing was written.
+      developer.log(
+        'claiming the daily gift failed',
+        name: 'nesty.save',
+        error: error,
+        stackTrace: stack,
+      );
+      return null;
+    }
+  }
+
+  @override
+  void noteLoginGiftDate(LocalDate today) {
+    try {
+      update((d) {
+        final noted = LoginGiftRules.noted(d.loginGift, today);
+        return noted == d.loginGift ? d : d.copyWith(loginGift: noted);
+      });
+    } on Object catch (error, stack) {
+      // Rule 3: the clock guard keeps the date it had.
+      developer.log(
+        'noting the daily gift date failed',
+        name: 'nesty.save',
+        error: error,
+        stackTrace: stack,
+      );
+    }
   }
 
   // --- Identity and persistence -------------------------------------------------------

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
@@ -9,6 +11,7 @@ import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/services/share/share_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_result_chips.dart';
@@ -316,9 +319,11 @@ void main() {
   });
 
   for (final size in screenSizes) {
-    testWidgets('the ribbon: its 410 × 110 canvas at min(1, W / 390), '
-        'centred, the anchor (205, 55) on the screen\'s centre line, '
-        '${size.width.toInt()} wide (LOTTIE.md v3)', (tester) async {
+    testWidgets('the ribbon: its 410 × 110 canvas at full size, centred, the '
+        'anchor (205, 55) on the screen\'s centre line, the band 290 or the '
+        'screen − 70, ${size.width.toInt()} wide (LOTTIE.md m7-5)', (
+      tester,
+    ) async {
       await pumpScreen(tester, _overlay(), size: size);
       await tester.pump(const Duration(milliseconds: 300));
       final row = tester.getRect(find.byKey(WinOverlay.ribbonKey));
@@ -331,18 +336,24 @@ void main() {
           matching: find.byType(LottieTextOverlay),
         ),
       );
-      final scale = size.width >= 390 ? 1.0 : size.width / 390;
-      expect(canvas.width, closeTo(410 * scale * fit, 0.01));
-      expect(canvas.height, closeTo(110 * scale * fit, 0.01));
+      expect(canvas.width, closeTo(410 * fit, 0.01));
+      expect(canvas.height, closeTo(110 * fit, 0.01));
       expect(canvas.center.dx, closeTo(size.width / 2, 0.01));
       expect(row.center.dx, closeTo(size.width / 2, 0.01));
       expect(canvas.center.dy, closeTo(row.center.dy, 0.01));
-      // At full size on 390 the canvas overhangs both edges by 10: the
-      // tails stay 5 inside at rest (380 wide).
-      if (size.width == 390 && fit == 1) {
-        expect(canvas.left, closeTo(-10, 0.01));
-        expect(canvas.right, closeTo(400, 0.01));
-      }
+      // A narrow phone narrows the band through the named rects, and the
+      // title's box with it; the ribbon and its tails fit with 13 dp or
+      // more to spare.
+      final view = tester.widget<LottieFxView>(
+        find.descendant(
+          of: find.byKey(WinOverlay.ribbonKey),
+          matching: find.byType(LottieFxView),
+        ),
+      );
+      final band = math.min(290.0, size.width - 70);
+      expect(view.controller!.params.ribbonBandWidth, band);
+      expect(view.labelStyle!.maxWidth, band - 24);
+      expect((size.width - (band + 44) * fit) / 2, greaterThanOrEqualTo(13));
       expectNoLayoutErrors(tester);
       await tester.pump(const Duration(seconds: 2));
     });
@@ -556,7 +567,8 @@ void main() {
 
     testWidgets('the 16:9 card keeps the helper note (tip or helper, never '
         'both): the pill at 486, the card moved up, buttons at 548 '
-        '(m7-4 4.12)', (tester) async {
+        '(m7-4 4.12; frame 11.2g, scene winShortCap: the reason takes the '
+        "tip's row, with the families at 64 dp, m7-5 item 22)", (tester) async {
       var tipShown = 0;
       await pumpScreen(
         tester,
@@ -585,6 +597,14 @@ void main() {
         tester.getTopLeft(find.widgetWithText(TactileButton, 'Continue')).dy,
         closeTo(548, 0.5),
       );
+      // 11.2g: the families at 64 (winStarsShort.notePill.withTip).
+      expect(WinStarsShortTokens.notePillWithTipHopDollHeight, 64);
+      for (final doll in tester.widgetList<LottieDoll>(
+        find.byType(LottieDoll),
+      )) {
+        expect(doll.height, 64);
+      }
+      expect(find.byType(LottieDoll), findsNWidgets(4));
     });
 
     testWidgets('the 16:9 card shows the tip, once, when that is the note', (

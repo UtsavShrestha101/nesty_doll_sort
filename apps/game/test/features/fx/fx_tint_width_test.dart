@@ -9,6 +9,7 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/features/fx/asset_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_drawable.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/fx_ribbon.dart';
 import 'package:nesty_game/features/fx/fx_spec.gen.dart';
 
 import 'support/fx_test_art.dart';
@@ -98,6 +99,141 @@ void main() {
     expect(count(snap, c.band), greaterThan(200));
     expect(count(snap, c.edge), greaterThan(50));
     expect(count(snap, c.tail), greaterThan(50));
+  });
+
+  group('a ribbon takes a band width through its named rects (m7-5)', () {
+    bool near(Snapshot s, int x, int y, Color c) {
+      final i = (y * s.width + x) * 4;
+      return s.bytes[i + 3] > 250 &&
+          (s.bytes[i] - (c.r * 255).round()).abs() < 4 &&
+          (s.bytes[i + 1] - (c.g * 255).round()).abs() < 4 &&
+          (s.bytes[i + 2] - (c.b * 255).round()).abs() < 4;
+    }
+
+    /// The band's and the whole ribbon's extent, in dp, at rest.
+    Future<(Rect band, Rect ribbon)> extent(
+      FxRibbon ribbon,
+      double? width,
+    ) async {
+      final clip = FxDrawable.of(library, ribbon.id)!;
+      clip.params
+        ..setRibbonColors(mine)
+        ..ribbonBandWidth = width;
+      // The win ribbon holds from 18, the chapter one from 18 to 138.
+      final snap = await snapshotDrawable(clip, 18, pixelRatio: 2);
+      final band = snap.boundsWhere((x, y) => near(snap, x, y, mine.band))!;
+      final all = snap.alphaBounds()!;
+      Rect dp(Rect r) => Rect.fromLTRB(
+        r.left / 2,
+        r.top / 2,
+        (r.right + 1) / 2,
+        (r.bottom + 1) / 2,
+      );
+      return (dp(band), dp(all));
+    }
+
+    test('the win band is 290 with its tails to 334, as authored, and fits '
+        'a 360 dp phone with 13 dp to spare', () async {
+      expect(WinRibbonTokens.bandSize, const Size(290, 56));
+      expect(WinRibbonTokens.reach, 334);
+      expect(FxRibbon.win.band, WinRibbonTokens.bandSize);
+      expect(FxRibbon.win.reachFor(290), WinRibbonTokens.reach);
+      final (band, all) = await extent(FxRibbon.win, null);
+      expect(band.width, closeTo(290, 1.5));
+      expect(all.width, closeTo(334, 1.5));
+      expect(FxRibbon.win.bandWidthFor(360), 290);
+      expect((360 - FxRibbon.win.reachFor(290)) / 2, 13);
+    });
+
+    for (final (ribbon, width) in [
+      (FxRibbon.win, 250.0),
+      (FxRibbon.win, 270.0),
+      (FxRibbon.chapter, 320.0),
+      (FxRibbon.chapter, 290.0),
+    ]) {
+      test('${ribbon.id.fileName} at $width: the band and edge take it, the '
+          'tails stay 22 past it, centred on the anchor', () async {
+        final (authoredBand, authored) = await extent(ribbon, null);
+        final (band, all) = await extent(ribbon, width);
+        expect(band.width, closeTo(width, 1.5));
+        expect(all.width, closeTo(ribbon.reachFor(width), 1.5));
+        expect(band.center.dx, closeTo(authoredBand.center.dx, 0.5));
+        expect(all.center.dx, closeTo(authored.center.dx, 0.5));
+        // The height is the file's.
+        expect(band.height, closeTo(authoredBand.height, 0.5));
+        expect(all.height, closeTo(authored.height, 0.5));
+      });
+    }
+
+    test(
+      'the highlight stays 16 narrower than the band (274 in 290)',
+      () async {
+        // hi_fill is 30 % white over the band. The colour match also takes a
+        // few antialiased pixels at the band's corners, so this compares the
+        // highlight at each width with the authored one.
+        final hi = Color.lerp(mine.band, const Color(0xFFFFFFFF), 0.3)!;
+        Future<double> shineWidth(double? width) async {
+          final clip = FxDrawable.of(library, FxId.uiWinRibbon)!;
+          clip.params
+            ..setRibbonColors(mine)
+            ..ribbonBandWidth = width;
+          final snap = await snapshotDrawable(clip, 18, pixelRatio: 2);
+          final shine = snap.boundsWhere((x, y) {
+            final i = (y * snap.width + x) * 4;
+            return snap.bytes[i + 3] > 250 &&
+                (snap.bytes[i] - (hi.r * 255).round()).abs() < 6 &&
+                (snap.bytes[i + 1] - (hi.g * 255).round()).abs() < 6 &&
+                (snap.bytes[i + 2] - (hi.b * 255).round()).abs() < 6;
+          })!;
+          return (shine.width + 1) / 2;
+        }
+
+        final authored = await shineWidth(null);
+        expect(authored, closeTo(290 - FxRibbon.hiInset, 4));
+        for (final width in [270.0, 250.0]) {
+          expect(
+            await shineWidth(width),
+            closeTo(authored - (290 - width), 1),
+            reason: 'band $width',
+          );
+        }
+      },
+    );
+
+    test('clearing the width restores the authored ribbon exactly', () async {
+      final clip = FxDrawable.of(library, FxId.uiChapterRibbon)!;
+      final authored = await snapshotDrawable(clip, 60);
+      clip.params.ribbonBandWidth = 300;
+      final narrow = await snapshotDrawable(clip, 60);
+      expect(authored.differingPixels(narrow), greaterThan(100));
+      clip.params.ribbonBandWidth = null;
+      final back = await snapshotDrawable(clip, 60);
+      expect(authored.differingPixels(back), 0);
+    });
+
+    test("a ribbon's label box keeps its 24 dp margin to the band", () {
+      expect(FxRibbon.win.labelFor(290).maxWidth, 266);
+      expect(FxRibbon.win.labelFor(250).maxWidth, 226);
+      expect(FxRibbon.chapter.labelFor(336).maxWidth, 312);
+      expect(FxRibbon.chapter.labelFor(320).maxWidth, 296);
+      expect(identical(FxRibbon.win.labelFor(290), FxRibbon.win.label), isTrue);
+    });
+  });
+
+  test('the m7-5 Lottie-only fixes draw as authored: the game names no '
+      "fill to tint in ui_chest's rays, the glass flash or ui_spinner "
+      '(items 6, 9, 10)', () {
+    for (final id in [
+      FxId.uiChest,
+      FxId.fxGlassUnlock,
+      FxId.fxGlassUnlockTall,
+      FxId.uiSpinner,
+    ]) {
+      final spec = fxSpecOf(id);
+      expect(spec.tintFills, isEmpty, reason: id.fileName);
+      expect(spec.colorFills, isEmpty, reason: id.fileName);
+      expect(spec.sizedRects, isEmpty, reason: id.fileName);
+    }
   });
 
   group('the family counter pill takes any width', () {

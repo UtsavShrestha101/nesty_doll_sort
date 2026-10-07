@@ -2,13 +2,16 @@ import 'package:nesty_game/core/models/booster.dart';
 import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/login_gift/login_gift_reward.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 
 export 'package:nesty_game/core/models/booster.dart'
     show BoosterKind, BoosterSource, BoosterType;
 
 /// The player's save document (spec §13.3; docs/plans/m3-design.md §3;
-/// schema 2, docs/plans/m7-design.md §3).
+/// schema 3: M7's fields, docs/plans/m7-design.md §3, and the daily
+/// gift's, docs/plans/plan-login-gift.md §7.5b).
 ///
 /// The real implementation, `HiveSaveService`, keeps one JSON document under
 /// `doc` in the Hive box `save`, through `DatabaseService` (D63): read once
@@ -225,6 +228,29 @@ abstract interface class SaveService {
   /// (the streak reconcile, the chest). A daily win goes through
   /// [recordLevelWin] instead.
   void writeDaily(DailyProgress daily, {int addCoins = 0});
+
+  // --- Daily gift (plan-login-gift §7.5b; D268) ---------------------------
+
+  /// Claims the daily gift for the local date [today], in one document
+  /// update: the day `LoginGiftRules.grantFor` gives (the track from
+  /// Remote Config `login_gift_track`, `LoginGiftRules.trackOf`) pays its
+  /// coins, hints and extra slots (added even with [unlimitedBoosters]:
+  /// they are a stored count), and `loginGift` becomes
+  /// `LoginGiftRules.claimed` (one more claim, [today] its date and seen).
+  /// Fires [changes] once and returns the grant.
+  ///
+  /// Null, with nothing written, when the gift is still locked (it unlocks
+  /// with the Daily, after Level 2), when [today] already claimed, or when
+  /// [today] is earlier than `loginGift.latestSeen` (the clock went back).
+  /// A missed day never moves the track back. Never throws for a valid
+  /// date (rule 3).
+  LoginGiftGrant? claimLoginGift(LocalDate today);
+
+  /// The gift's status was read on [today]: raises `loginGift.latestSeen`
+  /// to [today] in one update, so a date earlier than one already seen
+  /// can't claim. Writes nothing, and fires no [changes], when [today] is
+  /// not later than it. Never lowers it and never throws.
+  void noteLoginGiftDate(LocalDate today);
 
   // --- Identity -------------------------------------------------------------
 

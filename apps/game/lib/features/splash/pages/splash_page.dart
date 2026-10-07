@@ -128,6 +128,10 @@ class SplashView extends StatefulWidget {
   // TODO(design): add the splash error dim to tokens.json `color`.
   static const Color errorDim = Color(0x593C1E0A);
 
+  /// The top fade (`layout.splash.topFade`), for tests.
+  @visibleForTesting
+  static const Key topFadeKey = Key('splash-top-fade');
+
   /// Design y 240 → 750.
   static const double blockHeight = 510;
   static const double _blockTop = 240;
@@ -146,6 +150,11 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   final LottieFxController _loader = LottieFxController(FxId.uiSplashLoader);
+
+  /// The top fade's gradient over its 240 dp box (built once).
+  static final LinearGradient _topFade = SplashTokens.topFadeFill.resolve(
+    SplashTokens.topFadeHeight,
+  );
 
   @override
   void initState() {
@@ -192,6 +201,21 @@ class _SplashViewState extends State<SplashView> {
                   Color(0x00000000),
                 ],
                 stops: [0, 0.7, 1],
+              ),
+            ),
+          ),
+          // layout.splash.topFade (m7-5 item 11): solid cream down to 120 dp,
+          // clear at 240, over the theme art (its chapter-1 arch and halo
+          // are not meant to show) and under the logo and the status bar.
+          Positioned(
+            key: SplashView.topFadeKey,
+            left: 0,
+            right: 0,
+            top: 0,
+            height: SplashTokens.topFadeHeight,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(gradient: _topFade),
               ),
             ),
           ),

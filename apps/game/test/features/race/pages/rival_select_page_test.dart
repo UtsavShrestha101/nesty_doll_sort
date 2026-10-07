@@ -352,10 +352,13 @@ void main() {
       expect(shadows.last.spread, 1.5);
       expect(shadows.last.inset, isTrue);
       expect(styleOf(tester, 'Button').color, AppColorTokens.textLocked);
+      // The locked line is `textSecondary` #8A5B3A, as the frame draws it
+      // (m7-5 item 1).
       expect(
         styleOf(tester, 'Beat Pebble to unlock').color,
-        AppColorTokens.textLocked,
+        AppColorTokens.textSecondary,
       );
+      expect(AppColorTokens.textSecondary, const Color(0xFF8A5B3A));
     });
 
     testWidgets('F-TYPE-R: each card text per NestyHub:54-65', (tester) async {

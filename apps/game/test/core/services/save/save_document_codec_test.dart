@@ -83,6 +83,13 @@ void main() {
         RivalProgress(),
       ],
     ),
+    // Schema 3's daily gift (plan-login-gift §7.5b): nine claims, so the
+    // next pays Day 3; a status read saw a later date than the last claim.
+    loginGift: LoginGiftProgress(
+      claims: 9,
+      lastClaim: LocalDate(2026, 10, 4),
+      latestSeen: LocalDate(2026, 10, 5),
+    ),
     unknown: const {'zeta': 1, 'alpha': 'kept'},
   );
 
@@ -98,7 +105,7 @@ void main() {
   test('writes the known keys in order, then the unknown ones sorted', () {
     final keys = SaveDocumentCodec.encode(full).keys.toList();
     expect(keys.first, 'schema');
-    expect(keys.sublist(keys.length - 9), [
+    expect(keys.sublist(keys.length - 10), [
       'playerId',
       'levelBests',
       // The star rating's two (m7-design P3.4), after levelBests.
@@ -107,9 +114,16 @@ void main() {
       'records',
       'chests',
       'race',
+      // Schema 3's (plan-login-gift §7.5b), after race.
+      'loginGift',
       'alpha',
       'zeta',
     ]);
+    expect(SaveDocumentCodec.encode(full)['loginGift'], {
+      'claims': 9,
+      'lastClaim': '2026-10-04',
+      'latestSeen': '2026-10-05',
+    });
     expect(keys, isNot(contains('settings')));
   });
 
@@ -482,6 +496,123 @@ void main() {
         },
       });
       expect(doc.inProgress, isNull);
+    });
+  });
+
+  group('schema 3 (plan-login-gift §7.5b)', () {
+    LoginGiftProgress readGift(Object? value) => SaveDocumentCodec.read(
+      jsonEncode({'schema': 3, 'loginGift': ?value}),
+    ).document.loginGift;
+    final oct4 = LocalDate(2026, 10, 4);
+    final oct5 = LocalDate(2026, 10, 5);
+
+    test('a fresh document has claimed nothing and seen no date', () {
+      expect(const SaveDocument().loginGift, const LoginGiftProgress());
+      expect(SaveDocumentCodec.encode(const SaveDocument())['loginGift'], {
+        'claims': 0,
+        'lastClaim': null,
+        'latestSeen': null,
+      });
+      expect(readGift(null), const LoginGiftProgress());
+    });
+
+    test('round-trips each shape the game writes', () {
+      for (final gift in [
+        const LoginGiftProgress(),
+        LoginGiftProgress(latestSeen: oct4),
+        LoginGiftProgress(claims: 1, lastClaim: oct4, latestSeen: oct4),
+        LoginGiftProgress(claims: 15, lastClaim: oct4, latestSeen: oct5),
+      ]) {
+        final doc = SaveDocument(loginGift: gift);
+        final read = SaveDocumentCodec.read(SaveDocumentCodec.write(doc));
+        expect(read.kind, SaveReadKind.current, reason: '$gift');
+        expect(read.document.loginGift, gift);
+      }
+    });
+
+    test('a loginGift that is not an object is the fresh default', () {
+      for (final value in [
+        'x',
+        3,
+        true,
+        <Object?>[1, 2],
+      ]) {
+        expect(readGift(value), const LoginGiftProgress(), reason: '$value');
+      }
+    });
+
+    test('a count that is not a whole number of at least 0 reads 0', () {
+      for (final claims in ['many', -2, 2.5, null, true, <String, Object?>{}]) {
+        expect(readGift({'claims': claims}).claims, 0, reason: '$claims');
+      }
+      expect(readGift({'claims': 4.0}).claims, 4);
+      expect(readGift({'claims': 12}).claims, 12);
+    });
+
+    test('a date that does not parse reads null', () {
+      for (final date in ['soon', '2026-02-30', '2026-10-4', 20261004, true]) {
+        final gift = readGift({
+          'claims': 2,
+          'lastClaim': date,
+          'latestSeen': date,
+        });
+        expect(gift.lastClaim, isNull, reason: '$date');
+        expect(gift.latestSeen, isNull, reason: '$date');
+        expect(gift.claims, 2);
+      }
+    });
+
+    test('latestSeen is never earlier than lastClaim: one before it, or '
+        'none, reads as the last claim; a later one is kept', () {
+      expect(
+        readGift({
+          'claims': 3,
+          'lastClaim': '2026-10-05',
+          'latestSeen': '2026-10-04',
+        }),
+        LoginGiftProgress(claims: 3, lastClaim: oct5, latestSeen: oct5),
+      );
+      for (final latestSeen in [null, 'soon']) {
+        expect(
+          readGift({
+            'claims': 3,
+            'lastClaim': '2026-10-04',
+            'latestSeen': ?latestSeen,
+          }),
+          LoginGiftProgress(claims: 3, lastClaim: oct4, latestSeen: oct4),
+          reason: '$latestSeen',
+        );
+      }
+      expect(
+        readGift({
+          'claims': 3,
+          'lastClaim': '2026-10-04',
+          'latestSeen': '2026-10-05',
+        }),
+        LoginGiftProgress(claims: 3, lastClaim: oct4, latestSeen: oct5),
+      );
+      // A date seen with no claim yet (the status read) is kept.
+      expect(
+        readGift({'latestSeen': '2026-10-05'}),
+        LoginGiftProgress(latestSeen: oct5),
+      );
+    });
+
+    test('keys inside loginGift that this schema does not know are '
+        'dropped', () {
+      final doc = SaveDocumentCodec.read(
+        jsonEncode({
+          'schema': 3,
+          'loginGift': {'claims': 2, 'streakBonus': 5},
+        }),
+      ).document;
+      expect(doc.loginGift, const LoginGiftProgress(claims: 2));
+      expect(doc.unknown, isEmpty);
+      expect((SaveDocumentCodec.encode(doc)['loginGift']! as Map).keys, [
+        'claims',
+        'lastClaim',
+        'latestSeen',
+      ]);
     });
   });
 }

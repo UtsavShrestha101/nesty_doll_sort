@@ -280,12 +280,12 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const Directionality(
+      Directionality(
         textDirection: TextDirection.ltr,
         child: Column(
           children: [
             Text('Level 12', style: AppTextStyleTokens.h1),
-            Text('Sort the dolls', style: AppTextStyleTokens.body),
+            const Text('Sort the dolls', style: AppTextStyleTokens.body),
             Text('1,250', style: AppTextStyleTokens.number),
           ],
         ),

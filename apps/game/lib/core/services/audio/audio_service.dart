@@ -32,6 +32,10 @@ enum SoundEffect {
   /// `rival_complete`: the computer rival completes a family in a race
   /// (no haptic; §3.11).
   rivalComplete,
+
+  /// `gift_claim` (m7-5, AUDIO.md "SFX m7-5"): the daily gift's Claim, at 0
+  /// on the press (tokens.json `sound.events.giftClaim`, `gift.claim.sound`).
+  giftClaim,
 }
 
 /// The sound effects (spec §11.3). Implementations respect the Sound

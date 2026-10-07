@@ -226,7 +226,8 @@ class SheetRowTag extends SheetRowChip {
   @override
   double naturalWidth(BuildContext context) {
     final painter = TextPainter(
-      text: TextSpan(text: label, style: _textStyle),
+      // A static style: read through the locale's display face (m7-5 28).
+      text: TextSpan(text: label, style: DisplayFace.of(_textStyle)),
       textDirection: TextDirection.ltr,
       textScaler: MediaQuery.textScalerOf(context),
       maxLines: 1,

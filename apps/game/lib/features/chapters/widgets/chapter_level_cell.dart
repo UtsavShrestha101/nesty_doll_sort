@@ -124,12 +124,7 @@ class ChapterLevelCell extends StatelessWidget {
         children: [
           NestyNumberText(
             level.order,
-            style: AppTextStyleTokens.number.copyWith(
-              // NestyHub:86: Fredoka 700 16/1.
-              fontSize: 16,
-              height: 1,
-              color: textColor,
-            ),
+            style: ChaptersTypeTokens.cellNumber.copyWith(color: textColor),
           ),
           if (won && level.stars != null)
             StarRow(

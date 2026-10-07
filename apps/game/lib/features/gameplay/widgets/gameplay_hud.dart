@@ -7,6 +7,7 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/widgets/booster/bump_scale.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
 import 'package:nesty_game/features/gameplay/widgets/family_counter.dart';
+import 'package:nesty_render/nesty_render.dart' show BoardFitTokens;
 
 /// The gameplay HUD (frame 2.2; NestyBoard; spec §10.2 #3), laid out from
 /// the safe-area top: the pause button at (16, top + 3), the coin pill at
@@ -58,8 +59,10 @@ class GameplayHud extends StatelessWidget {
 
   /// A vs Computer race's rival strip (frame 9.3; lane R's `RivalStrip`),
   /// laid out in the top row in place of the level and coin pills, or null
-  /// off a race. It gets the row's width and sizes its own height (48 in the
-  /// design); a taller one scales down to the row. Wrapped in an
+  /// off a race. It gets the row's width and sizes its own height: 48, or
+  /// up to 58 when its tag takes the second line at large text (9.3i,
+  /// `layout.rivalStrip.forms.heightAt13`), and the family counter moves
+  /// down with it. A taller one scales down to 58. Wrapped in an
   /// `IgnorePointer` here.
   final Widget? raceStrip;
 
@@ -128,8 +131,8 @@ class GameplayHud extends StatelessWidget {
           if (strip != null)
             LayoutId(
               id: _HudSlot.strip,
-              // The row is 48 tall; a taller strip (a long name at 1.3×
-              // text) scales down to it instead of overflowing.
+              // The strip is 48 tall, or 58 in 9.3i's form at large text;
+              // anything taller scales down to 58 instead of overflowing.
               child: IgnorePointer(
                 child: LayoutBuilder(
                   builder: (context, constraints) => FittedBox(
@@ -221,6 +224,13 @@ final class _HudLayout extends MultiChildLayoutDelegate {
   /// The counter centre: (195, 129) on the reference screen.
   static const _counterCenter = 70.0;
 
+  /// How far 9.3i's grown strip may push the counter down: until its 26 dp
+  /// pill (bottom 142 on the reference screen) meets the board's HUD line,
+  /// below which the board fit keeps every doll (`BoardFitTokens.hudClearY`,
+  /// 150). The strip grows by 10 at 1.3× text; the counter stops at 8.
+  static const _counterShiftMax =
+      BoardFitTokens.hudClearY - (59 + _counterCenter + 13);
+
   /// The level pill keeps this gap to each side control.
   static const _pillGap = 8.0;
 
@@ -236,18 +246,28 @@ final class _HudLayout extends MultiChildLayoutDelegate {
         0.0,
         width - RivalStripTokens.left - RivalStripTokens.right,
       );
-      layoutChild(
+      final strip = layoutChild(
         _HudSlot.strip,
-        BoxConstraints.tightFor(
-          width: stripWidth,
-          height: RivalStripTokens.height,
+        BoxConstraints(
+          minWidth: stripWidth,
+          maxWidth: stripWidth,
+          minHeight: RivalStripTokens.height,
+          maxHeight: RivalStripTokens.formsHeightAt13,
         ),
       );
       positionChild(
         _HudSlot.strip,
         Offset(RivalStripTokens.left, top + RivalStripTokens.top - 59),
       );
-      _layoutCounter(width);
+      // 9.3i: a strip grown to 58 moves the family counter down with it,
+      // never past the board's HUD line (`_counterShiftMax`).
+      _layoutCounter(
+        width,
+        below: math.min(
+          strip.height - RivalStripTokens.height,
+          _counterShiftMax,
+        ),
+      );
       return;
     }
 
@@ -288,14 +308,14 @@ final class _HudLayout extends MultiChildLayoutDelegate {
     _layoutCounter(width);
   }
 
-  void _layoutCounter(double width) {
+  void _layoutCounter(double width, {double below = 0}) {
     const canvas = FamilyCounter.canvas;
     layoutChild(_HudSlot.counter, BoxConstraints.tight(canvas));
     positionChild(
       _HudSlot.counter,
       Offset(
         (width - canvas.width) / 2,
-        top + _counterCenter - canvas.height / 2,
+        top + _counterCenter + below - canvas.height / 2,
       ),
     );
   }

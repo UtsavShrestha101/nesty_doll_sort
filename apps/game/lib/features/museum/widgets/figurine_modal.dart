@@ -203,11 +203,11 @@ class _Spotlight extends StatelessWidget {
   /// The card's gap under the safe area, which the panel gives back.
   final double inset;
 
-  /// The art panel (`layout.museumDetail.spotlight.panel`: 300 tall, radius
-  /// 24); a short phone or a big text size gives some of it back so the card
-  /// still fits (the figurine shrinks with it).
-  static const double _height = MuseumDetailTokens.spotlightPanelHeight;
-  static const double _minHeight = 200;
+  /// The art panel (`layout.museumDetail.spotlight`: 300 tall, or 200 on a
+  /// phone under 760 dp, radius 24); a big text size still gives some of it
+  /// back so the card fits (the figurine shrinks with it).
+  static const double _height = MuseumDetailTokens.spotlightHeight;
+  static const double _minHeight = MuseumDetailTokens.spotlightHeightShort;
   static const double _artMax = 272;
 
   @override
@@ -222,7 +222,12 @@ class _Spotlight extends StatelessWidget {
         inset -
         330 * math.max(1, media.textScaler.scale(1));
     return SizedBox(
-      height: room.clamp(_minHeight, _height),
+      height: math.min(
+        media.size.height < MuseumDetailTokens.spotlightShortBelow
+            ? _minHeight
+            : _height,
+        math.max(room, _minHeight),
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final art = math.min(

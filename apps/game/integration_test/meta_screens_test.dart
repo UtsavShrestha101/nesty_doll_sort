@@ -180,16 +180,20 @@ void main() {
       expect(find.text('Level 61 of 200'), findsOneWidget);
       expect(find.text('60 won'), findsOneWidget);
       expect(find.text('CHAPTER 4 · LEVELS 61\u2060–\u206080'), findsOneWidget);
-      // m7-4 8.4 (`chapters.openScroll`): at most two finished rows above
-      // the current card, so chapter 1's row starts above the viewport.
-      expect(find.text('Sunny Toy Shop').hitTestable(), findsNothing);
+      // m7-5 item 21 (`layout.chapters.scroll.foldedAbove: 3`): up to three
+      // finished rows above the current card, fewer on a short phone. On a
+      // 844 dp phone chapter 1's row shows above chapter 4's card.
+      final view = tester.view;
+      if (view.physicalSize.height / view.devicePixelRatio >= 844) {
+        expect(find.text('Sunny Toy Shop').hitTestable(), findsOneWidget);
+      }
       await shots.take('meta-02-chapters');
 
       // A finished row opens in place (one open at a time): chapter 1's
       // cell 2 is won, so it opens the level card (10.4b) with its Play.
-      // Chapters opens scrolled to the current chapter, so chapter 1's row
-      // is above the viewport (built, but offstage to `find`): scroll up
-      // to it first (the device run found it, 2026-09-30).
+      // Chapters opens scrolled to the current chapter, so on a short phone
+      // chapter 1's row may be above the viewport (built, but offstage to
+      // `find`): scroll up to it first (the device run found it, 2026-09-30).
       final chapters = find
           .descendant(
             of: find.byType(ChaptersPage),

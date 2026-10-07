@@ -269,8 +269,8 @@ class _RaceHeaderBlock extends StatelessWidget {
     final pitch = n == 0 ? 0.0 : (330 / n).clamp(0.0, 84.0);
     final dollHeight = n > 4 ? 88.0 : 104.0;
     final width = MediaQuery.sizeOf(context).width;
-    final ribbonScale = width >= 390 ? 1.0 : width / 390;
-    final ribbonSize = VersusRibbon.canvas * ribbonScale;
+    // At full size: a narrow phone narrows the band, not the canvas (m7-5).
+    const ribbonSize = VersusRibbon.canvas;
     // Still dolls: the file rests on frame 0 when motion is reduced.
     Widget doll(int i, double center) => LottieDoll.positioned(
       centerX: center + (i - (n - 1) / 2) * pitch,

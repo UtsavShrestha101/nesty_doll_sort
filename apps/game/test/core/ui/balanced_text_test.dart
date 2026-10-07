@@ -33,7 +33,7 @@ void main() {
     const text = 'The shelves need a moment';
     await pumpUi(
       tester,
-      const SizedBox(
+      SizedBox(
         width: 250,
         child: BalancedText(text, style: ErrorCard.headStyle),
       ),
@@ -46,7 +46,7 @@ void main() {
   testWidgets('a text that fits one line is left alone', (tester) async {
     await pumpUi(
       tester,
-      const SizedBox(
+      SizedBox(
         width: 300,
         child: BalancedText('Paused', style: ErrorCard.headStyle),
       ),

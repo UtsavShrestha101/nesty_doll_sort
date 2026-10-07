@@ -118,12 +118,7 @@ class _BadgeCell extends StatelessWidget {
             Text(
               earned ? l10n.badgeLine(badge.id) : l10n.badgeLockedLine,
               textAlign: TextAlign.center,
-              style: AppTextStyleTokens.caption.copyWith(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                height: 1.3,
-                color: AppColorTokens.textSecondary,
-              ),
+              style: RecordsTypeTokens.badgeLine,
             ),
           ],
         ),

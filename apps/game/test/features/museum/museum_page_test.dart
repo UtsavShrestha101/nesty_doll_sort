@@ -514,6 +514,12 @@ void main() {
     );
     await pumpMuseum(tester, cubit);
     expect(find.text('Every family is home.'), findsOneWidget);
+    // Frame 6.1c sets the headline on one line (24/1.1: one line is 26.4
+    // tall) beside the 92 dp badge, 12 dp apart.
+    final headline = tester.renderObject<RenderParagraph>(
+      find.text('Every family is home.'),
+    );
+    expect(headline.size.height, lessThan(40));
     expect(find.text('Full House · all 10 families'), findsOneWidget);
     expect(find.text('10 / 10'), findsOneWidget);
     expect(find.textContaining('Play Level'), findsNothing);

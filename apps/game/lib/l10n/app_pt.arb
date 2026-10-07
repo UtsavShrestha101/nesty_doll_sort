@@ -406,5 +406,61 @@
   "recordsStatSemantics": "{label}: {value}",
   "recordsBadgesCount": "{earned}/{total}",
   "a11yJoinList": "{first}, {second}",
-  "a11yJoinSentences": "{first}. {second}"
+  "a11yJoinSentences": "{first}. {second}",
+
+  "giftTitle": "Presente diário",
+
+  "giftDay": "Dia {day}",
+
+  "giftClaim": "Coletar",
+
+  "giftClaimedLine": "O presente de hoje é seu.",
+
+  "giftTomorrow": "Amanhã: {gift}",
+
+  "giftNext": "Próximo presente: {gift}",
+
+  "giftButtonReadySemantics": "Presente diário. Há um presente pronto.",
+
+  "giftButtonSemantics": "Presente diário",
+
+  "giftTileSemantics": "Dia {day}, {gift}. {state}",
+
+  "giftTileDone": "Coletado",
+
+  "giftTileToday": "Presente de hoje",
+
+  "giftTileLater": "Mais adiante",
+
+  "giftChestTitle": "Presente do dia 7",
+
+  "giftChestBody": "Um baú para o dia 7. Veja o que tem dentro.",
+
+  "giftCoins": "{count, plural, =0{{count} moedas} one{{count} moeda} other{{count} moedas}}",
+
+  "giftHints": "{count, plural, =0{{count} dicas} one{{count} dica} other{{count} dicas}}",
+
+  "giftSlots": "{count, plural, =0{{count} espaços extras} one{{count} espaço extra} other{{count} espaços extras}}",
+
+  "giftRewardPair": "{first} + {second}",
+
+  "chestContentsSlot": "{count, plural, =0{+{count} espaços} one{+{count} espaço} other{+{count} espaços}}",
+
+  "chestContentsSlotSemantics": "{coins, plural, =0{{coins} moedas} one{{coins} moeda} other{{coins} moedas}}, {slots, plural, =0{{slots} espaços extras} one{{slots} espaço extra} other{{slots} espaços extras}}",
+
+  "giftSubtitle": "Um presente por dia, no seu ritmo.",
+
+  "giftTitleShort": "Presentes",
+
+  "giftChestTitleShort": "Dia 7",
+
+  "giftSlotsShort": "{count, plural, =0{{count} espaços} one{{count} espaço} other{{count} espaços}}",
+
+  "chestContentsSlotShort": "+{count}",
+
+  "giftA11yChestContents": "{first}, {second}",
+
+  "giftA11yClaimed": "Presente coletado: {gift}.",
+
+  "giftA11yAdded": "Adicionado: {gift}. Você tem {count}."
 }

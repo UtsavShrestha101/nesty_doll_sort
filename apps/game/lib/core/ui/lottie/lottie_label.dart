@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/painting.dart';
+import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
 /// How a localized label is drawn over a Lottie whose own text layers are
@@ -53,18 +54,63 @@ final class LottieLabelStyle {
   final Offset? shadowOffset;
   final Color? shadowColor;
 
+  /// This style with another box width or shadow colour: a ribbon whose
+  /// band is narrowed for the screen keeps its text inside it (m7-5,
+  /// tokens.winRibbon.size), and the chapter ribbon's shadow takes the
+  /// chapter's fold colour (tokens.theme.ribbonTint).
+  LottieLabelStyle copyWith({double? maxWidth, Color? shadowColor}) =>
+      LottieLabelStyle(
+        fontSize: fontSize,
+        color: color,
+        maxWidth: maxWidth ?? this.maxWidth,
+        maxHeight: maxHeight,
+        baseline: baseline,
+        restNull: restNull,
+        canvas: canvas,
+        shadowOffset: shadowOffset,
+        shadowColor: shadowColor ?? this.shadowColor,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is LottieLabelStyle &&
+      other.fontSize == fontSize &&
+      other.color == color &&
+      other.maxWidth == maxWidth &&
+      other.maxHeight == maxHeight &&
+      other.baseline == baseline &&
+      other.restNull == restNull &&
+      other.canvas == canvas &&
+      other.shadowOffset == shadowOffset &&
+      other.shadowColor == shadowColor;
+
+  @override
+  int get hashCode => Object.hash(
+    fontSize,
+    color,
+    maxWidth,
+    maxHeight,
+    baseline,
+    restNull,
+    canvas,
+    shadowOffset,
+    shadowColor,
+  );
+
   /// The text style at [size] (the fitted size).
-  TextStyle textStyle([double? size]) => TextStyle(
-    fontFamily: AppFontTokens.displayFamily,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    fontWeight: FontWeight.w700,
-    fontSize: size ?? fontSize,
-    height: 1,
-    leadingDistribution: TextLeadingDistribution.even,
-    color: color,
-    shadows: shadowOffset == null || shadowColor == null
-        ? null
-        : [Shadow(color: shadowColor!, offset: shadowOffset!)],
+  TextStyle textStyle([double? size]) => DisplayFace.apply(
+    TextStyle(
+      fontFamily: AppFontTokens.displayFamily,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      fontWeight: FontWeight.w700,
+      fontSize: size ?? fontSize,
+      height: 1,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: color,
+      shadows: shadowOffset == null || shadowColor == null
+          ? null
+          : [Shadow(color: shadowColor!, offset: shadowOffset!)],
+    ),
   );
 }
 
@@ -83,14 +129,18 @@ abstract final class LottieLabelStyles {
   );
 
   /// "Level Complete!" on the `ribbon` null (205,55) of the 410×110 canvas
-  /// (LOTTIE.md v3 "Text layers"): white Fredoka Bold 24 in a 312 × 40 box
-  /// centred on the anchor, inside the 336-wide band, with a `#96400A` 35 %
-  /// shadow 2 below. The baseline sits 0.36 em below the null, as the
-  /// file's own preview text does, so the letters centre on the band.
+  /// (LOTTIE.md v3 "Text layers"): white Fredoka Bold 24 in the
+  /// `tokens.winRibbon.size.textBox` (266 × 40, m7-5) centred on the
+  /// anchor, inside the 290-wide band, with a `#96400A` 35 % shadow 2 below.
+  /// A band narrowed for the screen narrows the box with it
+  /// ([copyWith], `FxRibbon.labelFor`). The baseline sits 0.36 em below the
+  /// null, as the file's own preview text does, so the letters centre on
+  /// the band.
   static const winRibbon = LottieLabelStyle(
     fontSize: 24,
     color: Color(0xFFFFFFFF),
-    maxWidth: 312,
+    // WinRibbonTokens.textBox (a test pins it: a const can't read a Size).
+    maxWidth: 266,
     maxHeight: 40,
     baseline: Offset(0, 8.64),
     restNull: Offset(205, 55),
@@ -100,11 +150,14 @@ abstract final class LottieLabelStyles {
   );
 
   /// "CHAPTER {n} · {name}" on the `ribbon` null (205,50) of the 410×100
-  /// canvas: white Fredoka Bold 20 in a 312 × 32 box centred on the anchor,
-  /// with a `#1C4F82` 35 % shadow 2 below.
+  /// canvas: white Fredoka Bold 20 in the `textFit.chapterRibbon` box
+  /// (312 × 32, inside the 336-wide band) centred on the anchor, with a
+  /// `#1C4F82` 35 % shadow 2 below (the chapter's `ribbonFold` at 35 % when
+  /// it is tinted, tokens.theme.ribbonTint).
   static const chapterRibbon = LottieLabelStyle(
     fontSize: 20,
     color: Color(0xFFFFFFFF),
+    // TextFitTokens.chapterRibbonBox (pinned by a test).
     maxWidth: 312,
     maxHeight: 32,
     baseline: Offset(0, 7.2),
@@ -116,42 +169,35 @@ abstract final class LottieLabelStyles {
 }
 
 /// Where the two ribbons (`ui_win_ribbon`, `ui_chapter_ribbon`) sit on a
-/// screen (LOTTIE.md v3 "Ribbons"): their 410-wide canvas centred on the
-/// screen at [scaleFor]. At full size on a 390 dp screen the canvas is wider
-/// than the screen, but the ribbon is 380 dp at rest; its tails pass the
-/// edges by up to 6 dp for about 100 ms during the 106 % pop (the owner
-/// accepted this, 2026-09-26).
+/// screen, and how wide their band is (LOTTIE.md m7-5; tokens.winRibbon.size).
+///
+/// The canvas is drawn at full size, centred on the screen: it may start
+/// left of 0 and end past the right edge, but what it draws fits. A band is
+/// never wider than the screen − 70 (`WinRibbonTokens.maxWidthInset`): the
+/// 290 win band fits a 360 dp phone with its tails 13 dp from each edge, and
+/// the 336 chapter band narrows below 406 dp (frame 4.7: 320 on a 390
+/// phone). A narrower band is set through the files' named rects, never by
+/// scaling the canvas (`FxDrawableParams.ribbonBandWidth`).
 abstract final class LottieRibbonFit {
-  /// The screen width the ribbons are drawn for at full size.
-  static const referenceScreenWidth = 390.0;
-
-  /// `min(1, screenWidth / 390)`: full size on a 390 dp screen and wider,
-  /// shrunk with a narrower one.
-  static double scaleFor(double screenWidth) {
-    if (screenWidth <= 0) return 0;
-    return screenWidth >= referenceScreenWidth
-        ? 1
-        : screenWidth / referenceScreenWidth;
-  }
+  /// The band's width on a screen [screenWidth] wide: [authored], or the
+  /// screen − 70 when that is narrower.
+  static double bandWidthFor(double authored, double screenWidth) => math.max(
+    0,
+    math.min(authored, screenWidth - WinRibbonTokens.maxWidthInset),
+  );
 
   /// The rect of a ribbon's [canvas] centred on a screen [screenWidth]
-  /// wide, its centre (the ribbon's anchor) [centerY] down: it may start
-  /// left of 0 and end past the screen's right edge.
+  /// wide, its centre (the ribbon's anchor) [centerY] down, at full size.
   static Rect rectFor(
     Size canvas, {
     required double screenWidth,
     required double centerY,
-  }) {
-    final scale = scaleFor(screenWidth);
-    final width = canvas.width * scale;
-    final height = canvas.height * scale;
-    return Rect.fromLTWH(
-      (screenWidth - width) / 2,
-      centerY - height / 2,
-      width,
-      height,
-    );
-  }
+  }) => Rect.fromLTWH(
+    (screenWidth - canvas.width) / 2,
+    centerY - canvas.height / 2,
+    canvas.width,
+    canvas.height,
+  );
 }
 
 /// Lays out one label once per text change and paints it at a null's

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:nesty_game/core/ui/tokens/ui_token_types.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/core/ui/widgets/surface/nesty_surface.dart';
 import 'package:nesty_game/core/ui/widgets/surface/surface_style.dart';
@@ -99,10 +98,7 @@ class _Segment extends StatelessWidget {
 
   static const _selectedStyle = SurfaceStyle(
     gradient: AppGradientTokens.surface,
-    shadows: [
-      NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2),
-      NestyShadow(color: AppColorTokens.surfaceEdge, dy: 3),
-    ],
+    shadows: AppShadowTokens.segmentSelected,
   );
 
   void _handleTap(BuildContext context) {
@@ -151,8 +147,7 @@ class _Segment extends StatelessWidget {
                 child: AnimatedDefaultTextStyle(
                   duration: duration,
                   curve: UiMotionTokens.curveEaseOut,
-                  style: AppTextStyleTokens.tabLabel.copyWith(
-                    fontSize: 14,
+                  style: ShopTypeTokens.tab.copyWith(
                     color: selected
                         ? AppColorTokens.textPrimary
                         : AppColorTokens.textSecondary,

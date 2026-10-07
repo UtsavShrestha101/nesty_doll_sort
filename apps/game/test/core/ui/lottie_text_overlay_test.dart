@@ -9,8 +9,9 @@ import 'support/ui_harness.dart';
 /// Lottie design §12 (PROGRESS D44): the text layers are hidden and a
 /// localized Flutter label follows the null; a label wider (or taller) than
 /// its box is laid out once more at `fontSize × maxWidth / width`. Since
-/// LOTTIE.md v3 the ribbons' boxes are 312 × 40 (win, Fredoka Bold 24) and
-/// 312 × 32 (chapter, 20), centred on the ribbon anchor.
+/// m7-5 the win ribbon's box is `tokens.winRibbon.size.textBox` (266 × 40,
+/// Fredoka Bold 24, in the 290 band) and the chapter's `textFit.chapterRibbon`
+/// (312 × 32, 20, in the 336 band), centred on the ribbon anchor.
 void main() {
   setUpAll(loadBundledFonts);
 
@@ -19,7 +20,7 @@ void main() {
       final painter = LottieLabelPainter(LottieLabelStyles.winRibbon)
         ..text = 'Level Complete!';
       expect(painter.fontSize, 24);
-      expect(painter.size.width, lessThanOrEqualTo(312));
+      expect(painter.size.width, lessThanOrEqualTo(266));
       painter.dispose();
     });
 
@@ -58,19 +59,24 @@ void main() {
       painter.dispose();
     });
 
-    test('the table of §12 (LOTTIE.md v3 ribbons)', () {
+    test('the table of §12 (LOTTIE.md v3 ribbons, m7-5 boxes)', () {
       expect(LottieLabelStyles.familyCounter.restNull, const Offset(60, 30));
-      const win = LottieLabelStyles.winRibbon;
+      final win = LottieLabelStyles.winRibbon;
       expect(win.fontSize, 24);
-      expect((win.maxWidth, win.maxHeight), (312, 40));
+      expect((win.maxWidth, win.maxHeight), (266, 40));
+      expect(Size(win.maxWidth, win.maxHeight), WinRibbonTokens.textBox);
       expect(win.restNull, const Offset(205, 55));
       expect(win.canvas, const Size(410, 110));
       // 0.36 em below the null, as the file's preview text (28 at 10.08).
       expect(win.baseline.dy, closeTo(0.36 * 24, 1e-9));
       expect(win.shadowOffset, const Offset(0, 2));
-      const chapter = LottieLabelStyles.chapterRibbon;
+      final chapter = LottieLabelStyles.chapterRibbon;
       expect(chapter.fontSize, 20);
       expect((chapter.maxWidth, chapter.maxHeight), (312, 32));
+      expect(
+        Size(chapter.maxWidth, chapter.maxHeight),
+        TextFitTokens.chapterRibbonBox,
+      );
       expect(chapter.restNull, const Offset(205, 50));
       expect(chapter.canvas, const Size(410, 100));
       expect(chapter.baseline, const Offset(0, 7.2));
@@ -141,16 +147,20 @@ void main() {
     }
   });
 
-  group('LottieRibbonFit (LOTTIE.md v3 ribbons)', () {
-    test('full size on a 390 dp screen and wider, shrunk on narrower', () {
-      expect(LottieRibbonFit.scaleFor(390), 1);
-      expect(LottieRibbonFit.scaleFor(430), 1);
-      expect(LottieRibbonFit.scaleFor(360), closeTo(360 / 390, 1e-12));
-      expect(LottieRibbonFit.scaleFor(0), 0);
+  group('LottieRibbonFit (LOTTIE.md m7-5 ribbons)', () {
+    test('a band is never wider than the screen − 70', () {
+      expect(WinRibbonTokens.maxWidthInset, 70);
+      expect(LottieRibbonFit.bandWidthFor(290, 390), 290);
+      expect(LottieRibbonFit.bandWidthFor(290, 360), 290);
+      expect(LottieRibbonFit.bandWidthFor(290, 320), 250);
+      expect(LottieRibbonFit.bandWidthFor(336, 430), 336);
+      expect(LottieRibbonFit.bandWidthFor(336, 406), 336);
+      expect(LottieRibbonFit.bandWidthFor(336, 390), 320);
+      expect(LottieRibbonFit.bandWidthFor(336, 0), 0);
     });
 
-    test('the canvas centred on the screen, its anchor on the centre line: '
-        'on 390 it overhangs each edge by 10', () {
+    test('the canvas at full size, centred on the screen, its anchor on the '
+        'centre line: on 390 it overhangs each edge by 10', () {
       final rect = LottieRibbonFit.rectFor(
         const Size(410, 110),
         screenWidth: 390,
@@ -164,9 +174,24 @@ void main() {
         screenWidth: 320,
         centerY: 179,
       );
-      expect(narrow.width, closeTo(410 * 320 / 390, 1e-9));
+      expect(narrow.size, const Size(410, 100));
       expect(narrow.center.dx, closeTo(160, 1e-9));
       expect(narrow.center.dy, closeTo(179, 1e-9));
+    });
+  });
+
+  group('LottieLabelStyle.copyWith', () {
+    test('changes the box width or the shadow, and compares by value', () {
+      final win = LottieLabelStyles.winRibbon;
+      final narrow = win.copyWith(maxWidth: 226);
+      expect(narrow.maxWidth, 226);
+      expect(narrow.maxHeight, win.maxHeight);
+      expect(narrow.shadowColor, win.shadowColor);
+      expect(win.copyWith(), win);
+      expect(win.copyWith().hashCode, win.hashCode);
+      expect(narrow, isNot(win));
+      const fold = Color(0x59123456);
+      expect(win.copyWith(shadowColor: fold).shadowColor, fold);
     });
   });
 

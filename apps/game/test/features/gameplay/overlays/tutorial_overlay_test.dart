@@ -341,8 +341,10 @@ void main() {
       expect(tester.getTopLeft(glyph), tapPoint - const Offset(24, 6));
     });
 
-    testWidgets('a tap step: ui_tap_hand at its 128×144 canvas, its fingertip '
-        '(48, 32) on the tapped doll', (tester) async {
+    testWidgets('a tap step: ui_tap_hand at 0.6 of its 128×144 canvas, its '
+        'fingertip (48, 32) on the tapped doll, so the hand is 40 dp (m7-5 '
+        'item 8)', (tester) async {
+      expect(TutorialTokens.handScale, 0.6);
       final library = await libraryWith(tester, FxId.uiTapHand);
       await pumpScreen(
         tester,
@@ -355,8 +357,36 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       final hand = handOf(FxId.uiTapHand);
-      expect(tester.getSize(hand), const Size(128, 144));
-      expect(tester.getTopLeft(hand), tapPoint - const Offset(48, 32));
+      final size = tester.getSize(hand);
+      expect(size.width, closeTo(128 * 0.6, 1e-9));
+      expect(size.height, closeTo(144 * 0.6, 1e-9));
+      final topLeft = tester.getTopLeft(hand);
+      expect(topLeft.dx, closeTo(tapPoint.dx - 48 * 0.6, 1e-9));
+      expect(topLeft.dy, closeTo(tapPoint.dy - 32 * 0.6, 1e-9));
+      expect(
+        tester.getRect(find.byKey(TutorialOverlay.tapHandKey)),
+        tester.getRect(hand),
+      );
+    });
+
+    testWidgets('a tap step without the file: the glyph scales with the '
+        'canvas, its fingertip on the tapped doll (rule 3)', (tester) async {
+      await pumpScreen(
+        tester,
+        TutorialOverlay(
+          cue: _tapSource,
+          board: board,
+          geometry: geometry,
+          library: FakeFxLibrary(),
+        ),
+      );
+      await tester.pump();
+      final glyph = find.byIcon(NestyIcons.touchApp);
+      expect(glyph, findsOneWidget);
+      final rect = tester.getRect(glyph);
+      expect(rect.width, closeTo(58 * 0.6, 1e-6));
+      expect(rect.left, closeTo(tapPoint.dx - 24 * 0.6, 1e-6));
+      expect(rect.top, closeTo(tapPoint.dy - 6 * 0.6, 1e-6));
     });
   });
 

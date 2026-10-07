@@ -139,6 +139,20 @@ final class FxDrawableParams {
 
   double? _pillWidth;
 
+  /// A ribbon's band width (`ui_win_ribbon`, `ui_chapter_ribbon`; LOTTIE.md
+  /// m7-5): `band_rect` and `edge_rect` take it, `hi_rect` stays 16 dp
+  /// narrower and `tail_l` / `tail_r` move by the half-difference, so the
+  /// tails stay 22 dp past the band. Null keeps the authored band (290 and
+  /// 336). `FxRibbon.bandWidthFor` gives the screen's.
+  double? get ribbonBandWidth => _ribbonBandWidth;
+  set ribbonBandWidth(double? value) {
+    if (value == _ribbonBandWidth) return;
+    _ribbonBandWidth = value;
+    _revision++;
+  }
+
+  double? _ribbonBandWidth;
+
   // ── Board-space travel (m2-lottie-design §6), in reference units. ──
 
   /// Where the `travel` null starts (null: the authored S).
@@ -179,6 +193,22 @@ final class FxDrawableParams {
 
   double? _revealDropUnits;
 
+  // ── The wobble's hand-off to the move (m7-5 item 14). ──
+
+  /// `doll_move`'s starting tilt, in degrees: the angle the dropped doll's
+  /// `doll_pick` wobble showed. Its `doll` null eases from this to 0 over
+  /// the move's first `MotionTokens.pickWobbleToMoveMs` (80 ms, easeOut),
+  /// overlapping the flight, so the move starts at once and never snaps.
+  /// Null: as authored (no tilt).
+  double? get unwindFrom => _unwindFrom;
+  set unwindFrom(double? value) {
+    if (value == _unwindFrom) return;
+    _unwindFrom = value;
+    _revision++;
+  }
+
+  double? _unwindFrom;
+
   // ── Motion. ──
 
   /// Reduced motion (D48): `doll_invalid`'s `target` and `fx_ice`'s `ice`
@@ -207,6 +237,15 @@ final class FxDrawableParams {
   Offset textNullPosition = Offset.zero;
   double textNullScale = 1;
 
+  /// `doll_pick`'s `doll` null rotation (degrees) in the last draw: the
+  /// wobble's angle, handed to the `doll_move` that takes over on a drop
+  /// ([unwindFrom]).
+  double pickRotation = 0;
+
+  /// The composition frame the clip draws, set by `FxDrawable.draw` before
+  /// each draw: the clock of a hook timed in the clip ([unwindFrom]).
+  double frame = 0;
+
   /// Back to "as authored" (a clip returned to its pool).
   void reset() {
     for (var i = 0; i < _sizes.length; i++) {
@@ -216,6 +255,7 @@ final class FxDrawableParams {
     _tintColor = null;
     _tints.clear();
     _pillWidth = null;
+    _ribbonBandWidth = null;
     _travelSrc = null;
     _travelDst = null;
     _targetPos = null;
@@ -226,6 +266,9 @@ final class FxDrawableParams {
     trailPoint = null;
     textNullPosition = Offset.zero;
     textNullScale = 1;
+    _unwindFrom = null;
+    pickRotation = 0;
+    frame = 0;
     _revision++;
   }
 }

@@ -139,6 +139,8 @@ import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart' as _i83;
 import 'package:nesty_game/features/home/cubit/home_cubit.dart' as _i524;
 import 'package:nesty_game/features/home/showcase/showcase_dolls.dart'
     as _i1053;
+import 'package:nesty_game/features/login_gift/cubit/login_gift_cubit.dart'
+    as _i182;
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart' as _i344;
 import 'package:nesty_game/features/race/cubit/race_cubit.dart' as _i110;
 import 'package:nesty_game/features/race/cubit/rival_select_cubit.dart' as _i74;
@@ -458,6 +460,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i789.LevelRepository>(),
         gh<_i885.CatalogRepository>(),
         gh<_i567.RemoteConfigService>(),
+      ),
+    );
+    gh.factory<_i182.LoginGiftCubit>(
+      () => _i182.LoginGiftCubit(
+        gh<_i276.SaveService>(),
+        gh<_i376.AppClock>(),
+        gh<_i567.RemoteConfigService>(),
+        gh<_i921.AnalyticsService>(),
       ),
     );
     gh.factory<_i524.HomeCubit>(

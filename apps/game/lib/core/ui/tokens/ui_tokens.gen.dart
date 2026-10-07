@@ -676,6 +676,48 @@ abstract final class AppColorTokens {
 
   /// `#A94F12`.
   static const textLinkAccentPressed = Color(0xFFA94F12);
+
+  /// `#FFEFD6`.
+  static const museumNextName = Color(0xFFFFEFD6);
+
+  /// `rgba(90,45,15,0.25)`.
+  static const trackShade = Color(0x405A2D0F);
+
+  /// `#CFA36A`.
+  static const segmentEdge = Color(0xFFCFA36A);
+
+  /// `rgba(110,60,25,0.2)`.
+  static const rowDash = Color(0x336E3C19);
+
+  /// `rgba(60,25,5,0.3)`.
+  static const shadowWarm = Color(0x4D3C1905);
+
+  /// `#F5C518`.
+  static const giftDot = Color(0xFFF5C518);
+
+  /// `#FFF3B0`.
+  static const giftDotTop = Color(0xFFFFF3B0);
+
+  /// `#C9960A`.
+  static const giftDotEdge = Color(0xFFC9960A);
+
+  /// `#F2893B`.
+  static const giftToday = Color(0xFFF2893B);
+
+  /// `#C4631E`.
+  static const giftTodayEdge = Color(0xFFC4631E);
+
+  /// `#FCEBD0`.
+  static const giftDoneFace = Color(0xFFFCEBD0);
+
+  /// `#6CC07C`.
+  static const slotDiscTop = Color(0xFF6CC07C);
+
+  /// `#46A758`.
+  static const slotDisc = Color(0xFF46A758);
+
+  /// `#2F7A3E`.
+  static const slotDiscEdge = Color(0xFF2F7A3E);
 }
 
 /// Gradients (tokens.json `gradient`). CSS angles map to Alignment so the
@@ -970,6 +1012,31 @@ abstract final class AppFontTokens {
   /// Letter spacing for text in this script: "always 0 (drop tracked caps)".
   static const jpanLetterSpacing = 0.0;
 
+  /// The Baloo 2 face that replaces Fredoka for whole strings in
+  /// [latnTrLocales] (m7-5 (item 28): Fredoka has no ğ Ğ İ ş Ş, so Turkish
+  /// draws every Fredoka role in Baloo 2, whole strings, never per glyph).
+  /// Bundled as its own family: its files answer each Fredoka weight with
+  /// [latnTrDisplayWeights].
+  static const latnTrFamily = 'Baloo2LatnTr';
+
+  /// The locales whose Fredoka (display) text draws in [latnTrFamily].
+  static const List<String> latnTrLocales = ['tr'];
+
+  /// Fredoka weight → the Baloo 2 weight a display style draws in
+  /// [latnTrLocales].
+  static const Map<int, int> latnTrDisplayWeights = {
+    700: 700,
+    600: 600,
+    500: 500,
+  };
+
+  /// The font size factor for display text in [latnTrLocales].
+  static const latnTrSizeFactor = 1.0;
+
+  /// The line height of multi-line titles in [latnTrLocales], as Fredoka:
+  /// "titles 1.15, as Fredoka; single-line boxes keep their height".
+  static const latnTrTitleLineHeight = 1.15;
+
   /// The `fontFamilyFallback` of every Fredoka style: Nunito for a Latin glyph
   /// Fredoka lacks, then the script faces (each maps only its own script).
   static const List<String> displayFallback = [
@@ -991,135 +1058,161 @@ abstract final class AppFontTokens {
 /// even leading, like CSS line-height.
 abstract final class AppTextStyleTokens {
   /// Fredoka 56/56/700.
-  static const display = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 56.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get display => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 56.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 40/42/700.
-  static const h1 = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 40.0,
-    height: 1.05,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get h1 => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 40.0,
+      height: 1.05,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 30/33/700.
-  static const sheetTitle = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 30.0,
-    height: 1.1,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get sheetTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 30.0,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 28/31/700.
-  static const h2 = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 28.0,
-    height: 1.1071428571428572,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get h2 => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 28.0,
+      height: 1.1071428571428572,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 26/26/700.
-  static const screenTitle = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 26.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get screenTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 26.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 20/22/700.
-  static const cardTitle = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 20.0,
-    height: 1.1,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get cardTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 21/21/700.
-  static const button = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 21.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get button => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 21.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 17/17/700.
-  static const buttonSmall = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 17.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get buttonSmall => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 18/18/700.
-  static const hudLevel = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 18.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get hudLevel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 18.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 17/17/700.
-  static const number = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 17.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    fontFeatures: [FontFeature.tabularFigures()],
+  static TextStyle get number => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
   );
 
   /// Fredoka 13/13/600.
-  static const boosterLabel = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 13.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w600,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get boosterLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 13.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w600,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Fredoka 11/11/700.
-  static const tierChip = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 11.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    letterSpacing: 0.66,
+  static TextStyle get tierChip => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      letterSpacing: 0.66,
+    ),
   );
 
   /// Fredoka 12/12/700.
-  static const tabLabel = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 12.0,
-    height: 1.0,
-    leadingDistribution: TextLeadingDistribution.even,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get tabLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 12.0,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// Nunito 16/23/600.
@@ -1286,6 +1379,25 @@ abstract final class AppShadowTokens {
   static const pressedEdge = 2.0;
 
   static const int pressTravelMs = 80;
+
+  /// `inset 0 3px 0 rgba(255,210,160,0.35), inset 0 -4px 0 rgba(40,18,6,0.4), 0
+  /// 8px 16px rgba(60,25,5,0.3)`.
+  static const List<NestyShadow> cabinet = [
+    NestyShadow(color: Color(0x59FFD2A0), inset: true, dy: 3.0),
+    NestyShadow(color: Color(0x66281206), inset: true, dy: -4.0),
+    NestyShadow(color: Color(0x4D3C1905), dy: 8.0, blur: 16.0),
+  ];
+
+  /// `inset 0 2px 4px rgba(90,45,15,0.25)`.
+  static const List<NestyShadow> segmentTrack = [
+    NestyShadow(color: Color(0x405A2D0F), inset: true, dy: 2.0, blur: 4.0),
+  ];
+
+  /// `inset 0 2px 0 #FFFFFF, 0 3px 0 #CFA36A`.
+  static const List<NestyShadow> segmentSelected = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFCFA36A), dy: 3.0),
+  ];
 }
 
 /// Gameplay HUD placement on the 390×844 reference (tokens.json
@@ -1488,6 +1600,9 @@ abstract final class SoundTokens {
   /// `none (no sound, no haptic)`: no sound (an empty cue plays nothing).
   static const reminderSet = SoundCue([]);
 
+  /// `gift_claim`.
+  static const giftClaim = SoundCue(['gift_claim']);
+
   /// Every SFX file base name the events use, sorted (for preloading and the
   /// asset manifest test): `assets/audio/<name>.wav`. The jingles are
   /// [jingleFiles] and the music loops [musicFiles].
@@ -1505,6 +1620,7 @@ abstract final class SoundTokens {
     'complete_3',
     'complete_4',
     'complete_5',
+    'gift_claim',
     'ice_crack',
     'ice_shatter',
     'pick',
@@ -1682,6 +1798,8 @@ abstract final class TutorialTokens {
   static const tooltipPadding = EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 16.0);
 
   static const tooltipRadius = 22.0;
+
+  static const handScale = 0.6;
 }
 
 /// tokens.json `layout.sizeBlend` (4.7, 4.12), in dp on the 390×844 reference
@@ -1743,16 +1861,16 @@ abstract final class SettingsRowsTokens {
 /// tokens.json `layout.noCoins` (7.3b, 7.4c (the modal shared with the other
 /// cards)), in dp on the 390×844 reference unless a member says otherwise.
 abstract final class NoCoinsTokens {
-  static const top = 220.0;
-
   /// `Fredoka 700 24/1.15, balanced`.
-  static const heading = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 24.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    height: 1.15,
-    leadingDistribution: TextLeadingDistribution.even,
+  static TextStyle get heading => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 24.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.15,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
   );
 
   /// `Nunito 600 16/23`.
@@ -1778,11 +1896,13 @@ abstract final class NoCoinsTokens {
   static const itemChipPadding = EdgeInsets.fromLTRB(16.0, 8.0, 10.0, 8.0);
 
   /// `Fredoka 700 18`.
-  static const itemChipName = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 18.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get itemChipName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 18.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// `gradient.coinChip pill, 30 tall, Fredoka 700 16 #8C5E12 with the 20 dp
@@ -1797,12 +1917,14 @@ abstract final class NoCoinsTokens {
   /// `gradient.coinChip pill, 30 tall, Fredoka 700 16 #8C5E12 with the 20 dp
   /// coin: the number alone (“2,500”); the coin says the rest, and a11y reads
   /// “2,500 coins”`.
-  static const itemChipPriceText = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 16.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFF8C5E12),
+  static TextStyle get itemChipPriceText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF8C5E12),
+    ),
   );
 
   /// `gradient.coinChip pill, 30 tall, Fredoka 700 16 #8C5E12 with the 20 dp
@@ -1842,6 +1964,12 @@ abstract final class MuseumDetailTokens {
     end: Alignment.bottomCenter,
     colors: [Color(0x8CFFFFFF), Color(0x00FFFFFF)],
   );
+
+  static const spotlightHeight = 300.0;
+
+  static const spotlightHeightShort = 200.0;
+
+  static const spotlightShortBelow = 760.0;
 }
 
 /// tokens.json `layout.languageSheet` (8.2, 8.2b), in dp on the 390×844
@@ -1900,13 +2028,15 @@ abstract final class ToastLayoutTokens {
   static const appGlyph = 26.0;
 
   /// `Fredoka 700 17/1.1`.
-  static const appTitle = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 17.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    height: 1.1,
-    leadingDistribution: TextLeadingDistribution.even,
+  static TextStyle get appTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
   );
 
   /// `Nunito 700 13/1.3`.
@@ -1975,13 +2105,15 @@ abstract final class ToastLayoutTokens {
   static const inPlaceArt = 38.0;
 
   /// `Fredoka 700 15/1.3`.
-  static const inPlaceTitle = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 15.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    height: 1.3,
-    leadingDistribution: TextLeadingDistribution.even,
+  static TextStyle get inPlaceTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.3,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
   );
 
   /// `Nunito 700 12/1.3`.
@@ -2040,11 +2172,13 @@ abstract final class ToastLayoutTokens {
   static const pillIcon = 32.0;
 
   /// `Fredoka 700 15`.
-  static const pillText = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 15.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get pillText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// `0 4px 0 #D8B07A`.
@@ -2061,11 +2195,13 @@ abstract final class TextFitTokens {
   static const winRibbonBox = Size(312.0, 40.0);
 
   /// `Fredoka 700 24`.
-  static const winRibbonFont = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 24.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get winRibbonFont => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 24.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   static const winRibbonWrap = false;
@@ -2082,11 +2218,13 @@ abstract final class TextFitTokens {
   static const chapterRibbonBox = Size(312.0, 32.0);
 
   /// `Fredoka 700 20`.
-  static const chapterRibbonFont = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 20.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get chapterRibbonFont => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   static const chapterRibbonWrap = false;
@@ -2123,6 +2261,11 @@ abstract final class TextFitTokens {
   static const chapterRowsWrap = false;
 
   static const chapterRowsMinScale = 0.85;
+
+  static const giftChestTitleMinScale = 0.85;
+
+  /// The copy.md id of the short form (the ARB key).
+  static const List<String> giftChestTitleShort = ['gift_chest_title_short'];
 }
 
 /// tokens.json `screenHeader` (m7-4 (10.2): one alignment for every screen.
@@ -2189,12 +2332,14 @@ abstract final class ChestCollectTokens {
   ];
 
   /// `Fredoka 700 13 #FFFFFF`.
-  static const gainTagFont = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 13.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFFFFFFFF),
+  static TextStyle get gainTagFont => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 13.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFFFFFFFF),
+    ),
   );
 
   static const gainTagPadding = EdgeInsets.symmetric(
@@ -2337,12 +2482,14 @@ abstract final class RivalStripTokens {
   static const portraitRing = TokenStroke(width: 2.0, color: Color(0xFFFFFDF7));
 
   /// `Fredoka 700 16 #5B3A21`.
-  static const name = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 16.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFF5B3A21),
+  static TextStyle get name => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF5B3A21),
+    ),
   );
 
   static const tagHeight = 20.0;
@@ -2394,13 +2541,15 @@ abstract final class RivalStripTokens {
   static const stateThinkingStaggerMs = 200;
 
   /// `Fredoka 700 17 #3242A8 tabular`.
-  static const count = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 17.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFF3242A8),
-    fontFeatures: [FontFeature.tabularFigures()],
+  static TextStyle get count => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF3242A8),
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
   );
 
   static const dotsSize = 8.0;
@@ -2431,6 +2580,49 @@ abstract final class RivalStripTokens {
   static const narrowTagGlyphOnlyBelowWidth = 360.0;
 
   static const narrowStateHiddenBelowWidth = 340.0;
+
+  /// The full form (9.3) draws the count over at most this many dots; a race
+  /// with more families takes the count-only form.
+  static const formsFullMaxDots = 8;
+
+  /// The count-only form (9.3h): the dots go and the count stands alone,
+  /// centred; also every race with more than [formsFullMaxDots] families.
+  static TextStyle get formsCountOnlyText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// The `more_horiz` glyph (`NestyIcons`), 16 dp after the tag (9.3i);
+  /// tools/test/tokens checks the bundled icon font has it.
+  static const formsStateGlyphThinking = 'more_horiz';
+
+  /// `more_horiz, #8A5B3A, pulsing like the 3 dots`.
+  static const formsStateGlyphThinkingColor = Color(0xFF8A5B3A);
+
+  /// The `replay` glyph (`NestyIcons`), 16 dp after the tag (9.3i);
+  /// tools/test/tokens checks the bundled icon font has it.
+  static const formsStateGlyphStartingOver = 'replay';
+
+  /// `replay, #8A5B3A`.
+  static const formsStateGlyphStartingOverColor = Color(0xFF8A5B3A);
+
+  /// The `check_circle` glyph (`NestyIcons`), 16 dp after the tag (9.3i);
+  /// tools/test/tokens checks the bundled icon font has it.
+  static const formsStateGlyphFinished = 'check_circle';
+
+  /// `check_circle, #46A758`.
+  static const formsStateGlyphFinishedColor = Color(0xFF46A758);
+
+  static const formsStateGlyphGap = 5.0;
+
+  static const formsHeightAt13 = 58.0;
+
+  /// In the m7-5 forms the dots never shrink below this, dp.
+  static const formsDotsMinSize = 8.0;
 }
 
 /// tokens.json `layout.raceBar` (booster bar during a race: Undo (unlimited)
@@ -2455,12 +2647,14 @@ abstract final class RaceBarTokens {
   static const startEdge = TokenStroke(width: 6.0, color: Color(0xFF3242A8));
 
   /// `Fredoka 700 21 white`.
-  static const startLabel = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 21.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFFFFFFFF),
+  static TextStyle get startLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 21.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFFFFFFFF),
+    ),
   );
 
   static const undoSlot = 1;
@@ -2694,6 +2888,12 @@ abstract final class HomeTokens {
   static const tilesColumnsAdsRemoved = 2;
 
   static const bottomNav = 738.0;
+
+  static const giftButtonRight = 68.0;
+
+  static const giftButtonTop = 64.0;
+
+  static const giftButtonSize = 46.0;
 }
 
 /// tokens.json `layout.homeShort` (Home on 390×693 (2.1b, E.1 approved):
@@ -2721,6 +2921,12 @@ abstract final class HomeShortTokens {
   static const tilesHeight = 112.0;
 
   static const bottomNav = 587.0;
+
+  static const giftButtonRight = 68.0;
+
+  static const giftButtonTop = 26.0;
+
+  static const giftButtonSize = 46.0;
 }
 
 /// tokens.json `layout.chapters` (Chapters (10.4)), in dp on the 390×844
@@ -2746,11 +2952,13 @@ abstract final class ChaptersTokens {
 
   /// `Fredoka 700 15, one line; scales down to 0.85 (12.75) before it
   /// ellipsizes`.
-  static const foldedRowName = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 15.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get foldedRowName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// One line: it scales down to this before it ellipsizes.
@@ -2843,6 +3051,8 @@ abstract final class ChaptersTokens {
   static const List<NestyShadow> lockedCellShadow = [
     NestyShadow(color: Color(0x265A2D0F), inset: true, dy: 2.0, blur: 4.0),
   ];
+
+  static const scrollFoldedAbove = 3;
 }
 
 /// tokens.json `layout.museum` (Museum (6.1, J.2)), in dp on the 390×844
@@ -2887,12 +3097,14 @@ abstract final class MuseumTokens {
   static const cabinetLockedOpacity = 0.45;
 
   /// `Fredoka 700 11.5 #4A3008 on a brass gradient`.
-  static const cabinetNamePlate = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 11.5,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFF4A3008),
+  static TextStyle get cabinetNamePlate => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.5,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF4A3008),
+    ),
   );
 
   /// A locked figurine's two lines ("Chapter 4" / "Levels 61–80").
@@ -2933,12 +3145,14 @@ abstract final class RecordsTokens {
   static const statsGridCellIconTileGlyph = 22.0;
 
   /// A stat's value, tabular figures, one line.
-  static const statsGridCellValue = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 20.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    fontFeatures: [FontFeature.tabularFigures()],
+  static TextStyle get statsGridCellValue => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
   );
 
   /// `Nunito 700 11.5/1.2 #8A5B3A`.
@@ -3019,11 +3233,13 @@ abstract final class RivalSelectTokens {
   static const newChipFill = AppGradientTokens.success;
 
   /// `gradient.success, Fredoka 700 12`.
-  static const newChipText = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 12.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get newChipText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 12.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   static const startBottom = 44.0;
@@ -3079,12 +3295,14 @@ abstract final class ReplayCardTokens {
   static const targetRowStarSize = 22.0;
 
   /// `dashed divider, empty star 22, Fredoka 700 15 #8C5E12`.
-  static const targetRowText = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 15.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFF8C5E12),
+  static TextStyle get targetRowText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF8C5E12),
+    ),
   );
 
   static const tipTop = 612.0;
@@ -3133,11 +3351,15 @@ abstract final class WinTwinklesTokens {
 abstract final class GeneratingTokens {
   static const cardWidth = 236.0;
 
-  static const cardTop = 360.0;
-
   static const cardRadius = 26.0;
 
-  /// `ui_spinner`, dp.
+  static const cardPadding = EdgeInsets.symmetric(
+    vertical: 22.0,
+    horizontal: 18.0,
+  );
+
+  /// `ui_spinner`, dp: its own #F2893B arc (110°) on a #EAD3B0 track, baked
+  /// into the file (m7-5).
   static const spinnerSize = 44.0;
 
   /// `rgba(60,30,10,.28)`.
@@ -3160,12 +3382,14 @@ abstract final class ShopTokens {
   static const buyCoinChipPadding = EdgeInsets.fromLTRB(6.0, 6.0, 10.0, 6.0);
 
   /// `Fredoka 700 19 white`.
-  static const buyCoinChipText = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 19.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    color: Color(0xFFFFFFFF),
+  static TextStyle get buyCoinChipText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 19.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFFFFFFFF),
+    ),
   );
 
   /// `inset 0 2px 0 rgba(255,255,255,.6)`.
@@ -3181,31 +3405,37 @@ abstract final class ShopTokens {
   static const detailPanelTagFill = Color(0xD9FFFFFF);
 
   /// `rgba(255,255,255,.85) chip, Fredoka 700 12`.
-  static const detailPanelTagText = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 12.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get detailPanelTagText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 12.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// `Fredoka 700 16/1.1, one line`.
-  static const cardNameSkin = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 16.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    height: 1.1,
-    leadingDistribution: TextLeadingDistribution.even,
+  static TextStyle get cardNameSkin => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
   );
 
   /// `Fredoka 700 14/1.15, one line, ellipsis`.
-  static const cardNameTheme = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 14.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
-    height: 1.15,
-    leadingDistribution: TextLeadingDistribution.even,
+  static TextStyle get cardNameTheme => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 14.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.15,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
   );
 
   /// Each skin's Shop card and detail panel colours, by catalog skin id
@@ -3323,11 +3553,13 @@ abstract final class SettingsTokens {
 /// otherwise.
 abstract final class TextLinkTokens {
   /// `Fredoka 700 16`.
-  static const font = TextStyle(
-    fontFamily: 'Fredoka',
-    fontSize: 16.0,
-    fontWeight: FontWeight.w700,
-    fontFamilyFallback: AppFontTokens.displayFallback,
+  static TextStyle get font => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
   );
 
   /// `#8A5B3A`.
@@ -3345,6 +3577,465 @@ abstract final class TextLinkTokens {
 
   /// `#A94F12`.
   static const accentPressed = Color(0xFFA94F12);
+}
+
+/// tokens.json `layout.splash`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class SplashTokens {
+  /// The splash's top fade (m7-5 item 11): solid to 120 dp, clear at 240 dp,
+  /// over the theme art. Call `resolve(topFadeHeight)`.
+  static const topFadeFill = PxLinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFBEAD0), Color(0xFFFBEAD0), Color(0x00FBEAD0)],
+    stops: [TokenStop.px(0.0), TokenStop.px(120.0), TokenStop.px(240.0)],
+  );
+
+  /// The fade's box, from the screen top, dp.
+  static const topFadeHeight = 240.0;
+}
+
+/// tokens.json `chest.slotChip`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class ChestSlotChipTokens {
+  /// The chip's disc, `ui/chest/chip_slot.svg` (`UiArt`), dp.
+  static const discSize = 30.0;
+
+  /// `linear-gradient(180deg,#6CC07C,#46A758)`.
+  static const face = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF6CC07C), Color(0xFF46A758)],
+  );
+
+  /// `inset 0 -2px 0 #2F7A3E`.
+  static const List<NestyShadow> edge = [
+    NestyShadow(color: Color(0xFF2F7A3E), inset: true, dy: -2.0),
+  ];
+
+  /// The add box in the disc (drawn in chip_slot.svg): a rounded square …
+  static const glyphColor = Color(0xFFFFFFFF);
+
+  /// … dp …
+  static const glyphSize = 15.0;
+
+  /// … with this corner radius …
+  static const glyphRadius = 4.2;
+
+  /// … and a plus in this colour.
+  static const glyphPlusColor = Color(0xFF46A758);
+}
+
+/// tokens.json `gift.button`, in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class GiftButtonTokens {
+  static const size = 46.0;
+
+  static const touch = 48.0;
+
+  static const gapToGear = 6.0;
+
+  static const radius = 17.0;
+
+  /// `linear-gradient(180deg,#FFF9EE,#FCEBD0)`.
+  static const face = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF9EE), Color(0xFFFCEBD0)],
+  );
+
+  /// `inset 0 2px 0 #FFFFFF, 0 5px 0 #D8B07A, 0 9px 14px rgba(90,50,20,0.22)`.
+  static const List<NestyShadow> shadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 5.0),
+    NestyShadow(color: Color(0x385A3214), dy: 9.0, blur: 14.0),
+  ];
+
+  static const glyphSize = 28.0;
+
+  static const readyDotSize = 12.0;
+
+  /// `radial-gradient(circle at 35% 30%, #FFF3B0, #F5C518 55%, #C9960A)`.
+  static const readyDotFace = RadialGradient(
+    center: Alignment(-0.3, -0.4),
+    radius: 0.9552,
+    colors: [Color(0xFFFFF3B0), Color(0xFFF5C518), Color(0xFFC9960A)],
+    stops: [0.0, 0.55, 1.0],
+  );
+
+  /// `2.5px #FFFDF7`.
+  static const readyDotRing = TokenStroke(width: 2.5, color: Color(0xFFFFFDF7));
+
+  /// `0 2px 3px rgba(90,50,20,0.3)`.
+  static const List<NestyShadow> readyDotShadow = [
+    NestyShadow(color: Color(0x4D5A3214), dy: 2.0, blur: 3.0),
+  ];
+
+  static const readyDotOffsetTop = -3.0;
+
+  static const readyDotOffsetRight = -3.0;
+}
+
+/// tokens.json `gift.sheet`, in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class GiftSheetTokens {
+  static const radius = 34.0;
+
+  /// `linear-gradient(180deg,#FFF9EE,#FCEBD0)`.
+  static const face = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF9EE), Color(0xFFFCEBD0)],
+  );
+
+  /// `inset 0 2px 0 #FFFFFF, 0 -10px 30px rgba(60,25,5,0.3)`.
+  static const List<NestyShadow> shadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0x4D3C1905), dy: -10.0, blur: 30.0),
+  ];
+
+  static const padding = EdgeInsets.fromLTRB(20.0, 14.0, 20.0, 40.0);
+
+  static const grabberSize = Size(44.0, 5.0);
+
+  /// `rgba(110,70,40,0.25)`.
+  static const grabberColor = Color(0x406E4628);
+
+  static const titleGap = 18.0;
+
+  static const titleHeight = 33.0;
+
+  static const subGap = 4.0;
+
+  static const subHeight = 20.0;
+
+  static const gridGap = 16.0;
+
+  static const gridColumns = 3;
+
+  static const gridTileGap = 10.0;
+
+  static const gridTileHeight = 100.0;
+
+  static const day7GapAbove = 10.0;
+
+  static const day7Height = 112.0;
+
+  static const day7Radius = 24.0;
+
+  static const day7Padding = EdgeInsets.fromLTRB(8.0, 8.0, 14.0, 8.0);
+
+  static const day7Chest = Size(108.0, 90.0);
+
+  static const day7ChipsHeight = 32.0;
+
+  static const day7ChipsRadius = 16.0;
+
+  /// `#FFFDF7`.
+  static const day7ChipsFace = Color(0xFFFFFDF7);
+
+  /// `inset 0 0 0 1.5px #EAD3B0`.
+  static const List<NestyShadow> day7ChipsRing = [
+    NestyShadow(color: Color(0xFFEAD3B0), inset: true, spread: 1.5),
+  ];
+
+  static const day7ChipsIcon = 24.0;
+
+  static const day7ChipsGap = 6.0;
+
+  static const footerGap = 16.0;
+
+  static const footerHeight = 58.0;
+
+  /// Claim and the claimed line cross-fade over this; the footer keeps
+  /// [footerHeight], so nothing moves.
+  static const footerSwapMs = 200;
+
+  /// The `scrim` colour (`rgba(60,30,10,0.55)`).
+  static const Color scrim = AppColorTokens.scrim;
+
+  /// The sheet's height on the 390×844 reference (from its content), for the
+  /// layout tests; its top is 288.
+  static const height = 556.0;
+}
+
+/// tokens.json `gift.tile`, in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class GiftTileTokens {
+  static const radius = 22.0;
+
+  static const padding = EdgeInsets.fromLTRB(12.0, 11.0, 12.0, 10.0);
+
+  static const art = 34.0;
+
+  static const artGap = 5.0;
+
+  /// `#FCEBD0`.
+  static const doneFace = Color(0xFFFCEBD0);
+
+  /// `inset 0 2px 4px rgba(90,45,15,0.14)`.
+  static const List<NestyShadow> doneShadow = [
+    NestyShadow(color: Color(0x245A2D0F), inset: true, dy: 2.0, blur: 4.0),
+  ];
+
+  /// `#9A6A44`.
+  static const doneLabel = Color(0xFF9A6A44);
+
+  static const doneContentOpacity = 0.5;
+
+  static const doneCheckSize = 22.0;
+
+  /// `#46A758`.
+  static const doneCheckFace = Color(0xFF46A758);
+
+  /// `inset 0 -2px 0 #2F7A3E`.
+  static const List<NestyShadow> doneCheckEdge = [
+    NestyShadow(color: Color(0xFF2F7A3E), inset: true, dy: -2.0),
+  ];
+
+  /// The done tile's check: the `check` glyph (`NestyIcons`) …
+  static const doneCheckGlyph = 'check';
+
+  /// `check 16 #FFFFFF wght 700`.
+  static const doneCheckGlyphSize = 16.0;
+
+  /// `check 16 #FFFFFF wght 700`.
+  static const doneCheckGlyphColor = Color(0xFFFFFFFF);
+
+  /// The design draws it at this weight; the bundled icon font is cut at
+  /// AppFontTokens.iconWeight.
+  static const doneCheckGlyphWeight = 700.0;
+
+  static const doneCheckTop = 7.0;
+
+  static const doneCheckRight = 8.0;
+
+  /// `#FFFDF7`.
+  static const todayFace = Color(0xFFFFFDF7);
+
+  /// `inset 0 2px 0 #FFFFFF, 0 0 0 3px #F2893B, 0 4px 0 3px #C4631E, 0 0 0 9px
+  /// rgba(242,137,59,0.16)`.
+  static const List<NestyShadow> todayShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFF2893B), spread: 3.0),
+    NestyShadow(color: Color(0xFFC4631E), dy: 4.0, spread: 3.0),
+    NestyShadow(color: Color(0x29F2893B), spread: 9.0),
+  ];
+
+  /// `#C4631E`.
+  static const todayLabel = Color(0xFFC4631E);
+
+  static const todayLift = -2.0;
+
+  /// `#FFFDF7`.
+  static const laterFace = Color(0xFFFFFDF7);
+
+  /// `inset 0 2px 0 #FFFFFF, 0 5px 0 #D8B07A`.
+  static const List<NestyShadow> laterShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 5.0),
+  ];
+
+  /// `#8A5B3A`.
+  static const laterLabel = Color(0xFF8A5B3A);
+
+  static const laterContentOpacity = 1.0;
+}
+
+/// tokens.json `gift.tally`, in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class GiftTallyTokens {
+  static const left = 16.0;
+
+  /// The tally's top is the coin pill's top + this …
+  static const topBelowCoinPill = 54.0;
+
+  /// … on 844 …
+  static const top = 120.0;
+
+  /// … and on 16:9.
+  static const topShort = 82.0;
+
+  static const height = 36.0;
+
+  static const radius = 18.0;
+
+  static const padding = EdgeInsets.fromLTRB(5.0, 0.0, 13.0, 0.0);
+
+  static const gap = 7.0;
+
+  static const disc = 26.0;
+
+  /// `linear-gradient(180deg,#FFF9EE,#FCEBD0)`.
+  static const face = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF9EE), Color(0xFFFCEBD0)],
+  );
+
+  /// `inset 0 2px 0 #FFFFFF, 0 4px 0 #D8B07A, 0 8px 14px rgba(60,25,5,0.25)`.
+  static const List<NestyShadow> shadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 4.0),
+    NestyShadow(color: Color(0x403C1905), dy: 8.0, blur: 14.0),
+  ];
+
+  /// The hint disc, as the chest's hint chip draws it: its face …
+  static const discsHintFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFE7A0), Color(0xFFF5C518)],
+  );
+
+  /// … its edge …
+  static const List<NestyShadow> discsHintEdge = [
+    NestyShadow(color: Color(0xFFC9960A), inset: true, dy: -2.0),
+  ];
+
+  /// … and the `lightbulb` glyph (`NestyIcons`) …
+  static const discsHintGlyph = 'lightbulb';
+
+  /// `the chest’s hint chip disc: linear-gradient(180deg,#FFE7A0,#F5C518),
+  /// inset 0 -2px 0 #C9960A, lightbulb 17 #8C5E12`.
+  static const discsHintGlyphSize = 17.0;
+
+  /// `the chest’s hint chip disc: linear-gradient(180deg,#FFE7A0,#F5C518),
+  /// inset 0 -2px 0 #C9960A, lightbulb 17 #8C5E12`.
+  static const discsHintGlyphColor = Color(0xFF8C5E12);
+
+  /// The tally slides down from behind the coin pill as the sprite takes off …
+  static const inMs = 200;
+
+  /// … so.
+  static const Cubic inCurve = UiMotionTokens.curveEaseOut;
+
+  static const holdMs = 1200;
+
+  /// After [holdMs] the tally slides back up …
+  static const outMs = 200;
+
+  /// … so.
+  static const Cubic outCurve = UiMotionTokens.curveEaseIn;
+}
+
+/// tokens.json `gift.claim`, in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class GiftClaimTokens {
+  /// Today's tile sinks to done over this, and its check pops with
+  /// MotionTokens.tagPop*.
+  static const tileSinkMs = 160;
+
+  /// A coin day flies one coin sprite per this many coins, clamped to
+  /// [coinsSpritesMin]…[coinsSpritesMax] (a look, not the reward: the amounts
+  /// are the track's).
+  static const coinsSpriteEvery = 10;
+
+  /// `one per 10 coins, 2 to 6 (20 → 2, 40 → 4, 100 → 6)`.
+  static const coinsSpritesMin = 2;
+
+  /// `one per 10 coins, 2 to 6 (20 → 2, 40 → 4, 100 → 6)`.
+  static const coinsSpritesMax = 6;
+
+  static const coinsMs = 700;
+
+  static const coinsStaggerMs = 60;
+
+  /// The coins fly a quadratic path; from a row-2 tile on 844 its control point
+  /// is here.
+  static const coinsPathControl = Offset(175.0, 300.0);
+
+  /// For the flight the scrim opens a hole this big around the coin pill (which
+  /// glows with ChestCollectTokens.pillRing* and steps its count up per
+  /// landing) …
+  static const coinsPillHole = Size(122.0, 54.0);
+
+  /// … with this radius …
+  static const coinsPillHoleRadius = 27.0;
+
+  /// … and closes this long after the last coin lands.
+  static const coinsPillHoleCloseMs = 240;
+
+  /// `ui/sprites/hint_flight.svg` (`UiArt`) at this size, dp.
+  static const hintSpriteSize = 40.0;
+
+  static const hintMs = 650;
+
+  /// As a hint (or a slot) lands the tally's disc bumps to this scale (the
+  /// chest's targetBump) with ChestCollectTokens.hintRing*, and the gain tag
+  /// sits beside the tally …
+  static const hintLandBump = 1.3;
+
+  /// … over this.
+  static const hintLandBumpMs = 240;
+
+  /// `ui/sprites/slot_flight.svg` (`UiArt`) at this size, dp.
+  static const slotSpriteSize = 40.0;
+
+  static const slotMs = 650;
+
+  /// Day 7: Claim closes the sheet over this and opens the chest card
+  /// (ChestCardTokens.cardTopDay7, ui_chest's arrive); Collect works as 10.3d
+  /// (ChestCollectTokens) …
+  static const day7SheetCloseMs = 280;
+
+  /// … with the scrim dropped to this while 6 coins fly to the pill and the
+  /// slot to the tally.
+  static const day7CollectScrim = Color(0x2E3C1E0A);
+}
+
+/// tokens.json `gift.reducedMotion`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class GiftReducedMotionTokens {
+  /// Reduce motion: no flights and no trail; the tile and Claim cross-fade over
+  /// this …
+  static const claimCrossFadeMs = 200;
+
+  /// … the pill shows the new count at once, ringed for this …
+  static const claimPillRingMs = 400;
+
+  /// … and the tally fades in over this, holds GiftTallyTokens.holdMs and fades
+  /// out.
+  static const claimTallyFadeInMs = 150;
+}
+
+/// tokens.json `gift.short` (16:9 (390×693), 13.3b), in dp on the 390×693
+/// (16:9) reference unless a member says otherwise.
+abstract final class GiftShortTokens {
+  static const padding = EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 20.0);
+
+  static const titleGap = 12.0;
+
+  static const titleHeight = 29.0;
+
+  static const titleSize = 26.0;
+
+  static const subGap = 2.0;
+
+  static const subHeight = 19.0;
+
+  static const subSize = 14.0;
+
+  static const gridGap = 12.0;
+
+  static const gridTileGap = 8.0;
+
+  static const gridTileHeight = 86.0;
+
+  static const art = 30.0;
+
+  static const amount = 22.0;
+
+  static const day7Height = 96.0;
+
+  static const day7Chest = Size(92.0, 77.0);
+
+  static const footerGap = 12.0;
+
+  static const footerHeight = 54.0;
+
+  /// The sheet's height on 16:9 (from its content), for the layout tests; its
+  /// top is 232.
+  static const height = 461.0;
 }
 
 /// The win card's star reveal, `ui_stars` (tokens.json `motion.stars`). It
@@ -3643,4 +4334,518 @@ abstract final class WinRibbonTokens {
 
   /// The colour delegate's key path to the `fold_fill` fills.
   static const List<String> foldKeyPath = ['**', 'fold_fill'];
+
+  /// `ui_win_ribbon`'s band as authored (m7-5): `band_rect` and `edge_rect`;
+  /// `hi_rect` is 16 dp narrower.
+  static const bandSize = Size(290.0, 56.0);
+
+  /// The ribbon's width at rest with its tails: for another band width w, move
+  /// `tail_l` / `tail_r` by ∓(w − bandSize.width) / 2.
+  static const reach = 334.0;
+
+  /// The game's own label fits this box, centred on the anchor.
+  static const textBox = Size(266.0, 40.0);
+
+  /// The size delegate's key path to `band_rect`
+  /// (`ValueDelegate.rectangleSize`).
+  static const List<String> bandRectKeyPath = ['band', 'band', 'band_rect'];
+
+  /// The size delegate's key path to `edge_rect`
+  /// (`ValueDelegate.rectangleSize`).
+  static const List<String> edgeRectKeyPath = ['band', 'edge', 'edge_rect'];
+
+  /// The size delegate's key path to `hi_rect` (`ValueDelegate.rectangleSize`).
+  static const List<String> hiRectKeyPath = ['band', 'hi', 'hi_rect'];
+
+  /// A ribbon is never wider than the screen − this; `ui_chapter_ribbon` takes
+  /// a width through the same rects.
+  static const maxWidthInset = 70.0;
+}
+
+/// The text styles of the home surfaces (tokens.json `type.home`): m7-5 (item
+/// 2): the scenes’ CSS sizes, named per surface. The CSS is the spec; these
+/// names are its index. Line height after the slash; colours where the
+/// surface fixes them. All scale with the text setting except where noted in
+/// textFit. A `…Caps` member says the text is drawn in capitals (CSS
+/// `text-transform`), a `…ShortSize` member the size on 16:9.
+abstract final class HomeTypeTokens {
+  /// `Fredoka 700 11/1, caps, letter-spacing 0.08em, chapter ink`: the colour
+  /// is the chapter palette's `ink`.
+  static TextStyle get chapterKicker => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      letterSpacing: 0.88,
+    ),
+  );
+
+  /// [chapterKicker] is drawn in capitals.
+  static const chapterKickerCaps = true;
+
+  /// `Fredoka 700 17/1.1 #5B3A21`.
+  static TextStyle get chapterName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// `Fredoka 700 15/1.1 #5B3A21`.
+  static TextStyle get tileTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// `Nunito 800 12/1 #8A5B3A`.
+  static const tileSub = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.0,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// `Fredoka 700 11/1 #6E4526`.
+  static TextStyle get recordsLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF6E4526),
+    ),
+  );
+}
+
+/// The text styles of the chapters surfaces (tokens.json `type.chapters`):
+/// m7-5 (item 2): the scenes’ CSS sizes, named per surface. The CSS is the
+/// spec; these names are its index. Line height after the slash; colours
+/// where the surface fixes them. All scale with the text setting except where
+/// noted in textFit. A `…Caps` member says the text is drawn in capitals (CSS
+/// `text-transform`), a `…ShortSize` member the size on 16:9.
+abstract final class ChaptersTypeTokens {
+  /// `Fredoka 700 10/1 #9A6A44, caps`.
+  static TextStyle get rowKicker => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 10.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF9A6A44),
+    ),
+  );
+
+  /// [rowKicker] is drawn in capitals.
+  static const rowKickerCaps = true;
+
+  /// `Fredoka 700 15/1.1 #5B3A21`.
+  static TextStyle get rowName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// `Nunito 800 11/1 #2F7A3E`.
+  static const rowSub = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.0,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF2F7A3E),
+  );
+
+  /// `Fredoka 700 16/1, tabular`: the surface gives the colour; tabular
+  /// figures.
+  static TextStyle get cellNumber => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
+
+  /// `Nunito 800 9.5/1 #9A6A44`.
+  static const cellBest = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 9.5,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.0,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF9A6A44),
+  );
+}
+
+/// The text styles of the museum surfaces (tokens.json `type.museum`): m7-5
+/// (item 2): the scenes’ CSS sizes, named per surface. The CSS is the spec;
+/// these names are its index. Line height after the slash; colours where the
+/// surface fixes them. All scale with the text setting except where noted in
+/// textFit. A `…Caps` member says the text is drawn in capitals (CSS
+/// `text-transform`), a `…ShortSize` member the size on 16:9.
+abstract final class MuseumTypeTokens {
+  /// `Fredoka 700 11/1 #9A6A44, caps (NEXT FAMILY)`: e.g. "NEXT FAMILY".
+  static TextStyle get kicker => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF9A6A44),
+    ),
+  );
+
+  /// [kicker] is drawn in capitals.
+  static const kickerCaps = true;
+
+  /// `Fredoka 700 20/1 #5B3A21, tabular`: tabular figures.
+  static TextStyle get count => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
+
+  /// `Fredoka 700 12/1.15 #FFEFD6 (museumNextName)`: the colour is
+  /// `AppColorTokens.museumNextName`.
+  static TextStyle get nextName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 12.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.15,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFFFFEFD6),
+    ),
+  );
+
+  /// `Nunito 800 12/1.2 #7A5234`.
+  static const nextLine = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.2,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF7A5234),
+  );
+
+  /// `Fredoka 700 11.5/1.15 #4A3008 (namePlateText)`: the colour is
+  /// `AppColorTokens.namePlateText`.
+  static TextStyle get plateName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.5,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.15,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF4A3008),
+    ),
+  );
+
+  /// `Nunito 800 11/1.25`: the surface gives the colour.
+  static const lockedLines = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.25,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+}
+
+/// The text styles of the records surfaces (tokens.json `type.records`): m7-5
+/// (item 2): the scenes’ CSS sizes, named per surface. The CSS is the spec;
+/// these names are its index. Line height after the slash; colours where the
+/// surface fixes them. All scale with the text setting except where noted in
+/// textFit. A `…Caps` member says the text is drawn in capitals (CSS
+/// `text-transform`), a `…ShortSize` member the size on 16:9.
+abstract final class RecordsTypeTokens {
+  /// `Fredoka 700 20/1 #5B3A21, tabular`: tabular figures.
+  static TextStyle get cellValue => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
+
+  /// `Nunito 700 11.5/1.2 #8A5B3A`.
+  static const cellLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.5,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.2,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// `Fredoka 600 16/1 #5B3A21`.
+  static TextStyle get rowName => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w600,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// `Fredoka 700 18/1, tabular`: the surface gives the colour; tabular
+  /// figures.
+  static TextStyle get rowValue => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 18.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
+
+  /// `Nunito 700 11/1.3 #8A5B3A`.
+  static const badgeLine = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+}
+
+/// The text styles of the shop surfaces (tokens.json `type.shop`): m7-5 (item
+/// 2): the scenes’ CSS sizes, named per surface. The CSS is the spec; these
+/// names are its index. Line height after the slash; colours where the
+/// surface fixes them. All scale with the text setting except where noted in
+/// textFit. A `…Caps` member says the text is drawn in capitals (CSS
+/// `text-transform`), a `…ShortSize` member the size on 16:9.
+abstract final class ShopTypeTokens {
+  /// `Nunito 600 16/1.45 #6E4526`.
+  static const description = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 16.0,
+    fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.45,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF6E4526),
+  );
+
+  /// `Fredoka 700 14/1`: the surface gives the colour.
+  static TextStyle get tab => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 14.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
+  );
+
+  /// `Fredoka 700 15/1.2 #8C5E12`.
+  static TextStyle get price => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.2,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF8C5E12),
+    ),
+  );
+
+  /// `Nunito 700 13/1.3 #8A5B3A`.
+  static const sub = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// `Nunito 700 13/1 #9A6A44`.
+  static const balance = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.0,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF9A6A44),
+  );
+}
+
+/// The text styles of the gift surfaces (tokens.json `type.gift`): m7-5 (item
+/// 2): the scenes’ CSS sizes, named per surface. The CSS is the spec; these
+/// names are its index. Line height after the slash; colours where the
+/// surface fixes them. All scale with the text setting except where noted in
+/// textFit. A `…Caps` member says the text is drawn in capitals (CSS
+/// `text-transform`), a `…ShortSize` member the size on 16:9.
+abstract final class GiftTypeTokens {
+  /// `Fredoka 700 30/1.1 #5B3A21 (26 on 16:9)`.
+  static TextStyle get title => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 30.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// [title]'s size on 16:9 (390×693).
+  static const titleShortSize = 26.0;
+
+  /// `Nunito 600 15/1.35 #7A5234 (14 on 16:9)`.
+  static const sub = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w600,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.35,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF7A5234),
+  );
+
+  /// [sub]'s size on 16:9 (390×693).
+  static const subShortSize = 14.0;
+
+  /// `Nunito 800 13/1`: the surface gives the colour.
+  static const dayLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.0,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// `Fredoka 700 24/1, tabular (22 on 16:9)`: the surface gives the colour;
+  /// tabular figures.
+  static TextStyle get amount => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 24.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
+
+  /// [amount]'s size on 16:9 (390×693).
+  static const amountShortSize = 22.0;
+
+  /// `Fredoka 700 15/1 #5B3A21`.
+  static TextStyle get chip => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// `Fredoka 700 17/1.15 #5B3A21`.
+  static TextStyle get line1 => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.15,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// `Nunito 700 15/1.3 #8A5B3A`.
+  static const line2 = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 15.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// `Fredoka 700 17/1, tabular`: the surface gives the colour; tabular
+  /// figures.
+  static TextStyle get tally => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
 }

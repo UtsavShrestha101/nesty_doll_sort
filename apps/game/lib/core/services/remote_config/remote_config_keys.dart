@@ -130,6 +130,18 @@ abstract final class RemoteConfigKeys {
   /// 2 stars at moves ≤ par + ⌈par × this ÷ 100⌉.
   static const star2SlackPct = RemoteConfigKey<int>._('star2_slack_pct', 60);
 
+  /// The daily gift's 7-day track (plan-login-gift §7.5b, §9.4; D268,
+  /// Q182c): 20 coins · 30 coins · 1 hint · 40 coins · 50 coins · 1 hint ·
+  /// 100 coins + 1 extra slot, as a JSON array of one object per day
+  /// (`coins`, `hints`, `slots`). The first string key: a value
+  /// `LoginGiftRules.parseTrack` can't read falls back to this default,
+  /// whole (rule 6).
+  static const loginGiftTrack = RemoteConfigKey<String>._(
+    'login_gift_track',
+    '[{"coins":20},{"coins":30},{"hints":1},{"coins":40},{"coins":50},'
+        '{"hints":1},{"coins":100,"slots":1}]',
+  );
+
   /// Every key, e.g. for pushing defaults into Firebase Remote Config (M4).
   static const List<RemoteConfigKey<Object>> all = [
     interstitialFirstLevel,
@@ -163,6 +175,7 @@ abstract final class RemoteConfigKeys {
     raceReward3,
     star3SlackPct,
     star2SlackPct,
+    loginGiftTrack,
   ];
 
   /// `{name: default}` for every key.

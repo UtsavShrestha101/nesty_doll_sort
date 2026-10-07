@@ -6,7 +6,8 @@ import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 /// Spec §9.4, transcribed by hand from the spec text so a drifted default in
 /// code fails here, plus the owner's `reward_medium` (Q5, D64), M3's
 /// `reward_chapter` (docs/plans/m3-design.md §7.1) and spec-prop §9.4's M7
-/// keys (docs/plans/m7-design.md §5).
+/// keys (docs/plans/m7-design.md §5), and the daily gift's track
+/// (plan-login-gift §7.5b, §9.4; D268).
 const _spec94 = <String, Object>{
   'interstitial_first_level': 8,
   'interstitial_every_n_levels': 3,
@@ -39,6 +40,9 @@ const _spec94 = <String, Object>{
   'race_reward_3': 40,
   'star3_slack_pct': 20,
   'star2_slack_pct': 60,
+  'login_gift_track':
+      '[{"coins":20},{"coins":30},{"hints":1},{"coins":40},{"coins":50},'
+      '{"hints":1},{"coins":100,"slots":1}]',
 };
 
 void main() {
@@ -60,7 +64,7 @@ void main() {
     test('names are unique, so no key shadows another', () {
       final names = RemoteConfigKeys.all.map((key) => key.name).toList();
       expect(names.toSet(), hasLength(names.length));
-      expect(names, hasLength(31));
+      expect(names, hasLength(32));
     });
 
     test('typed accessors point at the right parameters', () {
@@ -80,6 +84,8 @@ void main() {
       expect(RemoteConfigKeys.raceReward2.defaultValue, 30);
       expect(RemoteConfigKeys.star3SlackPct.name, 'star3_slack_pct');
       expect(RemoteConfigKeys.star2SlackPct.defaultValue, 60);
+      expect(RemoteConfigKeys.loginGiftTrack.name, 'login_gift_track');
+      expect(RemoteConfigKeys.loginGiftTrack.defaultValue, isA<String>());
     });
   });
 
@@ -103,6 +109,19 @@ void main() {
 
       service.clearOverrides();
       expect(service.value(RemoteConfigKeys.priceHint), 60);
+    });
+
+    test('a string key (the daily gift track) takes an override too', () {
+      const track = '[{"coins":5}]';
+      final service = FakeRemoteConfigService()
+        ..setOverride(RemoteConfigKeys.loginGiftTrack, track);
+      expect(service.value(RemoteConfigKeys.loginGiftTrack), track);
+
+      service.clearOverrides();
+      expect(
+        service.value(RemoteConfigKeys.loginGiftTrack),
+        RemoteConfigKeys.loginGiftTrack.defaultValue,
+      );
     });
   });
 }

@@ -1,13 +1,16 @@
 import 'dart:ui' show Color, Offset;
 
 import 'package:lottie/lottie.dart';
+import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 import 'package:nesty_game/features/fx/fx_cue.dart';
 import 'package:nesty_game/features/fx/fx_drawable_params.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
 import 'package:nesty_game/features/fx/fx_image_source.dart';
 import 'package:nesty_game/features/fx/fx_images.dart';
+import 'package:nesty_game/features/fx/fx_ribbon.dart';
 import 'package:nesty_game/features/fx/fx_spec.dart';
 import 'package:nesty_game/features/fx/fx_text_overlay.dart';
+import 'package:nesty_render/nesty_render.dart' show MotionTokens;
 
 /// Builds the `LottieDelegates` of one drawable from its file's [FxSpec]
 /// (m2-lottie-design §2–§13): everything the game overrides in the export
@@ -119,9 +122,34 @@ abstract final class FxDelegates {
       );
     }
 
-    // The family counter's pill takes any width: both rectangles and the
-    // doll mark (LOTTIE.md "Tint and width"). The radius stays 13.
-    if (spec.sizedRects.isNotEmpty) {
+    // A ribbon's band takes the screen's width through its named rects, and
+    // its tails move with the band's ends (LOTTIE.md m7-5).
+    final ribbon = FxRibbon.of(spec.id);
+    if (ribbon != null && spec.sizedRects.isNotEmpty) {
+      for (final keyPath in const [
+        WinRibbonTokens.bandRectKeyPath,
+        WinRibbonTokens.edgeRectKeyPath,
+        WinRibbonTokens.hiRectKeyPath,
+      ]) {
+        final hook = _RibbonRect(ribbon, params);
+        values.add(
+          ValueDelegate.rectangleSize(
+            keyPath,
+            callback: (f) => hook.size(f.startValue),
+          ),
+        );
+      }
+      for (final (name, side) in const [('tail_l', -1.0), ('tail_r', 1.0)]) {
+        final hook = _RibbonTail(ribbon, side, params);
+        values.add(
+          ValueDelegate.transformPosition([
+            name,
+          ], callback: (f) => hook.position(f.startValue)),
+        );
+      }
+    } else if (spec.sizedRects.isNotEmpty) {
+      // The family counter's pill takes any width: both rectangles and the
+      // doll mark (LOTTIE.md "Tint and width"). The radius stays 13.
       final hook = _PillWidth(params);
       for (final rect in spec.sizedRects) {
         values.add(
@@ -184,6 +212,26 @@ abstract final class FxDelegates {
               f.interpolatedKeyframeProgress,
             ),
           ),
+        );
+      case FxId.dollPick:
+        // The wobble's angle, captured for the move that takes over (m7-5).
+        final tilt = _PickTilt(params);
+        values.add(
+          ValueDelegate.transformRotation(
+            const ['doll'],
+            callback: (f) => tilt.rotation(
+              f.startValue,
+              f.endValue,
+              f.linearKeyframeProgress,
+            ),
+          ),
+        );
+      case FxId.dollMove:
+        final unwind = _Unwind(params);
+        values.add(
+          ValueDelegate.transformRotation(const [
+            'doll',
+          ], callback: (f) => unwind.rotation(f.startValue)),
         );
       case FxId.dollReveal:
         final drop = _Drop(params);
@@ -406,6 +454,60 @@ final class _PillWidth {
   }
 }
 
+/// One of a ribbon's named rects (`band_rect`, `edge_rect`, `hi_rect`) for
+/// the clip's band width: the authored size widened or narrowed by the
+/// band's difference, so the highlight stays 16 narrower. The value is built
+/// once per width (PROGRESS D42).
+final class _RibbonRect {
+  _RibbonRect(this.ribbon, this.params);
+
+  final FxRibbon ribbon;
+  final FxDrawableParams params;
+
+  double? _width;
+  Offset? _authored;
+  Offset _size = Offset.zero;
+
+  Offset size(Offset? authored) {
+    final width = params.ribbonBandWidth;
+    if (width == null || authored == null) {
+      return authored ?? Offset(ribbon.band.width, ribbon.band.height);
+    }
+    if (_width != width || _authored != authored) {
+      _width = width;
+      _authored = authored;
+      _size = Offset(authored.dx + width - ribbon.band.width, authored.dy);
+    }
+    return _size;
+  }
+}
+
+/// A ribbon's tail layer (`tail_l` [side] −1, `tail_r` +1) moved with the
+/// band's end: by ±(width − authored band) / 2 from its authored place.
+final class _RibbonTail {
+  _RibbonTail(this.ribbon, this.side, this.params);
+
+  final FxRibbon ribbon;
+  final double side;
+  final FxDrawableParams params;
+
+  double? _width;
+  Offset? _authored;
+  Offset _position = Offset.zero;
+
+  Offset position(Offset? authored) {
+    final width = params.ribbonBandWidth;
+    final at = authored ?? Offset.zero;
+    if (width == null) return at;
+    if (_width != width || _authored != at) {
+      _width = width;
+      _authored = at;
+      _position = Offset(at.dx + side * (width - ribbon.band.width) / 2, at.dy);
+    }
+    return _position;
+  }
+}
+
 /// The `travel` null of a board-space file (m2-lottie-design §6): the
 /// authored point projected on S→T and mapped onto src→dst, keeping the
 /// easing and overshoot. The null never holds (LOTTIE.md v3), so lottie
@@ -492,6 +594,49 @@ final class _Drop {
       (start.dx + (to.dx - start.dx) * eased) * k,
       (start.dy + (to.dy - start.dy) * eased) * k,
     );
+  }
+}
+
+/// `doll_pick`'s `doll` null rotation, returned unchanged and captured for
+/// the `doll_move` a drop hands over to (m7-5 item 14). For a double,
+/// lottie 3.6.1 passes the eased progress in `linearKeyframeProgress`
+/// (rule 5).
+final class _PickTilt {
+  _PickTilt(this.params);
+
+  final FxDrawableParams params;
+
+  double rotation(double? start, double? end, double eased) {
+    final from = start ?? 0;
+    final to = end ?? from;
+    final v = from + (to - from) * eased;
+    params.pickRotation = v;
+    return v;
+  }
+}
+
+/// `doll_move`'s `doll` null: the dropped doll's wobble angle
+/// (`FxDrawableParams.unwindFrom`) easing to 0 over the move's first
+/// `MotionTokens.pickWobbleToMoveMs` (easeOut), on top of the authored 0;
+/// the travel, arc and scale run as authored from the first frame. Timed in
+/// the clip's own frames, so a late start or a seek stays in step.
+final class _Unwind {
+  _Unwind(this.params);
+
+  final FxDrawableParams params;
+
+  /// 80 ms in the file's 60 fps frames (4.8).
+  static const double _frames =
+      MotionTokens.pickWobbleToMoveMs * FxSpec.frameRate / 1000;
+
+  double rotation(double? authored) {
+    final base = authored ?? 0;
+    final from = params.unwindFrom;
+    if (from == null || from == 0) return base;
+    final t = params.frame / _frames;
+    if (t >= 1) return base;
+    if (t <= 0) return base + from;
+    return base + from * (1 - MotionTokens.pickWobbleToMoveCurve.transform(t));
   }
 }
 

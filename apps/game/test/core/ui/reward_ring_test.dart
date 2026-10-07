@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -38,15 +40,12 @@ void main() {
     expect(fade(tester).duration, RewardRing.fadeIn);
     expect(RewardRing.fadeIn.inMilliseconds, 80);
     final ring = find.byKey(RewardRing.ringKey);
-    final decoration =
-        tester.widget<DecoratedBox>(ring).decoration as BoxDecoration;
-    expect(decoration.boxShadow, [
-      const BoxShadow(color: Color(0xCCFFD66E), spreadRadius: 4),
-      const BoxShadow(
-        color: Color(0x99FFCD50),
-        blurRadius: 18,
-        spreadRadius: 6,
-      ),
+    final painter =
+        tester.widget<CustomPaint>(ring).painter! as RingGlowPainter;
+    expect(painter.circle, isFalse);
+    expect(painter.shadows, const [
+      NestyShadow(color: Color(0xCCFFD66E), spread: 4),
+      NestyShadow(color: Color(0x99FFCD50), blur: 18, spread: 6),
     ]);
     expect(
       tester.getRect(ring),
@@ -80,13 +79,26 @@ void main() {
       tester.getCenter(ring),
       tester.getCenter(find.byKey(const Key('badge'))),
     );
-    final decoration =
-        tester.widget<DecoratedBox>(ring).decoration as BoxDecoration;
-    expect(decoration.shape, BoxShape.circle);
-    expect(decoration.boxShadow, [
-      for (final s in ChestCollectTokens.hintRingShadow) s.toBoxShadow(),
-    ]);
+    final painter =
+        tester.widget<CustomPaint>(ring).painter! as RingGlowPainter;
+    expect(painter.circle, isTrue);
+    expect(painter.shadows, ChestCollectTokens.hintRingShadow);
     expect(ChestCollectTokens.hintRingSize, 38);
+  });
+
+  testWidgets('the ring paints only outside its shape, as CSS does (m7-5 '
+      'Part 2 item 3): the pill and the badge stay readable', (tester) async {
+    final recorder = PictureRecorder();
+    const size = Size(110, 42);
+    const RingGlowPainter.pill().paint(Canvas(recorder), size);
+    final image = await tester.runAsync(
+      () => recorder.endRecording().toImage(110, 42),
+    );
+    final bytes = await tester.runAsync(image!.toByteData);
+    // Inside the stadium, nothing is painted.
+    final centre = (21 * 110 + 55) * 4;
+    expect(bytes!.getUint8(centre + 3), 0);
+    image.dispose();
   });
 
   testWidgets('reduced motion: no ring (the flights do not fly)', (

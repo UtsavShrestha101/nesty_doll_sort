@@ -1,4 +1,5 @@
 import 'package:nesty_game/core/common_imports.dart';
+import 'package:nesty_game/core/services/records/badge.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/museum/cubit/museum_cubit.dart';
@@ -109,11 +110,8 @@ class _Next extends StatelessWidget {
                 overflowLines: 2,
                 minFontScale: 0.75,
                 textAlign: TextAlign.start,
-                style: AppTextStyleTokens.cardTitle.copyWith(
-                  fontSize: 11,
-                  height: 1,
+                style: MuseumTypeTokens.kicker.copyWith(
                   letterSpacing: context.script.tracking(11 * 0.08),
-                  color: AppColorTokens.textMuted,
                 ),
               ),
               const SizedBox(height: 6),
@@ -131,12 +129,7 @@ class _Next extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 l10n.museumNextLine(entry.chapterNumber, levelsToGo),
-                style: AppTextStyleTokens.row.copyWith(
-                  fontSize: 12,
-                  height: 1.2,
-                  fontWeight: FontWeight.w800,
-                  color: AppColorTokens.textBrown,
-                ),
+                style: MuseumTypeTokens.nextLine,
                 maxLines: 2,
               ),
               const SizedBox(height: 6),
@@ -175,41 +168,31 @@ class _AllHome extends StatelessWidget {
 
   final int count;
 
-  static const _disc = SurfaceStyle(
-    gradient: AppGradientTokens.gold,
-    shadows: [
-      NestyShadow(color: Color(0x66FFFFFF), inset: true, dy: 2),
-      NestyShadow(color: Color(0xFF8A5C12), dy: 5),
-    ],
-  );
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     return Row(
       children: [
-        NestySurface(
-          style: _disc,
-          radius: BorderRadius.circular(42),
-          width: 84,
-          height: 84,
-          alignment: Alignment.center,
-          child: const Icon(
-            IconUses.familiesHome,
-            size: 48,
-            color: Color(0xFFFFFFFF),
-          ),
+        // `museum_full.svg` at 92 dp is the card's centrepiece (m7-5
+        // choice 12; NestyHub:114).
+        UiArtImage.square(
+          UiArt.badge(BadgeId.museumFull, earned: true),
+          extent: 92,
         ),
-        const SizedBox(width: 16),
+        // NestyHub's all-home row: a 12 dp gap.
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Frame 6.1c sets it on one line: it may shrink a little (to
+              // 0.9) to stay there, and only a longer translation wraps.
               ShrinkToFitText(
                 l10n.museumAllHome,
-                maxLines: 2,
-                minFontScale: 0.6,
+                maxLines: 1,
+                minFontScale: 0.9,
+                overflowLines: 2,
                 textAlign: TextAlign.start,
                 style: AppTextStyleTokens.cardTitle.copyWith(
                   fontSize: 24,

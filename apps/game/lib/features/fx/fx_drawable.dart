@@ -109,6 +109,7 @@ final class FxDrawable {
       lottie.setProgress(0);
     }
     lottie.setProgress(player.progress);
+    params.frame = player.frame;
     final hook = textHook;
     if (hook != null) {
       params

@@ -117,10 +117,10 @@ class HomeChapterCard extends StatelessWidget {
                 children: [
                   Text(
                     kicker,
-                    style: AppTextStyleTokens.cardTitle.copyWith(
-                      fontSize: 11,
-                      height: 1,
-                      letterSpacing: context.script.tracking(11 * 0.08),
+                    style: HomeTypeTokens.chapterKicker.copyWith(
+                      letterSpacing: context.script.tracking(
+                        HomeTypeTokens.chapterKicker.letterSpacing!,
+                      ),
                       color: bonus
                           ? AppColorTokens.bonusEdge
                           : palette.accentEdge,
@@ -134,11 +134,7 @@ class HomeChapterCard extends StatelessWidget {
                   Text(
                     title,
                     style: context.scriptStyle(
-                      AppTextStyleTokens.cardTitle.copyWith(
-                        fontSize: 17,
-                        height: 1.1,
-                        color: AppColorTokens.textPrimary,
-                      ),
+                      HomeTypeTokens.chapterName,
                       role: ScriptTextRole.title,
                     ),
                   ),
@@ -207,12 +203,8 @@ class HomeRecordsButton extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              // NestyHub:26: Fredoka 700 11, `#6E4526`.
-              style: AppTextStyleTokens.cardTitle.copyWith(
-                fontSize: 11,
-                height: 1,
-                color: AppColorTokens.iconBrown,
-              ),
+              // `type.home.recordsLabel`: Fredoka 700 11, `#6E4526`.
+              style: HomeTypeTokens.recordsLabel,
               maxLines: 1,
               softWrap: false,
             ),

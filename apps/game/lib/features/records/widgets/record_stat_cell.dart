@@ -91,20 +91,13 @@ class RecordStatCell extends StatelessWidget {
                     alignment: AlignmentDirectional.centerStart,
                     child: Text(
                       value,
-                      style: RecordsTokens.statsGridCellValue.copyWith(
-                        height: 1,
-                        color: AppColorTokens.textPrimary,
-                      ),
+                      style: RecordsTypeTokens.cellValue,
                       maxLines: 1,
                       softWrap: false,
                     ),
                   ),
                   const SizedBox(height: 3),
-                  Text(
-                    label,
-                    style: RecordsTokens.statsGridCellLabel,
-                    maxLines: 3,
-                  ),
+                  Text(label, style: RecordsTypeTokens.cellLabel, maxLines: 3),
                 ],
               ),
             ),

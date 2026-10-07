@@ -9,10 +9,11 @@ export 'package:nesty_game/core/services/records/badge.dart' show BadgeId;
 
 part 'save_document.freezed.dart';
 
-/// The player's save document, schema 2 (spec §13.3 plus the M3 additions,
-/// docs/plans/m3-design.md §3, and the M7 ones, spec-prop §13.3 and
-/// docs/plans/m7-design.md §3). It lives as one JSON document under the key
-/// `doc` of the Hive box `save` (D63), read and written only by
+/// The player's save document, schema 3 (spec §13.3 plus the M3 additions,
+/// docs/plans/m3-design.md §3, the M7 ones, spec-prop §13.3 and
+/// docs/plans/m7-design.md §3, and the daily gift's `loginGift`,
+/// docs/plans/plan-login-gift.md §7.5b). It lives as one JSON document
+/// under the key `doc` of the Hive box `save` (D63), read and written only by
 /// `SaveService` through `SaveDocumentCodec` (lenient, hand-written: no
 /// json_serializable).
 ///
@@ -122,6 +123,11 @@ abstract class SaveDocument with _$SaveDocument {
     /// race itself lands in M7 phase 2; the fields are schema 2's.
     @Default(RaceProgress()) RaceProgress race,
 
+    /// The daily gift's 7-day track (plan-login-gift §7.5b, D268; schema
+    /// 3's one addition). A save from before schema 3 starts it fresh: no
+    /// claim yet, so the next claim is Day 1.
+    @Default(LoginGiftProgress()) LoginGiftProgress loginGift,
+
     /// Top-level keys this schema doesn't know (a newer app's), kept as they
     /// were and written back (m3-design §3.3).
     @Default(<String, Object?>{}) Map<String, Object?> unknown,
@@ -131,8 +137,9 @@ abstract class SaveDocument with _$SaveDocument {
 
   /// The schema this app reads and writes. Raising it needs a step in
   /// `SaveMigrations.steps` and a test that migrates a real document of the
-  /// schema before (m7-design §3.3: 1 → 2 is M7's one step).
-  static const int currentSchema = 2;
+  /// schema before (m7-design §3.3: 1 → 2 is M7's step; 2 → 3 is the daily
+  /// gift's, plan-login-gift §7.5b).
+  static const int currentSchema = 3;
 
   /// The bundled skin every player owns (spec §13.5).
   static const String defaultSkin = 'classic';
@@ -576,6 +583,30 @@ abstract class RaceProgress with _$RaceProgress {
 
   /// Races won against every rival.
   int get totalWins => rivals.fold(0, (sum, rival) => sum + rival.wins);
+}
+
+/// The save's `loginGift` (plan-login-gift §7.5b, spec until the owner
+/// pastes it; D268): the daily gift's place on its 7-day track. The track
+/// counts claims, not dates, so a missed day never moves it back; the
+/// next claim pays day `claims % 7 + 1` (`LoginGiftRules.dayOf`). JSON:
+/// `{"claims": 9, "lastClaim": "2026-10-05", "latestSeen": "2026-10-05"}`.
+@freezed
+abstract class LoginGiftProgress with _$LoginGiftProgress {
+  const factory LoginGiftProgress({
+    /// Gifts claimed, ever. A claim adds one and nothing ever lowers it.
+    @Default(0) int claims,
+
+    /// The local date of the latest claim (at most one claim per date);
+    /// null before the first.
+    LocalDate? lastClaim,
+
+    /// The latest local date the gift has seen: a claim, or its status
+    /// read (`SaveService.noteLoginGiftDate`). The clock guard: a date
+    /// earlier than this claims nothing, so winding the clock back can't
+    /// claim again. Never earlier than [lastClaim]; null before the gift
+    /// has seen any date.
+    LocalDate? latestSeen,
+  }) = _LoginGiftProgress;
 }
 
 /// One rival's progress (spec-prop §7.7 "Save"; m7-design §3).

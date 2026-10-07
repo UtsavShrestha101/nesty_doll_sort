@@ -2,7 +2,7 @@ import 'dart:ui' show Size;
 
 import 'package:nesty_game/core/services/records/badge.dart';
 
-/// Every UI illustration Claude Design delivered in m7-3 (`design/ui/**`,
+/// Every UI illustration Claude Design delivered in m7-3 and m7-5 (`design/ui/**`,
 /// synced by `sync_design_assets` to `assets/ui/<folder>/<file>.svg`; PROGRESS
 /// D176): the stars, the chest, the reward-flight sprites, the rival
 /// portraits and the twelve badges, earned and locked (phase 4 architecture
@@ -38,6 +38,18 @@ enum UiArt {
 
   /// The hint flying from the chest to the Hint button.
   hintFlight('sprites', 'hint_flight', Size(48, 48)),
+
+  /// The extra slot flying to Home's tally (the daily gift's slot, frame
+  /// 13.6d; m7-5).
+  slotFlight('sprites', 'slot_flight', Size(48, 48)),
+
+  /// The "+1 slot" chip's disc (`chest.slotChip`, frames 13.2 and 13.6) and
+  /// the tally's slot disc (13.6d).
+  chipSlot('chest', 'chip_slot', Size(30, 30)),
+
+  /// Home's daily gift button glyph (`gift.button.glyph`, frame 13.1): the
+  /// icon brown is baked in (m7-5; it replaces the `redeem` stand-in, Q186).
+  giftGlyph('gift', 'gift_glyph', Size(24, 24)),
 
   /// The three computer rivals' portraits (Pebble, Button, Comet) and a
   /// locked rival's (frame 9.2).
@@ -78,7 +90,7 @@ enum UiArt {
   static const assetDirectory = 'assets/ui';
 
   /// The subfolder of [assetDirectory] (`stars`, `chest`, `sprites`,
-  /// `rivals`, `badges`).
+  /// `rivals`, `badges`, `gift`).
   final String folder;
 
   /// The file's base name, without `.svg`.

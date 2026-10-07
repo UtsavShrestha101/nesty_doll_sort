@@ -40,15 +40,7 @@ class MuseumCabinet extends StatelessWidget {
             AppColorTokens.walnutCabinetBottom,
           ],
         ),
-        shadows: [
-          NestyShadow(
-            color: AppColorTokens.walnutHighlight,
-            inset: true,
-            dy: 3,
-          ),
-          NestyShadow(color: AppColorTokens.walnutShade, inset: true, dy: -4),
-          NestyShadow(color: AppColors.cabinetDrop, dy: 8, blur: 16),
-        ],
+        shadows: AppShadowTokens.cabinet,
       ),
       radius: BorderRadius.circular(MuseumTokens.cabinetRadius),
       width: double.infinity,
@@ -318,11 +310,7 @@ class _Text extends StatelessWidget {
           // name in a 56 dp column is never cut.
           ShrinkToFitText(
             name,
-            style: AppTextStyleTokens.cardTitle.copyWith(
-              fontSize: 12,
-              height: 1.15,
-              color: const Color(0xFFFFFFFF),
-            ),
+            style: MuseumTypeTokens.nextName,
             maxLines: 3,
             minFontScale: 0.75,
             textAlign: TextAlign.start,
@@ -409,7 +397,7 @@ class _BrassPlate extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
     child: ShrinkToFitText(
       name,
-      style: MuseumTokens.cabinetNamePlate.copyWith(height: 1.15),
+      style: MuseumTypeTokens.plateName,
       maxLines: 3,
       minFontScale: 0.75,
       textAlign: TextAlign.start,

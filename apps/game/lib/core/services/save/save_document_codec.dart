@@ -61,7 +61,8 @@ final class SaveReadResult {
 
 /// The save document to JSON and back, by hand (no json_serializable;
 /// docs/plans/m3-design.md §3.3; schema 2's fields, docs/plans/
-/// m7-design.md §3.2).
+/// m7-design.md §3.2; schema 3's `loginGift`, docs/plans/
+/// plan-login-gift.md §7.5b).
 ///
 /// Reads are lenient and never throw: a value of the wrong type or out of
 /// range falls back to its default, list entries that can't be read are
@@ -120,7 +121,8 @@ abstract final class SaveDocumentCodec {
   static String write(SaveDocument doc) => jsonEncode(encode(doc));
 
   /// The JSON object of [doc]: the known keys in the order of
-  /// m3-design §3.1 and m7-design §3.1, then [SaveDocument.unknown]'s keys
+  /// m3-design §3.1 and m7-design §3.1 (schema 3's `loginGift` last), then
+  /// [SaveDocument.unknown]'s keys
   /// sorted by code unit, so the text is stable. `schema` is always
   /// [SaveDocument.currentSchema].
   static Map<String, Object?> encode(SaveDocument doc) {
@@ -182,6 +184,11 @@ abstract final class SaveDocumentCodec {
             },
         ],
       },
+      'loginGift': {
+        'claims': doc.loginGift.claims,
+        'lastClaim': doc.loginGift.lastClaim?.toIso(),
+        'latestSeen': doc.loginGift.latestSeen?.toIso(),
+      },
       for (final key in unknown) key: doc.unknown[key],
     };
   }
@@ -223,6 +230,7 @@ abstract final class SaveDocumentCodec {
       records: _decodeRecords(raw['records']),
       chests: _decodeChests(raw['chests']),
       race: _decodeRace(raw['race']),
+      loginGift: _decodeLoginGift(raw['loginGift']),
       unknown: {
         for (final MapEntry(:key, :value) in raw.entries)
           if (!_known.contains(key)) key: value,
@@ -262,6 +270,8 @@ abstract final class SaveDocumentCodec {
     'records',
     'chests',
     'race',
+    // Schema 3 (plan-login-gift §7.5b).
+    'loginGift',
     // Spec §13.3 lists `settings`, but they live in the settings box
     // (m3-design §3.1): a stray one is dropped, never written back.
     'settings',
@@ -493,6 +503,26 @@ abstract final class SaveDocumentCodec {
         for (var i = 0; i < RaceProgress.rivalCount; i++)
           _decodeRival(i < list.length ? list[i] : null, i),
       ],
+    );
+  }
+
+  /// `loginGift` (plan-login-gift §7.5b): a bad count is 0 and a bad date
+  /// null. [LoginGiftProgress.latestSeen] is never earlier than
+  /// [LoginGiftProgress.lastClaim] (a claim sees its own date), so a
+  /// missing or earlier one reads as the last claim's: the clock guard
+  /// never loosens below a date already claimed.
+  static LoginGiftProgress _decodeLoginGift(Object? value) {
+    final map = _map(value);
+    if (map == null) return const LoginGiftProgress();
+    final lastClaim = LocalDate.tryParse(map['lastClaim']);
+    final latestSeen = LocalDate.tryParse(map['latestSeen']);
+    return LoginGiftProgress(
+      claims: _int(map['claims'], 0, 0),
+      lastClaim: lastClaim,
+      latestSeen:
+          lastClaim != null && (latestSeen == null || latestSeen < lastClaim)
+          ? lastClaim
+          : latestSeen,
     );
   }
 

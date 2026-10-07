@@ -88,11 +88,12 @@ class _ChaptersBodyState extends State<_ChaptersBody> {
   GlobalKey _keyOf(String chapterId) =>
       _keys.putIfAbsent(chapterId, GlobalKey.new);
 
-  /// The finished rows kept in view above the current card: at most two
-  /// (`chapters.openScroll`, m7-4 8.4: offset = max(0, currentCardTop −
-  /// listTop − min(2, finished) × 64)), and the room the open card needs
-  /// under them: its 92 dp header, the family row and two grid rows.
-  static const maxFoldedAbove = ChaptersTokens.openScrollFinishedRows;
+  /// The finished rows kept in view above the current card: at most three
+  /// (`layout.chapters.scroll.foldedAbove`, m7-5 item 21; offset = max(0,
+  /// currentCardTop − listTop − min(3, finished) × 64)), and the room the
+  /// open card needs under them: its 92 dp header, the family row and two
+  /// grid rows (the game's rule for a short phone).
+  static const maxFoldedAbove = ChaptersTokens.scrollFoldedAbove;
   static const double foldedStep = ChaptersTokens.openScrollRowPitch;
   static const double _needBelow =
       ChaptersTokens.currentHeaderHeight +

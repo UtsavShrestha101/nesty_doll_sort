@@ -17,7 +17,7 @@ import 'package:nesty_game/core/services/save/hive_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_document_codec.dart';
 
-import 'save_migrations_test.dart' show schema1Document;
+import 'save_migrations_test.dart' show schema1Document, schema2Document;
 
 /// A [DatabaseService] proxy that counts and can pause `writeSaveDocument`
 /// calls, for the write-queue coalescing test.
@@ -146,8 +146,8 @@ void main() {
       await reload.dispose();
     });
 
-    test('round trip: every schema-2 field survives a real Hive write and '
-        'reload (m7-design §3.2)', () async {
+    test('round trip: every schema-3 field survives a real Hive write and '
+        'reload (m7-design §3.2; plan-login-gift §7.5b)', () async {
       final full = SaveDocument(
         currentLevel: 24,
         highestLevel: 26,
@@ -215,6 +215,13 @@ void main() {
             RivalProgress(unlocked: true, raceNo: 1),
             RivalProgress(),
           ],
+        ),
+        // Schema 3's daily gift: the next claim pays Day 2 of the second
+        // week.
+        loginGift: LoginGiftProgress(
+          claims: 8,
+          lastClaim: LocalDate(2026, 10, 4),
+          latestSeen: LocalDate(2026, 10, 5),
         ),
         unknown: const {'zeta': 1, 'alpha': 'kept'},
       );
@@ -292,8 +299,10 @@ void main() {
       final database = await HiveDatabaseService.open(
         directory: directory.path,
       );
+      // Above `SaveDocument.currentSchema` (3), so it still means "newer".
       const future =
-          '{"schema":3,"currentLevel":9,"coins":70,"aFutureKey":"x"}';
+          '{"schema":4,"currentLevel":9,"coins":70,"aFutureKey":"x",'
+          '"loginGift":{"claims":5,"lastClaim":"2026-10-04"}}';
       await database.writeSaveDocument(future);
       await database.flushSave();
 
@@ -302,9 +311,12 @@ void main() {
       expect(save.currentLevel, 9);
       expect(save.coins, 70);
       expect(save.document.unknown['aFutureKey'], 'x');
+      // A known key in a newer document is read like any other.
+      expect(save.document.loginGift.claims, 5);
       await save.flush();
 
-      expect(database.readSaveBackup(SaveBoxKeys.backup(3)), future);
+      expect(SaveDocument.currentSchema, lessThan(4));
+      expect(database.readSaveBackup(SaveBoxKeys.backup(4)), future);
       // The document was written back at the current schema.
       final rewritten = database.readSaveDocument();
       expect(rewritten, isNotNull);
@@ -312,9 +324,10 @@ void main() {
       await save.dispose();
     });
 
-    test('a real schema-1 document migrates to schema 2 on load: backed up '
-        'once under doc_backup_v1, the derived fields filled, the badges it '
-        'implies granted, and written back (m7-design §3.3)', () async {
+    test('a real schema-1 document migrates to the current schema on '
+        'load: backed up once under doc_backup_v1, the derived fields '
+        'filled, the badges it implies granted, and written back (m7-design '
+        '§3.3)', () async {
       final database = await HiveDatabaseService.open(
         directory: directory.path,
       );
@@ -345,6 +358,54 @@ void main() {
       await again.load();
       expect(again.document, save.document);
       expect(database.readSaveBackup(SaveBoxKeys.backup(1)), original);
+      await again.dispose();
+      await save.dispose();
+    });
+
+    test('a real schema-2 document migrates to schema 3 on load: backed up '
+        'once under doc_backup_v2, every field kept, the daily gift fresh, '
+        'and written back (plan-login-gift §7.5b)', () async {
+      final database = await HiveDatabaseService.open(
+        directory: directory.path,
+      );
+      final original = schema2Document();
+      await database.writeSaveDocument(original);
+      await database.flushSave();
+
+      final save = HiveSaveService(database, FakeRemoteConfigService());
+      await save.load();
+      // The fixture's badges were already granted when the M7 app loaded
+      // it, so the document is the migrated one, untouched.
+      expect(save.document, SaveDocumentCodec.read(original).document);
+      expect(save.currentLevel, 47);
+      expect(save.coins, 1240);
+      expect(save.document.daily.streak, 12);
+      expect(save.document.inProgress?.levelId, 'L0047');
+      expect(save.document.race.rivals[0].wins, 2);
+      expect(save.playerId, '4C1E-9B07');
+      expect(save.document.loginGift, const LoginGiftProgress());
+      await save.flush();
+
+      expect(database.readSaveBackup(SaveBoxKeys.backup(2)), original);
+      final rewritten = database.readSaveDocument();
+      final reread = SaveDocumentCodec.read(rewritten);
+      expect(reread.kind, SaveReadKind.current);
+      expect(reread.storedSchema, 3);
+      expect(reread.document, save.document);
+
+      // The first claim after the update pays Day 1 and survives a reload;
+      // the next launch reads it as current, with nothing more backed up.
+      final grant = save.claimLoginGift(LocalDate(2026, 10, 5));
+      expect(grant?.day, 1);
+      expect(save.coins, 1260);
+      await save.flush();
+      final again = HiveSaveService(database, FakeRemoteConfigService());
+      await again.load();
+      expect(again.document, save.document);
+      expect(again.document.loginGift.claims, 1);
+      expect(again.coins, 1260);
+      expect(database.readSaveBackup(SaveBoxKeys.backup(2)), original);
+      expect(database.readSaveBackup(SaveBoxKeys.backup(3)), isNull);
       await again.dispose();
       await save.dispose();
     });

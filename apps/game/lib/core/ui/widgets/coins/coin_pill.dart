@@ -19,9 +19,54 @@ import 'package:nesty_game/core/ui/widgets/tactile/tactile_surface.dart';
 /// pill (NestyMenus: 42 tall, a 30 px coin, the "+"), and the whole pill is
 /// the button, which gives the "+" a full touch target.
 class CoinPill extends StatelessWidget {
-  const CoinPill({required this.coins, this.onAdd, super.key});
+  const CoinPill({
+    required this.coins,
+    this.onAdd,
+    this.coinKey,
+    this.compact = false,
+    super.key,
+  });
+
+  /// The count in the locale's compact form: [homeNeedsCompact].
+  final bool compact;
+
+  /// Whether the Home pill would have to shrink its full count below
+  /// [_readableScale] to fit [maxWidth] (a huge balance on a 360 dp phone,
+  /// worst in Turkish, whose Baloo 2 digits are wider than Fredoka's):
+  /// then it shows the compact count. Its screen-reader label keeps the
+  /// exact one.
+  static bool homeNeedsCompact(
+    BuildContext context,
+    int coins,
+    double maxWidth,
+  ) {
+    if (!maxWidth.isFinite) return false;
+    final painter = TextPainter(
+      text: TextSpan(
+        text: NestyNumberText.formatCount(context, coins),
+        style: AppTextStyles.number,
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width + _homeChrome;
+    painter.dispose();
+    return width * _readableScale > maxWidth;
+  }
+
+  /// The Home pill around its count: padding 6 and 8, the 30 dp coin, its
+  /// 7 dp gap, the 9 dp gap and the 24 dp "+".
+  static const double _homeChrome = 6 + 30 + 7 + 9 + 24 + 8;
+
+  /// The smallest scale a count may be drawn at before it turns compact.
+  static const double _readableScale = 0.8;
 
   final int coins;
+
+  /// A key on the coin disc, so a reward flight can land on it (the daily
+  /// gift's coins, `gift.claim.coins.to`).
+  final Key? coinKey;
 
   /// Opens the Shop (M3). Null is the HUD pill.
   final VoidCallback? onAdd;
@@ -34,9 +79,12 @@ class CoinPill extends StatelessWidget {
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CoinIcon(size: home ? 30 : 28),
+        KeyedSubtree(
+          key: coinKey,
+          child: CoinIcon(size: home ? 30 : 28),
+        ),
         const SizedBox(width: 7),
-        NestyNumberText(coins, style: AppTextStyles.number),
+        NestyNumberText(coins, style: AppTextStyles.number, compact: compact),
         if (home) ...[const SizedBox(width: 9), const _PlusCircle()],
       ],
     );

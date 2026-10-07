@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/ui/lottie/lottie_label.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/fx_id.dart';
+import 'package:nesty_game/features/fx/fx_ribbon.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/chapter_ribbon.dart';
 import 'package:nesty_render/nesty_render.dart'
@@ -68,7 +70,7 @@ void main() {
     expect(done, 1);
   });
 
-  group('ChapterRibbon.rectIn (LOTTIE.md v3, for gameplay_view)', () {
+  group('ChapterRibbon.rectIn (LOTTIE.md m7-5, for gameplay_view)', () {
     const padding = EdgeInsets.only(top: 59, bottom: 34);
 
     test('on 390: the 410 × 100 canvas 1:1, centred, the anchor (205, 50) '
@@ -78,15 +80,84 @@ void main() {
       expect(rect.left + 205, 195);
     });
 
-    test('never scaled up; scaled down on a narrower screen', () {
+    test('never scaled: a narrower screen narrows the band instead', () {
       final wide = ChapterRibbon.rectIn(const Size(430, 932), padding);
       expect(wide.size, ChapterRibbon.canvas);
       expect(wide.center.dx, closeTo(215, 1e-9));
       final narrow = ChapterRibbon.rectIn(const Size(360, 640), padding);
-      expect(narrow.width, closeTo(410 * 360 / 390, 1e-9));
-      expect(narrow.height, closeTo(100 * 360 / 390, 1e-9));
+      expect(narrow.size, ChapterRibbon.canvas);
       expect(narrow.center.dx, closeTo(180, 1e-9));
       expect(narrow.center.dy, closeTo(59 + 120, 1e-9));
+    });
+  });
+
+  group('its band (LOTTIE.md m7-5: the screen − 70 below 406 dp)', () {
+    LottieFxView viewOf(WidgetTester tester) => tester.widget<LottieFxView>(
+      find.byWidgetPredicate(
+        (w) => w is LottieFxView && w.id == FxId.uiChapterRibbon,
+      ),
+    );
+
+    for (final (width, band) in const [
+      (430.0, 336.0),
+      (406.0, 336.0),
+      (390.0, 320.0),
+      (360.0, 290.0),
+      (320.0, 250.0),
+    ]) {
+      testWidgets('on $width: a $band band, the label box ${band - 24}', (
+        tester,
+      ) async {
+        await pumpUi(tester, _ribbon(() {}), width: width);
+        final view = viewOf(tester);
+        expect(view.controller!.params.ribbonBandWidth, band);
+        expect(view.labelStyle!.maxWidth, band - 24);
+        // The ribbon with its tails stays 13 dp or more inside the screen.
+        expect(FxRibbon.chapter.reachFor(band), lessThanOrEqualTo(width - 26));
+        await tester.pump(const Duration(seconds: 3));
+      });
+    }
+
+    testWidgets("a tinted label's shadow is the chapter's fold at 35 %", (
+      tester,
+    ) async {
+      final palette = ChapterTheme.byId('ch04')!.palette;
+      await pumpUi(
+        tester,
+        Center(
+          child: SizedBox.fromSize(
+            size: ChapterRibbon.canvas,
+            child: ChapterRibbon(
+              number: 4,
+              chapterId: 'ch04',
+              library: FakeFxLibrary(),
+              palette: palette,
+              onDone: () {},
+            ),
+          ),
+        ),
+      );
+      final shadow = viewOf(tester).labelStyle!.shadowColor!;
+      expect(
+        shadow.toARGB32() & 0xFFFFFF,
+        palette.ribbonFold.toARGB32() & 0xFFFFFF,
+      );
+      expect(
+        shadow.a,
+        closeTo(LottieLabelStyles.chapterRibbon.shadowColor!.a, 1e-9),
+      );
+      await tester.pump(const Duration(seconds: 3));
+    });
+
+    testWidgets('without a palette the label keeps the authored shadow', (
+      tester,
+    ) async {
+      await pumpUi(tester, _ribbon(() {}));
+      expect(
+        viewOf(tester).labelStyle!.shadowColor,
+        LottieLabelStyles.chapterRibbon.shadowColor,
+      );
+      await tester.pump(const Duration(seconds: 3));
     });
   });
 

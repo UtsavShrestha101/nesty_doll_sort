@@ -406,5 +406,61 @@
   "recordsStatSemantics": "{label}: {value}",
   "recordsBadgesCount": "{earned}/{total}",
   "a11yJoinList": "{first}, {second}",
-  "a11yJoinSentences": "{first}. {second}"
+  "a11yJoinSentences": "{first}. {second}",
+
+  "giftTitle": "Günlük hediye",
+
+  "giftDay": "{day}. gün",
+
+  "giftClaim": "Topla",
+
+  "giftClaimedLine": "Bugünkü hediye senin.",
+
+  "giftTomorrow": "Yarın: {gift}",
+
+  "giftNext": "Sıradaki hediye: {gift}",
+
+  "giftButtonReadySemantics": "Günlük hediye. Bir hediye hazır.",
+
+  "giftButtonSemantics": "Günlük hediye",
+
+  "giftTileSemantics": "{day}. gün, {gift}. {state}",
+
+  "giftTileDone": "Toplandı",
+
+  "giftTileToday": "Bugünün hediyesi",
+
+  "giftTileLater": "Sırada",
+
+  "giftChestTitle": "7. gün hediyesi",
+
+  "giftChestBody": "7. gün için bir sandık. İçindekilere bak.",
+
+  "giftCoins": "{count, plural, =1{1 altın} other{{count} altın}}",
+
+  "giftHints": "{count, plural, =1{1 ipucu} other{{count} ipucu}}",
+
+  "giftSlots": "{count, plural, =1{1 ek yuva} other{{count} ek yuva}}",
+
+  "giftRewardPair": "{first} + {second}",
+
+  "chestContentsSlot": "{count, plural, =1{+1 yuva} other{+{count} yuva}}",
+
+  "chestContentsSlotSemantics": "{coins, plural, =1{1 altın} other{{coins} altın}}, {slots, plural, =1{1 ek yuva} other{{slots} ek yuva}}",
+
+  "giftSubtitle": "Günde bir hediye, kendi temponda.",
+
+  "giftTitleShort": "Hediyeler",
+
+  "giftChestTitleShort": "7. gün",
+
+  "giftSlotsShort": "{count, plural, =1{1 yuva} other{{count} yuva}}",
+
+  "chestContentsSlotShort": "+{count}",
+
+  "giftA11yChestContents": "{first}, {second}",
+
+  "giftA11yClaimed": "Hediye toplandı: {gift}.",
+
+  "giftA11yAdded": "{gift} eklendi. Toplam {count}."
 }

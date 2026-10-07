@@ -679,6 +679,35 @@ ConstClass _motion(TokenReader t) {
   n('pick.wobbleDeg', 'pickWobbleDeg');
   ms('pick.wobblePeriod', 'pickWobblePeriodMs');
   ms('pick.cancelSettle', 'pickCancelSettleMs');
+  // Tokens v5 (m7-5 item 14): a wobbling doll's rotation eases to 0 over
+  // the first ms of doll_move, overlapped, so the move never snaps.
+  ms('pick.wobbleToMoveMs', 'pickWobbleToMoveMs');
+  final wobbleNote = t.string(
+    r'motion.pick.$m75',
+    symbol: '$m.pickWobbleToMoveCurve',
+  );
+  final wobble = RegExp(
+    r'^wobbleToMoveMs: when a wobbling doll is dropped, its rotation eases '
+    r'to 0 over the first (\d+) ms of doll_move \((\w+)\), overlapped, so '
+    r'the move starts at once and never snaps$',
+  ).firstMatch(wobbleNote);
+  if (wobble == null ||
+      int.parse(wobble[1]!) != t.peek('motion.pick.wobbleToMoveMs') ||
+      easings[wobble[2]] == null) {
+    throw TokenFormatException(
+      r'motion.pick.$m75',
+      'unexpected wording, or not wobbleToMoveMs with a motion.easing',
+    );
+  }
+  c.add(
+    'pickWobbleToMoveCurve',
+    easings[wobble[2]]!,
+    type: 'Cubic',
+    doc:
+        'When a wobbling doll is dropped its rotation eases to 0 over '
+        '[pickWobbleToMoveMs] of doll_move with this curve, overlapped, so '
+        'the move starts at once and never snaps (m7-5).',
+  );
 
   ms('move.duration', 'moveMs');
   curve('move.easing', 'moveCurve');

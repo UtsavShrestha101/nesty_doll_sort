@@ -480,6 +480,14 @@ void main() {
         'pill_rect',
         'glow_rect',
       });
+      // m7-5: both ribbons' bands take a width.
+      for (final name in ['ui_win_ribbon', 'ui_chapter_ribbon']) {
+        expect(lottieContractOf(name)!.sizedRects, {
+          'band_rect',
+          'edge_rect',
+          'hi_rect',
+        });
+      }
 
       void renameAll(Map<String, Object?> layer, String from, String to) {
         void visit(List<Object?> shapes) {
@@ -497,6 +505,13 @@ void main() {
       renameAll(_layer(ribbon, 'tail_l'), 'tail_fill', 'fill');
       renameAll(_layer(ribbon, 'tail_r'), 'tail_fill', 'fill');
       expect(_codes(ribbon, 'ui_win_ribbon'), [LottieIssueCodes.namedShapes]);
+
+      // m7-4's ribbons, the rects unnamed: the game can't set a width.
+      final chapter = _real('ui_chapter_ribbon');
+      renameAll(_layer(chapter, 'band'), 'hi_rect', 'rect');
+      expect(_codes(chapter, 'ui_chapter_ribbon'), [
+        LottieIssueCodes.namedShapes,
+      ]);
 
       final counter = _real('ui_family_counter');
       renameAll(_layer(counter, 'pill'), 'pill_rect', 'rect');

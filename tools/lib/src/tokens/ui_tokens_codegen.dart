@@ -2,8 +2,10 @@ import 'package:nesty_tools/src/fonts/bundled_fonts.dart';
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
 import 'package:nesty_tools/src/tokens/screen_tokens_codegen.dart';
+import 'package:nesty_tools/src/tokens/script_fonts.dart';
 import 'package:nesty_tools/src/tokens/sound_files.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
+import 'package:nesty_tools/src/tokens/ui_tokens_m75.dart';
 import 'package:nesty_tools/src/tokens/ui_tokens_v3.dart';
 
 /// Emits `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart`: app colors,
@@ -25,7 +27,13 @@ String uiTokensSource(TokenReader t, {required String header}) {
     _uiMotion(t),
     _sound(t),
     ...uiV3Classes(t),
+    ...uiM75Classes(t),
   ];
+  // m7-5 item 28: the display family's styles follow the locale's face.
+  final display = t.peek('font.display.family')! as String;
+  for (final c in classes) {
+    c.displayFace = display;
+  }
   t.documentedTree(
     'haptics',
     reason: 'haptic patterns are hand-written in the HapticsService (M2)',
@@ -313,6 +321,10 @@ void _scriptFonts(TokenReader t, ConstClass c) {
   final scriptFamilies = {for (final role in fontRoles.keys) role: <String>[]};
   for (final script in t.keys('font.scripts')) {
     if (script.startsWith(r'$')) continue;
+    if (isWholeStringScript(script)) {
+      _wholeStringScript(t, c, script);
+      continue;
+    }
     final base = 'font.scripts.$script';
     for (final field in t.keys(base)) {
       const known = {
@@ -448,6 +460,150 @@ void _scriptFonts(TokenReader t, ConstClass c) {
           'The `fontFamilyFallback` of every ${latin[role]} style: $other '
           'for a Latin glyph ${latin[role]} lacks, then the script faces '
           '(each maps only its own script).',
+    );
+  }
+}
+
+/// Tokens v5 (m7-5 item 28) `font.scripts.latnTr`: a face that replaces the
+/// display family for whole strings in its locales (Baloo 2 for every
+/// Fredoka role in Turkish), never per glyph, so it is in no fallback list.
+/// The body role stays Nunito. A display style keeps its Fredoka
+/// `fontWeight`; the family's files answer it with the weight the tokens map
+/// it to, so every bundled display weight must be mapped.
+void _wholeStringScript(TokenReader t, ConstClass c, String script) {
+  const name = 'AppFontTokens';
+  final base = 'font.scripts.$script';
+  const known = {
+    r'$note',
+    'family',
+    'source',
+    'locales',
+    'weights',
+    'size',
+    'lineHeight',
+    'body',
+    'rupee',
+  };
+  for (final field in t.keys(base)) {
+    if (!known.contains(field)) {
+      throw TokenFormatException(
+        '$base.$field',
+        'unknown whole-string script font field',
+      );
+    }
+  }
+  final note = t.documented(
+    '$base.\$note',
+    reason: 'why the face replaces whole strings, in the class doc',
+  );
+  final latin = t.peek('font.display.family')! as String;
+  final design = t.string('$base.family', symbol: '$name.${script}Family');
+  t.documented('$base.source', reason: 'licence note; see the OFL.txt');
+  final family = wholeStringFamilyName(design, script);
+  c.add(
+    '${script}Family',
+    stringLiteral(family),
+    doc:
+        'The $design face that replaces $latin for whole strings in '
+        '[${script}Locales] ($note). Bundled as its own family: its files '
+        'answer each $latin weight with [${script}DisplayWeights].',
+  );
+  final locales = t.strings('$base.locales', symbol: '$name.${script}Locales');
+  c.add(
+    '${script}Locales',
+    '[${locales.map(stringLiteral).join(', ')}]',
+    type: 'List<String>',
+    doc: 'The locales whose $latin (display) text draws in [${script}Family].',
+  );
+  final roleWeights = (t.peek('font.display.weights')! as List<Object?>)
+      .cast<num>();
+  final mapped = <String>[];
+  final from = <int>{};
+  for (final key in t.keys('$base.weights')) {
+    final m = RegExp(r'^display(\d+)$').firstMatch(key);
+    if (m == null) {
+      throw TokenFormatException(
+        '$base.weights.$key',
+        'a whole-string face maps display weights only (display<weight>)',
+      );
+    }
+    final weight = int.parse(m[1]!);
+    if (!roleWeights.contains(weight)) {
+      throw TokenFormatException(
+        '$base.weights.$key',
+        '$latin $weight is not a bundled weight ($roleWeights)',
+      );
+    }
+    final to = t.integer(
+      '$base.weights.$key',
+      symbol: '$name.${script}DisplayWeights',
+    );
+    _fontWeight(to, '$base.weights.$key');
+    from.add(weight);
+    mapped.add('$weight: $to');
+  }
+  if (!roleWeights.every(from.contains)) {
+    throw TokenFormatException(
+      '$base.weights',
+      'every bundled $latin weight ($roleWeights) needs a $design weight: the '
+          'face replaces every display style',
+    );
+  }
+  c.add(
+    '${script}DisplayWeights',
+    '{${mapped.join(', ')}}',
+    type: 'Map<int, int>',
+    doc:
+        '$latin weight → the $design weight a display style draws in '
+        '[${script}Locales].',
+  );
+  c.add(
+    '${script}SizeFactor',
+    doubleLiteral(t.number('$base.size', symbol: '$name.${script}SizeFactor')),
+    doc: 'The font size factor for display text in [${script}Locales].',
+  );
+  final lineHeight = t.string(
+    '$base.lineHeight',
+    symbol: '$name.${script}TitleLineHeight',
+  );
+  final heights = RegExp(
+    r'^titles (\d+(?:\.\d+)?), as (\w+); single-line boxes keep their height$',
+  ).firstMatch(lineHeight);
+  if (heights == null || heights[2] != latin) {
+    throw TokenFormatException(
+      '$base.lineHeight',
+      'expected "titles <n>, as $latin; single-line boxes keep their height", '
+          'got "$lineHeight"',
+    );
+  }
+  c.add(
+    '${script}TitleLineHeight',
+    doubleLiteral(double.parse(heights[1]!)),
+    doc:
+        'The line height of multi-line titles in [${script}Locales], as '
+        '$latin: "$lineHeight".',
+  );
+  final body = t.documented(
+    '$base.body',
+    reason: 'the body role keeps its Latin face (checked)',
+  );
+  final bodyFamily = t.peek('font.body.family')! as String;
+  if (!body.startsWith('$bodyFamily stays')) {
+    throw TokenFormatException(
+      '$base.body',
+      'expected "$bodyFamily stays …": a body face replacement needs codegen',
+    );
+  }
+  final rupee = t.documented(
+    '$base.rupee',
+    reason: 'already true: the deva faces are in every fallback list',
+  );
+  if (rupee != '₹ draws in $design in every locale (deva fallback)' ||
+      !t.has('font.scripts.deva') ||
+      t.peek('font.scripts.deva.family') != design) {
+    throw TokenFormatException(
+      '$base.rupee',
+      'expected ₹ from the deva fallback in $design, got "$rupee"',
     );
   }
 }

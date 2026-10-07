@@ -42,8 +42,10 @@ void main() {
           final body = classStart == -1
               ? ''
               : allSource.substring(classStart, classEnd);
+          // A display-family TextStyle is a DisplayFace getter (m7-5 28).
           if (!RegExp(
-            'static const (?:[\\w<>, (){}?]+ )?$member = ',
+            'static const (?:[\\w<>, (){}?]+ )?$member = '
+            '|static TextStyle get $member => ',
           ).hasMatch(body)) {
             missing.add('$path → $symbol');
           }
@@ -197,8 +199,11 @@ void main() {
         'settings.reduceMotion.default',
         for (final leaf in leafPaths(tokens()['versus'], 'versus'))
           if (!leaf.startsWith('versus.ribbon.')) leaf,
-        for (final leaf in leafPaths(tokens()['chest'], 'chest')) leaf,
+        // The +1 slot chip is look, not rule (m7-5): only its copy ids.
+        for (final leaf in leafPaths(tokens()['chest'], 'chest'))
+          if (!leaf.startsWith('chest.slotChip.')) leaf,
         ..._documentedV4(tokens()),
+        ..._documentedV5,
       });
     });
 
@@ -219,6 +224,25 @@ void main() {
       expect(ui, contains('TokenStop.px(14.0)'));
       expect(ui, contains('fontFeatures: [FontFeature.tabularFigures()]'));
       expect(ui, contains('letterSpacing: 0.66'));
+    });
+
+    test('routes every display-family style through DisplayFace (m7-5 28)', () {
+      final ui = output.files[uiTokensPath]!;
+      // Fredoka styles are getters, so Turkish can draw them in Baloo 2.
+      expect(ui, contains('static TextStyle get display => DisplayFace.of('));
+      expect(
+        RegExp(
+          r"static const \w+ = TextStyle\(\s*fontFamily: 'Fredoka'",
+        ).hasMatch(ui),
+        isFalse,
+      );
+      // Nunito (body) styles stay const.
+      expect(
+        RegExp(
+          r"static const \w+ = TextStyle\(\s*fontFamily: 'Nunito'",
+        ).hasMatch(ui),
+        isTrue,
+      );
     });
 
     test('emits the script faces and their fallback on every style', () {
@@ -549,6 +573,210 @@ void main() {
       expect(font, containsAll(glyphs));
     });
 
+    test('spot-checks tokens v5: the Turkish face (m7-5 item 28)', () {
+      final ui = output.files[uiTokensPath]!;
+      expect(ui, contains("static const latnTrFamily = 'Baloo2LatnTr';"));
+      expect(ui, contains("static const List<String> latnTrLocales = ['tr'];"));
+      expect(
+        ui,
+        contains(
+          'static const Map<int, int> latnTrDisplayWeights = '
+          '{700: 700, 600: 600, 500: 500};',
+        ),
+      );
+      expect(ui, contains('static const latnTrSizeFactor = 1.0;'));
+      expect(ui, contains('static const latnTrTitleLineHeight = 1.15;'));
+      // Whole strings, never per glyph: in no fallback list, and no
+      // per-role families (the fallback lists are checked above).
+      expect(ui, isNot(contains('latnTrDisplayFamily')));
+      expect(ui, isNot(contains('latnTrBodyFamily')));
+      expect(ui, isNot(contains("'Baloo2LatnTr', ")));
+    });
+
+    test('spot-checks tokens v5: the type index (m7-5 item 2)', () {
+      final ui = output.files[uiTokensPath]!;
+      for (final surface in [
+        'Home',
+        'Chapters',
+        'Museum',
+        'Records',
+        'Shop',
+        'Gift',
+      ]) {
+        expect(ui, contains('abstract final class ${surface}TypeTokens {'));
+      }
+      String member(String className, String name) {
+        final start = ui.indexOf('abstract final class $className {');
+        // A display-family TextStyle is a DisplayFace getter (m7-5 28).
+        final at = ui.indexOf(
+          RegExp('static (const|TextStyle get) $name (=|=>) '),
+          start,
+        );
+        expect(at, greaterThan(start), reason: '$className.$name');
+        return ui.substring(at, ui.indexOf(';', at));
+      }
+
+      // "Fredoka 700 11/1, caps, letter-spacing 0.08em, chapter ink".
+      final kicker = member('HomeTypeTokens', 'chapterKicker');
+      expect(kicker, contains('fontSize: 11.0'));
+      expect(kicker, contains('letterSpacing: 0.88'));
+      expect(kicker, isNot(contains('color:')));
+      expect(member('HomeTypeTokens', 'chapterKickerCaps'), endsWith('true'));
+      // "Fredoka 700 30/1.1 #5B3A21 (26 on 16:9)".
+      expect(member('GiftTypeTokens', 'title'), contains('height: 1.1'));
+      expect(member('GiftTypeTokens', 'titleShortSize'), endsWith('26.0'));
+      expect(
+        member('GiftTypeTokens', 'amount'),
+        contains('fontFeatures: [FontFeature.tabularFigures()]'),
+      );
+      expect(member('GiftTypeTokens', 'amountShortSize'), endsWith('22.0'));
+      // "(museumNextName)" names the colour it repeats.
+      expect(
+        member('MuseumTypeTokens', 'nextName'),
+        contains('color: Color(0xFFFFEFD6)'),
+      );
+      expect(member('MuseumTypeTokens', 'kickerCaps'), endsWith('true'));
+      expect(
+        member('RecordsTypeTokens', 'rowName'),
+        contains('fontWeight: FontWeight.w600'),
+      );
+      expect(member('ShopTypeTokens', 'description'), contains('height: 1.45'));
+    });
+
+    test('spot-checks tokens v5: the daily gift (App Flow section 13)', () {
+      final ui = output.files[uiTokensPath]!;
+      for (final name in [
+        'GiftButtonTokens',
+        'GiftSheetTokens',
+        'GiftTileTokens',
+        'GiftTallyTokens',
+        'GiftClaimTokens',
+        'GiftReducedMotionTokens',
+        'GiftShortTokens',
+        'ChestSlotChipTokens',
+      ]) {
+        expect(ui, contains('abstract final class $name {'), reason: name);
+      }
+      for (final value in [
+        'static const touch = 48.0;',
+        'center: Alignment(-0.3, -0.4)',
+        'static const readyDotRing = TokenStroke(width: 2.5, '
+            'color: Color(0xFFFFFDF7));',
+        'static const readyDotOffsetRight = -3.0;',
+        'static const Color scrim = AppColorTokens.scrim;',
+        'static const gridColumns = 3;',
+        'static const day7Chest = Size(108.0, 90.0);',
+        'static const footerSwapMs = 200;',
+        'static const height = 556.0;',
+        'static const doneCheckGlyph = \'check\';',
+        'static const doneCheckGlyphWeight = 700.0;',
+        'static const todayLift = -2.0;',
+        'static const topBelowCoinPill = 54.0;',
+        'static const topShort = 82.0;',
+        'static const discsHintGlyph = \'lightbulb\';',
+        'static const Cubic inCurve = UiMotionTokens.curveEaseOut;',
+        'static const holdMs = 1200;',
+        'static const coinsSpriteEvery = 10;',
+        'static const coinsSpritesMax = 6;',
+        'static const coinsMs = 700;',
+        'static const coinsPathControl = Offset(175.0, 300.0);',
+        'static const coinsPillHole = Size(122.0, 54.0);',
+        'static const hintSpriteSize = 40.0;',
+        'static const slotSpriteSize = 40.0;',
+        'static const day7CollectScrim = Color(0x2E3C1E0A);',
+        'static const claimTallyFadeInMs = 150;',
+        'static const height = 461.0;',
+        'static const discSize = 30.0;',
+        'static const glyphRadius = 4.2;',
+        'static const giftButtonTop = 26.0;',
+        "static const giftClaim = SoundCue(['gift_claim']);",
+        'static const giftChestTitleMinScale = 0.85;',
+        'static const List<String> giftChestTitleShort = '
+            "['gift_chest_title_short'];",
+        'static const giftDot = Color(0xFFF5C518);',
+        'static const slotDiscEdge = Color(0xFF2F7A3E);',
+      ]) {
+        expect(ui, contains(value));
+      }
+      // The track is a rule (Remote Config login_gift_track), never tokens.
+      expect(
+        output.reader.uses['gift.button.hiddenUntil'],
+        isA<DocumentedOnly>(),
+      );
+      expect(ui, isNot(contains('GiftChestTokens')));
+    });
+
+    test('spot-checks tokens v5: Part 2 (m7-5)', () {
+      final ui = output.files[uiTokensPath]!;
+      final render = output.files[renderTokensPath]!;
+      for (final value in [
+        // Item 5: the win ribbon's width.
+        'static const bandSize = Size(290.0, 56.0);',
+        'static const reach = 334.0;',
+        'static const textBox = Size(266.0, 40.0);',
+        "static const List<String> hiRectKeyPath = ['band', 'hi', 'hi_rect'];",
+        'static const maxWidthInset = 70.0;',
+        // Items 8, 11, 16, 18, 21.
+        'static const handScale = 0.6;',
+        'static const topFadeFill = PxLinearGradient(',
+        'TokenStop.px(120.0), TokenStop.px(240.0)',
+        'static const formsFullMaxDots = 8;',
+        "static const formsStateGlyphThinking = 'more_horiz';",
+        'static const formsDotsMinSize = 8.0;',
+        'static const formsHeightAt13 = 58.0;',
+        'static const spotlightHeightShort = 200.0;',
+        'static const spotlightShortBelow = 760.0;',
+        'static const scrollFoldedAbove = 3;',
+        // Item 1: the frame-only colours and shadows.
+        'static const museumNextName = Color(0xFFFFEFD6);',
+        'static const List<NestyShadow> segmentSelected = [',
+        // Item 10: the generating card is centred, its padding a token.
+        'static const cardPadding = EdgeInsets.symmetric(vertical: 22.0, '
+            'horizontal: 18.0);',
+        'static const spinnerSize = 44.0;',
+      ]) {
+        expect(ui, contains(value));
+      }
+      // Prose tops (Choices 10, 17): nothing reads a number any more.
+      String body(String className) {
+        final start = ui.indexOf('abstract final class $className {');
+        return ui.substring(start, ui.indexOf('\n}', start));
+      }
+
+      expect(body('GeneratingTokens'), isNot(contains('static const cardTop')));
+      expect(body('NoCoinsTokens'), isNot(contains('static const top ')));
+      // Item 14.
+      expect(render, contains('static const pickWobbleToMoveMs = 80;'));
+      expect(
+        render,
+        contains('static const Cubic pickWobbleToMoveCurve = curveEaseOut;'),
+      );
+    });
+
+    test('every glyph the v5 tokens name is in the bundled font, but one', () {
+      final font = File(
+        p.join(root.path, 'tools/fonts/nesty_symbols.txt'),
+      ).readAsLinesSync().map((l) => l.trim()).toSet();
+      final ui = output.files[uiTokensPath]!;
+      final glyphs = {
+        for (final m in RegExp(
+          r'static const (?:formsStateGlyph\w+|doneCheckGlyph|discsHintGlyph) '
+          r"= '([a-z0-9_]+)';",
+        ).allMatches(ui))
+          m[1]!,
+      };
+      expect(glyphs, {
+        'more_horiz',
+        'replay',
+        'check_circle',
+        'check',
+        'lightbulb',
+      });
+      // Every glyph the m7-5 tokens name is bundled; `more_horiz` (the race
+      // strip's thinking glyph, 9.3i) is in nesty_symbols.txt since m7-5.
+      expect(glyphs.difference(font), isEmpty);
+    });
+
     test('is deterministic', () {
       expect(generateDesignTokens(tokensJson).files, output.files);
     });
@@ -629,6 +857,40 @@ void main() {
           at('$base.figurine'),
           'museum/${ch.toString().padLeft(2, '0')}_'
           '${defaultMuseumFigurineIds[ch - 1]}.svg',
+        );
+      }
+    });
+
+    test('every UI art file the tokens name ships, and is synced', () {
+      // Tokens v5 (m7-5): the gift glyph, the slot chip and its sprite join
+      // the stars, chests and flight sprites the prose names by path.
+      final paths = <String>{
+        for (final leaf in leafPaths(json, ''))
+          if (at(leaf) case final String text)
+            for (final m in RegExp(
+              r'\bui/[a-z0-9_]+/[a-z0-9_]+\.svg\b',
+            ).allMatches(text))
+              m[0]!,
+      };
+      expect(
+        paths,
+        containsAll([
+          'ui/gift/gift_glyph.svg',
+          'ui/chest/chip_slot.svg',
+          'ui/sprites/slot_flight.svg',
+          'ui/sprites/hint_flight.svg',
+        ]),
+      );
+      for (final path in paths) {
+        expect(
+          File(p.join(root.path, 'design', path)).existsSync(),
+          isTrue,
+          reason: 'design/$path',
+        );
+        expect(
+          File(p.join(root.path, 'apps/game/assets', path)).existsSync(),
+          isTrue,
+          reason: 'apps/game/assets/$path: run sync_design_assets',
         );
       }
     });
@@ -1189,7 +1451,258 @@ void main() {
       );
     });
   });
+
+  group('tokens v5 fails loudly (m7-5)', () {
+    String mutate(void Function(Map<String, Object?> json) change) {
+      final json = tokens();
+      change(json);
+      return jsonEncode(json);
+    }
+
+    Map<String, Object?> at(Map<String, Object?> json, String path) {
+      Object? node = json;
+      for (final key in path.split('.')) {
+        node = (node! as Map<String, Object?>)[key];
+      }
+      return node! as Map<String, Object?>;
+    }
+
+    Matcher throwsAt(String path) => throwsA(
+      isA<TokenFormatException>().having((e) => e.path, 'path', path),
+    );
+
+    void expectThrowsAt(
+      String section,
+      String key,
+      Object? value,
+      String path, {
+      String? reason,
+    }) => expect(
+      () => generateDesignTokens(mutate((j) => at(j, section)[key] = value)),
+      throwsAt(path),
+      reason: reason,
+    );
+
+    test('on a whole-string face the bundle cannot honour', () {
+      const base = 'font.scripts.latnTr';
+      expectThrowsAt(
+        base,
+        'weights',
+        {'display700': 700, 'display600': 600},
+        '$base.weights',
+        reason: 'Fredoka 500 would fall back to the Latin face',
+      );
+      expectThrowsAt(
+        base,
+        'weights',
+        {'display700': 700, 'display600': 600, 'display400': 400},
+        '$base.weights.display400',
+        reason: 'Fredoka 400 is not bundled',
+      );
+      expectThrowsAt(
+        base,
+        'weights',
+        {'display700': 700, 'display600': 600, 'body500': 500},
+        '$base.weights.body500',
+        reason: 'the body role stays Nunito',
+      );
+      expectThrowsAt(
+        base,
+        'body',
+        'Baloo 2 for every Nunito role too',
+        '$base.body',
+      );
+      expectThrowsAt(base, 'italic', true, '$base.italic');
+    });
+
+    test('on a type entry the style can\'t say', () {
+      expectThrowsAt(
+        'type.home',
+        'tileTitle',
+        'Fredoka 700 15/1.1 #5B3A21, small caps',
+        'type.home.tileTitle',
+      );
+      expectThrowsAt(
+        'type.museum',
+        'nextName',
+        'Fredoka 700 12/1.15 #FFFFFF (museumNextName)',
+        'type.museum.nextName',
+        reason: 'the colour is not the one it names',
+      );
+      expectThrowsAt(
+        'type.records',
+        'rowName',
+        'Fredoka 400 16/1 #5B3A21',
+        'type.records.rowName',
+        reason: 'Fredoka 400 is not bundled',
+      );
+    });
+
+    test('on a gift size that disagrees with its type', () {
+      expectThrowsAt(
+        'gift.short.title',
+        'size',
+        24,
+        'gift.short.title.size',
+        reason: 'type.gift.title says 26 on 16:9',
+      );
+      expectThrowsAt(
+        'gift.sheet.title',
+        'height',
+        36,
+        'gift.sheet.title.height',
+        reason: '30 × 1.1',
+      );
+    });
+
+    test('on reworded or disagreeing gift prose', () {
+      expectThrowsAt(
+        'layout.home.giftButton',
+        'right',
+        70,
+        'gift.button.place',
+        reason: 'the place says right 68',
+      );
+      expectThrowsAt(
+        'gift.tally',
+        'top',
+        'the coin pill’s top + 50 (120; 82 on 16:9)',
+        'gift.tally.top',
+      );
+      expectThrowsAt(
+        'gift.claim.coins',
+        'sprites',
+        'one per 10 coins, 2 to 6 (20 → 2, 40 → 4, 100 → 10)',
+        'gift.claim.coins.sprites',
+        reason: '100 coins clamp to 6 sprites',
+      );
+      expectThrowsAt(
+        'gift.reducedMotion',
+        'claim',
+        'no flights, no trail: the tile and Claim cross-fade (200 ms); the '
+            'pill shows the new count at once with its ring for 400 ms; the '
+            'tally fades in over 150 ms, holds 1,500 and fades out',
+        'gift.reducedMotion.claim',
+        reason: 'not gift.tally.holdMs',
+      );
+      expectThrowsAt(
+        'gift.claim',
+        'sound',
+        'gift_open @0 on Claim, coins as the first coin lands; nothing extra '
+            'for a hint or a slot. Day 7: chest_wiggle, chest_open and '
+            'jingle_reward as 5.6',
+        'gift.claim.sound',
+      );
+      expectThrowsAt(
+        'gift.chest',
+        'title',
+        'gift_chest_title (Day 7 gift); short form gift_title_short (Day 7)',
+        'gift.chest.title',
+        reason: 'not textFit.giftChestTitle.short',
+      );
+      expectThrowsAt(
+        'gift.tile.done.check',
+        'glyph',
+        'a check, 16 dp',
+        'gift.tile.done.check.glyph',
+      );
+      expectThrowsAt(
+        'chest.slotChip',
+        'glyph',
+        'a white plus',
+        'chest.slotChip.glyph',
+      );
+    });
+
+    test('on ribbon rects that are not the Lottie contract\'s', () {
+      expectThrowsAt('winRibbon.size.rects', 'band', [
+        'band',
+        'band',
+        'rect',
+      ], 'winRibbon.size.rects.band');
+      expectThrowsAt(
+        'winRibbon.size.rects',
+        'glow',
+        ['band', 'glow', 'glow_rect'],
+        'winRibbon.size.rects',
+        reason: 'ui_win_ribbon has no glow_rect',
+      );
+    });
+
+    test('on a wobble note that is not wobbleToMoveMs', () {
+      expectThrowsAt('motion.pick', 'wobbleToMoveMs', 100, r'motion.pick.$m75');
+    });
+  });
 }
+
+/// The documentation-only leaves of tokens v5 (m7-5), each a deliberate
+/// decision of the codegen change that reads v5.
+const _documentedV5 = {
+  // Design notes.
+  r'color.$m75',
+  r'font.scripts.latnTr.$note',
+  r'layout.rivalStrip.forms.$note',
+  r'layout.splash.topFade.$note',
+  r'gift.$note',
+  r'gift.short.$note',
+  r'type.$note',
+  r'winRibbon.size.$note',
+  'layout.homeShort.giftButton.note',
+  'textFit.giftChestTitle.note',
+  'gift.tile.later.note',
+  'gift.tally.use',
+  // Licence notes, and the Turkish face's checked prose.
+  'font.scripts.latnTr.source',
+  'font.scripts.latnTr.body',
+  'font.scripts.latnTr.rupee',
+  // Behaviour and placement the hand-written code follows (some pinned
+  // word for word, some checked against the values they repeat).
+  'layout.tutorial.hand.lottie',
+  'layout.tutorial.hand.note',
+  'layout.generating.card.top',
+  'layout.generating.card.boxSizing',
+  'layout.noCoins.top',
+  'layout.chapters.scroll.rule',
+  'layout.rivalStrip.forms.tagSecondLine',
+  'layout.rivalStrip.forms.belowWidth360',
+  'layout.splash.topFade.over',
+  'textFit.giftSheet',
+  'gift.button.place',
+  'gift.button.glyph.color',
+  'gift.button.readyDot.motion',
+  'gift.button.narrow',
+  'gift.sheet.day7.chips.wrap',
+  'gift.sheet.footer.claim',
+  'gift.sheet.open',
+  'gift.tile.day7',
+  'gift.tally.layer',
+  'gift.tally.count',
+  'gift.claim.coins.from',
+  'gift.claim.coins.to',
+  'gift.claim.coins.trail',
+  'gift.claim.hint.to',
+  'gift.claim.slot.to',
+  'gift.claim.slot.land',
+  'gift.claim.sound',
+  'gift.claim.haptic',
+  'gift.chest.tint',
+  'gift.chest.buttons',
+  'gift.reducedMotion.day7',
+  'haptics.giftClaim',
+  // A rule: the gift shows once the Daily unlocks (never read from tokens).
+  'gift.button.hiddenUntil',
+  // Art references (UiArt draws them) and copy.md ids (the ARB keys).
+  'gift.button.glyph.src',
+  'gift.sheet.day7.chestSrc',
+  'gift.tile.artSrc.coins',
+  'gift.tile.artSrc.hint',
+  'gift.tally.discs.slot',
+  'chest.slotChip.label',
+  'chest.slotChip.a11y',
+  'gift.chest.title',
+  'gift.chest.body',
+  'gift.chest.chips',
+};
 
 /// The documentation-only leaves of tokens v4 (m7-4), each a deliberate
 /// decision of the codegen change that reads v4.

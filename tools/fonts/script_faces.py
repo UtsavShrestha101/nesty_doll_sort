@@ -1,6 +1,7 @@
 """Writes the role families of one script face (docs l10n.md §4.6, m7-4 9.1).
 
     script_faces.py <tokens.json> <script> <design-family> <src-dir> <out-dir>
+                    [<whole-string-family>]
 
 tokens.json `font.scripts.<script>.weights` maps each Latin role weight to a
 script weight, e.g. Devanagari `body700: 600` (Nunito 700 text draws its
@@ -16,6 +17,11 @@ When several Latin weights map to one script weight (Japanese body800 and
 body700 both draw Bold), the file carries the lowest of them; CSS weight
 matching sends the heavier requests down to it. tools/test/fonts checks
 that every mapping resolves to the right outlines.
+
+A whole-string script (m7-5 `latnTr`: Baloo 2 draws every Fredoka role in
+Turkish, never per glyph) passes its own family name as the last argument and
+gets just the display role, in that one family
+(Baloo2LatnTr-{Medium,SemiBold,Bold}.ttf, each its Fredoka weight).
 
 <src-dir> holds `<Base>-<Style>.ttf`, the subset face at each script weight
 (Base is the design family without spaces). The name table is rewritten so
@@ -74,9 +80,10 @@ def set_names(font, family, style, postscript):
 
 
 def main():
-    if len(sys.argv) != 6:
+    if len(sys.argv) not in (6, 7):
         sys.exit(__doc__)
-    tokens_path, script, design_family, src_dir, out_dir = sys.argv[1:]
+    tokens_path, script, design_family, src_dir, out_dir = sys.argv[1:6]
+    whole = sys.argv[6] if len(sys.argv) == 7 else None
     with open(tokens_path, encoding="utf-8") as f:
         tokens = json.load(f)
     entry = tokens["font"]["scripts"][script]
@@ -87,7 +94,9 @@ def main():
         )
     base = design_family.replace(" ", "")
     for role, files in sorted(role_files(entry["weights"]).items()):
-        family = f"{base}{ROLES[role]}"
+        if whole and role != "display":
+            sys.exit(f"{script}: a whole-string face has display weights only")
+        family = whole or f"{base}{ROLES[role]}"
         for script_weight, weight_class in sorted(files.items()):
             style = STYLES[script_weight]
             src = os.path.join(src_dir, f"{base}-{style}.ttf")
@@ -97,7 +106,8 @@ def main():
             font["OS/2"].usWeightClass = weight_class
             set_names(
                 font,
-                f"{design_family} {ROLES[role]}",
+                f"{design_family} {whole[len(base):]}" if whole
+                else f"{design_family} {ROLES[role]}",
                 style,
                 f"{family}-{style}",
             )

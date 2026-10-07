@@ -1,0 +1,18 @@
+# Hand-written (not generated): the Baloo 2 subset of the whole-string Turkish
+# face (tokens.json font.scripts.latnTr, locales tr; m7-5 item 28) that
+# tools/fonts/build_fonts.sh cuts with pyftsubset --unicodes-file. Fredoka
+# lacks ğ Ğ İ ş Ş, so Turkish draws every Fredoka role in this face, whole
+# strings. It needs the whole Latin set (a title is a full string), not just
+# the missing letters. tools/test/fonts/font_coverage_test.dart checks every
+# tr string against it.
+U+0020-007E # Basic Latin
+U+00A0-00FF # Latin-1 Supplement
+U+0100-017F # Latin Extended-A (ğ Ğ ı İ ş Ş)
+U+2013-2014 # en and em dash
+U+2018-201E # curly quotes
+U+2022 # bullet
+U+2026 # ellipsis
+U+20AC # euro
+U+20B9 # rupee (also drawn by the deva face)
+U+20BA # Turkish lira
+U+2212 # minus

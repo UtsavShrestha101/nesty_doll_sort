@@ -34,8 +34,8 @@ const syncedAssetRoots = [
 /// board art. `design/ui/notification/` is the Android small icon (a
 /// platform output, [notificationIconDrawable]); `design/ui/icons/` must
 /// stay empty, since every icon use is a glyph of the bundled font (tokens
-/// `icons.$note`).
-const uiArtFolders = ['badges', 'chest', 'rivals', 'sprites', 'stars'];
+/// `icons.$note`). m7-5 adds `gift/`, the daily gift button's glyph.
+const uiArtFolders = ['badges', 'chest', 'gift', 'rivals', 'sprites', 'stars'];
 
 /// The ten bundled museum figurine ids, in chapter order (m3-design §9.1,
 /// §9.5). Must match `BundledCatalogRepository.figurineIds`; `tools/` does

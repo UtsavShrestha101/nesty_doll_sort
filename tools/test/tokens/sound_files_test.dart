@@ -59,7 +59,7 @@ void main() {
   });
 
   group('soundFilesOf', () {
-    test('design/tokens.json: 23 SFX, 5 jingles, 2 loops with frames', () {
+    test('design/tokens.json: 24 SFX, 5 jingles, 2 loops with frames', () {
       final json =
           jsonDecode(
                 File(
@@ -68,7 +68,7 @@ void main() {
               )
               as Map<String, Object?>;
       final files = soundFilesOf(json)!;
-      expect(files.sfx, hasLength(23));
+      expect(files.sfx, hasLength(24));
       expect(
         files.sfx,
         containsAll([
@@ -82,6 +82,8 @@ void main() {
           'chest_wiggle',
           'chest_open',
           'rival_complete',
+          // m7-5: the daily gift's claim (AUDIO.md "SFX m7-5").
+          'gift_claim',
         ]),
       );
       expect(files.sfx.where(isJingleFile), isEmpty);
@@ -145,6 +147,35 @@ void main() {
         }),
         throwsFormatException,
         reason: 'motion.combo.maxSteps is needed for combo cues',
+      );
+    });
+
+    test('every SFX row of AUDIO.md\'s m7 sections is a tokens SFX', () {
+      final root = findRepoRoot().path;
+      final json =
+          jsonDecode(File(p.join(root, tokensJsonPath)).readAsStringSync())
+              as Map<String, Object?>;
+      final sfx = soundFilesOf(json)!.sfx;
+      final audio = File(
+        p.join(root, 'design/audio/AUDIO.md'),
+      ).readAsStringSync();
+      final rows = <String>[];
+      for (final section in audio.split('\n## ').skip(1)) {
+        if (!section.startsWith('SFX m7')) continue;
+        for (final m in RegExp(
+          r'^\| `([a-z0-9_]+)` \|',
+          multiLine: true,
+        ).allMatches(section)) {
+          rows.add(m[1]!);
+        }
+      }
+      // m7-2's stars, chest and rival; m7-5's gift claim.
+      expect(rows, contains('gift_claim'));
+      expect(rows, hasLength(7));
+      expect(sfx, containsAll(rows));
+      expect(
+        (json['sound']! as Map<String, Object?>)['events'],
+        containsPair('giftClaim', 'gift_claim'),
       );
     });
   });

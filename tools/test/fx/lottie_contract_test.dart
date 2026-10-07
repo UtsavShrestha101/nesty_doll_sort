@@ -360,6 +360,26 @@ void main() {
     expect(counter.requiredLayers, contains('icon'));
   });
 
+  test('the m7-5 ribbons take a width through LOTTIE.md\'s named rects', () {
+    final changes = _section(
+      _read('$designLottieDir/$lottieContractDoc'),
+      'Changes',
+    );
+    final start = changes.indexOf('### m7-5');
+    expect(start, isNot(-1), reason: 'LOTTIE.md "### m7-5"');
+    final m75 = changes.substring(start, changes.indexOf('\n### ', start + 1));
+    for (final name in ['ui_win_ribbon', 'ui_chapter_ribbon']) {
+      final row = m75
+          .split('\n')
+          .firstWhere((line) => line.startsWith('- **`$name`'));
+      final rects = {
+        for (final m in RegExp(r'`(\w+_rect)`').allMatches(row)) m[1]!,
+      };
+      expect(rects, {'band_rect', 'edge_rect', 'hi_rect'}, reason: name);
+      expect(lottieContractOf(name)!.sizedRects, rects, reason: name);
+    }
+  });
+
   test('the text files are the three LOTTIE.md "Text layers" names', () {
     expect(
       [

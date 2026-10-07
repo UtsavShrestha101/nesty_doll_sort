@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:nesty_tools/src/dart_format.dart';
@@ -54,10 +55,26 @@ void main() {
     ];
     expect(splashErrors, ['sd_card_alert', 'inventory_2']);
     expect(splashErrors, hasLength(int.parse(splash[1]!)));
+    // m7-5 names the race strip's state glyphs (9.3i) in tokens.json
+    // `layout.rivalStrip.forms.stateGlyph`, not in the README: the ones not
+    // bundled already follow (`more_horiz`).
+    final tokens = jsonDecode(read('design/tokens.json')) as Map;
+    final stateGlyph =
+        ((tokens['layout'] as Map)['rivalStrip'] as Map)['forms'] as Map;
+    final states = [
+      for (final value in (stateGlyph['stateGlyph'] as Map).values)
+        if (value is String) value.split(',').first.trim(),
+    ];
+    final m75 = [
+      for (final glyph in states)
+        if (![...first, ...added, ...splashErrors].contains(glyph)) glyph,
+    ];
+    expect(m75, ['more_horiz']);
     expect(parseGlyphList(read(glyphListPath)), [
       ...first,
       ...added,
       ...splashErrors,
+      ...m75,
     ]);
   });
 

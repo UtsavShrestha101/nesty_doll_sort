@@ -205,9 +205,23 @@ void main() {
       'tail_fill',
     ]);
     expect(of('ui_family_counter').sizedRects, ['glow_rect', 'pill_rect']);
+    for (final name in ['ui_win_ribbon', 'ui_chapter_ribbon']) {
+      expect(of(name).sizedRects, [
+        'band_rect',
+        'edge_rect',
+        'hi_rect',
+      ], reason: name);
+    }
     expect(of('ui_chest').tintFills, isEmpty);
     final source = fxSpecSource(facts);
     expect(source, contains("sizedRects: ['glow_rect', 'pill_rect'],"));
+    expect(
+      RegExp(
+        "sizedRects: \\['band_rect', 'edge_rect', 'hi_rect'\\],",
+      ).allMatches(source),
+      hasLength(2),
+      reason: 'the two ribbons (m7-5)',
+    );
     expect(
       RegExp('tintFills:').allMatches(source),
       hasLength(3),

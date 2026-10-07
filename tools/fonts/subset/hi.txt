@@ -2,11 +2,12 @@
 #
 # The Baloo 2 subset (tokens.json font.scripts.deva, locales hi)
 # that tools/fonts/build_fonts.sh cuts with pyftsubset --unicodes-file.
-# The whole Devanagari block (pyftsubset keeps the conjuncts and matras through GSUB/GPOS closure), ZWNJ/ZWJ and the dotted circle the shaper inserts.
+# The whole Devanagari block (pyftsubset keeps the conjuncts and matras through GSUB/GPOS closure), ZWNJ/ZWJ and the dotted circle the shaper inserts, and the rupee sign (m7-5: ₹ draws in Baloo 2 in every locale, through the fallback).
 #
 # Whole blocks:
 U+0900-097F # Devanagari
 U+200C-200D # ZWNJ, ZWJ
+U+20B9 # rupee sign
 U+25CC # dotted circle
 #
 # Characters outside the blocks that Fredoka and Nunito do not draw, from:

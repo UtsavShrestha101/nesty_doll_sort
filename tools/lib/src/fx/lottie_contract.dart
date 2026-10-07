@@ -294,8 +294,9 @@ final class LottieFileContract {
   final Set<String> tintFills;
 
   /// Exactly the rectangles named `<part>_rect` the file has (LOTTIE.md
-  /// "Tint and width": the family counter's `pill_rect` and `glow_rect`,
-  /// which `ValueDelegate.rectangleSize` widens). Each must be a rectangle.
+  /// "Tint and width": the family counter's `pill_rect` and `glow_rect`;
+  /// since m7-5 the ribbons' `band_rect`, `edge_rect` and `hi_rect`), which
+  /// `ValueDelegate.rectangleSize` widens. Each must be a rectangle.
   final Set<String> sizedRects;
 
   /// Exactly the text layer names; only the three text files have any.
@@ -310,6 +311,11 @@ const _moverTargetParts = {
   'target_lid',
   'target_body',
 };
+
+/// The ribbons' named rectangles (LOTTIE.md m7-5): `band_rect`, `edge_rect`
+/// and `hi_rect` on `band`, which the game resizes to set the band's width
+/// (`tokens.winRibbon.size.rects`; the tails move by the half-difference).
+const _ribbonRects = {'band_rect', 'edge_rect', 'hi_rect'};
 
 /// The ribbons' named fills (LOTTIE.md m7-4 "Tint and width"): `band_fill`,
 /// `edge_fill` and `hi_fill` on `band`, `tail_fill` and `fold_fill` on
@@ -652,8 +658,10 @@ const lottieContracts = [
     anchor: LottiePoint(65, 55),
     loops: true,
   ),
-  // The ribbons: 410 wide since v3 (band 336, tails 22 past it); the game's
-  // own text fits a 312×40 (win) or 312×32 (chapter) box on the anchor.
+  // The ribbons: a 410-wide canvas since v3. m7-5: the win band is 290 × 56
+  // with tails to ±167, the chapter band stays 336; the game's own text fits
+  // a 266×40 (win) or 312×32 (chapter) box on the anchor, and both bands
+  // take a width through their named rects.
   LottieFileContract(
     'ui_win_ribbon',
     width: 410,
@@ -663,6 +671,7 @@ const lottieContracts = [
     anchor: LottiePoint(205, 55),
     requiredLayers: {'ribbon'},
     tintFills: _ribbonFills,
+    sizedRects: _ribbonRects,
     textLayers: ['label', 'label_shadow'],
   ),
   LottieFileContract(
@@ -674,6 +683,7 @@ const lottieContracts = [
     anchor: LottiePoint(205, 50),
     requiredLayers: {'ribbon'},
     tintFills: _ribbonFills,
+    sizedRects: _ribbonRects,
     textLayers: ['label', 'label_shadow'],
   ),
   LottieFileContract(

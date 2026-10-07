@@ -174,16 +174,17 @@ void main() {
       // blank stand and blank tower, 4 × 3), 10 chapter themes, 23 SFX (WAV)
       // + 2 music loops and 5 jingles (OGG), 37 Lottie files, 10 figurines ×
       // (earned + locked) museum PNGs, and m7-3's UI art: 24 badges, 2
-      // chests, 4 rival portraits, 2 sprites, 3 stars.
+      // chests, 4 rival portraits, 2 sprites, 3 stars. m7-5 adds a SFX
+      // (gift_claim), the gift glyph, the slot chip and the slot sprite.
       expect(counts, {
         'skins': 14,
         'symbols': 11,
         'board': 30,
         'themes': 10,
-        'audio': 30,
+        'audio': 31,
         'lottie': 37,
         'museum': 20,
-        'ui': 35,
+        'ui': 38,
       });
       expect(
         [
@@ -192,7 +193,7 @@ void main() {
                 .where((a) => a.destination.startsWith('ui/$folder/'))
                 .length,
         ],
-        [24, 2, 4, 2, 3],
+        [24, 3, 1, 4, 3, 3],
       );
       expect(
         _destinationsOf(plan),
@@ -215,6 +216,11 @@ void main() {
           'ui/badges/first_family_locked.svg',
           'ui/rivals/rival_locked.svg',
           'ui/stars/star_glow.svg',
+          // m7-5: the daily gift's art and sound.
+          'ui/gift/gift_glyph.svg',
+          'ui/chest/chip_slot.svg',
+          'ui/sprites/slot_flight.svg',
+          'audio/gift_claim.wav',
         ]),
       );
       expect(
@@ -410,7 +416,7 @@ void main() {
       final issues = _plan(root).issues;
       expect(issues, [
         'design/ui/frames: unknown UI art folder (expected badges, chest, '
-            'rivals, sprites, stars, icons, notification)',
+            'gift, rivals, sprites, stars, icons, notification)',
         'design/ui/icons/share.svg: icons ship as glyphs of the bundled '
             'font; add the glyph to tokens.json `icons` and '
             'tools/fonts/nesty_symbols.txt instead',

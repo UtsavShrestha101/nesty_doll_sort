@@ -71,3 +71,5 @@ layers
 # The splash error views (ui-spec-game C9), not yet in tokens.json `icons`.
 sd_card_alert
 inventory_2
+# m7-5 (layout.rivalStrip.forms.stateGlyph, 9.3i): the race strip's thinking glyph.
+more_horiz

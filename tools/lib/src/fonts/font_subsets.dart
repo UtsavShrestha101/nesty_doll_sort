@@ -61,10 +61,12 @@ const scriptSubsets = [
     why:
         'The whole Devanagari block (pyftsubset keeps the conjuncts and '
         'matras through GSUB/GPOS closure), ZWNJ/ZWJ and the dotted circle '
-        'the shaper inserts.',
+        'the shaper inserts, and the rupee sign (m7-5: ₹ draws in Baloo 2 in '
+        'every locale, through the fallback).',
     blocks: [
       (first: 0x0900, last: 0x097F, name: 'Devanagari'),
       (first: 0x200C, last: 0x200D, name: 'ZWNJ, ZWJ'),
+      (first: 0x20B9, last: 0x20B9, name: 'rupee sign'),
       (first: 0x25CC, last: 0x25CC, name: 'dotted circle'),
     ],
   ),

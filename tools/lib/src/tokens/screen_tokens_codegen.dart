@@ -24,6 +24,8 @@ import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
 
+part 'screen_tokens_m75.dart';
+
 /// The per-screen sections, tokens.json path → generated class.
 const screenTokenSections = {
   'layout.tutorial': 'TutorialTokens',
@@ -63,6 +65,17 @@ const screenTokenSections = {
   'chestModal': 'ChestModalTokens',
   'settings': 'SettingsTokens',
   'textLink': 'TextLinkTokens',
+  // Tokens v5 (m7-5): the splash's top fade (item 11), the chest's +1 slot
+  // chip and the daily gift (App Flow section 13).
+  'layout.splash': 'SplashTokens',
+  'chest.slotChip': 'ChestSlotChipTokens',
+  'gift.button': 'GiftButtonTokens',
+  'gift.sheet': 'GiftSheetTokens',
+  'gift.tile': 'GiftTileTokens',
+  'gift.tally': 'GiftTallyTokens',
+  'gift.claim': 'GiftClaimTokens',
+  'gift.reducedMotion': 'GiftReducedMotionTokens',
+  'gift.short': 'GiftShortTokens',
 };
 
 /// One generated class for the section at [path] (a [screenTokenSections]
@@ -75,7 +88,10 @@ ConstClass screenTokens(
 }) {
   final note = t.has('$path.\$note') ? t.peek('$path.\$note') : null;
   // The 16:9 sections are measured on the short screen.
-  final short = path.endsWith('Short') || path == 'layout.short169';
+  final short =
+      path.endsWith('Short') ||
+      path == 'layout.short169' ||
+      path == 'gift.short';
   final c = ConstClass(
     className,
     'tokens.json `$path`${note == null ? '' : ' ($note)'}, in dp on the '
@@ -90,11 +106,20 @@ ConstClass screenTokens(
       t.documented(leaf, reason: 'a design note, in the class doc');
       continue;
     }
-    final member = [
-      memberName(segments.first),
-      for (final s in segments.skip(1))
-        '${s[0].toUpperCase()}${s.substring(1)}',
-    ].join();
+    final String member;
+    try {
+      member = [
+        memberName(segments.first),
+        for (final s in segments.skip(1))
+          '${s[0].toUpperCase()}${s.substring(1)}',
+      ].join();
+    } on FormatException {
+      // A reserved word (m7-5 `gift.tally.in`) is fine when a special parser
+      // names the members itself.
+      if (_specials[leaf] == null && _m75Specials[leaf] == null) rethrow;
+      _emitLeaf(_Leaf(t, c, env, leaf, segments.join('_')));
+      continue;
+    }
     _emitLeaf(_Leaf(t, c, env, leaf, member));
   }
   return c;
@@ -167,6 +192,9 @@ const _intKeys = {
   'undoSlot',
   'restartSlot',
   'coins',
+  // Tokens v5 (m7-5): a count of rows, and a flight's `ms`.
+  'foldedAbove',
+  'ms',
 };
 
 /// List keys whose two numbers are a width and a height.
@@ -183,6 +211,8 @@ const _sizeKeys = {
   // Tokens v4 (m7-4): the chest's art box, textFit's text boxes.
   'artBox',
   'box',
+  // Tokens v5 (m7-5): the gift sheet's day-7 chest.
+  'chest',
 };
 
 /// Keys whose string is a glyph of the bundled font.
@@ -302,9 +332,9 @@ const _exactLeaves = {
 
 void _emitLeaf(_Leaf l) {
   final t = l.t;
-  final special = _specials[l.path];
+  final special = _specials[l.path] ?? _m75Specials[l.path];
   if (special != null) return special(l);
-  final reason = _documentedLeaves[l.path];
+  final reason = _documentedLeaves[l.path] ?? _m75DocumentedLeaves[l.path];
   if (reason != null) {
     t.documented(l.path, reason: reason);
     return;
@@ -332,7 +362,7 @@ void _emitLeaf(_Leaf l) {
     }
     return;
   }
-  final exact = _exactLeaves[l.path];
+  final exact = _exactLeaves[l.path] ?? _m75ExactLeaves[l.path];
   if (exact != null) {
     final (text, why) = exact;
     t.documentedExact(l.path, text, reason: why);
@@ -482,6 +512,9 @@ void _emitString(_Leaf l) {
     l.add(linearGradientLiteral(parseCssLinearGradient(value), l.path));
     return;
   }
+  // Tokens v5 (m7-5): a colour by name, an art reference, a radial
+  // gradient, a copy.md id.
+  if (_m75String(l, value)) return;
   try {
     final shadows = parseBoxShadowList(value);
     l.add(shadowListLiteral(shadows), type: 'List<NestyShadow>');
@@ -523,8 +556,14 @@ String strokeLiteral(CssStroke stroke) =>
     'color: ${colorLiteral(stroke.color)})';
 
 /// A `TextStyle` for [font], its family and weight checked against the
-/// bundled fonts (tokens.json `font`).
-String textStyleLiteral(TokenReader t, FontSpec font, String path) {
+/// bundled fonts (tokens.json `font`), with an optional [letterSpacing] in
+/// logical px (tokens v5's `letter-spacing <n>em`, already × the size).
+String textStyleLiteral(
+  TokenReader t,
+  FontSpec font,
+  String path, {
+  double? letterSpacing,
+}) {
   final role = switch (font.family) {
     'Fredoka' => 'display',
     'Nunito' => 'body',
@@ -540,7 +579,7 @@ String textStyleLiteral(TokenReader t, FontSpec font, String path) {
       '${font.family} ${font.weight} is not a bundled weight ($weights)',
     );
   }
-  return 'TextStyle(${['fontFamily: ${stringLiteral(font.family)}', 'fontSize: ${doubleLiteral(font.size)}', 'fontWeight: FontWeight.w${font.weight}', 'fontFamilyFallback: AppFontTokens.${role}Fallback', if (font.height != null) 'height: ${doubleLiteral(font.height!)}', if (font.height != null) 'leadingDistribution: TextLeadingDistribution.even', if (font.color != null) 'color: ${colorLiteral(font.color!)}', if (font.tabular) 'fontFeatures: [FontFeature.tabularFigures()]'].join(', ')})';
+  return 'TextStyle(${['fontFamily: ${stringLiteral(font.family)}', 'fontSize: ${doubleLiteral(font.size)}', 'fontWeight: FontWeight.w${font.weight}', 'fontFamilyFallback: AppFontTokens.${role}Fallback', if (font.height != null) 'height: ${doubleLiteral(font.height!)}', if (font.height != null) 'leadingDistribution: TextLeadingDistribution.even', if (font.color != null) 'color: ${colorLiteral(font.color!)}', if (letterSpacing != null) 'letterSpacing: ${doubleLiteral(letterSpacing)}', if (font.tabular) 'fontFeatures: [FontFeature.tabularFigures()]'].join(', ')})';
 }
 
 /// A `LinearGradient` for a CSS `linear-gradient(…)`: the angle as the
@@ -1439,14 +1478,21 @@ final Map<String, void Function(_Leaf)> _specials = {
       );
   },
   'layout.generating.spinner': (l) {
-    final m = l.match('(ui_spinner) at (\\d+) dp');
+    // m7-5 (item 10): the colours are ui_spinner.json's own (recoloured by
+    // the design), so only the size is the game's.
+    final m = l.match(
+      '(ui_spinner) at (\\d+) dp: orange arc $_color \\((\\d+)°\\) on a '
+      '$_color track \\(m7-5\\)',
+    );
     if (lottieContractOf(m[1]!) == null) {
       throw TokenFormatException(l.path, 'no Lottie contract ${m[1]}');
     }
     l.add(
       doubleLiteral(num.parse(m[2]!)),
       name: 'spinnerSize',
-      doc: '`ui_spinner`, dp.',
+      doc:
+          '`ui_spinner`, dp: its own ${m[3]} arc (${m[4]}°) on a ${m[5]} '
+          'track, baked into the file (m7-5).',
     );
   },
   'shop.detailPanel.tag': (l) {

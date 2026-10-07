@@ -143,8 +143,8 @@ void main() {
     test('every design/audio WAV passes, C2PA chunk and all', () {
       final wavs = designFiles('.wav');
       // 17 of v2, plus m7's star_1..3, chest_wiggle, chest_open and
-      // rival_complete.
-      expect(wavs, hasLength(23));
+      // rival_complete, and m7-5's gift_claim.
+      expect(wavs, hasLength(24));
       for (final file in wavs) {
         expect(
           validateSfxWav(file.readAsBytesSync()),

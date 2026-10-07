@@ -11,6 +11,7 @@ import 'package:nesty_tools/src/fonts/bundled_fonts.dart';
 import 'package:nesty_tools/src/fonts/font_subsets.dart';
 import 'package:nesty_tools/src/repo_root.dart';
 import 'package:nesty_tools/src/tokens/design_tokens_codegen.dart';
+import 'package:nesty_tools/src/tokens/script_fonts.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
@@ -28,10 +29,14 @@ void main() {
       jsonDecode(File(p.join(root.path, tokensJsonPath)).readAsStringSync())
           as Map<String, Object?>;
   final font = tokens['font']! as Map<String, Object?>;
+  // The per-glyph script faces (deva, jpan). m7-5's whole-string Turkish
+  // face (`latnTr`) is in no fallback chain; the lane that bundles it adds
+  // its own coverage of the `tr` strings.
   final scripts = {
     for (final MapEntry(:key, :value)
         in (font['scripts']! as Map<String, Object?>).entries)
-      if (!key.startsWith(r'$')) key: value! as Map<String, Object?>,
+      if (!key.startsWith(r'$') && !isWholeStringScript(key))
+        key: value! as Map<String, Object?>,
   };
   String latin(String role) =>
       (font[role]! as Map<String, Object?>)['family']! as String;
@@ -175,6 +180,97 @@ void main() {
       );
     }
   });
+
+  group(
+    'the whole-string Turkish face (m7-5 item 28, font.scripts.latnTr)',
+    () {
+      final latnTr = {
+        for (final MapEntry(:key, :value)
+            in (font['scripts']! as Map<String, Object?>).entries)
+          if (isWholeStringScript(key)) key: value! as Map<String, Object?>,
+      }['latnTr']!;
+      final family = wholeStringFamilyName(
+        latnTr['family']! as String,
+        'latnTr',
+      );
+      final weights = (latnTr['weights']! as Map<String, Object?>).map(
+        (k, v) => MapEntry(int.parse(k.substring('display'.length)), v! as int),
+      );
+
+      test('is its own family, one file per Fredoka weight', () {
+        expect(family, 'Baloo2LatnTr');
+        expect(fonts, contains(family));
+        expect(weights.keys.toSet(), latinWeights('display').toSet());
+        for (final MapEntry(key: fredoka, value: baloo) in weights.entries) {
+          final file = matchWeight(fonts[family]!, fredoka);
+          expect(
+            file.info.weightClass,
+            fredoka,
+            reason: '$file answers $fredoka',
+          );
+          expect(
+            file.outlineWeight,
+            baloo,
+            reason: '$file draws Baloo 2 $baloo',
+          );
+        }
+      });
+
+      test('draws every tr string whole, in its display chain', () {
+        final arb = File(p.join(root.path, arbDir, 'app_tr.arb'));
+        final failures = <String>[];
+        for (final MapEntry(:key, :value) in arbValues(
+          arb.readAsStringSync(),
+        ).entries) {
+          if (isOsDrawnArbKey(key)) continue;
+          for (final c in value.runes) {
+            if (isExemptCharacter(c)) continue;
+            for (final weight in weights.keys) {
+              if (!matchWeight(fonts[family]!, weight).info.covers(c)) {
+                failures.add(
+                  '${_hex(c)} ${String.fromCharCode(c)} in "$key" '
+                  'at $weight',
+                );
+              }
+            }
+          }
+        }
+        expect(failures, isEmpty, reason: failures.join('\n'));
+      });
+
+      test('draws the Turkish letters Fredoka lacks, and the rupee', () {
+        final fredoka = matchWeight(fonts['Fredoka']!, 700).info;
+        for (final c in 'ğĞİşŞ'.runes) {
+          expect(
+            fredoka.covers(c),
+            isFalse,
+            reason: 'Fredoka lacks ${_hex(c)}',
+          );
+          for (final weight in weights.keys) {
+            expect(
+              matchWeight(fonts[family]!, weight).info.covers(c),
+              isTrue,
+              reason: '${_hex(c)} at $weight',
+            );
+          }
+        }
+        // The rupee draws in Baloo 2 in every locale (the deva fallback).
+        expect(
+          matchWeight(
+            fonts[scriptFamilyName('Baloo 2', 'display')]!,
+            700,
+          ).info.covers(0x20B9),
+          isTrue,
+        );
+      });
+
+      test('is in no fallback chain (whole strings, never per glyph)', () {
+        for (final role in fontRoles.keys) {
+          expect(chain(role), isNot(contains(family)));
+        }
+      });
+    },
+  );
 
   test('SHA256SUMS lists exactly the bundled font files', () {
     final sums = File(

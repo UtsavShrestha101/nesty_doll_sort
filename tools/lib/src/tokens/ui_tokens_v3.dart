@@ -4,6 +4,7 @@
 // values the design repeats, which are documentation only (phase 4
 // architecture §1.1 policy 2: rules never come from tokens; the app's
 // `rule_tokens_test` pins each to its source of truth).
+import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
 import 'package:nesty_tools/src/tokens/screen_tokens_codegen.dart';
@@ -60,13 +61,18 @@ void _documentRules(TokenReader t) {
           'D93); rule_tokens_test pins the numbers',
     );
   }
-  t.documentedTree(
-    'chest',
-    reason:
-        'rules, never read from tokens: MilestoneChest and '
-        'RemoteConfigKeys (chest_coins, chest_hints, streak7_reward; '
-        'spec-prop §7.3, §7.4); rule_tokens_test pins the numbers',
-  );
+  // Every `chest` leaf but the +1 slot chip's look (tokens v5, m7-5), which
+  // `ChestSlotChipTokens` emits.
+  for (final key in t.keys('chest')) {
+    if (key == 'slotChip') continue;
+    t.documentedTree(
+      'chest.$key',
+      reason:
+          'rules, never read from tokens: MilestoneChest and '
+          'RemoteConfigKeys (chest_coins, chest_hints, streak7_reward; '
+          'spec-prop §7.3, §7.4); rule_tokens_test pins the numbers',
+    );
+  }
 }
 
 ConstClass _shop(TokenReader t) {
@@ -438,5 +444,92 @@ ConstClass _winRibbon(TokenReader t) {
       doc: 'The colour delegate\'s key path to the `${key}_fill` fills.',
     );
   }
+  _winRibbonSize(t, c);
   return c;
+}
+
+/// Tokens v5 (m7-5 item 5; LOTTIE.md m7-5) `winRibbon.size`: the win band's
+/// size, its reach with the tails, the text box, the rects that set a width
+/// (`FxSpec.sizedRects`, checked against both ribbons' contracts) and the
+/// widest it may draw.
+void _winRibbonSize(TokenReader t, ConstClass c) {
+  const name = 'WinRibbonTokens';
+  const p = 'winRibbon.size';
+  for (final key in t.keys(p)) {
+    const known = {r'$note', 'band', 'reach', 'textBox', 'rects', 'wider'};
+    if (!known.contains(key)) {
+      throw TokenFormatException('$p.$key', 'unknown ribbon size field');
+    }
+  }
+  t.documented('$p.\$note', reason: 'a design note (LOTTIE.md m7-5)');
+  final band = t.numbers('$p.band', symbol: '$name.bandSize', length: 2);
+  c.add(
+    'bandSize',
+    sizeLiteral(band[0], band[1]),
+    doc:
+        '`ui_win_ribbon`\'s band as authored (m7-5): `band_rect` and '
+        '`edge_rect`; `hi_rect` is 16 dp narrower.',
+  );
+  final reach = t.number('$p.reach', symbol: '$name.reach');
+  if (reach <= band[0]) {
+    throw TokenFormatException('$p.reach', 'the tails reach past the band');
+  }
+  c.add(
+    'reach',
+    doubleLiteral(reach),
+    doc:
+        'The ribbon\'s width at rest with its tails: for another band width '
+        'w, move `tail_l` / `tail_r` by ∓(w − bandSize.width) / 2.',
+  );
+  final box = t.numbers('$p.textBox', symbol: '$name.textBox', length: 2);
+  c.add(
+    'textBox',
+    sizeLiteral(box[0], box[1]),
+    doc: 'The game\'s own label fits this box, centred on the anchor.',
+  );
+  final rects = <String>{};
+  for (final key in t.keys('$p.rects')) {
+    final path = '$p.rects.$key';
+    final member = '${memberName(key)}RectKeyPath';
+    final parts = t.strings(path, symbol: '$name.$member');
+    if (parts.length != 3 || parts[0] != 'band' || parts[2] != '${key}_rect') {
+      throw TokenFormatException(
+        path,
+        "expected ['band', <group>, '${key}_rect']",
+      );
+    }
+    rects.add(parts[2]);
+    c.add(
+      member,
+      '[${parts.map(stringLiteral).join(', ')}]',
+      type: 'List<String>',
+      doc:
+          'The size delegate\'s key path to `${key}_rect` '
+          '(`ValueDelegate.rectangleSize`).',
+    );
+  }
+  final wider = t.string('$p.wider', symbol: '$name.maxWidthInset');
+  final m = RegExp(
+    r'^never wider than screen − (\d+); (ui_chapter_ribbon) has the same rect '
+    r'names$',
+  ).firstMatch(wider);
+  if (m == null) throw TokenFormatException('$p.wider', 'unexpected wording');
+  for (final file in ['ui_win_ribbon', m[2]!]) {
+    final contract = lottieContractOf(file);
+    if (contract == null ||
+        contract.sizedRects.length != rects.length ||
+        !contract.sizedRects.containsAll(rects)) {
+      throw TokenFormatException(
+        '$p.rects',
+        '$rects are not $file\'s named rects (${contract?.sizedRects})',
+      );
+    }
+  }
+  c.add(
+    'maxWidthInset',
+    doubleLiteral(num.parse(m[1]!)),
+    doc:
+        'A ribbon is never wider than the screen − this; '
+        '`ui_chapter_ribbon` takes a width through the same rects.',
+  );
 }

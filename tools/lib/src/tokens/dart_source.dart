@@ -109,6 +109,12 @@ final class ConstClass {
   final _members = <String>[];
   final _names = <String>{};
 
+  /// The display family (tokens `font.display.family`) whose TextStyles are
+  /// emitted as getters through `DisplayFace.of`, so a locale can draw them
+  /// in another face, whole strings (m7-5 item 28: Turkish draws Fredoka's
+  /// roles in Baloo 2). Null keeps every member const.
+  String? displayFace;
+
   /// Adds `static const [member] = [expression];` (typed when [type] is
   /// given) and returns the qualified symbol for the parity ledger.
   String add(String member, String expression, {String? doc, String? type}) {
@@ -131,7 +137,23 @@ final class ConstClass {
   String build() => [
     docComment(doc, indent: ''),
     'abstract final class $name {',
-    _members.join('\n\n'),
+    _members.map(_routed).join('\n\n'),
     '}',
   ].join('\n');
+
+  /// [member] as a `DisplayFace.of` getter when it is a [displayFace]
+  /// TextStyle; any other member as it is.
+  String _routed(String member) {
+    final family = displayFace;
+    if (family == null) return member;
+    final m = RegExp(
+      r'^(.*?)  static const (?:TextStyle )?(\w+) = (TextStyle\(.*\));$',
+      dotAll: true,
+    ).firstMatch(member);
+    if (m == null || !m[3]!.contains('fontFamily: ${stringLiteral(family)}')) {
+      return member;
+    }
+    return '${m[1]}  static TextStyle get ${m[2]} => '
+        'DisplayFace.of(const ${m[3]});';
+  }
 }

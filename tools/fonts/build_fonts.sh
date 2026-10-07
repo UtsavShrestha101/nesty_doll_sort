@@ -41,6 +41,9 @@
 #                                              MPLUSRounded1c{Display,Body}-*.ttf
 #            (Latin letters and digits stay Fredoka/Nunito: the app lists
 #            these as fontFamilyFallback, so they draw only their script.)
+#   Baloo 2  again, for Turkish (font.scripts.latnTr): wght=500/600/700
+#            subset to subset/tr.txt (Latin, Latin Extended-A), whole strings,
+#            → Baloo2LatnTr-{Medium,SemiBold,Bold}.ttf
 #   Symbols  bake the FILL=1 glyph swap into the cmap
 #            (bake_feature_variations.py), subset to tools/fonts/nesty_symbols.txt
 #            (codepoints only, no layout tables), then FILL=1 wght=600 GRAD=0
@@ -185,6 +188,19 @@ done
   "$SCRIPT/deva" "$OUT"
 "$WORK/venv/bin/python" "$HERE/script_faces.py" "$TOKENS" jpan \
   "M PLUS Rounded 1c" "$SCRIPT/jpan" "$OUT"
+
+echo "==> Turkish face (Baloo 2, whole strings: font.scripts.latnTr)"
+# Fredoka lacks ğ Ğ İ ş Ş: in tr every Fredoka role draws in Baloo 2, whole
+# strings, never per glyph. Latin + Latin Extended-A at the display weights,
+# its own family (Baloo2LatnTr), the same pinned Baloo2-VF.ttf as deva.
+mkdir -p "$SCRIPT/latn"
+for pair in 500:Medium 600:SemiBold 700:Bold; do
+  style="${pair#*:}"
+  script_subset "$WORK/Baloo2-$style-full.ttf" "$SCRIPT/latn/Baloo2-$style.ttf" \
+    "$SUBSETS/tr.txt" --notdef-outline
+done
+"$WORK/venv/bin/python" "$HERE/script_faces.py" "$TOKENS" latnTr "Baloo 2" \
+  "$SCRIPT/latn" "$OUT" Baloo2LatnTr
 
 echo "==> NestySymbolsRounded subset"
 # name → codepoint for exactly the listed glyphs, in list order.

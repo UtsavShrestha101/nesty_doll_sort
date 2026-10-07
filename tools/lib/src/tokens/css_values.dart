@@ -353,6 +353,49 @@ bool isCssLinearGradient(String value) {
   }
 }
 
+/// A parsed CSS `radial-gradient(circle at <x>% <y>%, <stop>…)` (tokens v5's
+/// `gift.button.readyDot.face`): the centre as fractions of the box, and the
+/// stops. The size is CSS's default, farthest-corner.
+typedef CssRadialGradient = ({double cx, double cy, List<GradientStop> stops});
+
+final _radialGradient = RegExp(
+  r'^radial-gradient\(\s*circle at (\d+(?:\.\d+)?)% (\d+(?:\.\d+)?)%\s*,(.+)\)$',
+);
+
+/// Parses `radial-gradient(circle at 35% 30%, #FFF3B0, #F5C518 55%, #C9960A)`,
+/// stops as [parseGradientStop] reads them.
+CssRadialGradient parseCssRadialGradient(String value) {
+  final m = _radialGradient.firstMatch(value.trim());
+  if (m == null) {
+    throw FormatException(
+      'Expected radial-gradient(circle at <x>% <y>%, …)',
+      value,
+    );
+  }
+  final cx = double.parse(m[1]!) / 100;
+  final cy = double.parse(m[2]!) / 100;
+  if (cx > 1 || cy > 1) throw FormatException('Centre outside the box', value);
+  final stops = [
+    for (final stop in _splitTopLevel(m[3]!, ','))
+      parseGradientStop(stop.trim()),
+  ];
+  if (stops.length < 2) {
+    throw FormatException('A gradient needs at least two stops', value);
+  }
+  return (cx: cx, cy: cy, stops: stops);
+}
+
+/// True when [value] is a `radial-gradient(…)` [parseCssRadialGradient]
+/// accepts.
+bool isCssRadialGradient(String value) {
+  try {
+    parseCssRadialGradient(value);
+    return true;
+  } on FormatException {
+    return false;
+  }
+}
+
 /// A parsed font shorthand of tokens v3: `Fredoka 700 16 #5B3A21`,
 /// `Nunito 800 9.5`, `Fredoka 700 17 #3242A8 tabular`, and the prose tail
 /// the design sometimes writes after it (`, sentence case`, `; thinking = …`,

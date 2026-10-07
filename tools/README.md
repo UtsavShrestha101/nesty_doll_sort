@@ -99,6 +99,23 @@ Turns `design/tokens.json` into `static const` Dart:
   `AppFontTokens`' script families, their weight maps, size factors, line
   heights and letter spacing, and the `displayFallback` / `bodyFallback`
   lists that every generated `TextStyle` sets as `fontFamilyFallback`.
+  Tokens v5 (m7-5) adds the daily gift's sections (`GiftButtonTokens`,
+  `GiftSheetTokens`, `GiftTileTokens`, `GiftTallyTokens`, `GiftClaimTokens`,
+  `GiftReducedMotionTokens`, `GiftShortTokens`; `gift.chest` is copy ids and
+  behaviour, documented with checks; `gift.button.hiddenUntil` is a rule),
+  `ChestSlotChipTokens` (the +1 slot chip is look, so it leaves the `chest`
+  rules), `SplashTokens` (the top fade, a `PxLinearGradient`), one
+  `<Surface>TypeTokens` class per `type.<surface>` (a `TextStyle` per entry,
+  `…Caps` for capitals, `…ShortSize` for 16:9; the gift's sizes are checked
+  against `gift.sheet` and `gift.short`), `WinRibbonTokens`' size, reach,
+  text box, rect key paths (checked against both ribbons' `sizedRects`) and
+  `maxWidthInset`, `MotionTokens.pickWobbleToMove*`, and
+  `font.scripts.latnTr`: a whole-string face (`lib/src/tokens/
+  script_fonts.dart`: a `latn…` key) that replaces Fredoka in its locales,
+  emitted as `AppFontTokens.latnTrFamily` (`Baloo2LatnTr`), `latnTrLocales`,
+  `latnTrDisplayWeights` (every bundled Fredoka weight must be mapped),
+  `latnTrSizeFactor` and `latnTrTitleLineHeight`, and kept out of the
+  fallback lists.
 
 The generic emitter turns each leaf into the Dart type its shape says: a
 number is a `double` (an `int` for counts and `…Ms`), `padding` an
@@ -110,8 +127,12 @@ reference, `Fredoka|Nunito <weight> <size>[/<line height>] …` a `TextStyle`
 (an unbundled weight fails; a line height below 4 is a multiple, above it
 px), `<n>px <color>` a `TokenStroke`,
 `linear-gradient(…)` a `LinearGradient`, a box-shadow a `List<NestyShadow>`,
-a glyph key the glyph's name (checked against `icons`). A `note` or `use`
-leaf is a design note. Any other string is prose: a strict parser reads its
+a glyph key the glyph's name (checked against `icons`). Tokens v5 adds
+`color.<name>` (a checked `AppColorTokens` reference), `radial-gradient(circle
+at x% y%, …)` (a `RadialGradient`), an art path `ui/<folder>/<file>.svg`
+(documented: `UiArt` draws it; `… at <n>` emits `<member>Size`), and a
+copy.md id under `label`, `a11y` or `body` (documented: the ARB key). A
+`note` or `use` leaf is a design note. Any other string is prose: a strict parser reads its
 numbers, or a list in the emitter names it with its reason; an unknown string
 fails the build.
 
@@ -164,10 +185,10 @@ game:
 | `board/*.svg` | 18 (not `slot-stand.svg` / `tower-base.svg`, whose pips are baked in) |
 | `board/chNN/*.svg` | 12: chapters 7–10's own plank, blank stand and blank tower (m7-4 A.5), from `design/board/chNN/`; the folder and its files are exactly what tokens.json `theme.chapters.N.boardArt` lists |
 | `themes/chNN/background.svg` | 10 |
-| `audio/` | 30: 23 SFX `*.wav` + 7 `*.ogg` (2 music loops, 5 jingles) |
+| `audio/` | 31: 24 SFX `*.wav` (m7-5 adds `gift_claim`) + 7 `*.ogg` (2 music loops, 5 jingles) |
 | `lottie/*.json` | 37 (see "Lottie" below) |
 | `museum/NN-<id>[-locked].png` | 20 figurine PNGs (see below) |
-| `ui/<badges,chest,rivals,sprites,stars>/*.svg` | 35: the M7 UI art (24 badges, 2 chests, 4 rival portraits, 2 flight sprites, 3 stars) |
+| `ui/<badges,chest,gift,rivals,sprites,stars>/*.svg` | 38: the M7 UI art (24 badges, 2 chests and m7-5's slot chip, m7-5's gift glyph, 4 rival portraits, 3 flight sprites with m7-5's `slot_flight`, 3 stars) |
 
 SVGs lose their C2PA `<metadata>` block (about 7.7 KB each) and must pass the
 spec §12.2 rules in `package:nesty_render/svg_tools.dart` (no filters, masks,
@@ -241,7 +262,9 @@ Every animation ships as Lottie (PROGRESS D40–D52,
   named shapes of "Tint and width": the ribbons' `tintFills` (`band_fill`,
   `edge_fill`, `hi_fill`, `tail_fill`, `fold_fill`) and the family
   counter's `pill_fill`/`glow_fill` and `sizedRects` (`pill_rect`,
-  `glow_rect`; its `icon` null is required). It also lists the image slots (`FxImageSlot` ids and declared sizes:
+  `glow_rect`; its `icon` null is required). m7-5 gives both ribbons
+  `sizedRects` too (`band_rect`, `edge_rect`, `hi_rect`), so the game can
+  set a band's width. It also lists the image slots (`FxImageSlot` ids and declared sizes:
   dolls 512×768, board pieces at 3× their dp size) and, per file, the hooks
   the runtime keys on: the `<role>_size` nulls, `travel`, `target_pos`,
   `drop`, the `rim_tint` and `tint` fills, the text layers, the nulls of

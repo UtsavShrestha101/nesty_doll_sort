@@ -904,6 +904,14 @@ abstract final class MotionTokens {
   /// tokens.json `motion.pick.cancelSettle`.
   static const pickCancelSettleMs = 160;
 
+  /// tokens.json `motion.pick.wobbleToMoveMs`.
+  static const pickWobbleToMoveMs = 80;
+
+  /// When a wobbling doll is dropped its rotation eases to 0 over
+  /// [pickWobbleToMoveMs] of doll_move with this curve, overlapped, so the move
+  /// starts at once and never snaps (m7-5).
+  static const Cubic pickWobbleToMoveCurve = curveEaseOut;
+
   /// tokens.json `motion.move.duration`.
   static const moveMs = 260;
 

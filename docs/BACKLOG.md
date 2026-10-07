@@ -462,7 +462,7 @@ Left from phase 4 (the lanes' deferrals, 2026-09-30):
 - [x] Fidelity audit: the rest of D209's list (the paused strip's static "Thinking…", the iOS Share glyph, the coin pill's missing glow during the chest's flights, the splash dolls hidden until the skin loads) — `scratchpad/m7/reports/device-p4.md` §5, D209 (done 2026-10-01: F-SPL, D210: the splash draws the fallback doll from the first frame and cross-fades (`splash_page_test`); F-CH2, D217: the coin pill and Hint badge rings and the trail dots (`reward_ring_test`, `chest_reward_sequence_test`, `gameplay_view_test`). The paused strip and the share glyph stay as built until Claude Design answers follow-up 8.6 and 8.7. The citation of the wiped scratchpad report is replaced by PROGRESS D209. The frames' device comparison waits for the device run (5a-dev, blocked on disk: 16 GB free of the 20 GB floor).)
 - [x] design: Records' "Families completed" cell, its copy and glyph (`TODO(design)` in `records_page.dart`; Q159) — device run p4, D209 (done 2026-10-04: m7-4's DELIVERY 8.5 answered it: "Families completed" with the family counter's doll mark; `meta-06-records` asserts the label and a `DollMark`, 5d-i)
 - [ ] design: where a capped win says why on a short phone, since the helper note has no room there (11.2d, C11) — device run p4, D209
-- [ ] Claude Design's answers to "Follow-up after m7-3" (`docs/plans/claude-design-request-m7.md`): the tokens, copy ids, screen-reader strings and looks to confirm; take `nesty-design-m7-4` through the import checks — integrator, lead note 13, D202
+- [x] (done 2026-10-07: delivered and imported, D281; Part 2's answers are wired in D287–D289) Claude Design's answers to "Follow-up after m7-3" (`docs/plans/claude-design-request-m7.md`): the tokens, copy ids, screen-reader strings and looks to confirm; take `nesty-design-m7-4` through the import checks — integrator, lead note 13, D202
 - [ ] Rows of 5 and 6 with tall pieces: a tall case, its ice and a row of 6 are undesigned (the case is capped at the pitch − 2 dp, a 96-wide ice can overlap a neighbour by up to 2.4 dp), and `fourShelves` has no glass or ice sizes — lane B, `TODO(design)` in `board_geometry.dart`, `board_layout.dart`, `shelf_presets.dart`; follow-up §5
 - [x] Device check of the board's short motions: the empty stand's dip, the padlock ping, the tag pop and the hover glow (16–240 ms). `board_layouts_test` polls their tweens and shoots before and after — lane B, the device stage (done 2026-10-05: `board_layouts_test` passes on the iPhone 16e and the Android emulator in the `/milestone M7` gate, its polls and before/after shots included)
   - 2026-10-01 (phase 5A): `board_layouts_test` polls and shoots them; the run has not happened (disk).
@@ -502,7 +502,7 @@ Evidence: PROGRESS "Phase 5, m7-4" and its Verification; the audit is
 - [x] The English freeze for 5B and the translations' integration (5B-5 and after) — D240, `prompts/5b-integrate-additions.txt`; M7 (done 2026-10-05: the English freeze is 5b-copy's sha256 `1162e29f…`; the nine ARBs integrated by 5b-int, phases A, B1 and B2; D261–D267; the device run's results are pending, the lead appends them)
 - [x] 5B's device run (`nesty-test --device-only --only locales,board,meta,faults,playthrough`, iPhone 16e and Android at 390x844, `build/m7-p5/runs/5b.status`): **pending (the lead appends the results)**, with the fidelity re-shoots 5f-fix2 lists: `b_05_family_complete`, `meta-02-chapters`, `meta-05b-museum-modal`, `01b3_museum_locked_modal`, `f_splash_storage`, `f_splash_content`, `00b_splash_loaded` (now in `faults`) and the skin detail shot (Forest Bear, f7-4b) — 5f-fix2, 5f-e13; M7 (done 2026-10-05: the 5B run stopped on iOS (`objective_c.framework`, stale native assets after an iOS release build); after a `flutter clean`, the `/milestone M7` gate's device stage covered it: locales, board, meta, faults and the playthrough pass on both platforms, with the reruns in PROGRESS "Phase 5, 5C")
 - [x] The visual review of the locales' screenshots (`l10n-<code>-NN_<screen>`) and the E13 re-measure on a warm Android emulator, after the device run — 5B; M7 (the lead appends) (done 2026-10-05: 94 shots (de, hi, ja on both platforms) all ok, ja's "DAY" and "NEW" being the translation review's choices (`reports/5c-loc-*.md`); E13 re-measured as the item above)
-- [ ] design: Fredoka at the pin lacks the Turkish ğ Ğ İ ş Ş (and ₹), so Turkish display text falls back to Nunito mid-word; the coverage test passes because the fallback chain covers them. Ask Claude Design for a Fredoka build with Latin Extended-A, or the owner picks another face (`TODO(design)`; "Follow-up after m7-3" §13) — 5b-fonts, D262; M7
+- [x] design: Fredoka at the pin lacks the Turkish ğ Ğ İ ş Ş (and ₹), so Turkish display text falls back to Nunito mid-word; the coverage test passes because the fallback chain covers them. Ask Claude Design for a Fredoka build with Latin Extended-A, or the owner picks another face (`TODO(design)`; "Follow-up after m7-3" §13) — 5b-fonts, D262; M7 (done 2026-10-07: Turkish display text draws whole strings in Baloo 2, D291, D292)
 - [x] Per-locale tuning of the Shop's tall-script slack (a flat +2 dp today) and the Hindi and Japanese line heights, if the device run shows a clip — 5b-om, D263; M7 (done 2026-10-05: not needed; the gate's 94 locale shots (de, hi, ja on both platforms) show no clip (`build/m7-p5/reports/5c-loc-*.md`))
 - [x] After a new kanji lands in `app_ja.arb` (or any Japanese copy), rerun `gen_font_subsets`, `tools/fonts/build_fonts.sh` (needs the network) and `--verify`; the font coverage test fails until then — 5b-fonts, D262; M7 (done 2026-10-05: a standing procedure, written in `.claude/rules/l10n.md` ("A new Japanese kanji needs `gen_font_subsets`, then `tools/fonts/build_fonts.sh`") and enforced by the font coverage test)
 - [ ] A VoiceOver and TalkBack pass in German, Hindi and Japanese on a phone whose own language differs (a German game on an English phone is read with an English voice; Flutter sets no per-node locale here) — 5B risk 9; the owner (join the checklist [plans/voiceover-checklist.md](plans/voiceover-checklist.md))
@@ -511,7 +511,19 @@ Evidence: PROGRESS "Phase 5, m7-4" and its Verification; the audit is
 
 - [x] `/review` with the security scanner and the ethics lens, and its verified findings fixed — `build/m7-p5/reports/5c-*.md`, PROGRESS "Phase 5, 5C"; M7 (done 2026-10-05: security clean, no P0, 10 code findings fixed, the es/pt/ja "computer rival" wording)
 - [x] The race strip keeps the word "Computer" at 360 dp and up: the dots, then the state line give way (`_StripRoom`), and `computer_word_test` checks 9 locales at 360 and 390 dp, 1.0× and 1.3× — 5c-eth P1, D271; M7 (done 2026-10-05)
-- [ ] design: the race strip's two new forms, the count without dots (a long name, or above 8 families) and the tag on the second line in place of the state line (a long name at 360 dp or 1.3× text). Ask Claude Design to draw them with frame 9.3 (`TODO(design)` in `rival_strip.dart`; "Follow-up after m7-3" §14) — D271; M7
+- [x] design: the race strip's two new forms, the count without dots (a long name, or above 8 families) and the tag on the second line in place of the state line (a long name at 360 dp or 1.3× text). Ask Claude Design to draw them with frame 9.3 (`TODO(design)` in `rival_strip.dart`; "Follow-up after m7-3" §14) — D271; M7 (done 2026-10-07: answered by 9.3, 9.3h, 9.3i, D288)
+- [ ] design (m7-5 follow-up): copy.md's streak freeze chip says "{count} streak freeze(s)", but that overflows the streak card's row (12 overflow cases) and echoes our question's wording. Ask Claude Design for a wording that fits (the game ships "1 freeze" / "{n} freezes") — D284
+- [ ] design (m7-5 follow-up): 9.3i draws the `NestyStrip` tag scaling with the text (20k tall, glyph 14k); the game's `ComputerTag` keeps 20 dp because every rival surface shares it. Ask whether every `ComputerTag` should scale — D288
+- [ ] design (m7-5 follow-up): 9.3i draws Pause as tall as the 58 dp strip; the game keeps Pause at 48 dp (`HudTokens.pauseButtonSize`) and nothing in tokens or the README says it grows. Ask, or add a token — D288
+- [ ] design (m7-5 follow-up): the 16:9 gift sheet's Claim is 54 tall in frame 13.3b, and the game's large button is 58 (the sheet is 465, not 461). Ask for a 54 button size or a 58 Claim — D285
+- [ ] design (m7-5 follow-up): 13.6b's Day 7 ribbon is 46 tall at Fredoka 21 with padding 24; the shared `RibbonTitle` draws 18/700 with padding 9/22 (the same as 10.3b). Ask whether one ribbon spec serves both — D285
+- [ ] design (m7-5 follow-up): the done tile's check is drawn at weight 700; the bundled icon font is a static 600 cut. Ask whether 600 is acceptable, else cut a second weight — D282, D285
+- [ ] design (m7-5 follow-up): `textFit.winRibbon.box` still says 312 x 40 while `winRibbon.size.textBox` says 266 x 40; `type.museum.count` says 20 while the frames draw 16; the figurine panel's two radial gradients have no token. Ask Claude Design to fix the tokens — D287, D289
+- [ ] design (m7-5 follow-up): the Museum's won nameplates draw a glossy, saturated gold with a diagonal shine; frame 6.1c draws them pale, flat gold. The styling predates m7-5. Match the frame, or ask Claude Design which is meant — stage E iOS, D296
+- [ ] design (m7-5 follow-up): on a short phone (731 dp) the gift tally ends about 2 dp from the chapter card's "CHAPTER n" label, so a two-digit count covers its start for the tally's 1.2 s visit (under the scrim). Ask whether the tally may cover the card, as 13.5b and 13.6d draw it, or should step aside — stage E Android, D285
+- [ ] design (m7-5 follow-up): the opened chest's rays (`ui_chest`, m7-5 item 6) read as hard wedges on the device, where 10.3c and 13.6c draw a soft glow. Ask for a softer ray matte in the Lottie — stage E, D287
+- [ ] test (m7-5): `locales_test`'s chapter-ribbon check (`_level`, 300 ms after level 61 is ready) misses the 2.6 s ribbon when a starved emulator skips seconds of frames at the level's start (the Android `hi` run). Wait for the ribbon with a bound, or record that it showed, instead of a fixed delay — stage D, D296
+- [ ] test: `gameplay_bloc_test` "soft stuck: a verdict for an older board is dropped" waits on real-time settles of a few ms before it expects the held request. Under host load (the m7-5 final run, load ~20) the debounce hadn't fired yet and it failed once; the file passes alone (145/145). Drive it with fake time, or pump until the request is held — stage C, D296
 - [x] Look at the strip's count-only and two-line forms, the Home vs Computer tile and the race Pause header in es and ja at 1.3× on a device — 5c-fix; M7 (the locale screenshots of the gate's device run) (done 2026-10-05: ja on both devices at 1.0× shows the word on every rival surface (`5c-loc-*`); es and 1.3× are checked on the host, readable, uncut and with the word (`computer_word_test`, the overflow suite in gate mode); how the two new strip forms should look is Claude Design's §14)
 - [x] The `/milestone M7` gate (`build/m7-p5/bin/m7_gate.sh all`: host, the four builds, `nesty-test --device-only` on iOS and Android from fresh installs, which also runs the 11 English-pinned checks for the first time): **pending (the lead appends the result)** — M7 (done 2026-10-05: host, the four builds and both devices pass, with the reruns of the test fixes; PROGRESS "Phase 5, 5C")
 - [x] The loss card's `ui_rival_react` `win` hop with confetti (9.5): keep as designed (default), play `idle` or the `lose` nod, or ask Claude Design for a gentler segment — 5c-eth P1, Q183; M7 (owner) (done 2026-10-05: the owner keeps it as designed, D273)
@@ -886,50 +898,52 @@ The owner asked for a daily and weekly login reward on 2026-10-05 and approved t
 - the track is 20 · 30 · 1 hint · 40 · 50 · 1 hint · 100 coins + 1 extra slot;
 - the kid path gets the same gift.
 
-The rule is the plan's §7.5b text until the owner pastes it into the spec. The plan is [plans/plan-login-gift.md](plans/plan-login-gift.md), the research [plans/login-gift-research.md](plans/login-gift-research.md), and the design request [plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md). Nothing starts until M7 is closed.
+The rule is the plan's §7.5b text until the owner pastes it into the spec. The plan is [plans/plan-login-gift.md](plans/plan-login-gift.md), the research [plans/login-gift-research.md](plans/login-gift-research.md), and the design request [plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md). D272 let it start with M7's sign-offs open; it was built on 2026-10-05 (D276–D280), and its final look waits on the design delivery below.
 
-- [ ] Claude Design's delivery for section 13 (the gift button on 2.1/2.1b, the sheet and its four tile states, the claim, Day 7's chest, a new track, reduce motion, the `gift` tokens, the glyph and the copy), imported into `design/` by the owner and synced with `sync_design_assets` — the design prompt, D268
-- [ ] `LoginGiftRules` in `lib/core/services/login_gift/`, pure, beside `MilestoneChest`. It covers:
+- [x] Claude Design's delivery for section 13 (the gift button on 2.1/2.1b, the sheet and its four tile states, the claim, Day 7's chest, a new track, reduce motion, the `gift` tokens, the glyph and the copy), imported into `design/` by the owner and synced with `sync_design_assets` — the design prompt, D268 (done 2026-10-07: `nesty-design-m7-5`, copied into `design/` by the lead at the owner's request, D281)
+- [x] Once section 13 is in `design/`: swap the stand-ins for it. That covers `widgets/gift_look.dart` and the other `TODO(design)` markers (`docs/TODO_INDEX.md`), the glyph (Q186: `tools/fonts/nesty_symbols.txt`, then the icon subset rebuild), and the `gift` tokens through `gen_design_tokens`. The copy.md "## Daily gift" lines go into the ARB, then the eight translations again with the Opus review, the overflow suite in nine locales, and `nesty-test --only gift,playthrough` on both devices with the shots judged — D277, D278 (done 2026-10-07: `gift_look.dart` is deleted, the gift tokens, glyph and copy are in, D282–D286; the device run and the shots judged are in PROGRESS "m7-5, Device run (stage D)")
+- [ ] The final look's sign-off and the owner's paste of §7.5b into the spec (Q186 is answered; Q187, Q188 hold defaults) — D285
+- [x] `LoginGiftRules` in `lib/core/services/login_gift/`, pure, beside `MilestoneChest`. It covers:
   - the track, and the next day from the claim count;
   - one claim per local date (`AppClock`);
   - no claim on a date before the latest one seen;
   - the wrap after Day 7;
   - locked until the Daily unlocks.
 
-  Tested by `login_gift_rules_test`: gaps of 1, 3 and 30 days keep the day; a clock wound back; a clock wound forward then back — plan-login-gift, D268
-- [ ] `RemoteConfigKey<String>` in the service, its fake, the defaults and `all`, then `login_gift_track` with a fallback to the default when malformed (rule 6) — plan-login-gift, D268
-- [ ] Save schema 3 (`migrations-engineer`):
+  Tested by `login_gift_rules_test`: gaps of 1, 3 and 30 days keep the day; a clock wound back; a clock wound forward then back — plan-login-gift, D268 (done 2026-10-05: `login_gift_rules.dart` + `login_gift_reward.dart`; `test/core/services/login_gift/login_gift_rules_test.dart` passes, with the malformed-track fallbacks and a date seen but not claimed)
+- [x] `RemoteConfigKey<String>` in the service, its fake, the defaults and `all`, then `login_gift_track` with a fallback to the default when malformed (rule 6) — plan-login-gift, D268 (done 2026-10-05: `RemoteConfigKeys.loginGiftTrack`, a JSON array of 7 `{coins, hints, slots}` days; `LoginGiftRules.parseTrack` falls back whole; `remote_config_keys_test` has the key and a string override; the TODO(M4) names `getString`)
+- [x] Save schema 3 (`migrations-engineer`):
   - `LoginGiftProgress {claims, lastClaim, latestSeen}` in `SaveDocument`;
   - the 2→3 step in `save_migrations.dart`;
   - `SaveService.claimLoginGift(today)`, which writes the claim, the coins and the boosters in one update, in the Hive save and the fake.
 
-  Tested by the migration test and the contract tests. — plan-login-gift, D268
-- [ ] `LoginGiftCubit` (`BaseAsyncCubit`, a freezed state: the track, the next day, `canClaim`) in `features/login_gift/cubit/`, with `bloc_test` — plan-login-gift, D268
-- [ ] The UI in `features/login_gift/widgets/` and Home:
+  Tested by the migration test and the contract tests. — plan-login-gift, D268 (done 2026-10-05: `currentSchema` 3, step 2 → 3 stamps the schema, `noteLoginGiftDate` raises the clock guard; a real schema-2 fixture `fixtures/schema2_document.json`, the codec, Hive (`doc_backup_v2`) and `login_gift_claim_test` pass, 222 in the save, contracts, gift and Remote Config suites; the full game suite 4787 passed)
+- [x] `LoginGiftCubit` (`BaseAsyncCubit`, a freezed state: the track, the next day, `canClaim`) in `features/login_gift/cubit/`, with `bloc_test` — plan-login-gift, D268 (done 2026-10-05: phases locked/ready/claimed/waiting and the coin pill's cap; `test/features/login_gift/cubit/login_gift_cubit_test.dart`, 15 tests with the app-resume path; D277)
+- [x] The UI in `features/login_gift/widgets/` and Home:
   - `GiftButton` with its dot;
   - `GiftSheet` with seven `GiftDayTile`s;
   - the claim's `RewardFlight` to the coin pill, and Day 7 through `ChestRewardSequence`;
   - reduce motion and screen-reader labels;
   - `TODO(design)` stand-ins until the delivery.
 
-  Widget tests: all seven gifts visible before claiming, and no countdown text. — plan-login-gift, D268
-- [ ] Strings: about 8 keys in the nine catalogs. Then the Opus translation review (D240), the overflow suite in nine locales, and `gen_font_subsets` + `build_fonts.sh` if hi or ja need new glyphs — plan-login-gift, D268
-- [ ] `test/ethics/login_gift_respect_test.dart` checks that:
+  Widget tests: all seven gifts visible before claiming, and no countdown text. — plan-login-gift, D268 (done 2026-10-05 on `TODO(design)` stand-ins in `gift_look.dart`: `GiftButton`, `GiftSheet`, `GiftDayTile`, `GiftChestModal`, `ChestRewardSequence`'s `slots`; the button, sheet, tile, slot-chip and Home tests, the 48 dp header test; D277, D280)
+- [x] Strings: about 8 keys in the nine catalogs. Then the Opus translation review (D240), the overflow suite in nine locales, and `gen_font_subsets` + `build_fonts.sh` if hi or ja need new glyphs — plan-login-gift, D268 (done 2026-10-05: 20 keys; the Opus review fixed 14; `test/l10n` and the overflow suite pass in nine locales; no new hi or ja glyph, so no font rebuild; D278)
+- [x] `test/ethics/login_gift_respect_test.dart` checks that:
   - the gift paths use no ad, purchase or `Random`;
   - nothing lowers `claims`;
   - the copy has no loss or countdown words.
 
-  On the `stars_gate_nothing_test` pattern. — plan-login-gift, D268
-- [ ] On a device (the D169 rule):
+  On the `stars_gate_nothing_test` pattern. — plan-login-gift, D268 (done 2026-10-05: the code scan, the `claims` writers, a 600-step clock walk, the copy in nine locales and one tap call site; it caught pt "Em breve"; D279)
+- [x] On a device (the D169 rule):
   - `integration_test/login_gift_test.dart` with the `ready`, `claimed`, `day7` and `clock_back` scenarios (`NESTY_FAKE_DATE` and a seeded save);
   - `nesty-test --only gift`, also in README and CLAUDE.md Commands;
   - the playthrough's Home shot;
   - its TEST_COVERAGE row;
   - a pass on the iOS simulator and the Android emulator.
 
-  — plan-login-gift, D268
-- [ ] `login_gift_claim {day, claims}` logged through `AnalyticsService` (the fake until M4; M4's `FirebaseAnalyticsService` item sends it) — plan-login-gift, D268
-- [ ] CLAUDE.md's Code map: `features/login_gift`, `services/login_gift/` and the Remote Config string key. Current state when the work starts and ends — D268
+  — plan-login-gift, D268 (done 2026-10-05: `login_gift_test.dart` with its four scenarios, `nesty-test --only gift` (also in the default run, README and CLAUDE.md Commands), the playthrough's `13b_home_gift_ready` and the TEST_COVERAGE row; passed on the iPhone 16e and the Android emulator, 14/14 iOS shots judged; D279)
+- [x] `login_gift_claim {day, claims}` logged through `AnalyticsService` (the fake until M4; M4's `FirebaseAnalyticsService` item sends it) — plan-login-gift, D268 (done 2026-10-05: `LoginGiftCubit.claim`, tested with a mock; the kid path keeps it off for under-13s, BACKLOG M4)
+- [x] CLAUDE.md's Code map: `features/login_gift`, `services/login_gift/` and the Remote Config string key. Current state when the work starts and ends — D268 (done 2026-10-05: the Code map's `login_gift` and `services/login_gift/`, the Remote Config row, Commands' `gift`, Current state)
 
 ## Engagement research and the kid path — after the local habits (D259, D260)
 
@@ -1056,7 +1070,7 @@ playable. Levels published in the admin appear on the next app resume.
 - [ ] `connectivity_plus` to re-sync on reconnect, with its reason in PROGRESS — §13.2, §9.1
 - [ ] Airplane-mode tests with failing network services, plus a fresh-install device check — §18 M4
 - [ ] Install `firebase-tools` (it needs a JDK) and verify `firebase emulators:start` from `firebase/`, including the Auth emulator — PROGRESS M0 "Not verified yet"
-- [ ] Analytics and crash data by age (the kid path, D260): nothing is collected before the age answer, and ad-ID collection is off for everyone. For players under 13 and of unknown age, analytics stays off until the owner's legal check, and crash reports run only for the app's own operation. Play Families allows no AAID or other device identifier from them — engagement-research §6.2–§6.3, D260, Q174
+- [ ] Analytics and crash data by age (the kid path, D260): nothing is collected before the age answer, and ad-ID collection is off for everyone. For players under 13 and of unknown age, analytics stays off until the owner's legal check (every event, the daily gift's `login_gift_claim` included), and crash reports run only for the app's own operation. Play Families allows no AAID or other device identifier from them — engagement-research §6.2–§6.3, D260, Q174
 
 ## M5 — Admin panel — after Local habits (D90, D237)
 
@@ -1226,15 +1240,15 @@ names the milestone it blocks.
 
 ### Content and assets
 
-- [ ] **Wednesday 2026-10-07, when Claude Design is back: send the M7 design follow-up.** It is paste-ready in [plans/claude-design-request-m7.md](plans/claude-design-request-m7.md) "Follow-up after m7-3", §1–§14, and holds every design change M7 still needs. Highlights:
+- [x] (done 2026-10-07: delivered and imported, D281) **Wednesday 2026-10-07, when Claude Design is back: send [plans/claude-design-request-m7-5.md](plans/claude-design-request-m7-5.md)** (paste-ready, one message, delivered as `nesty-design-m7-5`). Part 1 is the daily gift's section 13. Part 2 is every M7 design question still open, gathered from "Follow-up after m7-3" in [plans/claude-design-request-m7.md](plans/claude-design-request-m7.md) and from BACKLOG M7's `design` items. Highlights:
   - §11: phase 5's ten questions (the undo's motion, Q160; the chest flights' values; the colours tokens.json lacks);
   - §12: the m7-4 device run's asks: the versus ribbon band (12.1: 336 dp where 9.4 and 9.5 draw about 290), the chest's rays, the badge toast's second line, 9.7b's Computer tag, the splash's arch;
   - §13: a Fredoka build with the Turkish letters;
   - §14: the race strip's two new forms (D271).
 
-  Send with it the daily gift's prompt ([plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md), the item below). The themes request (themes-characters-story §7) waits for Q184's picks. Then import the delivery through the checks in BACKLOG M7 "Importing a Claude Design delivery" — owner, 2026-10-05
+  The themes request (themes-characters-story §7) goes in a later round, after wave 1 (D275). Then import the delivery through the checks in BACKLOG M7 "Importing a Claude Design delivery" — owner, 2026-10-05
 
-- [ ] Send [plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md) to Claude Design, then drop the delivery into `design/`. It blocks the daily gift's final look, not its start (`TODO(design)` stand-ins) — D268
+- [ ] Send [plans/claude-design-login-gift-prompt.md](plans/claude-design-login-gift-prompt.md) (now Part 1 of `claude-design-request-m7-5.md`, the Wednesday item above) to Claude Design, then drop the delivery into `design/`. It blocks the daily gift's final look, not its start (`TODO(design)` stand-ins) — D268
 - [x] Music: `music_home` and `music_game`, seamless loops of 60–90 s — §11.3 (done 2026-09-26: Claude Design's audio export, 66.7 s and 68.6 s OGG loops, plus three jingles; D61)
 - [x] Optional: final SFX to replace the 17 placeholder WAVs — §11.3, D19 (done 2026-09-26: the SFX v2 WAVs, D61)
 - [ ] Listening check: `jingle_reward` reaches −17 RMS through up to 8.1 dB of limiting (`jingle_chapter` 4.5 dB, `jingle_oom` 2.5 dB). Compare the three in `design/prototypes/Nesty Soundtrack.dc.html` (serve `design/` over http); if `jingle_reward` sounds squashed, ask Claude Design for a gentler master — v3 issue 3 (M7)
@@ -1340,7 +1354,7 @@ takes the designs when they arrive.
 - [x] Tokens for the 5.6 and 8.1 colours now in `AppColors` (`chestGlow`, `chestShadow`, `symbolsCardSelectedFace`, `symbolsCardRing`), with the item above on `app_colors.dart` — M3 review FIDELITY-8, FIDELITY-12 (M7) (done 2026-09-30: delivered in m7-3: `chestModal.*` and `settings.colorSymbolCards`; lanes O and D, m7 P4.6, P4.7)
 - [x] The M7 phase-1 stand-ins, built in the design's system with `TODO(design)` until Claude Design's section I and J frames land: Chapters (10.4, `chapter_section_card.dart`, `chapter_level_cell.dart`), Records and its badge glyphs (10.6, I.6, `badge_toast.dart`, the best-moves link icon in `records_page.dart`), the win card's moves line, the replay card (10.5; the HUD's "Replay" tag was removed, D170; its reason line sits on the coin pill's cream surface since D162), the milestone and day-7 chest opening (10.3, `chest_reward_sequence.dart`), the relaxed "∞" badge and the always-free Undo row (10.9), the paused streak (10.7), the Settings rows and the reduce-motion sheet (10.2), the vs Computer tile's glyph and colour (9.1, C.8, `home_page.dart`), the Museum's clarity pass (J.2) and the "Not enough coins" dialog (J.3, G.10) — m7 §15, §15.10, design request C, I, J (M7) (done 2026-09-30: delivered in m7-3: sections I and J; lanes M, O and D, m7 P4.5–P4.7)
 - [ ] design: phase 5's ten questions to Claude Design, "Follow-up after m7-3" §11 (the undo's motion, the wobble settle before a move, the relit card's twinkle sizes, the Museum's Play at 36, Chapters' "levels to go" inline, the spotlight's 300, `layout.chapters.scroll.foldedAbove`, four frame-only colours, a type token per surface, the all-home card's badge art); each ships its default — phase 5A, lanes B, O, M, RD
-- [ ] design: the undo's motion (`TODO(design): Q160` in `timeline_plans.dart`) and the chest flights' values (`TODO(design)` FU 1.7 in `reward_ring.dart`, `reward_flight.dart`) — lanes B and O, D217, D221
+- [x] design: the undo's motion (`TODO(design): Q160` in `timeline_plans.dart`) and the chest flights' values (`TODO(design)` FU 1.7 in `reward_ring.dart`, `reward_flight.dart`) — lanes B and O, D217, D221 (done 2026-10-07: the undo keeps its motion, Choice 13, D287; the flights take m7-5's `motion.chest.collect.pillRing` and `trail`, Part 2 item 3, D286)
 
 ### Copy to confirm
 
@@ -1484,7 +1498,7 @@ takes the designs when they arrive.
 - [ ] Q157: the splash's "Nesty needs about 60 MB" (copy.md E `splash_storage_body`)? Default: copy.md's line with 60 in `SplashCopy.storageMegabytes` (M7, D196)
 - [x] Q158: a reminder the OS blocked has no off switch in the app (Settings draws the toggle off and opens the phone's settings, frame 10.2f), so it starts as asked if notifications are allowed later. Add a "Turn off" link on the blocked row? Default: no extra control (M7, D190, D207) (done 2026-10-04: answered "Build it" on 2026-10-01; D235, D244)
 - [x] Q159: Records' families cell shows the rule's plain count, "Families completed" (every family a won board completed), not frame 10.6's "N of 10 Families home", which is the Museum's count. Keep it, or show the Museum's count? Default: the plain count (M7, D209) (done 2026-10-04: answered by the design, DELIVERY 8.5: "Families completed" with the doll mark)
-- [ ] Q160: the undo's motion. No frame draws one. Default: the moved doll flies back along its own path, `doll_move` reversed (260 ms, `whoosh`, 130 ms under reduce motion), with `TODO(design): Q160`. Or keep the cut until Claude Design draws one? (M7, D221, D227)
+- [x] Q160: the undo's motion. No frame draws one. Default: the moved doll flies back along its own path, `doll_move` reversed (260 ms, `whoosh`, 130 ms under reduce motion), with `TODO(design): Q160`. Or keep the cut until Claude Design draws one? (M7, D221, D227) (answered 2026-10-07: keep, m7-5 DELIVERY Choice 13; D287)
 - [ ] Q161: close M7 with the owner-only items open? The "matches the design screens" acceptance needs your sign-off and several checks need a phone (VoiceOver, a real reminder, the haptic feel, the final mix, the ten flagged levels). Default: M7 is "code complete, acceptance waits on the owner", as M2 and M3 are (D90); M4 doesn't start until you say so (M7, phase 5)
 - [x] Q162: which local habits to build after M7, if any? Welcome back, a month of played days, the last 7 dailies playable, and a home-screen widget. Default: the first three in that order, and the widget only after them. None starts until M7 is closed. Firebase, the admin and purchases stay after that (D237) — local-habits, D237 (answered 2026-10-05: all four, in that order, the widget last; D274)
 - [ ] Q168: the freeze chip reads "0 left" in frames 5.2 and 7 of DELIVERY, and "left" is on the respect deny-list. Default: "No freeze" and "{count} streak freeze(s)" (M7, D242, D247; D110, Q95)
@@ -1508,10 +1522,14 @@ takes the designs when they arrive.
 - [x] Q183: the 9.5 race-loss card plays the Computer's `win` hop with confetti over the player's loss (the ethics lens's P1). Ship the design as delivered (default), or switch to TC8's polite bow? (M7 phase 5; themes-characters-story §11) (answered 2026-10-05: keep as designed, D273)
 - [x] Q184: which themes, characters and story proposals (TC1–TC14) to build and in what order; TC-FX and TC-DATA come with the items that need them. Also: the mascot's name, and the squad's names and chapter, after a legal check; the route for new lands in TC5 and TC6 (default: with M4's weekly levels); whether the story keeps the tokens' figurine pairing (default: yes, as its plot); and whether passed beats replay in the flow (default: no, the Storybook only). Default order: wave 1 (TC7, TC8, TC1), then TC4a, then TC13 (themes-characters-story §11, D270) (answered 2026-10-05: wave 1 first, TC7, TC8, TC1, then the story mode; the names wait for the legal check; D275)
 - [x] Q185: may the daily gift start before M7's owner sign-offs (the design sign-off Q161, the VoiceOver pass, Claude Design's follow-up)? Default: it starts when the owner says so, without waiting for them, as D90 did for M2 and M3 — PROGRESS Q185 (answered 2026-10-05: start it next, D272)
+- [ ] Q186: the daily gift button's glyph. The stand-in reuses the chest's `redeem` (no gift glyph is in the icon subset). Default: Claude Design's section 13 names it, then `tools/fonts/nesty_symbols.txt` and the subset rebuild — PROGRESS Q186, D277
+- [ ] Q187: `.claude/rules/hive.md` still says the save carries `"schema": 1` (now 3, D276); a rules file, so yours to change. Default: leave it; suggested text "the current `SaveDocument.currentSchema`" — PROGRESS Q187
+- [ ] Q188: a date seen far ahead (a clock once set into the future, the app opened then) holds the gift at "Next gift: …" until that date, per §7.5b's "the latest date ever seen". Or count only claimed dates? Default: as built, until M4's server time — PROGRESS Q188, D276
 - [ ] A lawyer's clearance for any hero-squad or fashion-doll names, emblems and designs, including Claude Design's generated art, before they ship (TC2, TC3; themes-characters-story §0) — M8 at the latest
 
 ## Tech debt
 
+- [ ] Retire the unused ARB key `chestContentsSlotSemantics` (and its description) from the nine catalogs; the chest reads `giftA11yChestContents` since m7-5. `IconUses.rewardSlot` is also unread — D283, D285
 - [ ] Extract the duplicated base layer into a shared package — D6, Q8
 - [ ] `SkinDollRow` lives in `features/shop/widgets/` but the Daily card and Settings' Color symbols use it too: move it next to `LottieDoll` in `features/fx/` — M3 fix pass
 - [ ] A public digest helper in nesty_core (e.g. `LevelCodec.fingerprint`), so the app's integration tests can report the core goldens' short `Hash64` instead of the whole canonical JSON — M3 shop lane

@@ -247,10 +247,25 @@ tools/scripts/nesty-test --android          # the flutter_emulator AVD, with its
 tools/scripts/nesty-test --device 87BDED37-4095-49C4-811A-3E2B7D5FB38B --only playthrough   # the iPhone 16e (390x844), by UDID
 tools/scripts/nesty-test --device-only --only board,race,meta,daily_states,overlays   # phase 4's files
 tools/scripts/nesty-test --device-only --only faults,semantics   # phase 5's files
+tools/scripts/nesty-test --device-only --only gift                # the daily gift's five scenarios
 tools/scripts/nesty-test --device-only --only locales            # de, hi, ja on a device (5B)
 tools/scripts/nesty-test --android --android-size 1170x2532@480 --device-only   # the emulator at 390x844 dp
 tools/scripts/nesty-test --android --only reminder   # the optional Android reminder check
 tools/scripts/nesty-test --help             # every option
+```
+
+**Watch every long run (owner, D295).** A long run (a suite, `nesty-test`,
+a device run, a build) runs detached with its log under `build/`, and
+`tools/scripts/watch-run` watches it from the start: it prints one line per
+event and ends on the first terminal state (done, died, stalled, overtime),
+so a dead or stuck run is seen at once. In Claude Code it runs under the
+Monitor tool; on an alert the `run-watcher` agent finds the cause and
+reruns the piece.
+
+```bash
+tools/scripts/watch-run --log build/x/game.log --pid 12345   # flutter test's done line, 300 s stall
+tools/scripts/watch-run --log build/x/device.log --match "nesty-test" --stall 900 --done '^DONE$'
+tools/scripts/watch-run --help              # every option and event
 ```
 
 `--device` takes a simulator name or UDID (iOS) or an AVD name or running
@@ -385,6 +400,8 @@ $T --target integration_test/meta_screens_test.dart \
   --dart-define=NESTY_META_SCENARIO=returning   # or finale, complete
 $T --target integration_test/daily_states_test.dart \
   --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, saved, settings
+$T --target integration_test/login_gift_test.dart \
+  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_GIFT_SCENARIO=ready  # or claimed, day7, clock_back
 $T --target integration_test/overlays_test.dart   # the win card, chests, 12.5-12.9, the undo, intro loops
 ```
 
@@ -407,6 +424,10 @@ seeds a 6-day streak and opens the day-7 chest and the offer's time picker,
 `paused` relights a paused flame and sees Home's badge glow once, `saved`
 lets a freeze cover yesterday (the toast and the streak card's freeze line,
 5.2), and `settings` toggles every row and plays a relaxed board.
+`login_gift_test` (`gift`) seeds the daily gift's track: `ready` claims Day 4
+after a gap (the dot, the sheet, the coins flying to the pill), `claimed` shows
+the calm "Tomorrow" sheet, `day7` opens the Day 7 chest and the finished
+track, and `clock_back` shows a wound-back clock claiming nothing.
 `overlays_test` replays level 1 three ways (1, 2 and 3 stars) for the win
 card's heights. The resume pair also runs with
 `--dart-define=NESTY_RESUME_SCENARIO=l1` on both phases (E9): one move on

@@ -13,16 +13,16 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M1 | Core (`nesty_core`) | 0 |
 | M2 | Playable game | 0 |
 | M3 | App shell and meta | 0 |
-| M4 | Firebase content | 13 |
+| M4 | Firebase content | 14 |
 | M5 | Admin panel | 17 |
 | M6 | Monetization | 17 |
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
-| design | Waiting on a design export or decision from the owner | 25 |
+| design | Waiting on a design export or decision from the owner | 20 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 81 markers.
+Total: 77 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -48,9 +48,10 @@ _None._
 - `apps/game/lib/core/services/analytics/fake_analytics_service.dart:13` — drop `AppEnv.real` from `env` once `FirebaseAnalyticsService` exists, then record events in memory (`events` list plus `clear()`) so tests can read them; that is only safe once release builds stop using this class.
 - `apps/game/lib/core/services/database/hive_database_service.dart:55` — report as a Crashlytics non-fatal.
 - `apps/game/lib/core/services/remote_config/defaults_remote_config_service.dart:9` — replace in the real env with `FirebaseRemoteConfigService`.
-- `apps/game/lib/core/services/remote_config/remote_config_service.dart:6` — add `FirebaseRemoteConfigService` (firebase_remote_config) for the real env; it sets `RemoteConfigKeys.defaults` as in-app defaults and falls back to them on any fetch error.
+- `apps/game/lib/core/services/remote_config/remote_config_service.dart:6` — add `FirebaseRemoteConfigService` (firebase_remote_config) for the real env; it sets `RemoteConfigKeys.defaults` as in-app defaults and falls back to them on any fetch error. Keys are `int`, `bool` and, since the daily …
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
+- `docs/BACKLOG.md:914` — names `getString`
 
 ## M5 — Admin panel
 
@@ -83,7 +84,7 @@ _None._
 - `apps/game/lib/features/daily/widgets/daily_chest_modal.dart:30` — "Double it" (a rewarded ad) sits above Collect.
 - `apps/game/lib/features/gameplay/overlays/booster_buy_popup.dart:26` — with a real `AdsService`, an ad ready keeps this path and an offline one shows frame 3.8's disabled button with "Connect to watch an ad" (`BuyPopupBody.offline`).
 - `apps/game/lib/features/gameplay/overlays/out_of_moves_sheet.dart:22` — the ▶ ad option beside the price chips and its offline variant (frames 3.7, 12.8).
-- `apps/game/lib/features/gameplay/overlays/win_overlay.dart:178` — the ×3 rewarded-video button and its "Reward added" state (frames 2.8, 2.9); hidden until ads exist, as the design does offline, where Continue takes its slot (C12).
+- `apps/game/lib/features/gameplay/overlays/win_overlay.dart:179` — the ×3 rewarded-video button and its "Reward added" state (frames 2.8, 2.9); hidden until ads exist, as the design does offline, where Continue takes its slot (C12).
 - `apps/game/lib/features/gameplay/widgets/booster_bar.dart:68` — the ▶ badge at 0 while an ad is ready (frame 2.2).
 - `apps/game/lib/features/settings/pages/settings_page.dart:259` — Restore Purchases (spec §9.2).
 - `apps/game/lib/features/settings/pages/settings_page.dart:266` — Privacy choices (the consent form's "Manage options", spec §9.3).
@@ -100,7 +101,7 @@ _None._
 
 - `apps/game/android/app/build.gradle.kts:69` — Sign release builds with the upload key. Load it from an untracked android/key.properties (storeFile, storePassword, keyAlias, keyPassword) and never commit the keystore or passwords. .gitignore already excludes …
 - `apps/game/lib/core/services/links/app_links.dart:6` — the owner's privacy policy URL and support email (Q73).
-- `apps/game/lib/core/ui/theme/app_text_styles.dart:9` — tabular figures for coins and counters (PROGRESS Q29; moved from M2, the approach waits on the owner). Fredoka has no `tnum`, so [number]'s `FontFeature.tabularFigures()` does nothing yet; `NestyNumberText` is the one …
+- `apps/game/lib/core/ui/theme/app_text_styles.dart:11` — tabular figures for coins and counters (PROGRESS Q29; moved from M2, the approach waits on the owner). Fredoka has no `tnum`, so [number]'s `FontFeature.tabularFigures()` does nothing yet; `NestyNumberText` is the one …
 - `apps/game/lib/core/ui/widgets/number/nesty_number_text.dart:7` — tabular figures (PROGRESS Q29; moved from M2, the approach waits on the owner). The design asks for them, but Fredoka's digits are proportional and it has no `tnum`, so a changing number still shifts. This widget is the …
 
 ## v1.1 — After v1 (e.g. the golden doll, spec §3.5)
@@ -121,17 +122,12 @@ _None._
 - `apps/admin/lib/features/login/pages/login_page.dart:11` — design/admin/*.png has no login screen yet (DESIGN_BRIEF Prompt 14 lists Levels, Level Editor and Skin upload only).
 - `apps/admin/lib/features/not_authorized/pages/not_authorized_page.dart:10` — no admin design export covers this screen yet.
 - `apps/admin/lib/features/shell/pages/admin_shell_page.dart:17` — narrow-window layout and rail styling (design/admin/*.png).
-- `apps/game/lib/core/ui/colors/app_colors.dart:64` — a token for the figurine panel's two gradients.
-- `apps/game/lib/core/ui/colors/app_colors.dart:74` — a token for the cabinet's drop shadow.
-- `apps/game/lib/core/ui/colors/app_colors.dart:80` — a token for the Pause card's dashed divider (m7-4 gave `divider` to the tiled Settings line only).
-- `apps/game/lib/core/ui/colors/app_colors.dart:86` — a token for the segmented track's inset shadow.
-- `apps/game/lib/core/ui/icons/icon_uses.dart:87` — ask Claude Design to add `storageError` and `contentError` to tokens.json `icons` (lead note 2; ui-spec-game C9).
-- `apps/game/lib/core/ui/lottie/lottie_label.dart:75` — the 52 max width is a guess (lottie §12).
+- `apps/game/lib/core/ui/colors/app_colors.dart:62` — m7-5 named no token for the figurine panel's two gradients; the frame's `mBg` values stay here (BACKLOG "Design gaps").
+- `apps/game/lib/core/ui/icons/icon_uses.dart:107` — ask Claude Design to add `storageError` and `contentError` to tokens.json `icons` (lead note 2; ui-spec-game C9).
+- `apps/game/lib/core/ui/lottie/lottie_label.dart:121` — the 52 max width is a guess (lottie §12).
 - `apps/game/lib/features/daily/pages/daily_page.dart:260` — no frame shows the Daily screen itself before Level 2 (m3-design §8.3, Q67); Home's tile is dimmed instead.
-- `apps/game/lib/features/gameplay/game/timeline/timeline_plans.dart:877` — an empty case or ice has no target doll; the drift uses the mover's height.
-- `apps/game/lib/features/gameplay/game/timeline/timeline_plans.dart:1202` — Q160, no frame draws the undo motion.
+- `apps/game/lib/features/gameplay/game/timeline/timeline_plans.dart:893` — an empty case or ice has no target doll; the drift uses the mover's height.
 - `apps/game/lib/features/gameplay/overlays/overlay_text_link.dart:31` — tokens.json has no 16 px Fredoka style for a text link; this is `buttonSmall` (17 px) at the frame's 16 px.
-- `apps/game/lib/features/race/widgets/rival_strip.dart:578` — frame 9.3 draws up to 8 dots and one name line; above 8 families, or when a long name and the "Computer" word need the room, the count stands alone (our proposal, ui-spec-game §2.1 "Open"; D271).
 - `apps/game/lib/features/records/pages/records_page.dart:171` — the "Best moves by level" destination is in no frame (menus spec §11 gap 6): it keeps the stand-in target, Chapters, whose won cells show "Best N". BACKLOG "M7 phase 4 design gaps".
 - `apps/game/lib/features/splash/pages/splash_page.dart:128` — add the splash error dim to tokens.json `color`.
 - `packages/nesty_render/lib/src/board/board_geometry.dart:169` — , the design draws no tall case there): then it is the case of a doll of `caseHeight`, and the composition's `case_size` follows it (the doll itself stays h.

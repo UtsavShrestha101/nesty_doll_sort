@@ -4,8 +4,12 @@ Paste everything below the line into the Nesty Claude Design project. It asks
 for a new section of App Flow frames (13), a few tokens and the copy for the
 daily gift. Nothing else in the export should change. Recorded as PROGRESS
 D268 and in BACKLOG "Daily gift". The rule is
-[plan-login-gift.md](plan-login-gift.md) §7.5b. The build starts after M7
-closes, so send this whenever it suits.
+[plan-login-gift.md](plan-login-gift.md) §7.5b.
+
+**Superseded for sending (2026-10-05):** its text is Part 1 of
+[claude-design-request-m7-5.md](claude-design-request-m7-5.md), the one
+message for Wednesday 2026-10-07. Send that instead; this file stays as the
+reference. The build starts now with stand-ins (D272).
 
 ---
 

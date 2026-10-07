@@ -14,7 +14,7 @@
 #      twice: level 3 (M3) and level 1 during its tutorial (E9,
 #      NESTY_RESUME_SCENARIO=l1)
 #   5. the daily puzzle's fingerprint, compared with nesty_core's own level (M3)
-#   6. M7 phase 4's device files (Claude Design's m7-3), each from a fresh
+#   6. M7 phase 4's device files (Claude Design's m7-3) and the daily gift's, each from a fresh
 #      install with its own screenshots:
 #      board        board_layouts_test.dart: levels 31-200's presets, the tall
 #                   glass case, the top-shelf tower, the iced tower's tag, two
@@ -34,6 +34,12 @@
 #                   picker), `paused` (paused, then relit), `saved` (a freeze
 #                   covers yesterday, 5.2) and `settings` (the toggles, Reduce
 #                   motion, Relaxed mode's toast and free undo, Large symbols)
+#      gift         login_gift_test.dart five times, with NESTY_FAKE_DATE: `ready`
+#                   (Home's dot, the sheet, a claim's flight, the claimed look),
+#                   `claimed` (no dot, "Tomorrow"), `day7` (the chest, Open,
+#                   Collect, the slot into the tally, the finished track),
+#                   `clock_back` (a wound-back clock claims nothing) and `hint`
+#                   (a hint day: the flight into the tally under the coin pill)
 #      overlays     overlays_test.dart: the replay's helper note, the milestone
 #                   chest's flights, the 10th bonus chest, the generating card,
 #                   Out of Moves with the free undos spent, the Undo popup, the
@@ -90,8 +96,8 @@ Usage: nesty-test [options]
                         $NESTY_TEST_ANDROID_SIZE; 1170x2532@480 is 390x844 dp)
   --device-only         skip the host checks (analyze and the test suites)
   --only <steps>        comma-separated subset of: gates,playthrough,resume,daily,
-                        board,race,meta,daily_states,overlays,faults,semantics,
-                        locales,reminder (reminder: Android only, and only when named)
+                        board,race,meta,daily_states,gift,overlays,faults,
+                        semantics,locales,reminder (reminder: Android only, and only when named)
   --date <yyyymmdd>     the daily's date (default 20260926, the core golden)
   --headless            Android: start the emulator without a window
   --shutdown            shut the device down at the end if this run booted it
@@ -193,7 +199,7 @@ ln -sfn "$OUT" "$GAME/build/nesty-test/latest" 2>/dev/null || true
 # the disk filling up is what failed the owner's run (2026-09-29).
 if [ -z "${NESTY_TEST_OUT:-}" ]; then
   ls -1dt "$GAME/build/nesty-test"/[0-9]*-[0-9]*/ 2>/dev/null |
-    tail -n +$(("${NESTY_TEST_KEEP_RUNS:-5}" + 1)) |
+    tail -n +$((${NESTY_TEST_KEEP_RUNS:-5} + 1)) |
     while IFS= read -r old; do rm -rf "$old"; done
 fi
 
@@ -347,7 +353,7 @@ if wants gates; then
 fi
 
 DEVICE_STEPS=0
-for step in playthrough resume daily board race meta daily_states overlays faults semantics locales reminder; do
+for step in playthrough resume daily board race meta daily_states gift overlays faults semantics locales reminder; do
   if wants "$step"; then DEVICE_STEPS=1; fi
 done
 
@@ -616,7 +622,7 @@ PY
   fi
 fi
 
-# ── 6. M7 phase 4's device files (fresh installs) ──────────────────────────
+# ── 6. M7 phase 4's device files and the daily gift's (fresh installs) ─────
 # One step per file (and per scenario), each from a fresh install: every one
 # seeds its own save (`integration_test/support/seeded_save.dart`) or needs a
 # fresh one. Its response data is kept as <step>.json.
@@ -668,6 +674,16 @@ if wants daily_states; then
       "daily_states_$scenario" "daily_states_$scenario" \
       daily_states_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" \
       --dart-define=NESTY_DAILY_SCENARIO="$scenario" --timeout 600
+  done
+fi
+
+if wants gift; then
+  section "The daily gift ($DAILY_DATE, fresh installs)"
+  for scenario in ready claimed day7 clock_back hint; do
+    drive_fresh "login_gift_test $scenario (screenshots g_*)" \
+      "login_gift_$scenario" "login_gift_$scenario" \
+      login_gift_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" \
+      --dart-define=NESTY_GIFT_SCENARIO="$scenario" --timeout 600
   done
 fi
 

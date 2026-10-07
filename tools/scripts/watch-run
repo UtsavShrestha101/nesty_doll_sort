@@ -1,0 +1,117 @@
+#!/bin/bash
+# watch-run: watches a long run (a test suite, nesty-test, a build) through its
+# log and its process, and prints one line per event, so a stuck, dead or
+# failing run is seen at once instead of after a silent wait (owner, D295;
+# CLAUDE.md Workflow "Watch every long run"). Made for Claude Code's Monitor
+# tool (each stdout line is a notification); a background shell works too.
+#
+# Usage:
+#   tools/scripts/watch-run --log <file> [--pid <pid> | --match <pattern>]
+#       [--done <regex>] [--fail <regex>] [--stall <s>] [--every <s>]
+#       [--heartbeat <s>] [--max <s>]
+#
+#   --log        the run's log (required; it may not exist yet)
+#   --pid        the run's process id: gone without --done means it died
+#   --match      a `pgrep -f` pattern instead of --pid
+#   --done       the line that ends the run (default: flutter/dart test's
+#                "All tests passed!" or "Some tests failed.", or a summary's
+#                "DONE")
+#   --fail       lines worth acting on while it runs (default: a failed test
+#                "[E]", "Some tests failed", FAILED, an unhandled exception,
+#                "Killed", "STOP:", or "exit N" with N > 0)
+#   --stall      seconds without the log growing before STALLED (default 300)
+#   --every      poll interval in seconds (default 15)
+#   --heartbeat  seconds between PROGRESS lines, 0 for none (default 600)
+#   --max        seconds before OVERTIME, 0 for no limit (default 0)
+#   --new-only   report only failure lines written after the watch starts
+#                (for re-arming a watch on a run that is already going)
+#
+# Events (stdout), one line each:
+#   WATCH START | PROGRESS | FAIL | DONE | DIED | STALLED | OVERTIME
+# Exit: 0 done, 2 died, 3 stalled, 4 overtime, 64 usage.
+set -u
+
+LOG= PID= MATCH= STALL=300 EVERY=15 HEARTBEAT=600 MAX=0 NEW_ONLY=0
+DONE='All tests passed!|Some tests failed\.|^DONE$'
+FAIL='\[E\]$|Some tests failed|FAILED|Unhandled exception|Killed|STOP:|exit [1-9][0-9]*'
+
+usage() { sed -n '2,34p' "$0" | sed 's/^# \{0,1\}//'; exit 64; }
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --log) LOG=$2; shift 2 ;;
+    --pid) PID=$2; shift 2 ;;
+    --match) MATCH=$2; shift 2 ;;
+    --done) DONE=$2; shift 2 ;;
+    --fail) FAIL=$2; shift 2 ;;
+    --stall) STALL=$2; shift 2 ;;
+    --every) EVERY=$2; shift 2 ;;
+    --heartbeat) HEARTBEAT=$2; shift 2 ;;
+    --max) MAX=$2; shift 2 ;;
+    --new-only) NEW_ONLY=1; shift ;;
+    -h|--help) usage ;;
+    *) echo "watch-run: unknown option $1" >&2; usage ;;
+  esac
+done
+[ -n "$LOG" ] || usage
+
+# The last line worth quoting: a test runner's "+N -M:" count, else the tail.
+progress() {
+  local count
+  count=$(grep -o -E '\+[0-9]+( ~[0-9]+)?( -[0-9]+)?:' "$LOG" 2>/dev/null | tail -1)
+  if [ -n "$count" ]; then echo "tests $count"; else tail -1 "$LOG" 2>/dev/null | cut -c1-160; fi
+}
+alive() {
+  if [ -n "$PID" ]; then kill -0 "$PID" 2>/dev/null
+  elif [ -n "$MATCH" ]; then pgrep -f "$MATCH" >/dev/null 2>&1
+  else return 0
+  fi
+}
+mtime() { stat -f %m "$LOG" 2>/dev/null || stat -c %Y "$LOG" 2>/dev/null || echo 0; }
+
+start=$(date +%s)
+last_beat=$start
+seen_fail=0
+if [ "$NEW_ONLY" = 1 ] && [ -f "$LOG" ]; then
+  seen_fail=$(grep -c -E "$FAIL" "$LOG" 2>/dev/null); seen_fail=${seen_fail:-0}
+fi
+echo "WATCH START $LOG${PID:+ pid $PID}${MATCH:+ match \"$MATCH\"} (stall ${STALL}s)"
+while :; do
+  now=$(date +%s)
+  if [ -f "$LOG" ]; then
+    # New failure lines since the last poll, at most five per poll.
+    fails=$(grep -c -E "$FAIL" "$LOG" 2>/dev/null); fails=${fails:-0}
+    if [ "$fails" -gt "$seen_fail" ]; then
+      grep -E "$FAIL" "$LOG" | sed -n "$((seen_fail + 1)),\$p" | head -5 |
+        cut -c1-200 | sed 's/^/WATCH FAIL /'
+      seen_fail=$fails
+    fi
+    if grep -q -E "$DONE" "$LOG" 2>/dev/null; then
+      echo "WATCH DONE $(progress) | $(grep -E "$DONE" "$LOG" | tail -1 | cut -c1-120)"
+      exit 0
+    fi
+    age=$((now - $(mtime)))
+  else
+    age=$((now - start))
+  fi
+  if ! alive; then
+    sleep 2
+    if [ -f "$LOG" ] && grep -q -E "$DONE" "$LOG"; then continue; fi
+    echo "WATCH DIED the process ended without its done line; last: $(progress)"
+    tail -5 "$LOG" 2>/dev/null | cut -c1-200 | sed 's/^/WATCH DIED | /'
+    exit 2
+  fi
+  if [ "$age" -ge "$STALL" ]; then
+    echo "WATCH STALLED no log output for ${age}s; last: $(progress)"
+    tail -3 "$LOG" 2>/dev/null | cut -c1-200 | sed 's/^/WATCH STALLED | /'
+    exit 3
+  fi
+  if [ "$MAX" -gt 0 ] && [ $((now - start)) -ge "$MAX" ]; then
+    echo "WATCH OVERTIME ${MAX}s; last: $(progress)"
+    exit 4
+  fi
+  if [ "$HEARTBEAT" -gt 0 ] && [ $((now - last_beat)) -ge "$HEARTBEAT" ]; then
+    echo "WATCH PROGRESS $(( (now - start) / 60 )) min: $(progress)"
+    last_beat=$now
+  fi
+  sleep "$EVERY"
+done

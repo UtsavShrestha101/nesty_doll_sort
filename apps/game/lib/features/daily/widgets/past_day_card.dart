@@ -1,6 +1,6 @@
-import 'package:intl/intl.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/ui/date_skeleton.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/theme/locale_script.dart';
 import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
@@ -40,7 +40,7 @@ class PastDayCard extends StatelessWidget {
     final solved = onDay || later;
     final tier = state.pastTier;
     final title = l10n.pastDailyTitle(
-      DateFormat(
+      skeletonDateFormat(
         HabitsPastDayTokens.cardTitleDateSkeleton,
         locale,
       ).format(date.startOfDay),

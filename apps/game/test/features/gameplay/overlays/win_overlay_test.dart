@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/intl.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
@@ -88,7 +87,9 @@ Widget _overlay({
   onContinue: onContinue ?? () {},
 );
 
-final _long = DateFormat('EEEEdMMMM', 'en').format(DateTime(2026, 10, 10));
+// Written out, not computed: the date must read as words with spaces
+// (DateFormat('EEEEdMMMM') printed "Saturday10October").
+const _long = 'Saturday, October 10';
 
 void main() {
   setUpAll(loadBundledFonts);

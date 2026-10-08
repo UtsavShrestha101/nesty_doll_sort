@@ -19,10 +19,10 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
-| design | Waiting on a design export or decision from the owner | 9 |
+| design | Waiting on a design export or decision from the owner | 12 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 70 markers.
+Total: 73 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -103,7 +103,7 @@ _None._
 
 ## M8 — Release prep
 
-- `apps/game/android/app/build.gradle.kts:69` — Sign release builds with the upload key. Load it from an untracked android/key.properties (storeFile, storePassword, keyAlias, keyPassword) and never commit the keystore or passwords. .gitignore already excludes …
+- `apps/game/android/app/build.gradle.kts:83` — Sign release builds with the upload key. Load it from an untracked android/key.properties (storeFile, storePassword, keyAlias, keyPassword) and never commit the keystore or passwords. .gitignore already excludes …
 - `apps/game/lib/core/services/links/app_links.dart:6` — the owner's privacy policy URL and support email (Q73).
 - `apps/game/lib/core/ui/theme/app_text_styles.dart:11` — tabular figures for coins and counters (PROGRESS Q29; moved from M2, the approach waits on the owner). Fredoka has no `tnum`, so [number]'s `FontFeature.tabularFigures()` does nothing yet; `NestyNumberText` is the one …
 - `apps/game/lib/core/ui/widgets/number/nesty_number_text.dart:7` — tabular figures (PROGRESS Q29; moved from M2, the approach waits on the owner). The design asks for them, but Fredoka's digits are proportional and it has no `tnum`, so a changing number still shifts. This widget is the …
@@ -126,6 +126,9 @@ _None._
 - `apps/admin/lib/features/login/pages/login_page.dart:11` — design/admin/*.png has no login screen yet (DESIGN_BRIEF Prompt 14 lists Levels, Level Editor and Skin upload only).
 - `apps/admin/lib/features/not_authorized/pages/not_authorized_page.dart:10` — no admin design export covers this screen yet.
 - `apps/admin/lib/features/shell/pages/admin_shell_page.dart:17` — narrow-window layout and rail styling (design/admin/*.png).
+- `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:119` — the first-run state isn't drawn (design spec gap 3); the default is the locked look with the gallery's own strings, read as they are by TalkBack.
+- `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:200` — gap 4 only tiers the streak look; the locked look's tiers here are the default.
+- `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:226` — gap 4 tiers the 2 × 2 only; the 4 × 2's tiers here follow it by default.
 - `apps/game/lib/features/daily/widgets/daily_locked_card.dart:11` — tokens.json holds no entry for this card's sizes; they are the scene's (card radius 32, 76 dp piece, title 26, body 16, 58 dp button).
 
 ## later — Unscheduled (spec §19 "Later ideas")

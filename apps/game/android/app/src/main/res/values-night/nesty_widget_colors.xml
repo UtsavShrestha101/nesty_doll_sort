@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The home-screen widget's dark colours (local habits stage 4): design/tokens.json
+  habits.widget.colors.dark, chosen by the system's dark theme.
+-->
+<resources>
+    <color name="nesty_widget_bg_top">#FF3A2414</color>
+    <color name="nesty_widget_bg_bottom">#FF24150B</color>
+    <color name="nesty_widget_title">#FFFFF4E0</color>
+    <color name="nesty_widget_number">#FFFFF4E0</color>
+    <color name="nesty_widget_label">#FFE3C9A4</color>
+    <color name="nesty_widget_line">#FFF6E2C2</color>
+    <!-- rgba(255,236,205,0.18) -->
+    <color name="nesty_widget_divider">#2EFFECCD</color>
+</resources>

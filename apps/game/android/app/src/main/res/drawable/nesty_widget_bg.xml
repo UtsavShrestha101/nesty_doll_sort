@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget's background (design spec §2.5): the 180deg cream gradient (walnut in
+  the dark theme, through values-night's colours) with 16 dp corners before
+  Android 12. drawable-v31 takes the system's widget radius instead. No shadow:
+  the launcher draws its own (gap 8).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:endColor="@color/nesty_widget_bg_bottom"
+        android:startColor="@color/nesty_widget_bg_top"
+        android:type="linear" />
+    <corners android:radius="16dp" />
+</shape>

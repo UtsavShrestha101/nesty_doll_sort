@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The home-screen widget's light colours (local habits stage 4): design/tokens.json
+  habits.widget.colors.light. values-night holds the dark ones; the launcher picks
+  by the SYSTEM appearance, never the app's setting (design spec §2.1).
+-->
+<resources>
+    <color name="nesty_widget_bg_top">#FFFFF9EE</color>
+    <color name="nesty_widget_bg_bottom">#FFFCEBD0</color>
+    <color name="nesty_widget_title">#FF5B3A21</color>
+    <color name="nesty_widget_number">#FF5B3A21</color>
+    <color name="nesty_widget_label">#FF8A5B3A</color>
+    <color name="nesty_widget_line">#FF6E4526</color>
+    <!-- rgba(138,91,58,0.18) -->
+    <color name="nesty_widget_divider">#2E8A5B3A</color>
+</resources>

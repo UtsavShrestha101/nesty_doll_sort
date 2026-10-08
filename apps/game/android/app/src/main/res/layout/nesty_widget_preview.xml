@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget picker's preview on Android 12+ (previewLayout) and the look before the
+  first render (initialLayout): the first-run state of design spec §2.6, the locked
+  look with the gallery's own strings, so it is localized by the phone's language.
+  Older pickers show nesty_widget_preview_2x2.png instead (English, gap 5).
+  Static: no code touches it.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/nesty_widget_bg"
+    android:clipToOutline="true"
+    android:padding="16dp"
+    tools:targetApi="31">
+
+    <ImageView
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_gravity="top|start"
+        android:importantForAccessibility="no"
+        android:src="@drawable/nesty_widget_daily_mark" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/widget_locked_title"
+            android:textColor="@color/nesty_widget_title"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:breakStrategy="balanced"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:hyphenationFrequency="none"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:text="@string/widget_gallery_description"
+            android:textColor="@color/nesty_widget_label"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</FrameLayout>

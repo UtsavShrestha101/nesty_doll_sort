@@ -13,16 +13,16 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M1 | Core (`nesty_core`) | 0 |
 | M2 | Playable game | 0 |
 | M3 | App shell and meta | 0 |
-| M4 | Firebase content | 15 |
+| M4 | Firebase content | 17 |
 | M5 | Admin panel | 17 |
 | M6 | Monetization | 17 |
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
 | design | Waiting on a design export or decision from the owner | 9 |
-| later | Unscheduled (spec §19 "Later ideas") | 1 |
+| later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 68 markers.
+Total: 69 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -42,13 +42,15 @@ _None._
 - `apps/game/lib/bootstrap.dart:76` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
 - `apps/game/lib/core/base/run_guarded.dart:29` — also report as a Crashlytics non-fatal (spec §14.4).
 - `apps/game/lib/core/repository/bundled_catalog_repository.dart:12` — overlay Firestore's `chapters`, `skins`, `themes` and `museumItems` (cached, offline-first; spec §13.5, §14.1).
-- `apps/game/lib/core/repository/default_level_resolver.dart:132` — this only sees the bundle it was resolved from, so a chapter the player already passed with fewer levels than `ChapterInfo.levels` never retroactively completes when sync adds the rest. Award that figurine and …
+- `apps/game/lib/core/repository/default_level_resolver.dart:144` — this only sees the bundle it was resolved from, so a chapter the player already passed with fewer levels than `ChapterInfo.levels` never retroactively completes when sync adds the rest. Award that figurine and …
 - `apps/game/lib/core/repository/level_repository.dart:9` — `levels_cache.json` + background Firestore sync on launch and resume (never blocking, never swapping the level in progress).
 - `apps/game/lib/core/services/analytics/analytics_service.dart:4` — add `FirebaseAnalyticsService` (firebase_analytics) for the real env, plus typed helpers for the §14.4 events (`level_start`, `level_win`, ...) so event names never get mistyped at call sites.
 - `apps/game/lib/core/services/analytics/fake_analytics_service.dart:13` — drop `AppEnv.real` from `env` once `FirebaseAnalyticsService` exists, then record events in memory (`events` list plus `clear()`) so tests can read them; that is only safe once release builds stop using this class.
 - `apps/game/lib/core/services/database/hive_database_service.dart:55` — report as a Crashlytics non-fatal.
 - `apps/game/lib/core/services/remote_config/defaults_remote_config_service.dart:9` — replace in the real env with `FirebaseRemoteConfigService`.
 - `apps/game/lib/core/services/remote_config/remote_config_service.dart:6` — add `FirebaseRemoteConfigService` (firebase_remote_config) for the real env; it sets `RemoteConfigKeys.defaults` as in-app defaults and falls back to them on any fetch error. Keys are `int`, `bool` and, since the daily …
+- `apps/game/lib/features/daily/widgets/month_card.dart:385` — the hint says "7 days" (copy.md) while `daily_archive_days` is tunable 0–28. Before Remote Config can serve anything but 7, give it a {days} plural in the nine catalogs (BACKLOG M4).
+- `apps/game/lib/features/gameplay/bloc/gameplay_bloc.dart:1365` — the kid path keeps this off for under-13s (D260, Q174): read the age gate here when it lands, as welcome_back_cubit.dart's `_logPlay` will.
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
 - `apps/game/lib/features/welcome_back/cubit/welcome_back_cubit.dart:89` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
@@ -85,8 +87,8 @@ _None._
 - `apps/game/lib/features/daily/widgets/daily_chest_modal.dart:30` — "Double it" (a rewarded ad) sits above Collect.
 - `apps/game/lib/features/gameplay/overlays/booster_buy_popup.dart:26` — with a real `AdsService`, an ad ready keeps this path and an offline one shows frame 3.8's disabled button with "Connect to watch an ad" (`BuyPopupBody.offline`).
 - `apps/game/lib/features/gameplay/overlays/out_of_moves_sheet.dart:22` — the ▶ ad option beside the price chips and its offline variant (frames 3.7, 12.8).
-- `apps/game/lib/features/gameplay/overlays/win_overlay.dart:179` — the ×3 rewarded-video button and its "Reward added" state (frames 2.8, 2.9); hidden until ads exist, as the design does offline, where Continue takes its slot (C12).
-- `apps/game/lib/features/gameplay/widgets/booster_bar.dart:68` — the ▶ badge at 0 while an ad is ready (frame 2.2).
+- `apps/game/lib/features/gameplay/overlays/win_overlay.dart:185` — the ×3 rewarded-video button and its "Reward added" state (frames 2.8, 2.9); hidden until ads exist, as the design does offline, where Continue takes its slot (C12).
+- `apps/game/lib/features/gameplay/widgets/booster_bar.dart:74` — the ▶ badge at 0 while an ad is ready (frame 2.2).
 - `apps/game/lib/features/settings/pages/settings_page.dart:259` — Restore Purchases (spec §9.2).
 - `apps/game/lib/features/settings/pages/settings_page.dart:266` — Privacy choices (the consent form's "Manage options", spec §9.3).
 - `apps/game/lib/features/shop/widgets/shop_closed_card.dart:9` — replace with the real coin packs (7.1, 7.2) and Remove Ads / No-Ads Bundle (7.8) once purchases ship.
@@ -127,4 +129,4 @@ _None._
 
 ## later — Unscheduled (spec §19 "Later ideas")
 
-- `apps/game/lib/features/daily/widgets/month_card.dart:17` — the hint line ("Play any of the last 7 days"), the raised past days and the previous-month chip come with local-habits stage 3's past-day play (BACKLOG "Local habits"); the cell look below already draws a `playable` day, …
+_None._

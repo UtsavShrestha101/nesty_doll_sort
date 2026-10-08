@@ -927,15 +927,15 @@ The plan is [plans/plan-local-habits.md](plans/plan-local-habits.md) (stage 0, 2
 
 ### Stage 3: the last 7 dailies, playable (local-habits 3; §7.5c approved, D310)
 
-- [ ] `daily_archive_days` (`RemoteConfigKey<int>`, 7, clamped 0–28) and `DailyArchiveRules` (pure: the window, `isPlayable`, `prune`) with `daily_archive_rules_test` — plan §3, §7.5c
-- [ ] Save schema 3 → 4 (`migrations-engineer`): `dailyArchive {played, inProgress}` apart from `daily`. It needs the step, a real schema-3 fixture `fixtures/schema3_document.json`, the migration, codec, Hive backup and contract tests in both save services. If Q190 keeps its default, `maxDates` also goes from 31 to 62 — plan §3, D298
-- [ ] `PlayRequest.pastDaily` / `PlayKind.pastDaily` and `DefaultLevelResolver._pastDaily`: the same board as that date's daily, `rewardCoins: 0`, and a date outside the window refused (a board in progress excepted) — plan §3
-- [ ] The save and the bloc: a past-day win pays nothing and writes no `daily` field, `records.dailies`, `longestRun`, `lastSolve` or chest. It adds `dailyArchive.played`. It counts in stats, families and dolls like a replay. Its in-progress board goes to `dailyArchive.inProgress`, and today's board survives a past-day game — plan §3, §7.5c
-- [ ] nesty_core `test/generator/daily_past_dates_test.dart`: the 7 past dates' boards are deterministic and equal the board built on that date, on the VM and the web parity run — plan §3
-- [ ] The picker in `MonthCard` (the window's days tappable at 48 dp; older days plain, with no lock and no word; Q190's month paging), the past day's `PuzzleCard` (no coin chip, the calm line, Play again, back to today), the board's date pill, and the win card's past variant ("Moves N", no coins, streak card, chest, Share or reminder offer). `TODO(design)` for 14.3 — plan §3
-- [ ] About 6 strings in nine catalogs with the Opus review; the overflow suite for the past day's card and win in nine locales — plan §3
-- [ ] `past_daily_complete {days_ago, again}` through `AnalyticsService`, with its `TODO(M4)` — plan §"Shared pieces"
-- [ ] The ethics test gains a 400-step walk of past-day wins and replays that never changes the streak's fields or coins, and the archive's copy — plan §3
+- [x] `daily_archive_days` (`RemoteConfigKey<int>`, 7, clamped 0–28) and `DailyArchiveRules` (pure: the window, `isPlayable`, `prune`) with `daily_archive_rules_test` — plan §3, §7.5c (done 2026-10-08, D311)
+- [x] Save schema 3 → 4 (`migrations-engineer`): `dailyArchive {played, inProgress}` apart from `daily`. It needs the step, a real schema-3 fixture `fixtures/schema3_document.json`, the migration, codec, Hive backup and contract tests in both save services. If Q190 keeps its default, `maxDates` also goes from 31 to 62 — plan §3, D298 (done 2026-10-08: schema 4, `maxDates` 62, D311)
+- [x] `PlayRequest.pastDaily` / `PlayKind.pastDaily` and `DefaultLevelResolver._pastDaily`: the same board as that date's daily, `rewardCoins: 0`, and a date outside the window refused (a board in progress excepted) — plan §3 (done 2026-10-08: the resolver takes the `AppClock`, D311)
+- [x] The save and the bloc: a past-day win pays nothing and writes no `daily` field, `records.dailies`, `longestRun`, `lastSolve` or chest. It adds `dailyArchive.played`. It counts in stats, families and dolls like a replay. Its in-progress board goes to `dailyArchive.inProgress`, and today's board survives a past-day game — plan §3, §7.5c (done 2026-10-08, D311)
+- [x] nesty_core `test/generator/daily_past_dates_test.dart`: the 7 past dates' boards are deterministic and equal the board built on that date, on the VM and the web parity run — plan §3 (done 2026-10-08 as `test/parity/daily_past_dates_test.dart`, so the node, chrome and dart2wasm runs take it by directory, D311)
+- [x] The picker in `MonthCard` (the window's days tappable at 48 dp; older days plain, with no lock and no word; Q190's month paging), the past day's `PuzzleCard` (no coin chip, the calm line, Play again, back to today), the board's date pill, and the win card's past variant ("Moves N", no coins, streak card, chest, Share or reminder offer). `TODO(design)` for 14.3 — plan §3 (done 2026-10-08 on m7-6's final look, so no `TODO(design)`: `PastDayCard`, `PastDayWinCard`; the day targets are 48 dp tall and one column wide, and today's cell scrolls up to today's card, D311)
+- [x] About 6 strings in nine catalogs with the Opus review; the overflow suite for the past day's card and win in nine locales — plan §3 (the strings came with m7-6's copy and its Opus review, D305; the overflow cases are in `daily_month_overflow_test` and `win_overlay_overflow_test`, D311)
+- [x] `past_daily_complete {days_ago, again}` through `AnalyticsService`, with its `TODO(M4)` — plan §"Shared pieces" (done 2026-10-08, D311)
+- [x] The ethics test gains a 400-step walk of past-day wins and replays that never changes the streak's fields or coins, and the archive's copy — plan §3 (done 2026-10-08, D311)
 - [ ] Device: the `daily_states` scenario `archive` (today's board in progress and a paused streak, a past day played to its win, the streak card unchanged, today's board resumable), its shots, and TEST_COVERAGE's "The past dailies" row — D169
 - [ ] The device run after stage 3: the full `nesty-test` on the iPhone 16e and the Android emulator, under `watch-run`, with every new shot judged against the plan's stand-in intent — the owner's brief
 
@@ -1158,6 +1158,7 @@ playable. Levels published in the admin appear on the next app resume.
 - [ ] Firebase init at the `TODO(M4)` in both bootstraps, failing silently offline. The owner runs `flutterfire configure` first (Q12) — §14, CLAUDE.md rule 3, `apps/game/lib/bootstrap.dart`
 - [ ] Crashlytics: uncaught errors, plus non-fatals for `runGuarded` failures, the Hive fallback and level-validation failures — §14.4, D17
 - [ ] `FirebaseRemoteConfigService` over the hard-coded defaults, with prices and rewards read from it — §9.4, CLAUDE.md rule 6
+- [ ] Before Remote Config can serve a `daily_archive_days` other than 7: the month's hint (`dailyMonthHint`, `dailyMonthHintShort`) says "7 days", so it needs a `{days}` plural in the nine catalogs with the Opus review, or the hint hides off 7 (`TODO(M4)` in `month_card.dart`). A past day's board must also take its date's `dailyOverrides` entry, as that day's daily did — plan-local-habits §7.5c, stage 3 review
 - [ ] `FirebaseAnalyticsService`, with every §14.4 event sent from the feature it belongs to — §14.4. The daily gift's `login_gift_claim` too (D268)
 - [ ] When sync adds levels to a chapter the player has already passed, award its figurine and `reward_chapter` once — m3 §6.2, D72
 - [ ] Synced levels carry their `par` for the star rating. A level without one shows no stars, and a new version keeps the level's best stars (Q117) — spec-prop §7.10, D125
@@ -1251,6 +1252,7 @@ Offline ad buttons fall back to coins correctly.
 - [ ] ATT pre-prompt (8.5) and system prompt (8.6) after the first Level 3 win, with the purpose string in `Info.plist` — §9.3
 - [ ] Rate prompt (`in_app_review`) after the `rate_prompt_level` win, if the player hasn't failed in the last 3 levels (frame 8.7) — §10.2 #16
 - [ ] `adCounters` in the save: winsSinceInterstitial, lastAdAt, interstitialsShown — §13.3
+- [ ] The interstitial counter skips a past daily: a past day's win leaves `adCounters` as it is today (D311), so `winsSinceInterstitial` must not count it when M6 starts counting, and no interstitial follows it — plan-local-habits §7.5c, D311
 - [ ] `AdsService` calls `MusicService.pauseForAd()` before every interstitial or rewarded show and `resumeAfterAd()` in a `finally` when it closes; with the app's own trip to the background during an Android ad, the pause reasons don't double up — `TODO(M6)` in `music_service.dart`, audio A5
 - [ ] A completed purchase calls `JingleCues.reward()` — `TODO(M6)` in `jingle_cues.dart`, Q62
 - [ ] The respect rules hold for every ad and purchase surface (spec-prop §1.1):

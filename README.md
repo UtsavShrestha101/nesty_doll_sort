@@ -178,6 +178,8 @@ dart run nesty_tools:sync_design_assets   # design/ art, UI art, audio, Lottie â
 dart run nesty_tools:gen_nesty_icons      # NestyIcons from the bundled icon font
 dart run nesty_tools:gen_font_subsets     # the hi/ja font subset lists (tools/fonts/subset/); then build_fonts.sh
 dart run nesty_tools:todo_index           # docs/TODO_INDEX.md from TODO(<tag>) markers
+dart run nesty_tools:gen_widget_strings   # the home-screen widget's native strings (iOS <lang>.lproj, Android values-<lang>) from the ARBs
+ruby tools/ios/add_widget_target.rb [--check]   # the NestyWidget Xcode target; rerun after a widget source file or a language is added
 tools/fonts/build_fonts.sh [--verify]     # bundled fonts from pinned upstream (network)
 ```
 
@@ -201,6 +203,7 @@ cd apps/game             && flutter test      # cubit + widget tests on fake ser
 cd apps/game             && flutter test test/overflow --dart-define=NESTY_TEST_LOCALE=de   # the overflow suite in one locale (de es fr hi id ja pt pt_BR tr; nesty-test and CI loop all nine)
 cd apps/admin            && flutter test
 cd tools                 && dart test         # nesty_tools
+cd apps/game/android     && ./gradlew :app:testDevDebugUnitTest -Ptarget=lib/main_dev.dart   # the widget's Kotlin JVM tests (gradlew appears after one flutter build apk)
 ```
 
 **One command for everything:** `tools/scripts/nesty-test` (the owner's
@@ -249,6 +252,7 @@ tools/scripts/nesty-test --device-only --only board,race,meta,daily_states,overl
 tools/scripts/nesty-test --device-only --only faults,semantics   # phase 5's files
 tools/scripts/nesty-test --device-only --only gift                # the daily gift's five scenarios
 tools/scripts/nesty-test --device-only --only locales            # de, hi, ja on a device (5B)
+tools/scripts/nesty-test --device-only --only widget             # the home-screen widget: store, links, RunnerTests (local habits 4)
 tools/scripts/nesty-test --android --android-size 1170x2532@480 --device-only   # the emulator at 390x844 dp
 tools/scripts/nesty-test --android --only reminder   # the optional Android reminder check
 tools/scripts/nesty-test --help             # every option

@@ -33,9 +33,10 @@ drift; CI runs the checks in the "Generated code is committed and fresh" job.
 | Command | Reads | Writes |
 |---|---|---|
 | `dart run nesty_tools:gen_design_tokens [--check]` | `design/tokens.json` | `packages/nesty_render/lib/src/tokens/render_tokens.gen.dart`, `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart` |
-| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie,museum/png,ui}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie,museum,ui}/`, and the Android notification icon `apps/game/android/app/src/main/res/drawable/ic_notification.xml` |
+| `dart run nesty_tools:sync_design_assets [--check]` | `design/{skins,symbols,board,themes,audio,lottie,museum/png,ui}` | `apps/game/assets/{skins,symbols,board,themes,audio,lottie,museum,ui}/`, the Android notification icon `apps/game/android/app/src/main/res/drawable/ic_notification.xml`, and the home-screen widget's native art (`apps/game/ios/NestyWidget/Assets.xcassets/`, Android `res/drawable{,-night,-nodpi}/nesty_widget_*`) |
 | `dart run nesty_tools:gen_fx_spec [--check]` | `design/lottie/*.json`, the contract table `lib/src/fx/lottie_contract.dart` | `apps/game/lib/features/fx/fx_spec.gen.dart` |
 | `dart run nesty_tools:gen_nesty_icons [--check]` | `tools/fonts/nesty_symbols.txt`, `apps/game/assets/fonts/NestySymbolsRounded.codepoints` | `apps/game/lib/core/ui/icons/nesty_icons.gen.dart` |
+| `dart run nesty_tools:gen_widget_strings [--check]` | `apps/game/lib/l10n/app_*.arb` (`widgetGalleryName`, `widgetGalleryDescription`, `widgetLockedTitle`; pt_BR falls back to pt per key) | the widget's native strings: `apps/game/ios/NestyWidget/<lang>.lproj/Localizable.strings` (`pt-BR.lproj`) and `apps/game/android/app/src/main/res/values{,-<lang>}/widget_strings.xml` (`values-id`, `values-pt-rBR`) |
 | `dart run nesty_tools:todo_index [--check]` | every first-party source file | `docs/TODO_INDEX.md` |
 | `dart run nesty_tools:nesty_levels bundle build` / `bundle check` | `tools/levels/manifest.json`, `tools/levels/authored/*.json` | `apps/game/assets/levels/bundle.json` (`bundle check` writes nothing) |
 | `dart run nesty_tools:gen_font_subsets [--check]` | `apps/game/lib/l10n/app_{hi,ja}.arb` (when they exist), intl's dates, the Flutter SDK's `material_{hi,ja}.arb` (found through `$FLUTTER_ROOT` or `flutter` on PATH), the language sheet's autonyms, the bundled Fredoka and Nunito cmaps, `design/tokens.json` `font.scripts` | `tools/fonts/subset/{hi,ja}.txt` |
@@ -239,14 +240,19 @@ group, transform, stroke, other colour or shape is an issue. `--check`
 compares its bytes like any asset.
 
 `design/ui/widget/` (m7-6) is not an asset either: it is the native
-home-screen widget's art, which local-habits stage 4
-(docs/plans/plan-local-habits.md §4) turns into the iOS asset catalog and the
-Android drawables. `lib/src/assets/widget_art.dart` keeps it to what tokens
+home-screen widget's art. `lib/src/assets/widget_native_art.dart` turns it
+into the iOS asset catalog (`WidgetFlameLit`, `WidgetFlameUnlit`,
+`WidgetFlameUnlitDark`, `WidgetDoll` as a template, `WidgetDailyMark`; each PNG
+with its C2PA `caBX` chunk stripped) and the Android vector drawables (the dark
+unlit flame under `drawable-night` with the same name) plus the 2 × 2 preview
+PNG; the 4 × 2 preview is validated, not shipped (local habits stage 4,
+PROGRESS D312). `lib/src/assets/widget_art.dart` keeps it to what tokens
 `habits.widget.art` promises: each SVG flat (solid `#RRGGBB` fills on paths,
 rects, circles and ellipses; no gradient, filter, mask, clip, image, text,
 stroke, opacity or transform), its viewBox at the dp size's aspect, the doll
 one colour (#000000), `name.png`/`-2x`/`-3x` at the dp size × 1/2/3, the two
-previews at their pixel sizes, and nothing else; nothing is copied.
+previews at their pixel sizes, and nothing else. Nothing goes to
+`apps/game/assets/`: the widget's art is never a Flutter asset.
 
 The 20 museum figurine PNGs (`design/museum/png/NN-<id>.png` and its
 `-locked` silhouette, one pair per bundled chapter figurine, m3-design §9.5)

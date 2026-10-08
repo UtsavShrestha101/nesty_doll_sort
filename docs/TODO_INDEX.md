@@ -19,10 +19,10 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
-| design | Waiting on a design export or decision from the owner | 12 |
+| design | Waiting on a design export or decision from the owner | 24 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 73 markers.
+Total: 85 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -55,7 +55,7 @@ _None._
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
 - `apps/game/lib/features/welcome_back/cubit/welcome_back_cubit.dart:89` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
-- `docs/BACKLOG.md:986` — names `getString`
+- `docs/BACKLOG.md:992` — names `getString`
 
 ## M5 — Admin panel
 
@@ -129,6 +129,18 @@ _None._
 - `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:119` — the first-run state isn't drawn (design spec gap 3); the default is the locked look with the gallery's own strings, read as they are by TalkBack.
 - `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:200` — gap 4 only tiers the streak look; the locked look's tiers here are the default.
 - `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:226` — gap 4 tiers the 2 × 2 only; the 4 × 2's tiers here follow it by default.
+- `apps/game/ios/NestyWidget/NestyWidget.swift:67` — the gallery preview is the first-run state, localized by the native strings (gap 20).
+- `apps/game/ios/NestyWidget/NestyWidgetCore.swift:265` — the past-the-last-entry look is the spec's default (gap 18).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:46` — the tinted frames (14.4f) draw mock values; the real tint is the system's, these are the spec's whites (gap 9).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:57` — StandBy uses the dark tokens (label #E3C9A4), not the frame's #C9B49A, and keeps them on a light phone (gaps 6, 17).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:142` — no widget face is drawn for tr, hi or ja (gap 10).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:291` — the cap at xxLarge is the spec's default (gap 19).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:62` — the first-run state isn't drawn (gap 3); it borrows the locked layout with the gallery description as its line.
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:105` — the short-widget tiers are the spec's default (gap 4).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:130` — one line, then the short form (gap 12).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:162` — the label wraps to two lines in the 104 column, then takes its short form (gap 11).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:237` — 1000+ relies on the 0.8 floor alone (gap 16).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:398` — more colours than fit show the first N, no "+N" (gap 15).
 - `apps/game/lib/features/daily/widgets/daily_locked_card.dart:11` — tokens.json holds no entry for this card's sizes; they are the scene's (card radius 32, 76 dp piece, title 26, body 16, 58 dp button).
 
 ## later — Unscheduled (spec §19 "Later ideas")

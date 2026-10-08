@@ -48,10 +48,19 @@ final class TokenReader {
 
   Object? _raw(String path) {
     Object? node = root;
-    for (final key in path.split('.')) {
-      if (node is! Map<String, Object?> || !node.containsKey(key)) {
+    final segments = path.split('.');
+    for (var i = 0; i < segments.length; i++) {
+      if (node is! Map<String, Object?>) {
         throw TokenFormatException(path, 'missing');
       }
+      // Tokens v6 (m7-6) keys some objects by file name
+      // (`habits.widget.art.files.flame_lit.svg`): a key with a dot spans
+      // segments, so the shortest key the object has wins.
+      var key = segments[i];
+      while (!node.containsKey(key) && i + 1 < segments.length) {
+        key = '$key.${segments[++i]}';
+      }
+      if (!node.containsKey(key)) throw TokenFormatException(path, 'missing');
       node = node[key];
     }
     return node;

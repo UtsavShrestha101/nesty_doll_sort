@@ -38,6 +38,28 @@ void main() {
       expect(parseSoundEvent('none, quiet', maxSteps: 5), isNull);
     });
 
+    test('a single file with a note on where it plays (tokens v6)', () {
+      for (final (value, file, note) in [
+        (
+          'button (the welcome card, its close, a month day, Play again)',
+          'button',
+          'the welcome card, its close, a month day, Play again',
+        ),
+        (
+          'win @0, no coins (the past-day win, 14.3d)',
+          'win',
+          'no coins; the past-day win, 14.3d',
+        ),
+        ('win @0', 'win', null),
+      ]) {
+        final event = parseSoundEvent(value, maxSteps: 5)!;
+        expect(event.files, [file], reason: value);
+        expect(event.pick, SoundEventPick.single, reason: value);
+        expect(event.note, note, reason: value);
+      }
+      expect(parseSoundEvent('pick', maxSteps: 5)!.note, isNull);
+    });
+
     test('anything else is null', () {
       for (final value in [
         'Pick',
@@ -46,6 +68,12 @@ void main() {
         'clack_1 | clack_2 (random)',
         'complete_{step}',
         '',
+        // Tokens v6's notes: only `@0`, one note, and never `(random)` on a
+        // single file.
+        'win @200',
+        'button (random)',
+        'button (one) (two)',
+        'button, (x)',
       ]) {
         expect(parseSoundEvent(value, maxSteps: 5), isNull, reason: value);
       }
@@ -177,6 +205,37 @@ void main() {
         (json['sound']! as Map<String, Object?>)['events'],
         containsPair('giftClaim', 'gift_claim'),
       );
+    });
+
+    test('the local habits play AUDIO.md\'s sounds, and no new one (m7-6)', () {
+      final root = findRepoRoot().path;
+      final json =
+          jsonDecode(File(p.join(root, tokensJsonPath)).readAsStringSync())
+              as Map<String, Object?>;
+      final events =
+          (json['sound']! as Map<String, Object?>)['events']!
+              as Map<String, Object?>;
+      String fileOf(String key) =>
+          parseSoundEvent(events[key]! as String, maxSteps: 5)!.files.single;
+      final audio = File(
+        p.join(root, 'design/audio/AUDIO.md'),
+      ).readAsStringSync();
+      final section = audio
+          .split('\n## ')
+          .firstWhere((s) => s.startsWith('Local habits'));
+      expect(section, contains('No new sound'));
+      final named = {
+        for (final m in RegExp(
+          r'^\|[^|]+\| `([a-z0-9_]+)`',
+          multiLine: true,
+        ).allMatches(section))
+          m[1]!,
+      };
+      expect(named, {'button', 'win'});
+      expect({fileOf('habitsTap'), fileOf('habitsPastWin')}, named);
+      // Each is an existing event's file: the set covers every habit.
+      expect(events['button'], 'button');
+      expect(events['win'], 'win');
     });
   });
 }

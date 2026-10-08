@@ -416,13 +416,78 @@ void main() {
       final issues = _plan(root).issues;
       expect(issues, [
         'design/ui/frames: unknown UI art folder (expected badges, chest, '
-            'gift, rivals, sprites, stars, icons, notification)',
+            'gift, rivals, sprites, stars, icons, notification, widget)',
         'design/ui/icons/share.svg: icons ship as glyphs of the bundled '
             'font; add the glyph to tokens.json `icons` and '
             'tools/fonts/nesty_symbols.txt instead',
         'design/ui/readme.txt: unexpected file in design/ui',
         'design/ui/stars/Star Big.svg: UI art files are named [a-z0-9_]+.svg',
         'design/ui/stars/star.png: UI art files are named [a-z0-9_]+.svg',
+      ]);
+    });
+
+    test('the widget art (m7-6) is validated against tokens, never shipped', () {
+      final root = _fakeRepo();
+      void write(String path, Object content) {
+        final file = File(p.join(root.path, path))
+          ..parent.createSync(recursive: true);
+        content is String
+            ? file.writeAsStringSync(content)
+            : file.writeAsBytesSync(content as List<int>);
+      }
+
+      write(
+        'design/tokens.json',
+        jsonEncode({
+          'dollColor': {
+            'red': {'symbol': 'heart'},
+          },
+          'habits': {
+            'widget': {
+              'art': {
+                'folder': 'ui/widget/',
+                'files': {'mark.svg': 20},
+                'previews':
+                    'preview_2x2.png (6 × 6) and preview_4x2.png (12 × 6), '
+                    '3× captures for Android’s previewImage',
+              },
+            },
+          },
+        }),
+      );
+      write(
+        'design/ui/widget/mark.svg',
+        _svg('<rect width="4" height="4" rx="1" fill="#F5C518"/>'),
+      );
+      for (final (suffix, side) in [('', 20), ('-2x', 40), ('-3x', 60)]) {
+        write(
+          'design/ui/widget/mark$suffix.png',
+          _png(width: side, height: side),
+        );
+      }
+      write('design/ui/widget/preview_2x2.png', _png(width: 6, height: 6));
+      write('design/ui/widget/preview_4x2.png', _png(width: 12, height: 6));
+      final plan = _plan(root);
+      expect(plan.issues, isEmpty);
+      expect(_destinationsOf(plan).where((d) => d.contains('widget')), isEmpty);
+
+      // A gradient, a wrong raster size and a stray file each block it.
+      write(
+        'design/ui/widget/mark.svg',
+        _svg(
+          '<linearGradient id="g"/><rect width="4" height="4" fill="url(#g)"/>',
+        ),
+      );
+      write('design/ui/widget/mark-3x.png', _png(width: 40, height: 40));
+      write('design/ui/widget/notes.txt', 'x');
+      expect(_plan(root).issues, [
+        contains('design/ui/widget/mark.svg: <linearGradient> is not a flat'),
+        'design/ui/widget/mark.svg: <rect> needs a solid fill (#RRGGBB), got '
+            '"url(#g)"',
+        'design/ui/widget/mark-3x.png: 40×40, expected 60×60',
+        'design/ui/widget/notes.txt: not in tokens.json `habits.widget.art` '
+            '(the widget art is its SVGs, their 1×/2×/3× PNGs and the two '
+            'previews)',
       ]);
     });
 

@@ -73,3 +73,5 @@ sd_card_alert
 inventory_2
 # m7-5 (layout.rivalStrip.forms.stateGlyph, 9.3i): the race strip's thinking glyph.
 more_horiz
+# m7-6 (habits.month.headerChipGlyphPrevious, 14.2c/14.2d): the month's previous chip.
+chevron_left

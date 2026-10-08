@@ -45,7 +45,9 @@ abstract final class LottieIssueCodes {
   static const fills = 'fills';
 
   /// A `<part>_fill` or `<part>_rect` the game keys on (LOTTIE.md m7-4
-  /// "Tint and width") is missing, extra or not a fill / rectangle.
+  /// "Tint and width") is missing, extra or not a fill / rectangle; or a
+  /// matte's gradient `<part>_fill` (m7-6) is missing, extra or off its
+  /// alpha matte.
   static const namedShapes = 'namedShapes';
   static const text = 'text';
   static const travel = 'travel';
@@ -449,10 +451,19 @@ final class _Validator {
   // with a colour delegate and each `<part>_rect` with a size delegate on
   // `['**', name]`, so the names are exactly the contract's, each on the
   // right shape type (a name may repeat: `tail_fill` is on both tails).
+  // LOTTIE.md m7-6: a `<part>_fill` may also be a gradient fill when the
+  // contract lists it as a matte fill (`ui_chest`'s `falloff_fill`) and it
+  // sits on an alpha matte layer, so it only shapes the layer under it and
+  // no delegate ever reaches it.
   void _checkNamedShapes() {
     final fills = <String>{};
     final rects = <String>{};
-    void visitShapes(List<Map<String, Object?>> shapes, String at) {
+    final matteFills = <String>{};
+    void visitShapes(
+      List<Map<String, Object?>> shapes,
+      String at, {
+      required bool onMatte,
+    }) {
       for (final shape in shapes) {
         final name = shape['nm'];
         if (name is String) {
@@ -463,6 +474,17 @@ final class _Validator {
             if (!name.endsWith(suffix)) continue;
             if (shape['ty'] == type) {
               found.add(name);
+            } else if (suffix == '_fill' &&
+                shape['ty'] == 'gf' &&
+                contract.matteFills.contains(name)) {
+              matteFills.add(name);
+              if (!onMatte) {
+                add(
+                  LottieIssueCodes.namedShapes,
+                  '$at: the matte fill "$name" is not on an alpha matte '
+                  '(td 1 over a layer with tt 1 or 2), so it would draw',
+                );
+              }
             } else {
               add(
                 LottieIssueCodes.namedShapes,
@@ -472,13 +494,25 @@ final class _Validator {
             }
           }
         }
-        if (shape['ty'] == 'gr') visitShapes(lottieMaps(shape['it']), at);
+        if (shape['ty'] == 'gr') {
+          visitShapes(lottieMaps(shape['it']), at, onMatte: onMatte);
+        }
       }
     }
 
     void visitLayers(List<Map<String, Object?>> layers, String where) {
       for (final (i, layer) in layers.indexed) {
-        visitShapes(lottieMaps(layer['shapes']), '$where[$i] "${layer['nm']}"');
+        // An alpha matte source: `td: 1`, and the next layer takes it as
+        // its track matte (1 alpha, 2 inverted alpha; luma is refused
+        // elsewhere).
+        final next = i + 1 < layers.length ? layers[i + 1] : null;
+        final onMatte =
+            layer['td'] == 1 && (next?['tt'] == 1 || next?['tt'] == 2);
+        visitShapes(
+          lottieMaps(layer['shapes']),
+          '$where[$i] "${layer['nm']}"',
+          onMatte: onMatte,
+        );
       }
     }
 
@@ -491,6 +525,13 @@ final class _Validator {
         LottieIssueCodes.namedShapes,
         'named fills are ${_sorted(fills)}, expected '
         '${_sorted(contract.tintFills)} (LOTTIE.md "Tint and width")',
+      );
+    }
+    if (!_sameSet(matteFills, contract.matteFills)) {
+      add(
+        LottieIssueCodes.namedShapes,
+        'named matte fills are ${_sorted(matteFills)}, expected '
+        '${_sorted(contract.matteFills)} (LOTTIE.md "### m7-6")',
       );
     }
     if (!_sameSet(rects, contract.sizedRects)) {

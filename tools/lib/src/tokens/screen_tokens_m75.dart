@@ -416,9 +416,21 @@ final Map<String, void Function(_Leaf)> _m75Specials = {
     );
   },
   'gift.short.height': (l) {
-    final m = l.match(r'(\d+) \(top (\d+)\)');
+    // m7-6 (item 4): the 58 dp Claim on 16:9 too.
+    final m = l.match(
+      r'(\d+) \(top (\d+)\)(?:; m7-6 \(item 4\): Claim is the (\d+) dp '
+      r'large button everywhere)?',
+    );
     if (693 - num.parse(m[1]!) != num.parse(m[2]!)) {
       throw TokenFormatException(l.path, 'the top is not 693 − the height');
+    }
+    if (m[3] != null &&
+        (num.parse(m[3]!) != _num(l, 'gift.short.footer.height') ||
+            num.parse(m[3]!) != _num(l, 'gift.sheet.footer.height'))) {
+      throw TokenFormatException(
+        l.path,
+        'Claim is not gift.short.footer.height and gift.sheet.footer.height',
+      );
     }
     l.add(
       doubleLiteral(num.parse(m[1]!)),
@@ -429,7 +441,19 @@ final Map<String, void Function(_Leaf)> _m75Specials = {
   },
   // The tiles (13.3).
   'gift.tile.done.check.glyph': (l) {
-    final m = l.match('([a-z_]+) (\\d+) $_color wght (\\d+)');
+    // m7-6 (item 6, keep): the check is drawn at the bundled cut's weight,
+    // with a note why.
+    final m = l.match(
+      '([a-z_]+) (\\d+) $_color wght (\\d+)(?: \\(the bundled static cut; '
+      'm7-6, item 6\\))?',
+    );
+    if (l.text.contains('m7-6') &&
+        !'${l.t.peek('font.icon.settings')}'.contains('wght ${m[4]}')) {
+      throw TokenFormatException(
+        l.path,
+        'is not the bundled cut\'s weight (font.icon.settings)',
+      );
+    }
     l
       ..add(
         stringLiteral(m[1]!),

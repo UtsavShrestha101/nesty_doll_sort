@@ -6,6 +6,7 @@ import 'package:nesty_tools/src/tokens/script_fonts.dart';
 import 'package:nesty_tools/src/tokens/sound_files.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
 import 'package:nesty_tools/src/tokens/ui_tokens_m75.dart';
+import 'package:nesty_tools/src/tokens/ui_tokens_m76.dart';
 import 'package:nesty_tools/src/tokens/ui_tokens_v3.dart';
 
 /// Emits `apps/game/lib/core/ui/tokens/ui_tokens.gen.dart`: app colors,
@@ -28,6 +29,7 @@ String uiTokensSource(TokenReader t, {required String header}) {
     _sound(t),
     ...uiV3Classes(t),
     ...uiM75Classes(t),
+    ...uiM76Classes(t),
   ];
   // m7-5 item 28: the display family's styles follow the locale's face.
   final display = t.peek('font.display.family')! as String;
@@ -160,6 +162,38 @@ ConstClass _gradients(TokenReader t) {
             doc: '${angle}deg.',
           );
         }
+      case 'radial' when t.has('$base.shape'):
+        // Tokens v6 (m7-6): a CSS ellipse, `ellipse 60% 70% at 50% 30%`.
+        extras.remove('shape');
+        final shape = t.string('$base.shape', symbol: symbol);
+        final e = RegExp(
+          r'^ellipse (\d+(?:\.\d+)?)% (\d+(?:\.\d+)?)% at '
+          r'(\d+(?:\.\d+)?)% (\d+(?:\.\d+)?)%$',
+        ).firstMatch(shape);
+        if (e == null) {
+          throw TokenFormatException(
+            '$base.shape',
+            'expected "ellipse <rx>% <ry>% at <x>% <y>%", got "$shape"',
+          );
+        }
+        final f = [for (var i = 1; i <= 4; i++) double.parse(e[i]!) / 100];
+        if (f[2] > 1 || f[3] > 1 || f[0] <= 0 || f[1] <= 0) {
+          throw TokenFormatException('$base.shape', 'outside the box');
+        }
+        final center = alignmentLiteral(
+          _round(f[2] * 2 - 1),
+          _round(f[3] * 2 - 1),
+        );
+        c.add(
+          member,
+          'RadialGradient(center: $center, radius: 0.5, colors: $colors'
+          '${allImplicit ? '' : ', stops: ${fractionList()}'}, '
+          'transform: EllipseGradientTransform(center: $center, '
+          'radiusX: ${doubleLiteral(f[0])}, radiusY: ${doubleLiteral(f[1])}))',
+          doc:
+              'CSS `radial-gradient($shape, …)`: the circle scaled into the '
+              'ellipse by [EllipseGradientTransform], so it fits any box.',
+        );
       case 'radial':
         extras.remove('center');
         final center = t.numbers('$base.center', symbol: symbol, length: 2);
@@ -629,11 +663,19 @@ ConstClass _textStyles(TokenReader t) {
     'weight',
     'letterSpacing',
     'tabular',
+    // Tokens v6 (m7-6): where the style is used, prose (in the doc).
+    'use',
   };
   for (final key in t.keys('fontSize')) {
     final base = 'fontSize.$key';
     final member = memberName(key);
     final symbol = '$name.$member';
+    final use = t.has('$base.use')
+        ? t.documented(
+            '$base.use',
+            reason: 'where the style is used, in its doc',
+          )
+        : null;
     for (final field in t.keys(base)) {
       if (!allowed.contains(field)) {
         throw TokenFormatException('$base.$field', 'unknown text style field');
@@ -677,7 +719,7 @@ ConstClass _textStyles(TokenReader t) {
     c.add(
       member,
       'TextStyle(${args.join(', ')})',
-      doc: '$family $size/$lineHeight/$weight.',
+      doc: '$family $size/$lineHeight/$weight.${use == null ? '' : ' $use.'}',
     );
   }
   return c;
@@ -841,6 +883,44 @@ ConstClass _hud(TokenReader t) {
     '{${examples.join(', ')}}',
     type: 'Map<String, double>',
     doc: 'The design\'s counter widths by label, for the layout test.',
+  );
+  // Tokens v6 (m7-6 item 16): the label hugs its text up to a max, then
+  // scales down (textFit.hudPills) and never wraps; the pill is the label +
+  // a fixed part.
+  n('familyCounter.labelMaxWidth', 'familyCounterLabelMaxWidth');
+  n('familyCounter.pillMaxWidth', 'familyCounterPillMaxWidth');
+  final note = t.documented(
+    '$p.familyCounter.\$m76',
+    reason: 'the counter\'s growth rule (m7-6 item 16), checked',
+  );
+  final m76 = RegExp(
+    r'^m7-6 \(item 16\): the label hugs its text \(E\.18\) up to (\d+) dp, '
+    r'which holds “12 / 12” at ([\d.]+)× text \((\d+) dp\); the pill is '
+    r'label \+ (\d+), so at most (\d+)\. Past (\d+) the label scales down '
+    r'to ([\d.]+) \(textFit\.hudPills\); it never wraps$',
+  ).firstMatch(note);
+  final label = t.peek('$p.familyCounter.labelMaxWidth');
+  final pill = t.peek('$p.familyCounter.pillMaxWidth');
+  if (m76 == null ||
+      num.parse(m76[1]!) != label ||
+      num.parse(m76[6]!) != label ||
+      num.parse(m76[3]!) > num.parse(m76[1]!) ||
+      num.parse(m76[5]!) != pill ||
+      (label! as num) + num.parse(m76[4]!) != pill ||
+      num.parse(m76[7]!) != t.peek('textFit.hudPills.minScale')) {
+    throw TokenFormatException(
+      '$p.familyCounter.\$m76',
+      'is not labelMaxWidth + the fixed part = pillMaxWidth, scaling to '
+          'textFit.hudPills.minScale',
+    );
+  }
+  c.add(
+    'familyCounterPillChrome',
+    doubleLiteral(num.parse(m76[4]!)),
+    doc:
+        'The pill is its label + this (m7-6 item 16); the label hugs its '
+        'text up to [familyCounterLabelMaxWidth], then scales down to '
+        'TextFitTokens.hudPillsMinScale and never wraps.',
   );
   return c;
 }

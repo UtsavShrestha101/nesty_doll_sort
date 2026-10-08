@@ -5,6 +5,7 @@ import 'package:nesty_render/svg_tools.dart';
 import 'package:nesty_tools/src/assets/android_vector.dart';
 import 'package:nesty_tools/src/assets/audio_formats.dart';
 import 'package:nesty_tools/src/assets/png_formats.dart';
+import 'package:nesty_tools/src/assets/widget_art.dart';
 import 'package:nesty_tools/src/file_writes.dart';
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/fx/lottie_sources.dart';
@@ -34,7 +35,10 @@ const syncedAssetRoots = [
 /// board art. `design/ui/notification/` is the Android small icon (a
 /// platform output, [notificationIconDrawable]); `design/ui/icons/` must
 /// stay empty, since every icon use is a glyph of the bundled font (tokens
-/// `icons.$note`). m7-5 adds `gift/`, the daily gift button's glyph.
+/// `icons.$note`). m7-5 adds `gift/`, the daily gift button's glyph. m7-6's
+/// `design/ui/widget/` is the native home-screen widget's art
+/// ([widgetArtDir]): validated, never copied into the Flutter assets
+/// (docs/plans/plan-local-habits.md §4 turns it into platform resources).
 const uiArtFolders = ['badges', 'chest', 'gift', 'rivals', 'sprites', 'stars'];
 
 /// The ten bundled museum figurine ids, in chapter order (m3-design §9.1,
@@ -423,6 +427,22 @@ AssetSyncPlan planDesignAssetSync(
             'instead',
           );
         }
+      } else if (name == widgetArtFolder) {
+        // m7-6: the home-screen widget's art is native-only (WidgetKit and
+        // RemoteViews), so nothing here is a Flutter asset. Stage 4 of the
+        // local habits (docs/plans/plan-local-habits.md §4) generates the
+        // iOS asset catalog and the Android drawables from it, as
+        // ui/notification became the notification icon; until then the sync
+        // keeps it to what tokens.json `habits.widget.art` promises.
+        final tokens = File(p.join(design.path, 'tokens.json'));
+        final json = tokens.existsSync()
+            ? jsonDecode(tokens.readAsStringSync())
+            : null;
+        if (json is! Map<String, Object?>) {
+          issues.add('$widgetArtDir: needs design/tokens.json');
+        } else {
+          issues.addAll(validateWidgetArt(repoRoot, json));
+        }
       } else if (name == 'notification') {
         final icon = File(p.join(repoRoot.path, notificationIconSource));
         for (final file in filesIn('ui/notification')) {
@@ -435,7 +455,7 @@ AssetSyncPlan planDesignAssetSync(
       } else if (!uiArtFolders.contains(name)) {
         issues.add(
           'design/ui/$name: unknown UI art folder (expected '
-          '${[...uiArtFolders, 'icons', 'notification'].join(', ')})',
+          '${[...uiArtFolders, 'icons', 'notification', widgetArtFolder].join(', ')})',
         );
       }
     }

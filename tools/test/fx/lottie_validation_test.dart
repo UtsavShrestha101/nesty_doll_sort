@@ -533,6 +533,61 @@ void main() {
       expect(_codes(stray, 'fx_sparkle'), [LottieIssueCodes.namedShapes]);
     });
 
+    test('the m7-6 chest rays fade through a gradient matte fill', () {
+      expect(lottieContractOf('ui_chest')!.matteFills, {'falloff_fill'});
+      expect(_codes(_real('ui_chest'), 'ui_chest'), isEmpty);
+
+      List<Object?> falloffShapes(Map<String, Object?> json) =>
+          ((_layer(json, 'rays_matte')['shapes']! as List<Object?>).first!
+                  as Map<String, Object?>)['it']!
+              as List<Object?>;
+
+      // Off its alpha matte the gradient would draw over the chest.
+      final unmatted = _real('ui_chest');
+      _layer(unmatted, 'rays_matte').remove('td');
+      expect(_codes(unmatted, 'ui_chest'), [LottieIssueCodes.namedShapes]);
+      final untracked = _real('ui_chest');
+      _layer(untracked, 'rays').remove('tt');
+      expect(_codes(untracked, 'ui_chest'), [LottieIssueCodes.namedShapes]);
+
+      // Renamed, the contract's matte fill is missing.
+      final renamed = _real('ui_chest');
+      for (final s in falloffShapes(renamed).cast<Map<String, Object?>>()) {
+        if (s['nm'] == 'falloff_fill') s['nm'] = 'falloff';
+      }
+      expect(_codes(renamed, 'ui_chest'), [LottieIssueCodes.namedShapes]);
+
+      // A tint fill turned into a gradient still fails as before: only the
+      // contract's matte fills may be one.
+      final ribbon = _real('ui_win_ribbon');
+      void gradient(List<Object?> shapes) {
+        for (final s in shapes.cast<Map<String, Object?>>()) {
+          if (s['nm'] == 'band_fill') s['ty'] = 'gf';
+          if (s['ty'] == 'gr') gradient(s['it']! as List<Object?>);
+        }
+      }
+
+      gradient(_layer(ribbon, 'band')['shapes']! as List<Object?>);
+      expect(
+        validateLottie(
+          ribbon,
+          lottieContractOf('ui_win_ribbon')!,
+        ).map((i) => i.message),
+        contains(contains('"band_fill" names a gf, not a fl')),
+      );
+
+      // A gradient `_fill` on a file whose contract has none.
+      final stray = _real('ui_chest');
+      final shapes = falloffShapes(stray).cast<Map<String, Object?>>();
+      final copy = jsonDecode(
+        jsonEncode(shapes.firstWhere((s) => s['nm'] == 'falloff_fill')),
+      );
+      (_layer(stray, 'flash')['shapes']! as List<Object?>).add(
+        (copy as Map<String, Object?>)..['nm'] = 'flash_fill',
+      );
+      expect(_codes(stray, 'ui_chest'), [LottieIssueCodes.namedShapes]);
+    });
+
     test('the text files name exactly their text layers', () {
       final json = _real('ui_win_ribbon');
       _layer(json, 'label_shadow')['nm'] = 'shadow';

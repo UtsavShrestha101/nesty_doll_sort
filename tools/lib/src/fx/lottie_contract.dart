@@ -217,6 +217,7 @@ final class LottieFileContract {
     this.fills = const {},
     this.tintFills = const {},
     this.sizedRects = const {},
+    this.matteFills = const {},
     this.textLayers = const [],
   });
 
@@ -298,6 +299,14 @@ final class LottieFileContract {
   /// since m7-5 the ribbons' `band_rect`, `edge_rect` and `hi_rect`), which
   /// `ValueDelegate.rectangleSize` widens. Each must be a rectangle.
   final Set<String> sizedRects;
+
+  /// Exactly the gradient fills named `<part>_fill` the file has (LOTTIE.md
+  /// m7-6: `ui_chest`'s `falloff_fill`, the radial falloff of `rays_matte`).
+  /// Each sits on an alpha matte layer (`td: 1`) whose next layer is matted
+  /// by it (`tt` 1 or 2), so it only shapes what that layer shows and is
+  /// never drawn: the game installs no colour delegate on it, it is never
+  /// one of [tintFills], and `FxSpec` doesn't name it.
+  final Set<String> matteFills;
 
   /// Exactly the text layer names; only the three text files have any.
   final List<String> textLayers;
@@ -764,6 +773,10 @@ const lottieContracts = [
       LottieMarker('open_idle', 290, 120),
     ],
     imageAssets: {'chest_closed', 'chest_open'},
+    // m7-6: the rays fade out from the chest through an alpha matte,
+    // `rays_matte`, whose disc is a radial gradient fill (LOTTIE.md
+    // "### m7-6"). Never tinted.
+    matteFills: {'falloff_fill'},
   ),
   // m7-3 (D): the mechanic intro cards' loops, on the card's 302×230
   // illustration box (placed by its top-left, like `ui_toggle`). One

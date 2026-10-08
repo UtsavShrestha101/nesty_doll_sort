@@ -32,7 +32,8 @@ List<ConstClass> uiM75Classes(TokenReader t) {
 /// leaf is a copy.md id or behaviour, documented with checks.
 void _giftChest(TokenReader t) {
   const p = 'gift.chest';
-  const known = {'title', 'tint', 'body', 'chips', 'buttons'};
+  // m7-6 (item 5): `ribbon` is RibbonTitleTokens' (ui_tokens_m76.dart).
+  const known = {'title', 'tint', 'body', 'chips', 'buttons', 'ribbon'};
   for (final key in t.keys(p)) {
     if (!known.contains(key)) {
       throw TokenFormatException('$p.$key', 'unknown gift chest field');
@@ -89,6 +90,7 @@ final _shortSize = RegExp(r'^(\d+(?:\.\d+)?) on 16:9$');
 final _colorName = RegExp(r'^[a-z][A-Za-z0-9]*$');
 final _capsExample = RegExp(r'^[A-Z][A-Z ]*$');
 final _letterSpacing = RegExp(r'^letter-spacing (\d+(?:\.\d+)?)em$');
+final _revision = RegExp(r'^m7-\d+: [^()]+$');
 
 /// `type.<surface>`: one `TextStyle` per entry, `<entry>Caps` when it draws
 /// in capitals and `<entry>ShortSize` when 16:9 gives its own size.
@@ -134,9 +136,14 @@ ConstClass _typeStyles(TokenReader t, String surface, String note) {
     double? shortSize;
     String? colorName;
     String? example;
+    String? revision;
     if (aside != null) {
       final text = aside[2]!;
-      if (_shortSize.firstMatch(text) case final m?) {
+      if (_revision.firstMatch(text) case final m?) {
+        // Tokens v6 (m7-6): a later delivery's note on why the value
+        // changed (`m7-6: the frames' size`).
+        revision = m[0];
+      } else if (_shortSize.firstMatch(text) case final m?) {
         shortSize = double.parse(m[1]!);
       } else if (_colorName.hasMatch(text)) {
         final named = t.has('color.$text') ? t.peek('color.$text') : null;
@@ -167,6 +174,7 @@ ConstClass _typeStyles(TokenReader t, String surface, String note) {
       if (font.color == null && !chapterInk) 'the surface gives the colour',
       if (tabular) 'tabular figures',
       if (example != null) 'e.g. "$example"',
+      ?revision,
     ];
     c.add(
       member,

@@ -1,6 +1,7 @@
 /// Format checks for the museum figurine PNGs `sync_design_assets` ships
 /// (docs/plans/m3-design.md §9.5): they must be real PNGs at the art's
-/// 600×600 size. Pure Dart, byte-level: the files ship byte for byte, so a
+/// 600×600 size. m7-6's widget art PNGs (`widget_art.dart`) are checked the
+/// same way at their own sizes. Pure Dart, byte-level: the files ship byte for byte, so a
 /// file `package:flutter`'s image codec can't decode must stop the sync.
 library;
 
@@ -12,7 +13,12 @@ const museumPngSize = 600;
 const _pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
 /// Problems with a museum figurine PNG. Empty when it ships.
-List<String> validateMuseumPng(List<int> bytes) {
+List<String> validateMuseumPng(List<int> bytes) =>
+    validatePngSize(bytes, museumPngSize, museumPngSize);
+
+/// Problems with a PNG that must be [width] × [height] pixels (the museum
+/// figurines; m7-6's home-screen widget art). Empty when it is.
+List<String> validatePngSize(List<int> bytes, int width, int height) {
   final data = Uint8List.fromList(bytes);
   if (data.length < 8 || !_matches(data, 0, _pngSignature)) {
     return const ['not a PNG file (bad signature)'];
@@ -24,10 +30,10 @@ List<String> validateMuseumPng(List<int> bytes) {
     return const ['no IHDR chunk'];
   }
   final view = ByteData.sublistView(data);
-  final width = view.getUint32(16, Endian.big);
-  final height = view.getUint32(20, Endian.big);
-  if (width != museumPngSize || height != museumPngSize) {
-    return ['$width×$height, expected $museumPngSize×$museumPngSize'];
+  final w = view.getUint32(16, Endian.big);
+  final h = view.getUint32(20, Endian.big);
+  if (w != width || h != height) {
+    return ['$w×$h, expected $width×$height'];
   }
   return const [];
 }

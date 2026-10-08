@@ -358,7 +358,14 @@ void _oneShelf(TokenReader t, String base) {
     throw TokenFormatException('$base.planksY', 'one shelf has one plank');
   }
   for (final key in t.keys(base)) {
-    const known = {'planksY', 'slotMaxDollHeight', 'maxSlotsPerRow', 'use'};
+    const known = {
+      'planksY',
+      'slotMaxDollHeight',
+      'maxSlotsPerRow',
+      'use',
+      // m7-6 (item 18): the owner's confirmation, checked below.
+      r'$m76',
+    };
     if (!known.contains(key)) {
       throw TokenFormatException(
         '$base.$key',
@@ -366,11 +373,30 @@ void _oneShelf(TokenReader t, String base) {
       );
     }
   }
+  // m7-6 (item 18) confirms the preset as it is: its prose repeats the
+  // plank top, the doll cap and the slot count, so they must agree.
+  if (t.has('$base.\$m76')) {
+    final m = RegExp(
+      r'^confirmed \(m7-6, item 18\): plank top (\d+), slotMaxDollHeight '
+      r'(\d+), up to (\d+) slots, the boardFit rule applies; for boards with '
+      r'one row only$',
+    ).firstMatch('${t.peek('$base.\$m76')}');
+    if (m == null ||
+        num.parse(m[1]!) != planks[0] ||
+        num.parse(m[2]!) != t.peek('$base.slotMaxDollHeight') ||
+        num.parse(m[3]!) != t.peek('$base.maxSlotsPerRow')) {
+      throw TokenFormatException(
+        '$base.\$m76',
+        'is not the preset\'s planksY, slotMaxDollHeight and maxSlotsPerRow',
+      );
+    }
+  }
   t.documentedTree(
     base,
     reason:
-        'tokens only (m7-4 5.2): no bundled level has one shelf, so no '
-        'BoardPresetToken; BoardLayout keeps its fallback',
+        'tokens only (m7-4 5.2; confirmed m7-6 item 18): no bundled level '
+        'has one shelf, so no BoardPresetToken; BoardLayout keeps its '
+        'fallback',
   );
 }
 
@@ -569,8 +595,30 @@ ConstClass _fallbackDoll(TokenReader t) {
     'The procedural doll drawn when a skin can\'t load (tokens v3 `$p`, '
     '${t.documented('$p.\$note', reason: 'the design item id')}; spec '
     '§12.5). Sizes are fractions of the doll height h (w: its width); the '
-    'head, face and belly are diameters (m7-4 8). On the splash: '
-    '${t.documentedExact('$p.splash', 'three cherry (red) fallback dolls, as 1.1; 12.12’s three colours only show the recipe', reason: 'the splash dolls (lane O, frame 1.1)')}.',
+    'head, face and belly are diameters (m7-4 8; every size is one, m7-6 '
+    'item 20). The splash shows no fallback dolls while its skin decodes '
+    '(m7-6 item 20, [splashFadeInMs]): they draw only when a skin can\'t '
+    'load, never as a placeholder that swaps.',
+  );
+  // m7-6 (item 20): the splash plank waits for the skin, then fades its
+  // three cherry dolls in; the fallback is only for a skin that can't load.
+  final splash = _match(
+    t,
+    '$p.splash',
+    '$name.splashFadeInMs',
+    r'm7-6 \(item 20\): the splash plank shows no dolls until the skin is '
+        r'decoded, then its three cherry dolls fade in over (\d+) ms; fallback '
+        r'dolls only when a skin can’t load \(never as a placeholder that '
+        r'swaps\)',
+  );
+  c.add(
+    'splashFadeInMs',
+    splash[1]!,
+    doc:
+        'The splash plank shows no dolls until the skin is decoded, then '
+        'its three cherry dolls fade in over this (m7-6 item 20, frame 1.1); '
+        'fallback dolls only when a skin can\'t load, never as a placeholder '
+        'that swaps.',
   );
   final head = _match(
     t,
@@ -618,6 +666,25 @@ ConstClass _fallbackDoll(TokenReader t) {
     'bodyWidth',
     doubleLiteral(double.parse(body[2]!)),
     doc: 'Its width ÷ the doll width.',
+  );
+  // m7-6 (item 20): the body's corner radius, and every size a diameter.
+  final shape = _match(
+    t,
+    '$p.\$m76',
+    '$name.bodyRadius',
+    r'every size here is a diameter; body is a rounded rect (\d*\.\d+) h '
+        r'tall × (\d*\.\d+) w wide \(w = doll width\), corner radius '
+        r'(\d*\.\d+) h',
+  );
+  if (shape[1] != body[1] || shape[2] != body[2]) {
+    throw TokenFormatException('$p.\$m76', 'is not the body\'s h × w');
+  }
+  c.add(
+    'bodyRadius',
+    doubleLiteral(double.parse(shape[3]!)),
+    doc:
+        'The body\'s corner radius ÷ the doll height h (m7-6 item 20: '
+        '`${t.peek('$p.\$m76')}`).',
   );
   final belly = _match(
     t,

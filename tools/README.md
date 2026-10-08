@@ -116,6 +116,18 @@ Turns `design/tokens.json` into `static const` Dart:
   `latnTrDisplayWeights` (every bundled Fredoka weight must be mapped),
   `latnTrSizeFactor` and `latnTrTitleLineHeight`, and kept out of the
   fallback lists.
+  Tokens v6 (m7-6) adds the local habits' sections (`HabitsWelcomeTokens`,
+  `HabitsMonthTokens` with `HabitsMonthShortTokens` and `HabitsDayCellTokens`,
+  `HabitsPastDayTokens`, `HabitsWidgetTokens` and `HabitsWidgetColorTokens`
+  for the native widget; `habits.respect`, the welcome card's `when`, the
+  month's `window` and a past day's `rules` are rules, documented),
+  `ComputerTagTokens` (the tag leaves the `versus` rules), `RibbonTitleTokens`
+  (`gift.chest.ribbon`), `fontSize.*.use` (a doc), an elliptical
+  `gradient.<name>.shape` (`ellipse rx% ry% at x% y%`: a `RadialGradient`
+  with an `EllipseGradientTransform`, apps/game's `ui_token_types.dart`),
+  the family counter's maxima, the splash's fallback-doll fade and body
+  radius, and `MotionTokens.invalidEmptyTargetStop`. `TokenReader` reaches a
+  key with a dot (`habits.widget.art.files.flame_lit.svg`).
 
 The generic emitter turns each leaf into the Dart type its shape says: a
 number is a `double` (an `int` for counts and `…Ms`), `padding` an
@@ -131,8 +143,10 @@ a glyph key the glyph's name (checked against `icons`). Tokens v5 adds
 `color.<name>` (a checked `AppColorTokens` reference), `radial-gradient(circle
 at x% y%, …)` (a `RadialGradient`), an art path `ui/<folder>/<file>.svg`
 (documented: `UiArt` draws it; `… at <n>` emits `<member>Size`), and a
-copy.md id under `label`, `a11y` or `body` (documented: the ARB key). A
-`note` or `use` leaf is a design note. Any other string is prose: a strict parser reads its
+copy.md id under `label`, `a11y` or `body` (documented: the ARB key). Tokens
+v6 adds a day number `#RRGGBB <weight>` under `number` (`…Color` and
+`…Weight`), a face of `none`, a mark's `means` and a copy id under `copy`
+(documented). A `note` or `use` leaf is a design note. Any other string is prose: a strict parser reads its
 numbers, or a list in the emitter names it with its reason; an unknown string
 fails the build.
 
@@ -224,6 +238,16 @@ white-filled `<path>`s on a `0 0 W H` viewBox convert (even-odd kept); a
 group, transform, stroke, other colour or shape is an issue. `--check`
 compares its bytes like any asset.
 
+`design/ui/widget/` (m7-6) is not an asset either: it is the native
+home-screen widget's art, which local-habits stage 4
+(docs/plans/plan-local-habits.md §4) turns into the iOS asset catalog and the
+Android drawables. `lib/src/assets/widget_art.dart` keeps it to what tokens
+`habits.widget.art` promises: each SVG flat (solid `#RRGGBB` fills on paths,
+rects, circles and ellipses; no gradient, filter, mask, clip, image, text,
+stroke, opacity or transform), its viewBox at the dp size's aspect, the doll
+one colour (#000000), `name.png`/`-2x`/`-3x` at the dp size × 1/2/3, the two
+previews at their pixel sizes, and nothing else; nothing is copied.
+
 The 20 museum figurine PNGs (`design/museum/png/NN-<id>.png` and its
 `-locked` silhouette, one pair per bundled chapter figurine, m3-design §9.5)
 ship byte for byte too, after checking the PNG signature and that each is
@@ -264,7 +288,11 @@ Every animation ships as Lottie (PROGRESS D40–D52,
   counter's `pill_fill`/`glow_fill` and `sizedRects` (`pill_rect`,
   `glow_rect`; its `icon` null is required). m7-5 gives both ribbons
   `sizedRects` too (`band_rect`, `edge_rect`, `hi_rect`), so the game can
-  set a band's width. It also lists the image slots (`FxImageSlot` ids and declared sizes:
+  set a band's width. m7-6 gives `ui_chest` a `matteFills` entry
+  (`falloff_fill`, a radial gradient fill on the `rays_matte` alpha matte):
+  a gradient `<part>_fill` is allowed only when the contract lists it and it
+  sits on an alpha matte layer (`td: 1` over a layer with `tt` 1 or 2); it
+  is never tinted, and every other `_fill` must still be a plain fill. It also lists the image slots (`FxImageSlot` ids and declared sizes:
   dolls 512×768, board pieces at 3× their dp size) and, per file, the hooks
   the runtime keys on: the `<role>_size` nulls, `travel`, `target_pos`,
   `drop`, the `rim_tint` and `tint` fills, the text layers, the nulls of

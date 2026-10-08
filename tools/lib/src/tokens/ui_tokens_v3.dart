@@ -34,7 +34,12 @@ List<ConstClass> uiV3Classes(TokenReader t) {
               '$path.$key',
           },
         ),
-        _ => screenTokens(t, path, className: name),
+        _ => screenTokens(
+          t,
+          path,
+          className: name,
+          skip: m76SectionSkips[path] ?? const {},
+        ),
       },
     _stars(t),
     _chest(t),
@@ -52,7 +57,8 @@ void _documentRules(TokenReader t) {
   // Every `versus` leaf but the ribbon's colours (tokens v4, m7-4 4.3),
   // which `WinRibbonTokens` emits.
   for (final key in t.keys('versus')) {
-    if (key == 'ribbon') continue;
+    // Tokens v6 (m7-6 item 2): the Computer tag's look, ComputerTagTokens.
+    if (key == 'ribbon' || key == 'computerTag') continue;
     t.documentedTree(
       'versus.$key',
       reason:

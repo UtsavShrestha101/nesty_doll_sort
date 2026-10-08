@@ -197,13 +197,18 @@ void main() {
         'layout.extraSlot.placement',
         'layout.extraSlot.limitPerLevel',
         'settings.reduceMotion.default',
+        // The ribbon's colours (m7-4) and the Computer tag's look (m7-6
+        // item 2) are emitted.
         for (final leaf in leafPaths(tokens()['versus'], 'versus'))
-          if (!leaf.startsWith('versus.ribbon.')) leaf,
+          if (!leaf.startsWith('versus.ribbon.') &&
+              !leaf.startsWith('versus.computerTag.'))
+            leaf,
         // The +1 slot chip is look, not rule (m7-5): only its copy ids.
         for (final leaf in leafPaths(tokens()['chest'], 'chest'))
           if (!leaf.startsWith('chest.slotChip.')) leaf,
         ..._documentedV4(tokens()),
         ..._documentedV5,
+        ..._documentedV6,
       });
     });
 
@@ -507,7 +512,8 @@ void main() {
           'static const pauseHoleRect = Rect.fromLTWH(10.0, 56.0, 60.0, 60.0);',
         ),
       );
-      expect(ui, contains('static const winRibbonBox = Size(312.0, 40.0);'));
+      // m7-6 (item 7): the 290 ribbon's 266 × 40 text box (was 312 × 40).
+      expect(ui, contains('static const winRibbonBox = Size(266.0, 40.0);'));
       expect(ui, contains('static const gainTagOffset = Offset(12.0, -42.0);'));
       expect(ui, contains('static const tooltipTopShort = 30.0;'));
       expect(ui, contains('static const openScrollFinishedRows = 2;'));
@@ -669,7 +675,8 @@ void main() {
         'static const footerSwapMs = 200;',
         'static const height = 556.0;',
         'static const doneCheckGlyph = \'check\';',
-        'static const doneCheckGlyphWeight = 700.0;',
+        // m7-6 (item 6, keep): drawn at the bundled cut's 600 (was 700).
+        'static const doneCheckGlyphWeight = 600.0;',
         'static const todayLift = -2.0;',
         'static const topBelowCoinPill = 54.0;',
         'static const topShort = 82.0;',
@@ -685,7 +692,8 @@ void main() {
         'static const slotSpriteSize = 40.0;',
         'static const day7CollectScrim = Color(0x2E3C1E0A);',
         'static const claimTallyFadeInMs = 150;',
-        'static const height = 461.0;',
+        // m7-6 (item 4): the 58 dp Claim on 16:9 makes the sheet 465.
+        'static const height = 465.0;',
         'static const discSize = 30.0;',
         'static const glyphRadius = 4.2;',
         'static const giftButtonTop = 26.0;',
@@ -777,6 +785,192 @@ void main() {
       expect(glyphs.difference(font), isEmpty);
     });
 
+    test('spot-checks tokens v6: the local habits (App Flow section 14)', () {
+      final ui = output.files[uiTokensPath]!;
+      for (final className in [
+        'HabitsWelcomeTokens',
+        'HabitsMonthTokens',
+        'HabitsMonthShortTokens',
+        'HabitsDayCellTokens',
+        'HabitsPastDayTokens',
+        'HabitsWidgetTokens',
+        'HabitsWidgetColorTokens',
+      ]) {
+        expect(ui, contains('abstract final class $className {'));
+      }
+      for (final value in [
+        // 14.1: the card's place (chapterCard.top + 74; checked).
+        'static const placeBelowChapterCardTop = 74.0;',
+        'static const placeH844Top = 198.0;',
+        'static const placeH844DollScale = 0.78;',
+        'static const placeDollFadeBelow = 0.6;',
+        'static const cardPadding = EdgeInsets.fromLTRB(12.0, 12.0, 12.0, '
+            '12.0);',
+        "static const discFreezeGlyph = 'local_fire_department';",
+        'static const discFreezeBadgeRight = -6.0;',
+        'static const playFace = AppGradientTokens.primary;',
+        'static const playUnderGap = 8.0;',
+        'static const dismissGlyphWeight = 700.0;',
+        'static const motionInMs = 280;',
+        'static const Cubic motionInCurve = UiMotionTokens.curveEaseOut;',
+        'static const Cubic motionDollsGrowCurve = '
+            'UiMotionTokens.curveEaseOutBack;',
+        'static const reducedMotionDollsMs = 200;',
+        // 14.2: the month, its grid formulas and 16:9.
+        'static const top = 728.0;',
+        'static const topShort = 690.0;',
+        "static const headerTitleDateSkeleton = 'LLLL';",
+        "static const headerChipGlyphPrevious = 'chevron_left';",
+        'static const gridColumns = 7;',
+        'static const gridPitchMax = 48.0;',
+        'static const gridPitchInset = 52.0;',
+        'static const gridFaceMax = 42.0;',
+        'static const gridNumberSizeSmall = 15.0;',
+        "static const a11yDateSkeleton = 'MMMMd';",
+        'static const titleSize = 18.0;',
+        'static const faceSize = 40.0;',
+        // The day cells: a number's colour and weight, the window's press.
+        'static const litNumberWeight = FontWeight.w700;',
+        'static const openNumberWeight = FontWeight.w600;',
+        'static const laterFace = Color(0xFFFFE7D0);',
+        "static const freezeGlyph = 'ac_unit';",
+        'static const freezeNumberLift = 4.5;',
+        'static const raisedEdgeDepth = 3.0;',
+        'static const pressedMs = 80;',
+        'static const List<NestyShadow> selectedRings = [NestyShadow(color: '
+            'Color(0xFFFFF9EE), spread: 2.0), NestyShadow(color: '
+            'Color(0xFF6E4526), spread: 5.0)];',
+        // 14.3: a past day.
+        "static const cardTitleDateSkeleton = 'MMMEd';",
+        'static const openScrollMs = 300;',
+        'static const solvedPreviewDim = Color(0xB8FFF9EC);',
+        "static const boardDateSkeleton = 'MMMd';",
+        "static const winMovesGlyph = 'route';",
+        "static const winDateSkeleton = 'EEEEdMMMM';",
+        // 14.4: the widget (native), its art sizes and colours.
+        'static const artDollSize = Size(18.0, 24.0);',
+        'static const artDailyMarkSize = Size(52.0, 52.0);',
+        'static const iosMedium = Size(338.0, 158.0);',
+        'static const androidMediumFrom = 250.0;',
+        "static const androidResizeMode = 'horizontal|vertical';",
+        'static const layoutMediumDollsMax = 8;',
+        'static const darkTitle = Color(0xFFFFF4E0);',
+        'static const tintedText = Color(0xEBFFFFFF);',
+        'static const tintedUnlitAccentOpacity = 0.45;',
+        // The habits' text fit and sound.
+        'static const habitsWelcomeTitleMinScale = 0.85;',
+        'static const habitsWelcomeBodyMaxLines = 2;',
+        'static const List<String> habitsMonthHintShort = '
+            "['habits_month_hint_short'];",
+        'static const widgetNumberMinScale = 0.8;',
+        "static const habitsTap = SoundCue(['button']);",
+        "static const habitsPastWin = SoundCue(['win']);",
+      ]) {
+        expect(ui, contains(value));
+      }
+      // The habits' rules are never values.
+      for (final rule in [
+        'habits.respect',
+        'habits.welcomeBack.when',
+        'habits.month.window',
+        'habits.pastDay.rules',
+      ]) {
+        expect(output.reader.uses[rule], isA<DocumentedOnly>(), reason: rule);
+      }
+    });
+
+    test('spot-checks tokens v6: Part 2 (m7-6)', () {
+      final ui = output.files[uiTokensPath]!;
+      final render = output.files[renderTokensPath]!;
+      for (final value in [
+        // Item 2: the Computer tag.
+        'static const ring = TokenStroke(width: 1.5, color: '
+            'Color(0xFFD8B07A));',
+        'static const maxTextScale = 1.3;',
+        // Items 1, 3, 5, 7, 8, 15, 16.
+        'static const freezeChipMaxWidth = 64.0;',
+        'static const List<String> freezeChipShort = '
+            "['streak_freeze_chip_short'];",
+        'static const formsPauseTop = 5.0;',
+        'static const overhang = 18.0;',
+        'static const List<NestyShadow> edge = [NestyShadow(color: '
+            'Color(0xFFC4631E), dy: 4.0)];',
+        'static const winRibbonBox = Size(266.0, 40.0);',
+        'transform: EllipseGradientTransform(center: Alignment(0.0, -0.4), '
+            'radiusX: 0.6, radiusY: 0.7)',
+        'static const cabinetNamePlateFace = LinearGradient(begin: '
+            'Alignment.topCenter, end: Alignment.bottomCenter, colors: '
+            '[Color(0xFFF5D98C), Color(0xFFD9AE52)]);',
+        'static const cabinetNamePlatePadding = EdgeInsets.symmetric('
+            'vertical: 3.0, horizontal: 7.0);',
+        'static const familyCounterLabelMaxWidth = 58.0;',
+        'static const familyCounterPillMaxWidth = 92.0;',
+        'static const familyCounterPillChrome = 34.0;',
+        // Item 4.
+        'static const footerHeight = 58.0;',
+      ]) {
+        expect(ui, contains(value));
+      }
+      // Item 15 (fontSize.textLink) and the museum count (item 7).
+      String body(String className) {
+        final start = ui.indexOf('abstract final class $className {');
+        return ui.substring(start, ui.indexOf('\n}', start));
+      }
+
+      expect(
+        body('AppTextStyleTokens'),
+        contains(
+          "textLink => DisplayFace.of(const TextStyle(fontFamily: 'Fredoka', "
+          'fontSize: 16.0, height: 1.25,',
+        ),
+      );
+      expect(body('MuseumTypeTokens'), contains('fontSize: 16.0'));
+      // Items 20 and 21 (nesty_render).
+      for (final value in [
+        'static const splashFadeInMs = 200;',
+        'static const bodyRadius = 0.16;',
+        'static const invalidEmptyTargetStop = 0.5;',
+      ]) {
+        expect(render, contains(value));
+      }
+      expect(output.reader.uses['versus.computerTag.height'], isA<EmittedAs>());
+    });
+
+    test('every glyph the v6 tokens name is in the bundled font, but one', () {
+      final font = File(
+        p.join(root.path, 'tools/fonts/nesty_symbols.txt'),
+      ).readAsLinesSync().map((l) => l.trim()).toSet();
+      final ui = output.files[uiTokensPath]!;
+      final glyphs = <String>{};
+      for (final className in [
+        'HabitsWelcomeTokens',
+        'HabitsMonthTokens',
+        'HabitsDayCellTokens',
+        'HabitsPastDayTokens',
+      ]) {
+        final start = ui.indexOf('abstract final class $className {');
+        final body = ui.substring(start, ui.indexOf('\n}', start));
+        for (final m in RegExp(
+          r"static const \w*Glyph\w* = '([a-z0-9_]+)';",
+        ).allMatches(body)) {
+          glyphs.add(m[1]!);
+        }
+      }
+      expect(glyphs, {
+        'local_fire_department',
+        'ac_unit',
+        'extension',
+        'close',
+        'chevron_left',
+        'chevron_right',
+        'replay',
+        'route',
+      });
+      // Every glyph the v6 tokens name is in the font (the font lane added
+      // `chevron_left`, the month's previous chip).
+      expect(glyphs.difference(font), isEmpty);
+    });
+
     test('is deterministic', () {
       expect(generateDesignTokens(tokensJson).files, output.files);
     });
@@ -797,13 +991,10 @@ void main() {
 
   group('cross-checks tokens v3 with the rest of design/', () {
     final json = tokens();
-    Object? at(String path) {
-      Object? node = json;
-      for (final key in path.split('.')) {
-        node = (node! as Map<String, Object?>)[key];
-      }
-      return node;
-    }
+    // Through TokenReader, which also reaches tokens v6's file-name keys
+    // (`habits.widget.art.files.flame_lit.svg`).
+    final reader = TokenReader(json);
+    Object? at(String path) => reader.peek(path);
 
     Map<String, (num, num)> markersOf(String file) {
       final lottie =
@@ -1633,6 +1824,227 @@ void main() {
       expectThrowsAt('motion.pick', 'wobbleToMoveMs', 100, r'motion.pick.$m75');
     });
   });
+
+  group('tokens v6 fails loudly (m7-6)', () {
+    String mutate(void Function(Map<String, Object?> json) change) {
+      final json = tokens();
+      change(json);
+      return jsonEncode(json);
+    }
+
+    Map<String, Object?> at(Map<String, Object?> json, String path) {
+      Object? node = json;
+      for (final key in path.split('.')) {
+        node = (node! as Map<String, Object?>)[key];
+      }
+      return node! as Map<String, Object?>;
+    }
+
+    Matcher throwsAt(String path) => throwsA(
+      isA<TokenFormatException>().having((e) => e.path, 'path', path),
+    );
+
+    void expectThrowsAt(
+      String section,
+      String key,
+      Object? Function(Object? old) change,
+      String path, {
+      String? reason,
+    }) => expect(
+      () => generateDesignTokens(
+        mutate((j) {
+          final node = at(j, section);
+          node[key] = change(node[key]);
+        }),
+      ),
+      throwsAt(path),
+      reason: reason,
+    );
+
+    String Function(Object?) replace(String from, String to) => (old) {
+      final text = old! as String;
+      expect(text, contains(from), reason: 'the test edits "$from"');
+      return text.replaceFirst(from, to);
+    };
+
+    test('on habits prose that disagrees with the values it repeats', () {
+      const welcome = 'habits.welcomeBack';
+      expectThrowsAt(
+        '$welcome.place',
+        'rule',
+        replace('chapterCard.top + 74', 'chapterCard.top + 80'),
+        '$welcome.place.rule',
+        reason: '124 + 80 is not the 844 top',
+      );
+      expectThrowsAt(
+        welcome,
+        'body',
+        replace('two lines', 'three lines'),
+        '$welcome.body',
+        reason: 'textFit.habitsWelcome.body says two',
+      );
+      expectThrowsAt(
+        '$welcome.play',
+        'place',
+        replace('At 1.3×', 'At 1.2×'),
+        '$welcome.play.place',
+      );
+      expectThrowsAt(
+        welcome,
+        'when',
+        replace('two or more days', 'three or more days'),
+        '$welcome.when',
+        reason: 'the rule is RemoteConfigKeys.welcomeBackDays',
+      );
+      expectThrowsAt(
+        welcome,
+        'sound',
+        replace('habitsTap', 'habitsTapLoud'),
+        '$welcome.sound',
+      );
+      expectThrowsAt(
+        'habits.month.grid',
+        'pitch',
+        replace('44 at 360', '45 at 360'),
+        'habits.month.grid.pitch',
+      );
+      expectThrowsAt(
+        'habits.month.grid',
+        'target',
+        replace('48 × 46', '48 × 48'),
+        'habits.month.grid.target',
+      );
+      expectThrowsAt(
+        'habits.month.short',
+        'face',
+        (_) => 38,
+        'habits.month.grid.radius',
+        reason: 'the small face is short.face',
+      );
+      expectThrowsAt(
+        'habits.widget.colors.light',
+        'flameUnlit',
+        (_) => 'flame_gone.svg',
+        'habits.widget.colors.light.flameUnlit',
+      );
+      expectThrowsAt(
+        'habits.widget.layout.small',
+        'line',
+        replace('two lines', 'three lines'),
+        'habits.widget.layout.small.line',
+      );
+    });
+
+    test('on a new habits value the emitter can\'t read', () {
+      expectThrowsAt(
+        'habits.month.card',
+        'glow',
+        (_) => 'soft and warm',
+        'habits.month.card.glow',
+      );
+      expectThrowsAt(
+        'habits.welcomeBack.disc.paused',
+        'glyph',
+        (_) => 'local_fire_department thirty, #9A6A44',
+        'habits.welcomeBack.disc.paused.glyph',
+      );
+    });
+
+    test('on a gradient shape that is not an ellipse in the box', () {
+      for (final shape in [
+        'circle 50% at 50% 30%',
+        'ellipse 60% 70% at 50% 130%',
+      ]) {
+        expectThrowsAt(
+          'gradient.figurinePanelEarned',
+          'shape',
+          (_) => shape,
+          'gradient.figurinePanelEarned.shape',
+          reason: shape,
+        );
+      }
+    });
+
+    test('on Part 2 prose that disagrees with its sources', () {
+      expectThrowsAt(
+        'layout.museum.cabinet',
+        'namePlate',
+        replace('namePlateTop #F5D98C', 'namePlateTop #F5D98D'),
+        'layout.museum.cabinet.namePlate',
+        reason: 'not color.namePlateTop',
+      );
+      expectThrowsAt(
+        'versus.computerTag',
+        'scale',
+        replace('height 20k', 'height 22k'),
+        'versus.computerTag.scale',
+      );
+      expectThrowsAt(
+        'layout.rivalStrip.forms',
+        'pause',
+        replace('top + 5', 'top + 6'),
+        'layout.rivalStrip.forms.pause',
+      );
+      expectThrowsAt(
+        'layout.hud.familyCounter',
+        'pillMaxWidth',
+        (_) => 90,
+        r'layout.hud.familyCounter.$m76',
+        reason: 'label + 34 is 92',
+      );
+      expectThrowsAt(
+        'gift.chest',
+        'ribbon',
+        replace('#C4631E', '#000000'),
+        'gift.chest.ribbon',
+        reason: 'not color.primaryEdge',
+      );
+      expectThrowsAt(
+        'textFit.winRibbon',
+        'box',
+        (_) => [312, 40],
+        'textFit.winRibbon.box',
+        reason: 'not winRibbon.size.textBox',
+      );
+      expectThrowsAt(
+        'gift.short',
+        'height',
+        replace('the 58 dp', 'the 54 dp'),
+        'gift.short.height',
+      );
+      expectThrowsAt(
+        'layout.boardPresets.oneShelf',
+        r'$m76',
+        replace('plank top 540', 'plank top 560'),
+        r'layout.boardPresets.oneShelf.$m76',
+      );
+      expectThrowsAt(
+        'layout.extraSlot',
+        r'$m76',
+        replace('pitch 62', 'pitch 64'),
+        r'layout.extraSlot.$m76',
+      );
+      expectThrowsAt(
+        'layout.fallbackDoll',
+        r'$m76',
+        replace('0.48 h tall', '0.5 h tall'),
+        r'layout.fallbackDoll.$m76',
+        reason: 'not the body\'s h × w',
+      );
+    });
+
+    test('TokenReader reaches a key with a dot', () {
+      final reader = TokenReader({
+        'files': {'flame_lit.svg': 44, 'a': 1},
+      });
+      expect(reader.peek('files.flame_lit.svg'), 44);
+      expect(reader.peek('files.a'), 1);
+      expect(
+        () => reader.peek('files.flame_lit'),
+        throwsA(isA<TokenFormatException>()),
+      );
+    });
+  });
 }
 
 /// The documentation-only leaves of tokens v5 (m7-5), each a deliberate
@@ -1704,6 +2116,91 @@ const _documentedV5 = {
   'gift.chest.chips',
 };
 
+/// The documentation-only leaves of tokens v6 (m7-6), each a deliberate
+/// decision of the codegen change that reads v6.
+final _documentedV6 = {
+  // Design notes.
+  r'habits.$note',
+  r'habits.month.short.$note',
+  r'layout.extraSlot.$m76',
+  r'layout.hud.familyCounter.$m76',
+  r'layout.sizeBlend.$m76',
+  r'layout.splash.errors.$note',
+  r'textFit.winRibbon.$m76',
+  'fontSize.textLink.use',
+  'gradient.figurinePanelEarned.use',
+  'gradient.figurinePanelLocked.use',
+  'textFit.freezeChip.note',
+  'habits.welcomeBack.dismiss.note',
+  for (final state in ['lit', 'later', 'freeze', 'open', 'blank'])
+    'habits.month.cell.$state.means',
+  // The habits' respect rules, and rules never read from tokens (the
+  // welcome card's when, the past-day window and pay rules).
+  'habits.respect',
+  'habits.welcomeBack.when',
+  'habits.month.window',
+  'habits.pastDay.rules',
+  // Behaviour and placement the hand-written code follows (some pinned word
+  // for word, some checked against the values they repeat).
+  'gift.tally.shortPhone',
+  'layout.splash.errors.dim',
+  'layout.splash.errors.icons',
+  'textFit.habitsMonth.legend',
+  'habits.welcomeBack.gone',
+  'habits.welcomeBack.card.button',
+  'habits.welcomeBack.place.h693.dolls',
+  'habits.welcomeBack.place.between',
+  'habits.welcomeBack.place.moves',
+  'habits.welcomeBack.withGift',
+  'habits.welcomeBack.sound',
+  'habits.welcomeBack.haptic',
+  'habits.month.header.chip.show',
+  'habits.month.weekdays.names',
+  'habits.month.weekdays.first',
+  'habits.month.grid.rows',
+  'habits.month.grid.target',
+  'habits.month.grid.fits360',
+  'habits.month.legend.shows',
+  'habits.month.frozen',
+  'habits.month.firstOfMonth',
+  'habits.month.justUnlocked',
+  'habits.month.motion',
+  'habits.month.cell.blank.face',
+  'habits.month.cell.future.face',
+  'habits.month.cell.today.tap',
+  'habits.pastDay.sound',
+  'habits.pastDay.haptic',
+  'haptics.habitsTap',
+  'haptics.habitsPastWin',
+  // Copy.md ids (the ARB keys).
+  for (final variant in ['freeze', 'paused', 'new'])
+    'habits.welcomeBack.variants.$variant',
+  'habits.welcomeBack.dismiss.label',
+  'habits.month.hint.copy',
+  // The home-screen widget's native-only prose (local-habits stage 4) and
+  // its art, which sync_design_assets validates (widget_art.dart).
+  'habits.widget.tap',
+  'habits.widget.refresh',
+  for (final key in ['folder', 'png', 'vector', 'doll', 'previews'])
+    'habits.widget.art.$key',
+  for (final key in [
+    'families',
+    'sizeNote',
+    'radius',
+    'background',
+    'tinted',
+    'standby',
+    'fonts',
+  ])
+    'habits.widget.ios.$key',
+  for (final key in ['sizes', 'preview', 'fonts']) 'habits.widget.android.$key',
+  for (final scheme in ['light', 'dark'])
+    'habits.widget.colors.$scheme.flameUnlit',
+  'habits.widget.colors.tinted.background',
+  for (final state in ['ready', 'solved', 'paused', 'zero', 'locked'])
+    'habits.widget.states.$state',
+};
+
 /// The documentation-only leaves of tokens v4 (m7-4), each a deliberate
 /// decision of the codegen change that reads v4.
 Set<String> _documentedV4(Map<String, Object?> tokens) => {
@@ -1766,7 +2263,8 @@ Set<String> _documentedV4(Map<String, Object?> tokens) => {
   'layout.board.glassCaseTopOverlap',
   'layout.boardPresets.fourShelves.pieces',
   'layout.towerStack.d21',
-  'layout.fallbackDoll.splash',
+  // `layout.fallbackDoll.splash` is FallbackDollTokens.splashFadeInMs since
+  // m7-6 (item 20).
   'layout.hud.familyCounter.lottieWidth',
   'theme.ribbonTint',
   for (var ch = 7; ch <= 10; ch++) 'theme.chapters.$ch.boardArt.note',

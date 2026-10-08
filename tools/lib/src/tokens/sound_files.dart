@@ -21,11 +21,15 @@ enum SoundEventPick { single, random, comboStep }
 
 /// The files behind one `sound.events` value.
 final class SoundEvent {
-  const SoundEvent(this.files, this.pick);
+  const SoundEvent(this.files, this.pick, {this.note});
 
   /// Base names, without extension.
   final List<String> files;
   final SoundEventPick pick;
+
+  /// Tokens v6 (m7-6): the prose after a single file's name, where it plays
+  /// (`the welcome card, its close, …`); documentation only.
+  final String? note;
 }
 
 final _name = RegExp(r'^[a-z0-9_]+$');
@@ -36,11 +40,22 @@ final _combo = RegExp(r'^([a-z0-9_]+)_\{comboStep\}$');
 /// with a note in parentheses (`none (no sound, no haptic)`).
 final _none = RegExp(r'^none(?: \([^)]*\))?$');
 
+/// Tokens v6 (m7-6): one file at once, with prose about where it plays:
+/// `button (the welcome card, its close, a month day, Play again)`, `win @0,
+/// no coins (the past-day win, 14.3d)`. `@0` is the only offset (the cue
+/// starts with its event; a later one would need a delay the cue can't
+/// carry), and the prose is a note. A note that is `random` is the random
+/// pick's wording, and `none` plays nothing, so both are refused here.
+final _singleWithNote = RegExp(
+  r'^([a-z0-9_]+)(?: @0)?(?:, ([^()]+?))?(?: \(([^()]+)\))?$',
+);
+
 /// Parses one `sound.events` value: a single file (`pick`), a random pick
 /// (`clack_1|clack_2|clack_3 (random)`) or one file per combo step
 /// (`complete_{comboStep}` → `complete_1` … `complete_<maxSteps>`), or no
-/// sound at all (`none`, `none (<note>)`: a single pick of no files). Returns
-/// null for any other wording.
+/// sound at all (`none`, `none (<note>)`: a single pick of no files), or
+/// (m7-6) a single file with a note (`button (the welcome card, …)`,
+/// `win @0, no coins (…)`). Returns null for any other wording.
 SoundEvent? parseSoundEvent(String value, {required int maxSteps}) {
   if (_none.hasMatch(value)) return const SoundEvent([], SoundEventPick.single);
   if (_name.hasMatch(value)) return SoundEvent([value], SoundEventPick.single);
@@ -51,6 +66,15 @@ SoundEvent? parseSoundEvent(String value, {required int maxSteps}) {
     return SoundEvent([
       for (var i = 1; i <= maxSteps; i++) '${m[1]}_$i',
     ], SoundEventPick.comboStep);
+  }
+  if (_singleWithNote.firstMatch(value) case final m?
+      when m[1] != 'none' && m[3] != 'random') {
+    final note = [m[2], m[3]].nonNulls.join('; ');
+    return SoundEvent(
+      [m[1]!],
+      SoundEventPick.single,
+      note: note.isEmpty ? null : note,
+    );
   }
   return null;
 }

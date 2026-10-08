@@ -28,6 +28,7 @@ String renderTokensSource(TokenReader t, {required String header}) {
           'contradicts spec §3.6; D172 keeps the bottom shelf (lane B: '
           'BoardShape.withExtraSlot, rowOfFive for 5)',
     )
+    ..documented(r'layout.extraSlot.$m76', reason: _rowOfSix(t))
     ..documented(
       'layout.extraSlot.limitPerLevel',
       reason:
@@ -765,6 +766,34 @@ ConstClass _motion(TokenReader t) {
   n('invalid.amplitude', 'invalidAmplitude');
   ms('invalid.each', 'invalidShakeMs');
   ms('invalid.returnDuration', 'invalidReturnMs');
+  // m7-6 (Choices 21, keep): an invalid drift onto an empty stand, glass
+  // case or ice slot stops short of the target by a fraction of the
+  // mover's own height, and draws in front of the case or the ice.
+  final empty =
+      RegExp(
+        r'^confirmed \(m7-6, item 21\): onto an empty stand, glass case or ice '
+        r'slot the drift ends at target base − (\d*\.\d+) × the mover’s own '
+        r'height, and the mover draws in front of the case or the ice$',
+      ).firstMatch(
+        t.string(
+          'motion.invalid.emptyTarget',
+          symbol: '$m.invalidEmptyTargetStop',
+        ),
+      );
+  if (empty == null) {
+    throw TokenFormatException(
+      'motion.invalid.emptyTarget',
+      'unexpected wording "${t.peek('motion.invalid.emptyTarget')}"',
+    );
+  }
+  c.add(
+    'invalidEmptyTargetStop',
+    doubleLiteral(double.parse(empty[1]!)),
+    doc:
+        'An invalid drift onto an empty stand, glass case or ice slot ends '
+        'at the target base − this × the mover\'s own height, the mover '
+        'drawn in front of the case or the ice (m7-6, Choices 21).',
+  );
 
   ms('reveal.duration', 'revealMs');
   // Owner decision 3d (2026-09-26): the wipe grows from the doll's centre,
@@ -893,4 +922,40 @@ ConstClass _motion(TokenReader t) {
   ms('extraSlot.stopUnderDollMs', 'extraSlotStopUnderDollMs');
   i('extraSlot.restFrame', 'extraSlotRestFrame');
   return c;
+}
+
+/// m7-6 (item 19) confirms the row of 6: its prose repeats the placement's
+/// pitch and stand, at the stand's row-of-5 scale. Checked, then kept as
+/// documentation (BoardLayout's row-of-5 formulas already cover it).
+String _rowOfSix(TokenReader t) {
+  const path = r'layout.extraSlot.$m76';
+  final text = '${t.peek(path)}';
+  final m = RegExp(
+    r'^confirmed \(m7-6, item 19\): a row of 6 follows the row-of-5 '
+    r'formulas: pitch (\d+(?:\.\d+)?), stand (\d+(?:\.\d+)?) × '
+    r'(\d+(?:\.\d+)?) \((\d*\.\d+)\), ',
+  ).firstMatch(text);
+  final placement = RegExp(
+    r'a row of 6 only when every row already holds 5 \(pitch '
+    r'(\d+(?:\.\d+)?), stand (\d+(?:\.\d+)?) × (\d+(?:\.\d+)?)\)$',
+  ).firstMatch('${t.peek('layout.extraSlot.placement')}');
+  final stand = t.peek('layout.board.stand');
+  if (m == null ||
+      placement == null ||
+      m[1] != placement[1] ||
+      m[2] != placement[2] ||
+      m[3] != placement[3] ||
+      stand is! List<Object?> ||
+      (double.parse(m[2]!) / (stand[0]! as num) - double.parse(m[4]!)).abs() >
+          0.001 ||
+      (double.parse(m[3]!) / (stand[1]! as num) - double.parse(m[4]!)).abs() >
+          0.001) {
+    throw TokenFormatException(
+      path,
+      'is not the placement\'s row of 6 at layout.board.stand × its scale',
+    );
+  }
+  return 'confirmed (m7-6 item 19): the row of 6 follows the row-of-5 '
+      'formulas (pitch ${m[1]}, stand ${m[2]} × ${m[3]}, checked against '
+      'the placement and layout.board.stand), BoardLayout as built';
 }

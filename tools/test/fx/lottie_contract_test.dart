@@ -380,6 +380,42 @@ void main() {
     }
   });
 
+  test('the m7-6 chest rays fade through LOTTIE.md\'s alpha matte', () {
+    final changes = _section(
+      _read('$designLottieDir/$lottieContractDoc'),
+      'Changes',
+    );
+    final start = changes.indexOf('### m7-6');
+    expect(start, isNot(-1), reason: 'LOTTIE.md "### m7-6"');
+    final m76 = changes.substring(start, changes.indexOf('\n### ', start + 1));
+    final row = m76
+        .split('\n')
+        .firstWhere((line) => line.startsWith('- **`ui_chest`'));
+    // "A new shape layer, `rays_matte`, sits right above `rays` as its alpha
+    // matte (`td: 1` on the matte, `tt: 1` on `rays`): a 200 dp disc with a
+    // radial gradient fill".
+    for (final words in [
+      '`rays_matte`',
+      'alpha matte',
+      '`td: 1`',
+      '`tt: 1` on `rays`',
+      'radial gradient fill',
+    ]) {
+      expect(row, contains(words));
+    }
+    expect(
+      [
+        for (final c in lottieContracts)
+          if (c.matteFills.isNotEmpty) c.name,
+      ],
+      ['ui_chest'],
+    );
+    expect(lottieContractOf('ui_chest')!.matteFills, {'falloff_fill'});
+    for (final c in lottieContracts) {
+      expect(c.matteFills.intersection(c.tintFills), isEmpty, reason: c.name);
+    }
+  });
+
   test('the text files are the three LOTTIE.md "Text layers" names', () {
     expect(
       [

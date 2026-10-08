@@ -19,12 +19,15 @@
 // Anything else is prose: a strict parser in [_specials] reads the numbers
 // out of it, or [_documentedLeaves] names it with its reason. An unknown
 // string fails the build, so a new design value is never silently dropped.
+import 'dart:math' as math;
+
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/tokens/css_values.dart';
 import 'package:nesty_tools/src/tokens/dart_source.dart';
 import 'package:nesty_tools/src/tokens/token_reader.dart';
 
 part 'screen_tokens_m75.dart';
+part 'screen_tokens_m76.dart';
 
 /// The per-screen sections, tokens.json path → generated class.
 const screenTokenSections = {
@@ -76,6 +79,9 @@ const screenTokenSections = {
   'gift.claim': 'GiftClaimTokens',
   'gift.reducedMotion': 'GiftReducedMotionTokens',
   'gift.short': 'GiftShortTokens',
+  // Tokens v6 (m7-6): the Computer tag and the local habits (App Flow
+  // section 14).
+  ...m76ScreenTokenSections,
 };
 
 /// One generated class for the section at [path] (a [screenTokenSections]
@@ -91,7 +97,8 @@ ConstClass screenTokens(
   final short =
       path.endsWith('Short') ||
       path == 'layout.short169' ||
-      path == 'gift.short';
+      path == 'gift.short' ||
+      path == 'habits.month.short';
   final c = ConstClass(
     className,
     'tokens.json `$path`${note == null ? '' : ' ($note)'}, in dp on the '
@@ -116,7 +123,11 @@ ConstClass screenTokens(
     } on FormatException {
       // A reserved word (m7-5 `gift.tally.in`) is fine when a special parser
       // names the members itself.
-      if (_specials[leaf] == null && _m75Specials[leaf] == null) rethrow;
+      if (_specials[leaf] == null &&
+          _m75Specials[leaf] == null &&
+          _m76Specials[leaf] == null) {
+        rethrow;
+      }
       _emitLeaf(_Leaf(t, c, env, leaf, segments.join('_')));
       continue;
     }
@@ -221,7 +232,6 @@ const _glyphKeys = {'glyph', 'undoBadge', 'icon'};
 /// The prose tail each font value may carry after its style.
 const _fontTails = {
   'layout.rivalStrip.tag.text': 'sentence case',
-  'layout.museum.cabinet.namePlate': 'on a brass gradient',
   'layout.replayCard.reason': 'with the replay glyph',
   'layout.noCoins.heading': 'balanced',
   'shop.cardName.skin': 'one line',
@@ -332,9 +342,13 @@ const _exactLeaves = {
 
 void _emitLeaf(_Leaf l) {
   final t = l.t;
-  final special = _specials[l.path] ?? _m75Specials[l.path];
+  final special =
+      _specials[l.path] ?? _m75Specials[l.path] ?? _m76Specials[l.path];
   if (special != null) return special(l);
-  final reason = _documentedLeaves[l.path] ?? _m75DocumentedLeaves[l.path];
+  final reason =
+      _documentedLeaves[l.path] ??
+      _m75DocumentedLeaves[l.path] ??
+      _m76DocumentedLeaves[l.path];
   if (reason != null) {
     t.documented(l.path, reason: reason);
     return;
@@ -362,7 +376,10 @@ void _emitLeaf(_Leaf l) {
     }
     return;
   }
-  final exact = _exactLeaves[l.path] ?? _m75ExactLeaves[l.path];
+  final exact =
+      _exactLeaves[l.path] ??
+      _m75ExactLeaves[l.path] ??
+      _m76ExactLeaves[l.path];
   if (exact != null) {
     final (text, why) = exact;
     t.documentedExact(l.path, text, reason: why);
@@ -497,11 +514,12 @@ void _emitString(_Leaf l) {
   }
   final font = tryParseFontSpec(value);
   if (font != null) {
-    if (font.tail != _fontTails[l.path]) {
+    final tail = _fontTails[l.path];
+    if (font.tail != tail) {
       throw TokenFormatException(
         l.path,
         font.tail == null
-            ? 'expected the tail "${_fontTails[l.path]}"'
+            ? 'expected the tail "$tail"'
             : 'unexpected prose after the font: "${font.tail}"',
       );
     }
@@ -515,6 +533,9 @@ void _emitString(_Leaf l) {
   // Tokens v5 (m7-5): a colour by name, an art reference, a radial
   // gradient, a copy.md id.
   if (_m75String(l, value)) return;
+  // Tokens v6 (m7-6): a day number's colour and weight, no face, a mark's
+  // meaning, a copy id.
+  if (_m76String(l, value)) return;
   try {
     final shadows = parseBoxShadowList(value);
     l.add(shadowListLiteral(shadows), type: 'List<NestyShadow>');

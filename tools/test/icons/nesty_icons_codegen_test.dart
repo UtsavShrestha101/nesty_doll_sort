@@ -70,11 +70,15 @@ void main() {
         if (![...first, ...added, ...splashErrors].contains(glyph)) glyph,
     ];
     expect(m75, ['more_horiz']);
+    // m7-6 adds the month's previous chip (`habits.month`, 14.2c/14.2d); the
+    // README's list has `chevron_right` only.
+    const m76 = ['chevron_left'];
     expect(parseGlyphList(read(glyphListPath)), [
       ...first,
       ...added,
       ...splashErrors,
       ...m75,
+      ...m76,
     ]);
   });
 

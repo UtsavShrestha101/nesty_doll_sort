@@ -1490,7 +1490,7 @@ takes the designs when they arrive.
 - [ ] Production Firebase project and signing material (upload keystore, Apple certificates) — §18 M8 (M8)
 - [ ] A legal check of the kid path: COPPA's amended rule for a mixed audience, the Play Families declaration, a UK Children's Code DPIA, GDPR Art. 8 consent ages and Texas SB 2420 — §17, D260 (M4: its analytics default waits on it; M8)
 
-- [ ] The home-screen widget's App Groups in the Apple Developer account: register `group.com.futrix.nesty`, `group.com.futrix.nesty.dev` and `group.com.futrix.nesty.stg`, and turn on App Groups for the three app ids and the three widget ids (`<app id>.widget`). The exact steps: [plans/widget-apple-setup.md](plans/widget-apple-setup.md). Simulators need none of it; a signed build for a real iPhone or an upload does — plan-local-habits §4, D312 (Local habits, stage 4)
+- [ ] The home-screen widget's App Groups in the Apple Developer account: register `group.com.futrix.nesty`, `group.com.futrix.nesty.dev` and `group.com.futrix.nesty.stg`, and turn on App Groups for the three app ids and the three widget ids (`<app id>.widget`). The exact steps: [plans/widget-apple-setup.md](plans/widget-apple-setup.md). Simulators need none of it; a signed build for a real iPhone or an upload does. Waiting: the owner has no Apple Developer account yet (D313) — plan-local-habits §4, D312 (Local habits, stage 4)
 
 ### Device checks (the owner's phone)
 

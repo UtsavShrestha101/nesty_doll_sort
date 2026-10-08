@@ -5907,6 +5907,40 @@ covers the design foundation, M1 and M2, copied from its approved plan.
       worker thread, never the main thread;
     - the cold-link device checks can't see a Flutter route, so the lead
       judges `w_cold_link` for the Daily.
+- **D313. Stage 3's device run, a date fix, and a paused session
+  (2026-10-08).**
+  - The full run after stage 3 passed on the iPhone 16e except three steps:
+    the meta finale (`flutter drive` never attached, the Mac under load), and
+    daily_states' month and archive, whose expectations predated the window
+    (window days now say ", open to play"; November 3's page shows two open
+    days with October's five behind ‹). The tests are fixed.
+  - On the Android emulator every step through the daily gift passed except
+    daily_states' chest (a starved emulator) and archive (a test bug: today's
+    Play sat under the header; it is now scrolled clear first). Overlays was
+    stopped while hung and wrongly logged PASS. The emulator then stopped
+    answering adb under host load 34–47 from another project's builds, so
+    faults, semantics and locales never ran.
+  - Judging d_43 found a real bug: the past day's date printed
+    "Sunday1November". intl reads a string as a skeleton only in its own
+    spelling, so the tokens' `EEEEdMMMM` was read as a pattern.
+    `core/ui/date_skeleton.dart` puts a skeleton's fields in intl's order
+    and the locale gives the order and punctuation ("Sunday, November 1",
+    "Sonntag, 1. November"), as CLDR intends; copy.md's "Saturday 10
+    October" is a sample, not a format.
+  - `nesty-test` no longer counts a stopped `flutter drive` as a pass: a
+    device step needs the driver's "All tests passed.", and a driver
+    extension that never answers stops the step after the attach-hang limit.
+    The device scripts wait for the Mac's load to fall under 20 and cold-boot
+    the emulator before Android.
+  - Stage 4 is merged into `feat/m7-offline-game`. The reruns of stage 3's
+    failed and missing steps fold into the full run after stage 4, which runs
+    them on the same code.
+  - 14.3d at 731 dp puts the button over the bar: a design gap in BACKLOG.
+  - The owner has no Apple Developer account yet, so the widget's App Groups
+    ([plans/widget-apple-setup.md](plans/widget-apple-setup.md)) wait.
+    Simulators need none of it; a real-iPhone build and an upload do.
+  - The owner paused the session at this checkpoint. The resume steps are in
+    `build/local-habits/checkpoints/stage3-lead.md` "Resume".
 
 ## Package reasons (CLAUDE.md rule 9)
 

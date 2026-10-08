@@ -687,8 +687,11 @@ Future<void> _month(WidgetTester tester, _Shots shots) async {
   await tester.pumpFor(const Duration(milliseconds: 600));
   await shots.take('d_36_month');
   final handle = tester.ensureSemantics();
+  // The last 7 days (Oct 24–30) are open to play since local habits 3, so
+  // their labels carry ", open to play"; older days keep the plain label.
   String label(int d, String state) =>
-      '${DateFormat.MMMMd('en').format(DateTime(2026, 10, d))}, $state';
+      '${DateFormat.MMMMd('en').format(DateTime(2026, 10, d))}, $state'
+      '${d >= 24 && d <= 30 ? ', open to play' : ''}';
   for (final (d, state) in [
     (3, 'solved'),
     (30, 'solved'),
@@ -808,11 +811,25 @@ Future<void> _archive(WidgetTester tester, Board board, _Shots shots) async {
   expect(find.bySemanticsLabel('Show October'), findsOneWidget);
   final target = today.addDays(-2);
   expect(open(target, 'not played'), findsOneWidget);
+  // The window is Oct 27–Nov 2: November shows its 1st and 2nd, and the
+  // ‹ chip pages back to October's five (Q190), never further.
+  final openDays = find.bySemanticsLabel(RegExp('open to play'));
   expect(
-    find.bySemanticsLabel(RegExp('open to play')),
-    findsNWidgets(7),
-    reason: 'seven days are open: the window, not the older days or today',
+    openDays,
+    findsNWidgets(2),
+    reason: "November's window days: not the older days or today",
   );
+  await tester.tap(find.bySemanticsLabel('Show October'));
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  expect(
+    openDays,
+    findsNWidgets(5),
+    reason: "October's window days, Oct 27–31",
+  );
+  expect(find.bySemanticsLabel('Show September'), findsNothing);
+  await tester.tap(find.bySemanticsLabel('Show November'));
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  expect(openDays, findsNWidgets(2), reason: 'back on November');
 
   // 14.3b: a tap opens the card; no coin chip.
   await tester.tap(open(target, 'not played'));
@@ -873,8 +890,13 @@ Future<void> _archive(WidgetTester tester, Board board, _Shots shots) async {
   expect(after.solvedToday, isFalse);
   expect(get<SaveService>().coins, 880, reason: 'a past day pays nothing');
 
-  // Today's board is where it was left.
-  await tester.tap(find.text('Play').first);
+  // Today's board is where it was left. The page is scrolled down to the
+  // month, so today's Play sits under the Daily's header: bring its card to
+  // the middle of the screen first.
+  final todayPlay = find.text('Play').first;
+  await Scrollable.ensureVisible(tester.element(todayPlay), alignment: 0.5);
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  await tester.tap(todayPlay);
   await tester.pumpUntil(
     () =>
         find.byType(GameplayView).evaluate().isNotEmpty &&

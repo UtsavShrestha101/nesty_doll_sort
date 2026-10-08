@@ -8,6 +8,10 @@
 # GoogleService-Info.plist) is also committed once the owner generates it: it
 # is not a secret — access is enforced by firebase/*.rules — and CI needs it.
 
+# Claude Code's agent worktrees: whole copies of the repo, never committed
+# (.claude/ itself is).
+.claude/worktrees/
+
 # ---------------------------------------------------------------- OS / editors
 .DS_Store
 Thumbs.db

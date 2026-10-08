@@ -253,6 +253,10 @@ section() { echo; echo "${BOLD}== $1${RESET}"; }
 # in the 2026-10-05 M7 gate). Its log then ends at the build line. After
 # ATTACH_HANG_S seconds of silence there, the step is stopped, with its whole
 # process tree, and fails. Override with NESTY_TEST_ATTACH_HANG_S.
+# The same limit stops a step whose driver found the app but whose test never
+# started ("Flutter Driver extension is taking a long time to become
+# available" and no "mm:ss +n" line since: an Android emulator starved by the
+# host, 2026-10-08), which Android's logcat would otherwise keep looking alive.
 ATTACH_HANG_S="${NESTY_TEST_ATTACH_HANG_S:-480}"
 kill_tree() { # pid: its descendants first, then itself
   local child
@@ -260,10 +264,21 @@ kill_tree() { # pid: its descendants first, then itself
   kill -KILL "$1" 2>/dev/null
 }
 watch_attach() { # pid log
-  local pid="$1" log="$2" age last
+  local pid="$1" log="$2" age last slow_since=""
   while kill -0 "$pid" 2>/dev/null; do
     sleep 15
     [ -f "$log" ] || continue
+    if [ -z "$slow_since" ] &&
+      grep -q 'Flutter Driver extension is taking a long time' "$log"; then
+      slow_since=$(date +%s)
+    fi
+    if [ -n "$slow_since" ] &&
+      [ $(( $(date +%s) - slow_since )) -ge "$ATTACH_HANG_S" ] &&
+      ! grep -qE '[0-9][0-9]:[0-9][0-9] \+[0-9]+' "$log"; then
+      echo "nesty-test: stopped ${ATTACH_HANG_S} s after the driver extension was slow, with no test started: the app never answered the driver (an overloaded machine?)" >>"$log"
+      kill_tree "$pid"
+      return
+    fi
     age=$(( $(date +%s) - $(stat -f %m "$log" 2>/dev/null || stat -c %Y "$log") ))
     last="$(grep -v '^[[:space:]]*$' "$log" | tail -1)"
     if [ "$age" -ge "$ATTACH_HANG_S" ] &&
@@ -534,14 +549,24 @@ kill_app() {
 
 # flutter drive of one integration test on the device (the dev flavor).
 drive() { # target extra-args...
-  local target="$1"; shift
+  local target="$1" out rc; shift
   # flutter drive's debug log of driver commands holds every screenshot's
   # data and grew to 1.1 GB in one run (the 2026-10-05 gate, under the disk
   # floor), so each step starts it empty; nothing reads it.
   : >"$GAME/build/flutter_driver_commands_0.log" 2>/dev/null || true
+  out="$(mktemp)"
   (cd "$GAME" && flutter drive --flavor dev \
     --driver test_driver/integration_test.dart \
-    --target "integration_test/$target" -d "$DEVICE_ID" "$@")
+    --target "integration_test/$target" -d "$DEVICE_ID" "$@") 2>&1 | tee "$out"
+  rc=${PIPESTATUS[0]}
+  # flutter drive exits 0 when it is stopped before its test ran (a SIGTERM,
+  # 2026-10-08), so a step passes only with the driver's own success line.
+  if [ "$rc" -eq 0 ] && ! grep -q '^All tests passed\.' "$out"; then
+    echo "nesty-test: flutter drive exited 0 without \"All tests passed.\": the test never finished"
+    rc=1
+  fi
+  rm -f "$out"
+  return "$rc"
 }
 
 response_to() { # file

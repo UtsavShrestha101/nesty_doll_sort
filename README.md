@@ -236,6 +236,10 @@ command log (`build/flutter_driver_commands_0.log`, which holds every
 screenshot's data) empty. A step that hangs at attach (the app is up, but
 `flutter drive` never connects, so its `--timeout` never starts) is stopped
 and fails after 8 minutes at its build line (`NESTY_TEST_ATTACH_HANG_S`).
+The same limit stops a step whose driver found the app but whose test never
+started ("Flutter Driver extension is taking a long time"), as an emulator
+starved by the host does. A device step passes only when `flutter drive`
+printed its own "All tests passed.", since it exits 0 when it is stopped.
 Only the newest 5 runs are kept in `apps/game/build/nesty-test/`
 (`NESTY_TEST_KEEP_RUNS`).
 

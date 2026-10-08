@@ -321,7 +321,12 @@ enum NestyWidgetCore {
 
   /// `#RRGGBB` as components, or nil when it isn't one.
   static func rgb(hex: String) -> NestyWidgetRGB? {
-    guard hex.count == 7, hex.first == "#", let value = UInt32(hex.dropFirst(), radix: 16) else {
+    // Six hex digits only, as Kotlin's parseColor: UInt32(radix:) alone
+    // would take a sign ("#+12345").
+    let digits = hex.dropFirst()
+    guard hex.count == 7, hex.first == "#", digits.allSatisfy(\.isHexDigit),
+      let value = UInt32(digits, radix: 16)
+    else {
       return nil
     }
     return NestyWidgetRGB(

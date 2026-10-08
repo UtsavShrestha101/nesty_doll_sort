@@ -14,8 +14,6 @@ import com.futrix.nesty.widget.NestyWidgetStore
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -90,15 +88,19 @@ class MainActivity : FlutterActivity() {
             return
         }
         val context: Context = applicationContext
-        widgetWork.execute {
-            val stored = try {
-                NestyWidgetStore.write(context, json)
-            } catch (e: Exception) {
+        NestyWidgetProvider.work.execute {
+            var stored = false
+            try {
+                stored = NestyWidgetStore.write(context, json)
+                if (stored) NestyWidgetProvider.refreshAll(context)
+            } catch (e: Throwable) {
+                // Rule 3: even an Error here must not end the app's process
+                // from this thread, and Dart always gets its answer.
                 Log.w(TAG, "storing the widget snapshot failed", e)
-                false
+            } finally {
+                val answer = stored
+                mainHandler.post { result.success(answer) }
             }
-            if (stored) NestyWidgetProvider.refreshAll(context)
-            mainHandler.post { result.success(stored) }
         }
     }
 
@@ -112,12 +114,5 @@ class MainActivity : FlutterActivity() {
         private const val TAG = "NestyWidget"
 
         private val mainHandler = Handler(Looper.getMainLooper())
-
-        /// One background thread, in order, so two quick publishes land as written.
-        private val widgetWork: ExecutorService by lazy {
-            Executors.newSingleThreadExecutor { runnable ->
-                Thread(runnable, "nesty-widget").apply { isDaemon = true }
-            }
-        }
     }
 }

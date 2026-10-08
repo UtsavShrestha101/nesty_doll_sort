@@ -96,12 +96,15 @@ class WidgetTimelineTest {
     }
 
     @Test
-    fun pastTheLastEntryIsTheLastAsReadyWithTheGenericTitle() {
+    fun pastTheLastEntryKeepsItsStateWithTheGenericTitle() {
+        // A resting streak stays resting past the snapshot (as on iOS, D312):
+        // never drawn as a ready streak it no longer is.
         val s = snapshot("widget_snapshot_v1.json")
         val last = s.days.last()
+        assertEquals(DayState.PAUSED, last.state)
         for (late in listOf(8L, 9L, 40L)) {
             val day = (WidgetTimeline.content(s, start.plusDays(late)) as WidgetContent.Day).day
-            assertEquals(DayState.READY, day.state)
+            assertEquals(DayState.PAUSED, day.state)
             assertEquals(last.date, day.date)
             assertEquals(last.streak, day.streak)
             assertEquals(last.number, day.number)

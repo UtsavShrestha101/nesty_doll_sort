@@ -66,11 +66,13 @@ object WidgetTimeline {
 
     /**
      * Past the last entry (the phone left unopened for more than a week;
-     * contract §3, design spec gap 18): the last entry with its state forced
-     * to ready, the streak and its label kept, the generic title, and no sub
-     * or dolls. A solved last entry (the app never writes one: days after
-     * today are projected with no solve) also takes the ready line and screen
-     * reader text of the latest unsolved entry, when there is one.
+     * contract §3, design spec gap 18): the last entry with the generic
+     * title and no sub or dolls. Its state is kept (a resting streak stays
+     * resting, as iOS draws it; lead ruling, D312): only a solved last entry
+     * turns ready, since the new day isn't solved, and it takes the ready
+     * line and screen reader text of the latest unsolved entry, when there
+     * is one (the app never writes one: days after today are projected with
+     * no solve).
      */
     fun pastTheLast(snapshot: WidgetSnapshot): WidgetDay {
         val last = snapshot.days.last()
@@ -80,7 +82,7 @@ object WidgetTimeline {
             last
         }
         return last.copy(
-            state = DayState.READY,
+            state = if (last.state == DayState.SOLVED) DayState.READY else last.state,
             title = snapshot.locked.title,
             sub = null,
             dolls = emptyList(),

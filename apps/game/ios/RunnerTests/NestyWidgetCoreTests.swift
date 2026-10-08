@@ -302,6 +302,13 @@ final class NestyWidgetCoreTests: XCTestCase {
     XCTAssertNil(NestyWidgetCore.rgb(hex: "2F3E8F"))
     XCTAssertNil(NestyWidgetCore.rgb(hex: "#2F3E8"))
     XCTAssertNil(NestyWidgetCore.rgb(hex: "#GGGGGG"))
+    XCTAssertNil(NestyWidgetCore.rgb(hex: "#+12345"))
+    XCTAssertNil(NestyWidgetCore.rgb(hex: "#-12345"))
+    // An unreadable colour is skipped, the rest still draw (as Kotlin's
+    // anUnreadableDollColourIsSkippedNotFatal).
+    XCTAssertEqual(
+      ["#GGGGGG", "#2F3E8F"].compactMap(NestyWidgetCore.rgb(hex:)),
+      [NestyWidgetRGB(red: 47.0 / 255, green: 62.0 / 255, blue: 143.0 / 255)])
     // systemSmall on a 390-wide phone: 126 wide, six fit.
     XCTAssertEqual(
       NestyWidgetCore.dollCount(available: 126, width: 15, gap: 4, cap: 6, total: 11), 6)

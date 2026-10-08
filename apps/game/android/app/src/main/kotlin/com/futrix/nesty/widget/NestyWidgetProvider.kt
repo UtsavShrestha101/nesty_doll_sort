@@ -6,6 +6,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
  * The home-screen widget (local habits stage 4; plan-local-habits §4
@@ -46,6 +48,17 @@ class NestyWidgetProvider : AppWidgetProvider() {
     companion object {
         private const val TAG = "NestyWidget"
 
+        /**
+         * One background thread for the widget's disk and text work, in
+         * order, so two quick publishes land as written and a clock
+         * broadcast's redraw never runs on the main thread.
+         */
+        val work: ExecutorService by lazy {
+            Executors.newSingleThreadExecutor { runnable ->
+                Thread(runnable, "nesty-widget").apply { isDaemon = true }
+            }
+        }
+
         /** Every placed widget's id; empty when none is (or no widget support). */
         fun widgetIds(context: Context): IntArray {
             val manager = AppWidgetManager.getInstance(context) ?: return IntArray(0)
@@ -71,11 +84,12 @@ class NestyWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        // Rule 3: a widget never crashes the app's process.
+        // Rule 3: a widget never crashes the app's process, not even with an
+        // Error (an out-of-memory while building the views) on a worker thread.
         private inline fun safely(what: String, block: () -> Unit) {
             try {
                 block()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.w(TAG, "widget $what failed", e)
             }
         }

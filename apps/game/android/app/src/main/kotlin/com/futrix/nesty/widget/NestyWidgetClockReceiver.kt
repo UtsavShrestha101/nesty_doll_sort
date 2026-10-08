@@ -12,6 +12,10 @@ import android.content.Intent
  * zone set by hand, and a new phone language (the first-run strings are native
  * resources). An app update re-arms it too. The boot permission is already
  * declared for the daily reminder.
+ *
+ * The redraw decodes the snapshot and measures text for every size of every
+ * placed widget, so it runs on the widget's worker thread under `goAsync`,
+ * never on the main thread.
  */
 class NestyWidgetClockReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -22,7 +26,17 @@ class NestyWidgetClockReceiver : BroadcastReceiver() {
             Intent.ACTION_TIMEZONE_CHANGED,
             Intent.ACTION_LOCALE_CHANGED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
-            -> NestyWidgetProvider.refreshAll(context)
+            -> {
+                val appContext = context.applicationContext
+                val pending = goAsync()
+                NestyWidgetProvider.work.execute {
+                    try {
+                        NestyWidgetProvider.refreshAll(appContext)
+                    } finally {
+                        pending.finish()
+                    }
+                }
+            }
         }
     }
 }

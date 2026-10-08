@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>a{color:#C4631E}a:hover{color:#A94F12}</style></helmet>
+<div style="position:relative;width:390px;height:844px;border-radius:46px;overflow:hidden;background:{{ bg }};box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+
+<sc-for list="{{ apps }}" as="a" hint-placeholder-count="0"><div style="position:absolute;left:{{ a.x }}px;top:{{ a.y }}px;width:{{ a.s }}px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2"><div style="width:{{ a.s }}px;height:{{ a.s }}px;border-radius:{{ a.r }};background:{{ a.bg }};box-shadow:0 2px 6px rgba(40,20,10,.12)"></div><div style="width:{{ a.lw }}px;height:6px;border-radius:3px;background:rgba(255,255,255,.55)"></div></div></sc-for>
+<sc-if value="{{ dockOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:12px;right:12px;bottom:14px;height:92px;border-radius:32px;background:rgba(255,255,255,.28);z-index:1"></div></sc-if>
+
+<sc-if value="{{ isSheet }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:20px;right:20px;top:68px;display:flex;flex-direction:column;gap:6px;z-index:3"><div style="font:700 12px/1 'Nunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#9A6A44">{{ shKicker }}</div><div style="font:700 28px/1.05 'Fredoka',sans-serif;color:#5B3A21">{{ shTitle }}</div></div></sc-if>
+<sc-for list="{{ stages }}" as="t" hint-placeholder-count="0"><div style="position:absolute;left:16px;right:16px;top:{{ t.y }}px;height:{{ t.h }}px;border-radius:22px;background:{{ t.bg }};box-shadow:inset 0 0 0 1.5px rgba(90,50,20,.12);z-index:2"></div></sc-for>
+<sc-for list="{{ caps }}" as="c" hint-placeholder-count="0"><div style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;right:20px;display:flex;align-items:baseline;gap:7px;z-index:4"><span style="font:800 11px/1 'Nunito',sans-serif;color:#C4631E;white-space:nowrap">{{ c.id }}</span><span style="font:800 12px/1.2 'Nunito',sans-serif;color:{{ c.col }}">{{ c.t }}</span></div></sc-for>
+<sc-for list="{{ notes }}" as="n" hint-placeholder-count="0"><div style="position:absolute;left:16px;right:16px;top:{{ n.y }}px;padding:12px 14px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #FFFFFF,0 4px 0 #D8B07A;z-index:4"><div style="font:700 15px/1.15 'Fredoka',sans-serif;color:#5B3A21">{{ n.title }}</div><div style="margin-top:5px;font:700 12px/1.4 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ n.t }}</div></div></sc-for>
+
+<sc-for list="{{ widgets }}" as="g" hint-placeholder-count="0"><div data-w="{{ g.id }}" style="position:absolute;left:{{ g.x }}px;top:{{ g.y }}px;width:{{ g.w }}px;height:{{ g.h }}px;transform:scale({{ g.k }});transform-origin:0 0;border-radius:{{ g.r }}px;background:{{ g.bg }};box-shadow:{{ g.sh }};overflow:hidden;box-sizing:border-box;padding:{{ g.pad }}px;z-index:5">
+<sc-if value="{{ g.small }}" hint-placeholder-val="{{ true }}"><div style="height:100%;display:flex;flex-direction:column">
+<sc-if value="{{ g.lockOn }}" hint-placeholder-val="{{ false }}"><div style="width:42px;height:42px;background:url(ui/widget/daily_mark.svg) center/contain no-repeat;opacity:{{ g.markOp }}"></div><div style="margin-top:auto;font:700 17px/1.15 {{ g.dFont }};color:{{ g.tc }}">Daily puzzle</div><div style="margin-top:4px;font:700 13px/1.3 {{ g.bFont }};color:{{ g.sc }}">Opens after Level 2</div></sc-if>
+<sc-if value="{{ g.streakOn }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:5px;height:40px"><sc-if value="{{ g.flameImg }}" hint-placeholder-val="{{ true }}"><div style="width:36px;height:36px;flex:none;background:url({{ g.flame }}) center/contain no-repeat"></div></sc-if><sc-if value="{{ g.flameMask }}" hint-placeholder-val="{{ false }}"><div style="width:36px;height:36px;flex:none;background:{{ g.ac }} center/contain no-repeat"></div></sc-if><sc-if value="{{ g.numOn }}" hint-placeholder-val="{{ true }}"><span style="font:700 36px/1 {{ g.dFont }};color:{{ g.nc }};font-variant-numeric:tabular-nums">{{ g.num }}</span></sc-if></div>
+<div style="margin-top:3px;font:800 12px/1.1 {{ g.bFont }};color:{{ g.sc }};white-space:nowrap">{{ g.label }}</div>
+<div style="margin-top:12px;display:flex;align-items:flex-end;gap:4px;height:20px"><sc-for list="{{ g.dolls }}" as="d" hint-placeholder-count="5"><div style="width:15px;height:20px;background:{{ d }} center/contain no-repeat"></div></sc-for></div>
+<div style="margin-top:auto;font:700 14px/1.2 {{ g.dFont }};color:{{ g.lc }};text-wrap:balance">{{ g.line }}</div></sc-if>
+</div></sc-if>
+<sc-if value="{{ g.medium }}" hint-placeholder-val="{{ false }}"><div style="height:100%;display:flex;gap:14px">
+<div style="width:{{ g.leftW }}px;flex:none;display:flex;flex-direction:column">
+<sc-if value="{{ g.lockOn }}" hint-placeholder-val="{{ false }}"><div style="width:56px;height:56px;background:url(ui/widget/daily_mark.svg) center/contain no-repeat;opacity:{{ g.markOp }}"></div></sc-if>
+<sc-if value="{{ g.streakOn }}" hint-placeholder-val="{{ true }}"><sc-if value="{{ g.flameImg }}" hint-placeholder-val="{{ true }}"><div style="width:46px;height:46px;background:url({{ g.flame }}) center/contain no-repeat"></div></sc-if><sc-if value="{{ g.flameMask }}" hint-placeholder-val="{{ false }}"><div style="width:46px;height:46px;background:{{ g.ac }} center/contain no-repeat"></div></sc-if><sc-if value="{{ g.numOn }}" hint-placeholder-val="{{ true }}"><div style="margin-top:auto;font:700 42px/1 {{ g.dFont }};color:{{ g.nc }};font-variant-numeric:tabular-nums">{{ g.num }}</div></sc-if><div style="margin-top:{{ g.labelMt }};font:800 12px/1.15 {{ g.bFont }};color:{{ g.sc }}">{{ g.label }}</div></sc-if>
+</div>
+<div style="width:1.5px;flex:none;border-radius:1px;background:{{ g.div }}"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<div style="font:700 17px/1.15 {{ g.dFont }};color:{{ g.tc }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
+<sc-if value="{{ g.subOn }}" hint-placeholder-val="{{ true }}"><div style="margin-top:3px;font:800 12.5px/1.2 {{ g.bFont }};color:{{ g.sc }}">5 colors · Hard</div><div style="margin-top:12px;display:flex;align-items:flex-end;gap:5px;height:26px"><sc-for list="{{ g.dolls }}" as="d" hint-placeholder-count="5"><div style="width:19px;height:26px;background:{{ d }} center/contain no-repeat"></div></sc-for></div></sc-if>
+<div style="margin-top:auto;font:700 15px/1.2 {{ g.dFont }};color:{{ g.lc }};text-wrap:balance">{{ g.line }}</div>
+</div>
+</div></sc-if>
+</div></sc-for>
+
+<sc-for list="{{ marks }}" as="m" hint-placeholder-count="0"><div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;width:{{ m.w }}px;height:{{ m.h }}px;border-radius:{{ m.r }}px;border:2px dashed {{ m.c }};box-sizing:border-box;z-index:6"></div><div style="position:absolute;left:{{ m.lx }}px;top:{{ m.ly }}px;padding:4px 8px;border-radius:8px;background:#5B3A21;color:#FFF4E0;font:800 11px/1 'Nunito',sans-serif;white-space:nowrap;z-index:7">{{ m.t }}</div></sc-for>
+
+<sc-if value="{{ pickerOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:{{ pickerY }}px;padding:16px;border-radius:26px;background:#F4EFE9;box-shadow:inset 0 0 0 1.5px rgba(60,40,20,.1);z-index:3;font-family:'Roboto',sans-serif">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:url(store/app-icon-180.png) center/cover"></div><div><div style="font:700 15px/1.2 'Roboto',sans-serif;color:#1F1A16">Nesty: Doll Sort</div><div style="font:500 12px/1.3 'Roboto',sans-serif;color:#5E554C">2 widgets</div></div></div>
+<div style="margin-top:14px;font:700 14px/1.2 'Roboto',sans-serif;color:#1F1A16">Daily puzzle</div>
+<div style="margin-top:3px;font:500 12.5px/1.35 'Roboto',sans-serif;color:#5E554C">Your streak and today’s puzzle at a glance.</div>
+<div style="margin-top:6px;font:500 12px/1 'Roboto',sans-serif;color:#7A7068">2 × 2 · 4 × 2</div>
+</div></sc-if>
+
+<sc-if value="{{ iosBar }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 34px 0 40px;box-sizing:border-box;font:700 16px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:24px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.8"><div style="width:80%;height:100%;background:currentColor;border-radius:2px"></div></div></div><div style="position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#120B06;z-index:41"></div><div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:42"></div></sc-if>
+<sc-if value="{{ andBar }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-sizing:border-box;font:500 14px 'Roboto',sans-serif;color:#FFFFFF;z-index:40"><span>9:41</span><span style="font-family:'Material Symbols Rounded';font-size:18px;font-variation-settings:'FILL' 1">battery_full</span></div><div style="position:absolute;left:50%;top:12px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#0B0806;z-index:41"></div><div style="position:absolute;left:50%;bottom:10px;width:108px;height:4px;margin-left:-54px;border-radius:2px;background:rgba(255,255,255,.85);z-index:42"></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ios&quot;,&quot;iosStates&quot;,&quot;iosLooks&quot;,&quot;android&quot;,&quot;androidLooks&quot;,&quot;previews&quot;],&quot;default&quot;:&quot;ios&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const R = Math.round;
+const FRED = "'Fredoka',sans-serif", NUN = "'Nunito',sans-serif", SANS = "'Roboto',sans-serif", SFR = "ui-rounded,'SF Pro Rounded','Fredoka',sans-serif";
+const CREAM = 'linear-gradient(180deg,#FBEAD0,#F4D9AE)';
+const DOLL_D = 'M12 1.5C16.4 1.5 19 4.8 19 8.8 19 10.6 18.5 12 17.7 13.2 20.5 15.4 22 18.8 22 22.5 22 28 17.5 31 12 31 6.5 31 2 28 2 22.5 2 18.8 3.5 15.4 6.3 13.2 5.5 12 5 10.6 5 8.8 5 4.8 7.6 1.5 12 1.5ZM12 5.2C9.9 5.2 8.3 6.8 8.3 8.9 8.3 11 9.9 12.6 12 12.6 14.1 12.6 15.7 11 15.7 8.9 15.7 6.8 14.1 5.2 12 5.2Z';
+const FLAME_D = 'M24 3.5C29.6 11.2 38.5 17.6 38.5 29.2 38.5 37.9 32 44.5 24 44.5 16 44.5 9.5 37.9 9.5 29.2 9.5 22.4 13.2 17.6 16.6 13.6 17.2 18.6 19.4 21.3 22 22.4 20.8 15.8 21.8 9.2 24 3.5Z';
+const svgUrl = (vb, d, fill) => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '"><path fill-rule="evenodd" fill="' + fill + '" d="' + d + '"/></svg>') + '")';
+const doll = c => svgUrl('0 0 24 32', DOLL_D, c), flameTint = c => svgUrl('0 0 48 48', FLAME_D, c);
+const DOLLS = ['#2F3E8F', '#F2893B', '#46A758', '#3E8EDE', '#A0673C'].map(doll);
+const THEME = {
+  light: { bg: 'linear-gradient(180deg,#FFF9EE,#FCEBD0)', tc: '#5B3A21', nc: '#5B3A21', sc: '#8A5B3A', lc: '#6E4526', div: 'rgba(138,91,58,.18)', unlit: 'ui/widget/flame_unlit.svg', dolls: DOLLS },
+  dark: { bg: 'linear-gradient(180deg,#3A2414,#24150B)', tc: '#FFF4E0', nc: '#FFF4E0', sc: '#E3C9A4', lc: '#F6E2C2', div: 'rgba(255,236,205,.18)', unlit: 'ui/widget/flame_unlit_dark.svg', dolls: DOLLS },
+  tinted: { bg: 'rgba(255,255,255,.14)', tc: 'rgba(255,255,255,.92)', nc: '#FFD9A0', sc: 'rgba(255,255,255,.7)', lc: 'rgba(255,255,255,.92)', div: 'rgba(255,255,255,.22)', mask: true, ac: flameTint('#FFD9A0'), dimAc: flameTint('rgba(255,217,160,.45)'), dolls: DOLLS.map(() => doll('rgba(255,255,255,.7)')) },
+  standby: { bg: '#000000', tc: '#FFF4E0', nc: '#FFF4E0', sc: '#C9B49A', lc: '#F6E2C2', div: 'rgba(255,236,205,.16)', unlit: 'ui/widget/flame_unlit_dark.svg', dolls: DOLLS },
+};
+const STATE = {
+  ready: { num: '4', lit: false, label: 'day streak', line: 'Today’s puzzle is ready' },
+  solved: { num: '5', lit: true, label: 'day streak', line: 'Solved. See you tomorrow.' },
+  paused: { num: '4', lit: false, label: 'day streak · resting', line: 'Today’s puzzle is ready' },
+  zero: { num: '', lit: false, label: 'Your first flame', line: 'Today’s puzzle is ready' },
+  locked: { lock: true, line: 'Your first daily puzzle opens after Level 2.' },
+};
+function widget(o) {
+  const t = THEME[o.theme || 'light'], st = STATE[o.state || 'ready'], ios = o.os !== 'android', med = o.size === 'medium';
+  const W = med ? (ios ? 338 : 348) : (ios ? 158 : 164), H = ios ? 158 : 164;
+  const flame = st.lit ? 'ui/widget/flame_lit.svg' : t.unlit;
+  return { id: o.id || '', x: o.x, y: o.y, k: o.k || 1, w: W, h: H, r: ios ? 22 : 24, pad: 16, bg: t.bg, sh: o.theme === 'tinted' ? 'inset 0 0 0 1px rgba(255,255,255,.18)' : o.theme === 'standby' ? 'none' : '0 6px 16px rgba(40,20,10,.18)',
+    small: !med, medium: med, lockOn: !!st.lock, streakOn: !st.lock, markOp: o.theme === 'tinted' ? .8 : 1, flameImg: !t.mask, flameMask: !!t.mask, flame, ac: st.lit ? t.ac : t.dimAc, numOn: !!st.num, num: st.num || '', label: st.label || '',
+    labelMt: st.num ? '4px' : 'auto', dolls: t.dolls, line: st.line, title: st.lock ? 'Daily puzzle' : 'Thursday’s puzzle', subOn: !st.lock, leftW: st.lock ? 64 : 104,
+    tc: t.tc, nc: t.nc, sc: t.sc, lc: t.lc, div: t.div, dFont: ios ? FRED : SANS, bFont: ios ? NUN : SANS };
+}
+const WALL_IOS = 'linear-gradient(165deg,#F7D2A6 0%,#EDA889 46%,#C27C8A 100%)', WALL_AND = 'linear-gradient(170deg,#7FB3B0 0%,#4F8A93 50%,#33606E 100%)';
+const icons = (rows, y0, round, s = 60) => { const out = []; for (let r = 0; r < rows; r++) for (let c = 0; c < 4; c++) out.push({ x: 27 + c * 88, y: y0 + r * 98, s, r: round ? '50%' : '15px', lw: 34, bg: ['rgba(255,255,255,.55)', 'rgba(255,244,230,.5)', 'rgba(255,255,255,.42)', 'rgba(255,236,220,.5)'][(r + c) % 4] }); return out; };
+const SCENES = ['ios', 'iosStates', 'iosLooks', 'android', 'androidLooks', 'previews'];
+
+class Component extends DCLogic {
+  renderVals() {
+    const sp = this.props.scene;
+    const s = SCENES.includes(sp) ? sp : 'ios';
+    const out = { bg: CREAM, apps: [], dockOn: false, isSheet: false, shKicker: '', shTitle: '', stages: [], caps: [], notes: [], widgets: [], marks: [], pickerOn: false, pickerY: 0, iosBar: true, andBar: false, sbc: '#3A2414', hi: 'rgba(40,20,8,.75)' };
+    if (s === 'ios') {
+      Object.assign(out, { bg: WALL_IOS, sbc: '#FFFFFF', hi: 'rgba(255,255,255,.85)', dockOn: true, apps: [...icons(2, 444, false), ...[0, 1, 2, 3].map(c => ({ x: 27 + c * 88, y: 752, s: 60, r: '15px', lw: 0, bg: 'rgba(255,255,255,.5)' }))] });
+      out.widgets = [widget({ x: 27, y: 70, size: 'small', state: 'ready' }), widget({ x: 205, y: 70, size: 'small', state: 'solved' }), widget({ x: 27, y: 254, size: 'medium', state: 'ready' })];
+      out.caps = [{ x: 27, y: 232, id: '', t: 'systemSmall 158 × 158 · ready and solved', col: '#FFFFFF' }, { x: 27, y: 416, id: '', t: 'systemMedium 338 × 158 · ready', col: '#FFFFFF' }];
+    }
+    if (s === 'iosStates') {
+      Object.assign(out, { isSheet: true, shKicker: '14.4 · Widget · iOS light', shTitle: 'The five states' });
+      const L = [['14.4a', 'ready', 'Ready · the number and an unlit flame'], ['14.4b', 'solved', 'Solved · the flame is lit'], ['14.4c', 'paused', 'Paused · the number kept, the flame unlit, no “missed”'], ['14.4d', 'zero', 'No streak yet · no number'], ['14.4e', 'locked', 'Before Level 2 · opens 12.14']];
+      L.forEach(([id, st, t], i) => { const y = 132 + i * 138; out.caps.push({ x: 20, y, id, t, col: '#8A5B3A' }); out.widgets.push(widget({ x: 20, y: y + 20, k: .62, size: 'small', state: st }), widget({ x: 134, y: y + 20, k: .62, size: 'medium', state: st })); });
+    }
+    if (s === 'iosLooks') {
+      Object.assign(out, { isSheet: true, shKicker: '14.4 · Widget · iOS looks', shTitle: 'Dark, tinted, StandBy' });
+      const L = [['dark', 'Dark · walnut container, cream type', '#2A1C14', 'paused'], ['tinted', 'iOS 18 tinted · the flame and number accented', 'linear-gradient(165deg,#5D4B3E,#2E2620)', 'solved'], ['standby', 'iOS 17 container background removed (StandBy)', '#000000', 'ready']];
+      L.forEach(([th, t, sbg, st], i) => { const y = 132 + i * 172; out.caps.push({ x: 20, y, id: th, t, col: '#8A5B3A' }); out.stages.push({ y: y + 20, h: 136, bg: sbg }); out.widgets.push(widget({ x: 30, y: y + 36, k: .66, size: 'small', theme: th, state: st }), widget({ x: 140, y: y + 36, k: .66, size: 'medium', theme: th, state: st })); });
+      out.notes = [{ y: 650, title: 'How each look is built', t: 'Draw the cream or walnut gradient inside containerBackground(for: .widget), so iOS 17 can drop it in StandBy. In tinted mode mark the flame and the number widgetAccentable(); the flame then draws as one tint (flame_lit.svg as a template), the dolls go desaturated, and the background is the system’s.' }];
+    }
+    if (s === 'android') {
+      Object.assign(out, { bg: WALL_AND, iosBar: false, andBar: true, apps: [...icons(1, 604, true, 58), ...[0, 1, 2, 3].map(c => ({ x: 28 + c * 88, y: 744, s: 58, r: '50%', lw: 0, bg: 'rgba(255,255,255,.5)' }))] });
+      out.widgets = [widget({ x: 21, y: 64, os: 'android', size: 'small', state: 'ready' }), widget({ x: 205, y: 64, os: 'android', size: 'small', state: 'paused' }), widget({ x: 21, y: 272, os: 'android', size: 'medium', state: 'ready' })];
+      out.caps = [{ x: 21, y: 240, id: '', t: '2 × 2 · ready and paused', col: '#FFFFFF' }, { x: 21, y: 448, id: '', t: '4 × 2 · ready', col: '#FFFFFF' }];
+      out.marks = [{ x: 21, y: 476, w: 110, h: 110, r: 16, c: 'rgba(255,255,255,.85)', lx: 140, ly: 520, t: '110 × 110 dp: the smallest size' }];
+    }
+    if (s === 'androidLooks') {
+      Object.assign(out, { isSheet: true, shKicker: '14.4 · Widget · Android', shTitle: 'Light, dark, radius, picker', iosBar: false, andBar: false });
+      const L = [['light', 'Light · solved · the system corner radius', '#E9E1D6', 'solved'], ['dark', 'Dark · paused', '#1E1814', 'paused']];
+      L.forEach(([th, t, sbg, st], i) => { const y = 132 + i * 150; out.caps.push({ x: 20, y, id: th, t, col: '#8A5B3A' }); out.stages.push({ y: y + 20, h: 118, bg: sbg }); out.widgets.push(widget({ x: 30, y: y + 32, k: .58, os: 'android', size: 'small', theme: th, state: st }), widget({ x: 137, y: y + 32, k: .63, os: 'android', size: 'medium', theme: th, state: st })); });
+      Object.assign(out, { pickerOn: true, pickerY: 438 });
+      out.widgets.push(widget({ id: 'p22', x: 32, y: 588, k: .58, os: 'android', size: 'small', state: 'ready' }), widget({ id: 'p42', x: 137, y: 588, k: .63, os: 'android', size: 'medium', state: 'ready' }));
+      out.caps.push({ x: 20, y: 418, id: 'picker', t: 'The widget picker and its previews', col: '#8A5B3A' });
+      out.notes = [{ y: 706, title: 'Sizes and corners', t: 'One provider with responsive layouts: under 250 dp wide the 2 × 2 layout, from 250 the 4 × 2. minWidth/minHeight 110, minResizeWidth/Height 110, maxResizeHeight 2 cells, resizeMode horizontal|vertical. Corners: the system radius on 12+ (clipToOutline), 16 dp before.' }];
+    }
+    if (s === 'previews') {
+      Object.assign(out, { bg: '#FFFFFF', iosBar: false });
+      out.widgets = [widget({ id: 'p22', x: 20, y: 20, os: 'android', size: 'small', state: 'ready' }), widget({ id: 'p42', x: 20, y: 210, os: 'android', size: 'medium', state: 'ready' }), widget({ id: 'pios', x: 20, y: 400, size: 'small', state: 'ready' }), widget({ id: 'piosm', x: 20, y: 580, size: 'medium', state: 'ready' })];
+    }
+    return out;
+  }
+}
+</script>
+</body>
+</html>

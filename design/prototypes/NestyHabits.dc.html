@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&family=Baloo+2:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,1,0&display=block" rel="stylesheet"><style>a{color:#C4631E}a:hover{color:#A94F12}</style></helmet>
+<div style="position:relative;width:390px;height:{{ frameH }}px;border-radius:{{ frameR }};overflow:hidden;background:{{ bg }};box-shadow:0 0 0 10px #2A1A10,0 24px 48px rgba(60,25,5,.35);flex:none;font-family:'Nunito',sans-serif;color:#5B3A21">
+
+<sc-if value="{{ homeTall }}" hint-placeholder-val="{{ false }}"><dc-import name="NestyHub" scene="home" gift="ready" coins="830" dolls="{{ dolls }}" daily="{{ dailySt }}" hint-size="390px,844px" style="position:absolute;left:0;top:0"></dc-import></sc-if>
+<sc-if value="{{ homeShort }}" hint-placeholder-val="{{ false }}"><dc-import name="NestyHub" scene="homeShort" gift="ready" coins="830" dolls="{{ dolls }}" daily="{{ dailySt }}" hint-size="390px,693px" style="position:absolute;left:0;top:0"></dc-import></sc-if>
+<sc-if value="{{ isBoard }}" hint-placeholder-val="{{ false }}"><dc-import name="NestyBoard" scene="daily" lvl="10 Oct" past="{{ true }}" hint-size="390px,844px" style="position:absolute;left:0;top:0"></dc-import></sc-if>
+
+<sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}"><dc-import name="NestyBoard" scene="wonDaily" bare="{{ true }}" lvl="10 Oct" past="{{ true }}" hint-size="390px,844px" style="position:absolute;left:0;top:0"></dc-import>
+<div style="position:absolute;inset:0;background:rgba(60,30,10,.55);z-index:30"></div>
+<div style="position:absolute;inset:0;z-index:31">
+<sc-for list="{{ confetti }}" as="k" hint-placeholder-count="0"><div style="position:absolute;left:{{ k.x }}px;top:{{ k.y }}px;width:{{ k.w }}px;height:{{ k.h }}px;border-radius:{{ k.br }};background:{{ k.bg }};transform:rotate({{ k.r }}deg)"></div></sc-for>
+<div style="position:absolute;left:44px;right:44px;top:118px;height:64px">
+<div style="position:absolute;left:-16px;top:16px;width:48px;height:44px;background:#C4631E;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,14px 50%)"></div><div style="position:absolute;right:-16px;top:16px;width:48px;height:44px;background:#C4631E;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 50%,100% 100%,0 100%)"></div>
+<div style="position:absolute;inset:0 6px 8px;border-radius:14px;background:linear-gradient(180deg,#F9A964,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 6px 0 #B8561A;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:700 28px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">Puzzle solved!</div>
+</div>
+<div style="position:absolute;left:10px;right:10px;top:350px;height:30px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 30px"></div>
+<sc-for list="{{ hoppers }}" as="d" hint-placeholder-count="0"><div style="position:absolute;left:{{ d.x }}px;top:{{ d.y }}px;width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat"></div></sc-for>
+<div style="position:absolute;left:0;right:0;top:404px;display:flex;justify-content:center"><div style="display:flex;align-items:center;gap:10px;padding:10px 20px 10px 10px;border-radius:26px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 5px 0 #D8B07A;font:700 28px/1 'Fredoka',sans-serif;color:#5B3A21;font-variant-numeric:tabular-nums"><div style="width:38px;height:38px;border-radius:50%;background:#F6E2C2;box-shadow:inset 0 -3px 0 rgba(150,100,50,.25);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:24px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600">route</div>Moves 18</div></div>
+<div style="position:absolute;left:28px;right:28px;top:484px;padding:12px 16px 12px 12px;border-radius:22px;background:rgba(255,249,236,.96);box-shadow:0 5px 0 #D8B07A;display:flex;align-items:center;gap:12px"><div style="width:52px;height:52px;flex:none;border-radius:16px;background:#FFE7D0;box-shadow:inset 0 0 0 2px #F3B98C;display:flex;align-items:center;justify-content:center;font:700 22px/1 'Fredoka',sans-serif;color:#A94F12">10</div><div style="flex:1;min-width:0"><div style="font:700 20px/1.1 'Fredoka',sans-serif;color:#5B3A21">Saturday 10 October</div><div style="margin-top:3px;font:700 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">Played later, just for fun.</div></div></div>
+<div style="position:absolute;left:28px;right:28px;top:630px;height:58px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:700 21px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)">Back to Daily</div>
+</div></sc-if>
+
+<sc-if value="{{ isDaily }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:{{ sy }}px;height:1600px;z-index:2">
+<sc-if value="{{ stLit }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:16px;right:16px;top:{{ yStreak }}px;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:24px;background:linear-gradient(180deg,#FFB27A,#F2702B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #B8501A">
+<div style="width:64px;height:64px;flex:none;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:46px;color:#FFF6E6;font-variation-settings:'FILL' 1">local_fire_department</div>
+<div style="flex:1;min-width:0"><div style="font:700 36px/1 'Fredoka',sans-serif;color:#FFFFFF">4 days</div><div style="margin-top:4px;font:700 14px/1.25 'Nunito',sans-serif;color:#FFEBDA">Play today to keep your streak</div></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:14px;background:#DCEFFF;box-shadow:0 3px 0 #9CC4EA;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#3E8EDE;font-variation-settings:'FILL' 1,'wght' 600">ac_unit</span><span style="font:700 11px/1 'Fredoka',sans-serif;color:#326497;white-space:nowrap">1 freeze</span></div>
+</div></sc-if>
+<sc-if value="{{ stZero }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:{{ yStreak }}px;display:flex;align-items:center;gap:12px;padding:14px;border-radius:24px;background:#FFF9EE;box-shadow:inset 0 2px 0 #FFFFFF,0 6px 0 #D8B07A">
+<div style="width:56px;height:56px;flex:none;border-radius:50%;background:linear-gradient(180deg,#F1E3CC,#DCC6A4);box-shadow:0 3px 0 #B99A7A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:34px;color:#9A6A44;font-variation-settings:'FILL' 1">local_fire_department</div>
+<div style="flex:1;min-width:0;font:700 17px/1.25 'Fredoka',sans-serif;color:#5B3A21;text-wrap:pretty">Solve today’s puzzle to light your first flame.</div>
+</div></sc-if>
+<div style="position:absolute;left:16px;right:16px;top:{{ yStrip }}px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+<sc-for list="{{ strip }}" as="d" hint-placeholder-count="7"><div style="height:{{ d.hgt }}px;border-radius:16px;background:{{ d.bg }};box-shadow:{{ d.sh }};display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0;box-sizing:border-box;transform:translateY({{ d.lift }}px)"><span style="font:700 10.5px/1 'Fredoka',sans-serif;color:{{ d.lc }}">{{ d.label }}</span><div style="width:28px;height:28px;border-radius:50%;background:{{ d.dot }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:19px;color:{{ d.ic }};font-variation-settings:'FILL' 1,'wght' 700">{{ d.icon }}</div><span style="font:700 13px/1 'Fredoka',sans-serif;color:{{ d.lc }}">{{ d.n }}</span></div></sc-for>
+</div>
+<div style="position:absolute;left:16px;right:16px;top:{{ yChest }}px;display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:22px;background:rgba(255,249,236,.9);box-shadow:0 3px 0 #D8B07A">
+<div style="position:relative;width:62px;height:50px;flex:none"><div style="position:absolute;left:4px;right:4px;top:18px;bottom:0;border-radius:6px 6px 10px 10px;background:linear-gradient(180deg,#C98A4E,#8A5429);box-shadow:inset 0 0 0 3px #E8B94A"></div><div style="position:absolute;left:2px;right:2px;top:4px;height:20px;border-radius:14px 14px 4px 4px;background:linear-gradient(180deg,#D99A5A,#A56A34);box-shadow:inset 0 0 0 3px #E8B94A"></div><div style="position:absolute;left:50%;top:16px;width:12px;height:14px;margin-left:-6px;border-radius:3px;background:#F5C518;box-shadow:0 0 0 2px #8C5E12"></div></div>
+<div style="flex:1;min-width:0"><div style="font:700 16px/1.1 'Fredoka',sans-serif">Day 7 chest · 300 coins</div><div style="margin-top:2px;font:600 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">{{ chestSub }}</div></div>
+</div>
+<div style="position:absolute;left:16px;right:16px;top:{{ yPuzzle }}px;border-radius:26px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 6px 0 #D8B07A;padding:16px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 20px/1 'Fredoka',sans-serif">{{ puzzleTitle }}</span><span style="padding:5px 9px;border-radius:9px;background:#F1E1C6;font:700 12px/1 'Fredoka',sans-serif;color:#7A5234">5 colors · Hard</span></div>
+<div style="position:relative;height:120px;border-radius:16px;background:url(backgrounds/ch3-seaside-market.svg) center 42%/cover,#F3E6CF;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:6px;height:22px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 22px"></div><div style="position:absolute;left:0;right:0;bottom:20px;display:flex;justify-content:space-around;align-items:flex-end;padding:0 14px"><sc-for list="{{ todayDolls }}" as="d" hint-placeholder-count="5"><div style="width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat"></div></sc-for></div></div>
+<div style="height:60px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;gap:10px;color:#FFFFFF;font:700 22px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)"><div style="width:0;height:0;border-left:16px solid #FFFFFF;border-top:10px solid transparent;border-bottom:10px solid transparent"></div>Play<span style="margin-left:4px;display:flex;align-items:center;gap:4px;padding:5px 9px 5px 5px;border-radius:12px;background:rgba(255,255,255,.22);font:700 15px/1 'Fredoka',sans-serif;text-shadow:none"><span style="width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B)"></span>50</span></div>
+</div>
+</div></sc-if>
+
+<sc-if value="{{ monthsOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ mbL }}px;right:{{ mbL }}px;top:{{ mbY }}px;display:flex;flex-direction:column;gap:14px;z-index:4">
+<sc-for list="{{ months }}" as="m" hint-placeholder-count="1"><div style="display:flex;flex-direction:column;gap:6px">
+<sc-if value="{{ m.capOn }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:baseline;gap:8px;padding-left:4px"><span style="font:800 11px/1 'Nunito',sans-serif;color:#C4631E;letter-spacing:.06em">{{ m.capId }}</span><span style="font:800 12px/1 'Nunito',sans-serif;color:#8A5B3A">{{ m.cap }}</span></div></sc-if>
+<div style="position:relative;height:{{ m.h }}px;overflow:hidden;border-radius:26px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 6px 0 #D8B07A;padding:{{ m.padT }}px 10px 0;box-sizing:border-box">
+<div style="height:{{ m.hdH }}px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font:700 {{ m.titleFs }}px/1 {{ m.titleFont }};color:#5B3A21;white-space:nowrap">{{ m.title }}</span>
+<sc-if value="{{ m.chipPrev }}" hint-placeholder-val="{{ false }}"><div style="height:30px;padding:0 12px 0 4px;border-radius:15px;background:#FFFDF7;box-shadow:inset 0 2px 0 #FFFFFF,0 3px 0 #D8B07A;display:flex;align-items:center;gap:1px;font:700 14px/1 'Fredoka',sans-serif;color:#6E4526;white-space:nowrap"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">chevron_left</span>{{ m.chip }}</div></sc-if>
+<sc-if value="{{ m.chipNext }}" hint-placeholder-val="{{ false }}"><div style="height:30px;padding:0 4px 0 12px;border-radius:15px;background:#FFFDF7;box-shadow:inset 0 2px 0 #FFFFFF,0 3px 0 #D8B07A;display:flex;align-items:center;gap:1px;font:700 14px/1 'Fredoka',sans-serif;color:#6E4526;white-space:nowrap">{{ m.chip }}<span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">chevron_right</span></div></sc-if>
+</div>
+<sc-if value="{{ m.hintOn }}" hint-placeholder-val="{{ true }}"><div style="margin-top:{{ m.hintMt }}px;height:{{ m.hintH }}px;padding:0 6px;font:700 {{ m.hintFs }}px/{{ m.hintH }}px 'Nunito',sans-serif;color:#8A5B3A;white-space:nowrap;overflow:hidden">{{ m.hint }}</div></sc-if>
+<div style="margin-top:{{ m.wdMt }}px;height:{{ m.wdH }}px;display:grid;grid-template-columns:repeat(7,{{ m.pitch }}px);justify-content:center">
+<sc-for list="{{ m.wd }}" as="w" hint-placeholder-count="7"><div style="text-align:center;font:800 {{ m.wdFs }}px/{{ m.wdH }}px {{ m.wdFont }};color:#9A6A44;white-space:nowrap">{{ w }}</div></sc-for>
+</div>
+<div style="margin-top:{{ m.gridMt }}px;display:grid;grid-template-columns:repeat(7,{{ m.pitch }}px);grid-auto-rows:{{ m.rowH }}px;justify-content:center">
+<sc-for list="{{ m.cells }}" as="c" hint-placeholder-count="35"><div style="display:flex;justify-content:center;align-items:flex-start">
+<div style="position:relative;width:{{ m.face }}px;height:{{ m.face }}px;border-radius:{{ m.fr }}px;background:{{ c.bg }};box-shadow:{{ c.sh }};transform:translateY({{ c.ty }}px);display:flex;align-items:center;justify-content:center;padding-bottom:{{ c.pb }}px;box-sizing:border-box;color:{{ c.col }};font:{{ c.fw }} {{ m.fs }}px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums">{{ c.n }}<sc-if value="{{ c.gOn }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;right:0;bottom:3px;text-align:center;font-family:'Material Symbols Rounded';font-size:11px;line-height:1;color:#3E8EDE;font-variation-settings:'FILL' 1,'wght' 600">ac_unit</span></sc-if></div>
+</div></sc-for>
+</div>
+<sc-if value="{{ m.legendOn }}" hint-placeholder-val="{{ true }}"><div style="margin-top:{{ m.legMt }}px;height:16px;padding:0 6px;display:flex;align-items:center;gap:14px">
+<sc-for list="{{ m.legend }}" as="g" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:6px;font:800 11.5px/1 'Nunito',sans-serif;color:#8A5B3A;white-space:nowrap"><span style="width:14px;height:14px;border-radius:5px;background:{{ g.bg }};box-shadow:{{ g.sh }}"></span>{{ g.t }}</div></sc-for>
+</div></sc-if>
+<sc-if value="{{ m.fadeOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;bottom:0;height:30px;background:linear-gradient(180deg,rgba(252,235,208,0),#FCEBD0)"></div></sc-if>
+</div>
+</div></sc-for>
+</div></sc-if>
+
+<sc-if value="{{ pastOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:{{ pastY }}px;border-radius:26px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 6px 0 #D8B07A;padding:16px;display:flex;flex-direction:column;gap:14px;z-index:4">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 20px/1 'Fredoka',sans-serif">Sat 10 Oct</span><span style="padding:5px 9px;border-radius:9px;background:#F1E1C6;font:700 12px/1 'Fredoka',sans-serif;color:#7A5234">5 colors · Hard</span></div>
+<div style="position:relative;height:120px;border-radius:16px;background:url(backgrounds/ch3-seaside-market.svg) center 42%/cover,#F3E6CF;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:6px;height:22px;background:url(skins/classic/board/shelf-plank.svg) repeat-x 0 0/auto 22px"></div><div style="position:absolute;left:0;right:0;bottom:20px;display:flex;justify-content:space-around;align-items:flex-end;padding:0 14px"><sc-for list="{{ pastDolls }}" as="d" hint-placeholder-count="5"><div style="width:{{ d.w }}px;height:{{ d.h }}px;background:{{ d.bgi }} center bottom/contain no-repeat"></div></sc-for></div>
+<sc-if value="{{ pastSolved }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(255,249,236,.72);display:flex;align-items:center;justify-content:center"><div style="display:flex;align-items:center;gap:8px;padding:9px 16px 9px 9px;border-radius:22px;background:#46A758;box-shadow:0 4px 0 #2F7A3E;color:#FFFFFF;font:700 18px/1 'Fredoka',sans-serif"><span style="width:28px;height:28px;border-radius:50%;background:#FFFFFF;color:#46A758;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:20px;font-variation-settings:'FILL' 1,'wght' 600">check</span>Played later</div></div></sc-if>
+</div>
+<sc-if value="{{ pastPlay }}" hint-placeholder-val="{{ true }}"><div style="height:60px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;gap:10px;color:#FFFFFF;font:700 22px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)"><div style="width:0;height:0;border-left:16px solid #FFFFFF;border-top:10px solid transparent;border-bottom:10px solid transparent"></div>Play</div></sc-if>
+<sc-if value="{{ pastSolved }}" hint-placeholder-val="{{ false }}"><div style="height:54px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #FFFFFF,0 5px 0 #D8B07A;display:flex;align-items:center;justify-content:center;gap:8px;color:#6E4526;font:700 18px/1 'Fredoka',sans-serif"><span style="font-family:'Material Symbols Rounded';font-size:22px;font-variation-settings:'FILL' 1,'wght' 600">replay</span>Play again</div></sc-if>
+<div style="margin-top:-2px;text-align:center;font:700 13px/1.3 'Nunito',sans-serif;color:#8A5B3A">Just for fun. Your streak stays as it is.</div>
+</div></sc-if>
+
+<sc-if value="{{ bandOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:{{ bandH }}px;background:{{ bandBg }};z-index:9"></div></sc-if>
+<sc-if value="{{ hdrOn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:{{ hdrY }}px;height:48px;display:flex;align-items:center;gap:12px;z-index:10">
+<div style="width:46px;height:46px;flex:none;border-radius:17px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 5px 0 #D8B07A,0 8px 12px rgba(90,50,20,.18);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:26px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 700">arrow_back</div>
+<div style="flex:1;min-width:0;font:700 26px/1 'Fredoka',sans-serif;color:#5B3A21">Daily</div>
+<div style="height:40px;padding:0 14px 0 6px;border-radius:20px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 4px 0 #D8B07A;display:flex;align-items:center;gap:7px;font:700 16px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums"><div style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#F2C230 50%,#B8860B);box-shadow:inset 0 -2px 0 rgba(120,70,0,.35)"></div>{{ coins }}</div>
+</div></sc-if>
+
+<sc-if value="{{ isLocked }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;top:200px;border-radius:32px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 7px 0 #D8B07A,0 14px 24px rgba(90,50,20,.16);padding:30px 22px 22px;display:flex;flex-direction:column;align-items:center;text-align:center">
+<div style="width:76px;height:76px;border-radius:24px;background:linear-gradient(180deg,#FFE7A0,#F5C518);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 5px 0 #C9960A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:44px;color:#8C5E12;font-variation-settings:'FILL' 1,'wght' 600">extension</div>
+<div style="margin-top:20px;font:700 26px/1.15 'Fredoka',sans-serif;color:#5B3A21;text-wrap:balance">Your first daily puzzle is close</div>
+<div style="margin-top:10px;font:600 16px/1.45 'Nunito',sans-serif;color:#7A5234;text-wrap:pretty">Win Level 2 and a new puzzle will wait here every day, the same for everyone.</div>
+<div style="margin-top:24px;align-self:stretch;height:58px;border-radius:22px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 6px 0 #C4631E;display:flex;align-items:center;justify-content:center;gap:10px;color:#FFFFFF;font:700 21px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.35)"><div style="width:0;height:0;border-left:14px solid #FFFFFF;border-top:9px solid transparent;border-bottom:9px solid transparent"></div>Play Level 2</div>
+</div></sc-if>
+
+<sc-if value="{{ isSheet }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:20px;right:20px;top:68px;display:flex;flex-direction:column;gap:6px;z-index:3"><div style="font:700 12px/1 'Nunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#9A6A44">{{ shKicker }}</div><div style="font:700 28px/1.05 'Fredoka',sans-serif">{{ shTitle }}</div></div></sc-if>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="0"><div style="position:absolute;left:16px;right:16px;top:{{ r.y }}px;height:{{ r.h }}px;border-radius:20px;background:#FFFDF7;box-shadow:inset 0 2px 0 #FFFFFF,0 4px 0 #D8B07A;z-index:3">
+<sc-if value="{{ r.side }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:12px;top:10px;bottom:10px;width:118px;border-radius:14px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 0 0 1.5px #EAD3B0"></div><div style="position:absolute;left:144px;right:12px;top:12px"><div style="display:flex;align-items:baseline;gap:6px"><span style="font:800 11px/1 'Nunito',sans-serif;color:#C4631E">{{ r.id }}</span><span style="font:700 15px/1.15 'Fredoka',sans-serif">{{ r.title }}</span></div><div style="margin-top:4px;font:700 12px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ r.note }}</div></div></sc-if>
+<sc-if value="{{ r.stack }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:14px;right:14px;top:12px;display:flex;align-items:baseline;gap:6px"><span style="font:800 11px/1 'Nunito',sans-serif;color:#C4631E">{{ r.id }}</span><span style="font:700 15px/1.15 'Fredoka',sans-serif">{{ r.title }}</span></div><div style="position:absolute;left:14px;right:14px;bottom:12px;font:700 12px/1.35 'Nunito',sans-serif;color:#8A5B3A;text-wrap:pretty">{{ r.note }}</div></sc-if>
+</div></sc-for>
+<sc-for list="{{ caps }}" as="t" hint-placeholder-count="0"><div style="position:absolute;left:{{ t.x }}px;top:{{ t.y }}px;width:{{ t.w }}px;text-align:center;font:800 11px/1 'Nunito',sans-serif;color:#9A6A44;z-index:6">{{ t.t }}</div></sc-for>
+<sc-for list="{{ samples }}" as="s" hint-placeholder-count="0"><div style="position:absolute;left:{{ s.x }}px;top:{{ s.y }}px;width:42px;height:42px;border-radius:14px;background:{{ s.bg }};box-shadow:{{ s.sh }};transform:translateY({{ s.ty }}px);display:flex;align-items:center;justify-content:center;padding-bottom:{{ s.pb }}px;box-sizing:border-box;color:{{ s.col }};font:{{ s.fw }} 16px/1 'Fredoka',sans-serif;font-variant-numeric:tabular-nums;z-index:6">{{ s.n }}<sc-if value="{{ s.gOn }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;right:0;bottom:3px;text-align:center;font-family:'Material Symbols Rounded';font-size:11px;line-height:1;color:#3E8EDE;font-variation-settings:'FILL' 1,'wght' 600">ac_unit</span></sc-if></div></sc-for>
+
+<sc-for list="{{ cards }}" as="c" hint-placeholder-count="0"><div style="position:absolute;left:{{ c.x }}px;top:{{ c.y }}px;width:{{ c.w }}px;transform:translateY({{ c.ty }}px) scale({{ c.k }});transform-origin:0 0;opacity:{{ c.op }};z-index:20">
+<div style="position:relative;min-height:84px;box-sizing:border-box;padding:12px {{ c.padR }}px 12px 12px;border-radius:24px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #FFFFFF,0 5px 0 #D8B07A,0 10px 18px rgba(90,50,20,.22);display:flex;align-items:center;gap:12px">
+<sc-if value="{{ c.discFlame }}" hint-placeholder-val="{{ true }}"><div style="position:relative;width:48px;height:48px;flex:none;border-radius:50%;background:{{ c.dBg }};box-shadow:{{ c.dSh }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:30px;color:{{ c.dC }};font-variation-settings:'FILL' 1">local_fire_department<sc-if value="{{ c.frz }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-6px;bottom:-5px;width:22px;height:22px;border-radius:50%;background:#DCEFFF;box-shadow:0 0 0 2px #FFF9EE,0 2px 0 2px #9CC4EA;display:flex;align-items:center;justify-content:center;font-size:15px;color:#3E8EDE;font-variation-settings:'FILL' 1,'wght' 600">ac_unit</span></sc-if></div></sc-if>
+<sc-if value="{{ c.discDaily }}" hint-placeholder-val="{{ false }}"><div style="width:48px;height:48px;flex:none;border-radius:15px;background:linear-gradient(180deg,#FFE7A0,#F5C518);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 3px 0 #C9960A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:28px;color:#8C5E12;font-variation-settings:'FILL' 1,'wght' 600">extension</div></sc-if>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+<div style="font:700 {{ c.fsT }}px/1.1 'Fredoka',sans-serif;color:#5B3A21;text-wrap:balance">{{ c.title }}</div>
+<div style="font:700 {{ c.fsB }}px/1.3 'Nunito',sans-serif;color:#7A5234;text-wrap:pretty">{{ c.body }}</div>
+<sc-if value="{{ c.pillStack }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-end;margin-top:8px;height:{{ c.pH }}px;padding:0 14px 0 11px;border-radius:13px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;display:flex;align-items:center;gap:7px;color:#FFFFFF;font:700 {{ c.fsP }}px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.3);white-space:nowrap"><div style="width:0;height:0;border-left:12px solid #FFFFFF;border-top:8px solid transparent;border-bottom:8px solid transparent"></div>{{ c.play }}</div></sc-if>
+</div>
+<sc-if value="{{ c.pillAbs }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;right:12px;bottom:12px;height:{{ c.pH }}px;padding:0 14px 0 11px;border-radius:13px;background:linear-gradient(180deg,#F7A15E,#F2893B);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 4px 0 #C4631E;display:flex;align-items:center;gap:7px;color:#FFFFFF;font:700 {{ c.fsP }}px/1 'Fredoka',sans-serif;text-shadow:0 2px 0 rgba(150,60,10,.3);white-space:nowrap"><div style="width:0;height:0;border-left:10px solid #FFFFFF;border-top:6.5px solid transparent;border-bottom:6.5px solid transparent"></div>{{ c.play }}</div></sc-if>
+<div style="position:absolute;right:6px;top:6px;width:28px;height:28px;border-radius:50%;background:#F6E2C2;box-shadow:inset 0 -2px 0 rgba(150,100,50,.25);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px;color:#8A5B3A;font-variation-settings:'wght' 700">close</div>
+<sc-if value="{{ c.tgt }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:-4px;top:-4px;width:48px;height:48px;border-radius:12px;border:2px dashed #C4631E;box-sizing:border-box"></div><div style="position:absolute;right:-6px;top:-30px;padding:4px 8px;border-radius:8px;background:#5B3A21;color:#FFF4E0;font:800 11px/1 'Nunito',sans-serif;white-space:nowrap">“Hide this card” · 48 dp</div></sc-if>
+</div>
+</div></sc-for>
+
+<sc-if value="{{ sbTall }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 34px 0 40px;box-sizing:border-box;font:700 16px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:24px;height:12px;border:1.5px solid currentColor;border-radius:4px;padding:1.5px;box-sizing:border-box;opacity:.7"><div style="width:80%;height:100%;background:currentColor;border-radius:2px"></div></div></div><div style="position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#120B06;z-index:41"></div><div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:{{ hi }};z-index:42"></div></sc-if>
+<sc-if value="{{ sbShort }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:20px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box;font:700 12px 'Nunito',sans-serif;color:{{ sbc }};z-index:40"><span>9:41</span><div style="width:20px;height:10px;border:1.2px solid currentColor;border-radius:3px;padding:1.2px;box-sizing:border-box;opacity:.7"><div style="width:80%;height:100%;background:currentColor;border-radius:1.5px"></div></div></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:410,&quot;height&quot;:864},&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;wFreeze&quot;,&quot;wPaused&quot;,&quot;wNew&quot;,&quot;wShort&quot;,&quot;wParts&quot;,&quot;month&quot;,&quot;monthEnd&quot;,&quot;monthShort&quot;,&quot;monthFirst&quot;,&quot;monthFirstPrev&quot;,&quot;monthLast&quot;,&quot;monthNew&quot;,&quot;monthLangs&quot;,&quot;pickStates&quot;,&quot;pastCard&quot;,&quot;pastBoard&quot;,&quot;pastWin&quot;,&quot;pastSolved&quot;,&quot;dailyLocked&quot;],&quot;default&quot;:&quot;month&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const R = Math.round, P = 'skins/classic/preview/';
+const CREAM = 'linear-gradient(180deg,#FBEAD0,#F4D9AE)';
+const LIT = 'linear-gradient(180deg,#FFB27A,#F2702B)';
+const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const WDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const FRED = "'Fredoka',sans-serif", NUN = "'Nunito',sans-serif", DEVA = "'Baloo 2','Nunito',sans-serif", JPAN = "'M PLUS Rounded 1c','Nunito',sans-serif";
+const LOC = {
+  en: { first: 1, wd: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], wdFont: NUN, titleFont: FRED, month: m => MON[m] },
+  de: { first: 1, wd: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'], wdFont: NUN, titleFont: FRED, month: m => ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'][m] },
+  ja: { first: 0, wd: ['日', '月', '火', '水', '木', '金', '土'], wdFont: JPAN, titleFont: JPAN, month: m => `${m + 1}月` },
+  hi: { first: 0, wd: ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'], wdFont: DEVA, titleFont: DEVA, month: m => ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्तूबर', 'नवंबर', 'दिसंबर'][m] },
+};
+const ST = {
+  lit: { bg: LIT, col: '#FFFFFF', fw: 700, ins: 'inset 0 2px 0 rgba(255,255,255,.3)', edge: '#B8501A' },
+  later: { bg: '#FFE7D0', col: '#A94F12', fw: 700, ins: 'inset 0 0 0 2px #F3B98C', edge: '#E3AE8C' },
+  freeze: { bg: '#E3F1FF', col: '#326497', fw: 700, ins: 'inset 0 0 0 2px #9CC4EA', edge: '#7FAEDB', g: true },
+  open: { bg: '#FFFDF7', col: '#5B3A21', fw: 600, ins: 'inset 0 2px 0 #FFFFFF', edge: '#D8B07A' },
+  blank: { bg: 'rgba(0,0,0,0)', col: '#8A5B3A', fw: 600, ins: '', edge: '' },
+  future: { bg: 'rgba(0,0,0,0)', col: '#8A5B3A', fw: 600, ins: '', edge: '' },
+  today: { bg: '#FFFDF7', col: '#C4631E', fw: 700, ins: 'inset 0 2px 0 #FFFFFF', sh: 'inset 0 2px 0 #FFFFFF,0 0 0 2.5px #F2893B,0 3.5px 0 2.5px #C4631E' },
+  todayLit: { bg: LIT, col: '#FFFFFF', fw: 700, ins: 'inset 0 2px 0 rgba(255,255,255,.3)', sh: 'inset 0 2px 0 rgba(255,255,255,.3),0 0 0 2px #FFF9EE,0 0 0 4.5px #F2893B' },
+};
+const join = (...a) => a.filter(Boolean).join(',') || 'none';
+function cell(state, win, mode, n) {
+  const st = state === 'blank' && win ? 'open' : state, s = ST[st];
+  let sh = s.sh || (win && s.edge ? join(s.ins, `0 3px 0 ${s.edge}`) : join(s.ins)), ty = 0;
+  if (mode === 'sel') { sh = join(s.ins, '0 0 0 2px #FFF9EE', '0 0 0 5px #6E4526'); ty = 2; }
+  if (mode === 'press') { sh = join(s.ins, `0 1px 0 ${s.edge}`); ty = 2; }
+  return { n: String(n), bg: s.bg, col: s.col, fw: s.fw, sh, ty, gOn: !!s.g, pb: s.g ? 9 : 0 };
+}
+const EMPTY = { n: '', bg: 'rgba(0,0,0,0)', col: '#8A5B3A', fw: 600, sh: 'none', ty: 0, gOn: false, pb: 0 };
+const DAY = 86400000;
+function cells(y, m, today, hist, first, sel) {
+  const n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(), lead = (new Date(Date.UTC(y, m, 1)).getUTCDay() - first + 7) % 7;
+  const t0 = Date.UTC(today[0], today[1], today[2]), out = [];
+  for (let i = 0; i < lead; i++) out.push(EMPTY);
+  for (let d = 1; d <= n; d++) {
+    const diff = R((t0 - Date.UTC(y, m, d)) / DAY), win = diff >= 1 && diff <= 7;
+    const state = diff === 0 ? (hist[d] === 'lit' ? 'todayLit' : 'today') : diff < 0 ? 'future' : hist[d] || 'blank';
+    out.push(cell(state, win, d === sel ? 'sel' : '', d));
+  }
+  while (out.length % 7) out.push(EMPTY);
+  return out;
+}
+const KEY = { lit: ['On the day', LIT, 'inset 0 1px 0 rgba(255,255,255,.3)'], later: ['Played later', '#FFE7D0', 'inset 0 0 0 1.5px #F3B98C'], freeze: ['Freeze', '#E3F1FF', 'inset 0 0 0 1.5px #9CC4EA'] };
+const SZ = {
+  tall: { padT: 14, hdH: 30, titleFs: 20, hintMt: 4, hintH: 17, hintFs: 13, wdMt: 12, wdH: 14, wdFs: 11, gridMt: 6, pitch: 48, face: 42, fr: 14, fs: 16, legMt: 8, padB: 14 },
+  short: { padT: 12, hdH: 28, titleFs: 18, hintMt: 3, hintH: 16, hintFs: 12, wdMt: 10, wdH: 13, wdFs: 11, gridMt: 5, pitch: 48, face: 40, fr: 13, fs: 15, legMt: 6, padB: 12 },
+  narrow: { padT: 12, hdH: 28, titleFs: 19, hintMt: 3, hintH: 16, hintFs: 12, wdMt: 10, wdH: 14, wdFs: 11, gridMt: 6, pitch: 44, face: 40, fr: 13, fs: 15, legMt: 6, padB: 12 },
+};
+function monthCard(o) {
+  const z = SZ[o.size || 'tall'], L = LOC[o.loc || 'en'], cl = cells(o.y, o.m, o.today, o.hist || {}, L.first, o.sel);
+  const rows = cl.length / 7, rowH = z.face + 4, shownRows = o.rows || rows;
+  const present = new Set(Object.entries(o.hist || {}).map(([, v]) => v));
+  const legend = o.noLegend ? [] : ['lit', 'later', 'freeze'].filter(k => present.has(k)).map(k => ({ t: KEY[k][0], bg: KEY[k][1], sh: KEY[k][2] }));
+  const hintOn = !o.noHint, legendOn = legend.length > 0 && !o.rows;
+  const wd = Array.from({ length: 7 }, (_, i) => L.wd[(i + L.first) % 7]);
+  const h = o.rows ? z.padT + z.hdH + (hintOn ? z.hintMt + z.hintH : 0) + z.wdMt + z.wdH + z.gridMt + shownRows * rowH - 4
+    : z.padT + z.hdH + (hintOn ? z.hintMt + z.hintH : 0) + z.wdMt + z.wdH + z.gridMt + rows * rowH + (legendOn ? z.legMt + 16 : 0) + z.padB;
+  return { ...z, rowH, h, title: L.month(o.m), titleFont: L.titleFont, wd, wdFont: L.wdFont, cells: cl, legend, legendOn, hintOn, hint: 'Play any of the last 7 days, just for fun.',
+    chipPrev: o.chip === 'prev', chipNext: o.chip === 'next', chip: o.chipLabel || '', capOn: !!o.cap, cap: o.cap || '', capId: o.capId || '', fadeOn: !!o.rows };
+}
+const STRIP = { base: [1, 1, 1, 1, 't', 0, 'c'], fresh: ['t', 0, 0, 0, 0, 0, 'c'] };
+const strip = key => STRIP[key].map((s, i) => {
+  const done = s === 1, today = s === 't', chest = s === 'c';
+  return { label: today ? 'Today' : 'Day', n: i + 1, hgt: today ? 104 : 96, lift: today ? -4 : 0, icon: done ? 'check' : today ? 'play_arrow' : chest ? 'redeem' : 'lock',
+    bg: today ? 'linear-gradient(180deg,#F9A964,#F2893B)' : done ? '#E3F4E6' : chest ? '#FFF1C9' : 'rgba(255,249,236,.7)',
+    sh: today ? '0 5px 0 #C4631E' : done ? 'inset 0 0 0 2px #A6DDB3' : chest ? 'inset 0 0 0 2px #E8C35C' : 'inset 0 0 0 2px #E2C9A3',
+    dot: done ? '#46A758' : today ? '#FFF6E6' : chest ? '#F5C518' : '#EAD3B0', ic: done ? '#FFFFFF' : today ? '#F2893B' : chest ? '#8C5E12' : '#B98A60', lc: today ? '#FFFFFF' : '#7A5234' };
+});
+const dolls = list => list.map(([c, h]) => ({ bgi: `url(${P}doll-${c}.svg)`, w: R(h * 2 / 3), h }));
+const TODAY_DOLLS = dolls([['midnight', 70], ['tangerine', 58], ['leaf', 84], ['sky', 50], ['cocoa', 66]]);
+const PAST_DOLLS = dolls([['grape', 74], ['sunflower', 58], ['cherry', 86], ['lagoon', 48], ['bubblegum', 66]]);
+const OCT = { 1: 'lit', 2: 'lit', 3: 'freeze', 4: 'lit', 5: 'lit', 6: 'later', 7: 'lit', 8: 'lit', 11: 'lit', 12: 'lit', 13: 'lit', 14: 'lit' };
+const OCT_LATE = { ...OCT, 15: 'lit', 16: 'lit', 18: 'lit', 19: 'lit', 20: 'later', 21: 'lit', 22: 'lit', 23: 'lit', 25: 'lit', 26: 'lit', 27: 'lit', 29: 'lit', 30: 'lit' };
+const Y = { tall: { hdr: 62, streak: 126, strip: 240, chest: 358, puzzle: 450, month: 728, bottom: 34 }, short: { hdr: 28, streak: 88, strip: 202, chest: 320, puzzle: 412, month: 690, bottom: 20 } };
+const DAILY = {
+  month: { today: [2026, 9, 15], hist: OCT, scroll: 0 },
+  monthEnd: { today: [2026, 9, 15], hist: OCT, scroll: 'end' },
+  monthShort: { today: [2026, 9, 15], hist: OCT, scroll: 'end', short: true },
+  monthFirst: { today: [2026, 10, 1], view: [2026, 10], hist: {}, scroll: 'end', chip: 'prev', chipLabel: 'October' },
+  monthFirstPrev: { today: [2026, 10, 1], view: [2026, 9], hist: { ...OCT_LATE, 31: 'lit' }, scroll: 'end', chip: 'next', chipLabel: 'November' },
+  monthLast: { today: [2026, 9, 31], hist: OCT_LATE, scroll: 'end' },
+  monthNew: { today: [2026, 9, 15], hist: {}, scroll: 'end', zero: true },
+  pastCard: { today: [2026, 9, 15], hist: OCT, scroll: 'end', sel: 10, past: 'open' },
+  pastSolved: { today: [2026, 9, 15], hist: { ...OCT, 10: 'later' }, scroll: 'end', sel: 10, past: 'solved' },
+};
+const WELCOME = {
+  freeze: { body: 'A freeze kept your flame lit. Today’s puzzle is ready.', flame: true, dBg: LIT, dSh: '0 3px 0 #B8501A', dC: '#FFF6E6', frz: true },
+  paused: { body: 'Your 4-day streak is resting. Today’s puzzle is ready.', flame: true, dBg: 'linear-gradient(180deg,#F1E3CC,#DCC6A4)', dSh: '0 3px 0 #B99A7A', dC: '#9A6A44' },
+  new: { body: 'Today’s puzzle is ready when you are.', daily: true },
+};
+const card = (v, o = {}) => { const w = WELCOME[v], fsP = o.fsP || 16, play = o.play || 'Play', pillW = 11 + 10 + 7 + R(play.length * fsP * 0.56) + 14;
+  return { x: o.x ?? 16, y: o.y ?? 198, w: o.w || 358, ty: o.ty || 0, k: o.k || 1, op: o.op ?? 1, padR: o.stack ? 40 : pillW + 22, pillAbs: !o.stack, pillStack: !!o.stack, discFlame: !!w.flame, discDaily: !!w.daily, dBg: w.dBg || '', dSh: w.dSh || '', dC: w.dC || '', frz: !!w.frz,
+    title: o.title || 'Welcome back!', body: o.body || w.body, fsT: o.fsT || 17, fsB: o.fsB || 13, fsP, pH: o.pH || 34, play, tgt: !!o.tgt }; };
+const SCENES = ['wFreeze', 'wPaused', 'wNew', 'wShort', 'wParts', 'month', 'monthEnd', 'monthShort', 'monthFirst', 'monthFirstPrev', 'monthLast', 'monthNew', 'monthLangs', 'pickStates', 'pastCard', 'pastBoard', 'pastWin', 'pastSolved', 'dailyLocked'];
+function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+
+class Component extends DCLogic {
+  renderVals() {
+    const sp = this.props.scene;
+    const s = SCENES.includes(sp) ? sp : 'month';
+    const out = { frameH: 844, frameR: '46px', bg: CREAM, homeTall: false, homeShort: false, dolls: '', dailySt: '', isBoard: false, isWin: false, isDaily: false, monthsOn: false, months: [], mbL: 16, mbY: 0, pastOn: false, pastY: 0, pastPlay: false, pastSolved: false,
+      bandOn: false, bandH: 0, bandBg: 'none', hdrOn: false, hdrY: 62, coins: '830', isLocked: false, isSheet: false, shKicker: '', shTitle: '', rows: [], caps: [], samples: [], cards: [], confetti: [], hoppers: [],
+      sbTall: true, sbShort: false, sbc: '#3A2414', hi: 'rgba(40,20,8,.75)', sy: 0, yStreak: 0, yStrip: 0, yChest: 0, yPuzzle: 0, stLit: true, stZero: false, strip: [], chestSub: '', puzzleTitle: '', todayDolls: TODAY_DOLLS, pastDolls: PAST_DOLLS };
+    if (s.startsWith('w') && s !== 'wParts') {
+      const short = s === 'wShort';
+      Object.assign(out, { homeTall: !short, homeShort: short, dolls: short ? 'off' : '0.78', dailySt: s === 'wNew' ? 'zero' : s === 'wFreeze' ? '' : 'paused', sbTall: false, frameH: short ? 693 : 844, frameR: short ? '30px' : '46px' });
+      out.cards = [card({ wFreeze: 'freeze', wPaused: 'paused', wNew: 'new', wShort: 'paused' }[s], { y: short ? 158 : 198 })];
+    }
+    if (s === 'pastBoard') Object.assign(out, { isBoard: true, sbTall: false });
+    if (s === 'dailyLocked') Object.assign(out, { isLocked: true, hdrOn: true, coins: '10' });
+    if (s === 'pastWin') {
+      const r = rnd(7), cols = ['#E5484D', '#F2893B', '#F5C518', '#46A758', '#12A594', '#3E8EDE', '#8E4EC6', '#E93D82'];
+      Object.assign(out, { isWin: true, sbc: '#FFF4E0', hi: 'rgba(255,240,215,.85)',
+        confetti: Array.from({ length: 42 }, (_, i) => { const w = 6 + R(r() * 6); return { x: R(r() * 380), y: R(60 + r() * 520), w, h: r() > .5 ? w : R(w * 1.8), br: r() > .7 ? '50%' : '2px', bg: cols[i % cols.length], r: R(r() * 180) }; }),
+        hoppers: ['grape', 'sunflower', 'cherry', 'lagoon', 'bubblegum'].map((c, i) => { const h = 88, cx = 195 + (i - 2) * 66, up = [0, 14, 4, 18, 0][i]; return { bgi: `url(${P}doll-${c}.svg)`, w: R(h * 2 / 3), h, x: R(cx - h / 3), y: R(361 - h * 742 / 768 - up) }; }) });
+    }
+    if (DAILY[s]) {
+      const d = DAILY[s], short = !!d.short, yy = Y[short ? 'short' : 'tall'], view = d.view || [d.today[0], d.today[1]];
+      const mc = monthCard({ y: view[0], m: view[1], today: d.today, hist: d.hist, sel: d.sel, chip: d.chip, chipLabel: d.chipLabel, size: short ? 'short' : 'tall' });
+      const pastH = d.past === 'solved' ? 281 : d.past ? 288 : 0, monthBottom = yy.month + mc.h + 6;
+      const pastTop = monthBottom + 12, contentBottom = (d.past ? pastTop + pastH + 6 : monthBottom) + yy.bottom;
+      const frameH = short ? 693 : 844, scroll = d.scroll === 'end' ? Math.max(0, contentBottom - frameH) : 0;
+      const wday = WDAY[new Date(Date.UTC(d.today[0], d.today[1], d.today[2])).getUTCDay()];
+      Object.assign(out, { isDaily: true, frameH, frameR: short ? '30px' : '46px', sbTall: !short, sbShort: short, sy: -scroll, yStreak: yy.streak, yStrip: yy.strip, yChest: yy.chest, yPuzzle: yy.puzzle,
+        stLit: !d.zero, stZero: !!d.zero, strip: strip(d.zero ? 'fresh' : 'base'), chestSub: d.zero ? '7 days to go, counting today' : '3 days to go, counting today', puzzleTitle: `${wday}’s puzzle`,
+        monthsOn: true, months: [mc], mbL: 16, mbY: yy.month - scroll, pastOn: !!d.past, pastY: pastTop - scroll, pastPlay: d.past === 'open', pastSolved: d.past === 'solved',
+        hdrOn: true, hdrY: yy.hdr, bandOn: scroll > 0, bandH: short ? 94 : 128,
+        bandBg: short ? 'linear-gradient(180deg,#FBEAD0 0,#FAE7CB 78px,rgba(250,231,203,0) 94px)' : 'linear-gradient(180deg,#FBEAD0 0,#FAE6C9 112px,rgba(250,230,201,0) 128px)' });
+    }
+    if (s === 'monthLangs') {
+      const base = { y: 2026, m: 9, today: [2026, 9, 15], hist: OCT, size: 'narrow', rows: 3, noHint: true };
+      Object.assign(out, { isSheet: true, shKicker: '14.2 · The month', shTitle: '360 dp · de, ja, hi', monthsOn: true, mbL: 31, mbY: 132,
+        months: [monthCard({ ...base, loc: 'de', capId: 'de', cap: 'Monday first · “Oktober” · Mo Di Mi …' }), monthCard({ ...base, loc: 'ja', capId: 'ja', cap: 'Sunday first · M PLUS Rounded 1c at 0.94' }), monthCard({ ...base, loc: 'hi', capId: 'hi', cap: 'Sunday first · Baloo 2 for Devanagari' })] });
+    }
+    if (s === 'pickStates') {
+      Object.assign(out, { isSheet: true, shKicker: '14.3 · The last 7 dailies', shTitle: 'How a day reads' });
+      const L = [
+        ['open', 'Open to play', 'One of the last 7 days, not played yet: white and raised like a button. A tap opens its card.', [cell('blank', true, '', 9)]],
+        ['lit', 'Lit', 'Solved on its own date. Inside the last 7 days it is raised too (right) and can be played again.', [cell('lit', false, '', 5), cell('lit', true, '', 12)]],
+        ['later', 'Played later', 'Solved later from this picker: a quieter peach mark. Never counts for the streak or the chest.', [cell('later', false, '', 6), cell('later', true, '', 13)]],
+        ['freeze', 'Freeze', 'A freeze covered the day: its own blue mark, never lit, since the puzzle wasn’t played.', [cell('freeze', false, '', 3), cell('freeze', true, '', 9)]],
+        ['blank', 'Blank and future', 'Not played, older than 7 days: just the number. No lock, no colour, no word. Future days match.', [cell('blank', false, '', 2), cell('future', false, '', 22)]],
+        ['today', 'Today', 'The orange ring, solved (right) or not. A tap scrolls up to today’s card.', [cell('today', false, '', 15), cell('todayLit', false, '', 15)]],
+        ['selected', 'Pressed and chosen', 'Pressed: down 2 dp on a 1 dp edge. Chosen: stays down with a brown ring while its card is open.', [cell('blank', true, 'press', 9), cell('blank', true, 'sel', 10)]],
+      ];
+      L.forEach(([id, title, note, cs], i) => { const y = 138 + i * 94, h = 86; out.rows.push({ y, h, id, title, note, side: true, stack: false });
+        const x0 = 16 + 12 + (118 - (cs.length * 42 + (cs.length - 1) * 14)) / 2; cs.forEach((c, j) => out.samples.push({ ...c, x: R(x0 + j * 56), y: y + 22 })); });
+    }
+    if (s === 'wParts') {
+      Object.assign(out, { isSheet: true, shKicker: '14.1 · Welcome back', shTitle: 'The card’s parts' });
+      out.rows = [
+        { y: 138, h: 192, id: 'A', title: 'Dismiss and labels', note: 'Close: a 28 dp disc in a 48 dp target, read as “Hide this card”. The rest of the card is one button: the title, the line, then “Play today’s puzzle”.', stack: true, side: false },
+        { y: 340, h: 212, id: 'B', title: 'Entrance, and with Reduce motion', note: 'With Home’s first frame: fades in and rises 12 dp (280 ms, easeOut). Reduced: opacity only, 200 ms. Dismiss fades it out (180 ms, 150 reduced), then the dolls grow back (280 ms) or cross-fade (200 ms).', stack: true, side: false },
+        { y: 562, h: 222, id: 'C', title: 'German · 360 dp · 1.3× text', note: 'Past two lines the line takes its short form and Play moves under it. The card grows; the dolls shrink to clear it and fade out below 0.6.', stack: true, side: false },
+      ];
+      const mini = (y, list) => list.map(([op, ty], i) => card('freeze', { x: 108 + i * 90, y, k: .24, op, ty }));
+      out.cards = [card('freeze', { x: 34, y: 180, k: .9, tgt: true }), ...mini(378, [[.12, 12], [.6, 5], [1, 0]]), ...mini(430, [[.12, 0], [.55, 0], [1, 0]]),
+        card('paused', { x: 31, y: 596, w: 328, title: 'Willkommen zurück!', body: 'Deine 4-Tage-Serie ruht.', fsT: 22, fsB: 17, fsP: 21, pH: 40, play: 'Spielen', stack: true })];
+      out.caps = [{ x: 28, y: 384, w: 72, t: 'Motion' }, { x: 28, y: 436, w: 72, t: 'Reduced' }, ...[0, 1, 2].map(i => ({ x: 108 + i * 90, y: 407, w: 86, t: ['0 ms', '140 ms', '280 ms'][i] })), ...[0, 1, 2].map(i => ({ x: 108 + i * 90, y: 459, w: 86, t: ['0 ms', '100 ms', '200 ms'][i] }))];
+    }
+    return out;
+  }
+}
+</script>
+</body>
+</html>

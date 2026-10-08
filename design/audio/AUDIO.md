@@ -109,6 +109,16 @@ One new SFX for the daily gift (section 13), in the same wooden set, WAV 44.1 kH
 
 Music doesn’t duck for `gift_claim` (it is shorter than a duck). The Day 7 chest uses the Reward row of the music rules. `generator/nesty-sfx.js` renders it as `gift_claim`.
 
+## Local habits (m7-6)
+
+No new sound: the set covers every habit (`sound.events.habitsTap`, `habitsPastWin`).
+
+| Moment | Sound | Music |
+|---|---|---|
+| The welcome card, its close, a month day, Play again (14.1–14.3) | `button` | as is |
+| A past day solved (14.3d) | `win` @0; never `coins` (nothing is paid) | the Won row: duck to 0.3, back after Back to Daily |
+| The widget (14.4) | silent | — |
+
 ## flutter_soloud 4.1.7 sketch
 
 Check the names against the pinned version.

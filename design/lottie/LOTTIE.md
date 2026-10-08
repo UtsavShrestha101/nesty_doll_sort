@@ -2,6 +2,11 @@
 
 ## Changes
 
+### m7-6 (2026-10-08, Claude Design)
+One file changed; timing, anchors, canvases and markers are unchanged everywhere.
+- **`ui_chest`: soft rays.** On a phone the five rays read as hard wedges, where 10.3c and 13.6c draw a soft glow. Each ray is now three nested wedges on the same centre line (19°, 28° and 38° wide, at 60, 30 and 14 %, all #FFD98A), so its sides fall off in steps. A new shape layer, `rays_matte`, sits right above `rays` as its alpha matte (`td: 1` on the matte, `tt: 1` on `rays`): a 200 dp disc with a radial gradient fill, opaque to r 22 and clear at r 80, so the rays fade out from the chest like the frames’ glow. The matte copies the rays’ position and scale keys (60 → 100 %) and doesn’t rotate. `rays` keeps its name, opacity and sway keys, so `open_idle` still loops without a jump, and the outer wedges stay 3.4 dp inside the canvas through the whole sway. Gradient fills with opacity stops and alpha mattes both play in lottie-flutter.
+- **The local habits (section 14) add no Lottie.** The welcome card, the month and the widget use Flutter transitions or none. The past-day win (14.3d) plays 5.4’s files without `fx_coin_burst`.
+
 ### m7-5 (2026-10-07, Claude Design)
 Six files changed; timing, anchors, canvases and markers are unchanged everywhere.
 - **`ui_win_ribbon`: 290 wide.** The frames are right (9.4, 9.5, 5.4): the band is 290 × 56 and the tails reach ±167, so the ribbon is 334 dp at rest and fits a 360 dp phone with 13 dp to spare. The highlight is 274 wide. The rects are named `band_rect`, `edge_rect` and `hi_rect`, so the game can set a width with `ValueDelegate.rectangleSize`; move `tail_l` / `tail_r` by the same half-difference. Keep the text in a 266 × 40 box. Never draw it wider than the screen − 70.
@@ -154,6 +159,7 @@ Play events in `MoveEvent` order. The board timeline starts each file, and a Lot
 | Chest Collect (10.3d) | no Lottie: 6 `ui/sprites/coin_flight` fly to the coin pill (700 ms, 60 ms apart) and `hint_flight` to the Hint button (650 ms), whose badge bumps 1.3×. Reduce motion: no flights, the counts update | `coins` @0 | light as the hint lands |
 | Race: the computer completes a family | none (the strip dot fills, `motion.rivalDot`) | `rival_complete` | none |
 | Daily gift claimed (13.5) | no Lottie: one `coin_flight` per 10 coins (2–6) flies to the coin pill (700 ms, 60 ms apart); a hint or slot flies with `hint_flight` / `slot_flight` into the tally under the pill (650 ms). Reduce motion: no flights, the counts update (`gift.reducedMotion`) | `gift_claim` @0, `coins` as the first coin lands | light @0, light as a hint or slot lands |
+| Local habits (14.1–14.3) | none. The past-day win (14.3d) plays the Won and Win overlay rows without `fx_coin_burst` | `button` on the welcome card, its close, a month day and Play again; `win` on the past-day win, never `coins` | selection on taps; success on the win |
 | Daily gift, Day 7 (13.6) | `ui_chest` as the day-7 chest row above; Collect as Chest Collect | as the chest rows | as the chest rows |
 
 ## Image slots

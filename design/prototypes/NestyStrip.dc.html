@@ -13,7 +13,7 @@
 <sc-for list="{{ rows }}" as="r" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:7px">
 <div style="margin:0 15px;font:600 11px/1.45 ui-monospace,Menlo,monospace;color:#8A6A4E">{{ r.cap }}</div>
 <div style="position:relative;width:{{ r.w }}px;margin-left:{{ r.ml }}px;height:{{ r.boxH }}px;border-radius:{{ r.br }};background:url(backgrounds/ch3-seaside-market.svg) center top/390px auto no-repeat,#F3E6CF;overflow:hidden">
-<div style="position:absolute;left:12px;top:12px;width:52px;height:{{ r.stripH }}px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:28px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600">pause</div>
+<div style="position:absolute;left:16px;top:{{ r.pauseY }}px;width:48px;height:48px;border-radius:17px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:28px;color:#6E4526;font-variation-settings:'FILL' 1,'wght' 600">pause</div>
 <div style="position:absolute;left:76px;right:16px;top:12px;height:{{ r.stripH }}px;border-radius:18px;background:linear-gradient(180deg,#FFF9EE,#FCEBD0);box-shadow:inset 0 2px 0 #fff,0 5px 0 #D8B07A,0 9px 14px rgba(90,50,20,.22);display:flex;align-items:center;gap:9px;padding:0 12px 0 5px;box-sizing:border-box">
 <div style="width:38px;height:38px;flex:none;border-radius:50%;background:url({{ r.art }}) center/100% 100% no-repeat;box-shadow:0 0 0 2px #FFFDF7,0 2px 4px rgba(60,25,5,.25)"></div>
 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
@@ -36,7 +36,7 @@ const row = o => { const k = o.k || 1, jp = !!o.jp, two = o.form === 'two';
     tag1: !two, tag2: two, dotsOn: o.form === 'one', dots: dots(o.total || 8, o.done || 3), count: `${o.done || 3}/${o.total || 8}`,
     nameFs: +(16 * k * (jp ? .94 : 1)).toFixed(1), tagFs: +(11 * k * (jp ? .94 : 1)).toFixed(1), tagGs: Math.round(14 * k), tagH: Math.round(20 * k), tagR: Math.round(10 * k), stateFs: +(12 * k).toFixed(1), countFs: +(17 * k).toFixed(1),
     stG: o.stG || 'more_horiz', stGc: o.stG === 'check_circle' ? '#46A758' : '#8A5B3A', stGs: Math.round(16 * k),
-    dispFont: jp ? JP : FRED, bodyFont: jp ? JP : NUN, stripH: two && k > 1.1 ? 58 : 48, boxH: (two && k > 1.1 ? 58 : 48) + 24 };
+    dispFont: jp ? JP : FRED, bodyFont: jp ? JP : NUN, stripH: two && k > 1.1 ? 58 : 48, pauseY: two && k > 1.1 ? 17 : 12, boxH: (two && k > 1.1 ? 58 : 48) + 24 };
 };
 const SETS = {
   noDots: { title: '9.3h · The count without dots', rows: [

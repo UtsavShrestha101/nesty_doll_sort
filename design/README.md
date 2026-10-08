@@ -1,11 +1,15 @@
 # Handoff: Nesty: Doll Sort — full mobile app
 
 ## Overview
-Nesty is a cozy sorting puzzle. The player nests wooden matryoshka dolls, each into the same color one size bigger, until every family is complete. This bundle has everything needed to build the whole player-facing app for iOS and Android: all screens and states (139 frames in 12 flows), the component and token system, the parametric doll asset system, every game-feel animation with exact timings, placeholder sound files, and haptics.
+Nesty is a cozy sorting puzzle. The player nests wooden matryoshka dolls, each into the same color one size bigger, until every family is complete. This bundle has everything needed to build the whole player-facing app for iOS and Android: all screens and states (183 frames in 14 flows), the component and token system, the parametric doll asset system, every game-feel animation with exact timings, placeholder sound files, and haptics.
 
 The source of truth for rules is `docs/GAME_SPEC.md` in the repo. This bundle is the source of truth for **look, layout, motion, sound and copy**. The section numbers used here (§x.y) refer to GAME_SPEC.md.
 
-## Latest changes (2026-10-07, m7-5)
+## Latest changes (2026-10-08, m7-6)
+- **Local habits (section 14, new):** a welcome-back card on Home after two or more days away (14.1a–c; on 2.1b as 14.1d; its parts in 14.1e); the month of played days at the end of the Daily (14.2–14.2g: on open, scrolled, 16:9, the 1st and the month before, the 31st, a new player, de/ja/hi at 360 dp); the last 7 dailies, playable for fun (14.3a–e: cell states, a past day’s card, the board, the win, a solved past day); and the home-screen widget for iOS and Android (14.4, 14.4a–e, 14.4f–h). Frames: `prototypes/NestyHabits.dc.html` and `prototypes/NestyWidget.dc.html`; `NestyHub` gains `dolls` and `daily`, `NestyBoard` gains `past`, all additive. Art: `ui/widget/`. Tokens: `habits`. Copy: `## Local habits`. No new sound, no new Lottie.
+- **The m7-5 questions:** the freeze chip’s wording, Computer tags that scale, Pause at 48, a 58 dp Claim on 13.3b, one ribbon for 13.6b, the check at 600, token fixes (the win ribbon box, the Museum count, the figurine panels), flat brass name plates, softer chest rays in `ui_chest`, the Daily before Level 2 (12.14), a 16 px text-link type, the family counter’s width, the splash dim and icons, and the fallback doll. Everything else keeps what the game ships. `DELIVERY.md` has each answer.
+
+## Previous changes (2026-10-07, m7-5)
 - **Daily gift (section 13, new):** Home with the gift button ready and at rest (13.1, 13.1b on 390×693, 13.2), the gift sheet (13.3, 13.3b), claimed today (13.4), the claim for coins and for a hint (13.5, 13.5b, 13.5c), Day 7 and its chest (13.6–13.6d), a new track (13.7), waiting after a clock change (13.8) and Reduce motion (13.5r, 13.6r). Frames: `prototypes/NestyGift.dc.html`; `NestyHub` gains two additive props (`gift`, `coins`), so no existing frame changes. Art: `ui/gift/gift_glyph.svg`, `ui/chest/chip_slot.svg`, `ui/sprites/slot_flight.svg`. Sound: `audio/gift_claim.wav`. Tokens: `gift`, `layout.home.giftButton`, `layout.homeShort.giftButton`, `chest.slotChip`, `sound.events.giftClaim`, `haptics.giftClaim`. Copy: `## Daily gift`.
 - **The m7-4 run questions:** names for the last frame-only colours and a `type` index per surface; a 290 win ribbon with named rects; brighter, wider chest rays; an orange spinner; a dome-shaped glass flash; the tap hand at 0.6; a splash top fade; an 80 ms wobble-to-move blend; the race strip’s two narrow forms (9.3h, 9.3i, `prototypes/NestyStrip.dc.html`); the capped win on 16:9 (11.2g); the spotlight height; Chapters’ scroll rule; “No freeze” at zero; Baloo 2 for Turkish. Everything else keeps what the game ships. `DELIVERY.md` has each answer.
 
@@ -71,6 +75,7 @@ design/                         → copy to the repo's design/ folder (owner-man
   ui/badges/*.svg               the 12 badges and their _locked versions (96 vb), ids as in copy.md G.8
   ui/sprites/*.svg              coin_flight, hint_flight (48 vb), chest rewards flying to the HUD
   ui/notification/ic_notification.svg   Android status-bar icon (24 vb, one color)
+  ui/widget/*                   the home-screen widget’s art (m7-6): flame_lit, flame_unlit, flame_unlit_dark (44 dp), doll (18×24, one colour, a template), daily_mark (52 dp) as flat SVG plus .png, -2x.png, -3x.png; preview_2x2.png, preview_4x2.png
   audio/*.wav                   23 SFX: the 17 §11.3 names (v2 wooden-toy set; clacks baked at size 3.5) plus star_1…3, chest_wiggle, chest_open, rival_complete
   audio/*.ogg                   music_home, music_game (seamless loops) + jingle_chapter, jingle_reward, jingle_oom, jingle_versus_win, jingle_versus_lose
   copy.md                       all new copy, one line per string (G.1–G.11, H, and the m7-2 screen labels)
@@ -84,8 +89,8 @@ design/                         → copy to the repo's design/ folder (owner-man
 prototypes/                     the HTML design references (open in a browser over http; keep the folder structure)
   support.js                    the runtime every .dc.html page loads; keep it in the same folder as the pages
   nesty-doll.js, nesty-music.js, nesty-sfx.js   copies of the generators that the pages load
-  Nesty App Flow.dc.html        all 135 frames, flow arrows, spec coverage
-  NestyBoard / NestyOverlay / NestyMenus / NestyShop / NestyHub / NestyMeta .dc.html   the screen components the flow page imports (NestyHub: the m7 screens; NestyMeta: the m7 overlays)
+  Nesty App Flow.dc.html        all 183 frames, flow arrows, spec coverage
+  NestyBoard / NestyOverlay / NestyMenus / NestyShop / NestyHub / NestyMeta .dc.html   the screen components the flow page imports (NestyHub: the m7 screens; NestyMeta: the m7 overlays; NestyGift: section 13; NestyHabits and NestyWidget: section 14)
   backgrounds/ icons/ museum/ skins/ store/ ui/   copies of the art the pages load
   Doll Studio.dc.html           parametric doll editor (any color, any symbol SVG, any skin)
   Nesty Motion & Sound.dc.html  every §11 animation looping live with sound, timing tables
@@ -229,6 +234,14 @@ Every skin is one layered SVG (512×768) with the group ids `shadow, bottom_mask
 - **A new track (13.7).** Day 1 again with every tile fresh, and no word for it.
 - **Reduce motion (13.5r, 13.6r).** No flights: cross-fades and count updates (`gift.reducedMotion`).
 - **Sound.** `gift_claim` on Claim, `coins` as the first coin lands, the chest’s own sounds on Day 7.
+
+**14 Local habits (m7-6)**
+- **Respect rules.** Nothing opens on its own and there is no new notification; no timer or countdown; a day not played is blank, never red, crossed out or “missed”; an old day never moves or repairs the streak; no ad, purchase or coin offer in these paths; warm copy. No game rule changes (`tokens.habits.respect`).
+- **Welcome back (14.1).** After two or more days away, with the Daily unlocked and today’s puzzle unsolved, Home shows one inline card under the chapter card (top 198, 16 dp sides, 84 tall): a freeze kept the flame lit (14.1a), paused with the number kept (14.1b), or no streak yet (14.1c). The whole card plays today’s daily; a 28 dp close in a 48 dp target (“Hide this card”) hides it. Only the dolls move: 0.78 on 2.1; on 2.1b (14.1d) they fade out and the empty plank stays. The gift’s ready dot shows with it. It arrives with Home’s first frame (fade and a 12 dp rise, 280 ms; opacity only under Reduce motion) and is gone once today is solved, when hidden, or at the first Home after midnight (`habits.welcomeBack`).
+- **The month (14.2).** The last card of the Daily’s scroll, under today’s puzzle card, so the 7-day strip stays the streak’s cycle. Lit (solved on its date), played later (peach), a frozen day (its own blue mark, never lit), blank (just the number), today (orange ring), future (plain). Weeks start on the locale’s first day; month and weekday names are localized. Cells are 48 × 46 dp at 390 wide and 44 × 44 at 360, so 7 × 6 fits a 360 dp phone. On the 1st to the 7th a ‹ chip shows the month before for the window’s days (`habits.month`).
+- **The last 7 dailies (14.3).** Those dates are raised buttons in the month. A tap opens the day’s card under the month (date title, chip, preview, Play with no coin chip, “Just for fun. Your streak stays as it is.”). The board is 5.3 with the past date and no coin pill, ▶ or price; the win is 5.4 with “Moves N”, the day’s new mark, no coins and no interstitial; a solved past day offers Play again. Old days pay nothing and never touch the streak, a freeze or the Day 7 chest (`habits.pastDay`).
+- **The widget (14.4).** iOS systemSmall and systemMedium, Android 2 × 2 and 4 × 2: the streak number and flame, today’s families as small dolls, one line. Five states: ready, solved, paused, no streak yet, and before Level 2, which opens 12.14. Light, dark, iOS 18 tinted, iOS 17 StandBy, the Android corner radius and picker previews. Art in `ui/widget/`. iOS bundles Fredoka in the extension; Android uses the system sans (`habits.widget`).
+- **12.14** The Daily before Level 2: one calm card, “Your first daily puzzle is close”, and Play Level 2.
 
 **Board presets (request B, NestyBoard scenes, not flow frames)** — `size5` (L71, maxSize 5 on three shelves), `size6` (L130, tall preset), `glass56` (tall glass cases), `towerTop3` (3 buried nests under the HUD), `extraFull` and `extraRow5` (+1 Slot when the bottom shelf is full), `iceTower` and `iceTowerThawed` (the +N tag), and the optional `shelves4` and `row5`. Laid out with their numbers in `Nesty Board Presets.dc.html`.
 

@@ -1,6 +1,10 @@
 # Nesty copy (m7)
 
-All the new copy for the m7 round, one line per string: `- <id>: <text>`. Ids are the request's ids where it gives them (badge ids, rival numbers, chapter numbers, museum file ids) and short slugs otherwise. Placeholders in braces are filled by the game: `{count}`, `{moves}`, `{date}`, `{day}`, `{time}`, `{rival}`, `{level}`, `{chapter}`, `{first}`, `{last}`, `{total}`, `{price}`, `{glyphs}`, `{badge}`, `{best}`, `{step}`, `{name}`, `{skill}`, `{booster}`, `{title}`, `{size}`, `{levels}`, `{how}`, `{contents}`, `{label}`, `{value}`. A plural is two lines, `one:` and `other:`. Curly quotes and the `·` separator are part of the strings.
+All the new copy for the m7 round, one line per string: `- <id>: <text>`. Ids are the request's ids where it gives them (badge ids, rival numbers, chapter numbers, museum file ids) and short slugs otherwise. Placeholders in braces are filled by the game: `{count}`, `{moves}`, `{date}`, `{day}`, `{time}`, `{rival}`, `{level}`, `{chapter}`, `{first}`, `{last}`, `{total}`, `{price}`, `{glyphs}`, `{badge}`, `{best}`, `{step}`, `{name}`, `{skill}`, `{booster}`, `{title}`, `{size}`, `{levels}`, `{how}`, `{contents}`, `{label}`, `{value}`, `{month}`, `{weekday}`. A plural is two lines, `one:` and `other:`. Curly quotes and the `·` separator are part of the strings.
+
+## Changes in m7-6
+- **Local habits (new, App Flow section 14):** every string is in `## Local habits`: the welcome-back card, the month, a past day, the locked Daily (12.14) and the widget, with their screen-reader lines and the widget gallery’s name and description. Short forms are in `## Short forms`. None of it says streak lost, missed, broken, expires, last chance, hurry or today only, and none of it offers coins.
+- **Freeze chip (item 1):** `streak_freeze_chip` is the game’s wording, “{count} freeze” / “{count} freezes”. Under 64 dp it falls back to `streak_freeze_chip_short`, the number alone beside the snowflake. The screen reader keeps `a11y_freezes` (“1 streak freeze left”).
 
 ## Changes in m7-5
 - **Daily gift (new, App Flow section 13):** every string is in `## Daily gift`, its screen-reader lines included (`gift_a11y_*`), and its short forms are in `## Short forms`. It never says streak, missed, lose, reset, start over, ends or today only.
@@ -243,8 +247,8 @@ Gentle streak (I.7). A missed day never lowers the number, and a freeze keeps th
 - streak_freeze_used: A freeze kept your flame lit.
 - streak_zero: Solve today’s puzzle to light your first flame.
 - streak_freeze_chip:
-  - one: {count} streak freeze
-  - other: {count} streak freezes
+  - one: {count} freeze
+  - other: {count} freezes
 - streak_freeze_chip_none: No freeze
 
 - chest_streak_body: Seven days in a row. Here’s what’s inside.
@@ -403,6 +407,96 @@ Screen reader:
 
 `gift_a11y_tile` reads, for example, “Day 4, 40 coins. Today’s gift.” The Day 7 tile and the chest read their two phrases joined by `gift_a11y_chest_contents`, “100 coins, 1 extra slot”, which fills `{contents}` in `a11y_chest_contents` (“Chest. Inside: 100 coins, 1 extra slot.”). `gift_a11y_claimed` is a polite announcement once the claim lands; `gift_a11y_added` is read when a hint or an extra slot reaches the tally, with the new total (“1 hint added. You have 3.”). Home never announces a ready gift by itself; the button label carries it.
 
+## Local habits
+Section 14 (m7-6). Four small reasons to open the app on an ordinary day, all offline. The voice is warm and plain: blank days are never failures, an old day never touches the streak, and nothing offers coins. `{date}` follows the locale, in the format noted on each line; `{month}` is the stand-alone month name (LLLL) and `{weekday}` the stand-alone weekday name.
+
+Welcome back (14.1):
+- habits_welcome_title: Welcome back!
+- habits_welcome_freeze: A freeze kept your flame lit. Today’s puzzle is ready.
+- habits_welcome_paused:
+  - one: Your {count}-day streak is resting. Today’s puzzle is ready.
+  - other: Your {count}-day streak is resting. Today’s puzzle is ready.
+- habits_welcome_new: Today’s puzzle is ready when you are.
+- habits_welcome_play: Play
+- habits_welcome_play_a11y: Play today’s puzzle
+- habits_welcome_dismiss_a11y: Hide this card
+
+The card is one button: a screen reader reads the title, the line, then `habits_welcome_play_a11y`. The close is its own button. Nothing announces the card; it is simply there when Home shows.
+
+The month (14.2):
+- habits_month_title: {month}
+- habits_month_hint: Play any of the last 7 days, just for fun.
+- habits_month_key_lit: On the day
+- habits_month_key_later: Played later
+- habits_month_key_freeze: Freeze
+- habits_month_show_a11y: Show {month}
+
+`habits_month_show_a11y` labels the ‹ / › month chip (shown on the 1st to the 7th only).
+
+Each day reads as one element (`{date}` is MMMMd: “7 October”, “7. Oktober”, “10月7日”):
+- habits_day_a11y_lit: {date}, solved
+- habits_day_a11y_later: {date}, played later
+- habits_day_a11y_freeze: {date}, covered by a freeze
+- habits_day_a11y_none: {date}, not played
+- habits_day_a11y_today: {date}, today
+- habits_day_a11y_today_solved: {date}, today, solved
+- habits_day_a11y_future: {date}
+- habits_day_a11y_open: {label}, open to play
+
+`habits_day_a11y_open` wraps the day’s label for the last 7 days, which are buttons: “10 October, not played, open to play”, “12 October, solved, open to play”.
+
+A past day (14.3):
+- habits_past_title: {date}
+- habits_past_note: Just for fun. Your streak stays as it is.
+- habits_past_solved_day: Solved on the day
+- habits_past_solved_later: Played later
+- habits_past_play_again: Play again
+- habits_past_win_title: Puzzle solved!
+- habits_past_win_date: {date}
+- habits_past_win_line: Played later, just for fun.
+- habits_past_win_back: Back to Daily
+- habits_past_win_a11y:
+  - one: {date} solved in {moves} move. Played later, just for fun.
+  - other: {date} solved in {moves} moves. Played later, just for fun.
+
+`habits_past_title` is MMMEd (“Sat 10 Oct”, “Sa., 10. Okt.”, “10月10日(土)”); `habits_past_win_date` is EEEEdMMMM (“Saturday 10 October”). The card keeps 5.1’s colours · tier chip and its Play, without the coin chip; the board keeps 5.3’s Daily pill with the past date (MMMd); the win’s Moves pill is `moves_line_first`.
+
+The Daily before Level 2 (12.14), also where the widget leads before then:
+- daily_locked_title: Your first daily puzzle is close
+- daily_locked_body: Win Level {level} and a new puzzle will wait here every day, the same for everyone.
+
+Its button is `museum_play` (“Play Level {level}”).
+
+The widget (14.4):
+- widget_gallery_name: Daily puzzle
+- widget_gallery_description: Your streak and today’s puzzle at a glance.
+- widget_puzzle_title: {weekday}’s puzzle
+- widget_streak_label:
+  - one: day streak
+  - other: day streak
+- widget_streak_resting:
+  - one: day streak · resting
+  - other: day streak · resting
+- widget_first_flame: Your first flame
+- widget_ready: Today’s puzzle is ready
+- widget_solved: Solved. See you tomorrow.
+- widget_locked_title: Daily puzzle
+- widget_locked_small: Opens after Level {level}
+- widget_locked_medium: Your first daily puzzle opens after Level {level}.
+
+The medium widget’s second line is 5.1’s colours · tier text. The widget is one element for a screen reader:
+- widget_a11y_ready:
+  - one: Nesty daily puzzle. {count}-day streak. Today’s puzzle is ready.
+  - other: Nesty daily puzzle. {count}-day streak. Today’s puzzle is ready.
+- widget_a11y_solved:
+  - one: Nesty daily puzzle. {count}-day streak, lit. Today’s puzzle is solved.
+  - other: Nesty daily puzzle. {count}-day streak, lit. Today’s puzzle is solved.
+- widget_a11y_paused:
+  - one: Nesty daily puzzle. {count}-day streak, resting. Today’s puzzle is ready.
+  - other: Nesty daily puzzle. {count}-day streak, resting. Today’s puzzle is ready.
+- widget_a11y_zero: Nesty daily puzzle. Today’s puzzle is ready.
+- widget_a11y_locked: Nesty daily puzzle. Opens after Level {level}.
+
 ## A11y
 Screen-reader strings for the m7 screens. Announcements (the rival’s progress, toasts, “Reminder set”) are polite: read once, after the current speech, and they never move focus. Buttons with visible text use that text; these cover icon-only controls and states the eye reads from colour or position.
 
@@ -552,3 +646,18 @@ Daily gift (m7-5), for a German text about 30 % longer:
   - other: +{count}
 
 The chest ribbon takes `gift_chest_title_short` when the full title doesn’t fit at 0.85 on a 360 dp phone (“Tag-7-Geschenk” fits; longer translations don’t). Day 7’s phrase uses `gift_slots_short` when “Tomorrow: …” would wrap past two lines. The “+1 slot” chip falls back to “+1” beside its disc, as `booster_slot_short` does. Tile amounts are numbers and never shorten.
+
+Local habits (m7-6), for a German text about 30 % longer:
+- habits_welcome_freeze_short: A freeze kept your flame lit.
+- habits_welcome_paused_short:
+  - one: Your {count}-day streak is resting.
+  - other: Your {count}-day streak is resting.
+- habits_welcome_new_short: Today’s puzzle is ready.
+- habits_month_hint_short: The last 7 days are open to play.
+- habits_past_win_title_short: Solved!
+- widget_ready_short: Ready to play
+- widget_solved_short: Solved!
+- widget_streak_resting_short: resting
+- streak_freeze_chip_short: {count}
+
+The welcome card takes its short line when the full one would need a third line; Play then sits under the text. The month hint drops to its short form, then wraps to two lines. On the small widget, `widget_streak_resting_short` replaces the label when “day streak · resting” doesn’t fit one line, and the state lines shorten when two lines aren’t enough. The freeze chip shows `streak_freeze_chip_short` beside the snowflake under 64 dp.

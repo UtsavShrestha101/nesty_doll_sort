@@ -1,0 +1,6 @@
+// Base configuration of the NestyWidget extension in all nine configurations
+// (tools/ios/add_widget_target.rb wires it). Flutter's Generated.xcconfig
+// gives FLUTTER_BUILD_NAME and FLUTTER_BUILD_NUMBER, so the extension's
+// version always matches the app's (App Store validation requires it). The
+// extension has no pods: it is not in the Podfile.
+#include? "../Flutter/Generated.xcconfig"

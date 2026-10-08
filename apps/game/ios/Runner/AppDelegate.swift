@@ -2,6 +2,7 @@ import AVFoundation
 import Flutter
 import UIKit
 import UserNotifications
+import WidgetKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -33,6 +34,51 @@ import UserNotifications
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     registerSystemSettingsChannel(with: engineBridge.pluginRegistry)
+    registerHomeWidgetChannel(with: engineBridge.pluginRegistry)
+  }
+
+  /// The home-screen widget's store (local habits stage 4, contract §1–2):
+  /// the Dart side is ChannelHomeWidgetService, fed by HomeWidgetBridge.
+  /// `publish` stores the snapshot JSON in the App Group named by Info.plist
+  /// `NestyAppGroup` (NestyWidgetStore) and reloads the widget's timelines;
+  /// `readBack` and `storeInfo` exist in debug builds only, for
+  /// integration_test/home_widget_test.dart. Nothing here ever throws to
+  /// Dart: a store that can't open answers false.
+  private func registerHomeWidgetChannel(with registry: FlutterPluginRegistry) {
+    guard let registrar = registry.registrar(forPlugin: "NestyHomeWidget") else {
+      return
+    }
+    let channel = FlutterMethodChannel(
+      name: "com.futrix.nesty/home_widget",
+      binaryMessenger: registrar.messenger()
+    )
+    channel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "publish":
+        guard let json = call.arguments as? String, let store = NestyWidgetStore.from() else {
+          result(false)
+          return
+        }
+        let stored = store.write(json)
+        if stored {
+          WidgetCenter.shared.reloadAllTimelines()
+        }
+        result(stored)
+      #if DEBUG
+      case "readBack":
+        result(NestyWidgetStore.from()?.read())
+      case "storeInfo":
+        let group = Bundle.main.object(forInfoDictionaryKey: NestyWidgetStore.groupInfoKey) as? String
+        let info: [String: Any] = [
+          "group": group.map { $0 as Any } ?? NSNull(),
+          "resolves": NestyWidgetStore.from()?.containerResolves ?? false,
+        ]
+        result(info)
+      #endif
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
   }
 
   /// "Open phone settings" (frames 10.2d and 10.2f, Q140; phase 4

@@ -5,6 +5,7 @@ import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/clock/app_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily/daily_projection.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -56,6 +57,35 @@ class FakeDailyService implements DailyService {
 
   @override
   DailyStatus refresh() => status;
+
+  /// What [projection] answers when set; else every date shows [status]'s
+  /// streak (solved on today, ready after), a scriptable stand-in.
+  List<DailyDayProjection>? projected;
+
+  @override
+  List<DailyDayProjection> projection(LocalDate from, int days) {
+    final fixed = projected;
+    if (fixed != null) return fixed;
+    final s = status;
+    return [
+      for (var i = 0; i < days; i++)
+        () {
+          final date = from.addDays(i);
+          final solved = i == 0 && s.solvedToday;
+          return DailyDayProjection(
+            date: date,
+            streak: s.streak,
+            lit: s.lit,
+            solved: solved,
+            state: DailyDayProjection.stateOf(
+              streak: s.streak,
+              lit: s.lit,
+              solved: solved,
+            ),
+          );
+        }(),
+    ];
+  }
 
   /// Calls of [pruneArchive].
   int archivePrunes = 0;

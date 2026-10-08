@@ -1,0 +1,133 @@
+{
+  "v": 1,
+  "scheme": "nesty-dev",
+  "lang": "en",
+  "unlocked": false,
+  "locked": {
+    "title": "Daily puzzle",
+    "small": "Opens after Level 2",
+    "medium": "Your first daily puzzle opens after Level 2.",
+    "a11y": "Nesty daily puzzle. Opens after Level 2."
+  },
+  "days": [
+    {
+      "date": "2026-10-08",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Thursday’s puzzle",
+      "sub": "5 colors · Medium",
+      "dolls": [
+        "#2F3E8F",
+        "#F2893B"
+      ],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-09",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Friday’s puzzle",
+      "sub": "5 colors · Medium",
+      "dolls": [
+        "#46A758",
+        "#3E8EDE",
+        "#A0673C"
+      ],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-10",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Saturday’s puzzle",
+      "sub": "6 colors · Hard",
+      "dolls": [],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-11",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Sunday’s puzzle",
+      "sub": "6 colors · Hard",
+      "dolls": [],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-12",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Monday’s puzzle",
+      "sub": "5 colors · Medium",
+      "dolls": [],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-13",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Tuesday’s puzzle",
+      "sub": "5 colors · Medium",
+      "dolls": [],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-14",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Wednesday’s puzzle",
+      "sub": "5 colors · Medium",
+      "dolls": [],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    },
+    {
+      "date": "2026-10-15",
+      "state": "zero",
+      "streak": 0,
+      "number": null,
+      "label": "Your first flame",
+      "labelShort": null,
+      "title": "Thursday’s puzzle",
+      "sub": "5 colors · Medium",
+      "dolls": [],
+      "line": "Today’s puzzle is ready",
+      "lineShort": "Ready to play",
+      "a11y": "Nesty daily puzzle. Today’s puzzle is ready."
+    }
+  ]
+}

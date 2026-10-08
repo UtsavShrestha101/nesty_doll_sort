@@ -159,7 +159,20 @@ jobs:
           dart run nesty_tools:sync_design_assets --check
           dart run nesty_tools:gen_fx_spec --check
           dart run nesty_tools:gen_font_subsets --check
+          dart run nesty_tools:gen_widget_strings --check
           dart run nesty_tools:todo_index --check
+
+      # The widget's Xcode target is generated (tools/ios/add_widget_target.rb).
+      # --check needs ruby and the xcodeproj gem (CocoaPods ships it), which
+      # this Linux runner lacks, so it runs only where both exist; nesty-test's
+      # gates run it on a Mac.
+      - name: Check the widget's Xcode target (when ruby and xcodeproj exist)
+        run: |
+          if command -v ruby >/dev/null && ruby -e 'require "xcodeproj"' 2>/dev/null; then
+            ruby tools/ios/add_widget_target.rb --check
+          else
+            echo "::notice::skipped: ruby with the xcodeproj gem is not on this runner"
+          fi
 
       # The game's bundled levels (tools/levels/README.md): bundle.json is
       # exactly what `nesty_levels bundle build` makes from tools/levels/, and
@@ -207,6 +220,13 @@ jobs:
       - name: Build game APK (dev, debug)
         working-directory: apps/game
         run: flutter build apk --debug --flavor dev -t lib/main_dev.dart
+
+      # The widget's Kotlin logic on the JVM. After the APK build on purpose:
+      # android/gradlew and local.properties are git-ignored and exist only
+      # once `flutter build apk` has run in a checkout.
+      - name: Test the widget's Android logic (JVM)
+        working-directory: apps/game/android
+        run: ./gradlew :app:testDevDebugUnitTest -Ptarget=lib/main_dev.dart
 
       - name: Build admin (web, prod entry point)
         working-directory: apps/admin

@@ -14,7 +14,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         // flutter_local_notifications (the daily reminder, M7 E4) uses
-        // java.time on API 24–25, which needs core-library desugaring.
+        // java.time on API 24–25, which needs core-library desugaring. The
+        // home-screen widget's WidgetTimeline (local habits stage 4) relies
+        // on it too.
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -46,21 +48,33 @@ android {
     //   flutter run --flavor stg  -t lib/main_stg.dart
     //   flutter run --flavor prod -t lib/main_prod.dart
     // The iOS schemes dev / stg / prod use the same names.
+    //
+    // appUrlScheme (local habits stage 4, contract §4): the home-screen
+    // widget's link <scheme>://daily, one scheme per flavor so the three
+    // installs never collide. The manifest's intent-filter takes the
+    // placeholder; the widget reads the same value as @string/app_url_scheme
+    // before the app has written a snapshot.
     flavorDimensions += "default"
     productFlavors {
         create("dev") {
             dimension = "default"
             applicationIdSuffix = ".dev"
             resValue("string", "app_name", "[DEV] Nesty")
+            manifestPlaceholders["appUrlScheme"] = "nesty-dev"
+            resValue("string", "app_url_scheme", "nesty-dev")
         }
         create("stg") {
             dimension = "default"
             applicationIdSuffix = ".stg"
             resValue("string", "app_name", "[STG] Nesty")
+            manifestPlaceholders["appUrlScheme"] = "nesty-stg"
+            resValue("string", "app_url_scheme", "nesty-stg")
         }
         create("prod") {
             dimension = "default"
             resValue("string", "app_name", "Nesty")
+            manifestPlaceholders["appUrlScheme"] = "nesty"
+            resValue("string", "app_url_scheme", "nesty")
         }
     }
 
@@ -85,4 +99,8 @@ dependencies {
     // The desugared java.time for flutter_local_notifications (see
     // compileOptions above); 2.1.4 is the version its README names.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // The widget's JVM tests (src/test/: WidgetTimeline, WidgetJson,
+    // WidgetFit; ./gradlew :app:testDevDebugUnitTest). Test-only, never in
+    // the APK (PROGRESS "Package reasons", rule 9).
+    testImplementation("junit:junit:4.13.2")
 }

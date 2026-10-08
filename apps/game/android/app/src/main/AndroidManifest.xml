@@ -68,7 +68,55 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- The home-screen widget's tap (local habits stage 4, contract §4):
+                 <scheme>://daily, one scheme per flavor (nesty, nesty-dev,
+                 nesty-stg from app/build.gradle.kts) so three installs never
+                 collide. The engine hands the URL to the router: as the initial
+                 route on a cold open, through onNewIntent (singleTop above) on a
+                 warm one. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="daily"
+                    android:scheme="${appUrlScheme}" />
+            </intent-filter>
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="true" />
         </activity>
+        <!-- The home-screen widget (local habits stage 4; plan-local-habits §4
+             "Android"). The system's widget service binds it, so it needs no
+             export. Its picker name is the label; the rest is in
+             res/xml/nesty_widget_info.xml. -->
+        <receiver
+            android:name="com.futrix.nesty.widget.NestyWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_gallery_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/nesty_widget_info" />
+        </receiver>
+        <!-- The widget's day rollover: its own inexact midnight alarm (an
+             explicit intent) and the clock broadcasts that may change today's
+             date or the native strings. Each is exempt from API 26's
+             implicit-broadcast limit; only the system sends them, so no export.
+             No exact-alarm permission (removed above). -->
+        <receiver
+            android:name="com.futrix.nesty.widget.NestyWidgetClockReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

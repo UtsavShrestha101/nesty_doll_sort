@@ -7,6 +7,8 @@ import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/error/app_exception.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/router/widget_link.dart';
+import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
@@ -56,6 +58,27 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
           .devicePixelRatio ??
       1;
 
+  /// Where the splash goes once loading ends: Level 1 on a first launch, else
+  /// Home, with the Daily over it when the widget's link is waiting and the
+  /// Daily is unlocked (plan-local-habits §4). A pending link is always
+  /// consumed, and a first launch's Level 1 wins over it.
+  static List<PageRouteInfo> _launchStack(SplashState? state) {
+    final widgetLink = get<WidgetLink>();
+    final wantsDaily = widgetLink.takePending();
+    if (state?.opensFirstLevel ?? false) {
+      return [
+        GameplayRoute(
+          request: const PlayRequest.campaign(1),
+          entrance: GameplayEntrance.fromSplash,
+        ),
+      ];
+    }
+    return [
+      const MainShellRoute(children: [HomeRoute()]),
+      if (wantsDaily && get<DailyService>().isUnlocked) const DailyRoute(),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SplashCubit, AsyncValue<SplashState>>(
@@ -65,20 +88,8 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
       // in between (E9, m7-design §13; spec-prop §10.1); its first win's
       // Continue goes Home. Otherwise Home, the shell's middle tab
       // (m3-design §10.1).
-      listener: (context, state) => unawaited(
-        context.router.replaceAll(
-          state.data?.opensFirstLevel ?? false
-              ? [
-                  GameplayRoute(
-                    request: const PlayRequest.campaign(1),
-                    entrance: GameplayEntrance.fromSplash,
-                  ),
-                ]
-              : [
-                  const MainShellRoute(children: [HomeRoute()]),
-                ],
-        ),
-      ),
+      listener: (context, state) =>
+          unawaited(context.router.replaceAll(_launchStack(state.data))),
       builder: (context, state) => SplashView(
         progress: state.data?.progress ?? 0,
         error: state.exceptionOrNull,

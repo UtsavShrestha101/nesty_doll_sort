@@ -8,15 +8,33 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		1E4DAB08411FCAC96652ABD6 /* widget_snapshot_v1.json in Resources */ = {isa = PBXBuildFile; fileRef = 5DA74C4DAAEB8D310B6AEF6D /* widget_snapshot_v1.json */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		4B462E635FA2C33F45A417B7 /* NestyWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA84B3AEF7470BFF00697DA1 /* NestyWidgetViews.swift */; };
+		4B4A33A87DECB97EDD3F3CF1 /* NestyWidgetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486A11291ECBDB493EF33605 /* NestyWidgetStore.swift */; };
+		5526E9AF43923CDD2EC2E74F /* NestyWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C73700239A1BD94D3F6B4B /* NestyWidget.swift */; };
+		57C16A57B36E206BCE70D689 /* NestyWidgetStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0077DA37533BEABAC7B9F2AD /* NestyWidgetStyle.swift */; };
+		5A24D4AEBB6780C36784FA42 /* NestyWidgetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486A11291ECBDB493EF33605 /* NestyWidgetStore.swift */; };
 		5D01649DC3B080FDFDD2D36D /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52124F0D22FADECD45DE25C2 /* Pods_RunnerTests.framework */; };
+		5EAF110E078B2F01FD3566CF /* Nunito-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4EC0F68AE2689A3C4919C8BA /* Nunito-Bold.ttf */; };
+		6BB5342BA047A20BB058265B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92EB234D572068879240D19E /* Assets.xcassets */; };
+		6E75820AE7F641DEC70BBA70 /* Fredoka-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AE09735095D73C807C046638 /* Fredoka-Bold.ttf */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
+		7593615D393617C81A380D9E /* Nunito-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7DF476F0E1B95160BBEFAB08 /* Nunito-ExtraBold.ttf */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
+		78DEE8926115B4DE78D4FFEA /* widget_snapshot_v1_locked.json in Resources */ = {isa = PBXBuildFile; fileRef = 529F3D7ED86361D5046FC7E3 /* widget_snapshot_v1_locked.json */; };
 		862577FC05E047E1BC954A74 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D02FAA6EFE550B235BE0A0 /* Pods_Runner.framework */; };
+		8AF8A0F70125C281E8E2D323 /* NestyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 32D07F0C3B2A43DE3C625B98 /* NestyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		92F8F4350CDFF1A018BAB952 /* widget_snapshot_v1_solved.json in Resources */ = {isa = PBXBuildFile; fileRef = 66CF6095495B8B0F9EDC239F /* widget_snapshot_v1_solved.json */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		B093698D06B5B1F4635B17A2 /* NestyWidgetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486A11291ECBDB493EF33605 /* NestyWidgetStore.swift */; };
+		B8789EEB0CB64A5EFBA987A3 /* NestyWidgetCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87B8E0F634CD2141D3AF5C74 /* NestyWidgetCoreTests.swift */; };
+		C362BA0546BCC42E2909C4C5 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9E56E5689CF9B0F621D1A5BC /* Localizable.strings */; };
+		CA106D20CD2BEAD18DFFC11C /* NestyWidgetCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF72A620D850EBF66BDA86F /* NestyWidgetCore.swift */; };
+		D3EB8BCD9BC05ED8CAA1C598 /* NestyWidgetCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF72A620D850EBF66BDA86F /* NestyWidgetCore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,9 +45,27 @@
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
 		};
+		AB9F59A1E57A93E06121C027 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 60DD2230009D32B6FDE73755;
+			remoteInfo = NestyWidget;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		0EB1EF6582C81388BFE141F3 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8AF8A0F70125C281E8E2D323 /* NestyWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -43,31 +79,49 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0077DA37533BEABAC7B9F2AD /* NestyWidgetStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NestyWidgetStyle.swift; sourceTree = "<group>"; };
+		01C73700239A1BD94D3F6B4B /* NestyWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NestyWidget.swift; sourceTree = "<group>"; };
 		02E62126D6E39B51BD4603DC /* Pods-Runner.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-prod.xcconfig"; sourceTree = "<group>"; };
 		1025D2B90E2B6A5271CB5D33 /* Pods-RunnerTests.release-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-stg.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-stg.xcconfig"; sourceTree = "<group>"; };
+		11A5213399112D7FA1D9C1B7 /* NestyWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = NestyWidget.entitlements; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		17D02FAA6EFE550B235BE0A0 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B0A40BD3BAC3E6F1B2042A1 /* Pods-RunnerTests.debug-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug-stg.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug-stg.xcconfig"; sourceTree = "<group>"; };
 		1C5B75E20A5C8153665959EE /* Pods-Runner.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-dev.xcconfig"; sourceTree = "<group>"; };
 		22F9A65BCAD722C85DC326CA /* Pods-Runner.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-dev.xcconfig"; sourceTree = "<group>"; };
+		32D07F0C3B2A43DE3C625B98 /* NestyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NestyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		38053876816FC5FDFEF95EA2 /* id */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		3CE11A08AAD13F1CEEA00D02 /* Pods-RunnerTests.debug-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug-dev.xcconfig"; sourceTree = "<group>"; };
 		405B1B0952E91500F69B18D0 /* Pods-RunnerTests.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-dev.xcconfig"; sourceTree = "<group>"; };
+		486A11291ECBDB493EF33605 /* NestyWidgetStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NestyWidgetStore.swift; sourceTree = "<group>"; };
 		4CF6BE6D7DB413A0815C2CFF /* Pods-Runner.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-prod.xcconfig"; sourceTree = "<group>"; };
+		4EC0F68AE2689A3C4919C8BA /* Nunito-Bold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; name = "Nunito-Bold.ttf"; path = "../assets/fonts/Nunito-Bold.ttf"; sourceTree = SOURCE_ROOT; };
+		5178241142E3D2C20AE68B86 /* fr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		52124F0D22FADECD45DE25C2 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		529F3D7ED86361D5046FC7E3 /* widget_snapshot_v1_locked.json */ = {isa = PBXFileReference; includeInIndex = 1; name = widget_snapshot_v1_locked.json; path = ../test/fixtures/widget_snapshot_v1_locked.json; sourceTree = SOURCE_ROOT; };
 		576CBDFE9AE84F1A82F8D7B3 /* Pods-RunnerTests.profile-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-stg.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-stg.xcconfig"; sourceTree = "<group>"; };
+		5AF72A620D850EBF66BDA86F /* NestyWidgetCore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NestyWidgetCore.swift; sourceTree = "<group>"; };
 		5D7115A7D5F5590277CFD027 /* Pods-Runner.debug-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-stg.xcconfig"; sourceTree = "<group>"; };
+		5DA74C4DAAEB8D310B6AEF6D /* widget_snapshot_v1.json */ = {isa = PBXFileReference; includeInIndex = 1; name = widget_snapshot_v1.json; path = ../test/fixtures/widget_snapshot_v1.json; sourceTree = SOURCE_ROOT; };
 		616D994DE1D93C8C70FDEC92 /* Pods-RunnerTests.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-dev.xcconfig"; sourceTree = "<group>"; };
 		627AA270A0AD8639031771A7 /* Pods-RunnerTests.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-prod.xcconfig"; sourceTree = "<group>"; };
+		66CF6095495B8B0F9EDC239F /* widget_snapshot_v1_solved.json */ = {isa = PBXFileReference; includeInIndex = 1; name = widget_snapshot_v1_solved.json; path = ../test/fixtures/widget_snapshot_v1_solved.json; sourceTree = SOURCE_ROOT; };
 		69F2392E1982409895F9511B /* Pods-Runner.release-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-stg.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		75437490642757931F568929 /* es */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		7A31E2B186AF88105D988D7C /* hi */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		7DF476F0E1B95160BBEFAB08 /* Nunito-ExtraBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; name = "Nunito-ExtraBold.ttf"; path = "../assets/fonts/Nunito-ExtraBold.ttf"; sourceTree = SOURCE_ROOT; };
 		83D03975C876C573B4539B74 /* Pods-Runner.debug-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-dev.xcconfig"; sourceTree = "<group>"; };
+		87B8E0F634CD2141D3AF5C74 /* NestyWidgetCoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NestyWidgetCoreTests.swift; sourceTree = "<group>"; };
+		8CCF3C3FCB4E46FDB058D28B /* ja */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		92EB234D572068879240D19E /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -76,12 +130,29 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A3DD10F94A0AA2C863C121F8 /* Pods-Runner.profile-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-stg.xcconfig"; sourceTree = "<group>"; };
+		AE09735095D73C807C046638 /* Fredoka-Bold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; name = "Fredoka-Bold.ttf"; path = "../assets/fonts/Fredoka-Bold.ttf"; sourceTree = SOURCE_ROOT; };
+		AFCC79950D68A2878B70690D /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B3D0AE85F98FB73D8A2716F2 /* de */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B47E987F81DDFA48755CAD12 /* Pods-RunnerTests.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-prod.xcconfig"; sourceTree = "<group>"; };
+		B8DB8BD411DDA8D6C56670F0 /* pt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		CADA57BABE4387AE1EA2122E /* Pods-Runner.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-prod.xcconfig"; sourceTree = "<group>"; };
+		CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = NestyWidget.xcconfig; sourceTree = "<group>"; };
+		CD957462290E608AFC8BDC86 /* pt-BR */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D7CF27DAB977520C0066F98B /* Pods-RunnerTests.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug-prod.xcconfig"; sourceTree = "<group>"; };
+		E101E6549EE524FAC0FBAD33 /* Runner.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		E137A6D31E5EA62B2BB50E5F /* tr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FA84B3AEF7470BFF00697DA1 /* NestyWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NestyWidgetViews.swift; sourceTree = "<group>"; };
+		FF4F4CCA0A358574E0CF128C /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2741E6B4D9B60E606EAAC32B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		71F17C556A3CCE94FFF10C97 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -105,8 +176,20 @@
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
+				87B8E0F634CD2141D3AF5C74 /* NestyWidgetCoreTests.swift */,
+				9C78AB9B84EDD752CB0F163E /* Fixtures */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		4C73808A5EB302D1998CFD9B /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				AE09735095D73C807C046638 /* Fredoka-Bold.ttf */,
+				4EC0F68AE2689A3C4919C8BA /* Nunito-Bold.ttf */,
+				7DF476F0E1B95160BBEFAB08 /* Nunito-ExtraBold.ttf */,
+			);
+			name = Fonts;
 			sourceTree = "<group>";
 		};
 		8CF8187B3376AC790B72830F /* Pods */ = {
@@ -155,6 +238,7 @@
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				8CF8187B3376AC790B72830F /* Pods */,
 				A9D7A56BB57A6AB1F22B08C2 /* Frameworks */,
+				A2A126D2C2C7851B1D11B0F3 /* NestyWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -163,6 +247,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				32D07F0C3B2A43DE3C625B98 /* NestyWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -179,8 +264,37 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				E101E6549EE524FAC0FBAD33 /* Runner.entitlements */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		9C78AB9B84EDD752CB0F163E /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				5DA74C4DAAEB8D310B6AEF6D /* widget_snapshot_v1.json */,
+				529F3D7ED86361D5046FC7E3 /* widget_snapshot_v1_locked.json */,
+				66CF6095495B8B0F9EDC239F /* widget_snapshot_v1_solved.json */,
+			);
+			name = Fixtures;
+			sourceTree = "<group>";
+		};
+		A2A126D2C2C7851B1D11B0F3 /* NestyWidget */ = {
+			isa = PBXGroup;
+			children = (
+				01C73700239A1BD94D3F6B4B /* NestyWidget.swift */,
+				FA84B3AEF7470BFF00697DA1 /* NestyWidgetViews.swift */,
+				0077DA37533BEABAC7B9F2AD /* NestyWidgetStyle.swift */,
+				5AF72A620D850EBF66BDA86F /* NestyWidgetCore.swift */,
+				486A11291ECBDB493EF33605 /* NestyWidgetStore.swift */,
+				AFCC79950D68A2878B70690D /* Info.plist */,
+				11A5213399112D7FA1D9C1B7 /* NestyWidget.entitlements */,
+				CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */,
+				92EB234D572068879240D19E /* Assets.xcassets */,
+				9E56E5689CF9B0F621D1A5BC /* Localizable.strings */,
+				4C73808A5EB302D1998CFD9B /* Fonts */,
+			);
+			path = NestyWidget;
 			sourceTree = "<group>";
 		};
 		A9D7A56BB57A6AB1F22B08C2 /* Frameworks */ = {
@@ -214,6 +328,23 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		60DD2230009D32B6FDE73755 /* NestyWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F747BD751EB94AD781E4B35E /* Build configuration list for PBXNativeTarget "NestyWidget" */;
+			buildPhases = (
+				9DB50D083CDB7158C96A3A1C /* Sources */,
+				2741E6B4D9B60E606EAAC32B /* Frameworks */,
+				4F047ED172E8A47F37DBDF46 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NestyWidget;
+			productName = NestyWidget;
+			productReference = 32D07F0C3B2A43DE3C625B98 /* NestyWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		97C146ED1CF9000F007C117D /* Runner */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
@@ -224,12 +355,14 @@
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				0EB1EF6582C81388BFE141F3 /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				3110F836A9895E71E3C53205 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				2548B6EA0A1F3569ED9E6E28 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
@@ -263,6 +396,15 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				es,
+				fr,
+				hi,
+				id,
+				ja,
+				pt,
+				"pt-BR",
+				tr,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
@@ -271,6 +413,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				60DD2230009D32B6FDE73755 /* NestyWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -280,6 +423,21 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E4DAB08411FCAC96652ABD6 /* widget_snapshot_v1.json in Resources */,
+				78DEE8926115B4DE78D4FFEA /* widget_snapshot_v1_locked.json in Resources */,
+				92F8F4350CDFF1A018BAB952 /* widget_snapshot_v1_solved.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F047ED172E8A47F37DBDF46 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6BB5342BA047A20BB058265B /* Assets.xcassets in Resources */,
+				C362BA0546BCC42E2909C4C5 /* Localizable.strings in Resources */,
+				6E75820AE7F641DEC70BBA70 /* Fredoka-Bold.ttf in Resources */,
+				5EAF110E078B2F01FD3566CF /* Nunito-Bold.ttf in Resources */,
+				7593615D393617C81A380D9E /* Nunito-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +555,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
+				B8789EEB0CB64A5EFBA987A3 /* NestyWidgetCoreTests.swift in Sources */,
+				D3EB8BCD9BC05ED8CAA1C598 /* NestyWidgetCore.swift in Sources */,
+				5A24D4AEBB6780C36784FA42 /* NestyWidgetStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -407,12 +568,31 @@
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
+				4B4A33A87DECB97EDD3F3CF1 /* NestyWidgetStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9DB50D083CDB7158C96A3A1C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5526E9AF43923CDD2EC2E74F /* NestyWidget.swift in Sources */,
+				4B462E635FA2C33F45A417B7 /* NestyWidgetViews.swift in Sources */,
+				57C16A57B36E206BCE70D689 /* NestyWidgetStyle.swift in Sources */,
+				CA106D20CD2BEAD18DFFC11C /* NestyWidgetCore.swift in Sources */,
+				B093698D06B5B1F4635B17A2 /* NestyWidgetStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2548B6EA0A1F3569ED9E6E28 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = NestyWidget;
+			target = 60DD2230009D32B6FDE73755 /* NestyWidget */;
+			targetProxy = AB9F59A1E57A93E06121C027 /* PBXContainerItemProxy */;
+		};
 		331C8086294A63A400263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
@@ -437,6 +617,23 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		9E56E5689CF9B0F621D1A5BC /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B3D0AE85F98FB73D8A2716F2 /* de */,
+				FF4F4CCA0A358574E0CF128C /* en */,
+				75437490642757931F568929 /* es */,
+				5178241142E3D2C20AE68B86 /* fr */,
+				7A31E2B186AF88105D988D7C /* hi */,
+				38053876816FC5FDFEF95EA2 /* id */,
+				8CCF3C3FCB4E46FDB058D28B /* ja */,
+				B8DB8BD411DDA8D6C56670F0 /* pt */,
+				CD957462290E608AFC8BDC86 /* pt-BR */,
+				E137A6D31E5EA62B2BB50E5F /* tr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -445,8 +642,11 @@
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "[STG] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.stg;
+				APP_URL_SCHEME = "nesty-stg";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -459,6 +659,7 @@
 				NESTY_FLAVOR = stg;
 				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.stg;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -582,8 +783,11 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "[DEV] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.dev;
+				APP_URL_SCHEME = "nesty-dev";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -671,6 +875,96 @@
 			};
 			name = "Release-dev";
 		};
+		2A6889BAD94A3E3918950A2B /* Release-dev */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = "[DEV] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.dev;
+				APP_URL_SCHEME = "nesty-dev";
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.dev.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Release-dev";
+		};
+		2A9BC66F8682A9F1C8391153 /* Profile-dev */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = "[DEV] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.dev;
+				APP_URL_SCHEME = "nesty-dev";
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.dev.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Profile-dev";
+		};
+		391CFB5A8CA2CBB45F9A60E3 /* Profile-prod */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = Nesty;
+				APP_GROUP_ID = group.com.futrix.nesty;
+				APP_URL_SCHEME = nesty;
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = prod;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Profile-prod";
+		};
 		4135E5EB8AC9B0B26595981B /* Debug-prod */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D7CF27DAB977520C0066F98B /* Pods-RunnerTests.debug-prod.xcconfig */;
@@ -714,8 +1008,11 @@
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "[DEV] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.dev;
+				APP_URL_SCHEME = "nesty-dev";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -728,12 +1025,45 @@
 				NESTY_FLAVOR = dev;
 				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Debug-dev";
+		};
+		5E017C73FAD86409F9D3A202 /* Debug-stg */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = "[STG] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.stg;
+				APP_URL_SCHEME = "nesty-stg";
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = stg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.stg.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug-stg";
 		};
 		5E041A1B5775EA11A2758E91 /* Profile-prod */ = {
 			isa = XCBuildConfiguration;
@@ -792,8 +1122,11 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "[DEV] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.dev;
+				APP_URL_SCHEME = "nesty-dev";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -830,6 +1163,36 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = "Debug-stg";
+		};
+		949BCFABB647F88997862957 /* Release-prod */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = Nesty;
+				APP_GROUP_ID = group.com.futrix.nesty;
+				APP_URL_SCHEME = nesty;
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = prod;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Release-prod";
 		};
 		979649936A8BA8FF92C12299 /* Release-prod */ = {
 			isa = XCBuildConfiguration;
@@ -902,6 +1265,38 @@
 			};
 			name = "Release-prod";
 		};
+		9E64B3EC3094C96A8A3931A3 /* Debug-dev */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = "[DEV] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.dev;
+				APP_URL_SCHEME = "nesty-dev";
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = dev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.dev.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug-dev";
+		};
 		9EB03C8F5AF236C85A2E1DDA /* Profile-dev */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 616D994DE1D93C8C70FDEC92 /* Pods-RunnerTests.profile-dev.xcconfig */;
@@ -919,13 +1314,76 @@
 			};
 			name = "Profile-dev";
 		};
+		B2851B697FB3AF965526EC39 /* Profile-stg */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = "[STG] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.stg;
+				APP_URL_SCHEME = "nesty-stg";
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = stg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.stg.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Profile-stg";
+		};
+		B8754E89A22A7441671F8B09 /* Release-stg */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = "[STG] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.stg;
+				APP_URL_SCHEME = "nesty-stg";
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = stg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.stg.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Release-stg";
+		};
 		BB3533731E0553A1C7175C78 /* Profile-stg */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "[STG] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.stg;
+				APP_URL_SCHEME = "nesty-stg";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -943,6 +1401,38 @@
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Profile-stg";
+		};
+		C280084F199B1EF7985593A9 /* Debug-prod */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CCB27BE94FE832B10C4D0710 /* NestyWidget.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_DISPLAY_NAME = Nesty;
+				APP_GROUP_ID = group.com.futrix.nesty;
+				APP_URL_SCHEME = nesty;
+				CODE_SIGN_ENTITLEMENTS = NestyWidget/NestyWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = Z674BG8G6U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NestyWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				NESTY_FLAVOR = prod;
+				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug-prod";
 		};
 		CC781220C51F4C0DAD9E8B91 /* Debug-dev */ = {
 			isa = XCBuildConfiguration;
@@ -1040,8 +1530,11 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = Nesty;
+				APP_GROUP_ID = group.com.futrix.nesty;
+				APP_URL_SCHEME = nesty;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -1174,8 +1667,11 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = Nesty;
+				APP_GROUP_ID = group.com.futrix.nesty;
+				APP_URL_SCHEME = nesty;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -1199,8 +1695,11 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "[STG] Nesty";
+				APP_GROUP_ID = group.com.futrix.nesty.stg;
+				APP_URL_SCHEME = "nesty-stg";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -1224,8 +1723,11 @@
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = Nesty;
+				APP_GROUP_ID = group.com.futrix.nesty;
+				APP_URL_SCHEME = nesty;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Z674BG8G6U;
 				ENABLE_BITCODE = NO;
@@ -1238,6 +1740,7 @@
 				NESTY_FLAVOR = prod;
 				PRODUCT_BUNDLE_IDENTIFIER = com.futrix.nesty;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -1363,6 +1866,22 @@
 				7802279E03CFEBBDA1515A56 /* Release-dev */,
 				EE10DD67BB8478023708346E /* Release-stg */,
 				E992B7170E8E9C1DD1E47B53 /* Release-prod */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release-prod";
+		};
+		F747BD751EB94AD781E4B35E /* Build configuration list for PBXNativeTarget "NestyWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9E64B3EC3094C96A8A3931A3 /* Debug-dev */,
+				5E017C73FAD86409F9D3A202 /* Debug-stg */,
+				C280084F199B1EF7985593A9 /* Debug-prod */,
+				2A9BC66F8682A9F1C8391153 /* Profile-dev */,
+				B2851B697FB3AF965526EC39 /* Profile-stg */,
+				391CFB5A8CA2CBB45F9A60E3 /* Profile-prod */,
+				2A6889BAD94A3E3918950A2B /* Release-dev */,
+				B8754E89A22A7441671F8B09 /* Release-stg */,
+				949BCFABB647F88997862957 /* Release-prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Release-prod";

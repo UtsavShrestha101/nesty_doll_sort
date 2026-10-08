@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The 2 × 2 widget (frame 14.4, Android; design spec §2.5). NestyWidgetRenderer sets
+  every view it changes at each render: the streak look (flame, number, label,
+  dolls, line) or the locked look (daily mark, title, line); the padding (16, or 12
+  in the shortest tier); the number's size; the dolls' tint. One tap target and one
+  description on the root; the images are decoration (importantForAccessibility no).
+  RemoteViews can't load the app's fonts: the system sans (DELIVERY "Widget type").
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/nesty_widget_bg"
+    android:clipToOutline="true"
+    android:padding="16dp"
+    tools:targetApi="31">
+
+    <LinearLayout
+        android:id="@+id/nesty_widget_streak"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/nesty_widget_flame"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:src="@drawable/nesty_widget_flame_unlit" />
+
+            <TextView
+                android:id="@+id/nesty_widget_number"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5dp"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:fontFeatureSettings="tnum"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/nesty_widget_number"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/nesty_widget_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/nesty_widget_label"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/nesty_widget_dolls"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginTop="12dp"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/nesty_widget_doll_0"
+                android:layout_width="15dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/nesty_widget_doll" />
+
+            <ImageView
+                android:id="@+id/nesty_widget_doll_1"
+                android:layout_width="15dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/nesty_widget_doll" />
+
+            <ImageView
+                android:id="@+id/nesty_widget_doll_2"
+                android:layout_width="15dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/nesty_widget_doll" />
+
+            <ImageView
+                android:id="@+id/nesty_widget_doll_3"
+                android:layout_width="15dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/nesty_widget_doll" />
+
+            <ImageView
+                android:id="@+id/nesty_widget_doll_4"
+                android:layout_width="15dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/nesty_widget_doll" />
+
+            <ImageView
+                android:id="@+id/nesty_widget_doll_5"
+                android:layout_width="15dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/nesty_widget_doll" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/nesty_widget_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:breakStrategy="balanced"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:hyphenationFrequency="none"
+        android:includeFontPadding="false"
+        android:maxLines="2"
+        android:textColor="@color/nesty_widget_line"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/nesty_widget_mark"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_gravity="top|start"
+        android:importantForAccessibility="no"
+        android:src="@drawable/nesty_widget_daily_mark"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/nesty_widget_locked"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/nesty_widget_locked_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/nesty_widget_title"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/nesty_widget_locked_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:breakStrategy="balanced"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:hyphenationFrequency="none"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:textColor="@color/nesty_widget_label"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
+import 'package:nesty_game/core/ui/date_skeleton.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/core/ui/theme/locale_script.dart';
@@ -22,7 +22,7 @@ class PastDayWinCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     final locale = Localizations.localeOf(context).toString();
-    final long = DateFormat(
+    final long = skeletonDateFormat(
       HabitsPastDayTokens.winDateSkeleton,
       locale,
     ).format(date.startOfDay);

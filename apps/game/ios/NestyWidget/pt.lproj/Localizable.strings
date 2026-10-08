@@ -1,0 +1,10 @@
+/*
+  GENERATED — do not edit; run dart run nesty_tools:gen_widget_strings
+
+  Source: apps/game/lib/l10n/app_pt.arb. The widget gallery's name
+  and description, and the title shown before the app has written anything
+  (stage 4 of the local habits).
+*/
+"widgetGalleryName" = "Desafio diário";
+"widgetGalleryDescription" = "Sua sequência e o desafio de hoje, de relance.";
+"widgetLockedTitle" = "Desafio diário";

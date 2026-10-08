@@ -8,6 +8,7 @@ import 'package:nesty_game/app/app.dart';
 import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
+import 'package:nesty_game/core/services/home_widget/home_widget_bridge.dart';
 import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
 import 'package:nesty_game/core/services/save/save_lifecycle_flusher.dart';
 import 'package:nesty_game/core/services/welcome_back/welcome_back_tracker.dart';
@@ -67,6 +68,11 @@ void bootstrap({@visibleForTesting Future<void> Function()? beforeRunApp}) {
       // Welcome back (local habit 1): notes the open before Home's first
       // frame, so the gap is read before anything overwrites lastOpenDate.
       get<WelcomeBackTracker>().start();
+
+      // The home-screen widget's snapshot (local habit 4): written now, on
+      // each resume, when the daily changes and when the language does. It
+      // never throws and nothing waits on it.
+      get<HomeWidgetBridge>().start();
 
       await beforeRunApp?.call();
 

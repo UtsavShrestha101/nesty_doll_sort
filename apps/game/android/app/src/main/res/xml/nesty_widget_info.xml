@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The home-screen widget (local habits stage 4; design spec §6, tokens
+  habits.widget.android): 2 × 2, resizable to 4 × 2 and no taller than 2 cells
+  (maxResizeHeight 180dp, gap 14). updatePeriodMillis 0: the provider redraws only
+  when the app publishes, at the midnight alarm and on the clock broadcasts, so
+  nothing polls. The picker's name is the receiver's label in the manifest.
+  targetCell*, maxResize*, description and previewLayout are API 31+; older
+  launchers size from minWidth / minHeight (110dp is 2 cells) and show previewImage.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:description="@string/widget_gallery_description"
+    android:initialLayout="@layout/nesty_widget_preview"
+    android:maxResizeHeight="180dp"
+    android:minHeight="110dp"
+    android:minResizeHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minWidth="110dp"
+    android:previewImage="@drawable/nesty_widget_preview_2x2"
+    android:previewLayout="@layout/nesty_widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    tools:targetApi="31" />

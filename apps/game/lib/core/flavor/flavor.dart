@@ -14,4 +14,14 @@ enum Flavor {
     Flavor.prod => true,
     Flavor.dev || Flavor.stg => false,
   };
+
+  /// The flavor's URL scheme, so three installs on one phone never collide
+  /// (plan-local-habits §4): the home-screen widget opens
+  /// `<urlScheme>://daily`. Matches the native `APP_URL_SCHEME` /
+  /// `appUrlScheme` build settings.
+  String get urlScheme => switch (this) {
+    Flavor.dev => 'nesty-dev',
+    Flavor.stg => 'nesty-stg',
+    Flavor.prod => 'nesty',
+  };
 }

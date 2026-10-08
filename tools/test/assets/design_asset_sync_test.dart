@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:nesty_tools/src/assets/android_vector.dart';
 import 'package:nesty_tools/src/assets/design_asset_sync.dart';
+import 'package:nesty_tools/src/assets/widget_native_art.dart';
 import 'package:nesty_tools/src/file_writes.dart';
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/repo_root.dart';
@@ -228,7 +229,21 @@ void main() {
         isEmpty,
         reason: 'the notification icon is a platform file, not an asset',
       );
-      expect(plan.outputs.map((o) => o.path), [notificationIconDrawable]);
+      // The notification icon, then the widget's native art (iOS catalog,
+      // Android drawables and picker preview; widget_native_art_test.dart
+      // owns the details).
+      final paths = plan.outputs.map((o) => o.path).toList();
+      expect(paths, contains(notificationIconDrawable));
+      expect(
+        paths.where((p) => p != notificationIconDrawable),
+        everyElement(
+          anyOf(
+            startsWith(widgetIosCatalog),
+            startsWith('$widgetAndroidRes/drawable'),
+          ),
+        ),
+      );
+      expect(paths.length, greaterThan(25));
       final destinations = plan.assets.map((a) => a.destination);
       expect(destinations, contains('skins/forest-bear/skin.svg'));
       expect(destinations, contains('themes/ch06/background.svg'));
@@ -309,10 +324,13 @@ void main() {
       expect(result.removed, isEmpty);
       expect(result.missingPubspecDirs, isEmpty);
       expect(
-        result.outputOutcomes,
-        {notificationIconDrawable: WriteOutcome.unchanged},
+        result.outputOutcomes.entries
+            .where((e) => e.value != WriteOutcome.unchanged)
+            .map((e) => e.key),
+        isEmpty,
         reason: 'run dart run nesty_tools:sync_design_assets',
       );
+      expect(result.outputOutcomes.keys, contains(notificationIconDrawable));
     });
 
     test('the Android notification icon is the design file, converted', () {

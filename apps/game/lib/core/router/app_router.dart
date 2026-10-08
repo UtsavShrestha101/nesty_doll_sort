@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:injectable/injectable.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/router/widget_link.dart';
 import 'package:nesty_game/features/chapters/pages/chapters_page.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_entrance.dart';
@@ -40,10 +41,48 @@ part 'app_router.gr.dart';
 @lazySingleton
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
-  AppRouter(this._contentReady);
+  AppRouter(this._contentReady, this._widgetLink);
 
   /// Everything after the splash opens only once it has loaded the levels.
   final ContentReadyGuard _contentReady;
+
+  final WidgetLink _widgetLink;
+
+  /// The `deepLinkBuilder` `App` passes to `config` (stage 4 contract §4):
+  /// the home-screen widget's `<scheme>://daily` is kept as a pending launch
+  /// target through the splash on a cold start, and opens the Daily over
+  /// Home on a warm one. The app has no other deep link: any other
+  /// `<scheme>://` link a stranger sends starts the app as usual when cold
+  /// and moves nothing when warm.
+  FutureOr<DeepLink> deepLinkBuilder(PlatformDeepLink link) {
+    return switch (_widgetLink.resolve(link.uri, initial: link.initial)) {
+      WidgetLinkAction.passThrough =>
+        link.initial ? DeepLink.defaultPath : DeepLink.none,
+      // The splash is the initial route; it loads, then reads the target.
+      WidgetLinkAction.viaSplash => DeepLink.defaultPath,
+      // A second tap while the Daily, or today's daily board, is already on
+      // top opens no second one: one Back still leaves it. Any other screen
+      // keeps its place under the Daily (a board under its Pause, which the
+      // app opened when it was hidden, a race's clock held by it).
+      WidgetLinkAction.openDaily =>
+        _dailyOnTop()
+            ? DeepLink.none
+            : DeepLink.single(const DailyRoute(), navigate: false),
+      WidgetLinkAction.stay => DeepLink.none,
+    };
+  }
+
+  bool _dailyOnTop() {
+    try {
+      final top = topRoute;
+      if (top.name == DailyRoute.name) return true;
+      final args = top.args;
+      return args is GameplayRouteArgs && args.request is DailyPlay;
+    } on Object {
+      // No route yet: nothing is on top.
+      return false;
+    }
+  }
 
   @override
   RouteType get defaultRouteType => const RouteType.material();

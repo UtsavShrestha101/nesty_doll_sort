@@ -13,16 +13,16 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M1 | Core (`nesty_core`) | 0 |
 | M2 | Playable game | 0 |
 | M3 | App shell and meta | 0 |
-| M4 | Firebase content | 17 |
+| M4 | Firebase content | 18 |
 | M5 | Admin panel | 17 |
 | M6 | Monetization | 17 |
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
-| design | Waiting on a design export or decision from the owner | 9 |
+| design | Waiting on a design export or decision from the owner | 24 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 69 markers.
+Total: 85 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -38,12 +38,13 @@ _None._
 
 ## M4 — Firebase content
 
-- `apps/game/lib/bootstrap.dart:39` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
-- `apps/game/lib/bootstrap.dart:76` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
+- `apps/game/lib/bootstrap.dart:40` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
+- `apps/game/lib/bootstrap.dart:82` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
 - `apps/game/lib/core/base/run_guarded.dart:29` — also report as a Crashlytics non-fatal (spec §14.4).
 - `apps/game/lib/core/repository/bundled_catalog_repository.dart:12` — overlay Firestore's `chapters`, `skins`, `themes` and `museumItems` (cached, offline-first; spec §13.5, §14.1).
 - `apps/game/lib/core/repository/default_level_resolver.dart:144` — this only sees the bundle it was resolved from, so a chapter the player already passed with fewer levels than `ChapterInfo.levels` never retroactively completes when sync adds the rest. Award that figurine and …
 - `apps/game/lib/core/repository/level_repository.dart:9` — `levels_cache.json` + background Firestore sync on launch and resume (never blocking, never swapping the level in progress).
+- `apps/game/lib/core/router/widget_link.dart:85` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
 - `apps/game/lib/core/services/analytics/analytics_service.dart:4` — add `FirebaseAnalyticsService` (firebase_analytics) for the real env, plus typed helpers for the §14.4 events (`level_start`, `level_win`, ...) so event names never get mistyped at call sites.
 - `apps/game/lib/core/services/analytics/fake_analytics_service.dart:13` — drop `AppEnv.real` from `env` once `FirebaseAnalyticsService` exists, then record events in memory (`events` list plus `clear()`) so tests can read them; that is only safe once release builds stop using this class.
 - `apps/game/lib/core/services/database/hive_database_service.dart:55` — report as a Crashlytics non-fatal.
@@ -54,7 +55,7 @@ _None._
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
 - `apps/game/lib/features/welcome_back/cubit/welcome_back_cubit.dart:89` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
-- `docs/BACKLOG.md:986` — names `getString`
+- `docs/BACKLOG.md:992` — names `getString`
 
 ## M5 — Admin panel
 
@@ -102,7 +103,7 @@ _None._
 
 ## M8 — Release prep
 
-- `apps/game/android/app/build.gradle.kts:69` — Sign release builds with the upload key. Load it from an untracked android/key.properties (storeFile, storePassword, keyAlias, keyPassword) and never commit the keystore or passwords. .gitignore already excludes …
+- `apps/game/android/app/build.gradle.kts:83` — Sign release builds with the upload key. Load it from an untracked android/key.properties (storeFile, storePassword, keyAlias, keyPassword) and never commit the keystore or passwords. .gitignore already excludes …
 - `apps/game/lib/core/services/links/app_links.dart:6` — the owner's privacy policy URL and support email (Q73).
 - `apps/game/lib/core/ui/theme/app_text_styles.dart:11` — tabular figures for coins and counters (PROGRESS Q29; moved from M2, the approach waits on the owner). Fredoka has no `tnum`, so [number]'s `FontFeature.tabularFigures()` does nothing yet; `NestyNumberText` is the one …
 - `apps/game/lib/core/ui/widgets/number/nesty_number_text.dart:7` — tabular figures (PROGRESS Q29; moved from M2, the approach waits on the owner). The design asks for them, but Fredoka's digits are proportional and it has no `tnum`, so a changing number still shifts. This widget is the …
@@ -125,6 +126,21 @@ _None._
 - `apps/admin/lib/features/login/pages/login_page.dart:11` — design/admin/*.png has no login screen yet (DESIGN_BRIEF Prompt 14 lists Levels, Level Editor and Skin upload only).
 - `apps/admin/lib/features/not_authorized/pages/not_authorized_page.dart:10` — no admin design export covers this screen yet.
 - `apps/admin/lib/features/shell/pages/admin_shell_page.dart:17` — narrow-window layout and rail styling (design/admin/*.png).
+- `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:119` — the first-run state isn't drawn (design spec gap 3); the default is the locked look with the gallery's own strings, read as they are by TalkBack.
+- `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:200` — gap 4 only tiers the streak look; the locked look's tiers here are the default.
+- `apps/game/android/app/src/main/kotlin/com/futrix/nesty/widget/NestyWidgetRenderer.kt:226` — gap 4 tiers the 2 × 2 only; the 4 × 2's tiers here follow it by default.
+- `apps/game/ios/NestyWidget/NestyWidget.swift:67` — the gallery preview is the first-run state, localized by the native strings (gap 20).
+- `apps/game/ios/NestyWidget/NestyWidgetCore.swift:265` — the past-the-last-entry look is the spec's default (gap 18).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:46` — the tinted frames (14.4f) draw mock values; the real tint is the system's, these are the spec's whites (gap 9).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:57` — StandBy uses the dark tokens (label #E3C9A4), not the frame's #C9B49A, and keeps them on a light phone (gaps 6, 17).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:142` — no widget face is drawn for tr, hi or ja (gap 10).
+- `apps/game/ios/NestyWidget/NestyWidgetStyle.swift:291` — the cap at xxLarge is the spec's default (gap 19).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:62` — the first-run state isn't drawn (gap 3); it borrows the locked layout with the gallery description as its line.
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:105` — the short-widget tiers are the spec's default (gap 4).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:130` — one line, then the short form (gap 12).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:162` — the label wraps to two lines in the 104 column, then takes its short form (gap 11).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:237` — 1000+ relies on the 0.8 floor alone (gap 16).
+- `apps/game/ios/NestyWidget/NestyWidgetViews.swift:398` — more colours than fit show the first N, no "+N" (gap 15).
 - `apps/game/lib/features/daily/widgets/daily_locked_card.dart:11` — tokens.json holds no entry for this card's sizes; they are the scene's (card radius 32, 76 dp piece, title 26, body 16, 58 dp button).
 
 ## later — Unscheduled (spec §19 "Later ideas")

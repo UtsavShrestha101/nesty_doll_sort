@@ -10,7 +10,10 @@ import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/catalog_repository.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/repository/level_resolver.dart';
+import 'package:nesty_game/core/services/clock/app_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
+import 'package:nesty_game/core/services/daily_archive/daily_archive_rules.dart';
 import 'package:nesty_game/core/services/generator/level_generator_service.dart';
 import 'package:nesty_game/core/services/race/race_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
@@ -31,6 +34,7 @@ class DefaultLevelResolver implements LevelResolver {
     this._remoteConfig,
     this._save,
     this._catalog,
+    this._clock,
   );
 
   final LevelRepository _levels;
@@ -38,6 +42,7 @@ class DefaultLevelResolver implements LevelResolver {
   final RemoteConfigService _remoteConfig;
   final SaveService _save;
   final CatalogRepository _catalog;
+  final AppClock _clock;
 
   /// Generated entries kept for the last few requests (m3-design §6.2).
   static const int _cacheSize = 4;
@@ -49,6 +54,10 @@ class DefaultLevelResolver implements LevelResolver {
   Future<PlayEntry?> resolve(PlayRequest request) => switch (request) {
     CampaignPlay(:final order) => Future.value(_campaign(order)),
     ReplayPlay(:final order) => Future.value(_replay(order)),
+    PastDailyPlay() =>
+      _mayPlayPastDay(request)
+          ? _ensureGenerated(request)
+          : Future<PlayEntry?>.value(),
     BonusPlay() || DailyPlay() || RacePlay() => _ensureGenerated(request),
   };
 
@@ -57,6 +66,7 @@ class DefaultLevelResolver implements LevelResolver {
     // Bundled boards (campaign, replay) resolve synchronously; generated
     // ones (bonus, daily, race) start in the isolate.
     if (!request.isGenerated) return;
+    if (request is PastDailyPlay && !_mayPlayPastDay(request)) return;
     unawaited(_ensureGenerated(request));
   }
 
@@ -68,6 +78,8 @@ class DefaultLevelResolver implements LevelResolver {
           : PlayRequest.bonus(_save.nextBonus),
     BonusPlay(:final number) => PlayRequest.bonus(number + 1),
     DailyPlay() => null,
+    // A past day ends on its own card, back to the Daily (§7.5c).
+    PastDailyPlay() => null,
     // Continue after a replay goes back to Chapters (m7-design §6).
     ReplayPlay() => null,
     // A race's result offers Rematch and New race, never a next level
@@ -194,6 +206,7 @@ class DefaultLevelResolver implements LevelResolver {
       return switch (request) {
         BonusPlay(:final number) => await _bonus(request, number),
         DailyPlay(:final yyyymmdd) => await _daily(request, yyyymmdd),
+        PastDailyPlay(:final yyyymmdd) => await _pastDaily(request, yyyymmdd),
         RacePlay() => await _race(request),
         CampaignPlay() || ReplayPlay() => null,
       };
@@ -232,6 +245,51 @@ class DefaultLevelResolver implements LevelResolver {
       rewardCoins: _remoteConfig.value(RemoteConfigKeys.dailyReward),
       themeId: _currentChapterThemeId(),
       expertOnly: generated.expertOnly,
+    );
+  }
+
+  /// A past day's board (§7.5c): the very board `_daily` makes for that
+  /// date, paying nothing. The gate ([_mayPlayPastDay]) already ran.
+  Future<PlayEntry?> _pastDaily(PlayRequest request, int yyyymmdd) async {
+    final params = DifficultyCurve.dailyParams(yyyymmdd);
+    final generated = await _generator.generate(params);
+    if (generated == null) return null;
+    return PlayEntry(
+      request: request,
+      level: generated.level,
+      tier: generated.tier,
+      levelVersion: Generator.version,
+      rewardCoins: 0,
+      themeId: _currentChapterThemeId(),
+      expertOnly: generated.expertOnly,
+    );
+  }
+
+  /// A past day may be resolved when the Daily is unlocked and the date is
+  /// in the window (today − `daily_archive_days` … today − 1), or is the
+  /// date of the saved past-day board: one open on screen past midnight
+  /// can still be finished (§7.5c). Never today, the future or a date that
+  /// isn't one.
+  bool _mayPlayPastDay(PlayRequest request) {
+    if (request is! PastDailyPlay) return false;
+    final LocalDate date;
+    try {
+      date = LocalDate.fromYyyymmdd(request.yyyymmdd);
+    } on ArgumentError {
+      return false;
+    }
+    final today = _clock.today();
+    if (date >= today) return false;
+    if (_save.highestLevel < StreakDailyService.unlockAtHighestLevel) {
+      return false;
+    }
+    final saved = _save.inProgressFor(PlayKind.pastDaily);
+    if (saved != null && saved.request == request) return true;
+    return DailyArchiveRules.isPlayable(
+      date,
+      today,
+      unlocked: true,
+      days: DailyArchiveRules.daysOf(_remoteConfig),
     );
   }
 
@@ -304,13 +362,14 @@ class DefaultLevelResolver implements LevelResolver {
       rewardCoins: switch (request) {
         BonusPlay() => winRewardFor(tier, _remoteConfig),
         DailyPlay() => _remoteConfig.value(RemoteConfigKeys.dailyReward),
+        PastDailyPlay() => 0,
         // Never restored: bundled boards load from the bundle, and a race
         // is never saved (m7-design P2.4).
         CampaignPlay() || ReplayPlay() || RacePlay() => 0,
       },
       themeId: switch (request) {
         BonusPlay() => _lastChapterThemeId(),
-        DailyPlay() => _currentChapterThemeId(),
+        DailyPlay() || PastDailyPlay() => _currentChapterThemeId(),
         CampaignPlay() || ReplayPlay() || RacePlay() => '',
       },
     );

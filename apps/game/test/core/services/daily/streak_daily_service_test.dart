@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/clock/fake_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
@@ -671,6 +672,70 @@ void main() {
         // The longest run ever recorded survives the pause: only
         // `SaveService.recordLevelWin` raises it, and never lowers it.
         expect(save.document.records.longestRun, 4);
+      });
+    });
+
+    group('the past days (local habits 3)', () {
+      InProgressLevel board(int date) => InProgressLevel(
+        request: PlayRequest.pastDaily(date),
+        levelId: 'L$date',
+        levelVersion: 1,
+        session: const {},
+      );
+
+      test('the window is empty while the Daily is locked, then opens with '
+          'it, not from the install date', () {
+        expect(service.refresh().window, isEmpty);
+        save.currentLevel = 3;
+        final status = service.refresh();
+        expect(status.window, hasLength(7));
+        expect(status.window.first, LocalDate(2026, 9, 14));
+        expect(status.window.last, LocalDate(2026, 9, 20));
+      });
+
+      test('daily_archive_days resizes it, and 0 empties it', () {
+        save.currentLevel = 3;
+        remoteConfig.setOverride(RemoteConfigKeys.dailyArchiveDays, 2);
+        expect(service.refresh().window, [
+          LocalDate(2026, 9, 19),
+          LocalDate(2026, 9, 20),
+        ]);
+        remoteConfig.setOverride(RemoteConfigKeys.dailyArchiveDays, 0);
+        expect(service.refresh().window, isEmpty);
+      });
+
+      test('played and archiveInProgress come from the archive, and a '
+          'refresh never touches the streak fields', () {
+        save.currentLevel = 3;
+        save.recordLevelWin(
+          const LevelWinRecord(
+            request: PlayRequest.pastDaily(20260919),
+            rewardCoins: 0,
+          ),
+        );
+        save.saveInProgress(board(20260918));
+        service.refresh(); // the weekly freeze grant lands here, once
+        final daily = save.document.daily;
+        final status = service.refresh();
+        expect(status.played, [LocalDate(2026, 9, 19)]);
+        expect(status.archiveInProgress, LocalDate(2026, 9, 18));
+        expect(save.document.daily, daily);
+      });
+
+      test('pruneArchive drops a board that left the window and '
+          'republishes', () {
+        save.currentLevel = 3;
+        save.saveInProgress(board(20260901));
+        expect(service.refresh().archiveInProgress, LocalDate(2026, 9, 1));
+        final status = service.pruneArchive();
+        expect(status.archiveInProgress, isNull);
+        expect(save.document.dailyArchive.inProgress, isNull);
+
+        save.saveInProgress(board(20260918));
+        expect(
+          service.pruneArchive().archiveInProgress,
+          LocalDate(2026, 9, 18),
+        );
       });
     });
   });

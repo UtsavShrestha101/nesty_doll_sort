@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:intl/intl.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
@@ -13,6 +15,7 @@ import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
 import 'package:nesty_game/features/daily/widgets/daily_locked_card.dart';
 import 'package:nesty_game/features/daily/widgets/day_strip.dart';
 import 'package:nesty_game/features/daily/widgets/month_card.dart';
+import 'package:nesty_game/features/daily/widgets/past_day_card.dart';
 import 'package:nesty_game/features/daily/widgets/puzzle_card.dart';
 import 'package:nesty_game/features/daily/widgets/reminder_offer_dialog.dart';
 import 'package:nesty_game/features/daily/widgets/streak_card.dart';
@@ -215,6 +218,26 @@ class _DailyViewState extends State<DailyView> {
     );
   }
 
+  /// Today's puzzle card, for the month's today cell to scroll back to.
+  final _todayCard = GlobalKey();
+
+  /// `habits.month.cell.today.tap`: scrolls up to today's card, with the
+  /// past day's open motion (a jump under reduced motion).
+  void _showToday() {
+    final card = _todayCard.currentContext;
+    if (card == null) return;
+    final reduced = context.reduceMotion;
+    unawaited(
+      Scrollable.ensureVisible(
+        card,
+        duration: reduced
+            ? Duration.zero
+            : const Duration(milliseconds: HabitsPastDayTokens.openScrollMs),
+        curve: HabitsPastDayTokens.openCurve,
+      ),
+    );
+  }
+
   Widget _unlocked(BuildContext context, DailyState state) {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
@@ -233,6 +256,7 @@ class _DailyViewState extends State<DailyView> {
           ChestRow(status: state.status, chestCoins: state.chestCoins),
           const SizedBox(height: 16),
           PuzzleCard(
+            key: _todayCard,
             state: state,
             onPlay: () => _playDaily(context),
             onPlayCampaign: () => _playCampaign(context, state),
@@ -240,10 +264,28 @@ class _DailyViewState extends State<DailyView> {
             // solved card (5.5) has none.
           ),
           const SizedBox(height: 16),
-          // Local habit 2: a month of played days (stage 2, not tappable). It
-          // is the scroll's last card, 12 dp under today's puzzle card
-          // (frame 14.2).
-          MonthCard(status: state.status),
+          // Local habits 2 and 3: the month of played days and the picker of
+          // the last days. 12 dp under today's puzzle card (frame 14.2); a
+          // chosen past day's card opens 12 dp under it (frame 14.3b).
+          MonthCard(
+            status: state.status,
+            selected: state.selectedPastDate,
+            monthOffset: state.monthOffset,
+            onSelect: context.read<DailyCubit>().selectPastDate,
+            onShowMonth: context.read<DailyCubit>().showMonth,
+            onShowToday: _showToday,
+          ),
+          if (state.selectedPastDate case final date?) ...[
+            const SizedBox(height: HabitsPastDayTokens.cardGapBelowMonth),
+            PastDayReveal(
+              key: ValueKey(date),
+              child: PastDayCard(
+                state: state,
+                date: date,
+                onPlay: () => _playPast(context),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -272,6 +314,16 @@ class _DailyViewState extends State<DailyView> {
     final request = context.read<DailyCubit>().dailyPlayRequest();
     await context.router.push(GameplayRoute(request: request));
     if (context.mounted) context.read<DailyCubit>().refresh();
+  }
+
+  /// A past day's Play: the board opens with its date pill, and on return
+  /// the Daily refreshes onto the month with the new mark (frame 14.3e).
+  Future<void> _playPast(BuildContext context) async {
+    final cubit = context.read<DailyCubit>();
+    final request = cubit.pastPlayRequest();
+    if (request == null) return;
+    await context.router.push(GameplayRoute(request: request));
+    if (context.mounted) cubit.refresh();
   }
 
   Future<void> _playCampaign(BuildContext context, DailyState state) async {

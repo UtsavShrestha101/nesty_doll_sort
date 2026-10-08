@@ -407,6 +407,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i655.ContentReadyGuard>(
       () => _i655.ContentReadyGuard(gh<_i789.LevelRepository>()),
     );
+    gh.lazySingleton<_i969.LevelResolver>(
+      () => _i231.DefaultLevelResolver(
+        gh<_i789.LevelRepository>(),
+        gh<_i644.LevelGeneratorService>(),
+        gh<_i567.RemoteConfigService>(),
+        gh<_i276.SaveService>(),
+        gh<_i885.CatalogRepository>(),
+        gh<_i376.AppClock>(),
+      ),
+      registerFor: {_real, _fake},
+    );
     gh.factoryParam<_i110.RaceCubit, _i143.RacePlay, dynamic>(
       (request, _) => _i110.RaceCubit(
         request,
@@ -435,16 +446,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i760.MusicRouteObserver>(
       () => _i760.MusicRouteObserver(gh<_i777.MusicService>()),
-    );
-    gh.lazySingleton<_i969.LevelResolver>(
-      () => _i231.DefaultLevelResolver(
-        gh<_i789.LevelRepository>(),
-        gh<_i644.LevelGeneratorService>(),
-        gh<_i567.RemoteConfigService>(),
-        gh<_i276.SaveService>(),
-        gh<_i885.CatalogRepository>(),
-      ),
-      registerFor: {_real, _fake},
     );
     gh.lazySingleton<_i843.DailyService>(
       () => _i590.StreakDailyService(

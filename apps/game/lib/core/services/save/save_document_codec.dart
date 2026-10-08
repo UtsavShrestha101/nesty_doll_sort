@@ -121,7 +121,7 @@ abstract final class SaveDocumentCodec {
   static String write(SaveDocument doc) => jsonEncode(encode(doc));
 
   /// The JSON object of [doc]: the known keys in the order of
-  /// m3-design §3.1 and m7-design §3.1 (schema 3's `loginGift` last), then
+  /// m3-design §3.1 and m7-design §3.1 (schema 3's `loginGift`, schema 4's `dailyArchive` last), then
   /// [SaveDocument.unknown]'s keys
   /// sorted by code unit, so the text is stable. `schema` is always
   /// [SaveDocument.currentSchema].
@@ -189,6 +189,10 @@ abstract final class SaveDocumentCodec {
         'lastClaim': doc.loginGift.lastClaim?.toIso(),
         'latestSeen': doc.loginGift.latestSeen?.toIso(),
       },
+      'dailyArchive': {
+        'played': [for (final date in doc.dailyArchive.played) date.toIso()],
+        'inProgress': _encodeInProgress(doc.dailyArchive.inProgress),
+      },
       for (final key in unknown) key: doc.unknown[key],
     };
   }
@@ -217,7 +221,7 @@ abstract final class SaveDocumentCodec {
       museum: museum,
       museumCollected: _decodeDates(raw['museumCollected'], museum),
       daily: _decodeDaily(raw['daily']),
-      inProgress: _decodeInProgress(raw['inProgress'], daily: false),
+      inProgress: _decodeInProgress(raw['inProgress']),
       adCounters: _decodeAdCounters(raw['adCounters']),
       stats: _decodeStats(raw['stats']),
       seenIntros: _ids(raw['seenIntros'], null),
@@ -231,6 +235,7 @@ abstract final class SaveDocumentCodec {
       chests: _decodeChests(raw['chests']),
       race: _decodeRace(raw['race']),
       loginGift: _decodeLoginGift(raw['loginGift']),
+      dailyArchive: _decodeArchive(raw['dailyArchive']),
       unknown: {
         for (final MapEntry(:key, :value) in raw.entries)
           if (!_known.contains(key)) key: value,
@@ -272,6 +277,7 @@ abstract final class SaveDocumentCodec {
     'race',
     // Schema 3 (plan-login-gift §7.5b).
     'loginGift',
+    'dailyArchive',
     // Spec §13.3 lists `settings`, but they live in the settings box
     // (m3-design §3.1): a stray one is dropped, never written back.
     'settings',
@@ -333,6 +339,20 @@ abstract final class SaveDocumentCodec {
     );
   }
 
+  /// `dailyArchive`, leniently: a malformed one reads as empty, bad dates
+  /// and a bad board are dropped.
+  static DailyArchive _decodeArchive(Object? value) {
+    final map = _map(value);
+    if (map == null) return const DailyArchive();
+    return DailyArchive(
+      played: _dateList(map['played']),
+      inProgress: _decodeInProgress(
+        map['inProgress'],
+        slot: PlayKind.pastDaily,
+      ),
+    );
+  }
+
   static DailyProgress _decodeDaily(Object? value) {
     final map = _map(value);
     if (map == null) return const DailyProgress();
@@ -356,7 +376,7 @@ abstract final class SaveDocumentCodec {
       noticeDate: LocalDate.tryParse(map['noticeDate']),
       chestPending: _bool(map['chestPending'], false),
       lastSolve: _decodeSolve(map['lastSolve']),
-      inProgress: _decodeInProgress(map['inProgress'], daily: true),
+      inProgress: _decodeInProgress(map['inProgress'], slot: PlayKind.daily),
     );
   }
 
@@ -375,13 +395,10 @@ abstract final class SaveDocumentCodec {
   }
 
   /// An in-progress board, or null when anything it needs is unreadable
-  /// (the level then just starts over, spec §13.3). [daily] says which
-  /// slot it came from: a daily board only in `daily`, the others only at
-  /// the top level.
-  static InProgressLevel? _decodeInProgress(
-    Object? value, {
-    required bool daily,
-  }) {
+  /// (the level then just starts over, spec §13.3). [slot] says which
+  /// slot it came from: a daily board only in `daily`, a past day's only in
+  /// `dailyArchive`, the others (null) only at the top level.
+  static InProgressLevel? _decodeInProgress(Object? value, {PlayKind? slot}) {
     final map = _map(value);
     if (map == null) return null;
     final kind = PlayKind.tryFromId(map['kind']);
@@ -394,7 +411,8 @@ abstract final class SaveDocumentCodec {
     if (kind == null ||
         kind == PlayKind.replay ||
         kind == PlayKind.race ||
-        (kind == PlayKind.daily) != daily ||
+        (kind == PlayKind.daily || kind == PlayKind.pastDaily ? kind : null) !=
+            slot ||
         number == null ||
         levelId == null ||
         levelVersion == null ||

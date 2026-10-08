@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/save/save_document_codec.dart';
@@ -29,6 +30,21 @@ String schema2Document() => File(
   'test/core/services/save/fixtures/schema2_document.json',
 ).readAsStringSync().trim();
 
+/// A schema-3 document as the daily gift's app wrote it (key order of
+/// schema 3): Level 31, a paused 10-day streak with `done` and `frozen`
+/// dates and a freeze held, nine gift claims, a real generated daily board
+/// (20261008) after two moves and an undo in `daily.inProgress`, records,
+/// stars and badges.
+///
+/// Made, not hand-typed: a throwaway flutter test run from `apps/game`
+/// against git HEAD's (schema-3) `SaveDocument` and `SaveDocumentCodec`,
+/// before the 3 → 4 bump, generated the daily board with
+/// `DifficultyCurve.dailyParams(20261008)`, built that `SaveDocument`, and
+/// wrote `SaveDocumentCodec.write` of it here.
+String schema3Document() => File(
+  'test/core/services/save/fixtures/schema3_document.json',
+).readAsStringSync().trim();
+
 /// The migration registry (spec §13.3; docs/plans/m3-design.md §3.2;
 /// docs/plans/m7-design.md §3.3).
 void main() {
@@ -51,7 +67,7 @@ void main() {
 
   test('no document migrates to a fresh document of the current schema', () {
     final migrated = SaveMigrations.migrate(
-      const {},
+      const <String, Object?>{},
       SaveMigrations.noDocument,
     );
     expect(migrated['schema'], SaveDocument.currentSchema);
@@ -59,10 +75,10 @@ void main() {
   });
 
   test('a current or newer document is left alone', () {
-    expect(SaveDocument.currentSchema, 3);
-    const doc = {'schema': 3, 'coins': 5};
-    expect(SaveMigrations.migrate(doc, 3), same(doc));
+    expect(SaveDocument.currentSchema, 4);
+    const doc = {'schema': 4, 'coins': 5};
     expect(SaveMigrations.migrate(doc, 4), same(doc));
+    expect(SaveMigrations.migrate(doc, 5), same(doc));
     expect(SaveMigrations.migrate(doc, 9), same(doc));
   });
 
@@ -178,7 +194,9 @@ void main() {
       expect(stepped, {...raw, 'schema': 3});
       expect(stepped.keys.toList(), raw.keys.toList());
       // Odd input never throws: there is nothing to read.
-      expect(SaveMigrations.steps[2]!(const {}), {'schema': 3});
+      expect(SaveMigrations.steps[2]!(const <String, Object?>{}), {
+        'schema': 3,
+      });
       expect(SaveMigrations.steps[2]!(const {'loginGift': 'x'}), {
         'loginGift': 'x',
         'schema': 3,
@@ -188,8 +206,10 @@ void main() {
     test('a real schema-2 document: every schema-2 field is kept, and the '
         'daily gift starts fresh at Day 1', () {
       final raw = jsonDecode(schema2Document()) as Map<String, Object?>;
+      // Step 2 alone writes schema 3; the chain goes on to the current one.
+      expect(SaveMigrations.steps[2]!(raw)['schema'], 3);
       final migrated = SaveMigrations.migrate(raw, 2);
-      expect(migrated['schema'], 3);
+      expect(migrated['schema'], SaveDocument.currentSchema);
       final doc = SaveDocumentCodec.decode(migrated);
 
       // No claim yet and no date seen: the next claim pays Day 1.
@@ -200,14 +220,15 @@ void main() {
       // Written back, it is the schema-2 text key for key and value, plus
       // `loginGift` right after `race` (every schema-2 field survived).
       final written = SaveDocumentCodec.encode(doc);
-      expect(written['schema'], 3);
+      expect(written['schema'], SaveDocument.currentSchema);
       expect(
         {...written}
           ..remove('schema')
-          ..remove('loginGift'),
+          ..remove('loginGift')
+          ..remove('dailyArchive'),
         {...raw}..remove('schema'),
       );
-      expect(written.keys.toList(), [...raw.keys, 'loginGift']);
+      expect(written.keys.toList(), [...raw.keys, 'loginGift', 'dailyArchive']);
       expect(written['loginGift'], {
         'claims': 0,
         'lastClaim': null,
@@ -306,6 +327,105 @@ void main() {
           latestSeen: LocalDate(2026, 10, 5),
         ),
       );
+      expect(read.document.unknown, isEmpty);
+    });
+  });
+  group('schema 3 → 4 (plan-local-habits §3, §7.5c)', () {
+    test('the step stamps schema 4 with an empty archive, keeping every '
+        'key as it was', () {
+      final raw = jsonDecode(schema3Document()) as Map<String, Object?>;
+      expect(raw['schema'], 3);
+      expect(raw, isNot(contains('dailyArchive')));
+      final stepped = SaveMigrations.steps[3]!(raw);
+      expect(stepped, {
+        ...raw,
+        'schema': 4,
+        'dailyArchive': const <String, Object?>{},
+      });
+      // Odd input never throws.
+      expect(SaveMigrations.steps[3]!(const <String, Object?>{}), {
+        'schema': 4,
+        'dailyArchive': const <String, Object?>{},
+      });
+    });
+
+    test('a real schema-3 document: every schema-3 field is kept, the '
+        'archive is empty, and today\'s daily board is where it was', () {
+      final raw = jsonDecode(schema3Document()) as Map<String, Object?>;
+      final migrated = SaveMigrations.migrate(raw, 3);
+      expect(migrated['schema'], 4);
+      final doc = SaveDocumentCodec.decode(migrated);
+
+      expect(doc.dailyArchive, const DailyArchive());
+      expect(doc.unknown, isEmpty);
+      expect(doc.currentLevel, 31);
+      expect(doc.coins, 740);
+      expect(doc.loginGift.claims, 9);
+      expect(doc.loginGift.lastClaim, LocalDate(2026, 10, 7));
+      expect(doc.daily.streak, 10);
+      expect(doc.daily.lit, isFalse);
+      expect(doc.daily.paused, isTrue);
+      expect(doc.daily.freezes, 1);
+      expect(doc.daily.done, hasLength(13));
+      expect(doc.daily.frozen, [LocalDate(2026, 9, 28)]);
+      expect(doc.daily.lastSolve?.minuteOfDay, 1290);
+      expect(doc.daily.inProgress?.request, const PlayRequest.daily(20261008));
+      expect(doc.dailyArchive.inProgress, isNull);
+      expect(doc.levelStars, {'L0003': 3, 'L0010': 2});
+      expect(doc.records.longestRun, 8);
+      expect(doc.playerId, '7F3A-21C9');
+
+      // Written back, it is the schema-3 text key for key and value (the
+      // new date cap only trims beyond 62), plus `dailyArchive` last.
+      final written = SaveDocumentCodec.encode(doc);
+      expect(written['schema'], 4);
+      expect(
+        {...written}
+          ..remove('schema')
+          ..remove('dailyArchive'),
+        {...raw}..remove('schema'),
+      );
+      expect(written.keys.toList(), [...raw.keys, 'dailyArchive']);
+      expect(written['dailyArchive'], {
+        'played': <String>[],
+        'inProgress': null,
+      });
+    });
+
+    test('the daily board of the fixture still resumes against its level', () {
+      final doc = SaveDocumentCodec.read(schema3Document()).document;
+      final board = doc.daily.inProgress!;
+      final level = LevelCodec.decode(board.level).level!;
+      final resumed = GameSessionCodec.decode(board.session, level);
+      expect(resumed.issues, isEmpty);
+      expect(resumed.session?.undosUsed, 1);
+    });
+
+    test('read through the codec, a schema-3 document is "migrated" and '
+        'needs its backup', () {
+      final read = SaveDocumentCodec.read(schema3Document());
+      expect(read.kind, SaveReadKind.migrated);
+      expect(read.storedSchema, 3);
+      expect(read.needsBackup, isTrue);
+      expect(read.document.dailyArchive, const DailyArchive());
+    });
+
+    test('a dailyArchive a schema-3 app carried as an unknown key '
+        '(a downgrade from schema 4) survives and is read', () {
+      final raw = jsonDecode(schema3Document()) as Map<String, Object?>;
+      final read = SaveDocumentCodec.read(
+        jsonEncode({
+          ...raw,
+          'dailyArchive': {
+            'played': ['2026-10-05', '2026-10-04'],
+          },
+        }),
+      );
+      expect(read.kind, SaveReadKind.migrated);
+      expect(read.document.dailyArchive.played, [
+        LocalDate(2026, 10, 4),
+        LocalDate(2026, 10, 5),
+      ]);
       expect(read.document.unknown, isEmpty);
     });
   });

@@ -11,6 +11,7 @@ import 'package:nesty_game/core/repository/level_resolver.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
+import 'package:nesty_game/core/services/daily_month/daily_month.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
@@ -55,7 +56,9 @@ class DailyCubit extends BaseAsyncCubit<DailyState> {
   Future<void> load() async {
     emit(AsyncValue.loading(data: state.data));
     await runGuarded(() async {
-      final status = _daily.refresh();
+      // The Daily page's load is where the archive is pruned (never
+      // mid-game): a past-day board whose date left the window goes now.
+      final status = _daily.pruneArchive();
       _startCountdown();
       return _build(status);
     });
@@ -76,6 +79,81 @@ class DailyCubit extends BaseAsyncCubit<DailyState> {
     final current = state.data;
     if (current == null) return;
     _showStatus(current, _daily.refresh());
+  }
+
+  /// A day of the month's picker was tapped (frame 14.3b): its card opens
+  /// under the month card. Tapping the chosen day again closes the card
+  /// (the chosen ring is its only handle). A day outside the window, or
+  /// today's, never opens: the grid doesn't offer it, and this refuses it
+  /// too.
+  void selectPastDate(LocalDate date) {
+    if (isClosed) return;
+    final current = state.data;
+    if (current == null) return;
+    if (current.selectedPastDate == date) {
+      clearPastSelection();
+      return;
+    }
+    final status = current.status;
+    if (!status.window.contains(date) && status.archiveInProgress != date) {
+      return;
+    }
+    emit(
+      AsyncValue.data(
+        data: current.copyWith(
+          selectedPastDate: date,
+          pastPreviewColors: null,
+          pastPreviewFailed: false,
+          pastTier: DifficultyCurve.dailyTier(date.yyyymmdd),
+          pastColorCount: DifficultyCurve.dailyParams(date.yyyymmdd).colors,
+        ),
+      ),
+    );
+    unawaited(_loadPastPreview(date));
+  }
+
+  /// Closes the past day's card.
+  void clearPastSelection() {
+    if (isClosed) return;
+    final current = state.data;
+    if (current == null || current.selectedPastDate == null) return;
+    emit(
+      AsyncValue.data(
+        data: current.copyWith(
+          selectedPastDate: null,
+          pastPreviewColors: null,
+          pastPreviewFailed: false,
+          pastTier: null,
+          pastColorCount: 0,
+        ),
+      ),
+    );
+  }
+
+  /// The ‹ / › chip: [offset] 0 is today's month, -1 the one before, and
+  /// nothing else (never further, frame 14.2c). Paging back is refused
+  /// unless the window reaches into the previous month.
+  void showMonth(int offset) {
+    if (isClosed) return;
+    final current = state.data;
+    if (current == null || current.monthOffset == offset) return;
+    if (offset != 0 && offset != -1) return;
+    final reaches = DailyMonth.reachesPreviousMonth(
+      current.status.today,
+      current.status.window,
+    );
+    if (offset == -1 && !reaches) return;
+    emit(AsyncValue.data(data: current.copyWith(monthOffset: offset)));
+  }
+
+  /// What the past day card's Play starts: the chosen date, or null.
+  /// Past midnight the screen rolls over first, which closes the card (the
+  /// window moved, and the chosen day may have left it), so Play starts
+  /// nothing rather than a board the resolver refuses.
+  PlayRequest? pastPlayRequest() {
+    if (_rollOverIfNewDay()) return null;
+    final date = state.data?.selectedPastDate;
+    return date == null ? null : PlayRequest.pastDaily(date.yyyymmdd);
   }
 
   /// What the puzzle card's Play starts: always the clock's today
@@ -126,6 +204,13 @@ class DailyCubit extends BaseAsyncCubit<DailyState> {
                 untilNextPuzzle: _daily.untilNextPuzzle(),
                 previewColors: null,
                 previewFailed: false,
+                // The window moved with the day: the picker starts clean.
+                selectedPastDate: null,
+                pastPreviewColors: null,
+                pastPreviewFailed: false,
+                pastTier: null,
+                pastColorCount: 0,
+                monthOffset: 0,
               )
             : current.copyWith(status: status),
       ),
@@ -138,6 +223,25 @@ class DailyCubit extends BaseAsyncCubit<DailyState> {
     final current = state.data;
     if (current == null) return;
     emit(AsyncValue.data(data: current.copyWith(coins: _save.coins)));
+  }
+
+  Future<void> _loadPastPreview(LocalDate date) async {
+    final request = PlayRequest.pastDaily(date.yyyymmdd);
+    final entry = await _resolver.resolve(request);
+    if (isClosed) return;
+    final current = state.data;
+    // Another day was chosen (or the card closed) while this was in
+    // flight: its own resolve owns the preview now.
+    if (current == null || current.selectedPastDate != date) return;
+    emit(
+      AsyncValue.data(
+        data: entry == null
+            ? current.copyWith(pastPreviewFailed: true)
+            : current.copyWith(
+                pastPreviewColors: entry.level.setsByColor.keys.toList(),
+              ),
+      ),
+    );
   }
 
   Future<void> _loadPreview(LocalDate today) async {

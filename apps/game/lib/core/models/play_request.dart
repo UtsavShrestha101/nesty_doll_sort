@@ -22,7 +22,12 @@ enum PlayKind {
   /// A vs Computer race (spec-prop §7.7, m7-design P2.4). "A race in
   /// progress is never resumed", so its [id] is never stored either: the
   /// save ignores it and the codec drops an `inProgress` of this kind.
-  race('race');
+  race('race'),
+
+  /// A past day's daily, one of the last days of the archive window
+  /// (plan-local-habits §7.5c). It is saved in progress apart from today's
+  /// daily, in `dailyArchive.inProgress`.
+  pastDaily('pastDaily');
 
   const PlayKind(this.id);
 
@@ -70,6 +75,11 @@ sealed class PlayRequest with _$PlayRequest {
   const factory PlayRequest.race({required int rival, required int raceNo}) =
       RacePlay;
 
+  /// The daily puzzle of an earlier day, [yyyymmdd] (plan-local-habits
+  /// §7.5c): the same board as that day's daily, but a win pays nothing and
+  /// moves no streak field.
+  const factory PlayRequest.pastDaily(int yyyymmdd) = PastDailyPlay;
+
   const PlayRequest._();
 
   /// The request of [kind] with [number] (the order, the bonus number or
@@ -81,9 +91,11 @@ sealed class PlayRequest with _$PlayRequest {
     return switch (kind) {
       PlayKind.campaign => PlayRequest.campaign(number),
       PlayKind.bonus => PlayRequest.bonus(number),
-      PlayKind.daily =>
+      PlayKind.daily || PlayKind.pastDaily =>
         number >= 10101 && number <= 99991231
-            ? PlayRequest.daily(number)
+            ? (kind == PlayKind.daily
+                  ? PlayRequest.daily(number)
+                  : PlayRequest.pastDaily(number))
             : null,
       PlayKind.replay => PlayRequest.replay(number),
       PlayKind.race => null,
@@ -96,6 +108,7 @@ sealed class PlayRequest with _$PlayRequest {
     DailyPlay() => PlayKind.daily,
     ReplayPlay() => PlayKind.replay,
     RacePlay() => PlayKind.race,
+    PastDailyPlay() => PlayKind.pastDaily,
   };
 
   /// The order, the bonus number, the date or a race's raceNo: with
@@ -106,6 +119,7 @@ sealed class PlayRequest with _$PlayRequest {
     DailyPlay(:final yyyymmdd) => yyyymmdd,
     ReplayPlay(:final order) => order,
     RacePlay(:final raceNo) => raceNo,
+    PastDailyPlay(:final yyyymmdd) => yyyymmdd,
   };
 
   /// True for the levels generated on the device (bonus, daily and race):
@@ -113,7 +127,10 @@ sealed class PlayRequest with _$PlayRequest {
   /// or daily in-progress save embeds the level JSON (m3-design §3.4; a
   /// race is never saved, m7-design P2.4).
   bool get isGenerated =>
-      kind == PlayKind.bonus || kind == PlayKind.daily || kind == PlayKind.race;
+      kind == PlayKind.bonus ||
+      kind == PlayKind.daily ||
+      kind == PlayKind.pastDaily ||
+      kind == PlayKind.race;
 
   /// True for a published level from the bundle (campaign and replay):
   /// the boards whose best moves are kept (m7-design §11).

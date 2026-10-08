@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_core/nesty_core.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/fake_level_resolver.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
@@ -28,11 +29,17 @@ GameplayState _state({
   int slotPrice = 0,
   bool relaxed = false,
   int extraSlots = 0,
+  bool past = false,
 }) {
   final level = levelFrom(tutorialLevelJson);
   final entry = entryFor(level);
   return GameplayState(
-    play: FakeLevelResolver.campaignEntry(entry, entry.rewardCoins),
+    play: past
+        ? FakeLevelResolver.campaignEntry(
+            entry,
+            0,
+          ).copyWith(request: const PlayRequest.pastDaily(20261010))
+        : FakeLevelResolver.campaignEntry(entry, entry.rewardCoins),
     entry: entry,
     board: extraSlots == 0
         ? GameState.initial(level)
@@ -64,6 +71,50 @@ GameState _withExtras(Level level, int count) {
 }
 
 void main() {
+  // Frame 14.3c: a past day sells nothing.
+  group('BoosterBarModel.of on a past day', () {
+    test('a booster at 0 takes the sunk face: no price, no ▶, no press', () {
+      final model = BoosterBarModel.of(
+        _state(
+          past: true,
+          freeUndosLeft: 0,
+          hintsLeft: 0,
+          extraSlotsLeft: 0,
+          canUndo: false,
+          canHint: false,
+          canAddSlot: false,
+          undoPrice: 20,
+          hintPrice: 40,
+          slotPrice: 150,
+        ),
+      );
+      expect(model.undoSpent && model.hintSpent && model.slotSpent, isTrue);
+      expect(model.undoBadge, isNull);
+      expect(model.hintBadge, isNull);
+      expect(model.slotBadge, isNull);
+      expect(
+        model.undoEnabled || model.hintEnabled || model.slotEnabled,
+        isFalse,
+      );
+      expect(model.restartEnabled, isTrue);
+    });
+
+    test('an owned booster keeps its count and its normal face', () {
+      final model = BoosterBarModel.of(_state(past: true, hintsLeft: 2));
+      expect(model.hintBadge, const BoosterBadge.count(2));
+      expect(model.hintSpent, isFalse);
+      expect(model.hintEnabled, isTrue);
+    });
+
+    test('any other board still shows a coin price at 0', () {
+      final model = BoosterBarModel.of(
+        _state(hintsLeft: 0, canHint: true, hintPrice: 40),
+      );
+      expect(model.hintBadge, const BoosterBadge.coin(40));
+      expect(model.hintSpent, isFalse);
+    });
+  });
+
   group('BoosterBarModel.of', () {
     test('counts what the player holds (NestyBoard badges)', () {
       final model = BoosterBarModel.of(_state());

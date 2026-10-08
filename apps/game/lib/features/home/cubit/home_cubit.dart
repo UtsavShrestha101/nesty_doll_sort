@@ -80,8 +80,9 @@ class HomeCubit extends BaseAsyncCubit<HomeState> {
       BonusPlay(:final number) => DifficultyCurve.tierForLevel(
         _levels.levelCount + number,
       ),
-      // homeRequest never asks for the daily, a replay or a race.
-      DailyPlay() || ReplayPlay() || RacePlay() => Tier.easy,
+      // homeRequest never asks for the daily, a replay, a race or a past
+      // day's board (Home never offers one as its "continue").
+      DailyPlay() || ReplayPlay() || RacePlay() || PastDailyPlay() => Tier.easy,
     };
 
     final daily = _daily.refresh();

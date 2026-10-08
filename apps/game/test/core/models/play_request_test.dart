@@ -46,6 +46,28 @@ void main() {
     expect(PlayKind.tryFromId('replay'), PlayKind.replay);
   });
 
+  test('a past day\'s daily is its own kind, generated like the daily '
+      '(plan-local-habits §7.5c)', () {
+    const past = PlayRequest.pastDaily(20261005);
+    expect(past.kind, PlayKind.pastDaily);
+    expect(past.number, 20261005);
+    expect(past.isGenerated, isTrue);
+    expect(past.isBundled, isFalse);
+    expect(past.isReplay, isFalse);
+    expect(past.isRace, isFalse);
+    expect(past, isNot(const PlayRequest.daily(20261005)));
+    expect(PlayKind.pastDaily.id, 'pastDaily');
+    expect(PlayKind.tryFromId('pastDaily'), PlayKind.pastDaily);
+    expect(PlayRequest.tryCreate(PlayKind.pastDaily, 20261005), past);
+    expect(PlayRequest.tryCreate(PlayKind.pastDaily, 0), isNull);
+    expect(PlayRequest.tryCreate(PlayKind.pastDaily, 7), isNull);
+    expect(PlayRequest.tryCreate(PlayKind.pastDaily, 100000000), isNull);
+    expect(
+      PlayRequest.tryCreate(PlayKind.daily, 20261005),
+      const PlayRequest.daily(20261005),
+    );
+  });
+
   test('reduce motion resolves against the system flag and reads '
       'leniently (m7-design §14)', () {
     for (final system in [true, false]) {

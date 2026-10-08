@@ -74,6 +74,21 @@ abstract class DailyStatus with _$DailyStatus {
     /// month's frost mark (Q191) and welcome back's "a freeze kept your
     /// flame" line (plan-local-habits §1).
     @Default(<LocalDate>[]) List<LocalDate> frozen,
+
+    /// Past days solved after their own date, oldest first
+    /// (`DailyArchive.played`, local habits 3): the month marks them played
+    /// without lighting the flame.
+    @Default(<LocalDate>[]) List<LocalDate> played,
+
+    /// The dates the Daily offers to play, oldest first (today − N … today
+    /// − 1, `DailyArchiveRules.window`). Empty while the Daily is locked or
+    /// `daily_archive_days` is 0.
+    @Default(<LocalDate>[]) List<LocalDate> window,
+
+    /// The date of the past-day board saved mid-way
+    /// (`DailyArchive.inProgress`), or null. It may sit outside [window]
+    /// until the Daily page's load prunes it.
+    LocalDate? archiveInProgress,
   }) = _DailyStatus;
 
   const DailyStatus._();

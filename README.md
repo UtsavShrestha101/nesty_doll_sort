@@ -399,7 +399,7 @@ $T --target integration_test/race_loss_test.dart \
 $T --target integration_test/meta_screens_test.dart \
   --dart-define=NESTY_META_SCENARIO=returning   # or finale, complete
 $T --target integration_test/daily_states_test.dart \
-  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, saved, settings, welcome, locked; month on 20261031
+  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, saved, settings, welcome, locked; month on 20261031, archive on 20261103
 $T --target integration_test/login_gift_test.dart \
   --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_GIFT_SCENARIO=ready  # or claimed, day7, clock_back
 $T --target integration_test/overlays_test.dart   # the win card, chests, 12.5-12.9, the undo, intro loops
@@ -423,7 +423,9 @@ Museum with all ten families (12.2, 6.1c). `daily_states_test`'s `chest`
 seeds a 6-day streak and opens the day-7 chest and the offer's time picker,
 `paused` relights a paused flame and sees Home's badge glow once, `saved`
 lets a freeze cover yesterday (the toast and the streak card's freeze line,
-5.2), and `settings` toggles every row and plays a relaxed board.
+5.2), `settings` toggles every row and plays a relaxed board, and `archive`
+plays a past day from the month's window (on 2026-11-03, so the window crosses
+into October) and checks the streak and today's board are untouched.
 `login_gift_test` (`gift`) seeds the daily gift's track: `ready` claims Day 4
 after a gap (the dot, the sheet, the coins flying to the pill), `claimed` shows
 the calm "Tomorrow" sheet, `day7` opens the Day 7 chest and the finished

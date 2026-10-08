@@ -31,6 +31,9 @@ final class BoosterBarModel {
     this.restartGlow = false,
     this.slotLimit,
     this.locked = false,
+    this.undoSpent = false,
+    this.hintSpent = false,
+    this.slotSpent = false,
   });
 
   factory BoosterBarModel.of(GameplayState state) {
@@ -44,10 +47,13 @@ final class BoosterBarModel {
     // A count while some are held (free undos, the inventory); the coin
     // price once they run out (frames 3.2, 3.3; m3-design §7.3); nothing
     // in the dev flavor, where boosters never run out.
+    // A past day sells nothing (spec-prop §7.5c, frame 14.3c): a booster the
+    // player doesn't own takes the sunk face with no price or ▶.
+    final past = state.isPastDaily;
     BoosterBadge? badgeFor(int n, int price) {
       if (unlimited) return null;
       if (n > 0) return BoosterBadge.count(n);
-      return BoosterBadge.coin(price);
+      return past ? null : BoosterBadge.coin(price);
     }
 
     return BoosterBarModel(
@@ -94,6 +100,9 @@ final class BoosterBarModel {
           state.status == GameplayStatus.playing &&
           !state.canUndo,
       locked: won,
+      undoSpent: past && !state.canUndo,
+      hintSpent: past && !state.canHint,
+      slotSpent: past && !state.canAddSlot && state.board.extraSlotCount == 0,
     );
   }
 
@@ -120,6 +129,12 @@ final class BoosterBarModel {
   /// The buttons look as the flags say but take no touch (the won level).
   final bool locked;
 
+  /// A past day's booster the player doesn't own: the sunk disabled face
+  /// (`HabitsPastDayTokens.boardBoosterDisabledFace`, frame 14.3c).
+  final bool undoSpent;
+  final bool hintSpent;
+  final bool slotSpent;
+
   @override
   bool operator ==(Object other) =>
       other is BoosterBarModel &&
@@ -133,7 +148,10 @@ final class BoosterBarModel {
       other.undoGlow == undoGlow &&
       other.restartGlow == restartGlow &&
       other.slotLimit == slotLimit &&
-      other.locked == locked;
+      other.locked == locked &&
+      other.undoSpent == undoSpent &&
+      other.hintSpent == hintSpent &&
+      other.slotSpent == slotSpent;
 
   @override
   int get hashCode => Object.hash(
@@ -148,6 +166,9 @@ final class BoosterBarModel {
     restartGlow,
     slotLimit,
     locked,
+    undoSpent,
+    hintSpent,
+    slotSpent,
   );
 }
 
@@ -245,6 +266,7 @@ class BoosterBar extends StatelessWidget {
                 shortLabel: l10n.boosterUndoShort,
                 width: width,
                 badge: model.undoBadge,
+                spent: model.undoSpent,
                 onPressed: model.undoEnabled ? onUndo : null,
                 glow: model.undoGlow ? BoosterGlow(library: library) : null,
               ),
@@ -257,6 +279,7 @@ class BoosterBar extends StatelessWidget {
                 shortLabel: l10n.boosterHintShort,
                 width: width,
                 badge: model.hintBadge,
+                spent: model.hintSpent,
                 onPressed: model.hintEnabled ? onHint : null,
                 glow: hintGlow ? BoosterGlow(library: library) : null,
                 badgeBump: hintBump,
@@ -274,7 +297,7 @@ class BoosterBar extends StatelessWidget {
                 badge: limit == null
                     ? model.slotBadge
                     : BoosterBadge.limit(limit, LayoutLimits.maxExtraSlots),
-                spent: limit != null,
+                spent: limit != null || model.slotSpent,
                 onPressed: limit != null
                     ? onSlotLimit
                     : model.slotEnabled

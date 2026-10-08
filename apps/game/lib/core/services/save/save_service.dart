@@ -229,6 +229,15 @@ abstract interface class SaveService {
   /// [recordLevelWin] instead.
   void writeDaily(DailyProgress daily, {int addCoins = 0});
 
+  // --- Past dailies (plan-local-habits §3, §7.5c) --------------------------
+
+  /// Drops the saved past-day board whose date left the window (today −
+  /// `daily_archive_days` … today − 1; `DailyArchiveRules.prune`). Writes
+  /// nothing, and fires no [changes], when there is nothing to drop. The
+  /// Daily page's load calls it; gameplay never does, so a board open on
+  /// screen is never pruned mid-game. Never throws.
+  void pruneDailyArchive(LocalDate today);
+
   // --- Daily gift (plan-login-gift §7.5b; D268) ---------------------------
 
   /// Claims the daily gift for the local date [today], in one document

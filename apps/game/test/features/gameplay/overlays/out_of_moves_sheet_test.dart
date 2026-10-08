@@ -21,6 +21,7 @@ void main() {
     int extraSlotsLeft = 0,
     bool unlimitedBoosters = false,
     bool relaxed = false,
+    bool pastDay = false,
   }) => OutOfMovesSheet(
     freeUndosLeft: freeUndosLeft,
     showFreeUndos: showFreeUndos,
@@ -33,6 +34,7 @@ void main() {
     extraSlotsLeft: extraSlotsLeft,
     unlimitedBoosters: unlimitedBoosters,
     relaxed: relaxed,
+    pastDay: pastDay,
   );
 
   testWidgets('frame 3.5: title, Undo (free · 1 left), +1 Slot, Restart', (
@@ -46,6 +48,30 @@ void main() {
     expect(find.text('+1 Slot'), findsOneWidget);
     expect(find.text('Start this level fresh, for free'), findsOneWidget);
     expect(find.byType(SheetRow), findsNWidgets(3));
+  });
+
+  // Frame 14.3c: only what the player owns, plus Restart; never a price.
+  testWidgets('a past day lists owned boosters and Restart, with no price', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      sheet(pastDay: true, freeUndosLeft: 0, onUndo: () {}, onExtraSlot: () {}),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(SheetRow), findsNWidgets(3));
+    expect(find.text('20'), findsNothing);
+    expect(find.text('150'), findsNothing);
+    expect(find.byType(CoinIcon), findsNothing);
+  });
+
+  testWidgets('a past day with nothing owned lists Restart alone', (
+    tester,
+  ) async {
+    await pumpScreen(tester, sheet(pastDay: true, freeUndosLeft: 0));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(SheetRow), findsOneWidget);
+    expect(find.text('Restart'), findsOneWidget);
   });
 
   testWidgets('+1 Slot is hidden once the level has its two (D22)', (

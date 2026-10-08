@@ -39,5 +39,28 @@ abstract class DailyState with _$DailyState {
 
     /// The number frame 5.5's copy shows (`SaveService.currentLevel`).
     @Default(1) int homeLevelNumber,
+
+    /// A past day the month's picker has chosen (frame 14.3b, spec-prop
+    /// §7.5c): its card is open under the month card. Page state, not a
+    /// route; null while none is.
+    LocalDate? selectedPastDate,
+
+    /// The chosen day's colours once its board resolves (the card's
+    /// preview); null shows the spinner.
+    List<DollColor>? pastPreviewColors,
+
+    /// The chosen day's board did not resolve: the preview is hidden, Play
+    /// still works.
+    @Default(false) bool pastPreviewFailed,
+
+    /// The chosen day's difficulty facts for the card's chip
+    /// ("5 colors · Hard"): `DifficultyCurve.dailyTier` and the colour
+    /// count of `dailyParams`, both pure functions of the date.
+    Tier? pastTier,
+    @Default(0) int pastColorCount,
+
+    /// 0 shows today's month; -1 the month before, while the window
+    /// reaches into it (the ‹ chip, frame 14.2c). Never further.
+    @Default(0) int monthOffset,
   }) = _DailyState;
 }

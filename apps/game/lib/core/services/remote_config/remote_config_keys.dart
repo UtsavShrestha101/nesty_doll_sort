@@ -83,6 +83,14 @@ abstract final class RemoteConfigKeys {
   /// 2; `WelcomeBackRules` clamps a read to 2–60 and never throws.
   static const welcomeBackDays = RemoteConfigKey<int>._('welcome_back_days', 2);
 
+  /// Past dailies (local habits 3, §7.5c): how many days back the Daily
+  /// lets the player play (today − N … today − 1). 0 turns the archive off;
+  /// `DailyArchiveRules` clamps a read to 0–28.
+  static const dailyArchiveDays = RemoteConfigKey<int>._(
+    'daily_archive_days',
+    7,
+  );
+
   /// "Remove Ads" offer appears after this many interstitials (spec §9.2).
   static const removeAdsOfferAfterInterstitials = RemoteConfigKey<int>._(
     'remove_ads_offer_after_interstitials',
@@ -167,6 +175,7 @@ abstract final class RemoteConfigKeys {
     dailyReward,
     streak7Reward,
     welcomeBackDays,
+    dailyArchiveDays,
     removeAdsOfferAfterInterstitials,
     ratePromptLevel,
     chestCoins,

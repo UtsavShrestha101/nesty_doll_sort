@@ -30,7 +30,19 @@ mixin _$DailyState implements DiagnosticableTreeMixin {
  bool get previewFailed;/// Frame 5.5's "Play Level N" (`LevelResolver.homeRequest`): the
 /// campaign level (or Bonus Endless) Home's PLAY would start.
  PlayRequest get homeRequest;/// The number frame 5.5's copy shows (`SaveService.currentLevel`).
- int get homeLevelNumber;
+ int get homeLevelNumber;/// A past day the month's picker has chosen (frame 14.3b, spec-prop
+/// §7.5c): its card is open under the month card. Page state, not a
+/// route; null while none is.
+ LocalDate? get selectedPastDate;/// The chosen day's colours once its board resolves (the card's
+/// preview); null shows the spinner.
+ List<DollColor>? get pastPreviewColors;/// The chosen day's board did not resolve: the preview is hidden, Play
+/// still works.
+ bool get pastPreviewFailed;/// The chosen day's difficulty facts for the card's chip
+/// ("5 colors · Hard"): `DifficultyCurve.dailyTier` and the colour
+/// count of `dailyParams`, both pure functions of the date.
+ Tier? get pastTier; int get pastColorCount;/// 0 shows today's month; -1 the month before, while the window
+/// reaches into it (the ‹ chip, frame 14.2c). Never further.
+ int get monthOffset;
 /// Create a copy of DailyState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -42,21 +54,21 @@ $DailyStateCopyWith<DailyState> get copyWith => _$DailyStateCopyWithImpl<DailySt
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'DailyState'))
-    ..add(DiagnosticsProperty('status', status))..add(DiagnosticsProperty('coins', coins))..add(DiagnosticsProperty('rewardCoins', rewardCoins))..add(DiagnosticsProperty('chestCoins', chestCoins))..add(DiagnosticsProperty('untilNextPuzzle', untilNextPuzzle))..add(DiagnosticsProperty('previewColors', previewColors))..add(DiagnosticsProperty('previewFailed', previewFailed))..add(DiagnosticsProperty('homeRequest', homeRequest))..add(DiagnosticsProperty('homeLevelNumber', homeLevelNumber));
+    ..add(DiagnosticsProperty('status', status))..add(DiagnosticsProperty('coins', coins))..add(DiagnosticsProperty('rewardCoins', rewardCoins))..add(DiagnosticsProperty('chestCoins', chestCoins))..add(DiagnosticsProperty('untilNextPuzzle', untilNextPuzzle))..add(DiagnosticsProperty('previewColors', previewColors))..add(DiagnosticsProperty('previewFailed', previewFailed))..add(DiagnosticsProperty('homeRequest', homeRequest))..add(DiagnosticsProperty('homeLevelNumber', homeLevelNumber))..add(DiagnosticsProperty('selectedPastDate', selectedPastDate))..add(DiagnosticsProperty('pastPreviewColors', pastPreviewColors))..add(DiagnosticsProperty('pastPreviewFailed', pastPreviewFailed))..add(DiagnosticsProperty('pastTier', pastTier))..add(DiagnosticsProperty('pastColorCount', pastColorCount))..add(DiagnosticsProperty('monthOffset', monthOffset));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyState&&(identical(other.status, status) || other.status == status)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins)&&(identical(other.chestCoins, chestCoins) || other.chestCoins == chestCoins)&&(identical(other.untilNextPuzzle, untilNextPuzzle) || other.untilNextPuzzle == untilNextPuzzle)&&const DeepCollectionEquality().equals(other.previewColors, previewColors)&&(identical(other.previewFailed, previewFailed) || other.previewFailed == previewFailed)&&(identical(other.homeRequest, homeRequest) || other.homeRequest == homeRequest)&&(identical(other.homeLevelNumber, homeLevelNumber) || other.homeLevelNumber == homeLevelNumber));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyState&&(identical(other.status, status) || other.status == status)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins)&&(identical(other.chestCoins, chestCoins) || other.chestCoins == chestCoins)&&(identical(other.untilNextPuzzle, untilNextPuzzle) || other.untilNextPuzzle == untilNextPuzzle)&&const DeepCollectionEquality().equals(other.previewColors, previewColors)&&(identical(other.previewFailed, previewFailed) || other.previewFailed == previewFailed)&&(identical(other.homeRequest, homeRequest) || other.homeRequest == homeRequest)&&(identical(other.homeLevelNumber, homeLevelNumber) || other.homeLevelNumber == homeLevelNumber)&&(identical(other.selectedPastDate, selectedPastDate) || other.selectedPastDate == selectedPastDate)&&const DeepCollectionEquality().equals(other.pastPreviewColors, pastPreviewColors)&&(identical(other.pastPreviewFailed, pastPreviewFailed) || other.pastPreviewFailed == pastPreviewFailed)&&(identical(other.pastTier, pastTier) || other.pastTier == pastTier)&&(identical(other.pastColorCount, pastColorCount) || other.pastColorCount == pastColorCount)&&(identical(other.monthOffset, monthOffset) || other.monthOffset == monthOffset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,coins,rewardCoins,chestCoins,untilNextPuzzle,const DeepCollectionEquality().hash(previewColors),previewFailed,homeRequest,homeLevelNumber);
+int get hashCode => Object.hash(runtimeType,status,coins,rewardCoins,chestCoins,untilNextPuzzle,const DeepCollectionEquality().hash(previewColors),previewFailed,homeRequest,homeLevelNumber,selectedPastDate,const DeepCollectionEquality().hash(pastPreviewColors),pastPreviewFailed,pastTier,pastColorCount,monthOffset);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'DailyState(status: $status, coins: $coins, rewardCoins: $rewardCoins, chestCoins: $chestCoins, untilNextPuzzle: $untilNextPuzzle, previewColors: $previewColors, previewFailed: $previewFailed, homeRequest: $homeRequest, homeLevelNumber: $homeLevelNumber)';
+  return 'DailyState(status: $status, coins: $coins, rewardCoins: $rewardCoins, chestCoins: $chestCoins, untilNextPuzzle: $untilNextPuzzle, previewColors: $previewColors, previewFailed: $previewFailed, homeRequest: $homeRequest, homeLevelNumber: $homeLevelNumber, selectedPastDate: $selectedPastDate, pastPreviewColors: $pastPreviewColors, pastPreviewFailed: $pastPreviewFailed, pastTier: $pastTier, pastColorCount: $pastColorCount, monthOffset: $monthOffset)';
 }
 
 
@@ -67,7 +79,7 @@ abstract mixin class $DailyStateCopyWith<$Res>  {
   factory $DailyStateCopyWith(DailyState value, $Res Function(DailyState) _then) = _$DailyStateCopyWithImpl;
 @useResult
 $Res call({
- DailyStatus status, int coins, int rewardCoins, int chestCoins, Duration? untilNextPuzzle, List<DollColor>? previewColors, bool previewFailed, PlayRequest homeRequest, int homeLevelNumber
+ DailyStatus status, int coins, int rewardCoins, int chestCoins, Duration? untilNextPuzzle, List<DollColor>? previewColors, bool previewFailed, PlayRequest homeRequest, int homeLevelNumber, LocalDate? selectedPastDate, List<DollColor>? pastPreviewColors, bool pastPreviewFailed, Tier? pastTier, int pastColorCount, int monthOffset
 });
 
 
@@ -84,7 +96,7 @@ class _$DailyStateCopyWithImpl<$Res>
 
 /// Create a copy of DailyState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? coins = null,Object? rewardCoins = null,Object? chestCoins = null,Object? untilNextPuzzle = freezed,Object? previewColors = freezed,Object? previewFailed = null,Object? homeRequest = null,Object? homeLevelNumber = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? coins = null,Object? rewardCoins = null,Object? chestCoins = null,Object? untilNextPuzzle = freezed,Object? previewColors = freezed,Object? previewFailed = null,Object? homeRequest = null,Object? homeLevelNumber = null,Object? selectedPastDate = freezed,Object? pastPreviewColors = freezed,Object? pastPreviewFailed = null,Object? pastTier = freezed,Object? pastColorCount = null,Object? monthOffset = null,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as DailyStatus,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
@@ -95,6 +107,12 @@ as Duration?,previewColors: freezed == previewColors ? _self.previewColors : pre
 as List<DollColor>?,previewFailed: null == previewFailed ? _self.previewFailed : previewFailed // ignore: cast_nullable_to_non_nullable
 as bool,homeRequest: null == homeRequest ? _self.homeRequest : homeRequest // ignore: cast_nullable_to_non_nullable
 as PlayRequest,homeLevelNumber: null == homeLevelNumber ? _self.homeLevelNumber : homeLevelNumber // ignore: cast_nullable_to_non_nullable
+as int,selectedPastDate: freezed == selectedPastDate ? _self.selectedPastDate : selectedPastDate // ignore: cast_nullable_to_non_nullable
+as LocalDate?,pastPreviewColors: freezed == pastPreviewColors ? _self.pastPreviewColors : pastPreviewColors // ignore: cast_nullable_to_non_nullable
+as List<DollColor>?,pastPreviewFailed: null == pastPreviewFailed ? _self.pastPreviewFailed : pastPreviewFailed // ignore: cast_nullable_to_non_nullable
+as bool,pastTier: freezed == pastTier ? _self.pastTier : pastTier // ignore: cast_nullable_to_non_nullable
+as Tier?,pastColorCount: null == pastColorCount ? _self.pastColorCount : pastColorCount // ignore: cast_nullable_to_non_nullable
+as int,monthOffset: null == monthOffset ? _self.monthOffset : monthOffset // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -198,10 +216,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DailyStatus status,  int coins,  int rewardCoins,  int chestCoins,  Duration? untilNextPuzzle,  List<DollColor>? previewColors,  bool previewFailed,  PlayRequest homeRequest,  int homeLevelNumber)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DailyStatus status,  int coins,  int rewardCoins,  int chestCoins,  Duration? untilNextPuzzle,  List<DollColor>? previewColors,  bool previewFailed,  PlayRequest homeRequest,  int homeLevelNumber,  LocalDate? selectedPastDate,  List<DollColor>? pastPreviewColors,  bool pastPreviewFailed,  Tier? pastTier,  int pastColorCount,  int monthOffset)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DailyState() when $default != null:
-return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_that.untilNextPuzzle,_that.previewColors,_that.previewFailed,_that.homeRequest,_that.homeLevelNumber);case _:
+return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_that.untilNextPuzzle,_that.previewColors,_that.previewFailed,_that.homeRequest,_that.homeLevelNumber,_that.selectedPastDate,_that.pastPreviewColors,_that.pastPreviewFailed,_that.pastTier,_that.pastColorCount,_that.monthOffset);case _:
   return orElse();
 
 }
@@ -219,10 +237,10 @@ return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DailyStatus status,  int coins,  int rewardCoins,  int chestCoins,  Duration? untilNextPuzzle,  List<DollColor>? previewColors,  bool previewFailed,  PlayRequest homeRequest,  int homeLevelNumber)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DailyStatus status,  int coins,  int rewardCoins,  int chestCoins,  Duration? untilNextPuzzle,  List<DollColor>? previewColors,  bool previewFailed,  PlayRequest homeRequest,  int homeLevelNumber,  LocalDate? selectedPastDate,  List<DollColor>? pastPreviewColors,  bool pastPreviewFailed,  Tier? pastTier,  int pastColorCount,  int monthOffset)  $default,) {final _that = this;
 switch (_that) {
 case _DailyState():
-return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_that.untilNextPuzzle,_that.previewColors,_that.previewFailed,_that.homeRequest,_that.homeLevelNumber);case _:
+return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_that.untilNextPuzzle,_that.previewColors,_that.previewFailed,_that.homeRequest,_that.homeLevelNumber,_that.selectedPastDate,_that.pastPreviewColors,_that.pastPreviewFailed,_that.pastTier,_that.pastColorCount,_that.monthOffset);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -239,10 +257,10 @@ return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DailyStatus status,  int coins,  int rewardCoins,  int chestCoins,  Duration? untilNextPuzzle,  List<DollColor>? previewColors,  bool previewFailed,  PlayRequest homeRequest,  int homeLevelNumber)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DailyStatus status,  int coins,  int rewardCoins,  int chestCoins,  Duration? untilNextPuzzle,  List<DollColor>? previewColors,  bool previewFailed,  PlayRequest homeRequest,  int homeLevelNumber,  LocalDate? selectedPastDate,  List<DollColor>? pastPreviewColors,  bool pastPreviewFailed,  Tier? pastTier,  int pastColorCount,  int monthOffset)?  $default,) {final _that = this;
 switch (_that) {
 case _DailyState() when $default != null:
-return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_that.untilNextPuzzle,_that.previewColors,_that.previewFailed,_that.homeRequest,_that.homeLevelNumber);case _:
+return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_that.untilNextPuzzle,_that.previewColors,_that.previewFailed,_that.homeRequest,_that.homeLevelNumber,_that.selectedPastDate,_that.pastPreviewColors,_that.pastPreviewFailed,_that.pastTier,_that.pastColorCount,_that.monthOffset);case _:
   return null;
 
 }
@@ -254,7 +272,7 @@ return $default(_that.status,_that.coins,_that.rewardCoins,_that.chestCoins,_tha
 
 
 class _DailyState with DiagnosticableTreeMixin implements DailyState {
-  const _DailyState({required this.status, this.coins = 0, this.rewardCoins = 50, this.chestCoins = 300, this.untilNextPuzzle, final  List<DollColor>? previewColors, this.previewFailed = false, this.homeRequest = const PlayRequest.campaign(1), this.homeLevelNumber = 1}): _previewColors = previewColors;
+  const _DailyState({required this.status, this.coins = 0, this.rewardCoins = 50, this.chestCoins = 300, this.untilNextPuzzle, final  List<DollColor>? previewColors, this.previewFailed = false, this.homeRequest = const PlayRequest.campaign(1), this.homeLevelNumber = 1, this.selectedPastDate, final  List<DollColor>? pastPreviewColors, this.pastPreviewFailed = false, this.pastTier, this.pastColorCount = 0, this.monthOffset = 0}): _previewColors = previewColors,_pastPreviewColors = pastPreviewColors;
   
 
 /// The reconciled streak, freezes, cycle and today's puzzle
@@ -292,6 +310,34 @@ class _DailyState with DiagnosticableTreeMixin implements DailyState {
 @override@JsonKey() final  PlayRequest homeRequest;
 /// The number frame 5.5's copy shows (`SaveService.currentLevel`).
 @override@JsonKey() final  int homeLevelNumber;
+/// A past day the month's picker has chosen (frame 14.3b, spec-prop
+/// §7.5c): its card is open under the month card. Page state, not a
+/// route; null while none is.
+@override final  LocalDate? selectedPastDate;
+/// The chosen day's colours once its board resolves (the card's
+/// preview); null shows the spinner.
+ final  List<DollColor>? _pastPreviewColors;
+/// The chosen day's colours once its board resolves (the card's
+/// preview); null shows the spinner.
+@override List<DollColor>? get pastPreviewColors {
+  final value = _pastPreviewColors;
+  if (value == null) return null;
+  if (_pastPreviewColors is EqualUnmodifiableListView) return _pastPreviewColors;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
+/// The chosen day's board did not resolve: the preview is hidden, Play
+/// still works.
+@override@JsonKey() final  bool pastPreviewFailed;
+/// The chosen day's difficulty facts for the card's chip
+/// ("5 colors · Hard"): `DifficultyCurve.dailyTier` and the colour
+/// count of `dailyParams`, both pure functions of the date.
+@override final  Tier? pastTier;
+@override@JsonKey() final  int pastColorCount;
+/// 0 shows today's month; -1 the month before, while the window
+/// reaches into it (the ‹ chip, frame 14.2c). Never further.
+@override@JsonKey() final  int monthOffset;
 
 /// Create a copy of DailyState
 /// with the given fields replaced by the non-null parameter values.
@@ -304,21 +350,21 @@ _$DailyStateCopyWith<_DailyState> get copyWith => __$DailyStateCopyWithImpl<_Dai
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
   properties
     ..add(DiagnosticsProperty('type', 'DailyState'))
-    ..add(DiagnosticsProperty('status', status))..add(DiagnosticsProperty('coins', coins))..add(DiagnosticsProperty('rewardCoins', rewardCoins))..add(DiagnosticsProperty('chestCoins', chestCoins))..add(DiagnosticsProperty('untilNextPuzzle', untilNextPuzzle))..add(DiagnosticsProperty('previewColors', previewColors))..add(DiagnosticsProperty('previewFailed', previewFailed))..add(DiagnosticsProperty('homeRequest', homeRequest))..add(DiagnosticsProperty('homeLevelNumber', homeLevelNumber));
+    ..add(DiagnosticsProperty('status', status))..add(DiagnosticsProperty('coins', coins))..add(DiagnosticsProperty('rewardCoins', rewardCoins))..add(DiagnosticsProperty('chestCoins', chestCoins))..add(DiagnosticsProperty('untilNextPuzzle', untilNextPuzzle))..add(DiagnosticsProperty('previewColors', previewColors))..add(DiagnosticsProperty('previewFailed', previewFailed))..add(DiagnosticsProperty('homeRequest', homeRequest))..add(DiagnosticsProperty('homeLevelNumber', homeLevelNumber))..add(DiagnosticsProperty('selectedPastDate', selectedPastDate))..add(DiagnosticsProperty('pastPreviewColors', pastPreviewColors))..add(DiagnosticsProperty('pastPreviewFailed', pastPreviewFailed))..add(DiagnosticsProperty('pastTier', pastTier))..add(DiagnosticsProperty('pastColorCount', pastColorCount))..add(DiagnosticsProperty('monthOffset', monthOffset));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyState&&(identical(other.status, status) || other.status == status)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins)&&(identical(other.chestCoins, chestCoins) || other.chestCoins == chestCoins)&&(identical(other.untilNextPuzzle, untilNextPuzzle) || other.untilNextPuzzle == untilNextPuzzle)&&const DeepCollectionEquality().equals(other._previewColors, _previewColors)&&(identical(other.previewFailed, previewFailed) || other.previewFailed == previewFailed)&&(identical(other.homeRequest, homeRequest) || other.homeRequest == homeRequest)&&(identical(other.homeLevelNumber, homeLevelNumber) || other.homeLevelNumber == homeLevelNumber));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyState&&(identical(other.status, status) || other.status == status)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins)&&(identical(other.chestCoins, chestCoins) || other.chestCoins == chestCoins)&&(identical(other.untilNextPuzzle, untilNextPuzzle) || other.untilNextPuzzle == untilNextPuzzle)&&const DeepCollectionEquality().equals(other._previewColors, _previewColors)&&(identical(other.previewFailed, previewFailed) || other.previewFailed == previewFailed)&&(identical(other.homeRequest, homeRequest) || other.homeRequest == homeRequest)&&(identical(other.homeLevelNumber, homeLevelNumber) || other.homeLevelNumber == homeLevelNumber)&&(identical(other.selectedPastDate, selectedPastDate) || other.selectedPastDate == selectedPastDate)&&const DeepCollectionEquality().equals(other._pastPreviewColors, _pastPreviewColors)&&(identical(other.pastPreviewFailed, pastPreviewFailed) || other.pastPreviewFailed == pastPreviewFailed)&&(identical(other.pastTier, pastTier) || other.pastTier == pastTier)&&(identical(other.pastColorCount, pastColorCount) || other.pastColorCount == pastColorCount)&&(identical(other.monthOffset, monthOffset) || other.monthOffset == monthOffset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,coins,rewardCoins,chestCoins,untilNextPuzzle,const DeepCollectionEquality().hash(_previewColors),previewFailed,homeRequest,homeLevelNumber);
+int get hashCode => Object.hash(runtimeType,status,coins,rewardCoins,chestCoins,untilNextPuzzle,const DeepCollectionEquality().hash(_previewColors),previewFailed,homeRequest,homeLevelNumber,selectedPastDate,const DeepCollectionEquality().hash(_pastPreviewColors),pastPreviewFailed,pastTier,pastColorCount,monthOffset);
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'DailyState(status: $status, coins: $coins, rewardCoins: $rewardCoins, chestCoins: $chestCoins, untilNextPuzzle: $untilNextPuzzle, previewColors: $previewColors, previewFailed: $previewFailed, homeRequest: $homeRequest, homeLevelNumber: $homeLevelNumber)';
+  return 'DailyState(status: $status, coins: $coins, rewardCoins: $rewardCoins, chestCoins: $chestCoins, untilNextPuzzle: $untilNextPuzzle, previewColors: $previewColors, previewFailed: $previewFailed, homeRequest: $homeRequest, homeLevelNumber: $homeLevelNumber, selectedPastDate: $selectedPastDate, pastPreviewColors: $pastPreviewColors, pastPreviewFailed: $pastPreviewFailed, pastTier: $pastTier, pastColorCount: $pastColorCount, monthOffset: $monthOffset)';
 }
 
 
@@ -329,7 +375,7 @@ abstract mixin class _$DailyStateCopyWith<$Res> implements $DailyStateCopyWith<$
   factory _$DailyStateCopyWith(_DailyState value, $Res Function(_DailyState) _then) = __$DailyStateCopyWithImpl;
 @override @useResult
 $Res call({
- DailyStatus status, int coins, int rewardCoins, int chestCoins, Duration? untilNextPuzzle, List<DollColor>? previewColors, bool previewFailed, PlayRequest homeRequest, int homeLevelNumber
+ DailyStatus status, int coins, int rewardCoins, int chestCoins, Duration? untilNextPuzzle, List<DollColor>? previewColors, bool previewFailed, PlayRequest homeRequest, int homeLevelNumber, LocalDate? selectedPastDate, List<DollColor>? pastPreviewColors, bool pastPreviewFailed, Tier? pastTier, int pastColorCount, int monthOffset
 });
 
 
@@ -346,7 +392,7 @@ class __$DailyStateCopyWithImpl<$Res>
 
 /// Create a copy of DailyState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? coins = null,Object? rewardCoins = null,Object? chestCoins = null,Object? untilNextPuzzle = freezed,Object? previewColors = freezed,Object? previewFailed = null,Object? homeRequest = null,Object? homeLevelNumber = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? coins = null,Object? rewardCoins = null,Object? chestCoins = null,Object? untilNextPuzzle = freezed,Object? previewColors = freezed,Object? previewFailed = null,Object? homeRequest = null,Object? homeLevelNumber = null,Object? selectedPastDate = freezed,Object? pastPreviewColors = freezed,Object? pastPreviewFailed = null,Object? pastTier = freezed,Object? pastColorCount = null,Object? monthOffset = null,}) {
   return _then(_DailyState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as DailyStatus,coins: null == coins ? _self.coins : coins // ignore: cast_nullable_to_non_nullable
@@ -357,6 +403,12 @@ as Duration?,previewColors: freezed == previewColors ? _self._previewColors : pr
 as List<DollColor>?,previewFailed: null == previewFailed ? _self.previewFailed : previewFailed // ignore: cast_nullable_to_non_nullable
 as bool,homeRequest: null == homeRequest ? _self.homeRequest : homeRequest // ignore: cast_nullable_to_non_nullable
 as PlayRequest,homeLevelNumber: null == homeLevelNumber ? _self.homeLevelNumber : homeLevelNumber // ignore: cast_nullable_to_non_nullable
+as int,selectedPastDate: freezed == selectedPastDate ? _self.selectedPastDate : selectedPastDate // ignore: cast_nullable_to_non_nullable
+as LocalDate?,pastPreviewColors: freezed == pastPreviewColors ? _self._pastPreviewColors : pastPreviewColors // ignore: cast_nullable_to_non_nullable
+as List<DollColor>?,pastPreviewFailed: null == pastPreviewFailed ? _self.pastPreviewFailed : pastPreviewFailed // ignore: cast_nullable_to_non_nullable
+as bool,pastTier: freezed == pastTier ? _self.pastTier : pastTier // ignore: cast_nullable_to_non_nullable
+as Tier?,pastColorCount: null == pastColorCount ? _self.pastColorCount : pastColorCount // ignore: cast_nullable_to_non_nullable
+as int,monthOffset: null == monthOffset ? _self.monthOffset : monthOffset // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

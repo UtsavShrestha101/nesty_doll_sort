@@ -55,7 +55,7 @@ extension PlayRequestPatterns on PlayRequest {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CampaignPlay value)?  campaign,TResult Function( BonusPlay value)?  bonus,TResult Function( DailyPlay value)?  daily,TResult Function( ReplayPlay value)?  replay,TResult Function( RacePlay value)?  race,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CampaignPlay value)?  campaign,TResult Function( BonusPlay value)?  bonus,TResult Function( DailyPlay value)?  daily,TResult Function( ReplayPlay value)?  replay,TResult Function( RacePlay value)?  race,TResult Function( PastDailyPlay value)?  pastDaily,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
@@ -63,7 +63,8 @@ return campaign(_that);case BonusPlay() when bonus != null:
 return bonus(_that);case DailyPlay() when daily != null:
 return daily(_that);case ReplayPlay() when replay != null:
 return replay(_that);case RacePlay() when race != null:
-return race(_that);case _:
+return race(_that);case PastDailyPlay() when pastDaily != null:
+return pastDaily(_that);case _:
   return orElse();
 
 }
@@ -81,7 +82,7 @@ return race(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CampaignPlay value)  campaign,required TResult Function( BonusPlay value)  bonus,required TResult Function( DailyPlay value)  daily,required TResult Function( ReplayPlay value)  replay,required TResult Function( RacePlay value)  race,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CampaignPlay value)  campaign,required TResult Function( BonusPlay value)  bonus,required TResult Function( DailyPlay value)  daily,required TResult Function( ReplayPlay value)  replay,required TResult Function( RacePlay value)  race,required TResult Function( PastDailyPlay value)  pastDaily,}){
 final _that = this;
 switch (_that) {
 case CampaignPlay():
@@ -89,7 +90,8 @@ return campaign(_that);case BonusPlay():
 return bonus(_that);case DailyPlay():
 return daily(_that);case ReplayPlay():
 return replay(_that);case RacePlay():
-return race(_that);}
+return race(_that);case PastDailyPlay():
+return pastDaily(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -103,7 +105,7 @@ return race(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CampaignPlay value)?  campaign,TResult? Function( BonusPlay value)?  bonus,TResult? Function( DailyPlay value)?  daily,TResult? Function( ReplayPlay value)?  replay,TResult? Function( RacePlay value)?  race,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CampaignPlay value)?  campaign,TResult? Function( BonusPlay value)?  bonus,TResult? Function( DailyPlay value)?  daily,TResult? Function( ReplayPlay value)?  replay,TResult? Function( RacePlay value)?  race,TResult? Function( PastDailyPlay value)?  pastDaily,}){
 final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
@@ -111,7 +113,8 @@ return campaign(_that);case BonusPlay() when bonus != null:
 return bonus(_that);case DailyPlay() when daily != null:
 return daily(_that);case ReplayPlay() when replay != null:
 return replay(_that);case RacePlay() when race != null:
-return race(_that);case _:
+return race(_that);case PastDailyPlay() when pastDaily != null:
+return pastDaily(_that);case _:
   return null;
 
 }
@@ -128,14 +131,15 @@ return race(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int order)?  campaign,TResult Function( int number)?  bonus,TResult Function( int yyyymmdd)?  daily,TResult Function( int order)?  replay,TResult Function( int rival,  int raceNo)?  race,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int order)?  campaign,TResult Function( int number)?  bonus,TResult Function( int yyyymmdd)?  daily,TResult Function( int order)?  replay,TResult Function( int rival,  int raceNo)?  race,TResult Function( int yyyymmdd)?  pastDaily,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
 return campaign(_that.order);case BonusPlay() when bonus != null:
 return bonus(_that.number);case DailyPlay() when daily != null:
 return daily(_that.yyyymmdd);case ReplayPlay() when replay != null:
 return replay(_that.order);case RacePlay() when race != null:
-return race(_that.rival,_that.raceNo);case _:
+return race(_that.rival,_that.raceNo);case PastDailyPlay() when pastDaily != null:
+return pastDaily(_that.yyyymmdd);case _:
   return orElse();
 
 }
@@ -153,14 +157,15 @@ return race(_that.rival,_that.raceNo);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int order)  campaign,required TResult Function( int number)  bonus,required TResult Function( int yyyymmdd)  daily,required TResult Function( int order)  replay,required TResult Function( int rival,  int raceNo)  race,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int order)  campaign,required TResult Function( int number)  bonus,required TResult Function( int yyyymmdd)  daily,required TResult Function( int order)  replay,required TResult Function( int rival,  int raceNo)  race,required TResult Function( int yyyymmdd)  pastDaily,}) {final _that = this;
 switch (_that) {
 case CampaignPlay():
 return campaign(_that.order);case BonusPlay():
 return bonus(_that.number);case DailyPlay():
 return daily(_that.yyyymmdd);case ReplayPlay():
 return replay(_that.order);case RacePlay():
-return race(_that.rival,_that.raceNo);}
+return race(_that.rival,_that.raceNo);case PastDailyPlay():
+return pastDaily(_that.yyyymmdd);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -174,14 +179,15 @@ return race(_that.rival,_that.raceNo);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int order)?  campaign,TResult? Function( int number)?  bonus,TResult? Function( int yyyymmdd)?  daily,TResult? Function( int order)?  replay,TResult? Function( int rival,  int raceNo)?  race,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int order)?  campaign,TResult? Function( int number)?  bonus,TResult? Function( int yyyymmdd)?  daily,TResult? Function( int order)?  replay,TResult? Function( int rival,  int raceNo)?  race,TResult? Function( int yyyymmdd)?  pastDaily,}) {final _that = this;
 switch (_that) {
 case CampaignPlay() when campaign != null:
 return campaign(_that.order);case BonusPlay() when bonus != null:
 return bonus(_that.number);case DailyPlay() when daily != null:
 return daily(_that.yyyymmdd);case ReplayPlay() when replay != null:
 return replay(_that.order);case RacePlay() when race != null:
-return race(_that.rival,_that.raceNo);case _:
+return race(_that.rival,_that.raceNo);case PastDailyPlay() when pastDaily != null:
+return pastDaily(_that.yyyymmdd);case _:
   return null;
 
 }
@@ -514,6 +520,72 @@ class _$RacePlayCopyWithImpl<$Res>
   return _then(RacePlay(
 rival: null == rival ? _self.rival : rival // ignore: cast_nullable_to_non_nullable
 as int,raceNo: null == raceNo ? _self.raceNo : raceNo // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class PastDailyPlay extends PlayRequest {
+  const PastDailyPlay(this.yyyymmdd): super._();
+  
+
+ final  int yyyymmdd;
+
+/// Create a copy of PlayRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PastDailyPlayCopyWith<PastDailyPlay> get copyWith => _$PastDailyPlayCopyWithImpl<PastDailyPlay>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PastDailyPlay&&(identical(other.yyyymmdd, yyyymmdd) || other.yyyymmdd == yyyymmdd));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,yyyymmdd);
+
+@override
+String toString() {
+  return 'PlayRequest.pastDaily(yyyymmdd: $yyyymmdd)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PastDailyPlayCopyWith<$Res> implements $PlayRequestCopyWith<$Res> {
+  factory $PastDailyPlayCopyWith(PastDailyPlay value, $Res Function(PastDailyPlay) _then) = _$PastDailyPlayCopyWithImpl;
+@useResult
+$Res call({
+ int yyyymmdd
+});
+
+
+
+
+}
+/// @nodoc
+class _$PastDailyPlayCopyWithImpl<$Res>
+    implements $PastDailyPlayCopyWith<$Res> {
+  _$PastDailyPlayCopyWithImpl(this._self, this._then);
+
+  final PastDailyPlay _self;
+  final $Res Function(PastDailyPlay) _then;
+
+/// Create a copy of PlayRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? yyyymmdd = null,}) {
+  return _then(PastDailyPlay(
+null == yyyymmdd ? _self.yyyymmdd : yyyymmdd // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

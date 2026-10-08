@@ -41,6 +41,7 @@ class GameplayHud extends StatelessWidget {
     this.coinPillKey,
     this.coinBump = 0,
     this.coinRing = false,
+    this.showCoins = true,
     super.key,
   });
 
@@ -103,6 +104,10 @@ class GameplayHud extends StatelessWidget {
   /// The ring round the coin pill while the chest's coins land.
   final bool coinRing;
 
+  /// False on a past day's board (frame 14.3c): it pays nothing, so there is
+  /// no coin pill.
+  final bool showCoins;
+
   /// The HUD's height below the safe-area top: down to the counter canvas'
   /// bottom (top + 70 + 30).
   static const double height = 100;
@@ -147,17 +152,19 @@ class GameplayHud extends StatelessWidget {
             LayoutId(
               id: _HudSlot.coins,
               // A huge balance at 1.3× text shrinks rather than overflow.
-              child: BumpScale(
-                trigger: coinBump,
-                child: RewardRing.pill(
-                  visible: coinRing,
-                  child: FittedBox(
-                    key: coinPillKey,
-                    fit: BoxFit.scaleDown,
-                    child: CoinPill(coins: coins),
-                  ),
-                ),
-              ),
+              child: !showCoins
+                  ? const SizedBox.shrink()
+                  : BumpScale(
+                      trigger: coinBump,
+                      child: RewardRing.pill(
+                        visible: coinRing,
+                        child: FittedBox(
+                          key: coinPillKey,
+                          fit: BoxFit.scaleDown,
+                          child: CoinPill(coins: coins),
+                        ),
+                      ),
+                    ),
             ),
             LayoutId(id: _HudSlot.level, child: _levelPill()),
           ],

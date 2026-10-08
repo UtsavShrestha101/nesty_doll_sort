@@ -20,6 +20,8 @@ Widget _hud({
   int done = 1,
   int total = 4,
   VoidCallback? onPause,
+  bool showCoins = true,
+  String? dailyDateLabel,
 }) => Scaffold(
   body: Align(
     alignment: Alignment.topCenter,
@@ -30,6 +32,8 @@ Widget _hud({
       setsDone: done,
       setsTotal: total,
       onPause: onPause ?? () {},
+      showCoins: showCoins,
+      dailyDateLabel: dailyDateLabel,
       library: FakeFxLibrary(),
     ),
   ),
@@ -37,6 +41,15 @@ Widget _hud({
 
 void main() {
   setUpAll(loadBundledFonts);
+
+  // Frame 14.3c: a past day's board shows its date and no coin pill.
+  testWidgets('a past day: the date chip, and no coin pill', (tester) async {
+    await pumpScreen(tester, _hud(showCoins: false, dailyDateLabel: 'Oct 10'));
+    expect(find.text('Oct 10'), findsOneWidget);
+    expect(find.byType(CoinPill), findsNothing);
+    await pumpScreen(tester, _hud(dailyDateLabel: 'Oct 10'));
+    expect(find.byType(CoinPill), findsOneWidget);
+  });
 
   for (final size in screenSizes) {
     for (final scale in textScales) {

@@ -13,6 +13,7 @@ import 'package:nesty_game/core/models/symbols_mode.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/clock/system_clock.dart';
+import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/save/in_memory_save_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -22,9 +23,13 @@ import 'package:nesty_game/core/ui/widgets/home/streak_look.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/daily/widgets/daily_locked_card.dart';
 import 'package:nesty_game/features/daily/widgets/month_card.dart';
+import 'package:nesty_game/features/daily/widgets/past_day_card.dart';
 import 'package:nesty_game/features/daily/widgets/streak_card.dart';
 import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
+import 'package:nesty_game/features/gameplay/overlays/past_day_win_card.dart';
+import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart'
+    show DailyStreakCard;
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/home/pages/home_page.dart';
 import 'package:nesty_game/features/settings/pages/settings_page.dart';
@@ -77,6 +82,14 @@ import 'support/time_picker_probe.dart';
 /// - `locked` (m7-6 12.14): Level 1 won, Level 2 not: Home's Daily tile opens
 ///   the Daily before it unlocks; its button plays Level 2.
 ///
+/// - `archive` (local habits 3, `nesty-test` passes 20261103): a paused
+///   streak, today's daily played two moves and left. The Daily's month shows
+///   its window across the 1st (the ‹ October chip), a window day opens its
+///   card (14.3b), Play opens the board with the date pill and no coin pill
+///   (14.3c), its win is the date card with no streak or coins (14.3d), Back
+///   to Daily lands on the month with the played-later mark (14.3e), the
+///   streak is unchanged and today's board resumes with its two moves.
+///
 /// ```sh
 /// cd apps/game
 /// flutter drive --flavor dev --driver test_driver/integration_test.dart \
@@ -110,6 +123,7 @@ void main() {
         'settings' => _seedSettings(),
         'welcome' => _seedWelcome(today),
         'month' => _seedMonth(today),
+        'archive' => _seedArchive(today),
         'locked' => _seedLocked(),
         _ => _seedChest(today),
       };
@@ -137,6 +151,8 @@ void main() {
           await _locked(tester, shots);
         case 'month':
           await _month(tester, shots);
+        case 'archive':
+          await _archive(tester, board, shots);
         default:
           await _chest(tester, board, shots);
       }
@@ -279,6 +295,21 @@ Future<void> _seedMonth(LocalDate today) {
   );
 }
 
+/// The past dailies (plan-local-habits §3), dated against the 3rd of a
+/// month so the 7-day window reaches the month before: a paused 4-day
+/// streak (this week's freeze spent, no notice to show), the reminder offer
+/// already shown.
+Future<void> _seedArchive(LocalDate today) => seedSave(
+  _base(
+    DailyProgress(
+      streak: 4,
+      freezeWeek: today.isoWeekKey,
+      done: [for (var back = 6; back >= 3; back--) today.addDays(-back)],
+    ),
+  ),
+  settings: const SeededSettings(reminder: ReminderSettings(offered: true)),
+);
+
 Future<void> _openDaily(WidgetTester tester, _Shots shots, String name) async {
   await tester.tap(find.text('Daily Puzzle'));
   await tester.pumpUntil(
@@ -299,6 +330,7 @@ Future<void> _playDailyToWin(
   String prefix = '',
   String start = 'Play',
   Finder? startFinder,
+  Future<void> Function()? afterStart,
 }) async {
   await tester.tap(startFinder ?? find.text(start));
   await tester.pumpUntil(
@@ -315,6 +347,7 @@ Future<void> _playDailyToWin(
   // run, 2026-09-30).
   await board.waitIdle();
   await tester.pumpFor(const Duration(milliseconds: 1200));
+  if (afterStart != null) await afterStart();
   final hintButton = find.text('Hint');
   for (var i = 0; i < 40; i++) {
     for (
@@ -680,6 +713,181 @@ Future<void> _month(WidgetTester tester, _Shots shots) async {
   );
   await _scrollToEnd(tester, DailyPage);
   await shots.take('d_37_daily_month_bottom');
+}
+
+/// The solver's hint, applied [count] times on an open board (no intro card
+/// is expected: the seed's board may open one, which is dismissed first).
+Future<void> _hintMoves(WidgetTester tester, Board board, int count) async {
+  await board.waitIdle();
+  await tester.pumpFor(const Duration(milliseconds: 1200));
+  for (var i = 0; i < count; i++) {
+    for (
+      var shown = board.state.intro;
+      shown != null;
+      shown = board.state.intro
+    ) {
+      await tester.pumpFor(const Duration(milliseconds: 400));
+      await tester.tap(find.text('Got it'));
+      await tester.pumpUntil(
+        () => board.state.intro != shown,
+        reason: 'the ${shown.name} intro card dismissed',
+      );
+    }
+    await board.waitIdle();
+    final hintButton = find.text('Hint');
+    await tester.pumpUntil(
+      () => hintButton.hitTestable().evaluate().isNotEmpty,
+      reason: 'Hint uncovered',
+    );
+    await tester.tap(hintButton);
+    await tester.pumpUntil(
+      () => board.state.hint != null,
+      timeout: const Duration(seconds: 15),
+      reason: 'a hint',
+    );
+    final hint = board.state.hint!;
+    await board.move(hint.from, hint.to);
+  }
+  await board.waitIdle();
+}
+
+Future<void> _archive(WidgetTester tester, Board board, _Shots shots) async {
+  final today = _fakeToday();
+  final handle = tester.ensureSemantics();
+  String label(LocalDate d, String state) =>
+      '${DateFormat.MMMMd('en').format(d.startOfDay)}, $state';
+  Finder open(LocalDate d, String state) =>
+      find.bySemanticsLabel('${label(d, state)}, open to play');
+
+  // Today's board, two moves in, left through Pause > Home.
+  await tester.tap(find.text('Daily Puzzle'));
+  await tester.pumpUntil(
+    () => find.byType(DailyPage).evaluate().isNotEmpty,
+    reason: 'the Daily screen',
+  );
+  await tester.pumpFor(const Duration(seconds: 1));
+  final before = get<DailyService>().refresh();
+  expect(before.lit, isFalse, reason: 'the seeded streak is paused');
+  await tester.tap(find.text('Play'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isNotEmpty &&
+        board.game.geometry != null &&
+        board.game.skin != null,
+    timeout: const Duration(seconds: 30),
+    reason: "today's daily with its skin",
+  );
+  await _hintMoves(tester, board, 2);
+  final movesBefore = board.state.board.moveCount;
+  expect(movesBefore, greaterThanOrEqualTo(2));
+  await tester.tap(find.bySemanticsLabel('Pause'));
+  await tester.pumpUntil(
+    () => find.text('Paused').evaluate().isNotEmpty,
+    reason: 'the pause dialog',
+  );
+  await tester.tap(find.text('Home'));
+  await tester.pumpUntil(
+    () => find.byType(GameplayView).evaluate().isEmpty,
+    reason: 'off the board',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 800));
+  if (find.byType(DailyPage).evaluate().isEmpty) {
+    await tester.tap(find.text('Daily Puzzle'));
+    await tester.pumpUntil(
+      () => find.byType(DailyPage).evaluate().isNotEmpty,
+      reason: 'the Daily screen again',
+    );
+    await tester.pumpFor(const Duration(seconds: 1));
+  }
+
+  // 14.3a: the window across the 1st, the ‹ chip, older days inert.
+  final month = find.byType(MonthCard);
+  await tester.ensureVisible(month);
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  await shots.take('d_40_month_window');
+  expect(find.bySemanticsLabel('Show October'), findsOneWidget);
+  final target = today.addDays(-2);
+  expect(open(target, 'not played'), findsOneWidget);
+  expect(
+    find.bySemanticsLabel(RegExp('open to play')),
+    findsNWidgets(7),
+    reason: 'seven days are open: the window, not the older days or today',
+  );
+
+  // 14.3b: a tap opens the card; no coin chip.
+  await tester.tap(open(target, 'not played'));
+  await tester.pumpUntil(
+    () => find.byType(PastDayCard).evaluate().isNotEmpty,
+    reason: "the past day's card",
+  );
+  await tester.pumpFor(const Duration(milliseconds: 1200));
+  await shots.take('d_41_past_card');
+  expect(
+    find.descendant(
+      of: find.byType(PastDayCard),
+      matching: find.byType(CoinIcon),
+    ),
+    findsNothing,
+  );
+  expect(find.text('Just for fun. Your streak stays as it is.'), findsOne);
+
+  // 14.3c: the board wears the date pill and no coin pill.
+  await _playDailyToWin(
+    tester,
+    board,
+    startFinder: find.byKey(PastDayCard.playKey),
+    afterStart: () async {
+      expect(find.byType(CoinPill), findsNothing);
+      expect(
+        find.text(DateFormat.MMMd('en').format(target.startOfDay)),
+        findsOneWidget,
+        reason: 'the date pill',
+      );
+      await shots.take('d_42_past_board');
+    },
+  );
+
+  // 14.3d: the date card, no streak, no coins, no Share.
+  expect(find.byType(PastDayWinCard), findsOneWidget);
+  expect(find.text('Share'), findsNothing);
+  expect(find.byType(DailyStreakCard), findsNothing);
+  await shots.take('d_43_past_win');
+  await tester.tap(find.text('Back to Daily'));
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isEmpty &&
+        find.byType(DailyPage).evaluate().isNotEmpty,
+    reason: 'the Daily screen under the board',
+  );
+  await tester.pumpFor(const Duration(milliseconds: 900));
+
+  // 14.3e: the month shows the played-later mark; the streak is unchanged.
+  await tester.ensureVisible(month);
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  expect(open(target, 'played later'), findsOneWidget);
+  await shots.take('d_44_month_after');
+  final after = get<DailyService>().refresh();
+  expect(after.streak, before.streak);
+  expect(after.lit, before.lit);
+  expect(after.done, before.done);
+  expect(after.solvedToday, isFalse);
+  expect(get<SaveService>().coins, 880, reason: 'a past day pays nothing');
+
+  // Today's board is where it was left.
+  await tester.tap(find.text('Play').first);
+  await tester.pumpUntil(
+    () =>
+        find.byType(GameplayView).evaluate().isNotEmpty &&
+        board.game.geometry != null &&
+        board.game.skin != null,
+    timeout: const Duration(seconds: 30),
+    reason: "today's daily again",
+  );
+  await board.waitIdle();
+  await tester.pumpFor(const Duration(milliseconds: 1200));
+  expect(board.state.board.moveCount, movesBefore);
+  await shots.take('d_45_today_resumes');
+  handle.dispose();
 }
 
 Future<void> _settings(WidgetTester tester, Board board, _Shots shots) async {

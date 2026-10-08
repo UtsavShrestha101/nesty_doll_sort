@@ -57,6 +57,15 @@ class FakeDailyService implements DailyService {
   @override
   DailyStatus refresh() => status;
 
+  /// Calls of [pruneArchive].
+  int archivePrunes = 0;
+
+  @override
+  DailyStatus pruneArchive() {
+    archivePrunes++;
+    return status;
+  }
+
   @override
   Stream<DailyStatus> get changes => _changes.stream;
 

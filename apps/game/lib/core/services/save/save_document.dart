@@ -9,10 +9,11 @@ export 'package:nesty_game/core/services/records/badge.dart' show BadgeId;
 
 part 'save_document.freezed.dart';
 
-/// The player's save document, schema 3 (spec §13.3 plus the M3 additions,
+/// The player's save document, schema 4 (spec §13.3 plus the M3 additions,
 /// docs/plans/m3-design.md §3, the M7 ones, spec-prop §13.3 and
 /// docs/plans/m7-design.md §3, and the daily gift's `loginGift`,
-/// docs/plans/plan-login-gift.md §7.5b). It lives as one JSON document
+/// docs/plans/plan-login-gift.md §7.5b, and the past dailies' `dailyArchive`,
+/// docs/plans/plan-local-habits.md §3). It lives as one JSON document
 /// under the key `doc` of the Hive box `save` (D63), read and written only by
 /// `SaveService` through `SaveDocumentCodec` (lenient, hand-written: no
 /// json_serializable).
@@ -128,6 +129,12 @@ abstract class SaveDocument with _$SaveDocument {
     /// claim yet, so the next claim is Day 1.
     @Default(LoginGiftProgress()) LoginGiftProgress loginGift,
 
+    /// The past dailies' record (plan-local-habits §3, §7.5c; schema 4's
+    /// one addition): the days played after their date, and the one past
+    /// day's board in progress. A save from before schema 4 starts it
+    /// empty.
+    @Default(DailyArchive()) DailyArchive dailyArchive,
+
     /// Top-level keys this schema doesn't know (a newer app's), kept as they
     /// were and written back (m3-design §3.3).
     @Default(<String, Object?>{}) Map<String, Object?> unknown,
@@ -138,8 +145,9 @@ abstract class SaveDocument with _$SaveDocument {
   /// The schema this app reads and writes. Raising it needs a step in
   /// `SaveMigrations.steps` and a test that migrates a real document of the
   /// schema before (m7-design §3.3: 1 → 2 is M7's step; 2 → 3 is the daily
-  /// gift's, plan-login-gift §7.5b).
-  static const int currentSchema = 3;
+  /// gift's, plan-login-gift §7.5b; 3 → 4 is the past dailies', plan-local-
+  /// habits §3).
+  static const int currentSchema = 4;
 
   /// The bundled skin every player owns (spec §13.5).
   static const String defaultSkin = 'classic';
@@ -153,6 +161,7 @@ abstract class SaveDocument with _$SaveDocument {
   /// a race is never saved (m7-design §6, P2.4).
   InProgressLevel? inProgressOf(PlayKind kind) => switch (kind) {
     PlayKind.daily => daily.inProgress,
+    PlayKind.pastDaily => dailyArchive.inProgress,
     PlayKind.campaign ||
     PlayKind.bonus => inProgress?.request.kind == kind ? inProgress : null,
     PlayKind.replay || PlayKind.race => null,
@@ -252,8 +261,27 @@ abstract class DailyProgress with _$DailyProgress {
   /// Freezes held at most (m3-design §8.2).
   static const int maxFreezes = 1;
 
-  /// [done] and [frozen] keep this many dates.
-  static const int maxDates = 31;
+  /// [done], [frozen] and `DailyArchive.played` keep this many dates: two
+  /// months, so the month before is known in full (Q190, D310). An older
+  /// save's 31 read as they are.
+  static const int maxDates = 62;
+}
+
+/// The save's `dailyArchive` (plan-local-habits §3, §7.5c): what the last
+/// days' dailies leave behind. A past day never touches [DailyProgress]
+/// (no streak, no `done`), so its own record lives here. JSON:
+/// `{"played": ["2026-10-05"], "inProgress": null}`.
+@freezed
+abstract class DailyArchive with _$DailyArchive {
+  const factory DailyArchive({
+    /// The days solved after their own date, distinct, oldest first, at
+    /// most `DailyProgress.maxDates`. The month card marks them as played.
+    @Default(<LocalDate>[]) List<LocalDate> played,
+
+    /// The one past day's board in progress. Starting another past day's
+    /// board replaces it; today's daily keeps `DailyProgress.inProgress`.
+    InProgressLevel? inProgress,
+  }) = _DailyArchive;
 }
 
 /// One daily solve, kept as `daily.lastSolve` (m7-design P3.4): the

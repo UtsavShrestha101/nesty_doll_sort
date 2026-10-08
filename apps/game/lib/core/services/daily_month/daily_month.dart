@@ -70,6 +70,8 @@ final class DailyMonth {
   /// [weekStart] is a [DateTime] weekday (`DateTime.monday` ...). [done],
   /// [frozen], [played] (stage 3) and [window] (stage 3's playable days)
   /// may hold dates of other months: only this month's are read.
+  /// [shownMonth] is any date of the month to draw (the picker's ‹ page);
+  /// the default is today's. Future and today are still judged by [today].
   /// Precedence: solved, then played later, then frozen, then not played;
   /// any date after [today] is future.
   factory DailyMonth.of({
@@ -79,13 +81,15 @@ final class DailyMonth {
     required Iterable<LocalDate> frozen,
     Iterable<LocalDate> played = const [],
     Iterable<LocalDate> window = const [],
+    LocalDate? shownMonth,
   }) {
+    final month = shownMonth ?? today;
     final doneSet = done.toSet();
     final frozenSet = frozen.toSet();
     final playedSet = played.toSet();
     final windowSet = window.toSet();
-    final first = LocalDate(today.year, today.month, 1);
-    final days = LocalDate.daysInMonth(today.year, today.month);
+    final first = LocalDate(month.year, month.month, 1);
+    final days = LocalDate.daysInMonth(month.year, month.month);
     final lead = (first.weekday - weekStart + 7) % 7;
     final rowCount = (lead + days + 6) ~/ 7;
     final rows = <List<MonthCell>>[];
@@ -97,7 +101,7 @@ final class DailyMonth {
           cells.add(const MonthCell.blank());
           continue;
         }
-        final date = LocalDate(today.year, today.month, day);
+        final date = LocalDate(month.year, month.month, day);
         final DayState state;
         if (date.epochDay > today.epochDay) {
           state = DayState.future;
@@ -115,9 +119,9 @@ final class DailyMonth {
             date,
             state,
             isToday: date == today,
-            playable:
-                windowSet.contains(date) &&
-                (state == DayState.notPlayed || state == DayState.frozen),
+            // Any day of the window can be opened, played or not: a solved
+            // or played-later one is played again (frame 14.3e).
+            playable: windowSet.contains(date) && state != DayState.future,
           ),
         );
       }
@@ -126,5 +130,20 @@ final class DailyMonth {
     return DailyMonth._(List.unmodifiable(rows));
   }
 
+  /// Whether any day of [window] falls in the month before [today]'s: the
+  /// ‹ chip shows only then (the 1st to the 7th with a 7-day window).
+  static bool reachesPreviousMonth(
+    LocalDate today,
+    Iterable<LocalDate> window,
+  ) => window.any((d) => d.year != today.year || d.month != today.month);
+
+  /// The first day of the month before [today]'s.
+  static LocalDate previousMonthOf(LocalDate today) => today.month == 1
+      ? LocalDate(today.year - 1, 12, 1)
+      : LocalDate(today.year, today.month - 1, 1);
+
   final List<List<MonthCell>> rows;
+
+  /// Any day of the grid can be opened: the picker's hint shows then.
+  bool get hasPlayable => rows.any((r) => r.any((c) => c.playable));
 }

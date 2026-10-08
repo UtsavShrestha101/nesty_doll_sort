@@ -7,6 +7,7 @@ import 'package:nesty_game/core/repository/fake_catalog_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fixture_levels.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/services/clock/fake_clock.dart';
 import 'package:nesty_game/core/services/generator/fake_level_generator_service.dart';
 import 'package:nesty_game/core/services/generator/level_generator_service.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
@@ -81,6 +82,7 @@ void main() {
         remoteConfig,
         save,
         catalog,
+        FakeClock(),
       );
     });
 
@@ -131,6 +133,7 @@ void main() {
           remoteConfig,
           FakeSaveService(),
           catalog,
+          FakeClock(),
         );
         final last = await partial.resolve(const PlayRequest.campaign(5));
         expect(last!.completesChapter, isFalse);
@@ -211,6 +214,7 @@ void main() {
         remoteConfig,
         save,
         catalog,
+        FakeClock(),
       );
     });
 
@@ -312,6 +316,7 @@ void main() {
         remoteConfig,
         FakeSaveService(),
         catalog,
+        FakeClock(),
       );
       expect(entry.level, (await fresh.resolve(request))!.level);
     });
@@ -341,6 +346,7 @@ void main() {
         remoteConfig,
         save,
         catalog,
+        FakeClock(),
       );
       // A negative `levelCount` makes `bonusParams` build an out-of-range
       // level number, which throws; the resolver's catch-all turns that
@@ -370,6 +376,7 @@ void main() {
         remoteConfig,
         save,
         catalog,
+        FakeClock(),
       );
     });
 
@@ -477,6 +484,7 @@ void main() {
         remoteConfig,
         atStage21,
         catalog,
+        FakeClock(),
       ).resolve(request);
       final high = await DefaultLevelResolver(
         levels,
@@ -484,6 +492,7 @@ void main() {
         remoteConfig,
         atStage41,
         catalog,
+        FakeClock(),
       ).resolve(request);
       expect(low, isNotNull);
       expect(high, isNotNull);
@@ -506,6 +515,7 @@ void main() {
         remoteConfig,
         save,
         catalog,
+        FakeClock(),
       );
       expect(
         await failing.resolve(const PlayRequest.race(rival: 1, raceNo: 1)),
@@ -549,6 +559,7 @@ void main() {
         remoteConfig,
         withStrayInProgress,
         catalog,
+        FakeClock(),
       );
       final entry = await withStray.resolve(
         const PlayRequest.race(rival: 1, raceNo: 1),

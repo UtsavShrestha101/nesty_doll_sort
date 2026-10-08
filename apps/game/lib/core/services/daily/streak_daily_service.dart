@@ -10,6 +10,7 @@ import 'package:nesty_game/core/services/clock/app_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
+import 'package:nesty_game/core/services/daily_archive/daily_archive_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_keys.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
@@ -56,6 +57,13 @@ class StreakDailyService implements DailyService {
   }
 
   @override
+  DailyStatus pruneArchive() {
+    final today = _clock.today();
+    _save.pruneDailyArchive(today);
+    return _publish(_save.document.daily, today);
+  }
+
+  @override
   Stream<DailyStatus> get changes => _changes.stream;
 
   @override
@@ -98,6 +106,19 @@ class StreakDailyService implements DailyService {
 
   DailyStatus _publish(DailyProgress daily, LocalDate today) {
     final solvedToday = daily.done.contains(today);
+    final archive = _save.document.dailyArchive;
+    // The window opens with the Daily and never from the install date;
+    // `daily_archive_days` of 0 closes it (§7.5c).
+    final window = isUnlocked
+        ? DailyArchiveRules.window(
+            today,
+            DailyArchiveRules.daysOf(_remoteConfig),
+          )
+        : const <LocalDate>[];
+    final saved = archive.inProgress?.request;
+    final archiveInProgress = saved is PastDailyPlay
+        ? _tryDate(saved.yyyymmdd)
+        : null;
     final status = DailyStatus(
       today: today,
       tier: DifficultyCurve.dailyTier(today.yyyymmdd),
@@ -117,6 +138,9 @@ class StreakDailyService implements DailyService {
       solve: daily.lastSolve?.date == today ? daily.lastSolve : null,
       done: daily.done,
       frozen: daily.frozen,
+      played: archive.played,
+      window: window,
+      archiveInProgress: archiveInProgress,
     );
     // Only a real change fires: Home re-reads the status (refresh) on every
     // change, so an unchanged one firing again would loop forever.
@@ -127,6 +151,14 @@ class StreakDailyService implements DailyService {
   }
 
   static const int _cycleLength = 7;
+
+  static LocalDate? _tryDate(int yyyymmdd) {
+    try {
+      return LocalDate.fromYyyymmdd(yyyymmdd);
+    } on ArgumentError {
+      return null;
+    }
+  }
 
   static LocalDate? _freezeNotice(DailyProgress daily) {
     if (daily.frozen.isEmpty) return null;

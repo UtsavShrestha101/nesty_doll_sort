@@ -15,8 +15,10 @@ typedef SaveMigration = Map<String, Object?> Function(Map<String, Object?> raw);
 /// is M7's (docs/plans/m7-design.md §3.3): it derives the gentle streak's
 /// `daily.lit` and `daily.run` and the records a schema-1 save already
 /// implies. Step 2 is the daily gift's (docs/plans/plan-login-gift.md
-/// §7.5b): it only stamps schema 3. `save_migrations_test` migrates a real
-/// document of each older schema (`fixtures/schema<n>_document.json`).
+/// §7.5b): it only stamps schema 3. Step 3 is the past dailies' (plan-local-
+/// habits §3): it stamps schema 4 with an empty `dailyArchive`.
+/// `save_migrations_test` migrates a real document of each older schema
+/// (`fixtures/schema<n>_document.json`).
 abstract final class SaveMigrations {
   /// The schema an absent document counts as.
   static const int noDocument = 0;
@@ -27,6 +29,7 @@ abstract final class SaveMigrations {
     noDocument: (Map<String, Object?> raw) => {...raw, 'schema': 1},
     1: _schema1To2,
     2: _schema2To3,
+    3: _schema3To4,
   });
 
   /// Schema 1 → 2 (m7-design §3.3). Schema 1's `daily.streak` was the
@@ -93,6 +96,18 @@ abstract final class SaveMigrations {
   static Map<String, Object?> _schema2To3(Map<String, Object?> raw) => {
     ...raw,
     'schema': 3,
+  };
+
+  /// Schema 3 → 4 (plan-local-habits §3): the past dailies' `dailyArchive`.
+  /// No schema-3 save has played a past day, so the step only stamps the
+  /// schema and writes an empty archive; every other key is kept as it was.
+  /// A `dailyArchive` a schema-3 app carried as an unknown key (a downgrade
+  /// from schema 4) is kept, for the decoder to read leniently. Never
+  /// throws.
+  static Map<String, Object?> _schema3To4(Map<String, Object?> raw) => {
+    ...raw,
+    'schema': 4,
+    'dailyArchive': raw['dailyArchive'] ?? const <String, Object?>{},
   };
 
   /// [raw], of schema [from], migrated step by step to

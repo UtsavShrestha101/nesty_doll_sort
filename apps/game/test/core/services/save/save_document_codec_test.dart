@@ -90,6 +90,10 @@ void main() {
       lastClaim: LocalDate(2026, 10, 4),
       latestSeen: LocalDate(2026, 10, 5),
     ),
+    // Schema 4's past dailies (plan-local-habits §3).
+    dailyArchive: DailyArchive(
+      played: [LocalDate(2026, 9, 30), LocalDate(2026, 10, 2)],
+    ),
     unknown: const {'zeta': 1, 'alpha': 'kept'},
   );
 
@@ -105,7 +109,7 @@ void main() {
   test('writes the known keys in order, then the unknown ones sorted', () {
     final keys = SaveDocumentCodec.encode(full).keys.toList();
     expect(keys.first, 'schema');
-    expect(keys.sublist(keys.length - 10), [
+    expect(keys.sublist(keys.length - 11), [
       'playerId',
       'levelBests',
       // The star rating's two (m7-design P3.4), after levelBests.
@@ -116,6 +120,8 @@ void main() {
       'race',
       // Schema 3's (plan-login-gift §7.5b), after race.
       'loginGift',
+      // Schema 4's (plan-local-habits §3), after loginGift.
+      'dailyArchive',
       'alpha',
       'zeta',
     ]);
@@ -247,9 +253,9 @@ void main() {
     },
   );
 
-  test('dates keep the last 31, sorted', () {
+  test('dates keep the last 62, sorted (Q190)', () {
     final days = [
-      for (var i = 40; i >= 0; i--) LocalDate(2026, 9, 1).addDays(i).toIso(),
+      for (var i = 70; i >= 0; i--) LocalDate(2026, 9, 1).addDays(i).toIso(),
     ];
     final read = SaveDocumentCodec.read(
       jsonEncode({
@@ -259,8 +265,25 @@ void main() {
     );
     final done = read.document.daily.done;
     expect(done, hasLength(DailyProgress.maxDates));
-    expect(done.first, LocalDate(2026, 9, 11));
-    expect(done.last, LocalDate(2026, 10, 11));
+    expect(DailyProgress.maxDates, 62);
+    expect(done.first, LocalDate(2026, 9, 10));
+    expect(done.last, LocalDate(2026, 11, 10));
+  });
+
+  test('a save of 31 dates, as schema 3 capped them, reads as it is', () {
+    final days = [
+      for (var i = 0; i < 31; i++) LocalDate(2026, 9, 1).addDays(i).toIso(),
+    ];
+    final read = SaveDocumentCodec.read(
+      jsonEncode({
+        'schema': 3,
+        'daily': {'done': days, 'frozen': days},
+        'dailyArchive': {'played': days},
+      }),
+    );
+    expect(read.document.daily.done, hasLength(31));
+    expect(read.document.daily.frozen, hasLength(31));
+    expect(read.document.dailyArchive.played, hasLength(31));
   });
 
   group('schema 2 (m7-design §3.2)', () {

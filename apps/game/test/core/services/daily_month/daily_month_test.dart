@@ -117,12 +117,36 @@ void main() {
       done: [LocalDate(2026, 10, 7)],
       frozen: const [],
       played: [LocalDate(2026, 10, 6)],
-      window: [LocalDate(2026, 10, 6), LocalDate(2026, 10, 5)],
+      window: [
+        LocalDate(2026, 10, 7),
+        LocalDate(2026, 10, 6),
+        LocalDate(2026, 10, 5),
+      ],
     );
     MonthCell at(int d) => days(m).firstWhere((c) => c.date!.day == d);
     expect(at(6).state, DayState.playedLater);
-    expect(at(6).playable, isFalse);
+    // Every window day can be opened, played or not (frame 14.3e).
+    expect(at(6).playable, isTrue);
     expect(at(5).playable, isTrue);
-    expect(at(7).playable, isFalse);
+    expect(at(7).playable, isTrue);
+    expect(at(4).playable, isFalse);
+    expect(at(9).playable, isFalse);
+  });
+
+  test('shownMonth draws the previous month with no today or future', () {
+    final m = DailyMonth.of(
+      today: LocalDate(2026, 10, 3),
+      shownMonth: LocalDate(2026, 9, 1),
+      weekStart: DateTime.monday,
+      done: [LocalDate(2026, 9, 30)],
+      frozen: const [],
+      window: [LocalDate(2026, 9, 28), LocalDate(2026, 10, 2)],
+    );
+    final cells = days(m);
+    expect(cells.length, 30);
+    expect(cells.any((c) => c.isToday), isFalse);
+    expect(cells.any((c) => c.state == DayState.future), isFalse);
+    expect(cells.last.state, DayState.solved);
+    expect(cells.firstWhere((c) => c.date!.day == 28).playable, isTrue);
   });
 }

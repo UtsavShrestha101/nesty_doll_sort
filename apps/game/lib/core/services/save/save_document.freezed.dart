@@ -65,7 +65,11 @@ mixin _$SaveDocument {
  RaceProgress get race;/// The daily gift's 7-day track (plan-login-gift §7.5b, D268; schema
 /// 3's one addition). A save from before schema 3 starts it fresh: no
 /// claim yet, so the next claim is Day 1.
- LoginGiftProgress get loginGift;/// Top-level keys this schema doesn't know (a newer app's), kept as they
+ LoginGiftProgress get loginGift;/// The past dailies' record (plan-local-habits §3, §7.5c; schema 4's
+/// one addition): the days played after their date, and the one past
+/// day's board in progress. A save from before schema 4 starts it
+/// empty.
+ DailyArchive get dailyArchive;/// Top-level keys this schema doesn't know (a newer app's), kept as they
 /// were and written back (m3-design §3.3).
  Map<String, Object?> get unknown;
 /// Create a copy of SaveDocument
@@ -78,16 +82,16 @@ $SaveDocumentCopyWith<SaveDocument> get copyWith => _$SaveDocumentCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SaveDocument&&(identical(other.schema, schema) || other.schema == schema)&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.highestLevel, highestLevel) || other.highestLevel == highestLevel)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.inventory, inventory) || other.inventory == inventory)&&(identical(other.adsRemoved, adsRemoved) || other.adsRemoved == adsRemoved)&&const DeepCollectionEquality().equals(other.ownedSkins, ownedSkins)&&(identical(other.selectedSkin, selectedSkin) || other.selectedSkin == selectedSkin)&&const DeepCollectionEquality().equals(other.ownedThemes, ownedThemes)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme)&&const DeepCollectionEquality().equals(other.museum, museum)&&const DeepCollectionEquality().equals(other.museumCollected, museumCollected)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.adCounters, adCounters) || other.adCounters == adCounters)&&(identical(other.stats, stats) || other.stats == stats)&&const DeepCollectionEquality().equals(other.seenIntros, seenIntros)&&(identical(other.tutorialDone, tutorialDone) || other.tutorialDone == tutorialDone)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.playerId, playerId) || other.playerId == playerId)&&const DeepCollectionEquality().equals(other.levelBests, levelBests)&&const DeepCollectionEquality().equals(other.levelStars, levelStars)&&(identical(other.starTipShown, starTipShown) || other.starTipShown == starTipShown)&&(identical(other.records, records) || other.records == records)&&(identical(other.chests, chests) || other.chests == chests)&&(identical(other.race, race) || other.race == race)&&(identical(other.loginGift, loginGift) || other.loginGift == loginGift)&&const DeepCollectionEquality().equals(other.unknown, unknown));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SaveDocument&&(identical(other.schema, schema) || other.schema == schema)&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.highestLevel, highestLevel) || other.highestLevel == highestLevel)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.inventory, inventory) || other.inventory == inventory)&&(identical(other.adsRemoved, adsRemoved) || other.adsRemoved == adsRemoved)&&const DeepCollectionEquality().equals(other.ownedSkins, ownedSkins)&&(identical(other.selectedSkin, selectedSkin) || other.selectedSkin == selectedSkin)&&const DeepCollectionEquality().equals(other.ownedThemes, ownedThemes)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme)&&const DeepCollectionEquality().equals(other.museum, museum)&&const DeepCollectionEquality().equals(other.museumCollected, museumCollected)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.adCounters, adCounters) || other.adCounters == adCounters)&&(identical(other.stats, stats) || other.stats == stats)&&const DeepCollectionEquality().equals(other.seenIntros, seenIntros)&&(identical(other.tutorialDone, tutorialDone) || other.tutorialDone == tutorialDone)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.playerId, playerId) || other.playerId == playerId)&&const DeepCollectionEquality().equals(other.levelBests, levelBests)&&const DeepCollectionEquality().equals(other.levelStars, levelStars)&&(identical(other.starTipShown, starTipShown) || other.starTipShown == starTipShown)&&(identical(other.records, records) || other.records == records)&&(identical(other.chests, chests) || other.chests == chests)&&(identical(other.race, race) || other.race == race)&&(identical(other.loginGift, loginGift) || other.loginGift == loginGift)&&(identical(other.dailyArchive, dailyArchive) || other.dailyArchive == dailyArchive)&&const DeepCollectionEquality().equals(other.unknown, unknown));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,schema,currentLevel,highestLevel,coins,inventory,adsRemoved,const DeepCollectionEquality().hash(ownedSkins),selectedSkin,const DeepCollectionEquality().hash(ownedThemes),selectedTheme,const DeepCollectionEquality().hash(museum),const DeepCollectionEquality().hash(museumCollected),daily,inProgress,adCounters,stats,const DeepCollectionEquality().hash(seenIntros),tutorialDone,bonus,playerId,const DeepCollectionEquality().hash(levelBests),const DeepCollectionEquality().hash(levelStars),starTipShown,records,chests,race,loginGift,const DeepCollectionEquality().hash(unknown)]);
+int get hashCode => Object.hashAll([runtimeType,schema,currentLevel,highestLevel,coins,inventory,adsRemoved,const DeepCollectionEquality().hash(ownedSkins),selectedSkin,const DeepCollectionEquality().hash(ownedThemes),selectedTheme,const DeepCollectionEquality().hash(museum),const DeepCollectionEquality().hash(museumCollected),daily,inProgress,adCounters,stats,const DeepCollectionEquality().hash(seenIntros),tutorialDone,bonus,playerId,const DeepCollectionEquality().hash(levelBests),const DeepCollectionEquality().hash(levelStars),starTipShown,records,chests,race,loginGift,dailyArchive,const DeepCollectionEquality().hash(unknown)]);
 
 @override
 String toString() {
-  return 'SaveDocument(schema: $schema, currentLevel: $currentLevel, highestLevel: $highestLevel, coins: $coins, inventory: $inventory, adsRemoved: $adsRemoved, ownedSkins: $ownedSkins, selectedSkin: $selectedSkin, ownedThemes: $ownedThemes, selectedTheme: $selectedTheme, museum: $museum, museumCollected: $museumCollected, daily: $daily, inProgress: $inProgress, adCounters: $adCounters, stats: $stats, seenIntros: $seenIntros, tutorialDone: $tutorialDone, bonus: $bonus, playerId: $playerId, levelBests: $levelBests, levelStars: $levelStars, starTipShown: $starTipShown, records: $records, chests: $chests, race: $race, loginGift: $loginGift, unknown: $unknown)';
+  return 'SaveDocument(schema: $schema, currentLevel: $currentLevel, highestLevel: $highestLevel, coins: $coins, inventory: $inventory, adsRemoved: $adsRemoved, ownedSkins: $ownedSkins, selectedSkin: $selectedSkin, ownedThemes: $ownedThemes, selectedTheme: $selectedTheme, museum: $museum, museumCollected: $museumCollected, daily: $daily, inProgress: $inProgress, adCounters: $adCounters, stats: $stats, seenIntros: $seenIntros, tutorialDone: $tutorialDone, bonus: $bonus, playerId: $playerId, levelBests: $levelBests, levelStars: $levelStars, starTipShown: $starTipShown, records: $records, chests: $chests, race: $race, loginGift: $loginGift, dailyArchive: $dailyArchive, unknown: $unknown)';
 }
 
 
@@ -98,11 +102,11 @@ abstract mixin class $SaveDocumentCopyWith<$Res>  {
   factory $SaveDocumentCopyWith(SaveDocument value, $Res Function(SaveDocument) _then) = _$SaveDocumentCopyWithImpl;
 @useResult
 $Res call({
- int schema, int currentLevel, int highestLevel, int coins, BoosterInventory inventory, bool adsRemoved, List<String> ownedSkins, String selectedSkin, List<String> ownedThemes, String? selectedTheme, List<String> museum, Map<String, LocalDate> museumCollected, DailyProgress daily, InProgressLevel? inProgress, AdCounters adCounters, SaveStats stats, List<String> seenIntros, bool tutorialDone, BonusProgress bonus, String? playerId, Map<String, int> levelBests, Map<String, int> levelStars, bool starTipShown, SaveRecords records, ChestProgress chests, RaceProgress race, LoginGiftProgress loginGift, Map<String, Object?> unknown
+ int schema, int currentLevel, int highestLevel, int coins, BoosterInventory inventory, bool adsRemoved, List<String> ownedSkins, String selectedSkin, List<String> ownedThemes, String? selectedTheme, List<String> museum, Map<String, LocalDate> museumCollected, DailyProgress daily, InProgressLevel? inProgress, AdCounters adCounters, SaveStats stats, List<String> seenIntros, bool tutorialDone, BonusProgress bonus, String? playerId, Map<String, int> levelBests, Map<String, int> levelStars, bool starTipShown, SaveRecords records, ChestProgress chests, RaceProgress race, LoginGiftProgress loginGift, DailyArchive dailyArchive, Map<String, Object?> unknown
 });
 
 
-$BoosterInventoryCopyWith<$Res> get inventory;$DailyProgressCopyWith<$Res> get daily;$InProgressLevelCopyWith<$Res>? get inProgress;$AdCountersCopyWith<$Res> get adCounters;$SaveStatsCopyWith<$Res> get stats;$BonusProgressCopyWith<$Res> get bonus;$SaveRecordsCopyWith<$Res> get records;$ChestProgressCopyWith<$Res> get chests;$RaceProgressCopyWith<$Res> get race;$LoginGiftProgressCopyWith<$Res> get loginGift;
+$BoosterInventoryCopyWith<$Res> get inventory;$DailyProgressCopyWith<$Res> get daily;$InProgressLevelCopyWith<$Res>? get inProgress;$AdCountersCopyWith<$Res> get adCounters;$SaveStatsCopyWith<$Res> get stats;$BonusProgressCopyWith<$Res> get bonus;$SaveRecordsCopyWith<$Res> get records;$ChestProgressCopyWith<$Res> get chests;$RaceProgressCopyWith<$Res> get race;$LoginGiftProgressCopyWith<$Res> get loginGift;$DailyArchiveCopyWith<$Res> get dailyArchive;
 
 }
 /// @nodoc
@@ -115,7 +119,7 @@ class _$SaveDocumentCopyWithImpl<$Res>
 
 /// Create a copy of SaveDocument
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? schema = null,Object? currentLevel = null,Object? highestLevel = null,Object? coins = null,Object? inventory = null,Object? adsRemoved = null,Object? ownedSkins = null,Object? selectedSkin = null,Object? ownedThemes = null,Object? selectedTheme = freezed,Object? museum = null,Object? museumCollected = null,Object? daily = null,Object? inProgress = freezed,Object? adCounters = null,Object? stats = null,Object? seenIntros = null,Object? tutorialDone = null,Object? bonus = null,Object? playerId = freezed,Object? levelBests = null,Object? levelStars = null,Object? starTipShown = null,Object? records = null,Object? chests = null,Object? race = null,Object? loginGift = null,Object? unknown = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? schema = null,Object? currentLevel = null,Object? highestLevel = null,Object? coins = null,Object? inventory = null,Object? adsRemoved = null,Object? ownedSkins = null,Object? selectedSkin = null,Object? ownedThemes = null,Object? selectedTheme = freezed,Object? museum = null,Object? museumCollected = null,Object? daily = null,Object? inProgress = freezed,Object? adCounters = null,Object? stats = null,Object? seenIntros = null,Object? tutorialDone = null,Object? bonus = null,Object? playerId = freezed,Object? levelBests = null,Object? levelStars = null,Object? starTipShown = null,Object? records = null,Object? chests = null,Object? race = null,Object? loginGift = null,Object? dailyArchive = null,Object? unknown = null,}) {
   return _then(_self.copyWith(
 schema: null == schema ? _self.schema : schema // ignore: cast_nullable_to_non_nullable
 as int,currentLevel: null == currentLevel ? _self.currentLevel : currentLevel // ignore: cast_nullable_to_non_nullable
@@ -144,7 +148,8 @@ as bool,records: null == records ? _self.records : records // ignore: cast_nulla
 as SaveRecords,chests: null == chests ? _self.chests : chests // ignore: cast_nullable_to_non_nullable
 as ChestProgress,race: null == race ? _self.race : race // ignore: cast_nullable_to_non_nullable
 as RaceProgress,loginGift: null == loginGift ? _self.loginGift : loginGift // ignore: cast_nullable_to_non_nullable
-as LoginGiftProgress,unknown: null == unknown ? _self.unknown : unknown // ignore: cast_nullable_to_non_nullable
+as LoginGiftProgress,dailyArchive: null == dailyArchive ? _self.dailyArchive : dailyArchive // ignore: cast_nullable_to_non_nullable
+as DailyArchive,unknown: null == unknown ? _self.unknown : unknown // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>,
   ));
 }
@@ -241,6 +246,15 @@ $LoginGiftProgressCopyWith<$Res> get loginGift {
   return $LoginGiftProgressCopyWith<$Res>(_self.loginGift, (value) {
     return _then(_self.copyWith(loginGift: value));
   });
+}/// Create a copy of SaveDocument
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DailyArchiveCopyWith<$Res> get dailyArchive {
+  
+  return $DailyArchiveCopyWith<$Res>(_self.dailyArchive, (value) {
+    return _then(_self.copyWith(dailyArchive: value));
+  });
 }
 }
 
@@ -323,10 +337,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int schema,  int currentLevel,  int highestLevel,  int coins,  BoosterInventory inventory,  bool adsRemoved,  List<String> ownedSkins,  String selectedSkin,  List<String> ownedThemes,  String? selectedTheme,  List<String> museum,  Map<String, LocalDate> museumCollected,  DailyProgress daily,  InProgressLevel? inProgress,  AdCounters adCounters,  SaveStats stats,  List<String> seenIntros,  bool tutorialDone,  BonusProgress bonus,  String? playerId,  Map<String, int> levelBests,  Map<String, int> levelStars,  bool starTipShown,  SaveRecords records,  ChestProgress chests,  RaceProgress race,  LoginGiftProgress loginGift,  Map<String, Object?> unknown)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int schema,  int currentLevel,  int highestLevel,  int coins,  BoosterInventory inventory,  bool adsRemoved,  List<String> ownedSkins,  String selectedSkin,  List<String> ownedThemes,  String? selectedTheme,  List<String> museum,  Map<String, LocalDate> museumCollected,  DailyProgress daily,  InProgressLevel? inProgress,  AdCounters adCounters,  SaveStats stats,  List<String> seenIntros,  bool tutorialDone,  BonusProgress bonus,  String? playerId,  Map<String, int> levelBests,  Map<String, int> levelStars,  bool starTipShown,  SaveRecords records,  ChestProgress chests,  RaceProgress race,  LoginGiftProgress loginGift,  DailyArchive dailyArchive,  Map<String, Object?> unknown)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SaveDocument() when $default != null:
-return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_that.inventory,_that.adsRemoved,_that.ownedSkins,_that.selectedSkin,_that.ownedThemes,_that.selectedTheme,_that.museum,_that.museumCollected,_that.daily,_that.inProgress,_that.adCounters,_that.stats,_that.seenIntros,_that.tutorialDone,_that.bonus,_that.playerId,_that.levelBests,_that.levelStars,_that.starTipShown,_that.records,_that.chests,_that.race,_that.loginGift,_that.unknown);case _:
+return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_that.inventory,_that.adsRemoved,_that.ownedSkins,_that.selectedSkin,_that.ownedThemes,_that.selectedTheme,_that.museum,_that.museumCollected,_that.daily,_that.inProgress,_that.adCounters,_that.stats,_that.seenIntros,_that.tutorialDone,_that.bonus,_that.playerId,_that.levelBests,_that.levelStars,_that.starTipShown,_that.records,_that.chests,_that.race,_that.loginGift,_that.dailyArchive,_that.unknown);case _:
   return orElse();
 
 }
@@ -344,10 +358,10 @@ return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int schema,  int currentLevel,  int highestLevel,  int coins,  BoosterInventory inventory,  bool adsRemoved,  List<String> ownedSkins,  String selectedSkin,  List<String> ownedThemes,  String? selectedTheme,  List<String> museum,  Map<String, LocalDate> museumCollected,  DailyProgress daily,  InProgressLevel? inProgress,  AdCounters adCounters,  SaveStats stats,  List<String> seenIntros,  bool tutorialDone,  BonusProgress bonus,  String? playerId,  Map<String, int> levelBests,  Map<String, int> levelStars,  bool starTipShown,  SaveRecords records,  ChestProgress chests,  RaceProgress race,  LoginGiftProgress loginGift,  Map<String, Object?> unknown)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int schema,  int currentLevel,  int highestLevel,  int coins,  BoosterInventory inventory,  bool adsRemoved,  List<String> ownedSkins,  String selectedSkin,  List<String> ownedThemes,  String? selectedTheme,  List<String> museum,  Map<String, LocalDate> museumCollected,  DailyProgress daily,  InProgressLevel? inProgress,  AdCounters adCounters,  SaveStats stats,  List<String> seenIntros,  bool tutorialDone,  BonusProgress bonus,  String? playerId,  Map<String, int> levelBests,  Map<String, int> levelStars,  bool starTipShown,  SaveRecords records,  ChestProgress chests,  RaceProgress race,  LoginGiftProgress loginGift,  DailyArchive dailyArchive,  Map<String, Object?> unknown)  $default,) {final _that = this;
 switch (_that) {
 case _SaveDocument():
-return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_that.inventory,_that.adsRemoved,_that.ownedSkins,_that.selectedSkin,_that.ownedThemes,_that.selectedTheme,_that.museum,_that.museumCollected,_that.daily,_that.inProgress,_that.adCounters,_that.stats,_that.seenIntros,_that.tutorialDone,_that.bonus,_that.playerId,_that.levelBests,_that.levelStars,_that.starTipShown,_that.records,_that.chests,_that.race,_that.loginGift,_that.unknown);case _:
+return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_that.inventory,_that.adsRemoved,_that.ownedSkins,_that.selectedSkin,_that.ownedThemes,_that.selectedTheme,_that.museum,_that.museumCollected,_that.daily,_that.inProgress,_that.adCounters,_that.stats,_that.seenIntros,_that.tutorialDone,_that.bonus,_that.playerId,_that.levelBests,_that.levelStars,_that.starTipShown,_that.records,_that.chests,_that.race,_that.loginGift,_that.dailyArchive,_that.unknown);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -364,10 +378,10 @@ return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int schema,  int currentLevel,  int highestLevel,  int coins,  BoosterInventory inventory,  bool adsRemoved,  List<String> ownedSkins,  String selectedSkin,  List<String> ownedThemes,  String? selectedTheme,  List<String> museum,  Map<String, LocalDate> museumCollected,  DailyProgress daily,  InProgressLevel? inProgress,  AdCounters adCounters,  SaveStats stats,  List<String> seenIntros,  bool tutorialDone,  BonusProgress bonus,  String? playerId,  Map<String, int> levelBests,  Map<String, int> levelStars,  bool starTipShown,  SaveRecords records,  ChestProgress chests,  RaceProgress race,  LoginGiftProgress loginGift,  Map<String, Object?> unknown)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int schema,  int currentLevel,  int highestLevel,  int coins,  BoosterInventory inventory,  bool adsRemoved,  List<String> ownedSkins,  String selectedSkin,  List<String> ownedThemes,  String? selectedTheme,  List<String> museum,  Map<String, LocalDate> museumCollected,  DailyProgress daily,  InProgressLevel? inProgress,  AdCounters adCounters,  SaveStats stats,  List<String> seenIntros,  bool tutorialDone,  BonusProgress bonus,  String? playerId,  Map<String, int> levelBests,  Map<String, int> levelStars,  bool starTipShown,  SaveRecords records,  ChestProgress chests,  RaceProgress race,  LoginGiftProgress loginGift,  DailyArchive dailyArchive,  Map<String, Object?> unknown)?  $default,) {final _that = this;
 switch (_that) {
 case _SaveDocument() when $default != null:
-return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_that.inventory,_that.adsRemoved,_that.ownedSkins,_that.selectedSkin,_that.ownedThemes,_that.selectedTheme,_that.museum,_that.museumCollected,_that.daily,_that.inProgress,_that.adCounters,_that.stats,_that.seenIntros,_that.tutorialDone,_that.bonus,_that.playerId,_that.levelBests,_that.levelStars,_that.starTipShown,_that.records,_that.chests,_that.race,_that.loginGift,_that.unknown);case _:
+return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_that.inventory,_that.adsRemoved,_that.ownedSkins,_that.selectedSkin,_that.ownedThemes,_that.selectedTheme,_that.museum,_that.museumCollected,_that.daily,_that.inProgress,_that.adCounters,_that.stats,_that.seenIntros,_that.tutorialDone,_that.bonus,_that.playerId,_that.levelBests,_that.levelStars,_that.starTipShown,_that.records,_that.chests,_that.race,_that.loginGift,_that.dailyArchive,_that.unknown);case _:
   return null;
 
 }
@@ -379,7 +393,7 @@ return $default(_that.schema,_that.currentLevel,_that.highestLevel,_that.coins,_
 
 
 class _SaveDocument extends SaveDocument {
-  const _SaveDocument({this.schema = SaveDocument.currentSchema, this.currentLevel = 1, this.highestLevel = 1, this.coins = 0, this.inventory = const BoosterInventory(), this.adsRemoved = false, final  List<String> ownedSkins = const <String>[SaveDocument.defaultSkin], this.selectedSkin = SaveDocument.defaultSkin, final  List<String> ownedThemes = const <String>[SaveDocument.defaultTheme], this.selectedTheme, final  List<String> museum = const <String>[], final  Map<String, LocalDate> museumCollected = const <String, LocalDate>{}, this.daily = const DailyProgress(), this.inProgress, this.adCounters = const AdCounters(), this.stats = const SaveStats(), final  List<String> seenIntros = const <String>[], this.tutorialDone = false, this.bonus = const BonusProgress(), this.playerId, final  Map<String, int> levelBests = const <String, int>{}, final  Map<String, int> levelStars = const <String, int>{}, this.starTipShown = false, this.records = const SaveRecords(), this.chests = const ChestProgress(), this.race = const RaceProgress(), this.loginGift = const LoginGiftProgress(), final  Map<String, Object?> unknown = const <String, Object?>{}}): _ownedSkins = ownedSkins,_ownedThemes = ownedThemes,_museum = museum,_museumCollected = museumCollected,_seenIntros = seenIntros,_levelBests = levelBests,_levelStars = levelStars,_unknown = unknown,super._();
+  const _SaveDocument({this.schema = SaveDocument.currentSchema, this.currentLevel = 1, this.highestLevel = 1, this.coins = 0, this.inventory = const BoosterInventory(), this.adsRemoved = false, final  List<String> ownedSkins = const <String>[SaveDocument.defaultSkin], this.selectedSkin = SaveDocument.defaultSkin, final  List<String> ownedThemes = const <String>[SaveDocument.defaultTheme], this.selectedTheme, final  List<String> museum = const <String>[], final  Map<String, LocalDate> museumCollected = const <String, LocalDate>{}, this.daily = const DailyProgress(), this.inProgress, this.adCounters = const AdCounters(), this.stats = const SaveStats(), final  List<String> seenIntros = const <String>[], this.tutorialDone = false, this.bonus = const BonusProgress(), this.playerId, final  Map<String, int> levelBests = const <String, int>{}, final  Map<String, int> levelStars = const <String, int>{}, this.starTipShown = false, this.records = const SaveRecords(), this.chests = const ChestProgress(), this.race = const RaceProgress(), this.loginGift = const LoginGiftProgress(), this.dailyArchive = const DailyArchive(), final  Map<String, Object?> unknown = const <String, Object?>{}}): _ownedSkins = ownedSkins,_ownedThemes = ownedThemes,_museum = museum,_museumCollected = museumCollected,_seenIntros = seenIntros,_levelBests = levelBests,_levelStars = levelStars,_unknown = unknown,super._();
   
 
 /// The schema this app writes ([currentSchema]).
@@ -522,6 +536,11 @@ class _SaveDocument extends SaveDocument {
 /// 3's one addition). A save from before schema 3 starts it fresh: no
 /// claim yet, so the next claim is Day 1.
 @override@JsonKey() final  LoginGiftProgress loginGift;
+/// The past dailies' record (plan-local-habits §3, §7.5c; schema 4's
+/// one addition): the days played after their date, and the one past
+/// day's board in progress. A save from before schema 4 starts it
+/// empty.
+@override@JsonKey() final  DailyArchive dailyArchive;
 /// Top-level keys this schema doesn't know (a newer app's), kept as they
 /// were and written back (m3-design §3.3).
  final  Map<String, Object?> _unknown;
@@ -544,16 +563,16 @@ _$SaveDocumentCopyWith<_SaveDocument> get copyWith => __$SaveDocumentCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SaveDocument&&(identical(other.schema, schema) || other.schema == schema)&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.highestLevel, highestLevel) || other.highestLevel == highestLevel)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.inventory, inventory) || other.inventory == inventory)&&(identical(other.adsRemoved, adsRemoved) || other.adsRemoved == adsRemoved)&&const DeepCollectionEquality().equals(other._ownedSkins, _ownedSkins)&&(identical(other.selectedSkin, selectedSkin) || other.selectedSkin == selectedSkin)&&const DeepCollectionEquality().equals(other._ownedThemes, _ownedThemes)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme)&&const DeepCollectionEquality().equals(other._museum, _museum)&&const DeepCollectionEquality().equals(other._museumCollected, _museumCollected)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.adCounters, adCounters) || other.adCounters == adCounters)&&(identical(other.stats, stats) || other.stats == stats)&&const DeepCollectionEquality().equals(other._seenIntros, _seenIntros)&&(identical(other.tutorialDone, tutorialDone) || other.tutorialDone == tutorialDone)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.playerId, playerId) || other.playerId == playerId)&&const DeepCollectionEquality().equals(other._levelBests, _levelBests)&&const DeepCollectionEquality().equals(other._levelStars, _levelStars)&&(identical(other.starTipShown, starTipShown) || other.starTipShown == starTipShown)&&(identical(other.records, records) || other.records == records)&&(identical(other.chests, chests) || other.chests == chests)&&(identical(other.race, race) || other.race == race)&&(identical(other.loginGift, loginGift) || other.loginGift == loginGift)&&const DeepCollectionEquality().equals(other._unknown, _unknown));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SaveDocument&&(identical(other.schema, schema) || other.schema == schema)&&(identical(other.currentLevel, currentLevel) || other.currentLevel == currentLevel)&&(identical(other.highestLevel, highestLevel) || other.highestLevel == highestLevel)&&(identical(other.coins, coins) || other.coins == coins)&&(identical(other.inventory, inventory) || other.inventory == inventory)&&(identical(other.adsRemoved, adsRemoved) || other.adsRemoved == adsRemoved)&&const DeepCollectionEquality().equals(other._ownedSkins, _ownedSkins)&&(identical(other.selectedSkin, selectedSkin) || other.selectedSkin == selectedSkin)&&const DeepCollectionEquality().equals(other._ownedThemes, _ownedThemes)&&(identical(other.selectedTheme, selectedTheme) || other.selectedTheme == selectedTheme)&&const DeepCollectionEquality().equals(other._museum, _museum)&&const DeepCollectionEquality().equals(other._museumCollected, _museumCollected)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress)&&(identical(other.adCounters, adCounters) || other.adCounters == adCounters)&&(identical(other.stats, stats) || other.stats == stats)&&const DeepCollectionEquality().equals(other._seenIntros, _seenIntros)&&(identical(other.tutorialDone, tutorialDone) || other.tutorialDone == tutorialDone)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.playerId, playerId) || other.playerId == playerId)&&const DeepCollectionEquality().equals(other._levelBests, _levelBests)&&const DeepCollectionEquality().equals(other._levelStars, _levelStars)&&(identical(other.starTipShown, starTipShown) || other.starTipShown == starTipShown)&&(identical(other.records, records) || other.records == records)&&(identical(other.chests, chests) || other.chests == chests)&&(identical(other.race, race) || other.race == race)&&(identical(other.loginGift, loginGift) || other.loginGift == loginGift)&&(identical(other.dailyArchive, dailyArchive) || other.dailyArchive == dailyArchive)&&const DeepCollectionEquality().equals(other._unknown, _unknown));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,schema,currentLevel,highestLevel,coins,inventory,adsRemoved,const DeepCollectionEquality().hash(_ownedSkins),selectedSkin,const DeepCollectionEquality().hash(_ownedThemes),selectedTheme,const DeepCollectionEquality().hash(_museum),const DeepCollectionEquality().hash(_museumCollected),daily,inProgress,adCounters,stats,const DeepCollectionEquality().hash(_seenIntros),tutorialDone,bonus,playerId,const DeepCollectionEquality().hash(_levelBests),const DeepCollectionEquality().hash(_levelStars),starTipShown,records,chests,race,loginGift,const DeepCollectionEquality().hash(_unknown)]);
+int get hashCode => Object.hashAll([runtimeType,schema,currentLevel,highestLevel,coins,inventory,adsRemoved,const DeepCollectionEquality().hash(_ownedSkins),selectedSkin,const DeepCollectionEquality().hash(_ownedThemes),selectedTheme,const DeepCollectionEquality().hash(_museum),const DeepCollectionEquality().hash(_museumCollected),daily,inProgress,adCounters,stats,const DeepCollectionEquality().hash(_seenIntros),tutorialDone,bonus,playerId,const DeepCollectionEquality().hash(_levelBests),const DeepCollectionEquality().hash(_levelStars),starTipShown,records,chests,race,loginGift,dailyArchive,const DeepCollectionEquality().hash(_unknown)]);
 
 @override
 String toString() {
-  return 'SaveDocument(schema: $schema, currentLevel: $currentLevel, highestLevel: $highestLevel, coins: $coins, inventory: $inventory, adsRemoved: $adsRemoved, ownedSkins: $ownedSkins, selectedSkin: $selectedSkin, ownedThemes: $ownedThemes, selectedTheme: $selectedTheme, museum: $museum, museumCollected: $museumCollected, daily: $daily, inProgress: $inProgress, adCounters: $adCounters, stats: $stats, seenIntros: $seenIntros, tutorialDone: $tutorialDone, bonus: $bonus, playerId: $playerId, levelBests: $levelBests, levelStars: $levelStars, starTipShown: $starTipShown, records: $records, chests: $chests, race: $race, loginGift: $loginGift, unknown: $unknown)';
+  return 'SaveDocument(schema: $schema, currentLevel: $currentLevel, highestLevel: $highestLevel, coins: $coins, inventory: $inventory, adsRemoved: $adsRemoved, ownedSkins: $ownedSkins, selectedSkin: $selectedSkin, ownedThemes: $ownedThemes, selectedTheme: $selectedTheme, museum: $museum, museumCollected: $museumCollected, daily: $daily, inProgress: $inProgress, adCounters: $adCounters, stats: $stats, seenIntros: $seenIntros, tutorialDone: $tutorialDone, bonus: $bonus, playerId: $playerId, levelBests: $levelBests, levelStars: $levelStars, starTipShown: $starTipShown, records: $records, chests: $chests, race: $race, loginGift: $loginGift, dailyArchive: $dailyArchive, unknown: $unknown)';
 }
 
 
@@ -564,11 +583,11 @@ abstract mixin class _$SaveDocumentCopyWith<$Res> implements $SaveDocumentCopyWi
   factory _$SaveDocumentCopyWith(_SaveDocument value, $Res Function(_SaveDocument) _then) = __$SaveDocumentCopyWithImpl;
 @override @useResult
 $Res call({
- int schema, int currentLevel, int highestLevel, int coins, BoosterInventory inventory, bool adsRemoved, List<String> ownedSkins, String selectedSkin, List<String> ownedThemes, String? selectedTheme, List<String> museum, Map<String, LocalDate> museumCollected, DailyProgress daily, InProgressLevel? inProgress, AdCounters adCounters, SaveStats stats, List<String> seenIntros, bool tutorialDone, BonusProgress bonus, String? playerId, Map<String, int> levelBests, Map<String, int> levelStars, bool starTipShown, SaveRecords records, ChestProgress chests, RaceProgress race, LoginGiftProgress loginGift, Map<String, Object?> unknown
+ int schema, int currentLevel, int highestLevel, int coins, BoosterInventory inventory, bool adsRemoved, List<String> ownedSkins, String selectedSkin, List<String> ownedThemes, String? selectedTheme, List<String> museum, Map<String, LocalDate> museumCollected, DailyProgress daily, InProgressLevel? inProgress, AdCounters adCounters, SaveStats stats, List<String> seenIntros, bool tutorialDone, BonusProgress bonus, String? playerId, Map<String, int> levelBests, Map<String, int> levelStars, bool starTipShown, SaveRecords records, ChestProgress chests, RaceProgress race, LoginGiftProgress loginGift, DailyArchive dailyArchive, Map<String, Object?> unknown
 });
 
 
-@override $BoosterInventoryCopyWith<$Res> get inventory;@override $DailyProgressCopyWith<$Res> get daily;@override $InProgressLevelCopyWith<$Res>? get inProgress;@override $AdCountersCopyWith<$Res> get adCounters;@override $SaveStatsCopyWith<$Res> get stats;@override $BonusProgressCopyWith<$Res> get bonus;@override $SaveRecordsCopyWith<$Res> get records;@override $ChestProgressCopyWith<$Res> get chests;@override $RaceProgressCopyWith<$Res> get race;@override $LoginGiftProgressCopyWith<$Res> get loginGift;
+@override $BoosterInventoryCopyWith<$Res> get inventory;@override $DailyProgressCopyWith<$Res> get daily;@override $InProgressLevelCopyWith<$Res>? get inProgress;@override $AdCountersCopyWith<$Res> get adCounters;@override $SaveStatsCopyWith<$Res> get stats;@override $BonusProgressCopyWith<$Res> get bonus;@override $SaveRecordsCopyWith<$Res> get records;@override $ChestProgressCopyWith<$Res> get chests;@override $RaceProgressCopyWith<$Res> get race;@override $LoginGiftProgressCopyWith<$Res> get loginGift;@override $DailyArchiveCopyWith<$Res> get dailyArchive;
 
 }
 /// @nodoc
@@ -581,7 +600,7 @@ class __$SaveDocumentCopyWithImpl<$Res>
 
 /// Create a copy of SaveDocument
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? schema = null,Object? currentLevel = null,Object? highestLevel = null,Object? coins = null,Object? inventory = null,Object? adsRemoved = null,Object? ownedSkins = null,Object? selectedSkin = null,Object? ownedThemes = null,Object? selectedTheme = freezed,Object? museum = null,Object? museumCollected = null,Object? daily = null,Object? inProgress = freezed,Object? adCounters = null,Object? stats = null,Object? seenIntros = null,Object? tutorialDone = null,Object? bonus = null,Object? playerId = freezed,Object? levelBests = null,Object? levelStars = null,Object? starTipShown = null,Object? records = null,Object? chests = null,Object? race = null,Object? loginGift = null,Object? unknown = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? schema = null,Object? currentLevel = null,Object? highestLevel = null,Object? coins = null,Object? inventory = null,Object? adsRemoved = null,Object? ownedSkins = null,Object? selectedSkin = null,Object? ownedThemes = null,Object? selectedTheme = freezed,Object? museum = null,Object? museumCollected = null,Object? daily = null,Object? inProgress = freezed,Object? adCounters = null,Object? stats = null,Object? seenIntros = null,Object? tutorialDone = null,Object? bonus = null,Object? playerId = freezed,Object? levelBests = null,Object? levelStars = null,Object? starTipShown = null,Object? records = null,Object? chests = null,Object? race = null,Object? loginGift = null,Object? dailyArchive = null,Object? unknown = null,}) {
   return _then(_SaveDocument(
 schema: null == schema ? _self.schema : schema // ignore: cast_nullable_to_non_nullable
 as int,currentLevel: null == currentLevel ? _self.currentLevel : currentLevel // ignore: cast_nullable_to_non_nullable
@@ -610,7 +629,8 @@ as bool,records: null == records ? _self.records : records // ignore: cast_nulla
 as SaveRecords,chests: null == chests ? _self.chests : chests // ignore: cast_nullable_to_non_nullable
 as ChestProgress,race: null == race ? _self.race : race // ignore: cast_nullable_to_non_nullable
 as RaceProgress,loginGift: null == loginGift ? _self.loginGift : loginGift // ignore: cast_nullable_to_non_nullable
-as LoginGiftProgress,unknown: null == unknown ? _self._unknown : unknown // ignore: cast_nullable_to_non_nullable
+as LoginGiftProgress,dailyArchive: null == dailyArchive ? _self.dailyArchive : dailyArchive // ignore: cast_nullable_to_non_nullable
+as DailyArchive,unknown: null == unknown ? _self._unknown : unknown // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>,
   ));
 }
@@ -707,6 +727,15 @@ $LoginGiftProgressCopyWith<$Res> get loginGift {
   
   return $LoginGiftProgressCopyWith<$Res>(_self.loginGift, (value) {
     return _then(_self.copyWith(loginGift: value));
+  });
+}/// Create a copy of SaveDocument
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DailyArchiveCopyWith<$Res> get dailyArchive {
+  
+  return $DailyArchiveCopyWith<$Res>(_self.dailyArchive, (value) {
+    return _then(_self.copyWith(dailyArchive: value));
   });
 }
 }
@@ -1357,6 +1386,306 @@ $DailySolveCopyWith<$Res>? get lastSolve {
     return _then(_self.copyWith(lastSolve: value));
   });
 }/// Create a copy of DailyProgress
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$InProgressLevelCopyWith<$Res>? get inProgress {
+    if (_self.inProgress == null) {
+    return null;
+  }
+
+  return $InProgressLevelCopyWith<$Res>(_self.inProgress!, (value) {
+    return _then(_self.copyWith(inProgress: value));
+  });
+}
+}
+
+/// @nodoc
+mixin _$DailyArchive {
+
+/// The days solved after their own date, distinct, oldest first, at
+/// most `DailyProgress.maxDates`. The month card marks them as played.
+ List<LocalDate> get played;/// The one past day's board in progress. Starting another past day's
+/// board replaces it; today's daily keeps `DailyProgress.inProgress`.
+ InProgressLevel? get inProgress;
+/// Create a copy of DailyArchive
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DailyArchiveCopyWith<DailyArchive> get copyWith => _$DailyArchiveCopyWithImpl<DailyArchive>(this as DailyArchive, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyArchive&&const DeepCollectionEquality().equals(other.played, played)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(played),inProgress);
+
+@override
+String toString() {
+  return 'DailyArchive(played: $played, inProgress: $inProgress)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $DailyArchiveCopyWith<$Res>  {
+  factory $DailyArchiveCopyWith(DailyArchive value, $Res Function(DailyArchive) _then) = _$DailyArchiveCopyWithImpl;
+@useResult
+$Res call({
+ List<LocalDate> played, InProgressLevel? inProgress
+});
+
+
+$InProgressLevelCopyWith<$Res>? get inProgress;
+
+}
+/// @nodoc
+class _$DailyArchiveCopyWithImpl<$Res>
+    implements $DailyArchiveCopyWith<$Res> {
+  _$DailyArchiveCopyWithImpl(this._self, this._then);
+
+  final DailyArchive _self;
+  final $Res Function(DailyArchive) _then;
+
+/// Create a copy of DailyArchive
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? played = null,Object? inProgress = freezed,}) {
+  return _then(_self.copyWith(
+played: null == played ? _self.played : played // ignore: cast_nullable_to_non_nullable
+as List<LocalDate>,inProgress: freezed == inProgress ? _self.inProgress : inProgress // ignore: cast_nullable_to_non_nullable
+as InProgressLevel?,
+  ));
+}
+/// Create a copy of DailyArchive
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$InProgressLevelCopyWith<$Res>? get inProgress {
+    if (_self.inProgress == null) {
+    return null;
+  }
+
+  return $InProgressLevelCopyWith<$Res>(_self.inProgress!, (value) {
+    return _then(_self.copyWith(inProgress: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [DailyArchive].
+extension DailyArchivePatterns on DailyArchive {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _DailyArchive value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _DailyArchive() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _DailyArchive value)  $default,){
+final _that = this;
+switch (_that) {
+case _DailyArchive():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _DailyArchive value)?  $default,){
+final _that = this;
+switch (_that) {
+case _DailyArchive() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LocalDate> played,  InProgressLevel? inProgress)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _DailyArchive() when $default != null:
+return $default(_that.played,_that.inProgress);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LocalDate> played,  InProgressLevel? inProgress)  $default,) {final _that = this;
+switch (_that) {
+case _DailyArchive():
+return $default(_that.played,_that.inProgress);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LocalDate> played,  InProgressLevel? inProgress)?  $default,) {final _that = this;
+switch (_that) {
+case _DailyArchive() when $default != null:
+return $default(_that.played,_that.inProgress);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _DailyArchive implements DailyArchive {
+  const _DailyArchive({final  List<LocalDate> played = const <LocalDate>[], this.inProgress}): _played = played;
+  
+
+/// The days solved after their own date, distinct, oldest first, at
+/// most `DailyProgress.maxDates`. The month card marks them as played.
+ final  List<LocalDate> _played;
+/// The days solved after their own date, distinct, oldest first, at
+/// most `DailyProgress.maxDates`. The month card marks them as played.
+@override@JsonKey() List<LocalDate> get played {
+  if (_played is EqualUnmodifiableListView) return _played;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_played);
+}
+
+/// The one past day's board in progress. Starting another past day's
+/// board replaces it; today's daily keeps `DailyProgress.inProgress`.
+@override final  InProgressLevel? inProgress;
+
+/// Create a copy of DailyArchive
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DailyArchiveCopyWith<_DailyArchive> get copyWith => __$DailyArchiveCopyWithImpl<_DailyArchive>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyArchive&&const DeepCollectionEquality().equals(other._played, _played)&&(identical(other.inProgress, inProgress) || other.inProgress == inProgress));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_played),inProgress);
+
+@override
+String toString() {
+  return 'DailyArchive(played: $played, inProgress: $inProgress)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$DailyArchiveCopyWith<$Res> implements $DailyArchiveCopyWith<$Res> {
+  factory _$DailyArchiveCopyWith(_DailyArchive value, $Res Function(_DailyArchive) _then) = __$DailyArchiveCopyWithImpl;
+@override @useResult
+$Res call({
+ List<LocalDate> played, InProgressLevel? inProgress
+});
+
+
+@override $InProgressLevelCopyWith<$Res>? get inProgress;
+
+}
+/// @nodoc
+class __$DailyArchiveCopyWithImpl<$Res>
+    implements _$DailyArchiveCopyWith<$Res> {
+  __$DailyArchiveCopyWithImpl(this._self, this._then);
+
+  final _DailyArchive _self;
+  final $Res Function(_DailyArchive) _then;
+
+/// Create a copy of DailyArchive
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? played = null,Object? inProgress = freezed,}) {
+  return _then(_DailyArchive(
+played: null == played ? _self._played : played // ignore: cast_nullable_to_non_nullable
+as List<LocalDate>,inProgress: freezed == inProgress ? _self.inProgress : inProgress // ignore: cast_nullable_to_non_nullable
+as InProgressLevel?,
+  ));
+}
+
+/// Create a copy of DailyArchive
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')

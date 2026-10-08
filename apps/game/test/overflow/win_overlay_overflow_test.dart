@@ -6,6 +6,7 @@ import 'package:nesty_game/core/services/records/badge.dart';
 import 'package:nesty_game/core/services/share/fake_share_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
+import 'package:nesty_game/features/gameplay/overlays/past_day_win_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
@@ -57,6 +58,7 @@ void main() {
     bool starsCapped = false,
     int? bonusNumber,
     bool share = false,
+    bool past = false,
   }) => WinOverlay(
     summary: WinSummary(
       reward: isReplay ? 0 : 1240,
@@ -76,6 +78,7 @@ void main() {
       starsCapped: starsCapped,
       bonusNumber: bonusNumber,
       dailyDate: LocalDate(2026, 9, 26),
+      pastDate: past ? LocalDate(2026, 10, 10) : null,
     ),
     share: share ? FakeShareService() : null,
     library: FakeFxLibrary(),
@@ -111,6 +114,19 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
         await expectAccessibleLayout(tester);
         expect(find.byType(DailyStreakCard), findsOneWidget);
+      });
+
+      testWidgets('a past day\'s win (frame 14.3d) fits ${size.width.toInt()}×'
+          '${size.height.toInt()} at $scale× text', (tester) async {
+        await pumpScreen(
+          tester,
+          overlay(winMoves: 188, past: true),
+          size: size,
+          textScale: scale,
+        );
+        await tester.pump(const Duration(seconds: 2));
+        await expectAccessibleLayout(tester);
+        expect(find.byType(PastDayWinCard), findsOneWidget);
       });
 
       testWidgets('the relit daily-streak card fits ${size.width.toInt()}×'

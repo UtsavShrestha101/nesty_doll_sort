@@ -29,15 +29,17 @@
 #                   Records, the Shop's Forest Bear, its detail, Ocean in play,
 #                   the themes, a theme in play), `finale` (12.1) and
 #                   `complete` (12.2, and the Museum with all ten families)
-#      daily_states daily_states_test.dart seven times, with NESTY_FAKE_DATE:
+#      daily_states daily_states_test.dart eight times, with NESTY_FAKE_DATE:
 #                   `chest` (a 6-day streak's day-7 chest, the offer's time
 #                   picker), `paused` (paused, then relit), `saved` (a freeze
 #                   covers yesterday, 5.2), `settings` (the toggles, Reduce
 #                   motion, Relaxed mode's toast and free undo, Large symbols),
 #                   `welcome` (the welcome-back card after 3 days away, its
 #                   Play to the win, then gone) and `month` (the month of
-#                   played days on 2026-10-31, whatever --date says) and
+#                   played days on 2026-10-31, whatever --date says),
 #                   `locked` (the Daily before Level 2, 12.14, and its Play)
+#                   and `archive` (a past day played from the month's window
+#                   on 2026-11-03, so the window crosses into October)
 #      gift         login_gift_test.dart five times, with NESTY_FAKE_DATE: `ready`
 #                   (Home's dot, the sheet, a claim's flight, the claimed look),
 #                   `claimed` (no dot, "Tomorrow"), `day7` (the chest, Open,
@@ -673,10 +675,12 @@ fi
 
 if wants daily_states; then
   section "The daily's states and Settings ($DAILY_DATE, fresh installs)"
-  for scenario in chest paused saved settings welcome month locked; do
-    # The month is shot on a 31st (plan-local-habits §2), whatever --date is.
+  for scenario in chest paused saved settings welcome month locked archive; do
+    # The month is shot on a 31st (plan-local-habits §2), and the past days on
+    # 2026-11-03, whose 7-day window crosses into October, whatever --date is.
     scenario_date="$DAILY_DATE"
     [[ $scenario == month ]] && scenario_date=20261031
+    [[ $scenario == archive ]] && scenario_date=20261103
     drive_fresh "daily_states_test $scenario (screenshots d_*)" \
       "daily_states_$scenario" "daily_states_$scenario" \
       daily_states_test.dart --dart-define=NESTY_FAKE_DATE="$scenario_date" \

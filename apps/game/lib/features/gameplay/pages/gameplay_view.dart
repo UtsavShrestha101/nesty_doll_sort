@@ -86,7 +86,8 @@ enum WinContinueAction { chapters, daily, chest, chapterComplete, home, next }
 
 WinContinueAction winContinueActionFor(GameplayState state) => switch (state) {
   _ when state.isReplay => WinContinueAction.chapters,
-  _ when state.dailyStreak != null => WinContinueAction.daily,
+  _ when state.dailyStreak != null || state.isPastDaily =>
+    WinContinueAction.daily,
   _ when state.chest != null => WinContinueAction.chest,
   _ when state.completedChapterId != null => WinContinueAction.chapterComplete,
   _ when state.firstWin => WinContinueAction.home,
@@ -657,11 +658,11 @@ class _GameplayViewState extends State<GameplayView> {
         dailyStreak: state.dailyStreak,
         dailyRelit: state.dailyRelit,
         winMoves: state.winMoves,
-        bestMoves: state.bestMoves,
+        bestMoves: state.isPastDaily ? null : state.bestMoves,
         chestLevelsLeft: state.chestLevelsLeft,
         isReplay: state.isReplay,
         newBadges: state.newBadges,
-        stars: state.stars,
+        stars: state.isPastDaily ? null : state.stars,
         starsNewBest: state.starsNewBest,
         starTarget: state.starTarget,
         starTip: state.starTip,
@@ -670,6 +671,8 @@ class _GameplayViewState extends State<GameplayView> {
           BonusPlay(:final number) => number,
           _ => null,
         },
+        pastDate: state.pastDate,
+        // A past day shows "Moves N" alone: no best, no stars (frame 14.3d).
         dailyDate: switch (state.play.request) {
           DailyPlay(:final yyyymmdd) => LocalDate.fromYyyymmdd(yyyymmdd),
           _ => null,
@@ -1254,7 +1257,8 @@ class _GameplayViewState extends State<GameplayView> {
     final request = state.play.request;
     final bonusNumber = request is BonusPlay ? request.number : null;
     final dailyDateLabel = switch (request) {
-      DailyPlay(:final yyyymmdd) => _dailyDateLabel(context, yyyymmdd),
+      DailyPlay(:final yyyymmdd) ||
+      PastDailyPlay(:final yyyymmdd) => _dailyDateLabel(context, yyyymmdd),
       _ => null,
     };
     final race = _race;
@@ -1276,6 +1280,7 @@ class _GameplayViewState extends State<GameplayView> {
             level: state.levelNumber,
             tier: state.entry.tier,
             coins: hudCoins,
+            showCoins: !state.isPastDaily,
             setsDone: math.min(_setsShown, state.totalSets),
             setsTotal: state.totalSets,
             sparkleScale: _counterSparkleScale,
@@ -1406,6 +1411,9 @@ class _GameplayViewState extends State<GameplayView> {
               // (spec-prop §7.7), and +1 Slot is off: Undo and Restart only
               // (m7-design P2.10).
               relaxed: state.isRace || state.relaxed,
+              // A past day lists only the owned boosters plus Restart, with
+              // no price (§7.5c).
+              pastDay: state.isPastDaily,
               onUndo: state.canUndo
                   ? () {
                       _closeOverlay();

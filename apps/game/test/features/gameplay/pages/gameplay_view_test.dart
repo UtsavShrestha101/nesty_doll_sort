@@ -36,9 +36,12 @@ import 'package:nesty_game/features/gameplay/overlays/intro_mechanic_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/milestone_chest_modal.dart';
 import 'package:nesty_game/features/gameplay/overlays/next_level_failed_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/out_of_moves_sheet.dart';
+import 'package:nesty_game/features/gameplay/overlays/past_day_win_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/pause_dialog.dart';
 import 'package:nesty_game/features/gameplay/overlays/tutorial_overlay.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
+import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart'
+    show WinCoinPill;
 import 'package:nesty_game/features/gameplay/pages/gameplay_services.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_view.dart';
 import 'package:nesty_game/features/gameplay/widgets/booster_bar.dart';
@@ -1352,6 +1355,102 @@ void main() {
     });
   });
 
+  group('a past day (frames 14.3c, 14.3d)', () {
+    const request = PlayRequest.pastDaily(20260925);
+
+    Future<_Screen> pumpPast(
+      WidgetTester tester, {
+      Level? level,
+      SaveService? save,
+      FakeRemoteConfigService? config,
+    }) => _pump(
+      tester,
+      request: request,
+      save: save,
+      config: config,
+      resolver: ScriptedLevelResolver(
+        entries: {request: playEntryFor(request, level ?? defaultLevel)},
+      ),
+    );
+
+    testWidgets('Out of moves lists only Restart when nothing is owned: no '
+        'Undo row, no +1 Slot row, no price (§7.5c)', (tester) async {
+      final config = FakeRemoteConfigService()
+        ..setOverride(RemoteConfigKeys.freeUndosPerLevel, 0);
+      final save = FakeSaveService(remoteConfig: config);
+      while (save.boosterCount(BoosterKind.extraSlot) > 0) {
+        save.useBooster(BoosterKind.extraSlot);
+      }
+      for (final mechanic in IntroMechanic.values) {
+        save.markIntroSeen(mechanic);
+      }
+      final screen = await pumpPast(
+        tester,
+        level: outOfMovesLevel,
+        save: save,
+        config: config,
+      );
+      await screen.move(tester, 'r0c0', 'r0c3');
+      screen.board.callbacks.onOutOfMoves();
+      await _settle(tester);
+      Finder inSheet(String text) => find.descendant(
+        of: find.byType(OutOfMovesSheet),
+        matching: find.text(text),
+      );
+      expect(find.text('No moves left!'), findsOneWidget);
+      expect(inSheet('Restart'), findsOneWidget);
+      expect(inSheet('Undo'), findsNothing);
+      expect(
+        inSheet('${RemoteConfigKeys.priceUndo.defaultValue}'),
+        findsNothing,
+      );
+      expect(
+        inSheet('${RemoteConfigKeys.priceSlot.defaultValue}'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('a Hint with none owned opens no buy popup', (tester) async {
+      final screen = await pumpPast(
+        tester,
+        save: FakeSaveService(
+          initial: const SaveDocument(inventory: BoosterInventory(hint: 0)),
+        ),
+      );
+      await tester.tap(find.text('Hint'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(BoosterBuyPopup), findsNothing);
+      expect(screen.state.offer, isNull);
+      expect(screen.state.acceptsInput, isTrue);
+    });
+
+    testWidgets('the board wears the date pill and no coin pill', (
+      tester,
+    ) async {
+      await pumpPast(tester);
+      expect(find.byType(CoinPill), findsNothing);
+      expect(find.text('Sep 25'), findsOneWidget);
+    });
+
+    testWidgets('its win: the date card, Moves, Back to Daily; no streak, '
+        'coins or chest', (tester) async {
+      final screen = await pumpPast(tester);
+      await _win(tester, screen);
+      screen.board.callbacks.onFamilyLanded(1, 1, 1.5);
+      await tester.pump();
+      screen.board.callbacks.onWon();
+      await _settle(tester);
+      expect(find.bySemanticsLabel('Puzzle solved!'), findsOneWidget);
+      expect(find.byType(PastDayWinCard), findsOneWidget);
+      expect(find.text('Back to Daily'), findsOneWidget);
+      expect(find.text('Continue'), findsNothing);
+      expect(find.byType(DailyStreakCard), findsNothing);
+      expect(find.byType(WinChapterCard), findsNothing);
+      expect(find.byType(WinCoinPill), findsNothing);
+      expect(screen.state.winReward, 0);
+    });
+  });
+
   group('The purchase-offer popup, the tutorial overlay and intro cards '
       '(m3-design §7.3, §10.4)', () {
     testWidgets('a booster press with none left opens its buy popup; Buy '
@@ -1538,6 +1637,11 @@ void main() {
 
     test('a daily win goes back to Daily', () {
       final state = stateFor(const PlayRequest.daily(20260926), dailyStreak: 1);
+      expect(winContinueActionFor(state), WinContinueAction.daily);
+    });
+
+    test('a past day goes back to Daily too', () {
+      final state = stateFor(const PlayRequest.pastDaily(20260925));
       expect(winContinueActionFor(state), WinContinueAction.daily);
     });
 

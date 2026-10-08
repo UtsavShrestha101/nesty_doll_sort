@@ -297,7 +297,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         order: switch (play.request) {
           CampaignPlay(:final order) || ReplayPlay(:final order) => order,
           BonusPlay(:final number) => _levels.levelCount + number,
-          DailyPlay(:final yyyymmdd) => yyyymmdd,
+          DailyPlay(:final yyyymmdd) ||
+          PastDailyPlay(:final yyyymmdd) => yyyymmdd,
           // A race isn't a level: its raceNo only fills the M2 widgets'
           // order (m7-design P2.6), and it logs no level events.
           RacePlay(:final raceNo) => raceNo,
@@ -411,7 +412,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     if (current == null || current.status != GameplayStatus.won) return;
     final request = current.play.request;
     // The daily has no "next": the page pops back to Daily (frame 5.4).
-    if (request is DailyPlay) return;
+    if (request is DailyPlay || request is PastDailyPlay) return;
     final nextRequest = current.nextRequest;
     if (request is CampaignPlay && nextRequest is BonusPlay) {
       await runGuarded(
@@ -622,6 +623,8 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         current.freeUndosLeft > 0) {
       return _applyUndo(current, session, source: BoosterSource.free);
     }
+    // A past day sells nothing (§7.5c): no coin offer, the row just waits.
+    if (current.isPastDaily) return current;
     return current.copyWith(
       offer: BoosterOffer(type: BoosterType.undo, price: current.undoPrice),
     );
@@ -711,6 +714,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
       }
       return _placeExtraSlot(current, session, source: BoosterSource.free);
     }
+    if (current.isPastDaily) return current;
     return current.copyWith(
       offer: BoosterOffer(type: BoosterType.slot, price: current.slotPrice),
     );
@@ -755,6 +759,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     if (current.unlimitedBoosters || current.hintsLeft > 0) {
       return _requestHint(current, source: BoosterSource.free);
     }
+    if (current.isPastDaily) return current;
     return current.copyWith(
       offer: BoosterOffer(type: BoosterType.hint, price: current.hintPrice),
     );
@@ -834,7 +839,10 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     // vs Computer (m7-design P2.6): no offer is ever up for Hint or +1
     // Slot, and undo never offers either (always free); belt and suspenders
     // against a stale confirm.
+    // A past day (§7.5c): nothing is bought with coins (or, from M6, a
+    // rewarded ad), so a stale confirm does nothing even if an offer is up.
     if (current.isRace ||
+        current.isPastDaily ||
         current.offer?.type != type ||
         current.paused ||
         current.intro != null ||
@@ -980,6 +988,15 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     // Read before recording (E9, m7-design §13): the player's very first
     // win ever, and only a campaign win sends Continue to Home.
     final firstWin = request is CampaignPlay && _save.document.stats.wins == 0;
+    // A past day (§7.5c) never reaches the streak: no `progressAfterSolve`,
+    // no coins, no daily event.
+    final pastDay = request is PastDailyPlay;
+    final pastDate = request is PastDailyPlay
+        ? LocalDate.fromYyyymmdd(request.yyyymmdd)
+        : null;
+    final pastAgain =
+        pastDate != null &&
+        _save.document.dailyArchive.played.contains(pastDate);
     DailyProgress? dailyProgress;
     var dailyRelit = false;
     if (request is DailyPlay) {
@@ -1022,7 +1039,7 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
     final outcome = _save.recordLevelWin(
       LevelWinRecord(
         request: request,
-        rewardCoins: play.rewardCoins,
+        rewardCoins: pastDay ? 0 : play.rewardCoins,
         moves: moves,
         completedChapterId: completesChapter ? chapterId : null,
         chapterReward: chapterReward,
@@ -1087,9 +1104,11 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
         ),
       );
     }
+    if (pastDate != null) _logPastDailyComplete(pastDate, again: pastAgain);
     return _withBoosters(
       next.copyWith(
-        winReward: play.rewardCoins,
+        winReward: pastDay ? 0 : play.rewardCoins,
+        pastDailyAgain: pastAgain,
         completedChapterId: completesChapter ? chapterId : null,
         chapterReward: chapterReward,
         dailyStreak: dailyProgress?.streak,
@@ -1206,10 +1225,23 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
       hintsLeft: hints,
       extraSlotsLeft: extraSlots,
       unlimitedBoosters: unlimited,
-      canUndo: session.canUndo,
+      // A past day (§7.5c) sells nothing: a booster counts only while the
+      // player owns one (free undos, relaxed mode, an inventory count, or
+      // the dev flavor's unlimited), so the Out of moves sheet lists only
+      // those plus Restart.
+      canUndo:
+          session.canUndo &&
+          (!current.isPastDaily ||
+              unlimited ||
+              current.relaxed ||
+              freeUndosLeft > 0),
       // vs Computer (m7-design P2.6): Hint and +1 Slot are off.
-      canHint: !current.isRace,
-      canAddSlot: !current.isRace && session.canAddExtraSlot,
+      canHint:
+          !current.isRace && (!current.isPastDaily || unlimited || hints > 0),
+      canAddSlot:
+          !current.isRace &&
+          session.canAddExtraSlot &&
+          (!current.isPastDaily || unlimited || extraSlots > 0),
       undoPrice: _remoteConfig.value(RemoteConfigKeys.priceUndo),
       hintPrice: _remoteConfig.value(RemoteConfigKeys.priceHint),
       slotPrice: _remoteConfig.value(RemoteConfigKeys.priceSlot),
@@ -1325,6 +1357,23 @@ class GameplayBloc extends BaseAsyncBloc<GameplayEvent, GameplayState> {
       },
     ),
   );
+
+  /// `past_daily_complete {days_ago, again}` (local habits 3): how far back
+  /// the day was (1–28) and whether it was already played. Failures are
+  /// swallowed by [AnalyticsService] itself, as for every event.
+  ///
+  /// TODO(M4): the kid path keeps this off for under-13s (D260, Q174): read
+  /// the age gate here when it lands, as welcome_back_cubit.dart's
+  /// `_logPlay` will.
+  void _logPastDailyComplete(LocalDate date, {required bool again}) {
+    final daysAgo = _clock.today().epochDay - date.epochDay;
+    unawaited(
+      _analytics.logEvent(
+        'past_daily_complete',
+        parameters: {'days_ago': daysAgo.clamp(1, 28), 'again': again},
+      ),
+    );
+  }
 
   void _logTutorialStep(int step) => unawaited(
     _analytics.logEvent('tutorial_step', parameters: {'step': step}),

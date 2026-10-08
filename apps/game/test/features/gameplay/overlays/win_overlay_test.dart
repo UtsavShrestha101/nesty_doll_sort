@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:nesty_core/nesty_core.dart';
 import 'package:nesty_game/core/services/audio/audio_service.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
@@ -12,6 +13,7 @@ import 'package:nesty_game/core/services/share/share_service.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
 import 'package:nesty_game/features/fx/lottie_fx_view.dart';
+import 'package:nesty_game/features/gameplay/overlays/past_day_win_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_overlay.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_result_chips.dart';
@@ -55,6 +57,7 @@ Widget _overlay({
   bool starsCapped = false,
   int? bonusNumber,
   LocalDate? dailyDate,
+  LocalDate? pastDate,
   ShareService? share,
   VoidCallback? onTipShown,
 }) => WinOverlay(
@@ -76,6 +79,7 @@ Widget _overlay({
     starsCapped: starsCapped,
     bonusNumber: bonusNumber,
     dailyDate: dailyDate,
+    pastDate: pastDate,
   ),
   share: share,
   onTipShown: onTipShown,
@@ -83,6 +87,8 @@ Widget _overlay({
   library: FakeFxLibrary(),
   onContinue: onContinue ?? () {},
 );
+
+final _long = DateFormat('EEEEdMMMM', 'en').format(DateTime(2026, 10, 10));
 
 void main() {
   setUpAll(loadBundledFonts);
@@ -187,6 +193,57 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.textContaining('Moves'), findsNothing);
       await tester.pump(const Duration(seconds: 2));
+    });
+  });
+
+  // Frame 14.3d: a past day's win pays nothing and moves nothing.
+  group('a past day (frame 14.3d)', () {
+    testWidgets('its title, Moves, the date card and Back to Daily; no coins, '
+        'streak, Share or ×3', (tester) async {
+      final feedback = RecordingCues();
+      await pumpScreen(
+        tester,
+        _overlay(
+          reward: 0,
+          pastDate: LocalDate(2026, 10, 10),
+          winMoves: 18,
+          share: FakeShareService(),
+          feedback: feedback,
+        ),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.bySemanticsLabel('Puzzle solved!'), findsOneWidget);
+      expect(find.text('Moves 18'), findsOneWidget);
+      expect(find.byType(PastDayWinCard), findsOneWidget);
+      expect(find.text(_long), findsOneWidget);
+      expect(find.text('Played later, just for fun.'), findsOneWidget);
+      expect(find.text('10'), findsOneWidget);
+      expect(find.text('Back to Daily'), findsOneWidget);
+      expect(find.text('Continue'), findsNothing);
+      expect(find.text('Share'), findsNothing);
+      expect(find.textContaining('+'), findsNothing);
+      expect(find.byType(DailyStreakCard), findsNothing);
+      expect(find.byType(WinChapterCard), findsNothing);
+      expect(find.byType(WinCoinPill), findsNothing);
+      // Only the open's `win` cue: never `coins` (nothing is paid).
+      expect(feedback.played, hasLength(1));
+      expect(feedback.played.single.sound, SoundEffect.win);
+    });
+
+    testWidgets('the screen reader hears one sentence', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpScreen(
+        tester,
+        _overlay(reward: 0, pastDate: LocalDate(2026, 10, 10), winMoves: 18),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(
+        find.bySemanticsLabel(
+          '$_long solved in 18 moves. Played later, just for fun.',
+        ),
+        findsOneWidget,
+      );
+      handle.dispose();
     });
   });
 

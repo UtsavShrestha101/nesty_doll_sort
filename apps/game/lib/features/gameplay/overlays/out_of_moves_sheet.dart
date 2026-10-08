@@ -35,6 +35,7 @@ class OutOfMovesSheet extends StatelessWidget {
     this.unlimitedBoosters = false,
     this.relaxed = false,
     this.freeUndosTotal = 2,
+    this.pastDay = false,
     super.key,
   });
 
@@ -74,12 +75,18 @@ class OutOfMovesSheet extends StatelessWidget {
   /// The dev flavor: never a coin price (boosters don't run out).
   final bool unlimitedBoosters;
 
+  /// A past day's board (frame 14.3c): it sells nothing, so no row shows a
+  /// price and only the boosters the player owns are listed, plus Restart.
+  final bool pastDay;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
     final onExtraSlot = this.onExtraSlot;
     final undoPriced =
-        !unlimitedBoosters && (!showFreeUndos || freeUndosLeft <= 0);
+        !pastDay &&
+        !unlimitedBoosters &&
+        (!showFreeUndos || freeUndosLeft <= 0);
     return OverlayEntrance(
       kind: OverlayEntranceKind.sheet,
       builder: (context, progress, content) => Stack(
@@ -106,26 +113,27 @@ class OutOfMovesSheet extends StatelessWidget {
         title: l10n.oomTitle,
         subtitle: l10n.oomSubtitle,
         children: [
-          SheetRow(
-            icon: NestyIcons.undo,
-            title: l10n.boosterUndo,
-            subtitle: relaxed
-                ? l10n.oomUndoFreeUnlimited
-                : undoPriced
-                ? l10n.oomUndoSpent(freeUndosTotal)
-                : l10n.oomUndoSubtitle,
-            // 12.8 / 9.x: Undo's tile is always mint with a green glyph.
-            tone: SheetRowTone.success,
-            highlighted: relaxed,
-            trailing: relaxed
-                ? const _FreeChip()
-                : showFreeUndos && freeUndosLeft > 0
-                ? SheetRowTag(l10n.oomUndoFree(freeUndosLeft))
-                : undoPriced
-                ? _CoinChip(price: undoPrice)
-                : null,
-            onTap: onUndo,
-          ),
+          if (!pastDay || onUndo != null)
+            SheetRow(
+              icon: NestyIcons.undo,
+              title: l10n.boosterUndo,
+              subtitle: relaxed
+                  ? l10n.oomUndoFreeUnlimited
+                  : undoPriced
+                  ? l10n.oomUndoSpent(freeUndosTotal)
+                  : l10n.oomUndoSubtitle,
+              // 12.8 / 9.x: Undo's tile is always mint with a green glyph.
+              tone: SheetRowTone.success,
+              highlighted: relaxed,
+              trailing: relaxed
+                  ? const _FreeChip()
+                  : showFreeUndos && freeUndosLeft > 0
+                  ? SheetRowTag(l10n.oomUndoFree(freeUndosLeft))
+                  : undoPriced
+                  ? _CoinChip(price: undoPrice)
+                  : null,
+              onTap: onUndo,
+            ),
           if (onExtraSlot != null)
             SheetRow(
               icon: NestyIcons.addBox,
@@ -135,7 +143,7 @@ class OutOfMovesSheet extends StatelessWidget {
               // The outline marks the way out while Undo is still free
               // (3.5); once Undo is priced the frame (12.8) drops it.
               highlighted: !undoPriced,
-              trailing: unlimitedBoosters || extraSlotsLeft > 0
+              trailing: pastDay || unlimitedBoosters || extraSlotsLeft > 0
                   ? SheetRow.chevron
                   : _CoinChip(price: slotPrice),
               onTap: onExtraSlot,

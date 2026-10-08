@@ -54,6 +54,12 @@ abstract interface class DailyService {
   /// Until the next local midnight (frame 5.5 "Next puzzle in 14h 12m").
   Duration untilNextPuzzle();
 
+  /// Drops the saved past-day board whose date left the window and
+  /// republishes [status] (local habits 3, §7.5c). The Daily page's load
+  /// calls it, never gameplay, so a board open on screen is never pruned
+  /// mid-game. Never throws.
+  DailyStatus pruneArchive();
+
   /// Closes [changes] (DI reset).
   void dispose();
 }

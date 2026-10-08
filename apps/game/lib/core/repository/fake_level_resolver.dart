@@ -4,6 +4,11 @@ import 'package:nesty_game/core/models/play_entry.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/repository/level_resolver.dart';
+import 'package:nesty_game/core/services/clock/app_clock.dart';
+import 'package:nesty_game/core/services/clock/fake_clock.dart';
+import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily/streak_daily_service.dart';
+import 'package:nesty_game/core/services/daily_archive/daily_archive_rules.dart';
 import 'package:nesty_game/core/services/remote_config/remote_config_service.dart';
 import 'package:nesty_game/core/services/save/save_service.dart';
 import 'package:nesty_game/features/gameplay/bloc/win_reward.dart';
@@ -23,7 +28,11 @@ class FakeLevelResolver implements LevelResolver {
     this._save,
     this._remoteConfig, {
     @ignoreParam Map<PlayRequest, PlayEntry>? generated,
-  }) : generated = generated ?? {};
+    @ignoreParam AppClock? clock,
+  }) : generated = generated ?? {},
+       _clock = clock ?? FakeClock();
+
+  final AppClock _clock;
 
   final LevelRepository _levels;
   final SaveService _save;
@@ -39,8 +48,43 @@ class FakeLevelResolver implements LevelResolver {
   Future<PlayEntry?> resolve(PlayRequest request) async => switch (request) {
     CampaignPlay(:final order) => _campaign(order),
     ReplayPlay(:final order) => _replay(order),
+    PastDailyPlay() => _pastDaily(request),
     BonusPlay() || DailyPlay() || RacePlay() => generated[request],
   };
+
+  /// `DefaultLevelResolver`'s gate (§7.5c): refuses today, the future, a
+  /// date outside the window and a locked Daily, unless the date is the
+  /// saved past-day board's. The board is the one a test filed for that
+  /// date's `PlayRequest.daily` (or for the past-day request itself), paying
+  /// nothing.
+  PlayEntry? _pastDaily(PastDailyPlay request) {
+    final LocalDate date;
+    try {
+      date = LocalDate.fromYyyymmdd(request.yyyymmdd);
+    } on ArgumentError {
+      return null;
+    }
+    final today = _clock.today();
+    if (date >= today) return null;
+    final saved = _save.inProgressFor(PlayKind.pastDaily);
+    final open = saved != null && saved.request == request;
+    if (!open) {
+      if (_save.highestLevel < StreakDailyService.unlockAtHighestLevel) {
+        return null;
+      }
+      if (!DailyArchiveRules.isPlayable(
+        date,
+        today,
+        unlocked: true,
+        days: DailyArchiveRules.daysOf(_remoteConfig),
+      )) {
+        return null;
+      }
+    }
+    final board =
+        generated[request] ?? generated[PlayRequest.daily(request.yyyymmdd)];
+    return board?.copyWith(request: request, rewardCoins: 0);
+  }
 
   PlayEntry? _replay(int order) {
     if (order < 1 || order >= _save.highestLevel) return null;
@@ -87,7 +131,7 @@ class FakeLevelResolver implements LevelResolver {
           ? PlayRequest.campaign(order + 1)
           : PlayRequest.bonus(_save.nextBonus),
     BonusPlay(:final number) => PlayRequest.bonus(number + 1),
-    DailyPlay() || ReplayPlay() || RacePlay() => null,
+    DailyPlay() || ReplayPlay() || RacePlay() || PastDailyPlay() => null,
   };
 
   @override

@@ -55,7 +55,7 @@ class PuzzleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _TitleRow(
+          PuzzleTitleRow(
             title: l10n.dailyPuzzleTitle(weekday),
             info: l10n.dailyPuzzleInfo(
               status.colors,
@@ -63,7 +63,13 @@ class PuzzleCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          _Preview(state: state),
+          PuzzlePreview(
+            colors: state.previewColors,
+            failed: state.previewFailed,
+            solvedLabel: status.solvedToday
+                ? l10n.dailySolvedChip(state.rewardCoins)
+                : null,
+          ),
           const SizedBox(height: 14),
           if (status.solvedToday)
             _SolvedFooter(state: state, onPlayCampaign: onPlayCampaign)
@@ -80,8 +86,8 @@ class PuzzleCard extends StatelessWidget {
 /// (m7-design §15's shared rule) while it keeps [minScale] of its size;
 /// past that (1.3× text on a phone) the chip moves under the title rather
 /// than shrinking the title to a caption. Never an ellipsis (review R27).
-class _TitleRow extends StatelessWidget {
-  const _TitleRow({required this.title, required this.info});
+class PuzzleTitleRow extends StatelessWidget {
+  const PuzzleTitleRow({required this.title, required this.info, super.key});
 
   final String title;
   final String info;
@@ -108,8 +114,13 @@ class _TitleRow extends StatelessWidget {
         direction,
       );
       final chipWidth =
-          _lineWidth(info, base.merge(_InfoChip.style), scaler, direction) +
-          _InfoChip.padding.horizontal;
+          _lineWidth(
+            info,
+            base.merge(PuzzleInfoChip.style),
+            scaler,
+            direction,
+          ) +
+          PuzzleInfoChip.padding.horizontal;
       final room = constraints.maxWidth - _gap - chipWidth;
       final titleText = FittedBox(
         fit: BoxFit.scaleDown,
@@ -117,7 +128,7 @@ class _TitleRow extends StatelessWidget {
         child: Text(title, style: _style, maxLines: 1, softWrap: false),
       );
       const chipGap = SizedBox(width: _gap, height: 6);
-      final chip = _InfoChip(text: info);
+      final chip = PuzzleInfoChip(text: info);
       if (room >= titleWidth * minScale) {
         return Row(
           children: [
@@ -153,8 +164,8 @@ class _TitleRow extends StatelessWidget {
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({required this.text});
+class PuzzleInfoChip extends StatelessWidget {
+  const PuzzleInfoChip({required this.text, super.key});
 
   final String text;
 
@@ -188,16 +199,29 @@ class _InfoChip extends StatelessWidget {
 /// opens Settings, so a Color symbols change there prepares it again (D91).
 /// The spinner shows until both the colours and the art are ready; a skin
 /// that can't be prepared draws the placeholder dolls (rule 3).
-class _Preview extends StatefulWidget {
-  const _Preview({required this.state});
+class PuzzlePreview extends StatefulWidget {
+  const PuzzlePreview({
+    required this.colors,
+    required this.failed,
+    this.solvedLabel,
+    super.key,
+  });
 
-  final DailyState state;
+  /// The puzzle's colours once resolved; null shows the spinner.
+  final List<DollColor>? colors;
+
+  /// The resolve failed: no spinner, no dolls.
+  final bool failed;
+
+  /// When set the preview is dimmed under the green pill with this label
+  /// (5.5's "+50 earned", a past day's "Solved on the day").
+  final String? solvedLabel;
 
   @override
-  State<_Preview> createState() => _PreviewState();
+  State<PuzzlePreview> createState() => _PreviewState();
 }
 
-class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
+class _PreviewState extends State<PuzzlePreview> with FollowsSymbolsMode {
   /// The colours and symbols mode [_art] was prepared for; null before the
   /// first request.
   List<DollColor>? _preparedFor;
@@ -209,9 +233,8 @@ class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
   /// arrival instead of shown.
   int _request = 0;
 
-  List<DollColor>? get _colors => widget.state.previewColors
-      ?.take(_DollRow.maxDolls)
-      .toList(growable: false);
+  List<DollColor>? get _colors =>
+      widget.colors?.take(_DollRow.maxDolls).toList(growable: false);
 
   @override
   void didChangeDependencies() {
@@ -220,7 +243,7 @@ class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
   }
 
   @override
-  void didUpdateWidget(_Preview oldWidget) {
+  void didUpdateWidget(PuzzlePreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     _prepareIfNeeded();
   }
@@ -279,9 +302,8 @@ class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.localizations;
-    final state = widget.state;
     final colors = _colors;
+    final solvedLabel = widget.solvedLabel;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: SizedBox(
@@ -305,15 +327,17 @@ class _PreviewState extends State<_Preview> with FollowsSymbolsMode {
                     .symbolsMode
                     .dollSymbols,
               )
-            else if (!state.previewFailed)
+            else if (!widget.failed)
               const Center(child: FxSpinner()),
-            if (state.status.solvedToday)
+            if (solvedLabel != null)
               Positioned.fill(
                 child: ColoredBox(
-                  color: const Color(0xB8FFF9EC),
+                  color: HabitsPastDayTokens.solvedPreviewDim,
                   child: Center(
-                    child: _SolvedChip(
-                      label: l10n.dailySolvedChip(state.rewardCoins),
+                    // Off the preview's edges when a long label fills it.
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: _SolvedChip(label: solvedLabel),
                     ),
                   ),
                 ),
@@ -422,11 +446,21 @@ class _SolvedChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: AppTextStyleTokens.cardTitle.copyWith(
-              fontSize: 18,
-              color: const Color(0xFFFFFFFF),
+          // A past day's longer labels ("Resolvido no mesmo dia" at 1.3×)
+          // shrink on one line, then wrap to two, never under the 0.75
+          // readability floor; "Solved" never needs either.
+          Flexible(
+            child: ShrinkToFitText(
+              label,
+              style: AppTextStyleTokens.cardTitle.copyWith(
+                fontSize: 18,
+                color: const Color(0xFFFFFFFF),
+              ),
+              maxLines: 1,
+              textAlign: TextAlign.start,
+              minFontScale: 0.85,
+              overflowLines: 2,
+              overflowMinFontScale: 0.75,
             ),
           ),
         ],

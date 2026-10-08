@@ -28,6 +28,7 @@ import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/daily/widgets/daily_background_loader.dart';
 import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
 import 'package:nesty_game/features/daily/widgets/month_card.dart';
+import 'package:nesty_game/features/daily/widgets/past_day_card.dart';
 import 'package:nesty_game/features/daily/widgets/puzzle_card.dart';
 import 'package:nesty_game/features/fx/chest/chest_reward_sequence.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
@@ -635,5 +636,35 @@ void main() {
       await built.cubit.close();
       await tester.pump(const Duration(seconds: 4));
     });
+  });
+
+  // Local habits 3: the month's picker opens a past day's card on the page.
+  testWidgets('a window day opens its card under the month, and tapping it '
+      'again closes it', (tester) async {
+    final day = today.addDays(-2);
+    final built = build(
+      status: status().copyWith(
+        window: [for (var i = 7; i >= 1; i--) today.addDays(-i)],
+      ),
+    );
+    await pumpDaily(tester, built.cubit, built.jingles);
+    expect(find.byType(PastDayCard), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('${day.day}'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('${day.day}'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(PastDayCard), findsOneWidget);
+    // Today's card stays on top.
+    expect(find.byType(PuzzleCard), findsOneWidget);
+    await tester.ensureVisible(find.text('${day.day}'));
+    await tester.pump();
+    await tester.tap(find.text('${day.day}'));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(PastDayCard), findsNothing);
+    await built.cubit.close();
   });
 }

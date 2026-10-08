@@ -11,6 +11,7 @@ import 'package:nesty_game/core/models/intro_mechanic.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily_archive/daily_archive_rules.dart';
 import 'package:nesty_game/core/services/login_gift/login_gift_reward.dart';
 import 'package:nesty_game/core/services/login_gift/login_gift_rules.dart';
 import 'package:nesty_game/core/services/records/badge_rules.dart';
@@ -217,7 +218,8 @@ class InMemorySaveService implements SaveService {
     update((d) {
       // A replay pays nothing (spec-prop §7.1): the resolver already says
       // 0, and the save holds to it whatever the record carries.
-      final replay = request is ReplayPlay;
+      // A past day pays nothing either (§7.5c), whatever the record says.
+      final replay = request is ReplayPlay || request is PastDailyPlay;
       var next = d.copyWith(
         coins: d.coins + (replay ? 0 : win.rewardCoins),
         stats: d.stats.copyWith(
@@ -286,6 +288,23 @@ class InMemorySaveService implements SaveService {
           // No progress, museum or chapter reward (spec-prop §7.1), and
           // nothing in progress to clear: a replay is never saved (§6).
           break;
+        case PastDailyPlay(:final yyyymmdd):
+          // §7.5c: pays 0, moves no `daily` field and no daily record, opens
+          // no chest and counts no ad. It only marks the date played (once)
+          // and clears its board; stats and records count as a replay's.
+          final date = LocalDate.fromYyyymmdd(yyyymmdd);
+          final archive = next.dailyArchive;
+          final played = archive.played.contains(date)
+              ? archive.played
+              : _trimPlayed([...archive.played, date]);
+          next = next.copyWith(
+            dailyArchive: archive.copyWith(
+              played: played,
+              inProgress: archive.inProgress?.request == request
+                  ? null
+                  : archive.inProgress,
+            ),
+          );
         case RacePlay():
           // Unreachable: returned above.
           break;
@@ -376,6 +395,14 @@ class InMemorySaveService implements SaveService {
       return next;
     });
     return outcome;
+  }
+
+  /// Keeps the newest [DailyProgress.maxDates] dates by date, not by when
+  /// each was played (an older day can be played after a newer one).
+  static List<LocalDate> _trimPlayed(List<LocalDate> dates) {
+    if (dates.length <= DailyProgress.maxDates) return dates;
+    final sorted = [...dates]..sort();
+    return sorted.sublist(sorted.length - DailyProgress.maxDates);
   }
 
   /// [minute] when it is a minute of the day (0–1439), else null.
@@ -564,9 +591,16 @@ class InMemorySaveService implements SaveService {
     // resumed (spec-prop §7.7 "Save"; m7-design P2.4).
     if (level.request.isReplay || level.request.isRace) return;
     update(
-      (d) => level.request.kind == PlayKind.daily
-          ? d.copyWith(daily: d.daily.copyWith(inProgress: level))
-          : d.copyWith(inProgress: level),
+      (d) => switch (level.request.kind) {
+        PlayKind.daily => d.copyWith(
+          daily: d.daily.copyWith(inProgress: level),
+        ),
+        // One past day's board at a time: a second replaces the first.
+        PlayKind.pastDaily => d.copyWith(
+          dailyArchive: d.dailyArchive.copyWith(inProgress: level),
+        ),
+        _ => d.copyWith(inProgress: level),
+      },
     );
   }
 
@@ -574,6 +608,9 @@ class InMemorySaveService implements SaveService {
   void clearInProgress(PlayKind kind) => update(
     (d) => switch (kind) {
       PlayKind.daily => d.copyWith(daily: d.daily.copyWith(inProgress: null)),
+      PlayKind.pastDaily => d.copyWith(
+        dailyArchive: d.dailyArchive.copyWith(inProgress: null),
+      ),
       PlayKind.campaign || PlayKind.bonus =>
         d.inProgressOf(kind) == null ? d : d.copyWith(inProgress: null),
       // Nothing is ever saved for a replay or a race.
@@ -642,6 +679,28 @@ class InMemorySaveService implements SaveService {
   void writeDaily(DailyProgress daily, {int addCoins = 0}) {
     RangeError.checkNotNegative(addCoins, 'addCoins');
     update((d) => d.copyWith(daily: daily, coins: d.coins + addCoins));
+  }
+
+  // --- Past dailies (plan-local-habits §3, §7.5c) --------------------------
+
+  @override
+  void pruneDailyArchive(LocalDate today) {
+    try {
+      if (_document.dailyArchive.inProgress == null) return;
+      final days = DailyArchiveRules.daysOf(_remoteConfig);
+      update((d) {
+        final pruned = DailyArchiveRules.prune(d.dailyArchive, today, days);
+        return pruned == d.dailyArchive ? d : d.copyWith(dailyArchive: pruned);
+      });
+    } on Object catch (error, stack) {
+      // Rule 3: a stale past-day board costs nothing but a Resume label.
+      developer.log(
+        'pruning the daily archive failed',
+        name: 'nesty.save',
+        error: error,
+        stackTrace: stack,
+      );
+    }
   }
 
   // --- Daily gift (plan-login-gift §7.5b; D268) ---------------------------

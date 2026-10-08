@@ -2,7 +2,12 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily_archive/daily_archive_rules.dart';
+import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
+import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
 import 'package:nesty_game/core/services/welcome_back/welcome_back_rules.dart';
 
 import '../l10n/locales/locales.dart';
@@ -34,6 +39,8 @@ void main() {
     'lib/core/services/daily_month',
     'lib/core/ui/week_start.dart',
     'lib/features/daily/widgets/month_card.dart',
+    // 3. The last days' dailies (the rules; lane ui adds its widgets).
+    'lib/core/services/daily_archive',
   ];
 
   /// The habits' code that isn't a widget: it never navigates or shows UI.
@@ -42,6 +49,7 @@ void main() {
     'lib/core/services/welcome_back',
     'lib/core/services/daily_month',
     'lib/core/ui/week_start.dart',
+    'lib/core/services/daily_archive',
   ];
 
   List<File> dartFilesUnder(String path) {
@@ -173,6 +181,86 @@ void main() {
       }
       expect(cards, greaterThan(20), reason: 'the walk found too few gaps');
     });
+
+    for (final paused in [false, true]) {
+      test('a seeded walk of past-day wins and replays never moves the '
+          'streak, a freeze, coins, a chest or the dailies count '
+          '(${paused ? 'paused' : 'lit'} flame)', () {
+        final random = math.Random(paused ? 20261009 : 20261010);
+        final today = LocalDate(2026, 10, 8);
+        final seed = SaveDocument(
+          coins: 740,
+          currentLevel: 40,
+          highestLevel: 40,
+          adCounters: const AdCounters(winsSinceInterstitial: 2),
+          records: const SaveRecords(dailies: 6, longestRun: 5),
+          daily: DailyProgress(
+            streak: 9,
+            lit: !paused,
+            run: paused ? 0 : 3,
+            lastDate: paused ? null : today.addDays(-1),
+            freezes: 1,
+            freezeWeek: 202641,
+            done: [today.addDays(-3), today.addDays(-2), today.addDays(-1)],
+            frozen: [today.addDays(-5)],
+            noticeDate: today.addDays(-5),
+            chestPending: true,
+          ),
+        );
+        final save = FakeSaveService(initial: seed);
+        final days = DailyArchiveRules.daysOf(FakeRemoteConfigService());
+        var played = <LocalDate>{};
+        for (var step = 0; step < 400; step++) {
+          // Dates inside the window, outside it, and the very edges.
+          final back = switch (random.nextInt(4)) {
+            0 => 1 + random.nextInt(days),
+            1 => days + 1 + random.nextInt(20),
+            2 => 1 + random.nextInt(30),
+            _ => random.nextBool() ? 1 : days,
+          };
+          final date = today.addDays(-back);
+          final request = PlayRequest.pastDaily(date.yyyymmdd);
+          switch (random.nextInt(4)) {
+            case 0:
+              save.saveInProgress(
+                InProgressLevel(
+                  request: request,
+                  levelId: 'L${date.yyyymmdd}',
+                  levelVersion: 1,
+                  session: const {'format': 1},
+                  level: const {'id': 'gen'},
+                ),
+              );
+            case 1:
+              save.pruneDailyArchive(today);
+            default:
+              save.recordLevelWin(
+                LevelWinRecord(
+                  request: request,
+                  rewardCoins: 1 + random.nextInt(60),
+                  moves: 5 + random.nextInt(20),
+                  families: random.nextInt(4),
+                  date: today,
+                  daily: DailyProgress(streak: 50 + random.nextInt(50)),
+                ),
+              );
+          }
+          final now = save.document;
+          final why = 'step $step ($date)';
+          expect(now.daily, seed.daily, reason: why);
+          expect(now.coins, seed.coins, reason: why);
+          expect(now.chests, seed.chests, reason: why);
+          expect(now.inventory, seed.inventory, reason: why);
+          expect(now.adCounters, seed.adCounters, reason: why);
+          expect(now.records.dailies, seed.records.dailies, reason: why);
+          expect(now.records.longestRun, seed.records.longestRun, reason: why);
+          final nowPlayed = now.dailyArchive.played.toSet();
+          expect(nowPlayed.containsAll(played), isTrue, reason: why);
+          played = nowPlayed;
+        }
+        expect(played, isNotEmpty);
+      });
+    }
 
     test('the month draws no red mark and no X', () {
       final found = offendingLines(

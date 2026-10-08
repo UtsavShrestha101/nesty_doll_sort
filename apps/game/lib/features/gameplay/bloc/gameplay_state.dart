@@ -193,6 +193,11 @@ abstract class GameplayState with _$GameplayState {
     /// says so.
     @Default(false) bool dailyRelit,
 
+    /// Once a past day is won: it had already been played (the archive held
+    /// its date), so the win card says "again" and not "new"
+    /// (`past_daily_complete.again`). False otherwise.
+    @Default(false) bool pastDailyAgain,
+
     /// Once won: the moves the win took (`GameState.moveCount`), for the
     /// win card's "Moves 18 · Best 16" or "Moves 18" (m7-design §11). Null
     /// before the win.
@@ -270,6 +275,17 @@ abstract class GameplayState with _$GameplayState {
   /// A replay from Chapters (m7-design §6): no coins, chest or figurine,
   /// no tutorial or intro card, and Continue goes back to Chapters.
   bool get isReplay => play.request.isReplay;
+
+  /// A past day's daily (local habits 3, §7.5c): no coin pill, the date
+  /// pill, the past-day win card, nothing paid, no streak move, no coin
+  /// purchase of a booster.
+  bool get isPastDaily => play.request is PastDailyPlay;
+
+  /// The date of a past day's board, or null for any other board.
+  LocalDate? get pastDate => switch (play.request) {
+    PastDailyPlay(:final yyyymmdd) => LocalDate.fromYyyymmdd(yyyymmdd),
+    _ => null,
+  };
 
   /// A vs Computer race (m7-design P2.6): the bloc's race mode (undo free,
   /// Hint and +1 Slot off, no level record), input gated by [raceLive].

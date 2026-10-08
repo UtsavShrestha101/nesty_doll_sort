@@ -23,6 +23,7 @@ import 'package:nesty_game/features/gameplay/game/timeline/motion_spec.dart';
 import 'package:nesty_game/features/gameplay/game/timeline/win_overlay_schedule.dart';
 import 'package:nesty_game/features/gameplay/overlays/celebration_layout.dart';
 import 'package:nesty_game/features/gameplay/overlays/overlay_entrance.dart';
+import 'package:nesty_game/features/gameplay/overlays/past_day_win_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_chapter_card.dart';
 import 'package:nesty_game/features/gameplay/overlays/win_result_chips.dart';
 import 'package:nesty_game/features/gameplay/pages/chapter_progress.dart';
@@ -51,6 +52,7 @@ final class WinSummary {
     this.starsCapped = false,
     this.bonusNumber,
     this.dailyDate,
+    this.pastDate,
   });
 
   /// Coins the win paid (the "+N"); 0 on a replay (E7; m7-design §11).
@@ -124,6 +126,10 @@ final class WinSummary {
 
   /// The daily's date, for the Share text (frame 10.1).
   final LocalDate? dailyDate;
+
+  /// Set only for a past day's daily (frame 14.3d): the win card is the date
+  /// card, with no coins, streak, chest, Share or reminder.
+  final LocalDate? pastDate;
 
   /// The win card's moves caption (E7; m7-design §11, §15.3): "Moves N ·
   /// Best M" with a kept best, "Moves N" alone otherwise; null with
@@ -321,9 +327,12 @@ class _WinOverlayState extends State<_WinOverlayBody>
     );
     _schedule = schedule;
     final isReplay = summary.isReplay;
+    final noCoins = isReplay || summary.pastDate != null;
     _variant = isReplay
         ? CelebrationVariant.replay
-        : summary.stars == null || summary.dailyStreak != null
+        : summary.stars == null ||
+              summary.dailyStreak != null ||
+              summary.pastDate != null
         ? CelebrationVariant.plain
         : CelebrationVariant.campaign;
     // The helper note wins over the tip: one note, never both. Every height
@@ -349,10 +358,10 @@ class _WinOverlayState extends State<_WinOverlayBody>
     for (final cue in schedule.cues) {
       // A replay pays no coins (E7; m7-design §11): no `coins` sound, burst
       // or count-up: only the open's `win` cue plays.
-      if (isReplay && cue.sound == SoundEffect.coins) continue;
+      if (noCoins && cue.sound == SoundEffect.coins) continue;
       _at(cue.atMs, () => widget.feedback?.play(cue));
     }
-    if (!isReplay) {
+    if (!noCoins) {
       _at(schedule.coinBurstAtMs, _burst.playWhole);
       _at(schedule.countUpStartMs, () => _countUp.forward());
     }
@@ -467,7 +476,8 @@ class _WinOverlayState extends State<_WinOverlayBody>
               ),
             ),
           ),
-          if (widget.summary.dailyStreak == null)
+          if (widget.summary.dailyStreak == null &&
+              widget.summary.pastDate == null)
             ..._twinkles(width, padding.top),
           content,
         ],
@@ -532,7 +542,13 @@ class _WinOverlayState extends State<_WinOverlayBody>
     final layout = _layout;
     final dailyStreak = summary.dailyStreak;
     final isReplay = summary.isReplay;
-    final fullTitle = dailyStreak == null ? l10n.winTitle : l10n.dailyWinTitle;
+    final pastDate = summary.pastDate;
+    final noCoins = isReplay || pastDate != null;
+    final fullTitle = pastDate != null
+        ? l10n.pastDailyWinTitle
+        : dailyStreak == null
+        ? l10n.winTitle
+        : l10n.dailyWinTitle;
     // textFit.winRibbon: the short form when the full title would shrink
     // below its minScale (the daily's title has none).
     // The band is 290, or the screen − 70 on a narrower phone (m7-5), and
@@ -542,12 +558,14 @@ class _WinOverlayState extends State<_WinOverlayBody>
     );
     _ribbon.params.ribbonBandWidth = bandWidth;
     final ribbonStyle = FxRibbon.win.labelFor(bandWidth);
-    final title = dailyStreak == null
+    final title = pastDate != null || dailyStreak == null
         ? RibbonLabel.pick(
             context,
             style: ribbonStyle,
             full: fullTitle,
-            short: l10n.winTitleShort,
+            short: pastDate != null
+                ? l10n.pastDailyWinTitleShort
+                : l10n.winTitleShort,
             minScale: TextFitTokens.winRibbonMinScale,
           )
         : fullTitle;
@@ -666,8 +684,8 @@ class _WinOverlayState extends State<_WinOverlayBody>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (!isReplay) coinChip,
-                        if (!isReplay && movesChip != null)
+                        if (!noCoins) coinChip,
+                        if (!noCoins && movesChip != null)
                           const SizedBox(width: WinStarsTokens.coinRowGap),
                         ?movesChip,
                       ],
@@ -681,6 +699,8 @@ class _WinOverlayState extends State<_WinOverlayBody>
             padding: const EdgeInsets.symmetric(horizontal: _cardInset),
             child: isReplay
                 ? ReplayReasonCard(starTarget: summary.starTarget)
+                : pastDate != null
+                ? PastDayWinCard(date: pastDate, moves: summary.winMoves ?? 0)
                 : dailyStreak == null
                 ? WinChapterCard(
                     progress: summary.chapter,
@@ -736,7 +756,7 @@ class _WinOverlayState extends State<_WinOverlayBody>
           TactileButton(
             label: summary.isReplay
                 ? l10n.winBackToChapters
-                : summary.dailyStreak == null
+                : summary.dailyStreak == null && summary.pastDate == null
                 ? l10n.winContinue
                 : l10n.dailyBackToDaily,
             onPressed: widget.onContinue,

@@ -9,6 +9,7 @@ import 'package:nesty_game/core/repository/default_level_resolver.dart';
 import 'package:nesty_game/core/repository/fake_catalog_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fixture_levels.dart';
+import 'package:nesty_game/core/services/clock/fake_clock.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/generator/fake_level_generator_service.dart';
 import 'package:nesty_game/core/services/race/race_rules.dart';
@@ -277,6 +278,7 @@ void main() {
           FakeRemoteConfigService(),
           save,
           FakeCatalogRepository(),
+          FakeClock(),
         );
 
     test('makes the rival 1 board once the mode and the rival are open; the '

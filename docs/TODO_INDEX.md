@@ -13,16 +13,16 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M1 | Core (`nesty_core`) | 0 |
 | M2 | Playable game | 0 |
 | M3 | App shell and meta | 0 |
-| M4 | Firebase content | 14 |
+| M4 | Firebase content | 15 |
 | M5 | Admin panel | 17 |
 | M6 | Monetization | 17 |
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
-| design | Waiting on a design export or decision from the owner | 20 |
-| later | Unscheduled (spec §19 "Later ideas") | 0 |
+| design | Waiting on a design export or decision from the owner | 9 |
+| later | Unscheduled (spec §19 "Later ideas") | 1 |
 
-Total: 77 markers.
+Total: 68 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -38,8 +38,8 @@ _None._
 
 ## M4 — Firebase content
 
-- `apps/game/lib/bootstrap.dart:38` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
-- `apps/game/lib/bootstrap.dart:71` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
+- `apps/game/lib/bootstrap.dart:39` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
+- `apps/game/lib/bootstrap.dart:76` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
 - `apps/game/lib/core/base/run_guarded.dart:29` — also report as a Crashlytics non-fatal (spec §14.4).
 - `apps/game/lib/core/repository/bundled_catalog_repository.dart:12` — overlay Firestore's `chapters`, `skins`, `themes` and `museumItems` (cached, offline-first; spec §13.5, §14.1).
 - `apps/game/lib/core/repository/default_level_resolver.dart:132` — this only sees the bundle it was resolved from, so a chapter the player already passed with fewer levels than `ChapterInfo.levels` never retroactively completes when sync adds the rest. Award that figurine and …
@@ -51,7 +51,8 @@ _None._
 - `apps/game/lib/core/services/remote_config/remote_config_service.dart:6` — add `FirebaseRemoteConfigService` (firebase_remote_config) for the real env; it sets `RemoteConfigKeys.defaults` as in-app defaults and falls back to them on any fetch error. Keys are `int`, `bool` and, since the daily …
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
-- `docs/BACKLOG.md:924` — names `getString`
+- `apps/game/lib/features/welcome_back/cubit/welcome_back_cubit.dart:89` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
+- `docs/BACKLOG.md:986` — names `getString`
 
 ## M5 — Admin panel
 
@@ -122,19 +123,8 @@ _None._
 - `apps/admin/lib/features/login/pages/login_page.dart:11` — design/admin/*.png has no login screen yet (DESIGN_BRIEF Prompt 14 lists Levels, Level Editor and Skin upload only).
 - `apps/admin/lib/features/not_authorized/pages/not_authorized_page.dart:10` — no admin design export covers this screen yet.
 - `apps/admin/lib/features/shell/pages/admin_shell_page.dart:17` — narrow-window layout and rail styling (design/admin/*.png).
-- `apps/game/lib/core/ui/colors/app_colors.dart:62` — m7-5 named no token for the figurine panel's two gradients; the frame's `mBg` values stay here (BACKLOG "Design gaps").
-- `apps/game/lib/core/ui/icons/icon_uses.dart:107` — ask Claude Design to add `storageError` and `contentError` to tokens.json `icons` (lead note 2; ui-spec-game C9).
-- `apps/game/lib/core/ui/lottie/lottie_label.dart:121` — the 52 max width is a guess (lottie §12).
-- `apps/game/lib/features/daily/pages/daily_page.dart:260` — no frame shows the Daily screen itself before Level 2 (m3-design §8.3, Q67); Home's tile is dimmed instead.
-- `apps/game/lib/features/gameplay/game/timeline/timeline_plans.dart:893` — an empty case or ice has no target doll; the drift uses the mover's height.
-- `apps/game/lib/features/gameplay/overlays/overlay_text_link.dart:31` — tokens.json has no 16 px Fredoka style for a text link; this is `buttonSmall` (17 px) at the frame's 16 px.
-- `apps/game/lib/features/records/pages/records_page.dart:171` — the "Best moves by level" destination is in no frame (menus spec §11 gap 6): it keeps the stand-in target, Chapters, whose won cells show "Best N". BACKLOG "M7 phase 4 design gaps".
-- `apps/game/lib/features/splash/pages/splash_page.dart:128` — add the splash error dim to tokens.json `color`.
-- `packages/nesty_render/lib/src/board/board_geometry.dart:169` — , the design draws no tall case there): then it is the case of a doll of `caseHeight`, and the composition's `case_size` follows it (the doll itself stays h.
-- `packages/nesty_render/lib/src/board/board_layout.dart:179` — a row of 6 (the second +1 Slot on a 4-slot bottom shelf, D172) extends rowOfFive's formulas: pitch 372 / 6 = 62, stands at 59.6 / 90 = 0.662; the design draws no row of 6.
-- `packages/nesty_render/lib/src/board/shelf_presets.dart:51` — a 1-shelf board is undesigned (D22, BACKLOG "Design gaps"). The plank sits where the 2-shelf pair is centred, with the 3-shelf doll height.
-- `packages/nesty_render/lib/src/doll/placeholder_doll_painter.dart:292` — `layout.fallbackDoll` doesn't say whether "circle, 0.36 h", "disc, 0.19 h" and "disc 0.2 h" are diameters or radii; ask Claude Design to say so in tokens.json.
+- `apps/game/lib/features/daily/widgets/daily_locked_card.dart:11` — tokens.json holds no entry for this card's sizes; they are the scene's (card radius 32, 76 dp piece, title 26, body 16, 58 dp button).
 
 ## later — Unscheduled (spec §19 "Later ideas")
 
-_None._
+- `apps/game/lib/features/daily/widgets/month_card.dart:17` — the hint line ("Play any of the last 7 days"), the raised past days and the previous-month chip come with local-habits stage 3's past-day play (BACKLOG "Local habits"); the cell look below already draws a `playable` day, …

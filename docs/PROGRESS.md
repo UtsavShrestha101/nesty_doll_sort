@@ -7,7 +7,7 @@ acceptance criteria come from spec §18. The work still to do is tracked in
 [BACKLOG.md](BACKLOG.md), item by item and milestone by milestone. This file
 doesn't copy it.
 
-Last updated: 2026-10-08 (the local habits' Claude Code prompt and Claude Design's m7-6 request written, and BACKLOG's design items that m7-5 answered ticked. Before that, D281–D296: Claude Design's m7-5 imported: the daily gift's final look (section 13) and Part 2's answers wired in four lanes plus a font lane, Turkish titles in Baloo 2, the owner's watcher rule; every on-device check passes on the iPhone 16e and the Android emulator, and the shots match section 13; see "m7-5, Device run and fidelity"). Before that: 2026-10-05 (D276–D280 and Q186–Q188: the daily gift built in four stages: its rules, the `login_gift_track` key and save schema 3; the cubit, Home's button, the sheet and Day 7's chest on `TODO(design)` stand-ins, 20 strings in nine locales with the Opus review, the ethics test; `nesty-test --only gift` passed on both devices; the review's fixes. Before that: D274, D275: Q162 answered (all four local habits, in order) and Q184 in part (wave 1 first). Before that: D272, D273: the owner's answers to Q185 (the daily gift starts next) and Q183 (the loss card keeps its hop). Before that: M7 code complete: the `/milestone M7` gate passed on both devices with its reruns, the results in "Phase 5, 5C", the 5B and 5f placeholders closed, Q185. Before that: D270's second pass: the themes, characters and story doc checked against the code and deepened (TC11–TC14, TC-FX, TC-DATA, the story in detail, the calendar), Q184 widened, and the proposals' Status row added. Before that: D271: M7 5C, the review and its fixes, and the race strip keeping the word "Computer"; the `/milestone M7` gate is next. Before that: D270, Q183–Q184: the themes, characters and story proposals and the loss-card question. Before that: D269: local first, backend last, data-driven for the admin. Before that: D268 and Q182: the daily gift, a login reward the owner asked for and approved with Q182's defaults; plan, research and the Claude Design request written; it starts after M7. Before that: 2026-10-05 (D261–D267 and Q175–Q181: M7 phase 5B, the translations: nine locales, the script fonts, the fit, the language sheet and the follow-ups that landed with them; the draft round and the integration are done, the device run's results are pending; the 5B questions were renumbered from the plan's Q162–Q167. Before that: 2026-10-04 (D259–D260 and Q173–Q174: the engagement research and its proposals ER1–ER11 in [plans/engagement-research.md](plans/engagement-research.md) and BACKLOG; under-13s become a target (a mixed audience) with the kid path's items in BACKLOG; Q86 annotated. Before that: 2026-10-04, D235–D236 logged and D241–D258, Q158–Q159 answered and Q168–Q172: M7 phase 5's m7-4 stage: the wiring, the device run, the TalkBack pass, the fidelity audit and its fixes, the 5B draft round; the 5f reruns' results are pending. Before that: 2026-10-04, D238–D240: the owner's rules for working within Claude's usage limits, for being proactive, and the documented efficiency practices, in CLAUDE.md "Workflow" and "Compact instructions". Before that: 2026-10-02, D237 and Q162: after M7, the local-habit proposals; M4, M5, M6 and M8 stay at the end. Before that: 2026-10-01, D210–D234 and Q160–Q161: M7 phase 5A built: the fidelity fixes from the scenes' CSS, the animated undo, lane O's splash, scrim, chest and relit card, the device seams, `faults` and `semantics` in `nesty-test`; the device run is blocked on disk (16 GB of the 20 GB floor), so the audit and the TalkBack pass wait. Before that: 2026-09-30, D209 and Q159: M7 phase 4's device run passed on both platforms, with seven test fixes and six app fixes; phase 5 is next. Before that: D202–D208 and Q158: phase 4 integrated: the lanes' cross-lane edits, E1, `di_test`, `app_flow_test` and the playthrough on m7-3, the five new device files in `nesty-test` and TEST_COVERAGE, the Claude Design follow-up; the device stage is next. Before that: D179–D201 and Q156–Q157: phase 4's contracts stage (C4b): the frozen shapes for Claude Design's m7-3 delivery, copy.md in the ARB, the five lanes; 20 design-answered questions marked answered, with Q72's Forest Bear part and Q73's catalog copy. Before that: D173–D178: phase 4's tooling stage: tokens v3, the 35 Lottie files, the UI art and the generated Android notification icon, the 68-glyph font. Before that: D171–D172: Claude Design's whole M7 delivery checked and copied into `design/` at the owner's request, and the +1 Slot kept on the bottom shelf (D22); phase 4, the integration, is next. Before that: D170: the HUD's "Replay" tag removed. Before that: D169, the owner's rule that `nesty-test` covers every feature: CI's host checks added, docs/TEST_COVERAGE.md and its test. Before that: M7 phase 5, the device run after the review: every device check passes on both platforms, the reminder in Europe/Amsterdam too, and one layout fix to the win card's button, D168. Before that: M7 review pass, round 2: four deep lenses, 33 findings, 32 fixed and one left to the owner, the accessibility audit closed, the pass-and-play proposal, D165–D167 and Q154–Q155. Before that: M7 review pass, round 1: five lenses, five findings, four fixed and one deferred, D163–D164 and Q153. Before that: M7 phase 3 integrated: star ratings, the daily share card and the opt-in reminder, D144–D161 and Q137–Q151; its device run is next. Before that: M7 phase 2 done: vs Computer, D132–D143 and Q124–Q136, passed on both devices. Before that: M7 phase 1 integrated: levels 31–200 and E1, E2, E5–E9, E12–E14 with the owner's simulator review, D113–D124, Q99–Q115; its device run is next. Earlier today: the M7 contracts, D95–D110 and Q88–Q98; D111–D112, the owner's review; D92–D93, the offline-game brainstorm, Q76–Q87; D91, Large color symbols by default; D90, M7 runs before M4–M6. M3 code complete, acceptance pending).
+Last updated: 2026-10-08 (D310: §7.5c approved (Q189–Q191); stage 3 starts; commits allowed when needed. Before that: D309: m7-6's device run passed on both platforms and its shots match the frames, with three fixes from the judging. Before that: D304–D308: Claude Design's m7-6 imported: tokens v6, the copy in nine locales, the habits' final look, Part 2's items and the host gate. D303: auto-compact at 400k tokens. Before that: D300 and Q192–Q193: the retention research, round 3, with proposals RR1–RR7 in [plans/retention-research.md](plans/retention-research.md) and BACKLOG. Before that: D297–D299 and Q189–Q191: the local habits started, stage 0's plan written with §7.5c for the owner, `home_widget` researched and not taken. Before that: the local habits' Claude Code prompt and Claude Design's m7-6 request written, and BACKLOG's design items that m7-5 answered ticked. Before that, D281–D296: Claude Design's m7-5 imported: the daily gift's final look (section 13) and Part 2's answers wired in four lanes plus a font lane, Turkish titles in Baloo 2, the owner's watcher rule; every on-device check passes on the iPhone 16e and the Android emulator, and the shots match section 13; see "m7-5, Device run and fidelity"). Before that: 2026-10-05 (D276–D280 and Q186–Q188: the daily gift built in four stages: its rules, the `login_gift_track` key and save schema 3; the cubit, Home's button, the sheet and Day 7's chest on `TODO(design)` stand-ins, 20 strings in nine locales with the Opus review, the ethics test; `nesty-test --only gift` passed on both devices; the review's fixes. Before that: D274, D275: Q162 answered (all four local habits, in order) and Q184 in part (wave 1 first). Before that: D272, D273: the owner's answers to Q185 (the daily gift starts next) and Q183 (the loss card keeps its hop). Before that: M7 code complete: the `/milestone M7` gate passed on both devices with its reruns, the results in "Phase 5, 5C", the 5B and 5f placeholders closed, Q185. Before that: D270's second pass: the themes, characters and story doc checked against the code and deepened (TC11–TC14, TC-FX, TC-DATA, the story in detail, the calendar), Q184 widened, and the proposals' Status row added. Before that: D271: M7 5C, the review and its fixes, and the race strip keeping the word "Computer"; the `/milestone M7` gate is next. Before that: D270, Q183–Q184: the themes, characters and story proposals and the loss-card question. Before that: D269: local first, backend last, data-driven for the admin. Before that: D268 and Q182: the daily gift, a login reward the owner asked for and approved with Q182's defaults; plan, research and the Claude Design request written; it starts after M7. Before that: 2026-10-05 (D261–D267 and Q175–Q181: M7 phase 5B, the translations: nine locales, the script fonts, the fit, the language sheet and the follow-ups that landed with them; the draft round and the integration are done, the device run's results are pending; the 5B questions were renumbered from the plan's Q162–Q167. Before that: 2026-10-04 (D259–D260 and Q173–Q174: the engagement research and its proposals ER1–ER11 in [plans/engagement-research.md](plans/engagement-research.md) and BACKLOG; under-13s become a target (a mixed audience) with the kid path's items in BACKLOG; Q86 annotated. Before that: 2026-10-04, D235–D236 logged and D241–D258, Q158–Q159 answered and Q168–Q172: M7 phase 5's m7-4 stage: the wiring, the device run, the TalkBack pass, the fidelity audit and its fixes, the 5B draft round; the 5f reruns' results are pending. Before that: 2026-10-04, D238–D240: the owner's rules for working within Claude's usage limits, for being proactive, and the documented efficiency practices, in CLAUDE.md "Workflow" and "Compact instructions". Before that: 2026-10-02, D237 and Q162: after M7, the local-habit proposals; M4, M5, M6 and M8 stay at the end. Before that: 2026-10-01, D210–D234 and Q160–Q161: M7 phase 5A built: the fidelity fixes from the scenes' CSS, the animated undo, lane O's splash, scrim, chest and relit card, the device seams, `faults` and `semantics` in `nesty-test`; the device run is blocked on disk (16 GB of the 20 GB floor), so the audit and the TalkBack pass wait. Before that: 2026-09-30, D209 and Q159: M7 phase 4's device run passed on both platforms, with seven test fixes and six app fixes; phase 5 is next. Before that: D202–D208 and Q158: phase 4 integrated: the lanes' cross-lane edits, E1, `di_test`, `app_flow_test` and the playthrough on m7-3, the five new device files in `nesty-test` and TEST_COVERAGE, the Claude Design follow-up; the device stage is next. Before that: D179–D201 and Q156–Q157: phase 4's contracts stage (C4b): the frozen shapes for Claude Design's m7-3 delivery, copy.md in the ARB, the five lanes; 20 design-answered questions marked answered, with Q72's Forest Bear part and Q73's catalog copy. Before that: D173–D178: phase 4's tooling stage: tokens v3, the 35 Lottie files, the UI art and the generated Android notification icon, the 68-glyph font. Before that: D171–D172: Claude Design's whole M7 delivery checked and copied into `design/` at the owner's request, and the +1 Slot kept on the bottom shelf (D22); phase 4, the integration, is next. Before that: D170: the HUD's "Replay" tag removed. Before that: D169, the owner's rule that `nesty-test` covers every feature: CI's host checks added, docs/TEST_COVERAGE.md and its test. Before that: M7 phase 5, the device run after the review: every device check passes on both platforms, the reminder in Europe/Amsterdam too, and one layout fix to the win card's button, D168. Before that: M7 review pass, round 2: four deep lenses, 33 findings, 32 fixed and one left to the owner, the accessibility audit closed, the pass-and-play proposal, D165–D167 and Q154–Q155. Before that: M7 review pass, round 1: five lenses, five findings, four fixed and one deferred, D163–D164 and Q153. Before that: M7 phase 3 integrated: star ratings, the daily share card and the opt-in reminder, D144–D161 and Q137–Q151; its device run is next. Before that: M7 phase 2 done: vs Computer, D132–D143 and Q124–Q136, passed on both devices. Before that: M7 phase 1 integrated: levels 31–200 and E1, E2, E5–E9, E12–E14 with the owner's simulator review, D113–D124, Q99–Q115; its device run is next. Earlier today: the M7 contracts, D95–D110 and Q88–Q98; D111–D112, the owner's review; D92–D93, the offline-game brainstorm, Q76–Q87; D91, Large color symbols by default; D90, M7 runs before M4–M6. M3 code complete, acceptance pending).
 
 ## Status
 
@@ -18,10 +18,11 @@ Last updated: 2026-10-08 (the local habits' Claude Code prompt and Claude Design
 | M2 — Playable game (placeholder art; the design art was pulled in, D23) | **Code complete 2026-09-27; acceptance waits on the owner's device check.** Built: the nesty_render foundation, the 30 authored levels and `bundle check` in CI, the phase-4 Lottie contracts (D40–D52), every Lottie lane, the services, the bloc, the UI kit, the Flame board and the screens (D53–D57), then a review fix pass (12 of 13 findings fixed, D58). Every automated gate passes, including the on-device playthrough of L1, L2 and L16. Left: the 60 fps profile on a real mid-range Android (the owner's, steps in [M2 acceptance](#m2-acceptance-spec-18)) and the manual L1–30 pass (see [M2](#m2--playable-game--code-complete-acceptance-pending)). **Post-M2 round 2026-09-27:** Claude Design's v3 Lottie export and the audio delivery (music, jingles, SFX v2) imported and wired in, the owner's Level 9 hint and +1 Slot report fixed, every gate green again (see [Post-M2 round](#post-m2-round-claude-design-v3-and-audio-2026-09-27), D59–D61) | Levels 1–30 playable start to finish at 60 fps on a mid-range Android device |
 | M3 — App shell and meta | **Code complete 2026-09-28; acceptance waits on the owner's two physical-device checks.** Built: the save (Hive, migrations, the board in progress), the economy and boosters' coin path, chapters, the Museum, Bonus Endless, the Daily with its streak, the tutorial and intro cards, the shell, Home, Settings and the Shop (D63–D80). The integration fixed five app bugs (D81, D84, D85); a three-lens review found 23 issues, 22 fixed in its pass and the last in the close-out (D86–D89). Both criteria pass on the iPhone 16 Pro simulator and the API 35 emulator (see [M3 acceptance](#m3-acceptance-spec-18)) | Kill the app mid-level and it resumes exactly where it was. The daily puzzle is identical on two devices on the same date |
 | M7 — Art and polish, plus the offline game: content, modes and engagement | **Code complete 2026-10-05; acceptance waits on the owner:** the design sign-off (Q161), the VoiceOver pass ([plans/voiceover-checklist.md](plans/voiceover-checklist.md)) and Claude Design's follow-up (§1–§14). Started 2026-09-28; D90, D92, D93; plan [plans/plan-m7.md](plans/plan-m7.md). The owner moved it ahead of M4–M6 and widened it: levels 31–200 on the chapter plan, chapter themes 7–10, the catalog copy, the vs Computer race (approved in principle, D93) and eight engagement features under the respect rules (D92). The rules are in [plans/spec-proposals-m7.md](plans/spec-proposals-m7.md) until the owner pastes them into the spec; the art and copy come from Claude Design ([BACKLOG M7](BACKLOG.md)). Phases 1–5 are done, and the `/milestone M7` gate passed on both devices (2026-10-05, [Phase 5, 5C](#phase-5-5c-the-review-and-its-fixes-2026-10-05)). D237 keeps the backend after this close and after the local-habit proposals | Matches the design screens. No layout overflows on 5 test screen sizes (small Android, standard phone, tall phone, small iPhone, iPad portrait) |
-| Local habits | **Picked: all four, in order, the widget last (D274, Q162). Not started.** The prompt that starts the build is [plans/local-habits-claude-code-prompt.md](plans/local-habits-claude-code-prompt.md), and Claude Design's request is [plans/claude-design-request-m7-6.md](plans/claude-design-request-m7-6.md) (section 14 and the 21 questions m7-5 left open), both 2026-10-08. After the daily gift, before M4. Reasoning: [plans/local-habits-brainstorm.md](plans/local-habits-brainstorm.md) | Each habit passes its host tests and its device step on both platforms (D169); the archive rule (§7.5c) needs the owner's approval first |
+| Local habits | **Picked: all four, in order, the widget last (D274, Q162). Started 2026-10-08 with M7's and the gift's sign-offs open (D297). Stage 0, the plan, is done: [plans/plan-local-habits.md](plans/plan-local-habits.md) (D298, D299); §7.5c is approved (Q189–Q191, D310). Stages 1 and 2 (welcome back, the month) are built on stand-ins and pass on the host and the iPhone 16e (D302); Claude Design's m7-6 is copied into `design/` (D301) and imported (D304–D308): the habits' final look for the welcome card, the month and 12.14, and Part 2's items are built, the host gate passed, and every device check passes on both platforms with the shots matching the frames (D309). Stage 3 (the last 7 dailies) is in progress.** The prompt that starts the build is [plans/local-habits-claude-code-prompt.md](plans/local-habits-claude-code-prompt.md), and Claude Design's request is [plans/claude-design-request-m7-6.md](plans/claude-design-request-m7-6.md) (section 14 and the 21 questions m7-5 left open), both 2026-10-08. After the daily gift, before M4. Reasoning: [plans/local-habits-brainstorm.md](plans/local-habits-brainstorm.md) | Each habit passes its host tests and its device step on both platforms (D169); the archive rule (§7.5c) needs the owner's approval first |
 | Daily gift (a login reward) | **Code complete 2026-10-05 (D276–D280); the final look is in (m7-5, D281–D294). Every on-device check passes on both platforms and the shots match section 13 (D296). Acceptance now waits on the owner's sign-off and the paste of §7.5b.** Built: `LoginGiftRules`, the `login_gift_track` key, save schema 3, `LoginGiftCubit`, Home's button and the sheet, Day 7's chest, 20 strings in nine locales with the Opus review, the ethics test and `nesty-test --only gift`, which passed on the iPhone 16e and the Android emulator. Work list: BACKLOG "Daily gift". [plans/plan-login-gift.md](plans/plan-login-gift.md) | The owner's sign-off of the final look (Claude Design's section 13, wired in m7-5) and the paste of §7.5b |
 | Engagement research and the kid path | Proposals ER1–ER11 (D259, Q173): not started, and not rules. The kid path (D260, Q174): decided, not started; its local part (the age question, the parent area) lands before M4, and its M4, M6 and M8 parts are in those sections. After M7 and the local habits. [plans/engagement-research.md](plans/engagement-research.md) | None for the proposals until the owner picks. The kid path ships before release |
 | Themes, characters and story | Proposals TC1–TC14 and the enablers TC-FX and TC-DATA (D270, Q184): not started, and not rules. Original characters only; a licence (TC-L) waits until after M8. After M7 and the local habits, beside the engagement research's wave 2. [plans/themes-characters-story.md](plans/themes-characters-story.md) | None until the owner picks |
+| Retention research, round 3 | Proposals RR1–RR7 (D300, Q192–Q193): not started, and not rules. All local except RR6 (M8). [plans/retention-research.md](plans/retention-research.md) | None until the owner picks |
 | M4 — Firebase content | Not started; after M7 and the local habits (D90, D237) | Airplane mode on first launch: fully playable. Levels published in the admin appear on the next app resume |
 | M5 — Admin panel | Not started; after M4 (D90, D237) | The owner can build, solve, simulate, playtest and publish a level, and upload a skin that then shows up in the game |
 | M6 — Monetization | Not started; after M5 (D90, D237) | Every §9.1 pacing rule is unit-tested with a fake clock. Offline ad buttons fall back to coins correctly |
@@ -5398,6 +5399,333 @@ covers the design foundation, M1 and M2, copied from its approved plan.
   - `tools/scripts/nesty-test` pruned no old runs: `$(("…" + 1))` quoted a number in shell arithmetic. Fixed.
   - `watch-run` gains `--new-only`, for re-arming a watch on a run that is already going. An emulator restart now waits for the old one to exit and bounds its boot: a new one on the same AVD refuses to start while the old one holds it, and the first retry hung there until the watcher reported the stall.
 
+- **D297. The local habits start now, with M7's and the gift's sign-offs open
+  (owner, 2026-10-08).** The owner asked to build the four local habits in
+  D274's order, fully offline (D269):
+  1. welcome back;
+  2. the month;
+  3. the past dailies;
+  4. the widget.
+
+  As D272 did for the gift, this doesn't wait for M7's design sign-off (Q161),
+  the VoiceOver pass, the gift's §7.5b paste, Q187 or Q188. The plan is
+  [plans/plan-local-habits.md](plans/plan-local-habits.md), and the work list
+  is BACKLOG "Local habits".
+  - §7.5c (the past dailies) counts as spec once the owner approves it
+    (Q189), and stage 3's code waits for that.
+  - Stages 1 and 2 may run meanwhile.
+  - The widget starts only after 1–3 pass on both devices.
+  - The design comes later as `nesty-design-m7-6`. Until then the surfaces
+    are `TODO(design)` stand-ins.
+- **D298. Where the habits keep their data (2026-10-08, plan stage 0).**
+  - **Welcome back's dates are settings, not save fields:** `lastOpenDate`
+    and `welcomeBackDate` in `settings_schema.dart`. They describe this phone,
+    not the player's progress, so there is no schema step.
+    - `lastOpenDate` is a high-water mark, written after the previous value
+      is read, so a clock wound back shows no card.
+    - `LoginGiftProgress.latestSeen` isn't reused: it is written only once
+      the gift unlocks, and on every Home load.
+  - **The month reads `daily.done` and `daily.frozen`.** 31 dates cover the
+    current month. If Q190 keeps its default, stage 3 raises `maxDates` to 62.
+  - **The past dailies take their own path:**
+    - save schema 4's `dailyArchive {played, inProgress}`;
+    - `PlayRequest.pastDaily`;
+    - `DailyArchiveRules`.
+
+    So a past day never reaches `StreakDailyService._solveOn`, `daily.done`,
+    `records.dailies`, `dailyReward` or today's in-progress slot.
+  - **The month's week starts on the phone's region:** the rendered locale
+    drops the region (`en_GB` renders as `en`), so the first preferred locale
+    with the rendered language gives `intl`'s first day.
+  - **The two numbers the admin tunes:** `welcome_back_days` (2, clamped
+    2–60) and `daily_archive_days` (7, clamped 0–28) are Remote Config keys
+    (rule 6).
+- **D299. The widget uses the app's own platform channel, not `home_widget`
+  (2026-10-08, plan stage 0, rule 9).**
+  - **Why not the package:** `home_widget` 0.10.0 (pub.dev, checked
+    2026-10-08) is maintained and fits Flutter 3.41.2. But its flavor support
+    landed in Sep–Oct 2026 and is still changing (PRs #446, #469, #471,
+    #472), and it adds `path_provider` and its own launch channel.
+  - **Why the channel is enough:** the widget is static. The native side
+    needs only a shared key-value store and a reload, so a
+    `com.futrix.nesty/home_widget` channel beside `ChannelSystemSettings
+    Service` adds no dependency.
+  - **No streak rule in Swift or Kotlin:** the app writes an eight-day
+    projection of the streak (`DailyService.projection`), and native code
+    only looks the date up.
+  - **Flavors:** one URL scheme and one App Group per flavor (`nesty`,
+    `nesty-dev`, `nesty-stg`; `group.com.futrix.nesty[.dev|.stg]`), so the
+    three installs never collide.
+  - **Midnight:** iOS timeline entries at each local midnight, and an inexact
+    Android alarm rescheduled on the time and zone broadcasts.
+- **D300. Retention research, round 3, as proposals (2026-10-08).** The
+  owner asked for web research on features that bring players back. The
+  analysis is [plans/retention-research.md](plans/retention-research.md).
+  - **Only what is new.** Each idea found was checked against ER1–ER12,
+    TC1–TC14, the local habits and E1–E14, and against the code. Seven are
+    new:
+    - RR1, a solve coach: the solver's shorter line, replayed after a win
+      on request;
+    - RR2, a helping hand: one free hint on the third try of a level;
+    - RR3, a living Home on the phone's clock;
+    - RR4, Nest Maker: player-made puzzles shared as ER4 codes;
+    - RR5, a satisfying replay clip;
+    - RR6, the stores' re-engagement surfaces (M8);
+    - RR7, a next-up peek on the win card.
+  - **Left out.** Ideas already planned (Game Center, renovation, story
+    maps) or already rejected are listed in the doc's §3 with where each
+    stands. The rejected ones are win streaks, daily missions, albums,
+    season passes, leagues and bot teams.
+  - **Limits.** All seven are local except RR6. All are within the respect
+    rules (D92) and the kid path (D260), and none is random, timed or sold.
+  - **Not rules.** Q193 picks what to build. Anything that touches a rule
+    needs spec-prop text first (RR1, RR2, RR4, RR5). Q192 asks whether
+    RR2's free hint fits the never list.
+  - **Where it sits.** BACKLOG has a new section, "Retention research,
+    round 3", after the themes, characters and story section and before
+    M4. Q193's default spreads the items over the existing waves.
+- **D301. Claude Design's m7-6 is copied into `design/` (owner, 2026-10-08).**
+  The owner asked to copy the repo-root `export 5/` into its folders and
+  delete it, as D281 did for m7-5.
+  - **The copy:** `rsync -rc` without `--delete`, `.DS_Store` excluded. 29
+    files were added (`ui/widget/`, `prototypes/NestyHabits.dc.html`,
+    `prototypes/NestyWidget.dc.html` and the SVG copies) and 12 changed
+    (`tokens.json`, `copy.md`, `README.md`, `DELIVERY.md`, `AUDIO.md`,
+    `LOTTIE.md`, `lottie/ui_chest.json` and five prototypes). Nothing was
+    deleted. `diff -rq` was empty afterwards, and `export 5/` was then
+    removed. `~/Downloads/export 5` is the owner's own copy and is left as
+    it is.
+  - **What it holds:** Part 1, the local habits (App Flow section 14 and
+    12.14, the `habits` tokens, the widget art and the `## Local habits`
+    copy), and Part 2, the answers to m7-5's open questions.
+  - **The import comes later.** The owner's brief keeps the import a
+    separate task, the m7-5 way. Until it runs, the `--check` of
+    `gen_design_tokens` and `sync_design_assets` shows drift.
+  - **Look only, not rules.** It draws Q190's and Q191's defaults: a ‹ chip
+    on the 1st–7th that reaches the window's days in the month before, and a
+    frozen day's own mark. It also disables the coin and ad boosters on a
+    past day. That last point is a rule, so it went into §7.5c for the
+    owner's approval (Q189) instead of being taken from the design.
+- **D302. Stages 1 and 2 built: welcome back and the month (2026-10-08).**
+  Two Sonnet lanes built them on stand-ins, and the lead integrated them.
+  The details are in BACKLOG "Local habits" and
+  `build/local-habits/reports/`.
+  - **Welcome back's Play** pushes the Daily, then today's board, so the
+    win's "Back to Daily" lands on the Daily.
+  - **The open tracker** (`WelcomeBackTracker`, started in bootstrap) reads
+    `lastOpenDate` before it writes, and keeps it in memory, because Home
+    asks in its first frame.
+  - **The card's headline** wraps to a second line before it shrinks. The
+    overflow suite's readability floor caught id's, pt's and tr's lines in
+    the slot beside Records. So id is "Halo lagi!", pt "Olá de novo!", and
+    tr's button "Bulmacayı oyna".
+  - **The week's first day:** `WeekStart` reads the date data
+    `GlobalMaterialLocalizations` already loads (`en_GB`, `pt_PT` …), not
+    intl's 346 KB `date_symbol_data_local` table.
+  - **Copy checks:** `respect_copy_test` now checks the `welcomeBack` and
+    `dailyMonth` keys.
+  - **Checks:**
+    - host: analyze, the game suite, tools, fonts (no new glyph), the TODO
+      index, and the habits' overflow suites in nine locales;
+    - device: `daily_states` with `welcome` and `month` on the iPhone 16e,
+      with the shots judged. Android comes with the post-stage-3 run.
+- **D303. Auto-compact at 400k tokens (owner, 2026-10-08).** The owner asked
+  for compaction to happen on its own before a session gets huge. The
+  project's `.claude/settings.json` sets `autoCompactWindow: 400000`, so
+  Claude Code compacts when the context reaches 400k tokens instead of near
+  the model's full window. CLAUDE.md's Workflow says so. "Compact
+  instructions" decide what survives, and the checkpoints keep the rest.
+  - **To change it:** `/autocompact <n>k` for one model, or edit the
+    setting. The environment variable `CLAUDE_CODE_AUTO_COMPACT_WINDOW`
+    overrides both.
+- **D304. m7-6's tooling: tokens v6, the widget art and the chest's matte
+  (2026-10-08).** The owner asked for the import (D301 copied it). Stage A1
+  made the four generators accept it; `--check` of `gen_design_tokens`,
+  `sync_design_assets`, `gen_fx_spec` and `gen_nesty_icons` is clean again.
+  Details: `build/m7-6/reports/a1-tooling.md`.
+  - **Tokens v6:** 2278 leaves, 1849 emitted and 429 documented; 325 members
+    were added and none removed or renamed. The new classes are the
+    `Habits*Tokens` (welcome card, month, day cells, past day, widget) and
+    `RibbonTitleTokens`. A key with a dot (`flame_lit.svg`) now spans path
+    segments in `TokenReader`.
+  - **Elliptical radial gradients** (the figurine panels) are emitted as a
+    radius-0.5 `RadialGradient` with `EllipseGradientTransform`, a hand-written
+    const `GradientTransform` in `ui_token_types.dart`, so the stops land
+    where the design's do on any box.
+  - **`design/ui/widget/` is native art:** the sync validates it against
+    `habits.widget.art` (flat SVGs at the dp aspect, the one-colour doll,
+    1x/2x/3x PNGs, the two previews, nothing else) and copies nothing into
+    `apps/game/assets`. Stage 4 turns it into the iOS catalog and the Android
+    drawables, as `ui/notification` became the notification icon.
+  - **The Lottie contract allows one gradient fill:** `matteFills` lists the
+    `<part>_fill`s a file may have as a `gf`, each valid only on an alpha
+    matte (`td: 1` over a layer with `tt` 1 or 2). `ui_chest`'s `rays_matte`
+    carries `falloff_fill`. Every other `_fill` must still be a plain fill.
+  - **Prose sound events:** a single file with a note (`button (the welcome
+    card, ...)`, `win @0, no coins (...)`) reads as that file. The habits
+    play `button` and `win` and add no sound; a tools test checks it.
+  - **The habits' rules stay code:** `habits.respect`, the welcome card's
+    `when` (`welcomeBackDays`), the month's 7-day window and a past day's
+    rules are documentation, not emitted values.
+- **D305. m7-6's copy is in the nine catalogs (2026-10-08).** Stage A2 mapped
+  `copy.md` "Local habits", its short forms and Part 2's freeze chip onto 51
+  keys (`welcomeBack...`, `dailyMonth...`, `pastDaily...`, `dailyLocked...`,
+  `widget...`, `dailyFreezesShort`). No new glyph, so no font build.
+  - **Stand-in keys kept their names:** `welcomeBackPlay` is now "Play" and
+    its old phrase moved to `welcomeBackPlaySemantics`. `dailyMonthDaySemantics`
+    drops the unused `playable` cases; a playable day wraps its label in
+    `dailyMonthDayOpenSemantics`.
+  - **"Just for fun" avoids each catalog's denied "only"** (es solo, pt só,
+    de nur, id hanya, hi सिर्फ/केवल, tr sadece): "por pura diversión",
+    "einfach zum Spaß", "tamamen eğlence için".
+  - **The Opus review** (D240) kept 47 of ja's 51 values and changed four:
+    お楽しみ read as a calque, so `dailyMonthHint`, `pastDailyNote`,
+    `pastDailyWinLine` and `pastDailyWinSemantics` say 気軽に, a character
+    already in the subset. The other eight locales were kept. The retired
+    `apply.py` held the old ja values and is not to be rerun.
+  - **The respect check widened:** `checkedPrefixes` in
+    `test/l10n/support/arb_checks.dart` and the ethics test now cover
+    `pastDaily`, `dailyLocked` and `widget`, so the denied lists run over all
+    51 keys.
+- **D306. The local habits' final look replaces the stand-ins (2026-10-08).**
+  Stage B-habits, from tokens v6 and the App Flow frames 14.1, 14.2 and 12.14.
+  Report: `build/m7-6/reports/b-habits.md`.
+  - **The welcome card** is one button (`TactileSurface`): the whole card
+    plays today's daily, its Play pill is a look, and the close is a 28 dp
+    disc in a 48 dp target. The close fades the card over 180 ms, then the
+    cubit hides it, so the dolls grow back after. The card takes its short
+    line when the full one needs a third line, and Play goes under the text at
+    1.3x.
+  - **Home's dolls under the card:** the scale clears the tallest doll 8 dp
+    below the card (0.78 on 844), and below 0.6 the dolls fade out and the
+    plank stays. The card height is measured, so larger text shrinks the
+    dolls further. The card sits 74 dp under the chapter card on every size;
+    the slot variant is gone.
+  - **The month card** reads `HabitsMonthTokens` and `HabitsDayCellTokens`:
+    the lit, played-later, freeze, today and open looks, a legend of only the
+    marks the month holds, and the short values under 768 dp. The hint line,
+    the previous-month chip and any tap wait for stage 3 and Q189
+    (`TODO(later)` in `month_card.dart`).
+  - **12.14, `DailyLockedCard`,** replaces the lock icon and line on the Daily
+    page before Level 2 is won: its title, body and a Play Level button. The
+    frame's sizes have no tokens, so they come from the scene and a
+    `TODO(design)` stays (BACKLOG, Design gaps).
+  - **Not built, and noted:** the month's 728 dp top and the 16 dp header
+    fade once scrolled (the Daily stacks its cards 16 dp apart), and frames
+    14.2c-g and 14.1d were judged by tokens, not viewed. The close target
+    overlaps the Play pill's top 6 dp, as the design does.
+- **D307. Part 2's items, as built (2026-10-08).** Stages B-menus, B-game and
+  B-font; reports `b-menus.md`, `b-game.md`, `b-font.md`. Item numbers are
+  the design's.
+  - **1, the freeze chip:** it shows `dailyFreezesShort` (the number) beside
+    the snowflake when "{count} freezes" passes 64 dp at the current text
+    scale.
+  - **2, the Computer tag** scales with the text setting up to 1.3x (height
+    20k, glyph 14k, text 11k, radius 10k; the ring stays 1.5 dp). Callers
+    still drop to the glyph first where a row can't grow.
+  - **3, Pause in a race** stays 48 dp and sits `formsPauseTop` (5 dp) down
+    when the strip is 58.
+  - **4, Claim on 16:9** is the 58 dp button and the sheet 465 dp; the code
+    already followed `GiftShortTokens`, so nothing changed.
+  - **5, the Day 7 ribbon:** the chest modal uses the default `RibbonTitle`,
+    which now reads `RibbonTitleTokens`.
+  - **7 and 8, the Museum:** the count is `MuseumTypeTokens.count` (16,
+    tabular), the figurine spotlight reads `AppGradientTokens.figurinePanel*`
+    (`AppColors.spotlight*` are removed) and the brass name plate reads
+    `MuseumTokens.cabinetNamePlate*`.
+  - **10, the chest's rays:** no code change; a test renders the real
+    `ui_chest` and checks that the matte fades the rays outwards.
+  - **13, Records:** "Best moves" opens Chapters and its `TODO(design)` is
+    removed.
+  - **14, the tutorial:** Level 1 already has one family, so no rule changed;
+    `TutorialLift` fades the scrim, hole, tip and hand over 200 ms when the
+    cue ends.
+  - **15, the text link** is Fredoka 700 16/20 (`AppTextStyleTokens.textLink`)
+    with the same 48 dp box; `RetryView` follows.
+  - **16, the family counter** follows the text setting up to 1.3x: the label
+    hugs its text between 30 and 58 dp, the pill is label + 34 (at most 92),
+    and a longer label shrinks and never wraps. Fidelity gap: the bundled
+    Fredoka measures "12 / 12" at 37 dp where the design says 44, so our pill
+    is 71 against 78.
+  - **17 and 20, the splash:** error dim is `scrimLight`; the plank's dolls
+    are not built until the skin is ready, then fade in over 200 ms (the
+    fallback draws only if the load ends with no art), and the fallback body
+    radius is 0.16 of its height.
+  - **18, 19 and 21, the board:** `ShelfPresets.one` is a designed preset
+    (plank 540, 150 dp, up to 4 slots), the row of 6 already followed the
+    row-of-5 formulas, and an invalid drift onto an empty target stops at
+    0.5 of the mover's height.
+  - **The month's ‹ chip glyph:** `chevron_left` is in the icon subset
+    (70 glyphs, `NestyIcons.chevronLeft`, `IconUses.monthPrevious` and
+    `monthNext`). The close glyph stays at the bundled 600 cut, where
+    tokens say `dismissGlyphWeight` 700: a fidelity note, as the gift's check
+    was before item 6.
+- **D308. The integration and the host gate (2026-10-08).** Stage C (the lead)
+  integrated the lanes, and `nesty-test --only gates` ran. Two failures were
+  real and are fixed with tests; the rest were stale tests.
+  - **The Museum's all-home line (6.1c)** got `ShrinkToFitText.overflowMinFontScale`:
+    on one line it may shrink to 0.9, and on two lines to the 0.75 readability
+    floor. Spanish at 1.3x text ("Todas las familias están en casa.") was cut
+    beside the 92 dp badge. This predates m7-6 (the m7-5 card), and the gift
+    gate never ran the es suite. Test: `shrink_to_fit_wrap_test.dart`.
+  - **`ComputerTag`** now passes its scale k as `TextScaler.linear(k)` on an
+    11 dp style, instead of folding k into the font size with `noScaling`. The
+    readability floor now judges the word against its 11 dp: Hindi at 1.3x on
+    Home's vs Computer tile read as 70% of 14.3 dp, and it draws the same
+    size. Test: `race_atoms_test.dart`.
+  - **Test fixes:** `streak_card_test` loads the bundled fonts, because the
+    freeze chip's 64 dp fit was measured in the test font (every glyph 1 em);
+    `asset_manifest_test` counts 70 glyphs (`chevron_left`); the welcome
+    card, daily states and splash tests follow the new copy and timing
+    (`playthrough_test` splash comment, `daily_states_test` finders).
+  - **Gate result:** `nesty-test --only gates` passed in every step, with the
+    es and hi overflow suites rerun in full.
+  - **Not done yet:** the device run (stage D, both platforms) and fidelity
+    judging (stage E) are in progress. Their results go in a later decision.
+- **D309. m7-6's device run and fidelity (2026-10-08).** Every on-device
+  check passes on the iPhone 16e and the Android emulator, and the shots
+  match the m7-6 frames. The reports are `build/m7-6/reports/e-fidelity-ios.md`
+  and `e-fidelity-android.md`.
+  - **Device:** Android passed every check in one run. iOS failed one step,
+    the new `locked` (12.14). Home's Daily tile is inert until the Daily
+    opens, and before stage 4 nothing in the app opens the Daily that early
+    (the widget's link will, DELIVERY item 12). The step now checks the
+    tile's "After Level 2" and opens the Daily as that link will. iOS then
+    passed every `daily_states` scenario.
+  - **Fixed from the judging:**
+    - the paused streak card's freeze chip sits at the card's right edge,
+      as 5.2b draws it, not right after "Paused";
+    - the Daily's 7-day strip draws its 2 dp rings (`inset 0 0 0 2px`).
+      They were inset shadows with no spread, so nothing painted since M7.
+      Test: `day_strip_test.dart`;
+    - the month's seed marks its freeze notice seen, so the existing
+      "Streak saved" toast no longer covers the month shots.
+  - **By design:**
+    - the month's past cells are flat: raised means playable, and that
+      waits for stage 3;
+    - on the emulator's short screen (411 × 731 dp, like 2.1b) the welcome
+      card fades the dolls out and the plank stays (14.1d);
+    - the iOS month starts on Sunday, from the phone's region.
+  - **Left as notes:** the figurine modal's "0/20" against the frame's
+    "15 / 20" (a BACKLOG fidelity note, older than m7-6), a one-word last
+    line in the locked figurine modal, and the gift chest's chips about
+    10 px wider. The respect rules pass on every habit shot.
+  - **BACKLOG:** the ten m7-5 follow-ups that m7-6 answered are ticked.
+  - **Final host gate:** `nesty-test --only gates` after these fixes passed
+    every step except the TODO index, which had gone stale because doc
+    edits shift its line numbers. It was regenerated, and `tools` (474 tests)
+    and every generator's `--check` passed.
+- **D310. §7.5c, the past dailies, approved (owner, 2026-10-08).** The
+  owner approved Q189: the rule text in plan-local-habits §7.5c and its
+  defaults table. Q190 and Q191 keep their defaults, which m7-6 already
+  draws: a ‹ chip on the 1st–7th reaches the window's days in the month
+  before, and a frozen day has its own frost mark. §7.5c now counts as spec
+  for the archive until the owner pastes it into GAME_SPEC (the owner's
+  brief, D297). Stage 3's code starts.
+  - **Commits:** the owner allows commits when they are needed
+    (conventional, no attribution, never a force-push). Pushing still waits
+    for the owner.
+
 ## Package reasons (CLAUDE.md rule 9)
 
 Versions are the resolved versions in the root `pubspec.lock`, checked
@@ -6533,6 +6861,45 @@ the tracker. They stay here as history. New notes go into BACKLOG.md instead.
   with no Claim until that date comes round. That is §7.5b's "the latest date
   ever seen"; nothing is lost and the copy is calm. Or count only claimed
   dates. Default: as built, until M4's server time.
+- [x] **Q189. §7.5c, the past dailies (D297).** Answered 2026-10-08: approved as written, with every default below (D310). Approve the rule text in
+  [plans/plan-local-habits.md](plans/plan-local-habits.md) and its defaults:
+  - a past day pays nothing;
+  - it isn't counted in Records' dailies or the longest streak;
+  - it is counted in wins, moves, families and dolls, as a replay is;
+  - the month marks it "played later";
+  - replays are allowed and pay nothing;
+  - there is no Share on a past day;
+  - one past-day board is in progress at a time;
+  - the window doesn't depend on the install date;
+  - on a past day's board only owned boosters work, with no coin or ad
+    buy (added after m7-6 drew it, D301).
+
+  Stage 3's code waits for the answer.
+- [x] **Q190. The window across a month boundary (D298).** Answered 2026-10-08: the default (D310). On the 1st–7th,
+  some of the last 7 dates are in the previous month.
+  - **Default:** the month card pages back exactly one month and forward
+    again, and `maxDates` goes from 31 to 62, so that month shows in full.
+  - **Or:** the grid's first row reaches back to the window's first date.
+  - **Or:** only the current month's part of the window is offered.
+- [x] **Q191. A frozen day in the month (D298).** Answered 2026-10-08: the default (D310).
+  - **Default:** a quiet frost mark (`acUnit`), neither lit nor blank.
+  - **Or:** blank like any day not played.
+- [ ] **Q192. Is RR2's free hint within the never list? (D300)** The never
+  list bans offers shown because a player failed. RR2 gives one free hint
+  on the third try of a level: no ad, no coins, at most once per level.
+  - **Default:** yes, it fits, because nothing is sold and nothing is shown
+    for money.
+  - **Or:** no, and RR2 is dropped. Its tools-side "mechanic wall" check
+    stays.
+- [ ] **Q193. Which retention proposals to build, and where (D300).**
+  - **Default:**
+    - RR3 (a living Home) and RR7 (the next-up peek) join the local
+      habits, after the widget;
+    - RR1 (the solve coach) and RR2 (the helping hand) join the engagement
+      research's wave 1;
+    - RR4 (Nest Maker, after ER4) and RR5 (the replay clip) join wave 2;
+    - RR6 (the stores' surfaces) goes with M8.
+  - **Or:** any subset, in any order.
 
 ## Next step
 
@@ -6545,7 +6912,12 @@ acceptance waits on the owner: the design sign-off (Q161), the VoiceOver
 pass and Claude Design's follow-up; BACKLOG "M7" lists them. The daily gift
 (D268) is built on Claude Design's section 13 (m7-5, D281–D296) and passed on
 both devices. Its acceptance waits on the owner's sign-off and the paste of
-§7.5b. Next: the local habits, in D274's order. Their Claude Code prompt is
+§7.5b. Now: the local habits, in D274's order (D297). Stage 0's plan is
+[plans/plan-local-habits.md](plans/plan-local-habits.md); its §7.5c waits for
+the owner (Q189). Stages 1 and 2 (welcome back, the month) are built (D302),
+and m7-6 is imported (D301, D304–D308) and passed on both devices with its
+fidelity judged (D309). §7.5c is approved (D310), and stage 3 is in progress. The
+build's Claude Code prompt is
 [plans/local-habits-claude-code-prompt.md](plans/local-habits-claude-code-prompt.md)
 and Claude Design's request is
 [plans/claude-design-request-m7-6.md](plans/claude-design-request-m7-6.md).

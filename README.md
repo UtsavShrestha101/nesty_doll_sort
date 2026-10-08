@@ -399,7 +399,7 @@ $T --target integration_test/race_loss_test.dart \
 $T --target integration_test/meta_screens_test.dart \
   --dart-define=NESTY_META_SCENARIO=returning   # or finale, complete
 $T --target integration_test/daily_states_test.dart \
-  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, saved, settings
+  --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_DAILY_SCENARIO=chest  # or paused, saved, settings, welcome, locked; month on 20261031
 $T --target integration_test/login_gift_test.dart \
   --dart-define=NESTY_FAKE_DATE=20260926 --dart-define=NESTY_GIFT_SCENARIO=ready  # or claimed, day7, clock_back
 $T --target integration_test/overlays_test.dart   # the win card, chests, 12.5-12.9, the undo, intro loops

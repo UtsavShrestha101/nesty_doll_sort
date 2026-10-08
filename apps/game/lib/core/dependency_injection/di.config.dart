@@ -31,6 +31,7 @@ import 'package:nesty_game/core/repository/level_repository.dart' as _i789;
 import 'package:nesty_game/core/repository/level_resolver.dart' as _i969;
 import 'package:nesty_game/core/router/app_router.dart' as _i655;
 import 'package:nesty_game/core/router/music_route_observer.dart' as _i760;
+import 'package:nesty_game/core/router/widget_link.dart' as _i447;
 import 'package:nesty_game/core/services/ads/ads_service.dart' as _i746;
 import 'package:nesty_game/core/services/ads/fake_ads_service.dart' as _i403;
 import 'package:nesty_game/core/services/analytics/analytics_service.dart'
@@ -72,6 +73,14 @@ import 'package:nesty_game/core/services/haptics/fake_haptics_service.dart'
 import 'package:nesty_game/core/services/haptics/haptics_service.dart' as _i165;
 import 'package:nesty_game/core/services/haptics/system_haptics_service.dart'
     as _i684;
+import 'package:nesty_game/core/services/home_widget/channel_home_widget_service.dart'
+    as _i920;
+import 'package:nesty_game/core/services/home_widget/fake_home_widget_service.dart'
+    as _i431;
+import 'package:nesty_game/core/services/home_widget/home_widget_bridge.dart'
+    as _i434;
+import 'package:nesty_game/core/services/home_widget/home_widget_service.dart'
+    as _i20;
 import 'package:nesty_game/core/services/links/fake_link_launcher.dart'
     as _i917;
 import 'package:nesty_game/core/services/links/link_launcher.dart' as _i902;
@@ -187,6 +196,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i716.SystemClock(),
       registerFor: {_real},
     );
+    gh.lazySingleton<_i20.HomeWidgetService>(
+      () => _i920.ChannelHomeWidgetService(),
+      registerFor: {_real},
+    );
     gh.lazySingleton<_i789.LevelRepository>(
       () => _i795.BundledLevelRepository(),
       registerFor: {_real},
@@ -277,6 +290,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i916.FakeDatabaseService(),
       registerFor: {_fake},
       dispose: (i) => i.close(),
+    );
+    gh.lazySingleton<_i20.HomeWidgetService>(
+      () => _i431.FakeHomeWidgetService(),
+      registerFor: {_fake},
     );
     gh.lazySingleton<_i989.FakeAudioService>(
       () => _i989.FakeAudioService(),
@@ -456,9 +473,6 @@ extension GetItInjectableX on _i174.GetIt {
       registerFor: {_real, _fake},
       dispose: (i) => i.dispose(),
     );
-    gh.lazySingleton<_i655.AppRouter>(
-      () => _i655.AppRouter(gh<_i655.ContentReadyGuard>()),
-    );
     gh.factory<_i344.MuseumCubit>(
       () => _i344.MuseumCubit(
         gh<_i276.SaveService>(),
@@ -489,6 +503,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i921.AnalyticsService>(),
       ),
     );
+    gh.lazySingleton<_i447.WidgetLink>(
+      () => _i447.WidgetLink(
+        gh<_i921.AnalyticsService>(),
+        gh<_i843.DailyService>(),
+        gh<_i789.LevelRepository>(),
+      ),
+    );
     gh.factory<_i524.HomeCubit>(
       () => _i524.HomeCubit(
         gh<_i276.SaveService>(),
@@ -508,9 +529,25 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i567.RemoteConfigService>(),
       ),
     );
+    gh.lazySingleton<_i655.AppRouter>(
+      () => _i655.AppRouter(
+        gh<_i655.ContentReadyGuard>(),
+        gh<_i447.WidgetLink>(),
+      ),
+    );
     gh.lazySingleton<_i489.JingleCues>(
       () =>
           _i489.JingleCues(gh<_i777.MusicService>(), gh<_i249.JinglePlayer>()),
+      dispose: (i) => i.dispose(),
+    );
+    gh.lazySingleton<_i434.HomeWidgetBridge>(
+      () => _i434.HomeWidgetBridge(
+        gh<_i20.HomeWidgetService>(),
+        gh<_i843.DailyService>(),
+        gh<_i980.DatabaseService>(),
+        gh<_i969.LevelResolver>(),
+        gh<_i376.AppClock>(),
+      ),
       dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i87.DailyReminder>(

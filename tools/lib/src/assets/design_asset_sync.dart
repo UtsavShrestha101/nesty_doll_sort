@@ -6,6 +6,7 @@ import 'package:nesty_tools/src/assets/android_vector.dart';
 import 'package:nesty_tools/src/assets/audio_formats.dart';
 import 'package:nesty_tools/src/assets/png_formats.dart';
 import 'package:nesty_tools/src/assets/widget_art.dart';
+import 'package:nesty_tools/src/assets/widget_native_art.dart';
 import 'package:nesty_tools/src/file_writes.dart';
 import 'package:nesty_tools/src/fx/lottie_contract.dart';
 import 'package:nesty_tools/src/fx/lottie_sources.dart';
@@ -431,9 +432,10 @@ AssetSyncPlan planDesignAssetSync(
         // m7-6: the home-screen widget's art is native-only (WidgetKit and
         // RemoteViews), so nothing here is a Flutter asset. Stage 4 of the
         // local habits (docs/plans/plan-local-habits.md §4) generates the
-        // iOS asset catalog and the Android drawables from it, as
-        // ui/notification became the notification icon; until then the sync
-        // keeps it to what tokens.json `habits.widget.art` promises.
+        // iOS asset catalog and the Android drawables from it
+        // (widget_native_art.dart), as ui/notification became the
+        // notification icon; the sync first keeps the folder to what
+        // tokens.json `habits.widget.art` promises.
         final tokens = File(p.join(design.path, 'tokens.json'));
         final json = tokens.existsSync()
             ? jsonDecode(tokens.readAsStringSync())
@@ -441,7 +443,21 @@ AssetSyncPlan planDesignAssetSync(
         if (json is! Map<String, Object?>) {
           issues.add('$widgetArtDir: needs design/tokens.json');
         } else {
-          issues.addAll(validateWidgetArt(repoRoot, json));
+          final artIssues = validateWidgetArt(repoRoot, json);
+          issues.addAll(artIssues);
+          if (artIssues.isEmpty) {
+            final native = planWidgetNativeArt(repoRoot, json);
+            issues.addAll(native.issues);
+            for (final file in native.files) {
+              outputs.add(
+                PlannedOutput(
+                  source: file.source,
+                  path: file.path,
+                  bytes: file.bytes,
+                ),
+              );
+            }
+          }
         }
       } else if (name == 'notification') {
         final icon = File(p.join(repoRoot.path, notificationIconSource));

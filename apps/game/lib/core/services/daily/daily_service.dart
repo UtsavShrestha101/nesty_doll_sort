@@ -1,5 +1,6 @@
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily/daily_projection.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/services/save/save_document.dart';
 
@@ -25,6 +26,13 @@ abstract interface class DailyService {
   /// grant), writes the result if it changed, and returns what to show.
   /// Idempotent within a day. Home and the Daily screen call it on open.
   DailyStatus refresh();
+
+  /// What the Daily would show on each of [days] dates from [from], if the
+  /// player never solves again (plan-local-habits §4, the home-screen
+  /// widget). Pure: nothing is written and no stream fires. It reuses
+  /// `refresh`'s reconcile, applied date by date as the app would on each
+  /// open, so there is one streak rule. An empty list for [days] below 1.
+  List<DailyDayProjection> projection(LocalDate from, int days);
 
   /// The status of the last [refresh] (refreshing first when there was
   /// none).

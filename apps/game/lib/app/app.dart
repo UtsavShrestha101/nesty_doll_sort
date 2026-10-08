@@ -28,6 +28,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   // delegate and navigation stack. The music follows the page on top
   // (AUDIO.md "Music loops").
   late final RouterConfig<UrlState> _routerConfig = widget.router.config(
+    deepLinkBuilder: widget.router.deepLinkBuilder,
     navigatorObservers: () => [get<MusicRouteObserver>()],
   );
 

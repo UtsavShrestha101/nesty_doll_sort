@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  GENERATED — do not edit; run dart run nesty_tools:gen_widget_strings
+
+  Source: apps/game/lib/l10n/app_en.arb. The widget picker's name and
+  description, and the title shown before the app has written anything
+  (stage 4 of the local habits).
+-->
+<resources>
+    <string name="widget_gallery_name">Daily puzzle</string>
+    <string name="widget_gallery_description">Your streak and today’s puzzle at a glance.</string>
+    <string name="widget_locked_title">Daily puzzle</string>
+</resources>

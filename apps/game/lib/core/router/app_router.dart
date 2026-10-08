@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:injectable/injectable.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
+import 'package:nesty_game/core/router/widget_link.dart';
 import 'package:nesty_game/features/chapters/pages/chapters_page.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/gameplay/pages/gameplay_entrance.dart';
@@ -40,10 +41,30 @@ part 'app_router.gr.dart';
 @lazySingleton
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
-  AppRouter(this._contentReady);
+  AppRouter(this._contentReady, this._widgetLink);
 
   /// Everything after the splash opens only once it has loaded the levels.
   final ContentReadyGuard _contentReady;
+
+  final WidgetLink _widgetLink;
+
+  /// The `deepLinkBuilder` `App` passes to `config` (stage 4 contract §4):
+  /// the home-screen widget's `<scheme>://daily` is kept as a pending launch
+  /// target through the splash on a cold start, and opens the Daily over
+  /// Home on a warm one. Every other link is handled as auto_route does by
+  /// default.
+  FutureOr<DeepLink> deepLinkBuilder(PlatformDeepLink link) {
+    return switch (_widgetLink.resolve(link.uri, initial: link.initial)) {
+      WidgetLinkAction.passThrough => link,
+      // The splash is the initial route; it loads, then reads the target.
+      WidgetLinkAction.viaSplash => DeepLink.defaultPath,
+      WidgetLinkAction.openDaily => DeepLink.single(
+        const DailyRoute(),
+        navigate: false,
+      ),
+      WidgetLinkAction.stay => DeepLink.none,
+    };
+  }
 
   @override
   RouteType get defaultRouteType => const RouteType.material();

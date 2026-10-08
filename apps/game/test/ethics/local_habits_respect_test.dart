@@ -41,6 +41,10 @@ void main() {
     'lib/features/daily/widgets/month_card.dart',
     // 3. The last days' dailies (the rules; lane ui adds its widgets).
     'lib/core/services/daily_archive',
+    // 4. The home-screen widget (its Dart side: the snapshot, the bridge and
+    // the link).
+    'lib/core/services/home_widget',
+    'lib/core/router/widget_link.dart',
   ];
 
   /// The habits' code that isn't a widget: it never navigates or shows UI.
@@ -50,6 +54,8 @@ void main() {
     'lib/core/services/daily_month',
     'lib/core/ui/week_start.dart',
     'lib/core/services/daily_archive',
+    'lib/core/services/home_widget',
+    'lib/core/router/widget_link.dart',
   ];
 
   List<File> dartFilesUnder(String path) {

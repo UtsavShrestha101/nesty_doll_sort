@@ -13,7 +13,7 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M1 | Core (`nesty_core`) | 0 |
 | M2 | Playable game | 0 |
 | M3 | App shell and meta | 0 |
-| M4 | Firebase content | 17 |
+| M4 | Firebase content | 18 |
 | M5 | Admin panel | 17 |
 | M6 | Monetization | 17 |
 | M7 | Art and polish | 0 |
@@ -22,7 +22,7 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | design | Waiting on a design export or decision from the owner | 9 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 69 markers.
+Total: 70 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -38,12 +38,13 @@ _None._
 
 ## M4 — Firebase content
 
-- `apps/game/lib/bootstrap.dart:39` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
-- `apps/game/lib/bootstrap.dart:76` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
+- `apps/game/lib/bootstrap.dart:40` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
+- `apps/game/lib/bootstrap.dart:82` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
 - `apps/game/lib/core/base/run_guarded.dart:29` — also report as a Crashlytics non-fatal (spec §14.4).
 - `apps/game/lib/core/repository/bundled_catalog_repository.dart:12` — overlay Firestore's `chapters`, `skins`, `themes` and `museumItems` (cached, offline-first; spec §13.5, §14.1).
 - `apps/game/lib/core/repository/default_level_resolver.dart:144` — this only sees the bundle it was resolved from, so a chapter the player already passed with fewer levels than `ChapterInfo.levels` never retroactively completes when sync adds the rest. Award that figurine and …
 - `apps/game/lib/core/repository/level_repository.dart:9` — `levels_cache.json` + background Firestore sync on launch and resume (never blocking, never swapping the level in progress).
+- `apps/game/lib/core/router/widget_link.dart:85` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
 - `apps/game/lib/core/services/analytics/analytics_service.dart:4` — add `FirebaseAnalyticsService` (firebase_analytics) for the real env, plus typed helpers for the §14.4 events (`level_start`, `level_win`, ...) so event names never get mistyped at call sites.
 - `apps/game/lib/core/services/analytics/fake_analytics_service.dart:13` — drop `AppEnv.real` from `env` once `FirebaseAnalyticsService` exists, then record events in memory (`events` list plus `clear()`) so tests can read them; that is only safe once release builds stop using this class.
 - `apps/game/lib/core/services/database/hive_database_service.dart:55` — report as a Crashlytics non-fatal.

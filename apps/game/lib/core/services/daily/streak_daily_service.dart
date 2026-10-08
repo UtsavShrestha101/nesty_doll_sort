@@ -8,6 +8,7 @@ import 'package:nesty_game/core/dependency_injection/app_env.dart';
 import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/services/clock/app_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily/daily_projection.dart';
 import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/services/daily_archive/daily_archive_rules.dart';
@@ -54,6 +55,33 @@ class StreakDailyService implements DailyService {
     final after = _reconcile(before, today);
     if (after != before) _save.writeDaily(after);
     return _publish(after, today);
+  }
+
+  @override
+  List<DailyDayProjection> projection(LocalDate from, int days) {
+    // Cumulative, like a player opening the app each day: freezes spent on
+    // one day are gone on the next, and `_reconcile` is the one rule.
+    var daily = _save.document.daily;
+    final result = <DailyDayProjection>[];
+    for (var i = 0; i < days; i++) {
+      final date = from.addDays(i);
+      daily = _reconcile(daily, date);
+      final solved = daily.done.contains(date);
+      result.add(
+        DailyDayProjection(
+          date: date,
+          streak: daily.streak,
+          lit: daily.lit,
+          solved: solved,
+          state: DailyDayProjection.stateOf(
+            streak: daily.streak,
+            lit: daily.lit,
+            solved: solved,
+          ),
+        ),
+      );
+    }
+    return result;
   }
 
   @override

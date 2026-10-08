@@ -330,10 +330,7 @@ void main() {
         isEmpty,
         reason: 'run dart run nesty_tools:sync_design_assets',
       );
-      expect(
-        result.outputOutcomes.keys,
-        contains(notificationIconDrawable),
-      );
+      expect(result.outputOutcomes.keys, contains(notificationIconDrawable));
     });
 
     test('the Android notification icon is the design file, converted', () {

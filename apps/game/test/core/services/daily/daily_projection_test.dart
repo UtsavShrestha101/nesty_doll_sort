@@ -122,5 +122,25 @@ void main() {
       expect(save.document.daily, const DailyProgress());
       service.dispose();
     });
+
+    // `stateOf`'s resting flame is the save's own `paused` (spec-prop §7.5):
+    // one rule, pinned here so the two can never drift apart.
+    test('the paused state is DailyProgress.paused', () {
+      for (final streak in [0, 1, 4, 30]) {
+        for (final lit in [false, true]) {
+          final progress = DailyProgress(streak: streak, lit: lit);
+          expect(
+            DailyDayProjection.stateOf(
+                  streak: streak,
+                  lit: lit,
+                  solved: false,
+                ) ==
+                DailyDayState.paused,
+            progress.paused,
+            reason: 'streak $streak, lit $lit',
+          );
+        }
+      }
+    });
   });
 }

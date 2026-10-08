@@ -9,6 +9,7 @@ import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fake_level_resolver.dart';
 import 'package:nesty_game/core/services/clock/fake_clock.dart';
 import 'package:nesty_game/core/services/clock/local_date.dart';
+import 'package:nesty_game/core/services/daily/daily_projection.dart';
 import 'package:nesty_game/core/services/daily/fake_daily_service.dart';
 import 'package:nesty_game/core/services/database/fake_database_service.dart';
 import 'package:nesty_game/core/services/home_widget/fake_home_widget_service.dart';
@@ -16,6 +17,7 @@ import 'package:nesty_game/core/services/home_widget/home_widget_bridge.dart';
 import 'package:nesty_game/core/services/home_widget/home_widget_snapshot.dart';
 import 'package:nesty_game/core/services/remote_config/fake_remote_config_service.dart';
 import 'package:nesty_game/core/services/save/fake_save_service.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
 
 import '../../../helpers/level_fixtures.dart';
 
@@ -30,6 +32,7 @@ void main() {
   late FakeDatabaseService settings;
   late FakeHomeWidgetService widget;
   late FakeLevelResolver resolver;
+  late FakeSaveService save;
   late HomeWidgetBridge bridge;
 
   PlayEntry entry(LocalDate date, String color) => PlayEntry(
@@ -54,7 +57,8 @@ void main() {
 
   Future<void> build({bool unlocked = true}) async {
     clock = FakeClock(now: DateTime(2026, 10, 8, 12));
-    daily = FakeDailyService(clock)..unlocked = unlocked;
+    daily = _CountingDaily(clock)..unlocked = unlocked;
+    save = FakeSaveService();
     settings = FakeDatabaseService();
     widget = FakeHomeWidgetService();
     final today = clock.today();
@@ -80,6 +84,7 @@ void main() {
       settings,
       resolver,
       clock,
+      save,
       scheme: 'nesty-dev',
       deviceLocales: () => const [Locale('en', 'US')],
     );
@@ -184,6 +189,40 @@ void main() {
     },
   );
 
+  test('writes when the save unlocks the Daily, before any screen refreshes '
+      'it', () async {
+    await build(unlocked: false);
+    bridge.start();
+    await idle();
+    expect(last()['unlocked'], isFalse);
+    final count = widget.published.length;
+    // Level 2 won: the save changes; DailyService.changes never fires here.
+    daily.unlocked = true;
+    save.addCoins(1);
+    await idle();
+    expect(widget.published.length, greaterThan(count));
+    expect(last()['unlocked'], isTrue);
+  });
+
+  test('a save change the widget cannot show composes nothing', () async {
+    await build();
+    bridge.start();
+    await idle();
+    final counting = daily as _CountingDaily;
+    final composed = counting.projections;
+    // Coins, and today's board in progress (every move saves it).
+    save.addCoins(5);
+    save.writeDaily(
+      save.document.daily.copyWith(inProgress: _inProgress(clock.today())),
+    );
+    await idle();
+    expect(counting.projections, composed);
+    // A solve does.
+    save.writeDaily(save.document.daily.copyWith(streak: 1, lit: true));
+    await idle();
+    expect(counting.projections, greaterThan(composed));
+  });
+
   test('a locked Daily writes unlocked: false and asks for no dolls', () async {
     await build(unlocked: false);
     bridge.start();
@@ -219,6 +258,7 @@ void main() {
       settings,
       resolver,
       clock,
+      save,
       scheme: 'nesty',
       deviceLocales: () => const [Locale('en')],
     );
@@ -262,3 +302,23 @@ class _ThrowingWidget extends FakeHomeWidgetService {
   Future<bool> publish(HomeWidgetSnapshot snapshot) =>
       throw StateError('the platform is gone');
 }
+
+/// Counts [projection] calls: each composed snapshot asks for one.
+class _CountingDaily extends FakeDailyService {
+  _CountingDaily(FakeClock clock) : super(clock);
+
+  int projections = 0;
+
+  @override
+  List<DailyDayProjection> projection(LocalDate from, int days) {
+    projections++;
+    return super.projection(from, days);
+  }
+}
+
+InProgressLevel _inProgress(LocalDate date) => InProgressLevel(
+  request: PlayRequest.daily(date.yyyymmdd),
+  levelId: 'daily-${date.yyyymmdd}',
+  levelVersion: 1,
+  session: const {},
+);

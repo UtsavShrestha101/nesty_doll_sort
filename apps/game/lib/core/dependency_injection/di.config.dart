@@ -473,6 +473,17 @@ extension GetItInjectableX on _i174.GetIt {
       registerFor: {_real, _fake},
       dispose: (i) => i.dispose(),
     );
+    gh.lazySingleton<_i434.HomeWidgetBridge>(
+      () => _i434.HomeWidgetBridge(
+        gh<_i20.HomeWidgetService>(),
+        gh<_i843.DailyService>(),
+        gh<_i980.DatabaseService>(),
+        gh<_i969.LevelResolver>(),
+        gh<_i376.AppClock>(),
+        gh<_i276.SaveService>(),
+      ),
+      dispose: (i) => i.dispose(),
+    );
     gh.factory<_i344.MuseumCubit>(
       () => _i344.MuseumCubit(
         gh<_i276.SaveService>(),
@@ -538,16 +549,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i489.JingleCues>(
       () =>
           _i489.JingleCues(gh<_i777.MusicService>(), gh<_i249.JinglePlayer>()),
-      dispose: (i) => i.dispose(),
-    );
-    gh.lazySingleton<_i434.HomeWidgetBridge>(
-      () => _i434.HomeWidgetBridge(
-        gh<_i20.HomeWidgetService>(),
-        gh<_i843.DailyService>(),
-        gh<_i980.DatabaseService>(),
-        gh<_i969.LevelResolver>(),
-        gh<_i376.AppClock>(),
-      ),
       dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i87.DailyReminder>(

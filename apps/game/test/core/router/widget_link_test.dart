@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
+import 'package:nesty_game/core/models/play_request.dart';
 import 'package:nesty_game/core/repository/fake_level_repository.dart';
 import 'package:nesty_game/core/repository/fixture_levels.dart';
 import 'package:nesty_game/core/repository/level_repository.dart';
@@ -157,6 +158,17 @@ void main() {
       expect(get<WidgetLink>().pending, isFalse);
     });
 
+    testWidgets('another link on the scheme starts the app as usual', (
+      tester,
+    ) async {
+      await setUpWith(highestLevel: 5);
+      await pumpApp(tester, link: 'nesty-dev://shop');
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.byType(HomePage), findsOneWidget);
+      expect(get<WidgetLink>().pending, isFalse);
+      expect(analytics.events, isEmpty);
+    });
+
     testWidgets('no link: the splash opens Home as before, and logs nothing', (
       tester,
     ) async {
@@ -180,11 +192,47 @@ void main() {
       expect(find.byType(DailyPage), findsOneWidget);
       expect(analytics.events, ['widget_open']);
 
-      // A second tap while there: logged again (a tap each), still the Daily.
+      // A second tap while there: logged again (a tap each), and no second
+      // Daily, so one Back reaches Home.
       await pushLink(tester, 'nesty-dev://daily');
       await pumpFor(tester, const Duration(seconds: 1));
-      expect(find.byType(DailyPage), findsWidgets);
+      expect(find.byType(DailyPage), findsOneWidget);
       expect(analytics.events, ['widget_open', 'widget_open']);
+      unawaited(get<AppRouter>().maybePop());
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.byType(DailyPage), findsNothing);
+      expect(find.byType(HomePage), findsOneWidget);
+    });
+
+    testWidgets("today's daily board on top: stays on it", (tester) async {
+      await setUpWith(highestLevel: 5);
+      final router = await pumpApp(tester);
+      await pumpFor(tester, const Duration(seconds: 1));
+      unawaited(
+        router.push(GameplayRoute(request: PlayRequest.daily(20261008))),
+      );
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.byType(GameplayPage), findsOneWidget);
+
+      await pushLink(tester, 'nesty-dev://daily');
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.byType(DailyPage), findsNothing);
+      expect(router.topRoute.name, GameplayRoute.name);
+      // The board logs its own `level_start`; the tap still logs once.
+      expect(analytics.events.where((e) => e == 'widget_open'), hasLength(1));
+    });
+
+    testWidgets('another link on the scheme moves nothing and logs nothing', (
+      tester,
+    ) async {
+      await setUpWith(highestLevel: 5);
+      await pumpApp(tester);
+      await pumpFor(tester, const Duration(seconds: 1));
+      await pushLink(tester, 'nesty-dev://shop');
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.byType(HomePage), findsOneWidget);
+      expect(find.byType(SplashPage), findsNothing);
+      expect(analytics.events, isEmpty);
     });
 
     testWidgets('with the Daily locked, stays where the player is', (

@@ -18,6 +18,8 @@ import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/home_widget/home_widget_service.dart';
 import 'package:nesty_game/core/services/home_widget/home_widget_snapshot.dart';
+import 'package:nesty_game/core/services/save/save_document.dart';
+import 'package:nesty_game/core/services/save/save_service.dart';
 
 /// Keeps the home-screen widget's snapshot current (plan-local-habits §4;
 /// stage 4 contract §3): it composes [DailyService.projection], the rendered
@@ -25,8 +27,10 @@ import 'package:nesty_game/core/services/home_widget/home_widget_snapshot.dart';
 /// different.
 ///
 /// Writes on [start], on each resume, on every [DailyService.changes] (a
-/// solve, a reconcile, a new day, a freeze) and on a language change, and
-/// skips a snapshot identical to the last one stored. It is fire-and-forget:
+/// reconcile, a new day, a freeze), on a save change to the daily's progress
+/// or the Daily's unlock (a solve, Level 2 won: the save fires before any
+/// screen refreshes the daily) and on a language change, and skips a
+/// snapshot identical to the last one stored. It is fire-and-forget:
 /// no call throws (rule 3) and nothing waits on it. It has no interface of
 /// its own, like `DailyReminder` beside which `bootstrap` starts it. Nothing
 /// here pops up, counts down or asks for anything: the widget only shows
@@ -41,7 +45,8 @@ class HomeWidgetBridge {
     this._daily,
     this._settings,
     this._resolver,
-    this._clock, {
+    this._clock,
+    this._save, {
     @ignoreParam String? scheme,
     @ignoreParam AppLocaleResolver? locales,
     @ignoreParam List<Locale> Function()? deviceLocales,
@@ -54,6 +59,7 @@ class HomeWidgetBridge {
   final DatabaseService _settings;
   final LevelResolver _resolver;
   final AppClock _clock;
+  final SaveService _save;
   final String? _scheme;
   final AppLocaleResolver _locales;
   final List<Locale> Function() _deviceLocales;
@@ -65,7 +71,12 @@ class HomeWidgetBridge {
 
   AppLifecycleListener? _lifecycle;
   StreamSubscription<DailyStatus>? _dailySubscription;
+  StreamSubscription<void>? _saveSubscription;
   StreamSubscription<String>? _languageSubscription;
+
+  /// What the widget reads from the save, as last seen: the daily's
+  /// progress without today's board, and the Daily's unlock.
+  (DailyProgress, bool)? _saveKey;
 
   /// The colours known per date, kept for the days still to come.
   final Map<LocalDate, List<DollColor>> _dolls = {};
@@ -86,6 +97,7 @@ class HomeWidgetBridge {
   void start() {
     if (_lifecycle != null ||
         _dailySubscription != null ||
+        _saveSubscription != null ||
         _languageSubscription != null) {
       return;
     }
@@ -96,11 +108,27 @@ class HomeWidgetBridge {
       _log('no lifecycle listener', error, stack);
     }
     _dailySubscription = _daily.changes.listen((_) => unawaited(publish()));
+    _saveKey = _readSaveKey();
+    _saveSubscription = _save.changes.listen((_) => _onSaveChanged());
     _languageSubscription = _settings.languageStream.listen(
       (_) => unawaited(publish()),
     );
     unawaited(publish());
   }
+
+  /// The save fires on every move of a board in progress, so only a change
+  /// the widget can show composes a snapshot: the daily's progress (a solve,
+  /// a freeze; not today's board, which changes on every move) or the
+  /// Daily's unlock.
+  void _onSaveChanged() {
+    final key = _readSaveKey();
+    if (key == _saveKey) return;
+    _saveKey = key;
+    unawaited(publish());
+  }
+
+  (DailyProgress, bool) _readSaveKey() =>
+      (_save.document.daily.copyWith(inProgress: null), _daily.isUnlocked);
 
   /// Re-writes on resume. Public and `@visibleForTesting`, like
   /// `DailyReminder.didChangeAppLifecycle`.
@@ -229,6 +257,8 @@ class HomeWidgetBridge {
     _lifecycle = null;
     await _dailySubscription?.cancel();
     _dailySubscription = null;
+    await _saveSubscription?.cancel();
+    _saveSubscription = null;
     await _languageSubscription?.cancel();
     _languageSubscription = null;
   }

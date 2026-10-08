@@ -88,9 +88,8 @@ class SplashPage extends StatelessWidget implements AutoRouteWrapper {
       // in between (E9, m7-design §13; spec-prop §10.1); its first win's
       // Continue goes Home. Otherwise Home, the shell's middle tab
       // (m3-design §10.1).
-      listener: (context, state) => unawaited(
-        context.router.replaceAll(_launchStack(state.data)),
-      ),
+      listener: (context, state) =>
+          unawaited(context.router.replaceAll(_launchStack(state.data))),
       builder: (context, state) => SplashView(
         progress: state.data?.progress ?? 0,
         error: state.exceptionOrNull,

@@ -296,7 +296,9 @@ typedef WidgetNativeFile = ({String source, String path, List<int> bytes});
   }
   // Art that is none of the m7-6 set (a scratch repo's) has nothing to
   // convert; a set that is partly there is an issue below.
-  if (!widgetImageSets.values.any((stem) => art.svgs.containsKey('$stem.svg'))) {
+  if (!widgetImageSets.values.any(
+    (stem) => art.svgs.containsKey('$stem.svg'),
+  )) {
     return (files: const [], issues: const []);
   }
   final files = <WidgetNativeFile>[];

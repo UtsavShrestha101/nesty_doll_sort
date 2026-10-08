@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget's background on Android 12+ (design spec §2.5, gap 7): the same
+  gradient with the system's widget corner radius; the root's clipToOutline clips
+  the content to it.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:endColor="@color/nesty_widget_bg_bottom"
+        android:startColor="@color/nesty_widget_bg_top"
+        android:type="linear" />
+    <corners android:radius="@android:dimen/system_app_widget_background_radius" />
+</shape>

@@ -61,4 +61,61 @@ void main() {
     final tall = HomeLayout.forBody(tallBody);
     expect(tall.tilesTopIn(tallBody), tall.tilesTop);
   });
+
+  group('the welcome-back card\'s place (14.1)', () {
+    const minCard = HabitsWelcomeTokens.cardMinHeight;
+
+    test('the card top is the design\'s on both frames', () {
+      expect(
+        HomeLayout.forBody(tallBody).welcomeCardTop + 59,
+        HabitsWelcomeTokens.placeH844Top,
+      );
+      expect(
+        HomeLayout.forBody(shortBody).welcomeCardTop +
+            HomeShortTokens.statusBar,
+        HabitsWelcomeTokens.placeH693Top,
+      );
+    });
+
+    test('844: the dolls scale to 0.78 and stay', () {
+      final dolls = HomeLayout.forBody(tallBody).dollsUnder(minCard);
+      expect(
+        dolls.scale,
+        closeTo(HabitsWelcomeTokens.placeH844DollScale, 1e-6),
+      );
+      expect(dolls.opacity, 1);
+    });
+
+    test('693: the dolls fade out and the plank stays', () {
+      final layout = HomeLayout.forBody(shortBody);
+      final dolls = layout.dollsUnder(minCard);
+      expect(dolls.opacity, 0);
+      // Faded dolls keep the layout's own scale: they fade back in without
+      // a size change.
+      expect(dolls.scale, layout.dollScale);
+    });
+
+    test('a taller card (1.3x text) shrinks the dolls, then fades them', () {
+      final layout = HomeLayout.forBody(tallBody);
+      final small = layout.dollsUnder(minCard).scale;
+      final taller = layout.dollsUnder(minCard + 12);
+      expect(taller.scale, lessThan(small));
+      expect(taller.scale, greaterThanOrEqualTo(0.6));
+      expect(taller.opacity, 1);
+      expect(layout.dollsUnder(minCard + 60).opacity, 0);
+    });
+
+    test('the tallest doll clears the card by 8 dp where they show', () {
+      for (var body = tallBody; body >= shortBody; body -= 4) {
+        final layout = HomeLayout.forBody(body);
+        final dolls = layout.dollsUnder(minCard);
+        expect(dolls.scale, lessThanOrEqualTo(layout.dollScale));
+        if (dolls.opacity == 1) {
+          expect(dolls.scale, greaterThanOrEqualTo(0.6), reason: '$body');
+        }
+        // Play stays below the card.
+        expect(layout.welcomeCardTop + minCard, lessThan(layout.playTop));
+      }
+    });
+  });
 }

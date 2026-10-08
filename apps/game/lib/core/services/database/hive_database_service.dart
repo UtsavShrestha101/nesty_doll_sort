@@ -235,6 +235,27 @@ class HiveDatabaseService implements DatabaseService {
       _settings.put(SettingsKeys.relitGlowSeen, date);
 
   @override
+  String? get lastOpenDate {
+    final value = _settings.get(SettingsKeys.lastOpenDate);
+    return value is String ? value : null;
+  }
+
+  @override
+  Future<void> setLastOpenDate(String date) =>
+      _settings.put(SettingsKeys.lastOpenDate, date);
+
+  @override
+  String? get welcomeBackDate {
+    final value = _settings.get(SettingsKeys.welcomeBackDate);
+    return value is String ? value : null;
+  }
+
+  @override
+  Future<void> setWelcomeBackDate(String? date) => date == null
+      ? _settings.delete(SettingsKeys.welcomeBackDate)
+      : _settings.put(SettingsKeys.welcomeBackDate, date);
+
+  @override
   int get lastRival => _readInt(SettingsKeys.lastRival, 0, min: 1, max: 3);
 
   @override

@@ -28,8 +28,9 @@ abstract final class TutorialScript {
   static const String _l1From = 'r0c2';
   static const String _l1To = 'r0c0';
 
-  /// The second family: no frame (`TODO(design)`), the smallest doll into
-  /// the family already built at [_l1To].
+  /// Step 3, "Finish the family" (the frame 1.4 look, m7-6 item 14): the
+  /// smallest doll into the big one, which completes L1's one family and
+  /// ends the tutorial. There is no second family.
   static const String _l1SecondFrom = 'r1c1';
   static const String _l1SecondTo = 'r0c0';
 

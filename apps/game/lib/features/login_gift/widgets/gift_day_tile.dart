@@ -662,8 +662,8 @@ class _Check extends StatelessWidget {
     width: GiftTileTokens.doneCheckSize,
     height: GiftTileTokens.doneCheckSize,
     alignment: Alignment.center,
-    // The icon font is cut at weight 600 (AppFontTokens.iconWeight); the
-    // frame's wght 700 check draws at 600 (A1's note).
+    // The check is the bundled weight, 600 (m7-6 Choice 6:
+    // GiftTileTokens.doneCheckGlyphWeight).
     child: Icon(
       IconUses.giftDayDone,
       size: GiftTileTokens.doneCheckGlyphSize,

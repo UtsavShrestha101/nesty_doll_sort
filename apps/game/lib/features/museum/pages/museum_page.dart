@@ -199,11 +199,7 @@ class _Header extends StatelessWidget {
                         state.collectedCount,
                         state.totalChapters,
                       ),
-                      style: AppTextStyleTokens.number.copyWith(
-                        fontSize: 16,
-                        height: 1,
-                        color: AppColorTokens.textPrimary,
-                      ),
+                      style: MuseumTypeTokens.count,
                       maxLines: 1,
                       softWrap: false,
                     ),

@@ -2745,4 +2745,260 @@ class AppLocalizationsJa extends AppLocalizations {
 
     return '$giftが加わりました。合計は$countStringです。';
   }
+
+  @override
+  String get welcomeBackTitle => 'おかえりなさい！';
+
+  @override
+  String get welcomeBackFreeze => 'フリーズが炎を守りました。今日のパズルの準備ができました。';
+
+  @override
+  String get welcomeBackFreezeShort => 'フリーズが炎を守りました。';
+
+  @override
+  String welcomeBackPaused(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString日連続の記録はお休み中です。今日のパズルの準備ができました。';
+  }
+
+  @override
+  String welcomeBackPausedShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString日連続の記録はお休み中です。';
+  }
+
+  @override
+  String get welcomeBackNew => '今日のパズルは、いつでもプレイできます。';
+
+  @override
+  String get welcomeBackNewShort => '今日のパズルの準備ができました。';
+
+  @override
+  String get welcomeBackPlay => 'プレイ';
+
+  @override
+  String get welcomeBackPlaySemantics => '今日のパズルをプレイ';
+
+  @override
+  String get welcomeBackHideSemantics => 'このカードを非表示にする';
+
+  @override
+  String dailyMonthTitle(String month) {
+    return '$month';
+  }
+
+  @override
+  String get dailyMonthHint => 'この7日間のどの日も、気軽にプレイできます。';
+
+  @override
+  String get dailyMonthHintShort => 'この7日間のパズルをプレイできます。';
+
+  @override
+  String get dailyMonthKeyLit => '当日クリア';
+
+  @override
+  String get dailyMonthKeyLater => 'あとからクリア';
+
+  @override
+  String get dailyMonthKeyFreeze => 'フリーズ';
+
+  @override
+  String dailyMonthShowSemantics(String month) {
+    return '$monthを表示';
+  }
+
+  @override
+  String dailyMonthDaySemantics(String state, String date) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'solved': '$date、クリア',
+      'later': '$date、あとからクリア',
+      'frozen': '$date、フリーズでカバー',
+      'today': '$date、今日',
+      'todaySolved': '$date、今日、クリア',
+      'future': '$date',
+      'other': '$date、未プレイ',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dailyMonthDayOpenSemantics(String label) {
+    return '$label、プレイできます';
+  }
+
+  @override
+  String pastDailyTitle(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyNote => '気軽にどうぞ。連続記録は変わりません。';
+
+  @override
+  String get pastDailySolvedOnDay => '当日にクリア';
+
+  @override
+  String get pastDailySolvedLater => 'あとからクリア';
+
+  @override
+  String get pastDailyPlayAgain => 'もう一度プレイ';
+
+  @override
+  String get pastDailyWinTitle => 'パズルクリア！';
+
+  @override
+  String get pastDailyWinTitleShort => 'クリア！';
+
+  @override
+  String pastDailyWinDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyWinLine => 'あとから気軽にプレイしました。';
+
+  @override
+  String pastDailyWinSemantics(String date, int moves) {
+    final intl.NumberFormat movesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String movesString = movesNumberFormat.format(moves);
+
+    return '$date、$movesString手でクリア。あとから気軽にプレイしました。';
+  }
+
+  @override
+  String get dailyLockedTitle => 'はじめてのデイリーパズルまで、あと少し';
+
+  @override
+  String dailyLockedBody(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'レベル$levelStringをクリアすると、毎日ここに新しいパズルが届きます。みんな同じパズルです。';
+  }
+
+  @override
+  String get widgetGalleryName => 'デイリーパズル';
+
+  @override
+  String get widgetGalleryDescription => '連続記録と今日のパズルをひと目でチェック。';
+
+  @override
+  String widgetPuzzleTitle(String weekday) {
+    return '$weekdayのパズル';
+  }
+
+  @override
+  String widgetStreakLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '日連続',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetStreakResting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '日連続・お休み中',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetStreakRestingShort => 'お休み中';
+
+  @override
+  String get widgetFirstFlame => '最初の炎';
+
+  @override
+  String get widgetReady => '今日のパズルの準備ができました';
+
+  @override
+  String get widgetReadyShort => 'プレイできます';
+
+  @override
+  String get widgetSolved => 'クリア。また明日。';
+
+  @override
+  String get widgetSolvedShort => 'クリア！';
+
+  @override
+  String get widgetLockedTitle => 'デイリーパズル';
+
+  @override
+  String widgetLockedSmall(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'レベル$levelStringクリアで開放';
+  }
+
+  @override
+  String widgetLockedMedium(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'はじめてのデイリーパズルは、レベル$levelStringクリアで開放されます。';
+  }
+
+  @override
+  String widgetReadySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nestyのデイリーパズル。$countString日連続。今日のパズルの準備ができました。';
+  }
+
+  @override
+  String widgetSolvedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nestyのデイリーパズル。$countString日連続、炎がともっています。今日のパズルはクリア済みです。';
+  }
+
+  @override
+  String widgetPausedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nestyのデイリーパズル。$countString日連続、お休み中。今日のパズルの準備ができました。';
+  }
+
+  @override
+  String get widgetZeroSemantics => 'Nestyのデイリーパズル。今日のパズルの準備ができました。';
+
+  @override
+  String widgetLockedSemantics(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Nestyのデイリーパズル。レベル$levelStringクリアで開放されます。';
+  }
+
+  @override
+  String dailyFreezesShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString';
+  }
 }

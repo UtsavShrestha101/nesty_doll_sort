@@ -118,11 +118,12 @@ final class LottieLabelStyle {
 /// `ui_win_ribbon`, `ui_chapter_ribbon`), with the table's values.
 abstract final class LottieLabelStyles {
   /// "{done} / {total}" on the `counter` null (60,30); cream `#FFF5E0`, 13.
-  /// TODO(design): the 52 max width is a guess (lottie §12).
+  /// The label hugs its text up to 58 dp (m7-6 item 16,
+  /// `layout.hud.familyCounter`) and scales down past that.
   static const familyCounter = LottieLabelStyle(
     fontSize: 13,
     color: Color(0xFFFFF5E0),
-    maxWidth: 52,
+    maxWidth: HudTokens.familyCounterLabelMaxWidth,
     baseline: Offset(7, 4.6),
     restNull: Offset(60, 30),
     canvas: Size(120, 60),

@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "プレゼントの{gift}を受け取りました。",
 
-  "giftA11yAdded": "{gift}が加わりました。合計は{count}です。"
+  "giftA11yAdded": "{gift}が加わりました。合計は{count}です。",
+
+  "welcomeBackTitle": "おかえりなさい！",
+
+  "welcomeBackFreeze": "フリーズが炎を守りました。今日のパズルの準備ができました。",
+
+  "welcomeBackFreezeShort": "フリーズが炎を守りました。",
+
+  "welcomeBackPaused": "{count}日連続の記録はお休み中です。今日のパズルの準備ができました。",
+
+  "welcomeBackPausedShort": "{count}日連続の記録はお休み中です。",
+
+  "welcomeBackNew": "今日のパズルは、いつでもプレイできます。",
+
+  "welcomeBackNewShort": "今日のパズルの準備ができました。",
+
+  "welcomeBackPlay": "プレイ",
+
+  "welcomeBackPlaySemantics": "今日のパズルをプレイ",
+
+  "welcomeBackHideSemantics": "このカードを非表示にする",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "この7日間のどの日も、気軽にプレイできます。",
+
+  "dailyMonthHintShort": "この7日間のパズルをプレイできます。",
+
+  "dailyMonthKeyLit": "当日クリア",
+
+  "dailyMonthKeyLater": "あとからクリア",
+
+  "dailyMonthKeyFreeze": "フリーズ",
+
+  "dailyMonthShowSemantics": "{month}を表示",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}、クリア} later{{date}、あとからクリア} frozen{{date}、フリーズでカバー} today{{date}、今日} todaySolved{{date}、今日、クリア} future{{date}} other{{date}、未プレイ}}",
+
+  "dailyMonthDayOpenSemantics": "{label}、プレイできます",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "気軽にどうぞ。連続記録は変わりません。",
+
+  "pastDailySolvedOnDay": "当日にクリア",
+
+  "pastDailySolvedLater": "あとからクリア",
+
+  "pastDailyPlayAgain": "もう一度プレイ",
+
+  "pastDailyWinTitle": "パズルクリア！",
+
+  "pastDailyWinTitleShort": "クリア！",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "あとから気軽にプレイしました。",
+
+  "pastDailyWinSemantics": "{date}、{moves}手でクリア。あとから気軽にプレイしました。",
+
+  "dailyLockedTitle": "はじめてのデイリーパズルまで、あと少し",
+
+  "dailyLockedBody": "レベル{level}をクリアすると、毎日ここに新しいパズルが届きます。みんな同じパズルです。",
+
+  "widgetGalleryName": "デイリーパズル",
+
+  "widgetGalleryDescription": "連続記録と今日のパズルをひと目でチェック。",
+
+  "widgetPuzzleTitle": "{weekday}のパズル",
+
+  "widgetStreakLabel": "{count, plural, other{日連続}}",
+
+  "widgetStreakResting": "{count, plural, other{日連続・お休み中}}",
+
+  "widgetStreakRestingShort": "お休み中",
+
+  "widgetFirstFlame": "最初の炎",
+
+  "widgetReady": "今日のパズルの準備ができました",
+
+  "widgetReadyShort": "プレイできます",
+
+  "widgetSolved": "クリア。また明日。",
+
+  "widgetSolvedShort": "クリア！",
+
+  "widgetLockedTitle": "デイリーパズル",
+
+  "widgetLockedSmall": "レベル{level}クリアで開放",
+
+  "widgetLockedMedium": "はじめてのデイリーパズルは、レベル{level}クリアで開放されます。",
+
+  "widgetReadySemantics": "Nestyのデイリーパズル。{count}日連続。今日のパズルの準備ができました。",
+
+  "widgetSolvedSemantics": "Nestyのデイリーパズル。{count}日連続、炎がともっています。今日のパズルはクリア済みです。",
+
+  "widgetPausedSemantics": "Nestyのデイリーパズル。{count}日連続、お休み中。今日のパズルの準備ができました。",
+
+  "widgetZeroSemantics": "Nestyのデイリーパズル。今日のパズルの準備ができました。",
+
+  "widgetLockedSemantics": "Nestyのデイリーパズル。レベル{level}クリアで開放されます。",
+
+  "dailyFreezesShort": "{count}"
 }

@@ -287,11 +287,7 @@ final class PlaceholderDollPainter implements DollRenderer {
 
   // Geometry, in art units on the same 512 × 768 board as the skins, so a
   // fallback and a skinned doll of one height line up. The sizes are the
-  // design's `layout.fallbackDoll`, read as diameters (frame 12.12's shapes
-  // are).
-  // TODO(design): `layout.fallbackDoll` doesn't say whether "circle, 0.36 h",
-  // "disc, 0.19 h" and "disc 0.2 h" are diameters or radii; ask Claude Design
-  // to say so in tokens.json.
+  // design's `layout.fallbackDoll`: every size is a diameter (m7-6 item 20).
   static const _art = DollArt.height;
   static const _headRadius = FallbackDollTokens.headSize * _art / 2;
   static const _headCenter = Offset(DollArt.width / 2, 270);
@@ -299,6 +295,7 @@ final class PlaceholderDollPainter implements DollRenderer {
   static const _bellyRadius = FallbackDollTokens.bellySize * _art / 2;
   static const _bodyWidth = FallbackDollTokens.bodyWidth * DollArt.width;
   static const _bodyHeight = FallbackDollTokens.bodyHeight * _art;
+  static const _bodyRadius = FallbackDollTokens.bodyRadius * _art;
 
   /// The darker bottom band: 3 dp at the design's 150 dp doll.
   static const _shadeBand = FallbackDollTokens.headShade / 150 * _art;
@@ -329,7 +326,7 @@ final class PlaceholderDollPainter implements DollRenderer {
         DollArt.base.dy - _bodyHeight,
         (DollArt.width + _bodyWidth) / 2,
         DollArt.base.dy,
-        const Radius.circular(_bodyWidth * 0.36),
+        const Radius.circular(_bodyRadius),
       ),
     );
   static final Path _headLit = _lit(_headShape);

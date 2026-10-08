@@ -1337,16 +1337,20 @@ class _GameplayViewState extends State<GameplayView> {
       // F-TUT, over m3-design §10.4's "under the HUD"): the scrim dims them
       // and the card covers the family chip. It is IgnorePointer, so Pause
       // and the boosters still take taps beneath it.
-      if (state.tutorial case final cue?)
-        Positioned.fill(
-          key: const ValueKey('tutorialOverlay'),
-          child: TutorialOverlay(
+      // Its scrim lifts over 200 ms when the family completes (m7-6 item
+      // 14), so the cue's overlay outlives the cue by that long.
+      Positioned.fill(
+        key: const ValueKey('tutorialOverlay'),
+        child: TutorialLift(
+          cue: state.tutorial,
+          builder: (cue) => TutorialOverlay(
             cue: cue,
             board: state.board,
             geometry: _geometry,
             library: services.fx,
           ),
         ),
+      ),
       Positioned(
         left: SoftStuckBanner.side,
         right: SoftStuckBanner.side,

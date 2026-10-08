@@ -64,6 +64,16 @@ abstract class DailyStatus with _$DailyStatus {
     /// (E4, Q81; m7-design P3.8). Null before today's solve, and for a day
     /// an older build solved (no Share then).
     DailySolve? solve,
+
+    /// Days solved on their own date, oldest first (`DailyProgress.done`,
+    /// at most `DailyProgress.maxDates`): the month of played days lights
+    /// them (local habits 2, plan-local-habits §2).
+    @Default(<LocalDate>[]) List<LocalDate> done,
+
+    /// Days a freeze covered, oldest first (`DailyProgress.frozen`): the
+    /// month's frost mark (Q191) and welcome back's "a freeze kept your
+    /// flame" line (plan-local-habits §1).
+    @Default(<LocalDate>[]) List<LocalDate> frozen,
   }) = _DailyStatus;
 
   const DailyStatus._();

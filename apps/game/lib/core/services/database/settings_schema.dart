@@ -47,6 +47,18 @@ abstract final class SettingsKeys {
   /// paused streak, a string. Missing reads as none.
   static const relitGlowSeen = 'relitGlowSeen';
 
+  /// The latest local date the app was opened or resumed (local habits 1,
+  /// plan-local-habits §1): a `yyyy-MM-dd` high-water mark that never moves
+  /// back, so a clock wound back writes nothing and shows no card. About
+  /// this phone, not progress, so it stays out of the save. Missing reads
+  /// as none (a first launch is never a gap).
+  static const lastOpenDate = 'lastOpenDate';
+
+  /// The day a welcome-back card belongs to (local habits 1): set when an
+  /// open finds the gap, removed on dismiss. A `yyyy-MM-dd` string;
+  /// missing reads as none.
+  static const welcomeBackDate = 'welcomeBackDate';
+
   /// The rival (1–3) the player last started a race against (m7-4 4.5):
   /// rival select's pick on a new visit when no rival is New. An int;
   /// missing reads as 0 (none).

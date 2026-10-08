@@ -964,7 +964,7 @@
 
   "dailyFreezes": "{count, plural, =0{No freeze} =1{1 freeze} other{{count} freezes}}",
   "@dailyFreezes": {
-    "description": "The Daily streak card's freeze chip (frame 5.1, and 5.2b's \"No freeze\"). copy.md m7-5 `streak_freeze_chip` and `streak_freeze_chip_none`.",
+    "description": "The Daily streak card's freeze chip (frame 5.1, and 5.2b's \"No freeze\"). copy.md m7-5 `streak_freeze_chip` and `streak_freeze_chip_none`; m7-6 (Part 2 item 1) keeps this wording. Under 64 dp the chip shows dailyFreezesShort (textFit.freezeChip).",
     "placeholders": {
       "count": {
         "type": "int",
@@ -1143,7 +1143,7 @@
 
   "playLevel": "Play Level {level}",
   "@playLevel": {
-    "description": "Play Level N: the Daily solved state's button back to the campaign (frame 5.5) and the Museum's next-family card (frame 6.1). copy.md G.10 `museum_play`.",
+    "description": "Play Level N: the Daily solved state's button back to the campaign (frame 5.5), the Museum's next-family card (frame 6.1) and the Daily before Level 2 (frame 12.14). copy.md G.10 `museum_play`.",
     "placeholders": {
       "level": {
         "type": "int",
@@ -1219,7 +1219,7 @@
 
   "dailyBackToDaily": "Back to Daily",
   "@dailyBackToDaily": {
-    "description": "The daily win card's secondary action, back to the Daily screen instead of the next campaign level (m3 §10.1)."
+    "description": "The daily win card's secondary action, back to the Daily screen instead of the next campaign level (m3 §10.1). Also a past day's win (frame 14.3d; copy.md ## Local habits `habits_past_win_back`)."
   },
 
   "museumTitle": "Museum",
@@ -3728,6 +3728,400 @@
         "type": "int",
         "format": "decimalPattern",
         "example": "3"
+      }
+    }
+  },
+
+  "welcomeBackTitle": "Welcome back!",
+  "@welcomeBackTitle": {
+    "description": "copy.md ## Local habits `habits_welcome_title`. Headline of Home's welcome-back card (frames 14.1a–e; plan-local-habits §1): inline under the chapter card when the app opens after two or more days away, the Daily is unlocked and today's daily isn't solved. One line, scales to 0.85, then wraps (textFit.habitsWelcome.title); about 18 Latin letters a line in the short-phone slot. Warm, never about anything lost. Under it one of welcomeBackFreeze, welcomeBackPaused or welcomeBackNew."
+  },
+
+  "welcomeBackFreeze": "A freeze kept your flame lit. Today’s puzzle is ready.",
+  "@welcomeBackFreeze": {
+    "description": "copy.md ## Local habits `habits_welcome_freeze`. The welcome-back card's line when a streak freeze covered the days away (frame 14.1a). Two lines at most, then welcomeBackFreezeShort (textFit.habitsWelcome.body). Uses the catalog's words for a streak freeze and the flame."
+  },
+
+  "welcomeBackFreezeShort": "A freeze kept your flame lit.",
+  "@welcomeBackFreezeShort": {
+    "description": "copy.md ## Short forms `habits_welcome_freeze_short`. welcomeBackFreeze when it would need a third line; Play then sits under the text (frames 14.1a, 14.1e)."
+  },
+
+  "welcomeBackPaused": "Your {count}-day streak is resting. Today’s puzzle is ready.",
+  "@welcomeBackPaused": {
+    "description": "copy.md ## Local habits `habits_welcome_paused`. The welcome-back card's line when the streak is paused (frame 14.1b): the number is kept and the flame unlit. Never says the streak was lost or missed. {count} is the kept streak (1 or more). Two lines at most, then welcomeBackPausedShort.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "6"
+      }
+    }
+  },
+
+  "welcomeBackPausedShort": "Your {count}-day streak is resting.",
+  "@welcomeBackPausedShort": {
+    "description": "copy.md ## Short forms `habits_welcome_paused_short`. welcomeBackPaused when it would need a third line; Play then sits under the text (frames 14.1b, 14.1e).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "6"
+      }
+    }
+  },
+
+  "welcomeBackNew": "Today’s puzzle is ready when you are.",
+  "@welcomeBackNew": {
+    "description": "copy.md ## Local habits `habits_welcome_new`. The welcome-back card's line with no streak yet (frame 14.1c). No clock, no pressure. Two lines at most, then welcomeBackNewShort."
+  },
+
+  "welcomeBackNewShort": "Today’s puzzle is ready.",
+  "@welcomeBackNewShort": {
+    "description": "copy.md ## Short forms `habits_welcome_new_short`. welcomeBackNew when it would need a third line; Play then sits under the text (frames 14.1c, 14.1e)."
+  },
+
+  "welcomeBackPlay": "Play",
+  "@welcomeBackPlay": {
+    "description": "copy.md ## Local habits `habits_welcome_play`. The welcome-back card's Play pill (frames 14.1a–e). The whole card is the button; it starts today's daily. In the short-phone slot the label wraps to two lines (about 9 letters a word); at 1.3× text or with a short line it moves under the text (textFit.habitsWelcome.play). Screen readers read welcomeBackPlaySemantics instead."
+  },
+
+  "welcomeBackPlaySemantics": "Play today’s puzzle",
+  "@welcomeBackPlaySemantics": {
+    "description": "copy.md ## Local habits `habits_welcome_play_a11y`. Screen-reader label of the welcome-back card, read after its title and line (frame 14.1). The card announces nothing by itself."
+  },
+
+  "welcomeBackHideSemantics": "Hide this card",
+  "@welcomeBackHideSemantics": {
+    "description": "copy.md ## Local habits `habits_welcome_dismiss_a11y`. Screen-reader label of the welcome-back card's close: the house close glyph in a 48 dp target (frame 14.1e). It hides the card; nothing is lost."
+  },
+
+  "dailyMonthTitle": "{month}",
+  "@dailyMonthTitle": {
+    "description": "copy.md ## Local habits `habits_month_title`. Title of the Daily's month card, the last card of the Daily's scroll (frames 14.2a–g). {month} is the stand-alone month name in the locale (DateFormat LLLL, 'October'). One line, scales to 0.85 (textFit.habitsMonth.title).",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "October"
+      }
+    }
+  },
+
+  "dailyMonthHint": "Play any of the last 7 days, just for fun.",
+  "@dailyMonthHint": {
+    "description": "copy.md ## Local habits `habits_month_hint`. The month card's line under its title (frame 14.2a): the last 7 days can be played again, for no reward and with no change to the streak. One line, then dailyMonthHintShort, then two lines (textFit.habitsMonth.hint)."
+  },
+
+  "dailyMonthHintShort": "The last 7 days are open to play.",
+  "@dailyMonthHintShort": {
+    "description": "copy.md ## Short forms `habits_month_hint_short`. dailyMonthHint when it doesn't fit one line (frame 14.2g, textFit.habitsMonth.hint)."
+  },
+
+  "dailyMonthKeyLit": "On the day",
+  "@dailyMonthKeyLit": {
+    "description": "copy.md ## Local habits `habits_month_key_lit`. The month card's legend for the orange mark: a daily solved on its own date (frame 14.2a). The legend lists only the marks the month holds and wraps to a second row."
+  },
+
+  "dailyMonthKeyLater": "Played later",
+  "@dailyMonthKeyLater": {
+    "description": "copy.md ## Local habits `habits_month_key_later`. The month card's legend for the peach mark: a past daily played later (frames 14.2a, 14.3e)."
+  },
+
+  "dailyMonthKeyFreeze": "Freeze",
+  "@dailyMonthKeyFreeze": {
+    "description": "copy.md ## Local habits `habits_month_key_freeze`. The month card's legend for the blue mark: a day a streak freeze covered (frame 14.2a). The catalog's word for a streak freeze."
+  },
+
+  "dailyMonthShowSemantics": "Show {month}",
+  "@dailyMonthShowSemantics": {
+    "description": "copy.md ## Local habits `habits_month_show_a11y`. Screen-reader label of the ‹ / › month chip, shown on the 1st to the 7th (frames 14.2c, 14.2d). {month} is the stand-alone month name the chip leads to (DateFormat LLLL).",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "October"
+      }
+    }
+  },
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, solved} later{{date}, played later} frozen{{date}, covered by a freeze} today{{date}, today} todaySolved{{date}, today, solved} future{{date}} other{{date}, not played}}",
+  "@dailyMonthDaySemantics": {
+    "description": "copy.md ## Local habits `habits_day_a11y_*`. Screen-reader label of one day in the Daily's month; each day reads as one element (frames 14.2a–g, 14.3a). {date} is DateFormat MMMMd ('7 October', '7. Oktober', '10月7日'). States: solved = solved on its own date (`habits_day_a11y_lit`); later = solved later as a past daily (`_later`); frozen = a streak freeze covered it (`_freeze`); today (`_today`); todaySolved (`_today_solved`); future = a day still to come, the date alone (`_future`); other = not played (`_none`). The last 7 days wrap this label in dailyMonthDayOpenSemantics. Never 'missed', 'lost' or 'broken': a day not played is not a failure.",
+    "placeholders": {
+      "state": {
+        "type": "String",
+        "example": "solved"
+      },
+      "date": {
+        "type": "String",
+        "example": "7 October"
+      }
+    }
+  },
+
+  "dailyMonthDayOpenSemantics": "{label}, open to play",
+  "@dailyMonthDayOpenSemantics": {
+    "description": "copy.md ## Local habits `habits_day_a11y_open`. Wraps a day's dailyMonthDaySemantics label for the last 7 days, which are buttons (frames 14.2a, 14.3a): '10 October, not played, open to play'. {label} is that label.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "10 October, not played"
+      }
+    }
+  },
+
+  "pastDailyTitle": "{date}",
+  "@pastDailyTitle": {
+    "description": "copy.md ## Local habits `habits_past_title`. Title of a past day's card, which opens under the month (frame 14.3b). {date} is DateFormat MMMEd ('Sat 10 Oct', 'Sa., 10. Okt.', '10月10日(土)').",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sat 10 Oct"
+      }
+    }
+  },
+
+  "pastDailyNote": "Just for fun. Your streak stays as it is.",
+  "@pastDailyNote": {
+    "description": "copy.md ## Local habits `habits_past_note`. The past day's card's one calm line (frame 14.3b): a past daily pays nothing and never moves the streak."
+  },
+
+  "pastDailySolvedOnDay": "Solved on the day",
+  "@pastDailySolvedOnDay": {
+    "description": "copy.md ## Local habits `habits_past_solved_day`. A past day's card when that day was solved on its own date, over its dimmed preview (frame 14.3e)."
+  },
+
+  "pastDailySolvedLater": "Played later",
+  "@pastDailySolvedLater": {
+    "description": "copy.md ## Local habits `habits_past_solved_later`. A past day's card when it was played later, over its dimmed preview (frame 14.3e)."
+  },
+
+  "pastDailyPlayAgain": "Play again",
+  "@pastDailyPlayAgain": {
+    "description": "copy.md ## Local habits `habits_past_play_again`. The button of a past day's card once that day is solved (frame 14.3e). It pays nothing."
+  },
+
+  "pastDailyWinTitle": "Puzzle solved!",
+  "@pastDailyWinTitle": {
+    "description": "copy.md ## Local habits `habits_past_win_title`. Title of a past day's win, on 5.4's layout (frame 14.3d). pastDailyWinTitleShort when it doesn't fit."
+  },
+
+  "pastDailyWinTitleShort": "Solved!",
+  "@pastDailyWinTitleShort": {
+    "description": "copy.md ## Short forms `habits_past_win_title_short`. pastDailyWinTitle when it doesn't fit (frame 14.3d)."
+  },
+
+  "pastDailyWinDate": "{date}",
+  "@pastDailyWinDate": {
+    "description": "copy.md ## Local habits `habits_past_win_date`. The past day's win, under its title (frame 14.3d). {date} is DateFormat EEEEdMMMM ('Saturday 10 October').",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Saturday 10 October"
+      }
+    }
+  },
+
+  "pastDailyWinLine": "Played later, just for fun.",
+  "@pastDailyWinLine": {
+    "description": "copy.md ## Local habits `habits_past_win_line`. The past day's win's line where the streak card was (frame 14.3d). No coins, no streak change."
+  },
+
+  "pastDailyWinSemantics": "{moves, plural, =1{{date} solved in 1 move. Played later, just for fun.} other{{date} solved in {moves} moves. Played later, just for fun.}}",
+  "@pastDailyWinSemantics": {
+    "description": "copy.md ## Local habits `habits_past_win_a11y`. Screen-reader summary of a past day's win (frame 14.3d). {date} is the long date (DateFormat EEEEdMMMM), {moves} the moves used.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Saturday 10 October"
+      },
+      "moves": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "18"
+      }
+    }
+  },
+
+  "dailyLockedTitle": "Your first daily puzzle is close",
+  "@dailyLockedTitle": {
+    "description": "copy.md ## Local habits `daily_locked_title`. Title of the Daily before Level 2 (frame 12.14), reached from Home's locked Daily tile (12.3) or the widget (14.4e). One calm card; its button is playLevel (`museum_play`)."
+  },
+
+  "dailyLockedBody": "Win Level {level} and a new puzzle will wait here every day, the same for everyone.",
+  "@dailyLockedBody": {
+    "description": "copy.md ## Local habits `daily_locked_body`. The 12.14 card's line under dailyLockedTitle. {level} is DailyService.unlockAfterLevel (2).",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "widgetGalleryName": "Daily puzzle",
+  "@widgetGalleryName": {
+    "description": "copy.md ## Local habits `widget_gallery_name`. The home-screen widget's name in the iOS widget gallery and the Android widget picker (frames 14.4, 14.4h). Native text: the widget's own string resources take it from here (local-habits stage 4)."
+  },
+
+  "widgetGalleryDescription": "Your streak and today’s puzzle at a glance.",
+  "@widgetGalleryDescription": {
+    "description": "copy.md ## Local habits `widget_gallery_description`. The widget's description in the iOS widget gallery and the Android widget picker (frame 14.4h). Native text, as widgetGalleryName."
+  },
+
+  "widgetPuzzleTitle": "{weekday}’s puzzle",
+  "@widgetPuzzleTitle": {
+    "description": "copy.md ## Local habits `widget_puzzle_title`. The medium widget's title (frames 14.4, 14.4g); its second line is 5.1's colours · tier text. {weekday} is the stand-alone weekday name (DateFormat cccc). One line, then an ellipsis (textFit.widget.title).",
+    "placeholders": {
+      "weekday": {
+        "type": "String",
+        "example": "Friday"
+      }
+    }
+  },
+
+  "widgetStreakLabel": "{count, plural, =1{day streak} other{day streak}}",
+  "@widgetStreakLabel": {
+    "description": "copy.md ## Local habits `widget_streak_label`. The widget's label under the streak number (frames 14.4a, 14.4b). {count} is the streak, drawn above as the big number; the label doesn't print it, the plural only lets a language agree with it.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+
+  "widgetStreakResting": "{count, plural, =1{day streak · resting} other{day streak · resting}}",
+  "@widgetStreakResting": {
+    "description": "copy.md ## Local habits `widget_streak_resting`. The label under the number while the streak is paused (frame 14.4c): resting, never missed. widgetStreakRestingShort when it doesn't fit one line. {count} as in widgetStreakLabel.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+
+  "widgetStreakRestingShort": "resting",
+  "@widgetStreakRestingShort": {
+    "description": "copy.md ## Short forms `widget_streak_resting_short`. Replaces widgetStreakResting on the small widget when it doesn't fit one line (frame 14.4c)."
+  },
+
+  "widgetFirstFlame": "Your first flame",
+  "@widgetFirstFlame": {
+    "description": "copy.md ## Local habits `widget_first_flame`. The widget's label with no streak yet, in place of the number (frame 14.4d)."
+  },
+
+  "widgetReady": "Today’s puzzle is ready",
+  "@widgetReady": {
+    "description": "copy.md ## Local habits `widget_ready`. The widget's state line while today's daily is unsolved (frames 14.4a, 14.4c, 14.4d). Two lines, then widgetReadyShort, then an ellipsis (textFit.widget.line)."
+  },
+
+  "widgetReadyShort": "Ready to play",
+  "@widgetReadyShort": {
+    "description": "copy.md ## Short forms `widget_ready_short`. widgetReady when two lines aren't enough (frame 14.4a)."
+  },
+
+  "widgetSolved": "Solved. See you tomorrow.",
+  "@widgetSolved": {
+    "description": "copy.md ## Local habits `widget_solved`. The widget's state line once today's daily is solved (frame 14.4b). Two lines, then widgetSolvedShort."
+  },
+
+  "widgetSolvedShort": "Solved!",
+  "@widgetSolvedShort": {
+    "description": "copy.md ## Short forms `widget_solved_short`. widgetSolved when two lines aren't enough (frame 14.4b)."
+  },
+
+  "widgetLockedTitle": "Daily puzzle",
+  "@widgetLockedTitle": {
+    "description": "copy.md ## Local habits `widget_locked_title`. The widget's title before Level 2, beside the Daily mark; a tap opens 12.14 (frame 14.4e)."
+  },
+
+  "widgetLockedSmall": "Opens after Level {level}",
+  "@widgetLockedSmall": {
+    "description": "copy.md ## Local habits `widget_locked_small`. The small widget's line before Level 2 (frame 14.4e). {level} is DailyService.unlockAfterLevel (2).",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "widgetLockedMedium": "Your first daily puzzle opens after Level {level}.",
+  "@widgetLockedMedium": {
+    "description": "copy.md ## Local habits `widget_locked_medium`. The medium widget's line before Level 2 (frame 14.4e). {level} is DailyService.unlockAfterLevel (2).",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "widgetReadySemantics": "Nesty daily puzzle. {count}-day streak. Today’s puzzle is ready.",
+  "@widgetReadySemantics": {
+    "description": "copy.md ## Local habits `widget_a11y_ready`. The widget's one screen-reader element while today's daily is unsolved (frame 14.4a). {count} is the streak (1 or more).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "12"
+      }
+    }
+  },
+
+  "widgetSolvedSemantics": "Nesty daily puzzle. {count}-day streak, lit. Today’s puzzle is solved.",
+  "@widgetSolvedSemantics": {
+    "description": "copy.md ## Local habits `widget_a11y_solved`. The widget's screen-reader element once today's daily is solved (frame 14.4b). {count} is the streak.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "12"
+      }
+    }
+  },
+
+  "widgetPausedSemantics": "Nesty daily puzzle. {count}-day streak, resting. Today’s puzzle is ready.",
+  "@widgetPausedSemantics": {
+    "description": "copy.md ## Local habits `widget_a11y_paused`. The widget's screen-reader element while the streak is paused (frame 14.4c): resting, never missed. {count} is the kept streak.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "12"
+      }
+    }
+  },
+
+  "widgetZeroSemantics": "Nesty daily puzzle. Today’s puzzle is ready.",
+  "@widgetZeroSemantics": {
+    "description": "copy.md ## Local habits `widget_a11y_zero`. The widget's screen-reader element with no streak yet (frame 14.4d)."
+  },
+
+  "widgetLockedSemantics": "Nesty daily puzzle. Opens after Level {level}.",
+  "@widgetLockedSemantics": {
+    "description": "copy.md ## Local habits `widget_a11y_locked`. The widget's screen-reader element before Level 2 (frame 14.4e). {level} is DailyService.unlockAfterLevel (2).",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "2"
+      }
+    }
+  },
+
+  "dailyFreezesShort": "{count}",
+  "@dailyFreezesShort": {
+    "description": "copy.md ## Short forms `streak_freeze_chip_short`. The Daily streak card's freeze chip under 64 dp: the number alone beside the snowflake (frame 5.1, textFit.freezeChip; m7-6 Part 2 item 1). Screen readers keep dailyFreezesSemantics.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1"
       }
     }
   }

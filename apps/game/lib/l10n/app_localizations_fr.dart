@@ -2900,4 +2900,311 @@ class AppLocalizationsFr extends AppLocalizations {
 
     return 'Ajouté : $gift. Tu en as $countString.';
   }
+
+  @override
+  String get welcomeBackTitle => 'Bon retour !';
+
+  @override
+  String get welcomeBackFreeze =>
+      'Un gel a gardé ta flamme allumée. Le défi du jour est prêt.';
+
+  @override
+  String get welcomeBackFreezeShort => 'Un gel a gardé ta flamme allumée.';
+
+  @override
+  String welcomeBackPaused(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Ta série de $countString jours se repose. Le défi du jour est prêt.',
+      one: 'Ta série de $countString jour se repose. Le défi du jour est prêt.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String welcomeBackPausedShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ta série de $countString jours se repose.',
+      one: 'Ta série de $countString jour se repose.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get welcomeBackNew => 'Le défi du jour t’attend quand tu veux.';
+
+  @override
+  String get welcomeBackNewShort => 'Le défi du jour est prêt.';
+
+  @override
+  String get welcomeBackPlay => 'Jouer';
+
+  @override
+  String get welcomeBackPlaySemantics => 'Jouer au défi du jour';
+
+  @override
+  String get welcomeBackHideSemantics => 'Masquer cette carte';
+
+  @override
+  String dailyMonthTitle(String month) {
+    return '$month';
+  }
+
+  @override
+  String get dailyMonthHint =>
+      'Joue l’un des 7 derniers jours, juste pour le plaisir.';
+
+  @override
+  String get dailyMonthHintShort => 'Les 7 derniers jours sont jouables.';
+
+  @override
+  String get dailyMonthKeyLit => 'Le jour même';
+
+  @override
+  String get dailyMonthKeyLater => 'Joué plus tard';
+
+  @override
+  String get dailyMonthKeyFreeze => 'Gel';
+
+  @override
+  String dailyMonthShowSemantics(String month) {
+    return 'Afficher $month';
+  }
+
+  @override
+  String dailyMonthDaySemantics(String state, String date) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'solved': '$date, résolu',
+      'later': '$date, joué plus tard',
+      'frozen': '$date, couvert par un gel',
+      'today': '$date, aujourd’hui',
+      'todaySolved': '$date, aujourd’hui, résolu',
+      'future': '$date',
+      'other': '$date, pas joué',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dailyMonthDayOpenSemantics(String label) {
+    return '$label, jouable';
+  }
+
+  @override
+  String pastDailyTitle(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyNote => 'Juste pour le plaisir. Ta série ne change pas.';
+
+  @override
+  String get pastDailySolvedOnDay => 'Résolu le jour même';
+
+  @override
+  String get pastDailySolvedLater => 'Joué plus tard';
+
+  @override
+  String get pastDailyPlayAgain => 'Rejouer';
+
+  @override
+  String get pastDailyWinTitle => 'Défi résolu !';
+
+  @override
+  String get pastDailyWinTitleShort => 'Résolu !';
+
+  @override
+  String pastDailyWinDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyWinLine => 'Joué plus tard, juste pour le plaisir.';
+
+  @override
+  String pastDailyWinSemantics(String date, int moves) {
+    final intl.NumberFormat movesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String movesString = movesNumberFormat.format(moves);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      moves,
+      locale: localeName,
+      other:
+          '$date, résolu en $movesString coups. Joué plus tard, juste pour le plaisir.',
+      one:
+          '$date, résolu en $movesString coup. Joué plus tard, juste pour le plaisir.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyLockedTitle => 'Ton premier défi du jour est tout proche';
+
+  @override
+  String dailyLockedBody(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Gagne le niveau $levelString et un nouveau défi t’attendra ici chaque jour, le même pour tout le monde.';
+  }
+
+  @override
+  String get widgetGalleryName => 'Défi du jour';
+
+  @override
+  String get widgetGalleryDescription =>
+      'Ta série et le défi du jour en un coup d’œil.';
+
+  @override
+  String widgetPuzzleTitle(String weekday) {
+    return 'Le défi de $weekday';
+  }
+
+  @override
+  String widgetStreakLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'jours de série',
+      one: 'jour de série',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetStreakResting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'jours de série · au repos',
+      one: 'jour de série · au repos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetStreakRestingShort => 'au repos';
+
+  @override
+  String get widgetFirstFlame => 'Ta première flamme';
+
+  @override
+  String get widgetReady => 'Le défi du jour est prêt';
+
+  @override
+  String get widgetReadyShort => 'Prêt à jouer';
+
+  @override
+  String get widgetSolved => 'Résolu. À demain.';
+
+  @override
+  String get widgetSolvedShort => 'Résolu !';
+
+  @override
+  String get widgetLockedTitle => 'Défi du jour';
+
+  @override
+  String widgetLockedSmall(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Ouvert après le niveau $levelString';
+  }
+
+  @override
+  String widgetLockedMedium(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Ton premier défi du jour s’ouvre après le niveau $levelString.';
+  }
+
+  @override
+  String widgetReadySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Défi du jour de Nesty. Série de $countString jours. Le défi d’aujourd’hui est prêt.',
+      one:
+          'Défi du jour de Nesty. Série de $countString jour. Le défi d’aujourd’hui est prêt.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetSolvedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Défi du jour de Nesty. Série de $countString jours, flamme allumée. Le défi d’aujourd’hui est résolu.',
+      one:
+          'Défi du jour de Nesty. Série de $countString jour, flamme allumée. Le défi d’aujourd’hui est résolu.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetPausedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Défi du jour de Nesty. Série de $countString jours, au repos. Le défi d’aujourd’hui est prêt.',
+      one:
+          'Défi du jour de Nesty. Série de $countString jour, au repos. Le défi d’aujourd’hui est prêt.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetZeroSemantics =>
+      'Défi du jour de Nesty. Le défi d’aujourd’hui est prêt.';
+
+  @override
+  String widgetLockedSemantics(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Défi du jour de Nesty. Ouvert après le niveau $levelString.';
+  }
+
+  @override
+  String dailyFreezesShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString';
+  }
 }

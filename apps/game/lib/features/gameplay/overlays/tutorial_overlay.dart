@@ -13,6 +13,61 @@ import 'package:nesty_game/features/gameplay/bloc/gameplay_bloc.dart'
 import 'package:nesty_game/l10n/app_localizations.dart';
 import 'package:nesty_render/nesty_render.dart';
 
+/// Keeps the tutorial's last cue on screen while the scrim lifts: when the
+/// first family completes the cue ends and the scrim, hole, tip and hand
+/// fade out over [liftMs] as the family counter bumps (m7-6 item 14,
+/// DELIVERY Part 2; the design gives no token, `200 ms`). A second family
+/// never gets a cue, so nothing ever shows for it. The overlay takes no
+/// touches, so the board is live from the first frame of the lift.
+class TutorialLift extends StatefulWidget {
+  const TutorialLift({required this.cue, required this.builder, super.key});
+
+  /// The live cue; null once the tutorial ended.
+  final TutorialCue? cue;
+
+  /// Builds the overlay for a cue (the live one, or the last while lifting).
+  final Widget Function(TutorialCue cue) builder;
+
+  /// The scrim's lift, ms.
+  static const liftMs = 200;
+
+  @override
+  State<TutorialLift> createState() => _TutorialLiftState();
+}
+
+class _TutorialLiftState extends State<TutorialLift> {
+  TutorialCue? _last;
+
+  @override
+  void didUpdateWidget(TutorialLift oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only a cue that ended, not one that never was.
+    if (widget.cue == null) _last = oldWidget.cue ?? _last;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final live = widget.cue;
+    if (live != null) {
+      _last = null;
+      return widget.builder(live);
+    }
+    final last = _last;
+    if (last == null) return const SizedBox.shrink();
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(last),
+      tween: Tween(begin: 1, end: 0),
+      duration: const Duration(milliseconds: TutorialLift.liftMs),
+      onEnd: () {
+        if (mounted) setState(() => _last = null);
+      },
+      builder: (context, opacity, child) =>
+          Opacity(opacity: opacity, child: child),
+      child: widget.builder(last),
+    );
+  }
+}
+
 /// The scripted tutorial's scrim, holes, arc, tooltip and hand (frames 1.3,
 /// 1.4, step 3, 1.6; docs/plans/m3-design.md §10.4): drawn over the board
 /// and under the HUD while `GameplayState.tutorial` is set. Every touch but

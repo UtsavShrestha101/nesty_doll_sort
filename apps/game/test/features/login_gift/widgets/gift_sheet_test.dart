@@ -108,7 +108,7 @@ void main() {
     });
 
     testWidgets('on 16:9 it takes gift.short: 86 dp tiles, the 26/14 title '
-        'and sub, 461 tall but for the 58 dp Claim', (tester) async {
+        'and sub, 465 tall with the 58 dp Claim', (tester) async {
       final rig = GiftRig();
       await rig.pump(
         tester,
@@ -117,8 +117,8 @@ void main() {
       );
       await openGiftSheet(tester);
       final sheet = tester.getRect(find.byKey(GiftSheet.surfaceKey));
-      // The frame's Claim is 54; the game's large button is 58.
-      expect(sheet.height, closeTo(GiftShortTokens.height + 4, 1));
+      // m7-6 (item 4): the frame's Claim is the game's 58 dp large button.
+      expect(sheet.height, closeTo(GiftShortTokens.height, 1));
       expect(tester.getSize(find.byType(GiftDayTile).first).height, 86);
       expect(
         tester.widget<FitText>(find.byType(FitText).first).style.fontSize,

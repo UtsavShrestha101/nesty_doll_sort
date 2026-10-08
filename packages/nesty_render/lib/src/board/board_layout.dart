@@ -176,9 +176,9 @@ abstract final class BoardLayout {
   static double rowPitch(int slotCount) =>
       math.min(_K.slotPitchMax, _K.slotRowWidth / slotCount);
 
-  // TODO(design): a row of 6 (the second +1 Slot on a 4-slot bottom shelf,
-  // D172) extends rowOfFive's formulas: pitch 372 / 6 = 62, stands at
-  // 59.6 / 90 = 0.662; the design draws no row of 6.
+  // A row of 6 (the second +1 Slot on a 4-slot bottom shelf, D172) follows
+  // rowOfFive's formulas, as the design confirms (m7-6, Choices 19): pitch
+  // 372 / 6 = 62, stands at 59.6 / 90 = 0.662 (59.6 × 22.5), ice 63.6 wide.
 
   /// A stand's scale on a row of [pitchRef]: `min(90, pitch − 2.4) / 90`
   /// (tokens.json `layout.boardFit.standWidth`): 1 from a pitch of 92.4 (a

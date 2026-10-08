@@ -609,10 +609,16 @@ abstract final class HintArcTokens {
 /// The procedural doll drawn when a skin can't load (tokens v3
 /// `layout.fallbackDoll`, E.19, drawn in code; all sizes are diameters, h =
 /// doll height; spec §12.5). Sizes are fractions of the doll height h (w: its
-/// width); the head, face and belly are diameters (m7-4 8). On the splash:
-/// three cherry (red) fallback dolls, as 1.1; 12.12’s three colours only show
-/// the recipe.
+/// width); the head, face and belly are diameters (m7-4 8; every size is one,
+/// m7-6 item 20). The splash shows no fallback dolls while its skin decodes
+/// (m7-6 item 20, [splashFadeInMs]): they draw only when a skin can't load,
+/// never as a placeholder that swaps.
 abstract final class FallbackDollTokens {
+  /// The splash plank shows no dolls until the skin is decoded, then its three
+  /// cherry dolls fade in over this (m7-6 item 20, frame 1.1); fallback dolls
+  /// only when a skin can't load, never as a placeholder that swaps.
+  static const splashFadeInMs = 200;
+
   /// The head circle's diameter (`circle, diameter 0.36 h, base color, 3 dp
   /// darker bottom`).
   static const headSize = 0.36;
@@ -630,6 +636,11 @@ abstract final class FallbackDollTokens {
 
   /// Its width ÷ the doll width.
   static const bodyWidth = 0.52;
+
+  /// The body's corner radius ÷ the doll height h (m7-6 item 20: `every size
+  /// here is a diameter; body is a rounded rect 0.48 h tall × 0.52 w wide (w =
+  /// doll width), corner radius 0.16 h`).
+  static const bodyRadius = 0.16;
 
   /// The belly disc's diameter, the face colour, with the symbol in ink.
   static const bellySize = 0.2;
@@ -995,6 +1006,11 @@ abstract final class MotionTokens {
 
   /// tokens.json `motion.invalid.returnDuration`.
   static const invalidReturnMs = 420;
+
+  /// An invalid drift onto an empty stand, glass case or ice slot ends at the
+  /// target base − this × the mover's own height, the mover drawn in front of
+  /// the case or the ice (m7-6, Choices 21).
+  static const invalidEmptyTargetStop = 0.5;
 
   /// tokens.json `motion.reveal.duration`.
   static const revealMs = 200;

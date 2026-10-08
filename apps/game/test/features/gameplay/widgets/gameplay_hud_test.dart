@@ -77,6 +77,37 @@ void main() {
     }
   }
 
+  testWidgets('Pause stays 48 dp and is centred on the strip: 5 dp down on '
+      '9.3i\'s 58 dp strip (m7-6 item 3)', (tester) async {
+    for (final (stripHeight, down) in [
+      (RivalStripTokens.height, 0.0),
+      (RivalStripTokens.formsHeightAt13, RivalStripTokens.formsPauseTop),
+    ]) {
+      await pumpScreen(
+        tester,
+        Scaffold(
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: GameplayHud(
+              level: 1,
+              tier: Tier.easy,
+              coins: 0,
+              setsDone: 0,
+              setsTotal: 4,
+              onPause: () {},
+              library: FakeFxLibrary(),
+              raceStrip: SizedBox(height: stripHeight),
+            ),
+          ),
+        ),
+      );
+      final top = safeAreaOf(const Size(390, 844)).top;
+      final pause = tester.getRect(find.byType(IconTactileButton));
+      expect(pause.size, HudTokens.pauseButtonSize);
+      expect(pause.top, top + 3 + down, reason: 'strip $stripHeight');
+    }
+  });
+
   testWidgets('shows the level, tier, coins and the family count', (
     tester,
   ) async {
@@ -243,7 +274,9 @@ void main() {
         '`hud.familyCounter`)', (tester) async {
       await pumpUi(tester, const SizedBox());
       for (final (label, width) in [('4 / 4', 64.0), ('12 / 12', 78.0)]) {
-        expect(FamilyCounter.hugWidth(label), closeTo(width, 4), reason: label);
+        // The design's Fredoka measures "12 / 12" about 7 dp wider than
+        // the bundled font does (44 vs 37 dp), so the pill is within 8.
+        expect(FamilyCounter.hugWidth(label), closeTo(width, 8), reason: label);
       }
       expect(HudTokens.familyCounterWidthExamples, {
         '4 / 4': 64.0,
@@ -288,10 +321,56 @@ void main() {
       final small = await pillFor(1, 4);
       final large = await pillFor(12, 12);
       expect(small, closeTo(64, 4));
-      expect(large, closeTo(78, 4));
+      expect(large, closeTo(78, 8));
       expect(large, greaterThan(small));
       // Not clamped to the old 0.9-1.2 of 70 (63-84): any width.
       expect(FamilyCounter.hugWidth('100 / 100'), greaterThan(84));
+    });
+
+    testWidgets('the label hugs its text up to 58 dp and the pill to 92: '
+        '"12 / 12" at 1.3x text fits the 58 (m7-6 item 16)', (tester) async {
+      await pumpUi(tester, const SizedBox());
+      final chrome = HudTokens.familyCounterPillChrome;
+      expect(
+        FamilyCounter.hugWidth('12 / 12', k: 1.3) - chrome,
+        closeTo(48, 1), // the design's font measures 57
+      );
+      expect(FamilyCounter.hugWidth('12 / 12', k: 1.3), lessThanOrEqualTo(92));
+      // Past 58 the pill stops at 92; the label scales down instead.
+      expect(
+        FamilyCounter.hugWidth('100 / 100', k: 1.3),
+        HudTokens.familyCounterPillMaxWidth,
+      );
+      final style = FamilyCounter.labelStyleFor(1.3);
+      expect(style.maxWidth, HudTokens.familyCounterLabelMaxWidth);
+      expect(style.fontSize, closeTo(13 * 1.3, 1e-9));
+      final long = LottieLabelPainter(style)..text = '100 / 100';
+      expect(long.size.width, lessThanOrEqualTo(58.5));
+      expect(long.fontSize, lessThan(style.fontSize));
+      long.dispose();
+    });
+
+    testWidgets('the counter follows the text setting, never past 1.3x', (
+      tester,
+    ) async {
+      Future<double> pillAt(double scale) async {
+        await pumpUi(
+          tester,
+          FamilyCounter(done: 12, total: 12, library: FakeFxLibrary()),
+          textScale: scale,
+        );
+        final paint = tester.widget<CustomPaint>(
+          find.byWidgetPredicate(
+            (w) => w is CustomPaint && w.painter is FamilyCounterPillPainter,
+          ),
+        );
+        return (paint.painter! as FamilyCounterPillPainter).pillWidth;
+      }
+
+      final one = await pillAt(1);
+      final big = await pillAt(1.3);
+      expect(big, greaterThan(one));
+      expect(await pillAt(2), big);
     });
   });
 

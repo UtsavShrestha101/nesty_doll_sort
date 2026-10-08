@@ -1,6 +1,7 @@
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 
 /// The Daily streak card (frames 5.1, 10.7; ui-spec-menus §6.5; NestyMenus
 /// "isDaily") in the gentle streak's states (E2, m7-design §8):
@@ -118,10 +119,11 @@ class StreakCard extends StatelessWidget {
                     if (title != null)
                       // A Wrap: at a narrow width or a large text scale the
                       // Paused chip drops under the count instead of
-                      // squeezing it.
+                      // squeezing it. It fills the row, so the freeze chip
+                      // sits at the card's right edge (5.2b).
                       Row(
                         children: [
-                          Flexible(
+                          Expanded(
                             child: Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
                               spacing: 8,
@@ -314,15 +316,25 @@ class _FreezeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    final label = Text(
-      l10n.dailyFreezes(freezes),
-      style: AppTextStyleTokens.tierChip.copyWith(
+    final style = context.scriptStyle(
+      AppTextStyleTokens.tierChip.copyWith(
         fontSize: 11,
         color: AppColorTokens.freezeChipText,
       ),
-      maxLines: 1,
-      softWrap: false,
     );
+    // textFit.freezeChip (m7-6 item 1): "{count} freezes" while it fits
+    // 64 dp, else the number alone beside the snowflake. The screen reader
+    // hears the card's own a11y_freezes line, so the chip adds none.
+    final text = FitText.pick(
+      full: l10n.dailyFreezes(freezes),
+      short: l10n.dailyFreezesShort(freezes),
+      style: DefaultTextStyle.of(context).style.merge(style),
+      maxWidth: TextFitTokens.freezeChipMaxWidth,
+      scaler: MediaQuery.textScalerOf(context),
+      direction: Directionality.of(context),
+      minScale: 1,
+    );
+    final label = Text(text, style: style, maxLines: 1, softWrap: false);
     return NestySurface(
       style: SurfaceStyle(
         color: AppColorTokens.iceTint,

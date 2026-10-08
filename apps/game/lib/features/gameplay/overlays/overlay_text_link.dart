@@ -23,15 +23,13 @@ class OverlayTextLink extends StatelessWidget {
   /// Null disables it.
   final VoidCallback? onPressed;
 
-  /// The 48 dp touch area's margin above and below the 16 px line at 1×
-  /// text: (48 − 16) / 2.
-  static const double slack = (48 - 16) / 2;
+  /// The 48 dp touch area's margin above and below the 20 dp line at 1×
+  /// text (`fontSize.textLink` is 16/20): (48 − 20) / 2.
+  static const double slack = (48 - 20) / 2;
 
-  /// NestyOverlay: `font:700 16px/1 'Fredoka'; color:#8A5B3A`.
-  // TODO(design): tokens.json has no 16 px Fredoka style for a text link;
-  // this is `buttonSmall` (17 px) at the frame's 16 px.
-  static final TextStyle style = AppTextStyleTokens.buttonSmall.copyWith(
-    fontSize: 16,
+  /// `fontSize.textLink` (m7-6 item 15): Fredoka 700 16/20, in
+  /// `#8A5B3A`.
+  static final TextStyle style = AppTextStyleTokens.textLink.copyWith(
     color: AppColorTokens.textSecondary,
   );
 

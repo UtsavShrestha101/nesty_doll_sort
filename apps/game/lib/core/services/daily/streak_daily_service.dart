@@ -115,6 +115,8 @@ class StreakDailyService implements DailyService {
       freezeNotice: _freezeNotice(daily),
       inProgress: daily.inProgress != null,
       solve: daily.lastSolve?.date == today ? daily.lastSolve : null,
+      done: daily.done,
+      frozen: daily.frozen,
     );
     // Only a real change fires: Home re-reads the status (refresh) on every
     // change, so an unchanged one firing again would loop forever.

@@ -20,8 +20,10 @@ abstract final class LottieGeometry {
   static const swallowHoverFraction = 1.06;
 
   /// `doll_invalid`: `dst` is the target base minus this many target
-  /// heights (the mover drifts halfway there and back).
-  static const invalidDriftFraction = 0.5;
+  /// heights (the mover drifts halfway there and back). Onto an empty stand,
+  /// case or ice slot the target's height is the mover's own
+  /// (`motion.invalid.emptyTarget`, m7-6 Choices 21).
+  static const invalidDriftFraction = MotionTokens.invalidEmptyTargetStop;
 
   /// `doll_complete`: `dst` is the family counter centre plus this many
   /// doll heights (the authored T (195, 144) = (195, 129) + 0.1 × 150).

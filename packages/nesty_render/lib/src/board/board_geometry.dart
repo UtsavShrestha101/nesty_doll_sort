@@ -166,8 +166,9 @@ final class SlotGeometry {
         sealedHeight != null &&
         sealedHeight / fit.scale > GlassCaseTallTokens.minDollHeight * q;
     // The case follows the doll's height h, but never grows wider than its
-    // column less 2 dp (a row of 5 or 6: TODO(design), the design draws no
-    // tall case there): then it is the case of a doll of `caseHeight`, and
+    // column less 2 dp (a safety net: on a row of 6 a tall case is at most
+    // 59.8 wide under boardFit's horizontal limit, so it never bites, m7-6
+    // Choices 19): then it is the case of a doll of `caseHeight`, and
     // the composition's `case_size` follows it (the doll itself stays h).
     final caseHeight = tallCase
         ? math.min(

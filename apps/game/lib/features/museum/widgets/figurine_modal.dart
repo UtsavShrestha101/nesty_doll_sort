@@ -240,22 +240,10 @@ class _Spotlight extends StatelessWidget {
             ),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0, -0.4),
-                  radius: 0.85,
-                  colors: earned
-                      ? const [
-                          AppColors.spotlightEarnedTop,
-                          AppColors.spotlightEarnedMid,
-                          AppColors.spotlightEarnedEdge,
-                        ]
-                      : const [
-                          AppColors.spotlightLockedTop,
-                          AppColors.spotlightLockedMid,
-                          AppColors.spotlightLockedEdge,
-                        ],
-                  stops: const [0, 0.7, 1],
-                ),
+                // gradient.figurinePanel*: the design's ellipse 60% 70%.
+                gradient: earned
+                    ? AppGradientTokens.figurinePanelEarned
+                    : AppGradientTokens.figurinePanelLocked,
               ),
               child: Stack(
                 children: [

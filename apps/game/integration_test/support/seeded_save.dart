@@ -15,6 +15,7 @@ final class SeededSettings {
     this.haptics,
     this.lastRival,
     this.locale,
+    this.lastOpenDate,
   });
 
   final bool? relaxedMode;
@@ -31,6 +32,11 @@ final class SeededSettings {
   /// `de`, `pt_BR`, `ja` …), so a run opens in it (`locales_test.dart`,
   /// build/m7-p5/p5/l10n.md §7.2).
   final String? locale;
+
+  /// The last day the app was opened (`yyyy-mm-dd`), so the first open
+  /// finds a gap and Home shows the welcome-back card (local habits 1,
+  /// plan-local-habits §1).
+  final String? lastOpenDate;
 }
 
 /// Starts a device check from a known save (phase 4 architecture §6.6,
@@ -66,6 +72,9 @@ Future<void> seedSave(
       await database.setLastRival(rival);
     }
     if (settings.locale case final code?) await database.setLanguage(code);
+    if (settings.lastOpenDate case final date?) {
+      await database.setLastOpenDate(date);
+    }
   } finally {
     // The app opens the boxes itself (`DatabaseModule`); Hive's own
     // `initFlutter` then finds these files.

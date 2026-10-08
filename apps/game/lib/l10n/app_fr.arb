@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "Cadeau récupéré : {gift}.",
 
-  "giftA11yAdded": "Ajouté : {gift}. Tu en as {count}."
+  "giftA11yAdded": "Ajouté : {gift}. Tu en as {count}.",
+
+  "welcomeBackTitle": "Bon retour !",
+
+  "welcomeBackFreeze": "Un gel a gardé ta flamme allumée. Le défi du jour est prêt.",
+
+  "welcomeBackFreezeShort": "Un gel a gardé ta flamme allumée.",
+
+  "welcomeBackPaused": "{count, plural, one{Ta série de {count} jour se repose. Le défi du jour est prêt.} other{Ta série de {count} jours se repose. Le défi du jour est prêt.}}",
+
+  "welcomeBackPausedShort": "{count, plural, one{Ta série de {count} jour se repose.} other{Ta série de {count} jours se repose.}}",
+
+  "welcomeBackNew": "Le défi du jour t’attend quand tu veux.",
+
+  "welcomeBackNewShort": "Le défi du jour est prêt.",
+
+  "welcomeBackPlay": "Jouer",
+
+  "welcomeBackPlaySemantics": "Jouer au défi du jour",
+
+  "welcomeBackHideSemantics": "Masquer cette carte",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "Joue l’un des 7 derniers jours, juste pour le plaisir.",
+
+  "dailyMonthHintShort": "Les 7 derniers jours sont jouables.",
+
+  "dailyMonthKeyLit": "Le jour même",
+
+  "dailyMonthKeyLater": "Joué plus tard",
+
+  "dailyMonthKeyFreeze": "Gel",
+
+  "dailyMonthShowSemantics": "Afficher {month}",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, résolu} later{{date}, joué plus tard} frozen{{date}, couvert par un gel} today{{date}, aujourd’hui} todaySolved{{date}, aujourd’hui, résolu} future{{date}} other{{date}, pas joué}}",
+
+  "dailyMonthDayOpenSemantics": "{label}, jouable",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "Juste pour le plaisir. Ta série ne change pas.",
+
+  "pastDailySolvedOnDay": "Résolu le jour même",
+
+  "pastDailySolvedLater": "Joué plus tard",
+
+  "pastDailyPlayAgain": "Rejouer",
+
+  "pastDailyWinTitle": "Défi résolu !",
+
+  "pastDailyWinTitleShort": "Résolu !",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "Joué plus tard, juste pour le plaisir.",
+
+  "pastDailyWinSemantics": "{moves, plural, one{{date}, résolu en {moves} coup. Joué plus tard, juste pour le plaisir.} other{{date}, résolu en {moves} coups. Joué plus tard, juste pour le plaisir.}}",
+
+  "dailyLockedTitle": "Ton premier défi du jour est tout proche",
+
+  "dailyLockedBody": "Gagne le niveau {level} et un nouveau défi t’attendra ici chaque jour, le même pour tout le monde.",
+
+  "widgetGalleryName": "Défi du jour",
+
+  "widgetGalleryDescription": "Ta série et le défi du jour en un coup d’œil.",
+
+  "widgetPuzzleTitle": "Le défi de {weekday}",
+
+  "widgetStreakLabel": "{count, plural, one{jour de série} other{jours de série}}",
+
+  "widgetStreakResting": "{count, plural, one{jour de série · au repos} other{jours de série · au repos}}",
+
+  "widgetStreakRestingShort": "au repos",
+
+  "widgetFirstFlame": "Ta première flamme",
+
+  "widgetReady": "Le défi du jour est prêt",
+
+  "widgetReadyShort": "Prêt à jouer",
+
+  "widgetSolved": "Résolu. À demain.",
+
+  "widgetSolvedShort": "Résolu !",
+
+  "widgetLockedTitle": "Défi du jour",
+
+  "widgetLockedSmall": "Ouvert après le niveau {level}",
+
+  "widgetLockedMedium": "Ton premier défi du jour s’ouvre après le niveau {level}.",
+
+  "widgetReadySemantics": "{count, plural, one{Défi du jour de Nesty. Série de {count} jour. Le défi d’aujourd’hui est prêt.} other{Défi du jour de Nesty. Série de {count} jours. Le défi d’aujourd’hui est prêt.}}",
+
+  "widgetSolvedSemantics": "{count, plural, one{Défi du jour de Nesty. Série de {count} jour, flamme allumée. Le défi d’aujourd’hui est résolu.} other{Défi du jour de Nesty. Série de {count} jours, flamme allumée. Le défi d’aujourd’hui est résolu.}}",
+
+  "widgetPausedSemantics": "{count, plural, one{Défi du jour de Nesty. Série de {count} jour, au repos. Le défi d’aujourd’hui est prêt.} other{Défi du jour de Nesty. Série de {count} jours, au repos. Le défi d’aujourd’hui est prêt.}}",
+
+  "widgetZeroSemantics": "Défi du jour de Nesty. Le défi d’aujourd’hui est prêt.",
+
+  "widgetLockedSemantics": "Défi du jour de Nesty. Ouvert après le niveau {level}.",
+
+  "dailyFreezesShort": "{count}"
 }

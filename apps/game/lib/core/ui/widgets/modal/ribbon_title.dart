@@ -27,7 +27,7 @@ class RibbonTitle extends StatelessWidget {
   final Color edgeColor;
 
   /// How far the ribbon rises above the card's top edge.
-  static const double overhang = 18;
+  static const double overhang = RibbonTitleTokens.overhang;
 
   @override
   Widget build(BuildContext context) {
@@ -44,16 +44,15 @@ class RibbonTitle extends StatelessWidget {
       namesRoute: true,
       child: NestySurface(
         style: style,
-        radius: const BorderRadius.all(Radius.circular(16)),
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 9),
+        radius: const BorderRadius.all(
+          Radius.circular(RibbonTitleTokens.radius),
+        ),
+        padding: RibbonTitleTokens.padding,
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
             title,
-            style: AppTextStyleTokens.button.copyWith(
-              fontSize: 18,
-              color: const Color(0xFFFFFFFF),
-            ),
+            style: RibbonTitleTokens.text,
             maxLines: 1,
             softWrap: false,
           ),

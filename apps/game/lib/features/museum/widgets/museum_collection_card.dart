@@ -187,12 +187,15 @@ class _AllHome extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Frame 6.1c sets it on one line: it may shrink a little (to
-              // 0.9) to stay there, and only a longer translation wraps.
+              // 0.9) to stay there, and only a longer translation wraps. On
+              // two lines it may go to the readability floor (es at 1.3×
+              // needs 0.85 beside the 92 dp badge).
               ShrinkToFitText(
                 l10n.museumAllHome,
                 maxLines: 1,
                 minFontScale: 0.9,
                 overflowLines: 2,
+                overflowMinFontScale: 0.75,
                 textAlign: TextAlign.start,
                 style: AppTextStyleTokens.cardTitle.copyWith(
                   fontSize: 24,

@@ -13,7 +13,7 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 /// (the hero scales down into what is left). Menus spec 1.1's proposed rule
 /// ("the 844 numbers until the gap between Play and the tiles is under 24")
 /// gives the same two ends; the blend just avoids a jump between them
-/// (`TODO(design)`: confirm, BACKLOG "Home between 700 and 844 dp").
+/// (BACKLOG "Home between 700 and 844 dp").
 class HomeLayout {
   const HomeLayout._({
     required this.t,
@@ -81,6 +81,42 @@ class HomeLayout {
       tilesHeight: lerp(HomeTokens.tilesHeight, HomeShortTokens.tilesHeight),
       dollScale: lerp(1, HomeShortTokens.dollScale),
     );
+  }
+
+  /// Where the welcome-back card sits: 74 dp under the chapter card's top
+  /// (frame 14.1a: 198 on 844, 158 on 693), so the blend is the chapter
+  /// card's own (tokens `habits.welcomeBack.place`).
+  double get welcomeCardTop =>
+      chapterCardTop + HabitsWelcomeTokens.placeBelowChapterCardTop;
+
+  /// The tallest doll's box, at scale 1, that makes the rule give the
+  /// design's 0.78 on the 844 frame: (plank base 384 - card bottom 198 + 84
+  /// - clearance 8) / 0.78.
+  static const double _tallestDollBox =
+      (HomeTokens.plankTop +
+          12 -
+          (HomeTokens.chapterCardTop +
+              HabitsWelcomeTokens.placeBelowChapterCardTop +
+              HabitsWelcomeTokens.cardMinHeight) -
+          HabitsWelcomeTokens.placeDollClearance) /
+      HabitsWelcomeTokens.placeH844DollScale;
+
+  /// The dolls' scale and opacity while the welcome card, [cardHeight] tall,
+  /// stands above the plank: they scale about the plank so the tallest
+  /// clears the card by 8 dp, and below 0.6 they fade out (opacity 0) and
+  /// the empty plank stays. Only the dolls move. [scale] is then the
+  /// layout's own, so they fade back in without a size change.
+  ({double scale, double opacity}) dollsUnder(double cardHeight) {
+    final room =
+        plankTop +
+        12 -
+        (welcomeCardTop + cardHeight) -
+        HabitsWelcomeTokens.placeDollClearance;
+    final fit = math.min(dollScale, room / _tallestDollBox);
+    if (fit < HabitsWelcomeTokens.placeDollFadeBelow) {
+      return (scale: dollScale, opacity: 0);
+    }
+    return (scale: fit, opacity: 1);
   }
 
   /// The hero block's top: the twinkles start 192 dp above the plank in the

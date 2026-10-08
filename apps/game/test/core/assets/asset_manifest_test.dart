@@ -400,11 +400,12 @@ void main() {
   });
 
   test('NestyIcons covers the design README glyph list once each', () {
-    // 48 of v1, 18 m7 adds (I.10), the splash errors' two (lead note 2) and
-    // m7-5's race strip state glyph (more_horiz, 9.3i).
-    expect(NestyIcons.byName, hasLength(69));
+    // 48 of v1, 18 m7 adds (I.10), the splash errors' two (lead note 2),
+    // m7-5's race strip state glyph (more_horiz, 9.3i) and m7-6's month
+    // chip (chevron_left, `habits.month` 14.2c/14.2d).
+    expect(NestyIcons.byName, hasLength(70));
     final codepoints = NestyIcons.byName.values.map((i) => i.codePoint);
-    expect(codepoints.toSet(), hasLength(69));
+    expect(codepoints.toSet(), hasLength(70));
     expect(
       NestyIcons.byName.values.every(
         (i) => i.fontFamily == NestyIcons.fontFamily,

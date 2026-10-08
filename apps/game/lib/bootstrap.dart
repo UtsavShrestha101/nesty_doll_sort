@@ -10,6 +10,7 @@ import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
 import 'package:nesty_game/core/services/reminder/daily_reminder.dart';
 import 'package:nesty_game/core/services/save/save_lifecycle_flusher.dart';
+import 'package:nesty_game/core/services/welcome_back/welcome_back_tracker.dart';
 
 /// Debug builds can opt into all-fake services with
 /// `--dart-define=NESTY_FAKE_SERVICES=true` (CLAUDE.md rule 4). Ignored in
@@ -62,6 +63,10 @@ void bootstrap({@visibleForTesting Future<void> Function()? beforeRunApp}) {
       // settings or language change. It never asks for the permission and
       // never schedules on a fresh install (the reminder is off).
       get<DailyReminder>().start();
+
+      // Welcome back (local habit 1): notes the open before Home's first
+      // frame, so the gap is read before anything overwrites lastOpenDate.
+      get<WelcomeBackTracker>().start();
 
       await beforeRunApp?.call();
 

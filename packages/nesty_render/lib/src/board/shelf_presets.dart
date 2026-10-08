@@ -48,13 +48,13 @@ final class ShelfPreset {
 /// The presets by shape (tokens.json `layout.boardPresets`, phase 4
 /// architecture §2.1).
 abstract final class ShelfPresets {
-  // TODO(design): a 1-shelf board is undesigned (D22, BACKLOG "Design
-  // gaps"). The plank sits where the 2-shelf pair is centred, with the
-  // 3-shelf doll height.
+  /// One row, for tiny boards (tokens.json `layout.boardPresets.oneShelf`,
+  /// confirmed in m7-6, Choices 18): plank top 540, 150 dp dolls, up to 4
+  /// slots, the boardFit rule applies.
   static const one = ShelfPreset(
     plankTops: [540],
     maxDollHeight: 150,
-    designed: false,
+    designed: true,
   );
 
   /// Level 1–2 tutorial boards (frames 1.3/1.4, NestyBoard:76 `L2`).

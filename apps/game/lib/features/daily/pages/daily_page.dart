@@ -2,7 +2,6 @@ import 'package:intl/intl.dart';
 import 'package:nesty_game/core/common_imports.dart';
 import 'package:nesty_game/core/dependency_injection/di.dart';
 import 'package:nesty_game/core/router/app_router.dart';
-import 'package:nesty_game/core/services/daily/daily_service.dart';
 import 'package:nesty_game/core/services/database/database_service.dart';
 import 'package:nesty_game/core/services/music/jingle_cues.dart';
 import 'package:nesty_game/core/services/skin/skin_service.dart';
@@ -11,7 +10,9 @@ import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 import 'package:nesty_game/features/daily/widgets/chest_row.dart';
 import 'package:nesty_game/features/daily/widgets/daily_background_loader.dart';
 import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
+import 'package:nesty_game/features/daily/widgets/daily_locked_card.dart';
 import 'package:nesty_game/features/daily/widgets/day_strip.dart';
+import 'package:nesty_game/features/daily/widgets/month_card.dart';
 import 'package:nesty_game/features/daily/widgets/puzzle_card.dart';
 import 'package:nesty_game/features/daily/widgets/reminder_offer_dialog.dart';
 import 'package:nesty_game/features/daily/widgets/streak_card.dart';
@@ -192,7 +193,7 @@ class _DailyViewState extends State<DailyView> {
               Expanded(
                 child: state.status.unlocked
                     ? _unlocked(context, state)
-                    : _locked(context),
+                    : _locked(context, state),
               ),
             ],
           ),
@@ -238,36 +239,29 @@ class _DailyViewState extends State<DailyView> {
             // Share lives on the daily win card (frame 10.1, D188): the
             // solved card (5.5) has none.
           ),
+          const SizedBox(height: 16),
+          // Local habit 2: a month of played days (stage 2, not tappable). It
+          // is the scroll's last card, 12 dp under today's puzzle card
+          // (frame 14.2).
+          MonthCard(status: state.status),
         ],
       ),
     );
   }
 
-  Widget _locked(BuildContext context) {
-    final l10n = context.localizations;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              NestyIcons.lock,
-              size: 40,
-              color: AppColorTokens.chevron,
-            ),
-            const SizedBox(height: 12),
-            // TODO(design): no frame shows the Daily screen itself before
-            // Level 2 (m3-design §8.3, Q67); Home's tile is dimmed instead.
-            Text(
-              l10n.homeDailyLocked(DailyService.unlockAfterLevel),
-              textAlign: TextAlign.center,
-              style: AppTextStyleTokens.cardTitle.copyWith(
-                color: AppColorTokens.textBrown,
-              ),
-            ),
-          ],
-        ),
+  /// Frame 12.14: one calm card before Level 2, 88 dp under the header (the
+  /// scene's 200 on 844), scrolling when a large text size needs the room.
+  Widget _locked(BuildContext context, DailyState state) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        88,
+        16,
+        32 + MediaQuery.viewPaddingOf(context).bottom,
+      ),
+      child: DailyLockedCard(
+        playLevelNumber: state.homeLevelNumber,
+        onPlay: () => _playCampaign(context, state),
       ),
     );
   }

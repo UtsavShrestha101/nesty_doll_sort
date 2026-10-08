@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "Geschenk eingesammelt: {gift}.",
 
-  "giftA11yAdded": "{gift} hinzugefügt. Du hast {count}."
+  "giftA11yAdded": "{gift} hinzugefügt. Du hast {count}.",
+
+  "welcomeBackTitle": "Willkommen zurück!",
+
+  "welcomeBackFreeze": "Ein Schutz hielt deine Flamme am Brennen. Das heutige Rätsel ist bereit.",
+
+  "welcomeBackFreezeShort": "Ein Schutz hielt deine Flamme am Brennen.",
+
+  "welcomeBackPaused": "{count, plural, one{Deine Serie von {count} Tag ruht. Das heutige Rätsel ist bereit.} other{Deine Serie von {count} Tagen ruht. Das heutige Rätsel ist bereit.}}",
+
+  "welcomeBackPausedShort": "{count, plural, one{Deine Serie von {count} Tag ruht.} other{Deine Serie von {count} Tagen ruht.}}",
+
+  "welcomeBackNew": "Das heutige Rätsel wartet, wann immer du magst.",
+
+  "welcomeBackNewShort": "Das heutige Rätsel ist bereit.",
+
+  "welcomeBackPlay": "Spielen",
+
+  "welcomeBackPlaySemantics": "Das heutige Rätsel spielen",
+
+  "welcomeBackHideSemantics": "Diese Karte ausblenden",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "Spiele einen der letzten 7 Tage, einfach zum Spaß.",
+
+  "dailyMonthHintShort": "Die letzten 7 Tage sind spielbar.",
+
+  "dailyMonthKeyLit": "Am selben Tag",
+
+  "dailyMonthKeyLater": "Später gespielt",
+
+  "dailyMonthKeyFreeze": "Schutz",
+
+  "dailyMonthShowSemantics": "{month} anzeigen",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, gelöst} later{{date}, später gespielt} frozen{{date}, von einem Schutz abgedeckt} today{{date}, heute} todaySolved{{date}, heute, gelöst} future{{date}} other{{date}, nicht gespielt}}",
+
+  "dailyMonthDayOpenSemantics": "{label}, spielbar",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "Einfach zum Spaß. Deine Serie bleibt, wie sie ist.",
+
+  "pastDailySolvedOnDay": "Am selben Tag gelöst",
+
+  "pastDailySolvedLater": "Später gespielt",
+
+  "pastDailyPlayAgain": "Erneut spielen",
+
+  "pastDailyWinTitle": "Rätsel gelöst!",
+
+  "pastDailyWinTitleShort": "Gelöst!",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "Später gespielt, einfach zum Spaß.",
+
+  "pastDailyWinSemantics": "{moves, plural, one{{date}, in {moves} Zug gelöst. Später gespielt, einfach zum Spaß.} other{{date}, in {moves} Zügen gelöst. Später gespielt, einfach zum Spaß.}}",
+
+  "dailyLockedTitle": "Dein erstes Tagesrätsel ist ganz nah",
+
+  "dailyLockedBody": "Gewinne Level {level}, dann wartet hier jeden Tag ein neues Rätsel, für alle dasselbe.",
+
+  "widgetGalleryName": "Tagesrätsel",
+
+  "widgetGalleryDescription": "Deine Serie und das heutige Rätsel auf einen Blick.",
+
+  "widgetPuzzleTitle": "Rätsel vom {weekday}",
+
+  "widgetStreakLabel": "{count, plural, one{Tag in Folge} other{Tage in Folge}}",
+
+  "widgetStreakResting": "{count, plural, one{Tag in Folge · ruht} other{Tage in Folge · ruht}}",
+
+  "widgetStreakRestingShort": "ruht",
+
+  "widgetFirstFlame": "Deine erste Flamme",
+
+  "widgetReady": "Das heutige Rätsel ist bereit",
+
+  "widgetReadyShort": "Bereit zum Spielen",
+
+  "widgetSolved": "Gelöst. Bis morgen.",
+
+  "widgetSolvedShort": "Gelöst!",
+
+  "widgetLockedTitle": "Tagesrätsel",
+
+  "widgetLockedSmall": "Öffnet nach Level {level}",
+
+  "widgetLockedMedium": "Dein erstes Tagesrätsel öffnet nach Level {level}.",
+
+  "widgetReadySemantics": "{count, plural, one{Nesty-Tagesrätsel. Serie: {count} Tag. Das heutige Rätsel ist bereit.} other{Nesty-Tagesrätsel. Serie: {count} Tage. Das heutige Rätsel ist bereit.}}",
+
+  "widgetSolvedSemantics": "{count, plural, one{Nesty-Tagesrätsel. Serie: {count} Tag, Flamme brennt. Das heutige Rätsel ist gelöst.} other{Nesty-Tagesrätsel. Serie: {count} Tage, Flamme brennt. Das heutige Rätsel ist gelöst.}}",
+
+  "widgetPausedSemantics": "{count, plural, one{Nesty-Tagesrätsel. Serie: {count} Tag, ruht. Das heutige Rätsel ist bereit.} other{Nesty-Tagesrätsel. Serie: {count} Tage, ruht. Das heutige Rätsel ist bereit.}}",
+
+  "widgetZeroSemantics": "Nesty-Tagesrätsel. Das heutige Rätsel ist bereit.",
+
+  "widgetLockedSemantics": "Nesty-Tagesrätsel. Öffnet nach Level {level}.",
+
+  "dailyFreezesShort": "{count}"
 }

@@ -85,7 +85,7 @@ class _TextLinkState extends State<TextLink> {
                 ),
                 child: Text(
                   widget.label,
-                  style: TextLinkTokens.font.copyWith(color: color),
+                  style: AppTextStyleTokens.textLink.copyWith(color: color),
                   maxLines: 1,
                   softWrap: false,
                 ),

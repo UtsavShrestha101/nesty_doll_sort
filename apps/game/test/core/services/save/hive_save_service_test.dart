@@ -61,6 +61,15 @@ final class _GatedDatabaseService implements DatabaseService {
   @override
   Future<void> setRelitGlowSeen(String date) => _inner.setRelitGlowSeen(date);
   @override
+  String? get lastOpenDate => _inner.lastOpenDate;
+  @override
+  Future<void> setLastOpenDate(String date) => _inner.setLastOpenDate(date);
+  @override
+  String? get welcomeBackDate => _inner.welcomeBackDate;
+  @override
+  Future<void> setWelcomeBackDate(String? date) =>
+      _inner.setWelcomeBackDate(date);
+  @override
   int get lastRival => _inner.lastRival;
   @override
   Future<void> setLastRival(int rival) => _inner.setLastRival(rival);

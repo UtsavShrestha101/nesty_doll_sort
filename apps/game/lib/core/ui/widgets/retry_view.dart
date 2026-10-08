@@ -202,7 +202,9 @@ class _ErrorTextLink extends StatelessWidget {
             child: Text(
               label,
               textAlign: TextAlign.center,
-              style: TextLinkTokens.font.copyWith(color: TextLinkTokens.color),
+              style: AppTextStyleTokens.textLink.copyWith(
+                color: TextLinkTokens.color,
+              ),
             ),
           ),
         ),

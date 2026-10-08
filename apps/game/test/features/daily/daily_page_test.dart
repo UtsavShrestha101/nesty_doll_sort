@@ -27,6 +27,7 @@ import 'package:nesty_game/features/daily/cubit/daily_cubit.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
 import 'package:nesty_game/features/daily/widgets/daily_background_loader.dart';
 import 'package:nesty_game/features/daily/widgets/daily_chest_modal.dart';
+import 'package:nesty_game/features/daily/widgets/month_card.dart';
 import 'package:nesty_game/features/daily/widgets/puzzle_card.dart';
 import 'package:nesty_game/features/fx/chest/chest_reward_sequence.dart';
 import 'package:nesty_game/features/fx/fake_fx_library.dart';
@@ -332,13 +333,55 @@ void main() {
     await built.cubit.close();
   });
 
-  testWidgets('locked before Level 2 shows the lock, not the strip', (
+  testWidgets('local habit 2: the month card sits under the puzzle card when '
+      'the Daily is unlocked', (tester) async {
+    final built = build(status: status());
+    await pumpDaily(tester, built.cubit, built.jingles);
+    expect(find.byType(MonthCard), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byType(MonthCard)).dy,
+      greaterThan(tester.getBottomLeft(find.byType(PuzzleCard)).dy),
+    );
+    await built.cubit.close();
+  });
+
+  testWidgets('local habit 2: no month card before Level 2', (tester) async {
+    final built = build(status: status(unlocked: false));
+    await pumpDaily(tester, built.cubit, built.jingles);
+    expect(find.byType(MonthCard), findsNothing);
+    await built.cubit.close();
+  });
+
+  testWidgets('12.14: locked before Level 2 shows one calm card and Play '
+      'Level N, not the strip or the month', (tester) async {
+    final built = build(status: status(unlocked: false));
+    await pumpDaily(tester, built.cubit, built.jingles);
+    expect(find.text('Your first daily puzzle is close'), findsOneWidget);
+    expect(
+      find.text(
+        'Win Level 2 and a new puzzle will wait here every day, the same '
+        'for everyone.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Play Level 1'), findsOneWidget);
+    expect(find.text('Day 7 chest · 300 coins'), findsNothing);
+    expect(find.byType(MonthCard), findsNothing);
+    // No lock, no countdown, no "locked" word.
+    expect(find.byIcon(NestyIcons.lock), findsNothing);
+    expect(
+      find.textContaining(RegExp('locked|missed', caseSensitive: false)),
+      findsNothing,
+    );
+    await built.cubit.close();
+  });
+
+  testWidgets('12.14: the card scrolls at 1.3x text without overflow', (
     tester,
   ) async {
     final built = build(status: status(unlocked: false));
-    await pumpDaily(tester, built.cubit, built.jingles);
-    expect(find.text('After Level 2'), findsOneWidget);
-    expect(find.text('Day 7 chest · 300 coins'), findsNothing);
+    await pumpDaily(tester, built.cubit, built.jingles, textScale: 1.3);
+    expectNoLayoutErrors(tester);
     await built.cubit.close();
   });
 

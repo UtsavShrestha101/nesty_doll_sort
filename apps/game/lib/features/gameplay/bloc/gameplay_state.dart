@@ -53,7 +53,7 @@ enum TutorialCueKind {
 abstract class TutorialCue with _$TutorialCue {
   const factory TutorialCue({
     /// 1–4: L1 tap the small doll, L1 tap the big one, L1 finish the family
-    /// (no frame: `TODO(design)`), L2 the swallow. The tooltip copy and
+    /// (the frame 1.4 look, copy.md `tut_step_3_*`), L2 the swallow. The tooltip copy and
     /// `tutorial_step{step}` follow it.
     required int step,
     required TutorialCueKind kind,

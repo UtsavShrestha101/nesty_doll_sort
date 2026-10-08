@@ -19,6 +19,7 @@ class ShrinkToFitText extends StatelessWidget {
     this.textAlign = TextAlign.center,
     this.minFontScale = 0.6,
     this.overflowLines,
+    this.overflowMinFontScale,
     this.fixedWidth,
     super.key,
   });
@@ -38,6 +39,12 @@ class ShrinkToFitText extends StatelessWidget {
   /// so it is wrapped rather than cut (textFit: wrap where the surface
   /// allows). Null keeps [maxLines].
   final int? overflowLines;
+
+  /// The smallest share it shrinks to on [overflowLines] lines, when that
+  /// may go lower than [minFontScale]'s one-line limit (a frame that allows
+  /// only a little shrink to stay on one line, while a long translation on
+  /// two lines may go to the readability floor). Null keeps [minFontScale].
+  final double? overflowMinFontScale;
 
   /// The width to fit to when the parent can't give one: a box inside an
   /// `IntrinsicHeight` can't hold a `LayoutBuilder` (it has no intrinsic
@@ -72,9 +79,9 @@ class ShrinkToFitText extends StatelessWidget {
     var lines = maxLines;
     var factor = 1.0;
     if (constraints.hasBoundedWidth) {
-      double shrink(int count) {
+      double shrink(int count, double floor) {
         var f = 1.0;
-        while (f - _step >= minFontScale - 1e-9 &&
+        while (f - _step >= floor - 1e-9 &&
             !_fits(
               base.copyWith(fontSize: fontSize * f),
               constraints.maxWidth,
@@ -87,7 +94,7 @@ class ShrinkToFitText extends StatelessWidget {
         return f;
       }
 
-      factor = shrink(lines);
+      factor = shrink(lines, minFontScale);
       final more = overflowLines ?? maxLines;
       if (more > maxLines &&
           !_fits(
@@ -98,7 +105,7 @@ class ShrinkToFitText extends StatelessWidget {
             lines,
           )) {
         lines = more;
-        factor = shrink(lines);
+        factor = shrink(lines, overflowMinFontScale ?? minFontScale);
       }
     }
     return Text(

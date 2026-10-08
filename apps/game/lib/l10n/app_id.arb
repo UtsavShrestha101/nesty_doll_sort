@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "Hadiah diambil: {gift}.",
 
-  "giftA11yAdded": "{gift} ditambahkan. Kamu punya {count}."
+  "giftA11yAdded": "{gift} ditambahkan. Kamu punya {count}.",
+
+  "welcomeBackTitle": "Halo lagi!",
+
+  "welcomeBackFreeze": "Pelindung menjaga apimu tetap menyala. Teka-teki hari ini sudah siap.",
+
+  "welcomeBackFreezeShort": "Pelindung menjaga apimu tetap menyala.",
+
+  "welcomeBackPaused": "Streak {count} harimu sedang istirahat. Teka-teki hari ini sudah siap.",
+
+  "welcomeBackPausedShort": "Streak {count} harimu sedang istirahat.",
+
+  "welcomeBackNew": "Teka-teki hari ini siap kapan pun kamu mau.",
+
+  "welcomeBackNewShort": "Teka-teki hari ini sudah siap.",
+
+  "welcomeBackPlay": "Main",
+
+  "welcomeBackPlaySemantics": "Main teka-teki hari ini",
+
+  "welcomeBackHideSemantics": "Sembunyikan kartu ini",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "Main hari mana pun dari 7 hari terakhir, untuk seru-seruan.",
+
+  "dailyMonthHintShort": "7 hari terakhir bisa dimainkan.",
+
+  "dailyMonthKeyLit": "Di hari itu",
+
+  "dailyMonthKeyLater": "Dimainkan belakangan",
+
+  "dailyMonthKeyFreeze": "Pelindung",
+
+  "dailyMonthShowSemantics": "Tampilkan {month}",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, selesai} later{{date}, dimainkan belakangan} frozen{{date}, ditutupi pelindung} today{{date}, hari ini} todaySolved{{date}, hari ini, selesai} future{{date}} other{{date}, belum dimainkan}}",
+
+  "dailyMonthDayOpenSemantics": "{label}, bisa dimainkan",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "Untuk seru-seruan. Streak-mu tidak berubah.",
+
+  "pastDailySolvedOnDay": "Selesai di hari itu",
+
+  "pastDailySolvedLater": "Dimainkan belakangan",
+
+  "pastDailyPlayAgain": "Main lagi",
+
+  "pastDailyWinTitle": "Teka-teki selesai!",
+
+  "pastDailyWinTitleShort": "Selesai!",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "Dimainkan belakangan, untuk seru-seruan.",
+
+  "pastDailyWinSemantics": "{date} selesai dalam {moves} langkah. Dimainkan belakangan, untuk seru-seruan.",
+
+  "dailyLockedTitle": "Teka-teki harian pertamamu sudah dekat",
+
+  "dailyLockedBody": "Menangkan Level {level}, lalu teka-teki baru akan menunggu di sini setiap hari, sama untuk semua orang.",
+
+  "widgetGalleryName": "Teka-teki harian",
+
+  "widgetGalleryDescription": "Streak-mu dan teka-teki hari ini dalam sekali lihat.",
+
+  "widgetPuzzleTitle": "Teka-teki {weekday}",
+
+  "widgetStreakLabel": "{count, plural, other{hari beruntun}}",
+
+  "widgetStreakResting": "{count, plural, other{hari beruntun · istirahat}}",
+
+  "widgetStreakRestingShort": "istirahat",
+
+  "widgetFirstFlame": "Api pertamamu",
+
+  "widgetReady": "Teka-teki hari ini sudah siap",
+
+  "widgetReadyShort": "Siap dimainkan",
+
+  "widgetSolved": "Selesai. Sampai besok.",
+
+  "widgetSolvedShort": "Selesai!",
+
+  "widgetLockedTitle": "Teka-teki harian",
+
+  "widgetLockedSmall": "Terbuka setelah Level {level}",
+
+  "widgetLockedMedium": "Teka-teki harian pertamamu terbuka setelah Level {level}.",
+
+  "widgetReadySemantics": "Teka-teki harian Nesty. Streak {count} hari. Teka-teki hari ini sudah siap.",
+
+  "widgetSolvedSemantics": "Teka-teki harian Nesty. Streak {count} hari, menyala. Teka-teki hari ini sudah selesai.",
+
+  "widgetPausedSemantics": "Teka-teki harian Nesty. Streak {count} hari, sedang istirahat. Teka-teki hari ini sudah siap.",
+
+  "widgetZeroSemantics": "Teka-teki harian Nesty. Teka-teki hari ini sudah siap.",
+
+  "widgetLockedSemantics": "Teka-teki harian Nesty. Terbuka setelah Level {level}.",
+
+  "dailyFreezesShort": "{count}"
 }

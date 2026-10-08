@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "Presente coletado: {gift}.",
 
-  "giftA11yAdded": "Adicionado: {gift}. Você tem {count}."
+  "giftA11yAdded": "Adicionado: {gift}. Você tem {count}.",
+
+  "welcomeBackTitle": "Olá de novo!",
+
+  "welcomeBackFreeze": "Um protetor manteve sua chama acesa. O desafio de hoje está pronto.",
+
+  "welcomeBackFreezeShort": "Um protetor manteve sua chama acesa.",
+
+  "welcomeBackPaused": "{count, plural, =0{Sua sequência de {count} dias está descansando. O desafio de hoje está pronto.} one{Sua sequência de {count} dia está descansando. O desafio de hoje está pronto.} other{Sua sequência de {count} dias está descansando. O desafio de hoje está pronto.}}",
+
+  "welcomeBackPausedShort": "{count, plural, =0{Sua sequência de {count} dias está descansando.} one{Sua sequência de {count} dia está descansando.} other{Sua sequência de {count} dias está descansando.}}",
+
+  "welcomeBackNew": "O desafio de hoje te espera quando você quiser.",
+
+  "welcomeBackNewShort": "O desafio de hoje está pronto.",
+
+  "welcomeBackPlay": "Jogar",
+
+  "welcomeBackPlaySemantics": "Jogar o desafio de hoje",
+
+  "welcomeBackHideSemantics": "Ocultar este cartão",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "Jogue qualquer um dos últimos 7 dias, por pura diversão.",
+
+  "dailyMonthHintShort": "Você pode jogar os últimos 7 dias.",
+
+  "dailyMonthKeyLit": "No mesmo dia",
+
+  "dailyMonthKeyLater": "Jogado depois",
+
+  "dailyMonthKeyFreeze": "Protetor",
+
+  "dailyMonthShowSemantics": "Mostrar {month}",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, resolvido} later{{date}, jogado depois} frozen{{date}, coberto por um protetor} today{{date}, hoje} todaySolved{{date}, hoje, resolvido} future{{date}} other{{date}, não jogado}}",
+
+  "dailyMonthDayOpenSemantics": "{label}, disponível para jogar",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "Por pura diversão. Sua sequência continua igual.",
+
+  "pastDailySolvedOnDay": "Resolvido no mesmo dia",
+
+  "pastDailySolvedLater": "Jogado depois",
+
+  "pastDailyPlayAgain": "Jogar de novo",
+
+  "pastDailyWinTitle": "Desafio resolvido!",
+
+  "pastDailyWinTitleShort": "Resolvido!",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "Jogado depois, por pura diversão.",
+
+  "pastDailyWinSemantics": "{moves, plural, =0{{date}, resolvido em {moves} jogadas. Jogado depois, por pura diversão.} one{{date}, resolvido em {moves} jogada. Jogado depois, por pura diversão.} other{{date}, resolvido em {moves} jogadas. Jogado depois, por pura diversão.}}",
+
+  "dailyLockedTitle": "Seu primeiro desafio diário está perto",
+
+  "dailyLockedBody": "Vença o nível {level} e um novo desafio vai te esperar aqui todo dia, o mesmo para todo mundo.",
+
+  "widgetGalleryName": "Desafio diário",
+
+  "widgetGalleryDescription": "Sua sequência e o desafio de hoje, de relance.",
+
+  "widgetPuzzleTitle": "Desafio de {weekday}",
+
+  "widgetStreakLabel": "{count, plural, =0{dias de sequência} one{dia de sequência} other{dias de sequência}}",
+
+  "widgetStreakResting": "{count, plural, =0{dias de sequência · descansando} one{dia de sequência · descansando} other{dias de sequência · descansando}}",
+
+  "widgetStreakRestingShort": "descansando",
+
+  "widgetFirstFlame": "Sua primeira chama",
+
+  "widgetReady": "O desafio de hoje está pronto",
+
+  "widgetReadyShort": "Pronto para jogar",
+
+  "widgetSolved": "Resolvido. Até amanhã.",
+
+  "widgetSolvedShort": "Resolvido!",
+
+  "widgetLockedTitle": "Desafio diário",
+
+  "widgetLockedSmall": "Abre após o nível {level}",
+
+  "widgetLockedMedium": "Seu primeiro desafio diário abre após o nível {level}.",
+
+  "widgetReadySemantics": "{count, plural, =0{Desafio diário do Nesty. Sequência de {count} dias. O desafio de hoje está pronto.} one{Desafio diário do Nesty. Sequência de {count} dia. O desafio de hoje está pronto.} other{Desafio diário do Nesty. Sequência de {count} dias. O desafio de hoje está pronto.}}",
+
+  "widgetSolvedSemantics": "{count, plural, =0{Desafio diário do Nesty. Sequência de {count} dias, acesa. O desafio de hoje está resolvido.} one{Desafio diário do Nesty. Sequência de {count} dia, acesa. O desafio de hoje está resolvido.} other{Desafio diário do Nesty. Sequência de {count} dias, acesa. O desafio de hoje está resolvido.}}",
+
+  "widgetPausedSemantics": "{count, plural, =0{Desafio diário do Nesty. Sequência de {count} dias, descansando. O desafio de hoje está pronto.} one{Desafio diário do Nesty. Sequência de {count} dia, descansando. O desafio de hoje está pronto.} other{Desafio diário do Nesty. Sequência de {count} dias, descansando. O desafio de hoje está pronto.}}",
+
+  "widgetZeroSemantics": "Desafio diário do Nesty. O desafio de hoje está pronto.",
+
+  "widgetLockedSemantics": "Desafio diário do Nesty. Abre após o nível {level}.",
+
+  "dailyFreezesShort": "{count}"
 }

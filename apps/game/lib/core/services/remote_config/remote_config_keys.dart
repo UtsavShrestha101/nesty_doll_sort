@@ -78,6 +78,11 @@ abstract final class RemoteConfigKeys {
   static const dailyReward = RemoteConfigKey<int>._('daily_reward', 50);
   static const streak7Reward = RemoteConfigKey<int>._('streak7_reward', 300);
 
+  /// Welcome back (local habits 1, plan-local-habits "What the admin tunes
+  /// later"): days since the last open that bring the card. The default is
+  /// 2; `WelcomeBackRules` clamps a read to 2–60 and never throws.
+  static const welcomeBackDays = RemoteConfigKey<int>._('welcome_back_days', 2);
+
   /// "Remove Ads" offer appears after this many interstitials (spec §9.2).
   static const removeAdsOfferAfterInterstitials = RemoteConfigKey<int>._(
     'remove_ads_offer_after_interstitials',
@@ -161,6 +166,7 @@ abstract final class RemoteConfigKeys {
     rewardChapter,
     dailyReward,
     streak7Reward,
+    welcomeBackDays,
     removeAdsOfferAfterInterstitials,
     ratePromptLevel,
     chestCoins,

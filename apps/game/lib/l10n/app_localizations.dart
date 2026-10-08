@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// **'A full week!'**
   String get dailyStreakWeek;
 
-  /// The Daily streak card's freeze chip (frame 5.1, and 5.2b's "No freeze"). copy.md m7-5 `streak_freeze_chip` and `streak_freeze_chip_none`.
+  /// The Daily streak card's freeze chip (frame 5.1, and 5.2b's "No freeze"). copy.md m7-5 `streak_freeze_chip` and `streak_freeze_chip_none`; m7-6 (Part 2 item 1) keeps this wording. Under 64 dp the chip shows dailyFreezesShort (textFit.freezeChip).
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =0{No freeze} =1{1 freeze} other{{count} freezes}}'**
@@ -977,7 +977,7 @@ abstract class AppLocalizations {
   /// **'{hours}h {minutes}m'**
   String dailyCountdown(int hours, int minutes);
 
-  /// Play Level N: the Daily solved state's button back to the campaign (frame 5.5) and the Museum's next-family card (frame 6.1). copy.md G.10 `museum_play`.
+  /// Play Level N: the Daily solved state's button back to the campaign (frame 5.5), the Museum's next-family card (frame 6.1) and the Daily before Level 2 (frame 12.14). copy.md G.10 `museum_play`.
   ///
   /// In en, this message translates to:
   /// **'Play Level {level}'**
@@ -1037,7 +1037,7 @@ abstract class AppLocalizations {
   /// **'{count, select, 0{Your Day 7 chest is ready!} 1{One more day to the Day 7 chest} 2{Two more days to the Day 7 chest} 3{Three more days to the Day 7 chest} 4{Four more days to the Day 7 chest} 5{Five more days to the Day 7 chest} 6{Six more days to the Day 7 chest} other{{count} more days to the Day 7 chest}}'**
   String dailyWinChestHint(String count);
 
-  /// The daily win card's secondary action, back to the Daily screen instead of the next campaign level (m3 §10.1).
+  /// The daily win card's secondary action, back to the Daily screen instead of the next campaign level (m3 §10.1). Also a past day's win (frame 14.3d; copy.md ## Local habits `habits_past_win_back`).
   ///
   /// In en, this message translates to:
   /// **'Back to Daily'**
@@ -2727,6 +2727,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{gift} added. You have {count}.'**
   String giftA11yAdded(String gift, int count);
+
+  /// copy.md ## Local habits `habits_welcome_title`. Headline of Home's welcome-back card (frames 14.1a–e; plan-local-habits §1): inline under the chapter card when the app opens after two or more days away, the Daily is unlocked and today's daily isn't solved. One line, scales to 0.85, then wraps (textFit.habitsWelcome.title); about 18 Latin letters a line in the short-phone slot. Warm, never about anything lost. Under it one of welcomeBackFreeze, welcomeBackPaused or welcomeBackNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back!'**
+  String get welcomeBackTitle;
+
+  /// copy.md ## Local habits `habits_welcome_freeze`. The welcome-back card's line when a streak freeze covered the days away (frame 14.1a). Two lines at most, then welcomeBackFreezeShort (textFit.habitsWelcome.body). Uses the catalog's words for a streak freeze and the flame.
+  ///
+  /// In en, this message translates to:
+  /// **'A freeze kept your flame lit. Today’s puzzle is ready.'**
+  String get welcomeBackFreeze;
+
+  /// copy.md ## Short forms `habits_welcome_freeze_short`. welcomeBackFreeze when it would need a third line; Play then sits under the text (frames 14.1a, 14.1e).
+  ///
+  /// In en, this message translates to:
+  /// **'A freeze kept your flame lit.'**
+  String get welcomeBackFreezeShort;
+
+  /// copy.md ## Local habits `habits_welcome_paused`. The welcome-back card's line when the streak is paused (frame 14.1b): the number is kept and the flame unlit. Never says the streak was lost or missed. {count} is the kept streak (1 or more). Two lines at most, then welcomeBackPausedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {count}-day streak is resting. Today’s puzzle is ready.'**
+  String welcomeBackPaused(int count);
+
+  /// copy.md ## Short forms `habits_welcome_paused_short`. welcomeBackPaused when it would need a third line; Play then sits under the text (frames 14.1b, 14.1e).
+  ///
+  /// In en, this message translates to:
+  /// **'Your {count}-day streak is resting.'**
+  String welcomeBackPausedShort(int count);
+
+  /// copy.md ## Local habits `habits_welcome_new`. The welcome-back card's line with no streak yet (frame 14.1c). No clock, no pressure. Two lines at most, then welcomeBackNewShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s puzzle is ready when you are.'**
+  String get welcomeBackNew;
+
+  /// copy.md ## Short forms `habits_welcome_new_short`. welcomeBackNew when it would need a third line; Play then sits under the text (frames 14.1c, 14.1e).
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s puzzle is ready.'**
+  String get welcomeBackNewShort;
+
+  /// copy.md ## Local habits `habits_welcome_play`. The welcome-back card's Play pill (frames 14.1a–e). The whole card is the button; it starts today's daily. In the short-phone slot the label wraps to two lines (about 9 letters a word); at 1.3× text or with a short line it moves under the text (textFit.habitsWelcome.play). Screen readers read welcomeBackPlaySemantics instead.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get welcomeBackPlay;
+
+  /// copy.md ## Local habits `habits_welcome_play_a11y`. Screen-reader label of the welcome-back card, read after its title and line (frame 14.1). The card announces nothing by itself.
+  ///
+  /// In en, this message translates to:
+  /// **'Play today’s puzzle'**
+  String get welcomeBackPlaySemantics;
+
+  /// copy.md ## Local habits `habits_welcome_dismiss_a11y`. Screen-reader label of the welcome-back card's close: the house close glyph in a 48 dp target (frame 14.1e). It hides the card; nothing is lost.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this card'**
+  String get welcomeBackHideSemantics;
+
+  /// copy.md ## Local habits `habits_month_title`. Title of the Daily's month card, the last card of the Daily's scroll (frames 14.2a–g). {month} is the stand-alone month name in the locale (DateFormat LLLL, 'October'). One line, scales to 0.85 (textFit.habitsMonth.title).
+  ///
+  /// In en, this message translates to:
+  /// **'{month}'**
+  String dailyMonthTitle(String month);
+
+  /// copy.md ## Local habits `habits_month_hint`. The month card's line under its title (frame 14.2a): the last 7 days can be played again, for no reward and with no change to the streak. One line, then dailyMonthHintShort, then two lines (textFit.habitsMonth.hint).
+  ///
+  /// In en, this message translates to:
+  /// **'Play any of the last 7 days, just for fun.'**
+  String get dailyMonthHint;
+
+  /// copy.md ## Short forms `habits_month_hint_short`. dailyMonthHint when it doesn't fit one line (frame 14.2g, textFit.habitsMonth.hint).
+  ///
+  /// In en, this message translates to:
+  /// **'The last 7 days are open to play.'**
+  String get dailyMonthHintShort;
+
+  /// copy.md ## Local habits `habits_month_key_lit`. The month card's legend for the orange mark: a daily solved on its own date (frame 14.2a). The legend lists only the marks the month holds and wraps to a second row.
+  ///
+  /// In en, this message translates to:
+  /// **'On the day'**
+  String get dailyMonthKeyLit;
+
+  /// copy.md ## Local habits `habits_month_key_later`. The month card's legend for the peach mark: a past daily played later (frames 14.2a, 14.3e).
+  ///
+  /// In en, this message translates to:
+  /// **'Played later'**
+  String get dailyMonthKeyLater;
+
+  /// copy.md ## Local habits `habits_month_key_freeze`. The month card's legend for the blue mark: a day a streak freeze covered (frame 14.2a). The catalog's word for a streak freeze.
+  ///
+  /// In en, this message translates to:
+  /// **'Freeze'**
+  String get dailyMonthKeyFreeze;
+
+  /// copy.md ## Local habits `habits_month_show_a11y`. Screen-reader label of the ‹ / › month chip, shown on the 1st to the 7th (frames 14.2c, 14.2d). {month} is the stand-alone month name the chip leads to (DateFormat LLLL).
+  ///
+  /// In en, this message translates to:
+  /// **'Show {month}'**
+  String dailyMonthShowSemantics(String month);
+
+  /// copy.md ## Local habits `habits_day_a11y_*`. Screen-reader label of one day in the Daily's month; each day reads as one element (frames 14.2a–g, 14.3a). {date} is DateFormat MMMMd ('7 October', '7. Oktober', '10月7日'). States: solved = solved on its own date (`habits_day_a11y_lit`); later = solved later as a past daily (`_later`); frozen = a streak freeze covered it (`_freeze`); today (`_today`); todaySolved (`_today_solved`); future = a day still to come, the date alone (`_future`); other = not played (`_none`). The last 7 days wrap this label in dailyMonthDayOpenSemantics. Never 'missed', 'lost' or 'broken': a day not played is not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'{state, select, solved{{date}, solved} later{{date}, played later} frozen{{date}, covered by a freeze} today{{date}, today} todaySolved{{date}, today, solved} future{{date}} other{{date}, not played}}'**
+  String dailyMonthDaySemantics(String state, String date);
+
+  /// copy.md ## Local habits `habits_day_a11y_open`. Wraps a day's dailyMonthDaySemantics label for the last 7 days, which are buttons (frames 14.2a, 14.3a): '10 October, not played, open to play'. {label} is that label.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, open to play'**
+  String dailyMonthDayOpenSemantics(String label);
+
+  /// copy.md ## Local habits `habits_past_title`. Title of a past day's card, which opens under the month (frame 14.3b). {date} is DateFormat MMMEd ('Sat 10 Oct', 'Sa., 10. Okt.', '10月10日(土)').
+  ///
+  /// In en, this message translates to:
+  /// **'{date}'**
+  String pastDailyTitle(String date);
+
+  /// copy.md ## Local habits `habits_past_note`. The past day's card's one calm line (frame 14.3b): a past daily pays nothing and never moves the streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Just for fun. Your streak stays as it is.'**
+  String get pastDailyNote;
+
+  /// copy.md ## Local habits `habits_past_solved_day`. A past day's card when that day was solved on its own date, over its dimmed preview (frame 14.3e).
+  ///
+  /// In en, this message translates to:
+  /// **'Solved on the day'**
+  String get pastDailySolvedOnDay;
+
+  /// copy.md ## Local habits `habits_past_solved_later`. A past day's card when it was played later, over its dimmed preview (frame 14.3e).
+  ///
+  /// In en, this message translates to:
+  /// **'Played later'**
+  String get pastDailySolvedLater;
+
+  /// copy.md ## Local habits `habits_past_play_again`. The button of a past day's card once that day is solved (frame 14.3e). It pays nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Play again'**
+  String get pastDailyPlayAgain;
+
+  /// copy.md ## Local habits `habits_past_win_title`. Title of a past day's win, on 5.4's layout (frame 14.3d). pastDailyWinTitleShort when it doesn't fit.
+  ///
+  /// In en, this message translates to:
+  /// **'Puzzle solved!'**
+  String get pastDailyWinTitle;
+
+  /// copy.md ## Short forms `habits_past_win_title_short`. pastDailyWinTitle when it doesn't fit (frame 14.3d).
+  ///
+  /// In en, this message translates to:
+  /// **'Solved!'**
+  String get pastDailyWinTitleShort;
+
+  /// copy.md ## Local habits `habits_past_win_date`. The past day's win, under its title (frame 14.3d). {date} is DateFormat EEEEdMMMM ('Saturday 10 October').
+  ///
+  /// In en, this message translates to:
+  /// **'{date}'**
+  String pastDailyWinDate(String date);
+
+  /// copy.md ## Local habits `habits_past_win_line`. The past day's win's line where the streak card was (frame 14.3d). No coins, no streak change.
+  ///
+  /// In en, this message translates to:
+  /// **'Played later, just for fun.'**
+  String get pastDailyWinLine;
+
+  /// copy.md ## Local habits `habits_past_win_a11y`. Screen-reader summary of a past day's win (frame 14.3d). {date} is the long date (DateFormat EEEEdMMMM), {moves} the moves used.
+  ///
+  /// In en, this message translates to:
+  /// **'{moves, plural, =1{{date} solved in 1 move. Played later, just for fun.} other{{date} solved in {moves} moves. Played later, just for fun.}}'**
+  String pastDailyWinSemantics(String date, int moves);
+
+  /// copy.md ## Local habits `daily_locked_title`. Title of the Daily before Level 2 (frame 12.14), reached from Home's locked Daily tile (12.3) or the widget (14.4e). One calm card; its button is playLevel (`museum_play`).
+  ///
+  /// In en, this message translates to:
+  /// **'Your first daily puzzle is close'**
+  String get dailyLockedTitle;
+
+  /// copy.md ## Local habits `daily_locked_body`. The 12.14 card's line under dailyLockedTitle. {level} is DailyService.unlockAfterLevel (2).
+  ///
+  /// In en, this message translates to:
+  /// **'Win Level {level} and a new puzzle will wait here every day, the same for everyone.'**
+  String dailyLockedBody(int level);
+
+  /// copy.md ## Local habits `widget_gallery_name`. The home-screen widget's name in the iOS widget gallery and the Android widget picker (frames 14.4, 14.4h). Native text: the widget's own string resources take it from here (local-habits stage 4).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily puzzle'**
+  String get widgetGalleryName;
+
+  /// copy.md ## Local habits `widget_gallery_description`. The widget's description in the iOS widget gallery and the Android widget picker (frame 14.4h). Native text, as widgetGalleryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak and today’s puzzle at a glance.'**
+  String get widgetGalleryDescription;
+
+  /// copy.md ## Local habits `widget_puzzle_title`. The medium widget's title (frames 14.4, 14.4g); its second line is 5.1's colours · tier text. {weekday} is the stand-alone weekday name (DateFormat cccc). One line, then an ellipsis (textFit.widget.title).
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday}’s puzzle'**
+  String widgetPuzzleTitle(String weekday);
+
+  /// copy.md ## Local habits `widget_streak_label`. The widget's label under the streak number (frames 14.4a, 14.4b). {count} is the streak, drawn above as the big number; the label doesn't print it, the plural only lets a language agree with it.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{day streak} other{day streak}}'**
+  String widgetStreakLabel(int count);
+
+  /// copy.md ## Local habits `widget_streak_resting`. The label under the number while the streak is paused (frame 14.4c): resting, never missed. widgetStreakRestingShort when it doesn't fit one line. {count} as in widgetStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{day streak · resting} other{day streak · resting}}'**
+  String widgetStreakResting(int count);
+
+  /// copy.md ## Short forms `widget_streak_resting_short`. Replaces widgetStreakResting on the small widget when it doesn't fit one line (frame 14.4c).
+  ///
+  /// In en, this message translates to:
+  /// **'resting'**
+  String get widgetStreakRestingShort;
+
+  /// copy.md ## Local habits `widget_first_flame`. The widget's label with no streak yet, in place of the number (frame 14.4d).
+  ///
+  /// In en, this message translates to:
+  /// **'Your first flame'**
+  String get widgetFirstFlame;
+
+  /// copy.md ## Local habits `widget_ready`. The widget's state line while today's daily is unsolved (frames 14.4a, 14.4c, 14.4d). Two lines, then widgetReadyShort, then an ellipsis (textFit.widget.line).
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s puzzle is ready'**
+  String get widgetReady;
+
+  /// copy.md ## Short forms `widget_ready_short`. widgetReady when two lines aren't enough (frame 14.4a).
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to play'**
+  String get widgetReadyShort;
+
+  /// copy.md ## Local habits `widget_solved`. The widget's state line once today's daily is solved (frame 14.4b). Two lines, then widgetSolvedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Solved. See you tomorrow.'**
+  String get widgetSolved;
+
+  /// copy.md ## Short forms `widget_solved_short`. widgetSolved when two lines aren't enough (frame 14.4b).
+  ///
+  /// In en, this message translates to:
+  /// **'Solved!'**
+  String get widgetSolvedShort;
+
+  /// copy.md ## Local habits `widget_locked_title`. The widget's title before Level 2, beside the Daily mark; a tap opens 12.14 (frame 14.4e).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily puzzle'**
+  String get widgetLockedTitle;
+
+  /// copy.md ## Local habits `widget_locked_small`. The small widget's line before Level 2 (frame 14.4e). {level} is DailyService.unlockAfterLevel (2).
+  ///
+  /// In en, this message translates to:
+  /// **'Opens after Level {level}'**
+  String widgetLockedSmall(int level);
+
+  /// copy.md ## Local habits `widget_locked_medium`. The medium widget's line before Level 2 (frame 14.4e). {level} is DailyService.unlockAfterLevel (2).
+  ///
+  /// In en, this message translates to:
+  /// **'Your first daily puzzle opens after Level {level}.'**
+  String widgetLockedMedium(int level);
+
+  /// copy.md ## Local habits `widget_a11y_ready`. The widget's one screen-reader element while today's daily is unsolved (frame 14.4a). {count} is the streak (1 or more).
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty daily puzzle. {count}-day streak. Today’s puzzle is ready.'**
+  String widgetReadySemantics(int count);
+
+  /// copy.md ## Local habits `widget_a11y_solved`. The widget's screen-reader element once today's daily is solved (frame 14.4b). {count} is the streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty daily puzzle. {count}-day streak, lit. Today’s puzzle is solved.'**
+  String widgetSolvedSemantics(int count);
+
+  /// copy.md ## Local habits `widget_a11y_paused`. The widget's screen-reader element while the streak is paused (frame 14.4c): resting, never missed. {count} is the kept streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty daily puzzle. {count}-day streak, resting. Today’s puzzle is ready.'**
+  String widgetPausedSemantics(int count);
+
+  /// copy.md ## Local habits `widget_a11y_zero`. The widget's screen-reader element with no streak yet (frame 14.4d).
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty daily puzzle. Today’s puzzle is ready.'**
+  String get widgetZeroSemantics;
+
+  /// copy.md ## Local habits `widget_a11y_locked`. The widget's screen-reader element before Level 2 (frame 14.4e). {level} is DailyService.unlockAfterLevel (2).
+  ///
+  /// In en, this message translates to:
+  /// **'Nesty daily puzzle. Opens after Level {level}.'**
+  String widgetLockedSemantics(int level);
+
+  /// copy.md ## Short forms `streak_freeze_chip_short`. The Daily streak card's freeze chip under 64 dp: the number alone beside the snowflake (frame 5.1, textFit.freezeChip; m7-6 Part 2 item 1). Screen readers keep dailyFreezesSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String dailyFreezesShort(int count);
 }
 
 class _AppLocalizationsDelegate

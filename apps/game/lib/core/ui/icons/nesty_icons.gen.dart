@@ -257,6 +257,9 @@ abstract final class NestyIcons {
   /// `more_horiz`
   static const IconData moreHoriz = IconData(0xe5d3, fontFamily: fontFamily);
 
+  /// `chevron_left`
+  static const IconData chevronLeft = IconData(0xe5cb, fontFamily: fontFamily);
+
   /// Every glyph by its upstream name, for tests and tooling.
   static const Map<String, IconData> byName = {
     'pause': pause,
@@ -328,5 +331,6 @@ abstract final class NestyIcons {
     'sd_card_alert': sdCardAlert,
     'inventory_2': inventory2,
     'more_horiz': moreHoriz,
+    'chevron_left': chevronLeft,
   };
 }

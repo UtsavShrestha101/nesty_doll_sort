@@ -41,6 +41,38 @@ void main() {
     expectNoCutText(tester);
   });
 
+  testWidgets('overflowMinFontScale lets the wrapped lines shrink past the '
+      'one-line limit', (tester) async {
+    // Its first word alone is wider than 140 dp at 0.95, so two lines at
+    // the one-line limit stay at 0.95; a lower floor shrinks it to fit.
+    const long = 'Spielzeugladengeschäft sonnig';
+    final cut = await shown(
+      tester,
+      ShrinkToFitText(
+        long,
+        style: style,
+        maxLines: 1,
+        minFontScale: 0.95,
+        overflowLines: 2,
+      ),
+    );
+    expect(cut.style?.fontSize, closeTo(15 * 0.95, 1e-9));
+    final text = await shown(
+      tester,
+      ShrinkToFitText(
+        long,
+        style: style,
+        maxLines: 1,
+        minFontScale: 0.95,
+        overflowLines: 2,
+        overflowMinFontScale: 0.6,
+      ),
+    );
+    expect(text.maxLines, 2);
+    expect(text.style!.fontSize!, lessThan(15 * 0.95));
+    expectNoCutText(tester);
+  });
+
   testWidgets('without overflowLines it stays on one line', (tester) async {
     final text = await shown(
       tester,

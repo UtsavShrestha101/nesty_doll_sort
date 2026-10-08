@@ -259,6 +259,14 @@ final class _HudLayout extends MultiChildLayoutDelegate {
         _HudSlot.strip,
         Offset(RivalStripTokens.left, top + RivalStripTokens.top - 59),
       );
+      // Pause stays 48 dp in every strip form and is centred on the strip:
+      // on 9.3i's 58 dp strip it sits `formsPauseTop` down (m7-6 item 3).
+      if (strip.height > RivalStripTokens.height) {
+        positionChild(
+          _HudSlot.pause,
+          Offset(_side, top + _pillTop + RivalStripTokens.formsPauseTop),
+        );
+      }
       // 9.3i: a strip grown to 58 moves the family counter down with it,
       // never past the board's HUD line (`_counterShiftMax`).
       _layoutCounter(

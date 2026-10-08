@@ -61,6 +61,32 @@ BoardGeometry _geometryFor(
 void main() {
   setUpAll(loadBundledFonts);
 
+  testWidgets('TutorialLift: when the cue ends the scrim lifts over 200 ms, '
+      'and a tutorial that never had a cue draws nothing (m7-6 item 14)', (
+    tester,
+  ) async {
+    final board = GameState.initial(defaultLevel);
+    final geometry = _geometryFor(board);
+    Widget lift(TutorialCue? cue) => TutorialLift(
+      cue: cue,
+      builder: (c) => TutorialOverlay(cue: c, board: board, geometry: geometry),
+    );
+    await pumpScreen(tester, lift(null));
+    expect(find.byType(TutorialOverlay), findsNothing);
+    await pumpScreen(tester, lift(_tapSource));
+    await tester.pump(const Duration(milliseconds: 300));
+    double opacity() =>
+        tester.widget<Opacity>(find.byType(Opacity).first).opacity;
+    expect(find.byType(TutorialOverlay), findsOneWidget);
+    await pumpScreen(tester, lift(null));
+    // Still there, fading.
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.byType(TutorialOverlay), findsOneWidget);
+    expect(opacity(), inExclusiveRange(0.0, 1.0));
+    await tester.pump(const Duration(milliseconds: TutorialLift.liftMs));
+    expect(find.byType(TutorialOverlay), findsNothing);
+  });
+
   testWidgets('a tap step (1.3): the hole, the tooltip and ui_tap_hand', (
     tester,
   ) async {

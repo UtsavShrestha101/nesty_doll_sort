@@ -289,7 +289,7 @@ as int,
 mixin _$TutorialCue implements DiagnosticableTreeMixin {
 
 /// 1–4: L1 tap the small doll, L1 tap the big one, L1 finish the family
-/// (no frame: `TODO(design)`), L2 the swallow. The tooltip copy and
+/// (the frame 1.4 look, copy.md `tut_step_3_*`), L2 the swallow. The tooltip copy and
 /// `tutorial_step{step}` follow it.
  int get step; TutorialCueKind get kind;/// The scripted move.
  String get from; String get to;
@@ -497,7 +497,7 @@ class _TutorialCue with DiagnosticableTreeMixin implements TutorialCue {
   
 
 /// 1–4: L1 tap the small doll, L1 tap the big one, L1 finish the family
-/// (no frame: `TODO(design)`), L2 the swallow. The tooltip copy and
+/// (the frame 1.4 look, copy.md `tut_step_3_*`), L2 the swallow. The tooltip copy and
 /// `tutorial_step{step}` follow it.
 @override final  int step;
 @override final  TutorialCueKind kind;

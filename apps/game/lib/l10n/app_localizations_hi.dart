@@ -2838,4 +2838,271 @@ class AppLocalizationsHi extends AppLocalizations {
 
     return 'जोड़ा गया: $gift। कुल $countString।';
   }
+
+  @override
+  String get welcomeBackTitle => 'फिर से स्वागत है!';
+
+  @override
+  String get welcomeBackFreeze =>
+      'एक फ़्रीज़ ने आपकी लौ जलाए रखी। आज की पहेली तैयार है।';
+
+  @override
+  String get welcomeBackFreezeShort => 'एक फ़्रीज़ ने आपकी लौ जलाए रखी।';
+
+  @override
+  String welcomeBackPaused(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'आपकी $countString दिन की स्ट्रीक आराम कर रही है। आज की पहेली तैयार है।';
+  }
+
+  @override
+  String welcomeBackPausedShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'आपकी $countString दिन की स्ट्रीक आराम कर रही है।';
+  }
+
+  @override
+  String get welcomeBackNew => 'आज की पहेली तैयार है, जब भी आप चाहें।';
+
+  @override
+  String get welcomeBackNewShort => 'आज की पहेली तैयार है।';
+
+  @override
+  String get welcomeBackPlay => 'खेलें';
+
+  @override
+  String get welcomeBackPlaySemantics => 'आज की पहेली खेलें';
+
+  @override
+  String get welcomeBackHideSemantics => 'यह कार्ड छिपाएं';
+
+  @override
+  String dailyMonthTitle(String month) {
+    return '$month';
+  }
+
+  @override
+  String get dailyMonthHint =>
+      'पिछले 7 दिनों में से कोई भी दिन खेलें, बस मज़े के लिए।';
+
+  @override
+  String get dailyMonthHintShort => 'पिछले 7 दिन खेले जा सकते हैं।';
+
+  @override
+  String get dailyMonthKeyLit => 'उसी दिन';
+
+  @override
+  String get dailyMonthKeyLater => 'बाद में खेली';
+
+  @override
+  String get dailyMonthKeyFreeze => 'फ़्रीज़';
+
+  @override
+  String dailyMonthShowSemantics(String month) {
+    return '$month दिखाएं';
+  }
+
+  @override
+  String dailyMonthDaySemantics(String state, String date) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'solved': '$date, हल हुई',
+      'later': '$date, बाद में खेली',
+      'frozen': '$date, फ़्रीज़ ने संभाला',
+      'today': '$date, आज',
+      'todaySolved': '$date, आज, हल हुई',
+      'future': '$date',
+      'other': '$date, नहीं खेली',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dailyMonthDayOpenSemantics(String label) {
+    return '$label, खेलने के लिए उपलब्ध';
+  }
+
+  @override
+  String pastDailyTitle(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyNote =>
+      'बस मज़े के लिए। आपकी स्ट्रीक जैसी है, वैसी ही रहेगी।';
+
+  @override
+  String get pastDailySolvedOnDay => 'उसी दिन हल हुई';
+
+  @override
+  String get pastDailySolvedLater => 'बाद में खेली';
+
+  @override
+  String get pastDailyPlayAgain => 'फिर से खेलें';
+
+  @override
+  String get pastDailyWinTitle => 'पहेली हल!';
+
+  @override
+  String get pastDailyWinTitleShort => 'हल हुई!';
+
+  @override
+  String pastDailyWinDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyWinLine => 'बाद में खेली, बस मज़े के लिए।';
+
+  @override
+  String pastDailyWinSemantics(String date, int moves) {
+    final intl.NumberFormat movesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String movesString = movesNumberFormat.format(moves);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      moves,
+      locale: localeName,
+      other: '$date, $movesString चालों में हल। बाद में खेली, बस मज़े के लिए।',
+      one: '$date, $movesString चाल में हल। बाद में खेली, बस मज़े के लिए।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyLockedTitle => 'आपकी पहली रोज़ की पहेली बस थोड़ी दूर है';
+
+  @override
+  String dailyLockedBody(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'लेवल $levelString जीतें, फिर हर दिन यहाँ एक नई पहेली आपका इंतज़ार करेगी, सबके लिए एक जैसी।';
+  }
+
+  @override
+  String get widgetGalleryName => 'रोज़ की पहेली';
+
+  @override
+  String get widgetGalleryDescription =>
+      'आपकी स्ट्रीक और आज की पहेली, एक नज़र में।';
+
+  @override
+  String widgetPuzzleTitle(String weekday) {
+    return '$weekday की पहेली';
+  }
+
+  @override
+  String widgetStreakLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'दिन की स्ट्रीक',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetStreakResting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'दिन की स्ट्रीक · आराम पर',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetStreakRestingShort => 'आराम पर';
+
+  @override
+  String get widgetFirstFlame => 'आपकी पहली लौ';
+
+  @override
+  String get widgetReady => 'आज की पहेली तैयार है';
+
+  @override
+  String get widgetReadyShort => 'खेलने को तैयार';
+
+  @override
+  String get widgetSolved => 'हल हो गई। कल मिलते हैं।';
+
+  @override
+  String get widgetSolvedShort => 'हल हुई!';
+
+  @override
+  String get widgetLockedTitle => 'रोज़ की पहेली';
+
+  @override
+  String widgetLockedSmall(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'लेवल $levelString के बाद खुलेगी';
+  }
+
+  @override
+  String widgetLockedMedium(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'आपकी पहली रोज़ की पहेली लेवल $levelString के बाद खुलेगी।';
+  }
+
+  @override
+  String widgetReadySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nesty की रोज़ की पहेली। $countString दिन की स्ट्रीक। आज की पहेली तैयार है।';
+  }
+
+  @override
+  String widgetSolvedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nesty की रोज़ की पहेली। $countString दिन की स्ट्रीक, जल रही है। आज की पहेली हल हो गई।';
+  }
+
+  @override
+  String widgetPausedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nesty की रोज़ की पहेली। $countString दिन की स्ट्रीक, आराम पर। आज की पहेली तैयार है।';
+  }
+
+  @override
+  String get widgetZeroSemantics =>
+      'Nesty की रोज़ की पहेली। आज की पहेली तैयार है।';
+
+  @override
+  String widgetLockedSemantics(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Nesty की रोज़ की पहेली। लेवल $levelString के बाद खुलेगी।';
+  }
+
+  @override
+  String dailyFreezesShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString';
+  }
 }

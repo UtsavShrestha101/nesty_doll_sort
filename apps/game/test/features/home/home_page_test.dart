@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,6 +36,8 @@ import 'package:nesty_game/features/login_gift/widgets/gift_button.dart';
 import 'package:nesty_game/features/login_gift/widgets/gift_sheet.dart';
 import 'package:nesty_game/features/login_gift/widgets/gift_tally.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
+import 'package:nesty_game/features/welcome_back/cubit/welcome_back_cubit.dart';
+import 'package:nesty_game/features/welcome_back/widgets/welcome_back_card.dart';
 
 import '../../core/ui/support/ui_harness.dart';
 import '../../helpers/level_fixtures.dart';
@@ -89,6 +92,8 @@ void main() {
     double textScale = 1,
     LoginGiftCubit? gift,
     EdgeInsets? padding,
+    WelcomeBackShown? welcome,
+    VoidCallback? onWelcomeClose,
   }) async {
     Widget view(Widget child) =>
         gift == null ? child : BlocProvider.value(value: gift, child: child);
@@ -108,6 +113,8 @@ void main() {
           onSettings: onSettings ?? () {},
           library: FakeFxLibrary(),
           levels: repository,
+          welcome: welcome,
+          onWelcomeClose: onWelcomeClose ?? () {},
         ),
       ),
       size: size,
@@ -1104,4 +1111,189 @@ void main() {
       });
     }
   }
+
+  group('the welcome-back card (local habit 1)', () {
+    const welcome = WelcomeBackShown(
+      variant: WelcomeBackVariant.paused,
+      streak: 6,
+    );
+
+    Future<LoginGiftCubit> readyGift() async {
+      final cubit = LoginGiftCubit(
+        FakeSaveService(initial: const SaveDocument(highestLevel: 5)),
+        FakeClock(),
+        FakeRemoteConfigService(),
+        FakeAnalyticsService(),
+      );
+      await cubit.load();
+      return cubit;
+    }
+
+    const state = AsyncValue<HomeState>.data(
+      data: HomeState(
+        playRequest: PlayRequest.campaign(56),
+        tier: Tier.hard,
+        coins: 830,
+        dailyUnlocked: true,
+      ),
+    );
+
+    // Home's body here is the whole screen under the safe area (the shell's
+    // nav isn't in the test): 600 is about the short frame's 567 dp body.
+    for (final size in const [
+      Size(390, 844),
+      Size(390, 780),
+      Size(390, 650),
+      Size(390, 600),
+    ]) {
+      testWidgets(
+        '${size.height.toInt()} dp: the card sits under the chapter card, '
+        'clear of Play, the tiles and Records, which all stay',
+        (tester) async {
+          final gift = await readyGift();
+          await pumpHome(
+            tester,
+            gift: gift,
+            welcome: welcome,
+            size: size,
+            state: state,
+          );
+          await tester.pumpAndSettle();
+          expectNoLayoutErrors(tester);
+          final card = tester.getRect(find.byType(WelcomeBackCard));
+          final bounds = Offset.zero & size;
+          expect(bounds.contains(card.topLeft), isTrue);
+          expect(bounds.contains(card.bottomRight), isTrue);
+          final play = tester.getRect(find.byType(PlayButton));
+          expect(card.overlaps(play), isFalse, reason: 'Play stays clear');
+          final tiles = tester.getRect(find.byType(HomeTile).first);
+          expect(card.overlaps(tiles), isFalse, reason: 'the tiles stay clear');
+          final dot = tester.getRect(find.byKey(GiftButton.dotKey));
+          final face = tester.getRect(find.byKey(GiftButton.faceKey));
+          expect(card.overlaps(face), isFalse);
+          expect(
+            card.overlaps(dot),
+            isFalse,
+            reason: 'the ready dot shows too',
+          );
+          final records = tester.getRect(find.byType(HomeRecordsButton));
+          expect(card.overlaps(records), isFalse, reason: 'Records stays');
+          final chapter = tester.getRect(find.byType(HomeChapterCard));
+          expect(chapter.bottom, lessThanOrEqualTo(card.top + 4.5));
+          expect(find.byType(HomeChapterCard), findsOneWidget);
+          // The card's left and right are the design's 16.
+          final face2 = tester.getRect(
+            find
+                .descendant(
+                  of: find.byType(WelcomeBackCard),
+                  matching: find.byType(TactileSurface),
+                )
+                .first,
+          );
+          expect(face2.left, 16);
+          expect(face2.right, size.width - 16);
+        },
+      );
+    }
+
+    double? dollOpacity(WidgetTester tester) {
+      final opacity = find.ancestor(
+        of: find.byType(LottieDoll).first,
+        matching: find.byType(Opacity),
+      );
+      return opacity.evaluate().isEmpty
+          ? 1.0
+          : tester.widget<Opacity>(opacity.first).opacity;
+    }
+
+    testWidgets('844: the dolls scale to clear the card, the plank stays', (
+      tester,
+    ) async {
+      await pumpHome(
+        tester,
+        welcome: welcome,
+        size: const Size(390, 738),
+        padding: const EdgeInsets.only(top: 59),
+        state: state,
+      );
+      await tester.pumpAndSettle();
+      final tallest = tester
+          .widgetList<LottieDoll>(find.byType(LottieDoll))
+          .map((d) => d.height)
+          .reduce(math.max);
+      expect(dollOpacity(tester), 1);
+      // The design's 0.78 on 844: the tallest doll is 128 dp at scale 1.
+      expect(
+        tallest,
+        closeTo(128 * HabitsWelcomeTokens.placeH844DollScale, 0.01),
+      );
+    });
+
+    testWidgets('693: the dolls fade out, the empty plank stays', (
+      tester,
+    ) async {
+      await pumpHome(
+        tester,
+        welcome: welcome,
+        size: const Size(390, 587),
+        padding: const EdgeInsets.only(top: 20),
+        state: state,
+      );
+      await tester.pumpAndSettle();
+      expect(dollOpacity(tester), 0);
+      expect(find.byType(PlankStrip), findsOneWidget);
+    });
+
+    testWidgets('1.3x text: the card grows and the dolls give it room', (
+      tester,
+    ) async {
+      await pumpHome(
+        tester,
+        welcome: welcome,
+        size: const Size(390, 738),
+        padding: const EdgeInsets.only(top: 59),
+        state: state,
+        textScale: 1.3,
+      );
+      await tester.pumpAndSettle();
+      expectNoLayoutErrors(tester);
+      final card = tester.getRect(find.byType(WelcomeBackCard));
+      expect(card.height, greaterThan(HabitsWelcomeTokens.cardMinHeight));
+      final tallest = tester
+          .widgetList<LottieDoll>(find.byType(LottieDoll))
+          .map((d) => d.height)
+          .reduce(math.max);
+      expect(
+        dollOpacity(tester) == 0 || tallest < 128 * 0.78,
+        isTrue,
+        reason: 'visible dolls shrink further to clear the taller card',
+      );
+    });
+
+    testWidgets('the close reports once the card has faded out', (
+      tester,
+    ) async {
+      var closed = 0;
+      await pumpHome(
+        tester,
+        welcome: welcome,
+        state: state,
+        onWelcomeClose: () => closed++,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Hide this card'));
+      await tester.pump();
+      expect(closed, 0, reason: 'the card fades first (180 ms)');
+      await tester.pumpAndSettle();
+      expect(closed, 1);
+    });
+
+    testWidgets('without a card the chapter card is where it was', (
+      tester,
+    ) async {
+      await pumpHome(tester);
+      expect(find.byType(WelcomeBackCard), findsNothing);
+      expect(find.byType(HomeChapterCard), findsOneWidget);
+    });
+  });
 }

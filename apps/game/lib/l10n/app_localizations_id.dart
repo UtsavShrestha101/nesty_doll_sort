@@ -2785,4 +2785,264 @@ class AppLocalizationsId extends AppLocalizations {
 
     return '$gift ditambahkan. Kamu punya $countString.';
   }
+
+  @override
+  String get welcomeBackTitle => 'Halo lagi!';
+
+  @override
+  String get welcomeBackFreeze =>
+      'Pelindung menjaga apimu tetap menyala. Teka-teki hari ini sudah siap.';
+
+  @override
+  String get welcomeBackFreezeShort => 'Pelindung menjaga apimu tetap menyala.';
+
+  @override
+  String welcomeBackPaused(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Streak $countString harimu sedang istirahat. Teka-teki hari ini sudah siap.';
+  }
+
+  @override
+  String welcomeBackPausedShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Streak $countString harimu sedang istirahat.';
+  }
+
+  @override
+  String get welcomeBackNew => 'Teka-teki hari ini siap kapan pun kamu mau.';
+
+  @override
+  String get welcomeBackNewShort => 'Teka-teki hari ini sudah siap.';
+
+  @override
+  String get welcomeBackPlay => 'Main';
+
+  @override
+  String get welcomeBackPlaySemantics => 'Main teka-teki hari ini';
+
+  @override
+  String get welcomeBackHideSemantics => 'Sembunyikan kartu ini';
+
+  @override
+  String dailyMonthTitle(String month) {
+    return '$month';
+  }
+
+  @override
+  String get dailyMonthHint =>
+      'Main hari mana pun dari 7 hari terakhir, untuk seru-seruan.';
+
+  @override
+  String get dailyMonthHintShort => '7 hari terakhir bisa dimainkan.';
+
+  @override
+  String get dailyMonthKeyLit => 'Di hari itu';
+
+  @override
+  String get dailyMonthKeyLater => 'Dimainkan belakangan';
+
+  @override
+  String get dailyMonthKeyFreeze => 'Pelindung';
+
+  @override
+  String dailyMonthShowSemantics(String month) {
+    return 'Tampilkan $month';
+  }
+
+  @override
+  String dailyMonthDaySemantics(String state, String date) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'solved': '$date, selesai',
+      'later': '$date, dimainkan belakangan',
+      'frozen': '$date, ditutupi pelindung',
+      'today': '$date, hari ini',
+      'todaySolved': '$date, hari ini, selesai',
+      'future': '$date',
+      'other': '$date, belum dimainkan',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dailyMonthDayOpenSemantics(String label) {
+    return '$label, bisa dimainkan';
+  }
+
+  @override
+  String pastDailyTitle(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyNote => 'Untuk seru-seruan. Streak-mu tidak berubah.';
+
+  @override
+  String get pastDailySolvedOnDay => 'Selesai di hari itu';
+
+  @override
+  String get pastDailySolvedLater => 'Dimainkan belakangan';
+
+  @override
+  String get pastDailyPlayAgain => 'Main lagi';
+
+  @override
+  String get pastDailyWinTitle => 'Teka-teki selesai!';
+
+  @override
+  String get pastDailyWinTitleShort => 'Selesai!';
+
+  @override
+  String pastDailyWinDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyWinLine => 'Dimainkan belakangan, untuk seru-seruan.';
+
+  @override
+  String pastDailyWinSemantics(String date, int moves) {
+    final intl.NumberFormat movesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String movesString = movesNumberFormat.format(moves);
+
+    return '$date selesai dalam $movesString langkah. Dimainkan belakangan, untuk seru-seruan.';
+  }
+
+  @override
+  String get dailyLockedTitle => 'Teka-teki harian pertamamu sudah dekat';
+
+  @override
+  String dailyLockedBody(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Menangkan Level $levelString, lalu teka-teki baru akan menunggu di sini setiap hari, sama untuk semua orang.';
+  }
+
+  @override
+  String get widgetGalleryName => 'Teka-teki harian';
+
+  @override
+  String get widgetGalleryDescription =>
+      'Streak-mu dan teka-teki hari ini dalam sekali lihat.';
+
+  @override
+  String widgetPuzzleTitle(String weekday) {
+    return 'Teka-teki $weekday';
+  }
+
+  @override
+  String widgetStreakLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'hari beruntun',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetStreakResting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'hari beruntun · istirahat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetStreakRestingShort => 'istirahat';
+
+  @override
+  String get widgetFirstFlame => 'Api pertamamu';
+
+  @override
+  String get widgetReady => 'Teka-teki hari ini sudah siap';
+
+  @override
+  String get widgetReadyShort => 'Siap dimainkan';
+
+  @override
+  String get widgetSolved => 'Selesai. Sampai besok.';
+
+  @override
+  String get widgetSolvedShort => 'Selesai!';
+
+  @override
+  String get widgetLockedTitle => 'Teka-teki harian';
+
+  @override
+  String widgetLockedSmall(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Terbuka setelah Level $levelString';
+  }
+
+  @override
+  String widgetLockedMedium(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Teka-teki harian pertamamu terbuka setelah Level $levelString.';
+  }
+
+  @override
+  String widgetReadySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Teka-teki harian Nesty. Streak $countString hari. Teka-teki hari ini sudah siap.';
+  }
+
+  @override
+  String widgetSolvedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Teka-teki harian Nesty. Streak $countString hari, menyala. Teka-teki hari ini sudah selesai.';
+  }
+
+  @override
+  String widgetPausedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Teka-teki harian Nesty. Streak $countString hari, sedang istirahat. Teka-teki hari ini sudah siap.';
+  }
+
+  @override
+  String get widgetZeroSemantics =>
+      'Teka-teki harian Nesty. Teka-teki hari ini sudah siap.';
+
+  @override
+  String widgetLockedSemantics(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Teka-teki harian Nesty. Terbuka setelah Level $levelString.';
+  }
+
+  @override
+  String dailyFreezesShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString';
+  }
 }

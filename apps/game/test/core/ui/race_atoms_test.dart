@@ -18,7 +18,7 @@ void main() {
     expect(find.byIcon(NestyIcons.smartDisplay), findsNothing);
     expect(
       tester.getSize(find.byType(ComputerTag)).height,
-      RivalStripTokens.tagHeight,
+      ComputerTagTokens.height,
     );
     final box = tester.widget<DecoratedBox>(
       find.descendant(
@@ -27,14 +27,14 @@ void main() {
       ),
     );
     final decoration = box.decoration as BoxDecoration;
-    expect(decoration.color, RivalStripTokens.tagFill);
+    expect(decoration.color, ComputerTagTokens.face);
     expect(
       decoration.borderRadius,
-      const BorderRadius.all(Radius.circular(RivalStripTokens.tagRadius)),
+      const BorderRadius.all(Radius.circular(ComputerTagTokens.radius)),
     );
     final border = decoration.border! as Border;
-    expect(border.top.color, RivalStripTokens.tagRing.color);
-    expect(border.top.width, RivalStripTokens.tagRing.width);
+    expect(border.top.color, ComputerTagTokens.ring.color);
+    expect(border.top.width, ComputerTagTokens.ring.width);
     final label = tester.widget<Text>(find.text('Computer'));
     expect(label.style?.fontSize, 11);
     expect(label.style?.fontWeight, FontWeight.w800);
@@ -48,8 +48,38 @@ void main() {
     expect(find.byIcon(IconUses.computerTag), findsOneWidget);
     expect(
       tester.getSize(find.byType(ComputerTag)).height,
-      RivalStripTokens.tagHeight,
+      ComputerTagTokens.height,
     );
+  });
+
+  testWidgets('ComputerTag scales with the text setting up to 1.3x: 20k tall, '
+      'glyph 14k, text 11k, radius 10k (versus.computerTag)', (tester) async {
+    Future<void> at(double scale) =>
+        pumpUi(tester, const Center(child: ComputerTag()), textScale: scale);
+    for (final entry in {1.3: 1.3, 2.0: 1.3, 1.15: 1.15}.entries) {
+      await at(entry.key);
+      final k = entry.value;
+      expect(
+        tester.getSize(find.byType(ComputerTag)).height,
+        closeTo(ComputerTagTokens.height * k, 0.01),
+        reason: 'text ${entry.key}',
+      );
+      final icon = tester.widget<Icon>(find.byIcon(IconUses.computerTag));
+      expect(icon.size, closeTo(ComputerTagTokens.glyphSize * k, 0.01));
+      final label = tester.widget<Text>(find.text('Computer'));
+      expect(label.style?.fontSize, 11);
+      expect(label.textScaler!.scale(11), closeTo(11 * k, 0.01));
+      final box = tester.widget<DecoratedBox>(
+        find.descendant(
+          of: find.byType(ComputerTag),
+          matching: find.byType(DecoratedBox),
+        ),
+      );
+      expect(
+        (box.decoration as BoxDecoration).borderRadius,
+        BorderRadius.all(Radius.circular(ComputerTagTokens.radius * k)),
+      );
+    }
   });
 
   testWidgets('ComputerTag.responsive: glyph only under 360 dp, the word at '

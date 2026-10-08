@@ -180,7 +180,7 @@ void main() {
     });
 
     test('a row of 6: stands 59.6 wide, glass, ice, glow and pips as '
-        'rowOfFive\'s formulas say (D181, TODO(design))', () {
+        'rowOfFive\'s formulas say (D181, confirmed m7-6 Choices 19)', () {
       final g = BoardLayout.compute(
         board(['oooo', 'oooo', 'ootoxx'], maxSize: 4),
         BoardViewport.reference,
@@ -194,6 +194,7 @@ void main() {
       // Pips stay unscaled (rowOfFive.pips).
       expect(tower.pipPitch, closeTo(7.8, exact));
       expect(tower.pipDiameter, closeTo(6, exact));
+      expect(tower.iceRect.width, closeTo(63.6, 0.05)); // 96 k, 1.6 overlap
       expect(tower.iceRect.width, closeTo(96 * k, exact));
       expect(tower.glowRingRect.width, closeTo(116 * k, exact));
       expect(tower.hintArrowRect(4).width, closeTo(40 * k, exact));
@@ -211,7 +212,7 @@ void main() {
         board(['oooo'], maxSize: 4),
         BoardViewport.reference,
       );
-      expect(g.preset.designed, isFalse);
+      expect(g.preset.designed, isTrue); // m7-6 Choices 18
       expect(g.shelves.single.plankTop, 540);
       expect(g.maxDollHeight, closeTo(117, exact));
     });

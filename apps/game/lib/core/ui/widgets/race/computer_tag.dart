@@ -8,8 +8,11 @@ import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 /// ui-spec-game §1 "ComputerTag"). Rival select, the race strip, both
 /// results, 9.6, Pause and Records carry it.
 ///
-/// `layout.rivalStrip.tag`: 20 tall, radius 10, a 1.5 dp `#D8B07A` ring on
-/// `#FFFDF7`, the `computer` glyph at 14 and "Computer" in Nunito 800 11.
+/// `versus.computerTag` (m7-6 item 2): 20 tall, radius 10, a 1.5 dp `#D8B07A`
+/// ring on `#FFFDF7`, the `computer` glyph at 14 and "Computer" in Nunito 800
+/// 11. Every one of those but the ring scales with the text setting k, up to
+/// [ComputerTagTokens.maxTextScale] (20k tall, glyph 14k, text 11k, radius
+/// 10k). Where a surface can't grow, the caller drops to the glyph first.
 /// With [glyphOnly] (a screen under `narrowTagGlyphOnlyBelowWidth`, 360 dp)
 /// only the glyph shows. Use [ComputerTag.responsive] where the screen's
 /// width decides.
@@ -51,25 +54,43 @@ class ComputerTag extends StatelessWidget {
     return maxWidth / total < minScale;
   }
 
-  /// The tag with its word, laid out at the context's text scale: the
-  /// padding, the glyph, the gap and the word (the ring is painted, not laid
-  /// out).
-  static double fullWidth(BuildContext context) =>
-      RivalStripTokens.tagPadding.horizontal +
-      RivalStripTokens.tagGlyphSize +
-      _wordGap +
-      lineWidth(
-        context,
-        context.localizations.raceComputerTag,
-        RivalStripTokens.tagText,
-      );
+  /// The text setting k the tag scales by: the context's, at most
+  /// [ComputerTagTokens.maxTextScale].
+  static double scaleOf(BuildContext context) => MediaQuery.textScalerOf(
+    context,
+  ).scale(1).clamp(0.0, ComputerTagTokens.maxTextScale);
 
-  /// One unwrapped line of [text] in [style] at the context's text scale.
-  static double lineWidth(BuildContext context, String text, TextStyle style) {
+  /// The tag with its word, laid out at its scale k: the padding, the glyph,
+  /// the gap and the word (the ring is painted, not laid out).
+  static double fullWidth(BuildContext context) {
+    final k = scaleOf(context);
+    return RivalStripTokens.tagPadding.horizontal +
+        ComputerTagTokens.glyphSize * k +
+        _wordGap +
+        lineWidth(
+          context,
+          context.localizations.raceComputerTag,
+          ComputerTagTokens.text.copyWith(
+            fontSize: ComputerTagTokens.text.fontSize! * k,
+          ),
+          scaled: false,
+        );
+  }
+
+  /// One unwrapped line of [text] in [style], at the context's text scale
+  /// unless [scaled] is false (a style that already carries its size).
+  static double lineWidth(
+    BuildContext context,
+    String text,
+    TextStyle style, {
+    bool scaled = true,
+  }) {
     final painter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
+      textScaler: scaled
+          ? MediaQuery.textScalerOf(context)
+          : TextScaler.noScaling,
       maxLines: 1,
     )..layout();
     final width = painter.width;
@@ -88,18 +109,19 @@ class ComputerTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = context.localizations.raceComputerTag;
-    const ring = RivalStripTokens.tagRing;
+    const ring = ComputerTagTokens.ring;
+    final k = scaleOf(context);
     return ExcludeSemantics(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: RivalStripTokens.tagFill,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(RivalStripTokens.tagRadius),
+          color: ComputerTagTokens.face,
+          borderRadius: BorderRadius.all(
+            Radius.circular(ComputerTagTokens.radius * k),
           ),
           border: Border.all(color: ring.color, width: ring.width),
         ),
         child: SizedBox(
-          height: RivalStripTokens.tagHeight,
+          height: ComputerTagTokens.height * k,
           child: Padding(
             padding: glyphOnly
                 ? const EdgeInsets.symmetric(horizontal: 3)
@@ -108,16 +130,20 @@ class ComputerTag extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   IconUses.computerTag,
-                  size: RivalStripTokens.tagGlyphSize,
+                  size: ComputerTagTokens.glyphSize * k,
                   color: AppColorTokens.computerTagText,
                 ),
                 if (!glyphOnly) ...[
                   const SizedBox(width: _wordGap),
+                  // k is a text scale (the setting, capped), so it goes on
+                  // the scaler, not into the size: a fitted surface then
+                  // judges the word against its 11 dp like any other text.
                   Text(
                     label,
-                    style: RivalStripTokens.tagText,
+                    style: ComputerTagTokens.text,
+                    textScaler: TextScaler.linear(k),
                     maxLines: 1,
                     softWrap: false,
                   ),

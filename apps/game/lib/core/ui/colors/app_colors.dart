@@ -1,4 +1,3 @@
-import 'package:flutter/painting.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 
 /// The colour names the widgets outside the menu screens still read, and the
@@ -55,16 +54,4 @@ abstract final class AppColors {
   /// The chest flights' trail dots: `motion.chest.collect.trail` names the
   /// colour (m7-4 1.7), so this is [ChestCollectTokens.trailColor].
   static const trailDot = ChestCollectTokens.trailColor;
-
-  /// The figurine detail's art panel, a radial gradient (NestyShop `mBg`,
-  /// frame 6.2 earned; 6.3 a duller one for a locked family). tokens.json's
-  /// `spotlightPanel` (white 55 %) is the cone's fill, not this.
-  // TODO(design): m7-5 named no token for the figurine panel's two gradients;
-  // the frame's `mBg` values stay here (BACKLOG "Design gaps").
-  static const spotlightEarnedTop = Color(0xFFFFF6DC);
-  static const spotlightEarnedMid = Color(0xFFF2D29E);
-  static const spotlightEarnedEdge = Color(0xFFE2B478);
-  static const spotlightLockedTop = Color(0xFFF7EBD6);
-  static const spotlightLockedMid = Color(0xFFE8D3B0);
-  static const spotlightLockedEdge = Color(0xFFD9BE93);
 }

@@ -87,6 +87,17 @@ abstract interface class DatabaseService {
   String? get relitGlowSeen;
   Future<void> setRelitGlowSeen(String date);
 
+  /// The latest `yyyy-MM-dd` the app was opened or resumed, or null (local
+  /// habits 1, plan-local-habits §1). A value of the wrong type reads as
+  /// null. Only `WelcomeBackRules`' high-water mark writes it.
+  String? get lastOpenDate;
+  Future<void> setLastOpenDate(String date);
+
+  /// The `yyyy-MM-dd` a welcome-back card belongs to, or null. Passing null
+  /// to [setWelcomeBackDate] clears it (a dismissal).
+  String? get welcomeBackDate;
+  Future<void> setWelcomeBackDate(String? date);
+
   /// The rival (1–3) the player last started a race against, or 0 (m7-4
   /// 4.5: rival select's pick on a new visit is the New rival, else this
   /// one). A stored value outside 1–3 reads as 0.

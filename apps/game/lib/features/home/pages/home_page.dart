@@ -31,6 +31,9 @@ import 'package:nesty_game/features/login_gift/widgets/gift_button.dart';
 import 'package:nesty_game/features/settings/widgets/follows_symbols_mode.dart';
 import 'package:nesty_game/features/shell/pages/main_shell_page.dart';
 import 'package:nesty_game/features/shop/model/shop_tab.dart';
+import 'package:nesty_game/features/welcome_back/cubit/welcome_back_cubit.dart';
+import 'package:nesty_game/features/welcome_back/welcome_back_navigation.dart';
+import 'package:nesty_game/features/welcome_back/widgets/welcome_back_card.dart';
 import 'package:nesty_render/nesty_render.dart';
 
 /// Spec §10.2 #2, frame 2.1's hero: the player's chapter background, the
@@ -66,6 +69,8 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
       providers: [
         BlocProvider(create: (_) => get<HomeCubit>()..load()),
         BlocProvider(create: (_) => get<LoginGiftCubit>()..load()),
+        // Welcome back (local habit 1): the card Home shows on a return.
+        BlocProvider(create: (_) => get<WelcomeBackCubit>()..load()),
       ],
       child: this,
     ),
@@ -84,6 +89,14 @@ class HomePage extends StatelessWidget implements AutoRouteWrapper {
     return BlocBuilder<HomeCubit, AsyncValue<HomeState>>(
       builder: (context, state) => HomeView(
         state: state,
+        welcome: context.select<WelcomeBackCubit, WelcomeBackShown?>(
+          (cubit) => switch (cubit.state.data) {
+            final WelcomeBackShown shown => shown,
+            _ => null,
+          },
+        ),
+        onWelcomePlay: () => unawaited(playWelcomeBack(context)),
+        onWelcomeClose: context.read<WelcomeBackCubit>().dismiss,
         onRetry: context.read<HomeCubit>().load,
         onPlay: (request) => unawaited(
           context.router.root.push(GameplayRoute(request: request)),
@@ -136,6 +149,9 @@ class HomeView extends StatefulWidget {
     this.onChapters = _doNothing,
     this.onRecords = _doNothing,
     this.onVsComputer = _doNothing,
+    this.welcome,
+    this.onWelcomePlay = _doNothing,
+    this.onWelcomeClose = _doNothing,
     this.background,
     this.library,
     this.showcase,
@@ -160,6 +176,13 @@ class HomeView extends StatefulWidget {
   /// Opens rival select once `raceUnlocked` (E10 phase 2; m7-design P2.10).
   /// A locked tile ignores it (`HomeTile.locked`).
   final VoidCallback onVsComputer;
+
+  /// The welcome-back card to show, or null (local habit 1,
+  /// plan-local-habits §1); [onWelcomePlay] and [onWelcomeClose] are its
+  /// two controls.
+  final WelcomeBackShown? welcome;
+  final VoidCallback onWelcomePlay;
+  final VoidCallback onWelcomeClose;
   final ThemeBackground? background;
   final FxLibrary? library;
   final ShowcaseDolls? showcase;
@@ -229,6 +252,35 @@ class _HomeViewState extends State<HomeView> {
   final _coinDiscKey = GlobalKey();
 
   static final ValueNotifier<LevelSkin?> _noSkin = ValueNotifier(null);
+
+  /// The welcome-back card's face height (14.1: at least 84, taller with the
+  /// text), measured after layout: the dolls' scale clears it by 8 dp.
+  final _welcomeKey = GlobalKey();
+  double _welcomeHeight = HabitsWelcomeTokens.cardMinHeight;
+
+  /// How long the dolls take to move after the card goes: they grow back
+  /// over 280 ms; at any other change (a rotation, a resize) they follow
+  /// at once.
+  int _dollsMs = 0;
+
+  @override
+  void didUpdateWidget(HomeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final gone = oldWidget.welcome != null && widget.welcome == null;
+    _dollsMs = gone ? HabitsWelcomeTokens.motionDollsGrowMs : 0;
+    if (widget.welcome == null) {
+      _welcomeHeight = HabitsWelcomeTokens.cardMinHeight;
+    }
+  }
+
+  void _measureWelcome() {
+    final box = _welcomeKey.currentContext?.findRenderObject();
+    if (!mounted || box is! RenderBox || !box.hasSize) return;
+    final height = box.size.height - WelcomeBackCard.targetOutset;
+    if ((height - _welcomeHeight).abs() > 0.5) {
+      setState(() => _welcomeHeight = height);
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -316,6 +368,16 @@ class _HomeViewState extends State<HomeView> {
         final room = tilesTop - HomeView.heroTilesGap - top;
         final blockHeight = layout.heroBottom - layout.heroTop;
         final cardTop = padding.top + layout.chapterCardTop;
+        final welcome = widget.welcome;
+        // The dev picker's button hangs under whatever is on the card row.
+        final cardRowHeight = welcome == null
+            ? HomeChapterCard.minHeight
+            : layout.welcomeCardTop - layout.chapterCardTop + _welcomeHeight;
+        if (welcome != null) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _measureWelcome(),
+          );
+        }
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -330,7 +392,16 @@ class _HomeViewState extends State<HomeView> {
                 child: SizedBox(
                   width: width,
                   height: blockHeight,
-                  child: _heroBlock(context, home, skin, width, layout),
+                  child: _heroBlock(
+                    context,
+                    home,
+                    skin,
+                    width,
+                    layout,
+                    welcome != null
+                        ? layout.dollsUnder(_welcomeHeight)
+                        : (scale: layout.dollScale, opacity: 1.0),
+                  ),
                 ),
               ),
             ),
@@ -369,12 +440,33 @@ class _HomeViewState extends State<HomeView> {
                 onRecords: widget.onRecords,
               ),
             ),
+            // Under the chapter card at the design's top on every blend (14.1);
+            // only the dolls make room for it. The widget's box reaches the
+            // close's 48 dp target past the card's top and right edge.
+            if (welcome != null)
+              Positioned(
+                left: HabitsWelcomeTokens.placeSide,
+                right:
+                    HabitsWelcomeTokens.placeSide -
+                    WelcomeBackCard.targetOutset,
+                top:
+                    padding.top +
+                    layout.welcomeCardTop -
+                    WelcomeBackCard.targetOutset,
+                child: WelcomeBackCard(
+                  key: _welcomeKey,
+                  variant: welcome.variant,
+                  streak: welcome.streak,
+                  onPlay: widget.onWelcomePlay,
+                  onClose: widget.onWelcomeClose,
+                ),
+              ),
             if (LevelPickerSheet.isAvailable && widget.levels != null)
               Positioned(
                 left: 16,
                 // Under the chapter card; the compact face's 48 dp target
                 // reaches 5 px above it (review R38).
-                top: cardTop + HomeChapterCard.minHeight + 8,
+                top: cardTop + cardRowHeight + 12,
                 child: TactileButton(
                   label: context.localizations.devLevelPickerTitle,
                   icon: NestyIcons.shuffle,
@@ -410,8 +502,10 @@ class _HomeViewState extends State<HomeView> {
     LevelSkin? skin,
     double width,
     HomeLayout layout,
+    ({double scale, double opacity}) dolls,
   ) {
     final center = width / 2;
+    final reduce = context.reduceMotion;
     // The block's origin is `layout.heroTop`: the plank sits 192 dp below
     // it (frame 2.1's 372 - 180) whatever the screen.
     const plankTop = 192.0;
@@ -428,22 +522,47 @@ class _HomeViewState extends State<HomeView> {
           top: plankTop,
           child: PlankStrip(sprites: skin?.sprites),
         ),
-        for (var i = 0; i < HomeView.dolls.length; i++)
-          LottieDoll.positioned(
-            centerX: center + HomeView.dolls[i].dx * layout.dollScale,
-            baseY: base,
-            doll: LottieDoll(
-              id: FxId.dollIdle,
-              color: HomeView.dolls[i].color,
-              height: HomeView.dolls[i].height * layout.dollScale,
-              images: skin?.images,
-              renderer: skin?.restRenderer,
-              symbols: widget.symbols,
-              library: widget.library,
-              speed: _idle[i].speed,
-              phaseMs: _idle[i].phaseMs,
+        Positioned.fill(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(end: dolls.scale),
+            duration: Duration(milliseconds: reduce ? 0 : _dollsMs),
+            curve: HabitsWelcomeTokens.motionDollsGrowCurve,
+            builder: (context, scale, _) => TweenAnimationBuilder<double>(
+              tween: Tween(end: dolls.opacity),
+              duration: Duration(
+                milliseconds: dolls.opacity == 1 && _dollsMs == 0
+                    ? 0
+                    : (reduce
+                          ? HabitsWelcomeTokens.reducedMotionDollsMs
+                          : HabitsWelcomeTokens.motionDollsFadeInMs),
+              ),
+              builder: (context, opacity, child) => opacity >= 1
+                  ? child!
+                  : Opacity(opacity: opacity, child: child),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  for (var i = 0; i < HomeView.dolls.length; i++)
+                    LottieDoll.positioned(
+                      centerX: center + HomeView.dolls[i].dx * scale,
+                      baseY: base,
+                      doll: LottieDoll(
+                        id: FxId.dollIdle,
+                        color: HomeView.dolls[i].color,
+                        height: HomeView.dolls[i].height * scale,
+                        images: skin?.images,
+                        renderer: skin?.restRenderer,
+                        symbols: widget.symbols,
+                        library: widget.library,
+                        speed: _idle[i].speed,
+                        phaseMs: _idle[i].phaseMs,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
+        ),
         Positioned(
           left: 36,
           right: 36,
@@ -708,7 +827,11 @@ class _CardRow extends StatelessWidget {
   final VoidCallback onRecords;
 
   @override
-  Widget build(BuildContext context) => IntrinsicHeight(
+  Widget build(BuildContext context) {
+    return _chapterRow(context);
+  }
+
+  Widget _chapterRow(BuildContext context) => IntrinsicHeight(
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

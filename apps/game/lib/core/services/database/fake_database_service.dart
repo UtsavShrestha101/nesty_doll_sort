@@ -35,6 +35,8 @@ class FakeDatabaseService implements DatabaseService {
   String _languageCode = SettingsDefaults.locale;
   String? _relitGlowSeen;
   int _lastRival = 0;
+  String? _lastOpenDate;
+  String? _welcomeBackDate;
   final Map<String, String> _save = {};
 
   @override
@@ -42,6 +44,19 @@ class FakeDatabaseService implements DatabaseService {
 
   @override
   Future<void> setRelitGlowSeen(String date) async => _relitGlowSeen = date;
+
+  @override
+  String? get lastOpenDate => _lastOpenDate;
+
+  @override
+  Future<void> setLastOpenDate(String date) async => _lastOpenDate = date;
+
+  @override
+  String? get welcomeBackDate => _welcomeBackDate;
+
+  @override
+  Future<void> setWelcomeBackDate(String? date) async =>
+      _welcomeBackDate = date;
 
   @override
   int get lastRival => _lastRival;

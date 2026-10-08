@@ -56,7 +56,13 @@ class _DayCell extends StatelessWidget {
     if (done && !isChest) {
       style = const SurfaceStyle(
         color: AppColorTokens.dayDoneFace,
-        shadows: [NestyShadow(color: AppColorTokens.dayDoneRing, inset: true)],
+        shadows: [
+          NestyShadow(
+            color: AppColorTokens.dayDoneRing,
+            inset: true,
+            spread: 2,
+          ),
+        ],
       );
       dot = AppColorTokens.success;
       icon = const Color(0xFFFFFFFF);
@@ -84,7 +90,11 @@ class _DayCell extends StatelessWidget {
           : const SurfaceStyle(
               color: AppColorTokens.dayChestFace,
               shadows: [
-                NestyShadow(color: AppColorTokens.dayChestRing, inset: true),
+                NestyShadow(
+                  color: AppColorTokens.dayChestRing,
+                  inset: true,
+                  spread: 2,
+                ),
               ],
             );
       dot = done ? AppColorTokens.dayOpenDot : AppColorTokens.dayChestDot;
@@ -95,7 +105,11 @@ class _DayCell extends StatelessWidget {
       style = const SurfaceStyle(
         color: AppColorTokens.dayFutureFace,
         shadows: [
-          NestyShadow(color: AppColorTokens.dayFutureRing, inset: true),
+          NestyShadow(
+            color: AppColorTokens.dayFutureRing,
+            inset: true,
+            spread: 2,
+          ),
         ],
       );
       dot = AppColorTokens.dayFutureDot;

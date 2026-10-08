@@ -6,12 +6,17 @@ import 'package:nesty_game/core/services/daily/daily_status.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
 import 'package:nesty_game/features/daily/widgets/streak_card.dart';
 
+import '../../core/ui/support/ui_harness.dart';
 import '../support/screen_harness.dart';
 
 /// The Daily streak card (frames 5.1, 10.7, 10.7b; ui-spec-menus §6.5;
 /// docs/plans/m7-design.md §8): lit, paused, zero and relit, never red
 /// (Q96), and the number never drops.
 void main() {
+  // The freeze chip's fit (textFit.freezeChip, 64 dp) needs the real glyph
+  // widths: the test font draws every glyph one em wide.
+  setUpAll(loadBundledFonts);
+
   DailyStatus statusOf({required bool lit, required int streak}) => DailyStatus(
     today: LocalDate(2026, 9, 26),
     tier: Tier.hard,
@@ -76,14 +81,65 @@ void main() {
     final surface = tester.widget<NestySurface>(cardSurface.first);
     expect(surface.style.color, AppColorTokens.surface);
     expect(tester.getSize(cardSurface.first).height, lessThanOrEqualTo(150));
-    // The freeze chip is inline at the title row's end, not a column to
-    // the card's right (the test font is wider than Fredoka, so the Paused
-    // chip may wrap under the count here; it does not at 390 dp).
-    final card = tester.getRect(cardSurface.first);
-    expect(
-      tester.getTopRight(find.text('1 freeze')).dx,
-      greaterThan(card.right - 30),
+    // The freeze chip is inline in the title row, after the Paused chip
+    // (as on the device, frame 5.2b), not a column at the card's right.
+    // Measured with the real fonts (setUpAll above).
+    final paused = tester.getRect(find.text('Paused'));
+    final chip = tester.getRect(find.text('1 freeze'));
+    expect(chip.left, greaterThan(paused.right));
+    expect((chip.center.dy - paused.center.dy).abs(), lessThan(4));
+    // Pinned to the card's right edge, inside its 14 dp padding.
+    final chipFace = tester.getRect(
+      find
+          .ancestor(
+            of: find.text('1 freeze'),
+            matching: find.byType(NestySurface),
+          )
+          .first,
     );
+    expect(
+      chipFace.right,
+      closeTo(tester.getRect(cardSurface.first).right - 14, 1),
+    );
+  });
+
+  testWidgets('the freeze chip says "{count} freezes" while it fits 64 dp '
+      '(textFit.freezeChip, m7-6 item 1)', (tester) async {
+    await pump(
+      tester,
+      StreakCard(status: statusOf(lit: true, streak: 4).copyWith(freezes: 2)),
+    );
+    expect(find.text('2 freezes'), findsOneWidget);
+  });
+
+  testWidgets('under 64 dp the chip shows the number beside the snowflake, '
+      'and the screen reader keeps "streak freeze"', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(tester, StreakCard(status: statusOf(lit: true, streak: 4)));
+    // Reset and pump again with big text: "1 freeze" no longer fits 64 dp.
+    await pumpScreen(
+      tester,
+      Material(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: StreakCard(
+              status: statusOf(lit: true, streak: 4).copyWith(freezes: 12),
+            ),
+          ),
+        ),
+      ),
+      textScale: 1.3,
+    );
+    expect(find.text('12 freezes'), findsNothing);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.byIcon(NestyIcons.acUnit), findsOneWidget);
+    expect(
+      tester.getSemantics(find.byType(StreakCard)).label,
+      contains('12 streak freezes'),
+    );
+    handle.dispose();
   });
 
   testWidgets('the card reads its freezes (a11y_freezes)', (tester) async {

@@ -161,6 +161,24 @@ void main() {
     await database.close();
   });
 
+  test(
+    'lastOpenDate and welcomeBackDate of the wrong type read as unset',
+    () async {
+      Hive.init(directory.path);
+      final raw = await Hive.openBox<Object>(HiveBoxes.settings);
+      await raw.put(SettingsKeys.lastOpenDate, 3);
+      await raw.put(SettingsKeys.welcomeBackDate, true);
+      await raw.close();
+
+      final database = await HiveDatabaseService.open(
+        directory: directory.path,
+      );
+      expect(database.lastOpenDate, isNull);
+      expect(database.welcomeBackDate, isNull);
+      await database.close();
+    },
+  );
+
   test('deleting the stored locale emits the default', () async {
     final database = await HiveDatabaseService.open(directory: directory.path);
     await database.setLanguage('fr');

@@ -890,8 +890,9 @@ extension _Plans on BoardTimeline {
     final special =
         dstView is LockedSlot || dstView.isFrozen || dstView is TowerSlot;
     final moverHeight = mover == null ? 0.0 : _height(mover.outerSize);
-    // TODO(design): an empty case or ice has no target doll; the drift uses
-    // the mover's height.
+    // An empty stand, case or ice slot has no target doll: the drift stops at
+    // target base − 0.5 × the mover's own height (`motion.invalid.emptyTarget`,
+    // m7-6 Choices 21; the clip draws above the board, so in front of them).
     final targetHeight = target == null
         ? moverHeight
         : _height(target.outerSize);

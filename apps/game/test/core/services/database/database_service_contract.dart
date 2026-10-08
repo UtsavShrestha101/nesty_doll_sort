@@ -65,6 +65,21 @@ void runDatabaseServiceContract(
       expect(database.lastRival, 0, reason: 'only rivals 1-3 exist');
     });
 
+    test(
+      'lastOpenDate and welcomeBackDate: defaults, round trips, clear',
+      () async {
+        expect(database.lastOpenDate, isNull);
+        expect(database.welcomeBackDate, isNull);
+        await database.setLastOpenDate('2026-10-05');
+        await database.setWelcomeBackDate('2026-10-08');
+        expect(database.lastOpenDate, '2026-10-05');
+        expect(database.welcomeBackDate, '2026-10-08');
+        await database.setWelcomeBackDate(null);
+        expect(database.welcomeBackDate, isNull);
+        expect(database.lastOpenDate, '2026-10-05');
+      },
+    );
+
     test('every setting reads back what was written', () async {
       await database.setSoundEnabled(false);
       await database.setMusicEnabled(false);

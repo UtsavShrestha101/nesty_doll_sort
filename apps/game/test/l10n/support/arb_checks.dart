@@ -34,6 +34,12 @@ const checkedPrefixes = [
   'chaptersStars',
   'recordsStars',
   'recordsThreeStar',
+  // The local habits (plan-local-habits, D297).
+  'welcomeBack',
+  'dailyMonth',
+  'pastDaily',
+  'dailyLocked',
+  'widget',
 ];
 
 /// The star keys, held to [LocaleRules.starDenied] on top.

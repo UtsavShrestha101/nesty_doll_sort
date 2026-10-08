@@ -300,7 +300,12 @@ class _Text extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.localizations;
-    if (entry.earned) return _BrassPlate(name, width: nameWidth - 16);
+    if (entry.earned) {
+      return _BrassPlate(
+        name,
+        width: nameWidth - MuseumTokens.cabinetNamePlatePadding.horizontal,
+      );
+    }
     if (entry.isNext) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -386,15 +391,12 @@ class _BrassPlate extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NestySurface(
     style: const SurfaceStyle(
-      gradient: AppGradientTokens.gold,
-      shadows: [
-        NestyShadow(color: Color(0x80FFFFFF), inset: true, dy: 1),
-        NestyShadow(color: Color(0xFF8A5C12), dy: 2),
-      ],
+      gradient: MuseumTokens.cabinetNamePlateFace,
+      shadows: MuseumTokens.cabinetNamePlateShadow,
     ),
-    radius: BorderRadius.circular(10),
+    radius: BorderRadius.circular(MuseumTokens.cabinetNamePlateRadius),
     width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+    padding: MuseumTokens.cabinetNamePlatePadding,
     child: ShrinkToFitText(
       name,
       style: MuseumTypeTokens.plateName,

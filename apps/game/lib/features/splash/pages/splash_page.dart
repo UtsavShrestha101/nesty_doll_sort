@@ -123,10 +123,9 @@ class SplashView extends StatefulWidget {
   /// own (`ShowcaseDolls`), so this shows only when that can't load.
   final DollSymbols symbols;
 
-  /// The art's dim behind an error card: `rgba(60,30,10,.35)` (frames
-  /// 12.10, 12.11; frame-only, no token).
-  // TODO(design): add the splash error dim to tokens.json `color`.
-  static const Color errorDim = Color(0x593C1E0A);
+  /// The art's dim behind an error card: `color.scrimLight` (frames 12.10,
+  /// 12.11; `layout.splash.errors`, m7-6 item 17).
+  static const Color errorDim = AppColorTokens.scrimLight;
 
   /// The top fade (`layout.splash.topFade`), for tests.
   @visibleForTesting
@@ -287,13 +286,15 @@ class _SplashViewState extends State<SplashView> {
     const base = 578 - SplashView._blockTop;
     const loaderTop = 690 - SplashView._blockTop;
     final loaderWidth = math.max(0.0, width - 2 * 56);
-    // The shelf dolls and the wordmark's doll draw the procedural placeholder
-    // from the first frame (red, frame 1.1) and crossfade to the skin's art
-    // when the showcase lands (phase 5 F-SPL, superseding Q58). A showcase
-    // whose art fails keeps the placeholder.
+    // layout.fallbackDoll.splash (m7-6 item 20): the plank shows no dolls
+    // until the skin is decoded, then its three cherry dolls fade in over
+    // 200 ms. The placeholder draws only when the load is over and no art
+    // came (rule 3), never as a placeholder that swaps. The wordmark's doll
+    // keeps its own crossfade.
+    final dollsReady = skin != null || widget.progress >= 1;
     final fade = context.reduceMotion
         ? Duration.zero
-        : const Duration(milliseconds: UiMotionTokens.modalInMs);
+        : const Duration(milliseconds: FallbackDollTokens.splashFadeInMs);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -327,19 +328,21 @@ class _SplashViewState extends State<SplashView> {
               duration: fade,
               switchInCurve: UiMotionTokens.curveEaseOut,
               switchOutCurve: UiMotionTokens.curveEaseOut,
-              child: LottieDoll(
-                key: ValueKey(skin != null),
-                id: FxId.dollIdle,
-                color: DollColor.red,
-                height: d.height,
-                images: skin?.images,
-                renderer: skin?.restRenderer,
-                symbols: widget.symbols,
-                library: widget.library,
-                // doll_idle is 3 s; the design's loops run 2.3–3 s.
-                speed: (3 / d.periodS).clamp(0.8, 1.2),
-                phaseMs: d.phaseS * 1000,
-              ),
+              child: !dollsReady
+                  ? const SizedBox.shrink()
+                  : LottieDoll(
+                      key: const ValueKey('splash-doll'),
+                      id: FxId.dollIdle,
+                      color: DollColor.red,
+                      height: d.height,
+                      images: skin?.images,
+                      renderer: skin?.restRenderer,
+                      symbols: widget.symbols,
+                      library: widget.library,
+                      // doll_idle is 3 s; the design's loops run 2.3–3 s.
+                      speed: (3 / d.periodS).clamp(0.8, 1.2),
+                      phaseMs: d.phaseS * 1000,
+                    ),
             ),
           ),
         if (widget.error == null)

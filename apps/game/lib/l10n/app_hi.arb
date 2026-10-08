@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "तोहफ़ा ले लिया: {gift}।",
 
-  "giftA11yAdded": "जोड़ा गया: {gift}। कुल {count}।"
+  "giftA11yAdded": "जोड़ा गया: {gift}। कुल {count}।",
+
+  "welcomeBackTitle": "फिर से स्वागत है!",
+
+  "welcomeBackFreeze": "एक फ़्रीज़ ने आपकी लौ जलाए रखी। आज की पहेली तैयार है।",
+
+  "welcomeBackFreezeShort": "एक फ़्रीज़ ने आपकी लौ जलाए रखी।",
+
+  "welcomeBackPaused": "आपकी {count} दिन की स्ट्रीक आराम कर रही है। आज की पहेली तैयार है।",
+
+  "welcomeBackPausedShort": "आपकी {count} दिन की स्ट्रीक आराम कर रही है।",
+
+  "welcomeBackNew": "आज की पहेली तैयार है, जब भी आप चाहें।",
+
+  "welcomeBackNewShort": "आज की पहेली तैयार है।",
+
+  "welcomeBackPlay": "खेलें",
+
+  "welcomeBackPlaySemantics": "आज की पहेली खेलें",
+
+  "welcomeBackHideSemantics": "यह कार्ड छिपाएं",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "पिछले 7 दिनों में से कोई भी दिन खेलें, बस मज़े के लिए।",
+
+  "dailyMonthHintShort": "पिछले 7 दिन खेले जा सकते हैं।",
+
+  "dailyMonthKeyLit": "उसी दिन",
+
+  "dailyMonthKeyLater": "बाद में खेली",
+
+  "dailyMonthKeyFreeze": "फ़्रीज़",
+
+  "dailyMonthShowSemantics": "{month} दिखाएं",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, हल हुई} later{{date}, बाद में खेली} frozen{{date}, फ़्रीज़ ने संभाला} today{{date}, आज} todaySolved{{date}, आज, हल हुई} future{{date}} other{{date}, नहीं खेली}}",
+
+  "dailyMonthDayOpenSemantics": "{label}, खेलने के लिए उपलब्ध",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "बस मज़े के लिए। आपकी स्ट्रीक जैसी है, वैसी ही रहेगी।",
+
+  "pastDailySolvedOnDay": "उसी दिन हल हुई",
+
+  "pastDailySolvedLater": "बाद में खेली",
+
+  "pastDailyPlayAgain": "फिर से खेलें",
+
+  "pastDailyWinTitle": "पहेली हल!",
+
+  "pastDailyWinTitleShort": "हल हुई!",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "बाद में खेली, बस मज़े के लिए।",
+
+  "pastDailyWinSemantics": "{moves, plural, one{{date}, {moves} चाल में हल। बाद में खेली, बस मज़े के लिए।} other{{date}, {moves} चालों में हल। बाद में खेली, बस मज़े के लिए।}}",
+
+  "dailyLockedTitle": "आपकी पहली रोज़ की पहेली बस थोड़ी दूर है",
+
+  "dailyLockedBody": "लेवल {level} जीतें, फिर हर दिन यहाँ एक नई पहेली आपका इंतज़ार करेगी, सबके लिए एक जैसी।",
+
+  "widgetGalleryName": "रोज़ की पहेली",
+
+  "widgetGalleryDescription": "आपकी स्ट्रीक और आज की पहेली, एक नज़र में।",
+
+  "widgetPuzzleTitle": "{weekday} की पहेली",
+
+  "widgetStreakLabel": "{count, plural, other{दिन की स्ट्रीक}}",
+
+  "widgetStreakResting": "{count, plural, other{दिन की स्ट्रीक · आराम पर}}",
+
+  "widgetStreakRestingShort": "आराम पर",
+
+  "widgetFirstFlame": "आपकी पहली लौ",
+
+  "widgetReady": "आज की पहेली तैयार है",
+
+  "widgetReadyShort": "खेलने को तैयार",
+
+  "widgetSolved": "हल हो गई। कल मिलते हैं।",
+
+  "widgetSolvedShort": "हल हुई!",
+
+  "widgetLockedTitle": "रोज़ की पहेली",
+
+  "widgetLockedSmall": "लेवल {level} के बाद खुलेगी",
+
+  "widgetLockedMedium": "आपकी पहली रोज़ की पहेली लेवल {level} के बाद खुलेगी।",
+
+  "widgetReadySemantics": "Nesty की रोज़ की पहेली। {count} दिन की स्ट्रीक। आज की पहेली तैयार है।",
+
+  "widgetSolvedSemantics": "Nesty की रोज़ की पहेली। {count} दिन की स्ट्रीक, जल रही है। आज की पहेली हल हो गई।",
+
+  "widgetPausedSemantics": "Nesty की रोज़ की पहेली। {count} दिन की स्ट्रीक, आराम पर। आज की पहेली तैयार है।",
+
+  "widgetZeroSemantics": "Nesty की रोज़ की पहेली। आज की पहेली तैयार है।",
+
+  "widgetLockedSemantics": "Nesty की रोज़ की पहेली। लेवल {level} के बाद खुलेगी।",
+
+  "dailyFreezesShort": "{count}"
 }

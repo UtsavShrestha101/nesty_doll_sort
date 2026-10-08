@@ -26,6 +26,7 @@ const _spec94 = <String, Object>{
   'reward_chapter': 150,
   'daily_reward': 50,
   'streak7_reward': 300,
+  'welcome_back_days': 2,
   'remove_ads_offer_after_interstitials': 3,
   'rate_prompt_level': 15,
   'chest_coins': 100,
@@ -64,7 +65,7 @@ void main() {
     test('names are unique, so no key shadows another', () {
       final names = RemoteConfigKeys.all.map((key) => key.name).toList();
       expect(names.toSet(), hasLength(names.length));
-      expect(names, hasLength(32));
+      expect(names, hasLength(33));
     });
 
     test('typed accessors point at the right parameters', () {
@@ -84,6 +85,8 @@ void main() {
       expect(RemoteConfigKeys.raceReward2.defaultValue, 30);
       expect(RemoteConfigKeys.star3SlackPct.name, 'star3_slack_pct');
       expect(RemoteConfigKeys.star2SlackPct.defaultValue, 60);
+      expect(RemoteConfigKeys.welcomeBackDays.name, 'welcome_back_days');
+      expect(RemoteConfigKeys.welcomeBackDays.defaultValue, 2);
       expect(RemoteConfigKeys.loginGiftTrack.name, 'login_gift_track');
       expect(RemoteConfigKeys.loginGiftTrack.defaultValue, isA<String>());
     });

@@ -126,6 +126,8 @@ import 'package:nesty_game/core/services/system_settings/system_settings_service
 import 'package:nesty_game/core/services/ticker/frame_ticker.dart' as _i408;
 import 'package:nesty_game/core/services/ticker/scheduler_frame_ticker.dart'
     as _i687;
+import 'package:nesty_game/core/services/welcome_back/welcome_back_tracker.dart'
+    as _i728;
 import 'package:nesty_game/core/ui/art/ui_art_library.dart' as _i73;
 import 'package:nesty_game/features/chapters/cubit/chapters_cubit.dart'
     as _i900;
@@ -150,6 +152,8 @@ import 'package:nesty_game/features/settings/cubit/settings_cubit.dart'
 import 'package:nesty_game/features/shop/cubit/shop_cubit.dart' as _i865;
 import 'package:nesty_game/features/shop/cubit/skin_detail_cubit.dart' as _i711;
 import 'package:nesty_game/features/splash/cubit/splash_cubit.dart' as _i724;
+import 'package:nesty_game/features/welcome_back/cubit/welcome_back_cubit.dart'
+    as _i999;
 
 const String _real = 'real';
 const String _fake = 'fake';
@@ -376,6 +380,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i980.DatabaseService>(),
       ),
     );
+    gh.lazySingleton<_i728.WelcomeBackTracker>(
+      () => _i728.WelcomeBackTracker(
+        gh<_i980.DatabaseService>(),
+        gh<_i376.AppClock>(),
+        gh<_i567.RemoteConfigService>(),
+      ),
+    );
     gh.lazySingleton<_i1053.ShowcaseDolls>(
       () => _i1053.ShowcaseDolls(
         gh<_i267.SkinService>(),
@@ -467,6 +478,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i276.SaveService>(),
         gh<_i376.AppClock>(),
         gh<_i567.RemoteConfigService>(),
+        gh<_i921.AnalyticsService>(),
+      ),
+    );
+    gh.factory<_i999.WelcomeBackCubit>(
+      () => _i999.WelcomeBackCubit(
+        gh<_i728.WelcomeBackTracker>(),
+        gh<_i843.DailyService>(),
         gh<_i921.AnalyticsService>(),
       ),
     );

@@ -2835,4 +2835,264 @@ class AppLocalizationsTr extends AppLocalizations {
 
     return '$gift eklendi. Toplam $countString.';
   }
+
+  @override
+  String get welcomeBackTitle => 'Tekrar hoş geldin!';
+
+  @override
+  String get welcomeBackFreeze =>
+      'Bir koruma alevini yanık tuttu. Bugünün bulmacası hazır.';
+
+  @override
+  String get welcomeBackFreezeShort => 'Bir koruma alevini yanık tuttu.';
+
+  @override
+  String welcomeBackPaused(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString günlük serin dinleniyor. Bugünün bulmacası hazır.';
+  }
+
+  @override
+  String welcomeBackPausedShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString günlük serin dinleniyor.';
+  }
+
+  @override
+  String get welcomeBackNew => 'Bugünün bulmacası, ne zaman istersen hazır.';
+
+  @override
+  String get welcomeBackNewShort => 'Bugünün bulmacası hazır.';
+
+  @override
+  String get welcomeBackPlay => 'Oyna';
+
+  @override
+  String get welcomeBackPlaySemantics => 'Bugünün bulmacasını oyna';
+
+  @override
+  String get welcomeBackHideSemantics => 'Bu kartı gizle';
+
+  @override
+  String dailyMonthTitle(String month) {
+    return '$month';
+  }
+
+  @override
+  String get dailyMonthHint =>
+      'Son 7 günden birini oyna, tamamen eğlence için.';
+
+  @override
+  String get dailyMonthHintShort => 'Son 7 gün oynanabilir.';
+
+  @override
+  String get dailyMonthKeyLit => 'Gününde';
+
+  @override
+  String get dailyMonthKeyLater => 'Sonradan oynandı';
+
+  @override
+  String get dailyMonthKeyFreeze => 'Koruma';
+
+  @override
+  String dailyMonthShowSemantics(String month) {
+    return '$month ayını göster';
+  }
+
+  @override
+  String dailyMonthDaySemantics(String state, String date) {
+    String _temp0 = intl.Intl.selectLogic(state, {
+      'solved': '$date, çözüldü',
+      'later': '$date, sonradan oynandı',
+      'frozen': '$date, bir koruma kapsadı',
+      'today': '$date, bugün',
+      'todaySolved': '$date, bugün, çözüldü',
+      'future': '$date',
+      'other': '$date, oynanmadı',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dailyMonthDayOpenSemantics(String label) {
+    return '$label, oynanabilir';
+  }
+
+  @override
+  String pastDailyTitle(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyNote => 'Tamamen eğlence için. Serin olduğu gibi kalır.';
+
+  @override
+  String get pastDailySolvedOnDay => 'Gününde çözüldü';
+
+  @override
+  String get pastDailySolvedLater => 'Sonradan oynandı';
+
+  @override
+  String get pastDailyPlayAgain => 'Tekrar oyna';
+
+  @override
+  String get pastDailyWinTitle => 'Bulmaca çözüldü!';
+
+  @override
+  String get pastDailyWinTitleShort => 'Çözüldü!';
+
+  @override
+  String pastDailyWinDate(String date) {
+    return '$date';
+  }
+
+  @override
+  String get pastDailyWinLine => 'Sonradan oynandı, tamamen eğlence için.';
+
+  @override
+  String pastDailyWinSemantics(String date, int moves) {
+    final intl.NumberFormat movesNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String movesString = movesNumberFormat.format(moves);
+
+    return '$date, $movesString hamlede çözüldü. Sonradan oynandı, tamamen eğlence için.';
+  }
+
+  @override
+  String get dailyLockedTitle => 'İlk günlük bulmacan çok yakın';
+
+  @override
+  String dailyLockedBody(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return '$levelString. seviyeyi kazan, burada her gün yeni bir bulmaca seni bekleyecek, herkes için aynı.';
+  }
+
+  @override
+  String get widgetGalleryName => 'Günlük bulmaca';
+
+  @override
+  String get widgetGalleryDescription =>
+      'Serin ve bugünün bulmacası bir bakışta.';
+
+  @override
+  String widgetPuzzleTitle(String weekday) {
+    return '$weekday bulmacası';
+  }
+
+  @override
+  String widgetStreakLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'günlük seri',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String widgetStreakResting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'günlük seri · dinleniyor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get widgetStreakRestingShort => 'dinleniyor';
+
+  @override
+  String get widgetFirstFlame => 'İlk alevin';
+
+  @override
+  String get widgetReady => 'Bugünün bulmacası hazır';
+
+  @override
+  String get widgetReadyShort => 'Oynamaya hazır';
+
+  @override
+  String get widgetSolved => 'Çözüldü. Yarın görüşürüz.';
+
+  @override
+  String get widgetSolvedShort => 'Çözüldü!';
+
+  @override
+  String get widgetLockedTitle => 'Günlük bulmaca';
+
+  @override
+  String widgetLockedSmall(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return '$levelString. seviyeden sonra açılır';
+  }
+
+  @override
+  String widgetLockedMedium(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'İlk günlük bulmacan $levelString. seviyeden sonra açılır.';
+  }
+
+  @override
+  String widgetReadySemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nesty günlük bulmacası. $countString günlük seri. Bugünün bulmacası hazır.';
+  }
+
+  @override
+  String widgetSolvedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nesty günlük bulmacası. $countString günlük seri, alev yanıyor. Bugünün bulmacası çözüldü.';
+  }
+
+  @override
+  String widgetPausedSemantics(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'Nesty günlük bulmacası. $countString günlük seri, dinleniyor. Bugünün bulmacası hazır.';
+  }
+
+  @override
+  String get widgetZeroSemantics =>
+      'Nesty günlük bulmacası. Bugünün bulmacası hazır.';
+
+  @override
+  String widgetLockedSemantics(int level) {
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String levelString = levelNumberFormat.format(level);
+
+    return 'Nesty günlük bulmacası. $levelString. seviyeden sonra açılır.';
+  }
+
+  @override
+  String dailyFreezesShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString';
+  }
 }

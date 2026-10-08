@@ -907,6 +907,34 @@ abstract final class AppGradientTokens {
   static const List<NestyShadow> coinChipEdge = [
     NestyShadow(color: Color(0xFFD4A93A), dy: 3.0),
   ];
+
+  /// CSS `radial-gradient(ellipse 60% 70% at 50% 30%, …)`: the circle scaled
+  /// into the ellipse by [EllipseGradientTransform], so it fits any box.
+  static const figurinePanelEarned = RadialGradient(
+    center: Alignment(0.0, -0.4),
+    radius: 0.5,
+    colors: [Color(0xFFFFF6DC), Color(0xFFF2D29E), Color(0xFFE2B478)],
+    stops: [0.0, 0.7, 1.0],
+    transform: EllipseGradientTransform(
+      center: Alignment(0.0, -0.4),
+      radiusX: 0.6,
+      radiusY: 0.7,
+    ),
+  );
+
+  /// CSS `radial-gradient(ellipse 60% 70% at 50% 30%, …)`: the circle scaled
+  /// into the ellipse by [EllipseGradientTransform], so it fits any box.
+  static const figurinePanelLocked = RadialGradient(
+    center: Alignment(0.0, -0.4),
+    radius: 0.5,
+    colors: [Color(0xFFF7EBD6), Color(0xFFE8D3B0), Color(0xFFD9BE93)],
+    stops: [0.0, 0.7, 1.0],
+    transform: EllipseGradientTransform(
+      center: Alignment(0.0, -0.4),
+      radiusX: 0.6,
+      radiusY: 0.7,
+    ),
+  );
 }
 
 /// Font families and weights (tokens.json `font`). The TTFs are bundled in
@@ -1147,6 +1175,19 @@ abstract final class AppTextStyleTokens {
       fontFamily: 'Fredoka',
       fontSize: 17.0,
       height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// Fredoka 16/20/700. text links on overlays (textLink): Back to Home, Not
+  /// now, No thanks; m7-6 (item 15).
+  static TextStyle get textLink => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      height: 1.25,
       leadingDistribution: TextLeadingDistribution.even,
       fontWeight: FontWeight.w700,
       fontFamilyFallback: AppFontTokens.displayFallback,
@@ -1439,6 +1480,15 @@ abstract final class HudTokens {
     '4 / 4': 64.0,
     '12 / 12': 78.0,
   };
+
+  static const familyCounterLabelMaxWidth = 58.0;
+
+  static const familyCounterPillMaxWidth = 92.0;
+
+  /// The pill is its label + this (m7-6 item 16); the label hugs its text up to
+  /// [familyCounterLabelMaxWidth], then scales down to
+  /// TextFitTokens.hudPillsMinScale and never wraps.
+  static const familyCounterPillChrome = 34.0;
 }
 
 /// Booster bar (tokens.json `layout.boosterBar`).
@@ -1602,6 +1652,12 @@ abstract final class SoundTokens {
 
   /// `gift_claim`.
   static const giftClaim = SoundCue(['gift_claim']);
+
+  /// `button (the welcome card, its close, a month day, Play again)`.
+  static const habitsTap = SoundCue(['button']);
+
+  /// `win @0, no coins (the past-day win, 14.3d)`.
+  static const habitsPastWin = SoundCue(['win']);
 
   /// Every SFX file base name the events use, sorted (for preloading and the
   /// asset manifest test): `assets/audio/<name>.wav`. The jingles are
@@ -2192,7 +2248,7 @@ abstract final class ToastLayoutTokens {
 /// down to min, else the short form in copy.md), in dp on the 390×844
 /// reference unless a member says otherwise.
 abstract final class TextFitTokens {
-  static const winRibbonBox = Size(312.0, 40.0);
+  static const winRibbonBox = Size(266.0, 40.0);
 
   /// `Fredoka 700 24`.
   static TextStyle get winRibbonFont => DisplayFace.of(
@@ -2266,6 +2322,56 @@ abstract final class TextFitTokens {
 
   /// The copy.md id of the short form (the ARB key).
   static const List<String> giftChestTitleShort = ['gift_chest_title_short'];
+
+  static const freezeChipMaxWidth = 64.0;
+
+  /// `Fredoka 700 11`.
+  static TextStyle get freezeChipFont => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 11.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// The copy.md id of the short form (the ARB key).
+  static const List<String> freezeChipShort = ['streak_freeze_chip_short'];
+
+  /// One line, scaling down to this, then it wraps (`one line, scales to 0.85,
+  /// then wraps`).
+  static const habitsWelcomeTitleMinScale = 0.85;
+
+  /// The body takes this many lines, then the short forms
+  /// `habits_welcome_*_short` (copy.md `## Short forms`).
+  static const habitsWelcomeBodyMaxLines = 2;
+
+  /// From this text scale, or with a short body, the Play pill moves under the
+  /// text (HabitsWelcomeTokens.playUnderGap).
+  static const habitsWelcomePlayUnderAtTextScale = 1.3;
+
+  /// One line, scaling down to this (`one line, scales to 0.85`).
+  static const habitsMonthTitleMinScale = 0.85;
+
+  /// One line, then this short form (the ARB key) …
+  static const List<String> habitsMonthHintShort = ['habits_month_hint_short'];
+
+  /// … then this many lines.
+  static const habitsMonthHintMaxLines = 2;
+
+  /// The weekday names are the abbreviated stand-alone ones; when one does not
+  /// fit its column at this scale, the narrow form.
+  static const habitsMonthWeekdaysMinScale = 0.85;
+
+  /// The widget's line: this many lines, then an ellipsis (native).
+  static const widgetLineMaxLines = 2;
+
+  /// The widget's title: one line, then an ellipsis (native).
+  static const widgetTitleMaxLines = 1;
+
+  /// The widget's streak number never scales below this; 1000+ uses the
+  /// locale's grouping (native).
+  static const widgetNumberMinScale = 0.8;
 }
 
 /// tokens.json `screenHeader` (m7-4 (10.2): one alignment for every screen.
@@ -2623,6 +2729,11 @@ abstract final class RivalStripTokens {
 
   /// In the m7-5 forms the dots never shrink below this, dp.
   static const formsDotsMinSize = 8.0;
+
+  /// Pause stays HudTokens.pauseButtonSize in every strip form; on the
+  /// [formsHeightAt13] strip it sits this far down, centred (m7-6 item 3,
+  /// 9.3i).
+  static const formsPauseTop = 5.0;
 }
 
 /// tokens.json `layout.raceBar` (booster bar during a race: Undo (unlimited)
@@ -3096,7 +3207,7 @@ abstract final class MuseumTokens {
 
   static const cabinetLockedOpacity = 0.45;
 
-  /// `Fredoka 700 11.5 #4A3008 on a brass gradient`.
+  /// The name plate's text (m7-6 item 8: flat brass, 6.1c).
   static TextStyle get cabinetNamePlate => DisplayFace.of(
     const TextStyle(
       fontFamily: 'Fredoka',
@@ -3105,6 +3216,35 @@ abstract final class MuseumTokens {
       fontFamilyFallback: AppFontTokens.displayFallback,
       color: Color(0xFF4A3008),
     ),
+  );
+
+  /// The plate's flat brass: AppColorTokens.namePlateTop → namePlateBottom, no
+  /// shine and no extra saturation.
+  static const cabinetNamePlateFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFF5D98C), Color(0xFFD9AE52)],
+  );
+
+  /// A 1 dp white top and a 2 dp AppColorTokens.namePlateEdge edge.
+  static const List<NestyShadow> cabinetNamePlateShadow = [
+    NestyShadow(color: Color(0x99FFFFFF), inset: true, dy: 1.0),
+    NestyShadow(color: Color(0xFF8C6420), dy: 2.0),
+  ];
+
+  /// `Fredoka 700 11.5 #4A3008 on flat brass: linear-gradient(180deg,
+  /// namePlateTop #F5D98C, namePlateBottom #D9AE52), inset 0 1px 0
+  /// rgba(255,255,255,0.6), 0 2px 0 namePlateEdge #8C6420, radius 7, padding
+  /// 3/7. No shine, no extra saturation: 6.1c is the spec (m7-6, item 8)`.
+  static const cabinetNamePlateRadius = 7.0;
+
+  /// `Fredoka 700 11.5 #4A3008 on flat brass: linear-gradient(180deg,
+  /// namePlateTop #F5D98C, namePlateBottom #D9AE52), inset 0 1px 0
+  /// rgba(255,255,255,0.6), 0 2px 0 namePlateEdge #8C6420, radius 7, padding
+  /// 3/7. No shine, no extra saturation: 6.1c is the spec (m7-6, item 8)`.
+  static const cabinetNamePlatePadding = EdgeInsets.symmetric(
+    vertical: 3.0,
+    horizontal: 7.0,
   );
 
   /// A locked figurine's two lines ("Chapter 4" / "Levels 61–80").
@@ -3796,15 +3936,15 @@ abstract final class GiftTileTokens {
   /// The done tile's check: the `check` glyph (`NestyIcons`) …
   static const doneCheckGlyph = 'check';
 
-  /// `check 16 #FFFFFF wght 700`.
+  /// `check 16 #FFFFFF wght 600 (the bundled static cut; m7-6, item 6)`.
   static const doneCheckGlyphSize = 16.0;
 
-  /// `check 16 #FFFFFF wght 700`.
+  /// `check 16 #FFFFFF wght 600 (the bundled static cut; m7-6, item 6)`.
   static const doneCheckGlyphColor = Color(0xFFFFFFFF);
 
   /// The design draws it at this weight; the bundled icon font is cut at
   /// AppFontTokens.iconWeight.
-  static const doneCheckGlyphWeight = 700.0;
+  static const doneCheckGlyphWeight = 600.0;
 
   static const doneCheckTop = 7.0;
 
@@ -4031,11 +4171,1184 @@ abstract final class GiftShortTokens {
 
   static const footerGap = 12.0;
 
-  static const footerHeight = 54.0;
+  static const footerHeight = 58.0;
 
   /// The sheet's height on 16:9 (from its content), for the layout tests; its
-  /// top is 232.
-  static const height = 461.0;
+  /// top is 228.
+  static const height = 465.0;
+}
+
+/// tokens.json `versus.computerTag`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class ComputerTagTokens {
+  static const height = 20.0;
+
+  static const radius = 10.0;
+
+  /// The `computer` glyph's size at 1× text, dp (`14`).
+  static const glyphSize = 14.0;
+
+  /// `Nunito 800 11 #6E4526`.
+  static const text = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    color: Color(0xFF6E4526),
+  );
+
+  /// The tag's face …
+  static const face = Color(0xFFFFFDF7);
+
+  /// … and its ring.
+  static const ring = TokenStroke(width: 1.5, color: Color(0xFFD8B07A));
+
+  /// Every rival surface's tag scales its height, glyph, text and radius with
+  /// the text scale k, up to this (m7-6 item 2); where a surface can't grow it
+  /// drops to its glyph first (TextFitTokens.rivalNames*).
+  static const maxTextScale = 1.3;
+}
+
+/// tokens.json `habits.welcomeBack`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class HabitsWelcomeTokens {
+  /// The card sits under the chapter card, this far from each side …
+  static const placeSide = 16.0;
+
+  /// … its top this far below the chapter card's top
+  /// (HomeTokens.chapterCardTop, HomeShortTokens.chapterCard; checked against
+  /// [placeH844Top] and [placeH693Top]).
+  static const placeBelowChapterCardTop = 74.0;
+
+  /// The five dolls scale about the plank centre so the tallest clears the
+  /// card's bottom edge by this at the top of its bob …
+  static const placeDollClearance = 8.0;
+
+  /// … and below this scale they fade out; the empty plank stays.
+  static const placeDollFadeBelow = 0.6;
+
+  static const placeH844Top = 198.0;
+
+  static const placeH844DollScale = 0.78;
+
+  static const placeH693Top = 158.0;
+
+  static const cardMinHeight = 84.0;
+
+  static const cardRadius = 24.0;
+
+  static const cardPadding = EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0);
+
+  static const cardGap = 12.0;
+
+  /// `linear-gradient(180deg,#FFF9EE,#FCEBD0)`.
+  static const cardFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF9EE), Color(0xFFFCEBD0)],
+  );
+
+  /// `inset 0 2px 0 #FFFFFF, 0 5px 0 #D8B07A, 0 10px 18px rgba(90,50,20,0.22)`.
+  static const List<NestyShadow> cardShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 5.0),
+    NestyShadow(color: Color(0x385A3214), dy: 10.0, blur: 18.0),
+  ];
+
+  static const discSize = 48.0;
+
+  /// `linear-gradient(180deg,#FFB27A,#F2702B)`.
+  static const discFreezeFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFB27A), Color(0xFFF2702B)],
+  );
+
+  /// `0 3px 0 #B8501A`.
+  static const List<NestyShadow> discFreezeEdge = [
+    NestyShadow(color: Color(0xFFB8501A), dy: 3.0),
+  ];
+
+  /// The `local_fire_department` glyph (`NestyIcons`); tools/test/tokens checks
+  /// the bundled icon font has it …
+  static const discFreezeGlyph = 'local_fire_department';
+
+  /// … dp …
+  static const discFreezeGlyphSize = 30.0;
+
+  /// … in this colour.
+  static const discFreezeGlyphColor = Color(0xFFFFF6E6);
+
+  /// The freeze badge on the disc: a disc this big …
+  static const discFreezeBadgeSize = 22.0;
+
+  /// … in this colour …
+  static const discFreezeBadgeFace = Color(0xFFDCEFFF);
+
+  /// … ringed and edged so …
+  static const List<NestyShadow> discFreezeBadgeShadow = [
+    NestyShadow(color: Color(0xFFFFF9EE), spread: 2.0),
+    NestyShadow(color: Color(0xFF9CC4EA), dy: 2.0, spread: 2.0),
+  ];
+
+  /// … with the `ac_unit` glyph (`NestyIcons`) …
+  static const discFreezeBadgeGlyph = 'ac_unit';
+
+  /// `22 dp #DCEFFF disc, ring 0 0 0 2px #FFF9EE, edge 0 2px 0 2px #9CC4EA,
+  /// ac_unit 15 #3E8EDE, at right −6 / bottom −5`.
+  static const discFreezeBadgeGlyphSize = 15.0;
+
+  /// `22 dp #DCEFFF disc, ring 0 0 0 2px #FFF9EE, edge 0 2px 0 2px #9CC4EA,
+  /// ac_unit 15 #3E8EDE, at right −6 / bottom −5`.
+  static const discFreezeBadgeGlyphColor = Color(0xFF3E8EDE);
+
+  /// The badge's right edge from the disc's (negative: outside) …
+  static const discFreezeBadgeRight = -6.0;
+
+  /// … and its bottom edge from the disc's.
+  static const discFreezeBadgeBottom = -5.0;
+
+  /// `linear-gradient(180deg,#F1E3CC,#DCC6A4)`.
+  static const discPausedFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFF1E3CC), Color(0xFFDCC6A4)],
+  );
+
+  /// `0 3px 0 #B99A7A`.
+  static const List<NestyShadow> discPausedEdge = [
+    NestyShadow(color: Color(0xFFB99A7A), dy: 3.0),
+  ];
+
+  /// The `local_fire_department` glyph (`NestyIcons`); tools/test/tokens checks
+  /// the bundled icon font has it …
+  static const discPausedGlyph = 'local_fire_department';
+
+  /// … dp …
+  static const discPausedGlyphSize = 30.0;
+
+  /// … in this colour.
+  static const discPausedGlyphColor = Color(0xFF9A6A44);
+
+  /// `linear-gradient(180deg,#FFE7A0,#F5C518)`.
+  static const discNewFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFE7A0), Color(0xFFF5C518)],
+  );
+
+  static const discNewRadius = 15.0;
+
+  /// `inset 0 2px 0 rgba(255,255,255,0.6), 0 3px 0 #C9960A`.
+  static const List<NestyShadow> discNewEdge = [
+    NestyShadow(color: Color(0x99FFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFC9960A), dy: 3.0),
+  ];
+
+  /// The `extension` glyph (`NestyIcons`), the Daily Puzzle tile;
+  /// tools/test/tokens checks the bundled icon font has it …
+  static const discNewGlyph = 'extension';
+
+  /// … dp …
+  static const discNewGlyphSize = 28.0;
+
+  /// … in this colour.
+  static const discNewGlyphColor = Color(0xFF8C5E12);
+
+  /// `Fredoka 700 17/1.1 #5B3A21`.
+  static TextStyle get title => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.1,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// The body: two lines, then the short form
+  /// (TextFitTokens.habitsWelcomeBodyMaxLines).
+  static const body = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF7A5234),
+  );
+
+  static const playHeight = 34.0;
+
+  static const playRadius = 13.0;
+
+  static const playPadding = EdgeInsets.fromLTRB(11.0, 0.0, 14.0, 0.0);
+
+  static const playGap = 7.0;
+
+  /// `gradient.primary`.
+  static const playFace = AppGradientTokens.primary;
+
+  /// `inset 0 2px 0 rgba(255,255,255,0.35), 0 4px 0 #C4631E`.
+  static const List<NestyShadow> playEdge = [
+    NestyShadow(color: Color(0x59FFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFC4631E), dy: 4.0),
+  ];
+
+  /// `Fredoka 700 16 #FFFFFF, text-shadow 0 2px 0 rgba(150,60,10,0.3)`.
+  static TextStyle get playLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFFFFFFFF),
+      shadows: [Shadow(color: Color(0x4D963C0A), offset: Offset(0.0, 2.0))],
+    ),
+  );
+
+  /// The Play pill's triangle …
+  static const playTriangle = Size(10.0, 13.0);
+
+  /// … in this colour.
+  static const playTriangleColor = Color(0xFFFFFFFF);
+
+  /// The Play pill sits this far from the card's bottom …
+  static const playBottom = 12.0;
+
+  /// … and right; the text keeps clear of it.
+  static const playRight = 12.0;
+
+  /// From TextFitTokens.habitsWelcomePlayUnderAtTextScale, or with a short
+  /// body, the pill moves under the text, right-aligned, this far below.
+  static const playUnderGap = 8.0;
+
+  /// The close button's disc, dp (`28`).
+  static const dismissFaceSize = 28.0;
+
+  static const dismissTarget = 48.0;
+
+  /// The close disc sits this far from the card's top …
+  static const dismissTop = 6.0;
+
+  /// … and right; its [dismissTarget] is centred on the disc.
+  static const dismissRight = 6.0;
+
+  /// `#F6E2C2`.
+  static const dismissColor = Color(0xFFF6E2C2);
+
+  /// `inset 0 -2px 0 rgba(150,100,50,0.25)`.
+  static const List<NestyShadow> dismissShade = [
+    NestyShadow(color: Color(0x40966432), inset: true, dy: -2.0),
+  ];
+
+  /// The `close` glyph (`NestyIcons`); tools/test/tokens checks the bundled
+  /// icon font has it …
+  static const dismissGlyph = 'close';
+
+  /// … dp …
+  static const dismissGlyphSize = 18.0;
+
+  /// … in this colour.
+  static const dismissGlyphColor = Color(0xFF8A5B3A);
+
+  /// The design draws it at this weight; the bundled icon font is a static cut
+  /// at AppFontTokens.iconWeight.
+  static const dismissGlyphWeight = 700.0;
+
+  /// With Home's first frame (never later, never on its own) the card fades in
+  /// and rises from this far down …
+  static const motionInRise = 12.0;
+
+  /// … over this …
+  static const motionInMs = 280;
+
+  /// … so; the dolls are drawn at their scale from the start.
+  static const Cubic motionInCurve = UiMotionTokens.curveEaseOut;
+
+  /// On the close the card fades out and shrinks to this …
+  static const motionOutScale = 0.96;
+
+  /// … over this …
+  static const motionOutMs = 180;
+
+  /// `on the close: opacity 1 → 0 and scale 1 → 0.96, 180 ms easeIn; then the
+  /// dolls grow back to 1 in 280 ms (easeOutBack), or fade in over 200 ms where
+  /// they had faded out`.
+  static const Cubic motionOutCurve = UiMotionTokens.curveEaseIn;
+
+  /// Then the dolls grow back to 1 over this …
+  static const motionDollsGrowMs = 280;
+
+  /// `on the close: opacity 1 → 0 and scale 1 → 0.96, 180 ms easeIn; then the
+  /// dolls grow back to 1 in 280 ms (easeOutBack), or fade in over 200 ms where
+  /// they had faded out`.
+  static const Cubic motionDollsGrowCurve = UiMotionTokens.curveEaseOutBack;
+
+  /// … or fade in over this where they had faded out.
+  static const motionDollsFadeInMs = 200;
+
+  /// Reduce motion: a fade in.
+  static const reducedMotionInMs = 200;
+
+  /// Reduce motion: a fade out …
+  static const reducedMotionOutMs = 150;
+
+  /// … then the dolls cross-fade to full size over this.
+  static const reducedMotionDollsMs = 200;
+}
+
+/// tokens.json `habits.month`, in dp on the 390×844 reference unless a member
+/// says otherwise.
+abstract final class HabitsMonthTokens {
+  /// The month is the last card of the Daily's scroll; on open its top is here
+  /// (its title peeks under Play) …
+  static const top = 728.0;
+
+  /// … this far under today's puzzle card …
+  static const gapBelowPuzzleCard = 12.0;
+
+  /// … and here on 16:9.
+  static const topShort = 690.0;
+
+  /// Once scrolled, the screen header keeps the canvas behind it with a fade
+  /// this tall …
+  static const headerFade = 16.0;
+
+  /// … ending this far down …
+  static const headerFadeTo = 128.0;
+
+  /// … (this on 16:9).
+  static const headerFadeToShort = 94.0;
+
+  static const cardLeft = 16.0;
+
+  static const cardRight = 16.0;
+
+  static const cardRadius = 26.0;
+
+  /// `linear-gradient(180deg,#FFF9EE,#FCEBD0)`.
+  static const cardFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF9EE), Color(0xFFFCEBD0)],
+  );
+
+  /// `inset 0 2px 0 #FFFFFF, 0 6px 0 #D8B07A`.
+  static const List<NestyShadow> cardShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 6.0),
+  ];
+
+  static const cardPadding = EdgeInsets.fromLTRB(10.0, 14.0, 10.0, 14.0);
+
+  static const headerHeight = 30.0;
+
+  static const headerInset = 6.0;
+
+  /// The month's name, first letter capitalised …
+  static TextStyle get headerTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// … the stand-alone month name (intl skeleton).
+  static const headerTitleDateSkeleton = 'LLLL';
+
+  static const headerChipHeight = 30.0;
+
+  static const headerChipTarget = 48.0;
+
+  static const headerChipRadius = 15.0;
+
+  static const headerChipPadding = EdgeInsets.fromLTRB(4.0, 0.0, 12.0, 0.0);
+
+  /// `#FFFDF7`.
+  static const headerChipFace = Color(0xFFFFFDF7);
+
+  /// `inset 0 2px 0 #FFFFFF, 0 3px 0 #D8B07A`.
+  static const List<NestyShadow> headerChipShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 3.0),
+  ];
+
+  /// `Fredoka 700 14 #6E4526`.
+  static TextStyle get headerChipLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 14.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF6E4526),
+    ),
+  );
+
+  /// The ‹ chip's `chevron_left` glyph (`NestyIcons`) …
+  static const headerChipGlyphPrevious = 'chevron_left';
+
+  /// … the › chip's `chevron_right` …
+  static const headerChipGlyphNext = 'chevron_right';
+
+  /// … at this size, dp.
+  static const headerChipGlyphSize = 22.0;
+
+  static const hintGap = 4.0;
+
+  static const hintHeight = 17.0;
+
+  /// `Nunito 700 13/17 #8A5B3A`.
+  static const hintFont = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.307692,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  static const weekdaysGap = 12.0;
+
+  static const weekdaysHeight = 14.0;
+
+  /// `Nunito 800 11/14 #9A6A44`.
+  static const weekdaysFont = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.272727,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF9A6A44),
+  );
+
+  static const gridGap = 6.0;
+
+  static const gridColumns = 7;
+
+  /// A day column is min([gridPitchMax], floor((screen width −
+  /// [gridPitchInset]) / 7)) wide: 48 at 390, 44 at 360.
+  static const gridPitchMax = 48.0;
+
+  /// `min(48, floor((screen width − 52) / 7)): 48 at 390, 44 at 360`.
+  static const gridPitchInset = 52.0;
+
+  /// A day's face is min([gridFaceMax], pitch − [gridFaceInset]): 42 at 390, 40
+  /// at 360.
+  static const gridFaceMax = 42.0;
+
+  /// `min(42, pitch − 4): 42 at 390, 40 at 360`.
+  static const gridFaceInset = 4.0;
+
+  /// A grid row is the face + this tall.
+  static const gridRowOverFace = 4.0;
+
+  /// A day's corner radius …
+  static const gridRadius = 14.0;
+
+  /// … and at a [gridSmallFace] face.
+  static const gridRadiusSmall = 13.0;
+
+  /// The face size that takes the small radius and number.
+  static const gridSmallFace = 40.0;
+
+  /// A day's number, tabular; the colour and weight are its state's
+  /// (`HabitsDayCellTokens.<state>Number*`): 700 on a coloured face, 600 on a
+  /// plain one …
+  static TextStyle get gridNumber => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 16.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
+
+  /// … at this size on a [gridSmallFace] face.
+  static const gridNumberSizeSmall = 15.0;
+
+  static const legendGap = 8.0;
+
+  static const legendHeight = 16.0;
+
+  static const legendSwatch = 14.0;
+
+  static const legendSwatchRadius = 5.0;
+
+  static const legendItemGap = 14.0;
+
+  /// `Nunito 800 11.5 #8A5B3A`.
+  static const legendLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 11.5,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// Each day is one element read as `habits_day_a11y_*` with {date} in this
+  /// intl skeleton; window days add `habits_day_a11y_open`.
+  static const a11yDateSkeleton = 'MMMMd';
+}
+
+/// tokens.json `habits.month.short` (16:9 (390 × 693), 14.2b), in dp on the
+/// 390×693 (16:9) reference unless a member says otherwise.
+abstract final class HabitsMonthShortTokens {
+  static const padding = EdgeInsets.fromLTRB(10.0, 12.0, 10.0, 12.0);
+
+  static const headerHeight = 28.0;
+
+  /// The month's name on 16:9, dp (`18`).
+  static const titleSize = 18.0;
+
+  /// The hint on 16:9 (the colour is HabitsMonthTokens.hintFont's) …
+  static const hint = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.333333,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
+
+  /// … this far under the header.
+  static const hintGap = 3.0;
+
+  /// `gap 10, height 13`.
+  static const weekdaysGap = 10.0;
+
+  /// `gap 10, height 13`.
+  static const weekdaysHeight = 13.0;
+
+  static const gridGap = 5.0;
+
+  /// A day's face on 16:9, dp (`40`).
+  static const faceSize = 40.0;
+
+  static const rowHeight = 44.0;
+
+  /// A day's number on 16:9, dp (`15`).
+  static const numberSize = 15.0;
+
+  static const legendGap = 6.0;
+}
+
+/// tokens.json `habits.month.cell`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class HabitsDayCellTokens {
+  /// `linear-gradient(180deg,#FFB27A,#F2702B)`.
+  static const litFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFB27A), Color(0xFFF2702B)],
+  );
+
+  /// The day number's colour …
+  static const litNumberColor = Color(0xFFFFFFFF);
+
+  /// … and weight (`#FFFFFF 700`).
+  static const litNumberWeight = FontWeight.w700;
+
+  /// `inset 0 2px 0 rgba(255,255,255,0.3)`.
+  static const List<NestyShadow> litInner = [
+    NestyShadow(color: Color(0x4DFFFFFF), inset: true, dy: 2.0),
+  ];
+
+  /// `#B8501A`.
+  static const litEdge = Color(0xFFB8501A);
+
+  /// `#FFE7D0`.
+  static const laterFace = Color(0xFFFFE7D0);
+
+  /// The day number's colour …
+  static const laterNumberColor = Color(0xFFA94F12);
+
+  /// … and weight (`#A94F12 700`).
+  static const laterNumberWeight = FontWeight.w700;
+
+  /// `inset 0 0 0 2px #F3B98C`.
+  static const List<NestyShadow> laterInner = [
+    NestyShadow(color: Color(0xFFF3B98C), inset: true, spread: 2.0),
+  ];
+
+  /// `#E3AE8C`.
+  static const laterEdge = Color(0xFFE3AE8C);
+
+  /// `#E3F1FF`.
+  static const freezeFace = Color(0xFFE3F1FF);
+
+  /// The day number's colour …
+  static const freezeNumberColor = Color(0xFF326497);
+
+  /// … and weight (`#326497 700`).
+  static const freezeNumberWeight = FontWeight.w700;
+
+  /// `inset 0 0 0 2px #9CC4EA`.
+  static const List<NestyShadow> freezeInner = [
+    NestyShadow(color: Color(0xFF9CC4EA), inset: true, spread: 2.0),
+  ];
+
+  /// `#7FAEDB`.
+  static const freezeEdge = Color(0xFF7FAEDB);
+
+  /// The `ac_unit` glyph (`NestyIcons`); tools/test/tokens checks the bundled
+  /// icon font has it …
+  static const freezeGlyph = 'ac_unit';
+
+  /// … dp …
+  static const freezeGlyphSize = 11.0;
+
+  /// … in this colour.
+  static const freezeGlyphColor = Color(0xFF3E8EDE);
+
+  /// The snowflake sits this far from the face's bottom …
+  static const freezeGlyphBottom = 3.0;
+
+  /// … and the number lifts this far.
+  static const freezeNumberLift = 4.5;
+
+  /// `#FFFDF7`.
+  static const openFace = Color(0xFFFFFDF7);
+
+  /// The day number's colour …
+  static const openNumberColor = Color(0xFF5B3A21);
+
+  /// … and weight (`#5B3A21 600`).
+  static const openNumberWeight = FontWeight.w600;
+
+  /// `inset 0 2px 0 #FFFFFF`.
+  static const List<NestyShadow> openInner = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+  ];
+
+  /// `#D8B07A`.
+  static const openEdge = Color(0xFFD8B07A);
+
+  /// The day number's colour …
+  static const blankNumberColor = Color(0xFF8A5B3A);
+
+  /// … and weight (`#8A5B3A 600`).
+  static const blankNumberWeight = FontWeight.w600;
+
+  /// The day number's colour …
+  static const futureNumberColor = Color(0xFF8A5B3A);
+
+  /// … and weight (`#8A5B3A 600`).
+  static const futureNumberWeight = FontWeight.w600;
+
+  /// `#FFFDF7`.
+  static const todayFace = Color(0xFFFFFDF7);
+
+  /// The day number's colour …
+  static const todayNumberColor = Color(0xFFC4631E);
+
+  /// … and weight (`#C4631E 700`).
+  static const todayNumberWeight = FontWeight.w700;
+
+  /// `inset 0 2px 0 #FFFFFF, 0 0 0 2.5px #F2893B, 0 3.5px 0 2.5px #C4631E`.
+  static const List<NestyShadow> todayShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFF2893B), spread: 2.5),
+    NestyShadow(color: Color(0xFFC4631E), dy: 3.5, spread: 2.5),
+  ];
+
+  /// `linear-gradient(180deg,#FFB27A,#F2702B)`.
+  static const todayLitFace = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFB27A), Color(0xFFF2702B)],
+  );
+
+  /// The day number's colour …
+  static const todayLitNumberColor = Color(0xFFFFFFFF);
+
+  /// … and weight (`#FFFFFF 700`).
+  static const todayLitNumberWeight = FontWeight.w700;
+
+  /// `inset 0 2px 0 rgba(255,255,255,0.3), 0 0 0 2px #FFF9EE, 0 0 0 4.5px
+  /// #F2893B`.
+  static const List<NestyShadow> todayLitShadow = [
+    NestyShadow(color: Color(0x4DFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFFFF9EE), spread: 2.0),
+    NestyShadow(color: Color(0xFFF2893B), spread: 4.5),
+  ];
+
+  /// Inside the window every past day is a button raised on its state's
+  /// `<state>Edge` this deep; outside it is flat and not a button.
+  static const raisedEdgeDepth = 3.0;
+
+  /// Pressed, a day sinks this far …
+  static const pressedShift = 2.0;
+
+  /// … onto an edge this deep …
+  static const pressedEdgeDepth = 1.0;
+
+  /// … over this (the house press).
+  static const pressedMs = 80;
+
+  /// The chosen day, while its card is open, sinks this far with no edge …
+  static const selectedShift = 2.0;
+
+  /// … and wears these rings.
+  static const List<NestyShadow> selectedRings = [
+    NestyShadow(color: Color(0xFFFFF9EE), spread: 2.0),
+    NestyShadow(color: Color(0xFF6E4526), spread: 5.0),
+  ];
+}
+
+/// tokens.json `habits.pastDay`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class HabitsPastDayTokens {
+  /// A past day's card opens this far under the month card.
+  static const cardGapBelowMonth = 12.0;
+
+  /// The puzzle card of 5.1 for a past day: its title, the date
+  /// ([cardTitleDateSkeleton]) …
+  static TextStyle get cardTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// … in this intl skeleton …
+  static const cardTitleDateSkeleton = 'MMMEd';
+
+  /// … the colours · tier chip, the preview this big …
+  static const cardPreviewSize = 120.0;
+
+  /// … Play this tall with no coin chip …
+  static const cardPlayHeight = 60.0;
+
+  /// … then `habits_past_note` (the ARB key), centred, in this style.
+  static const cardNote = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+    height: 1.3,
+    leadingDistribution: TextLeadingDistribution.even,
+    color: Color(0xFF8A5B3A),
+  );
+
+  /// The card slides down this far and fades in …
+  static const openSlide = 12.0;
+
+  /// … over this …
+  static const openMs = 240;
+
+  /// … so;
+  static const Cubic openCurve = UiMotionTokens.curveEaseOut;
+
+  /// the page scrolls just enough to show the note over this.
+  static const openScrollMs = 300;
+
+  /// Reduce motion: a fade this long, and the scroll jumps.
+  static const openReducedMs = 150;
+
+  /// A solved past day's preview is dimmed with this under 5.5's green pill,
+  /// `habits_past_solved_day` or `habits_past_solved_later` (the ARB keys).
+  static const solvedPreviewDim = Color(0xB8FFF9EC);
+
+  /// Play again is the secondary button: this tall …
+  static const playAgainHeight = 54.0;
+
+  /// `the secondary button: 54 tall, radius 20, #FFFDF7, inset 0 2px 0 #FFFFFF,
+  /// 0 5px 0 #D8B07A, replay 22 + Fredoka 700 18 #6E4526`.
+  static const playAgainRadius = 20.0;
+
+  /// `the secondary button: 54 tall, radius 20, #FFFDF7, inset 0 2px 0 #FFFFFF,
+  /// 0 5px 0 #D8B07A, replay 22 + Fredoka 700 18 #6E4526`.
+  static const playAgainFace = Color(0xFFFFFDF7);
+
+  /// `the secondary button: 54 tall, radius 20, #FFFDF7, inset 0 2px 0 #FFFFFF,
+  /// 0 5px 0 #D8B07A, replay 22 + Fredoka 700 18 #6E4526`.
+  static const List<NestyShadow> playAgainShadow = [
+    NestyShadow(color: Color(0xFFFFFFFF), inset: true, dy: 2.0),
+    NestyShadow(color: Color(0xFFD8B07A), dy: 5.0),
+  ];
+
+  /// The `replay` glyph (`NestyIcons`) …
+  static const playAgainGlyph = 'replay';
+
+  /// `the secondary button: 54 tall, radius 20, #FFFDF7, inset 0 2px 0 #FFFFFF,
+  /// 0 5px 0 #D8B07A, replay 22 + Fredoka 700 18 #6E4526`.
+  static const playAgainGlyphSize = 22.0;
+
+  /// … and the label.
+  static TextStyle get playAgainLabel => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 18.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF6E4526),
+    ),
+  );
+
+  /// A past day's board shows its date in the Daily pill chip in this intl
+  /// skeleton; no coin pill, no ▶ or price, Out of moves lists only what the
+  /// player owns plus Restart, no interstitial.
+  static const boardDateSkeleton = 'MMMd';
+
+  /// A booster at 0 takes the disabled face …
+  static const boardBoosterDisabledFace = Color(0xFFE8DCCB);
+
+  /// `NestyBoard scene daily with the past date in the Daily pill chip ({date}
+  /// MMMd); no coin pill; a booster at 0 takes the disabled face (#E8DCCB,
+  /// inset 0 2px 4px rgba(90,45,15,0.2), #A48B72) instead of ▶ or a price; Out
+  /// of moves lists only what the player owns, plus Restart; no interstitial`.
+  static const List<NestyShadow> boardBoosterDisabledShadow = [
+    NestyShadow(color: Color(0x335A2D0F), inset: true, dy: 2.0, blur: 4.0),
+  ];
+
+  /// … its glyph and count in this.
+  static const boardBoosterDisabledGlyphColor = Color(0xFFA48B72);
+
+  /// A past day's win is 5.4's layout with `habits_past_win_title`: where the
+  /// coins were, the Moves pill: the `route` glyph (`NestyIcons`) …
+  static const winMovesGlyph = 'route';
+
+  /// `the 5.4 layout: ribbon habits_past_win_title, the Moves pill (route 24
+  /// #6E4526 in a 38 dp #F6E2C2 disc, Fredoka 700 28 #5B3A21) where the coins
+  /// were, the date card where the streak card was (a 52 dp cell.later with the
+  /// day, {date} EEEEdMMMM in Fredoka 700 20, habits_past_win_line), then Back
+  /// to Daily, which lands on the month with the new mark. No coins, no ×3`.
+  static const winMovesGlyphSize = 24.0;
+
+  /// `the 5.4 layout: ribbon habits_past_win_title, the Moves pill (route 24
+  /// #6E4526 in a 38 dp #F6E2C2 disc, Fredoka 700 28 #5B3A21) where the coins
+  /// were, the date card where the streak card was (a 52 dp cell.later with the
+  /// day, {date} EEEEdMMMM in Fredoka 700 20, habits_past_win_line), then Back
+  /// to Daily, which lands on the month with the new mark. No coins, no ×3`.
+  static const winMovesGlyphColor = Color(0xFF6E4526);
+
+  /// … in a disc this big …
+  static const winMovesDisc = 38.0;
+
+  /// `the 5.4 layout: ribbon habits_past_win_title, the Moves pill (route 24
+  /// #6E4526 in a 38 dp #F6E2C2 disc, Fredoka 700 28 #5B3A21) where the coins
+  /// were, the date card where the streak card was (a 52 dp cell.later with the
+  /// day, {date} EEEEdMMMM in Fredoka 700 20, habits_past_win_line), then Back
+  /// to Daily, which lands on the month with the new mark. No coins, no ×3`.
+  static const winMovesDiscColor = Color(0xFFF6E2C2);
+
+  /// … and the moves.
+  static TextStyle get winMovesText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 28.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      color: Color(0xFF5B3A21),
+    ),
+  );
+
+  /// Where the streak card was, the date card: a HabitsDayCellTokens.later* day
+  /// this big …
+  static const winDateCell = 52.0;
+
+  /// … the date in this intl skeleton …
+  static const winDateSkeleton = 'EEEEdMMMM';
+
+  /// … in this style, then `habits_past_win_line`; Back to Daily lands on the
+  /// month with the new mark. No coins, no ×3.
+  static TextStyle get winDateText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 20.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+}
+
+/// tokens.json `habits.widget`, in dp on the 390×844 reference unless a
+/// member says otherwise.
+abstract final class HabitsWidgetTokens {
+  /// `ui/widget/flame_lit.svg` is drawn at this dp size (native,
+  /// plan-local-habits §4; the 1×/2×/3× PNGs are this × 1, 2, 3).
+  static const artFlameLitSize = Size(44.0, 44.0);
+
+  /// `ui/widget/flame_unlit.svg` is drawn at this dp size (native,
+  /// plan-local-habits §4; the 1×/2×/3× PNGs are this × 1, 2, 3).
+  static const artFlameUnlitSize = Size(44.0, 44.0);
+
+  /// `ui/widget/flame_unlit_dark.svg` is drawn at this dp size (native,
+  /// plan-local-habits §4; the 1×/2×/3× PNGs are this × 1, 2, 3).
+  static const artFlameUnlitDarkSize = Size(44.0, 44.0);
+
+  /// `ui/widget/doll.svg` is drawn at this dp size (native, plan-local-habits
+  /// §4; the 1×/2×/3× PNGs are this × 1, 2, 3).
+  static const artDollSize = Size(18.0, 24.0);
+
+  /// `ui/widget/daily_mark.svg` is drawn at this dp size (native,
+  /// plan-local-habits §4; the 1×/2×/3× PNGs are this × 1, 2, 3).
+  static const artDailyMarkSize = Size(52.0, 52.0);
+
+  /// systemSmall on a 390×844 iPhone (the system sets it per device).
+  static const iosSmall = Size(158.0, 158.0);
+
+  /// systemMedium on a 390×844 iPhone.
+  static const iosMedium = Size(338.0, 158.0);
+
+  static const iosContentMargins = 16.0;
+
+  static const androidMinWidth = 110.0;
+
+  static const androidMinHeight = 110.0;
+
+  static const androidMinResizeWidth = 110.0;
+
+  static const androidMinResizeHeight = 110.0;
+
+  /// The Android widget resizes up to this many cells tall.
+  static const androidMaxResizeCells = 2;
+
+  /// The Android widget's `android:resizeMode`.
+  static const androidResizeMode = 'horizontal|vertical';
+
+  /// Responsive RemoteViews: from this width the 4 × 2 (medium) layout, under
+  /// it the 2 × 2 (small).
+  static const androidMediumFrom = 250.0;
+
+  /// Android 12+ uses system_app_widget_background_radius (clipToOutline);
+  /// before it, this radius.
+  static const androidRadiusBefore12 = 16.0;
+
+  static const androidPadding = 16.0;
+
+  static const layoutSmallPadding = 16.0;
+
+  static const layoutSmallFlame = 36.0;
+
+  /// The small widget's streak number …
+  static TextStyle get layoutSmallNumber => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 36.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// … this far after the flame …
+  static const layoutSmallNumberGap = 5.0;
+
+  /// … in a row this tall.
+  static const layoutSmallNumberRow = 40.0;
+
+  /// `Nunito 800 12, 3 below`.
+  static const layoutSmallLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+  );
+
+  /// The label sits this far under the number row.
+  static const layoutSmallLabelGap = 3.0;
+
+  /// The small widget's dolls: each this big …
+  static const layoutSmallDollsSize = Size(15.0, 20.0);
+
+  /// `15 × 20, gap 4, 12 below the label, up to 6`.
+  static const layoutSmallDollsGap = 4.0;
+
+  /// … this far under the label …
+  static const layoutSmallDollsTop = 12.0;
+
+  /// … at most this many.
+  static const layoutSmallDollsMax = 6;
+
+  /// The small widget's line, at the bottom (TextFitTokens.widgetLineMaxLines).
+  static TextStyle get layoutSmallLine => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 14.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.2,
+      leadingDistribution: TextLeadingDistribution.even,
+    ),
+  );
+
+  /// Locked (before Level 2): `daily_mark` this big at the top …
+  static const layoutSmallLockedMark = 42.0;
+
+  /// … the title …
+  static TextStyle get layoutSmallLockedTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// … and the line.
+  static const layoutSmallLockedLine = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 13.0,
+    fontWeight: FontWeight.w700,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+  );
+
+  static const layoutMediumPadding = 16.0;
+
+  /// The medium widget: a left column this wide …
+  static const layoutMediumLeft = 104.0;
+
+  /// … this gap either side of …
+  static const layoutMediumGap = 14.0;
+
+  /// … a divider this thick, then the right column.
+  static const layoutMediumDivider = 1.5;
+
+  /// The left column: the flame this big at the top …
+  static const layoutMediumFlame = 46.0;
+
+  /// … the number at the bottom …
+  static TextStyle get layoutMediumNumber => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 42.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// … and the label.
+  static const layoutMediumLabel = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.0,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+  );
+
+  /// The right column: the title (one line) …
+  static TextStyle get layoutMediumTitle => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 17.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// … the sub …
+  static const layoutMediumSub = TextStyle(
+    fontFamily: 'Nunito',
+    fontSize: 12.5,
+    fontWeight: FontWeight.w800,
+    fontFamilyFallback: AppFontTokens.bodyFallback,
+  );
+
+  /// … the dolls, each this big …
+  static const layoutMediumDollsSize = Size(19.0, 26.0);
+
+  /// `title Fredoka 700 17 (one line), sub Nunito 800 12.5, dolls 19 × 26 gap 5
+  /// (12 below, up to 8), the line Fredoka 700 15 at the bottom`.
+  static const layoutMediumDollsGap = 5.0;
+
+  /// … this far under the sub …
+  static const layoutMediumDollsTop = 12.0;
+
+  /// … at most this many …
+  static const layoutMediumDollsMax = 8;
+
+  /// … and the line at the bottom.
+  static TextStyle get layoutMediumLine => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 15.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+    ),
+  );
+
+  /// Locked: `daily_mark` this big …
+  static const layoutMediumLockedMark = 56.0;
+
+  /// … in a left column this wide.
+  static const layoutMediumLockedColumn = 64.0;
+}
+
+/// tokens.json `habits.widget.colors`, in dp on the 390×844 reference unless
+/// a member says otherwise.
+abstract final class HabitsWidgetColorTokens {
+  /// `linear-gradient(180deg,#FFF9EE,#FCEBD0)`.
+  static const lightBackground = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFFFF9EE), Color(0xFFFCEBD0)],
+  );
+
+  /// `#5B3A21`.
+  static const lightTitle = Color(0xFF5B3A21);
+
+  /// `#5B3A21`.
+  static const lightNumber = Color(0xFF5B3A21);
+
+  /// `#8A5B3A`.
+  static const lightLabel = Color(0xFF8A5B3A);
+
+  /// `#6E4526`.
+  static const lightLine = Color(0xFF6E4526);
+
+  /// `rgba(138,91,58,0.18)`.
+  static const lightDivider = Color(0x2E8A5B3A);
+
+  /// The light widget's shadow on Android; iOS draws its own.
+  static const List<NestyShadow> lightShadow = [
+    NestyShadow(color: Color(0x2E28140A), dy: 6.0, blur: 16.0),
+  ];
+
+  /// `linear-gradient(180deg,#3A2414,#24150B)`.
+  static const darkBackground = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF3A2414), Color(0xFF24150B)],
+  );
+
+  /// `#FFF4E0`.
+  static const darkTitle = Color(0xFFFFF4E0);
+
+  /// `#FFF4E0`.
+  static const darkNumber = Color(0xFFFFF4E0);
+
+  /// `#E3C9A4`.
+  static const darkLabel = Color(0xFFE3C9A4);
+
+  /// `#F6E2C2`.
+  static const darkLine = Color(0xFFF6E2C2);
+
+  /// `rgba(255,236,205,0.18)`.
+  static const darkDivider = Color(0x2EFFECCD);
+
+  /// Tinted mode draws the accent in the system tint; the frames show this one.
+  static const tintedAccentPreview = Color(0xFFFFD9A0);
+
+  /// Tinted mode: the unlit flame is the tint at this opacity.
+  static const tintedUnlitAccentOpacity = 0.45;
+
+  /// Tinted mode: the text in white at 92 % …
+  static const tintedText = Color(0xEBFFFFFF);
+
+  /// … and the labels at 70 %.
+  static const tintedLabel = Color(0xB3FFFFFF);
 }
 
 /// The win card's star reveal, `ui_stars` (tokens.json `motion.stars`). It
@@ -4533,11 +5846,12 @@ abstract final class MuseumTypeTokens {
   /// [kicker] is drawn in capitals.
   static const kickerCaps = true;
 
-  /// `Fredoka 700 20/1 #5B3A21, tabular`: tabular figures.
+  /// `Fredoka 700 16/1 #5B3A21, tabular (m7-6: the frames’ size)`: tabular
+  /// figures; m7-6: the frames’ size.
   static TextStyle get count => DisplayFace.of(
     const TextStyle(
       fontFamily: 'Fredoka',
-      fontSize: 20.0,
+      fontSize: 16.0,
       fontWeight: FontWeight.w700,
       fontFamilyFallback: AppFontTokens.displayFallback,
       height: 1.0,
@@ -4848,4 +6162,38 @@ abstract final class GiftTypeTokens {
       fontFeatures: [FontFeature.tabularFigures()],
     ),
   );
+}
+
+/// The shared orange ribbon title of 10.3b (`RibbonTitle`), on a modal card's
+/// top edge; the Day 7 chest card wears it too (m7-6 item 5, tokens.json
+/// `gift.chest.ribbon`; 13.6b redrawn).
+abstract final class RibbonTitleTokens {
+  /// The title, one line, with its text shadow.
+  static TextStyle get text => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 18.0,
+      fontWeight: FontWeight.w700,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      height: 1.0,
+      leadingDistribution: TextLeadingDistribution.even,
+      color: Color(0xFFFFFFFF),
+      shadows: [Shadow(color: Color(0x29000000), offset: Offset(0.0, 2.0))],
+    ),
+  );
+
+  static const padding = EdgeInsets.symmetric(vertical: 9.0, horizontal: 22.0);
+
+  static const radius = 16.0;
+
+  /// How far the ribbon rises above the card's top edge.
+  static const overhang = 18.0;
+
+  /// Its face.
+  static const face = AppGradientTokens.primary;
+
+  /// Its solid edge (AppColorTokens.primaryEdge).
+  static const List<NestyShadow> edge = [
+    NestyShadow(color: Color(0xFFC4631E), dy: 4.0),
+  ];
 }

@@ -21,8 +21,11 @@ import 'package:nesty_game/features/gameplay/game/timeline/fx_placement.dart';
 /// motion). A lower count (undo, restart, a new level) changes at once.
 ///
 /// It hugs its text (E.18; `layout.hud.familyCounter`): the pill is
-/// [hugWidth] wide (padding 10 + doll icon 12 + gap 5 + the label + padding
-/// 10: 64 for "4 / 4", 78 for "12 / 12"). The file's pill takes that width
+/// [hugWidth] wide (the label + 34: 64 for "4 / 4", 78 for "12 / 12"). The
+/// label follows the text setting up to 1.3× and hugs its text up to 58 dp
+/// ("12 / 12" at 1.3× is 57), so the pill is at most 92; a longer label
+/// scales down to fit and never wraps (m7-6 item 16). The file's pill takes
+/// that width
 /// as it is, at any width: `pill_rect` and `glow_rect` resized and the doll
 /// mark moved with them (LOTTIE.md "Tint and width"; m7-4 4.14), with no
 /// scale on the whole counter.
@@ -56,28 +59,50 @@ class FamilyCounter extends StatefulWidget {
   /// The file's own pill width (`FamilyCounterPillPainter`: 70×26).
   static const double filePillWidth = 70;
 
-  /// The label's text style for measuring (`LottieLabelStyles.familyCounter`:
-  /// Fredoka 700 13).
-  static TextStyle get _labelStyle =>
-      LottieLabelStyles.familyCounter.textStyle();
+  /// The text setting the label follows: the context's, from 1 up to 1.3
+  /// (the HUD's label is part of the file's art, so it never goes smaller).
+  static double textScaleOf(BuildContext context) =>
+      (MediaQuery.textScalerOf(context).scale(1)).clamp(1.0, 1.3);
 
-  /// The pill's width around [label] (tokens `hud.familyCounter`): the
-  /// horizontal padding, the doll icon, the gap and the label's own width.
-  static double hugWidth(
-    String label, {
-    TextScaler scaler = TextScaler.noScaling,
-  }) {
+  /// The label's style at the text scale [k]: the table's, with its size and
+  /// baseline following the setting.
+  static LottieLabelStyle labelStyleFor(double k) {
+    const base = LottieLabelStyles.familyCounter;
+    if (k == 1) return base;
+    return LottieLabelStyle(
+      fontSize: base.fontSize * k,
+      color: base.color,
+      maxWidth: base.maxWidth,
+      maxHeight: base.maxHeight,
+      baseline: Offset(base.baseline.dx, base.baseline.dy * k),
+      restNull: base.restNull,
+      canvas: base.canvas,
+      shadowOffset: base.shadowOffset,
+      shadowColor: base.shadowColor,
+    );
+  }
+
+  /// The pill's width around [label] (tokens `hud.familyCounter`): the label
+  /// as wide as its text at the text scale [k], at least
+  /// [HudTokens.familyCounterLabelMinWidth] and at most
+  /// [HudTokens.familyCounterLabelMaxWidth], plus
+  /// [HudTokens.familyCounterPillChrome]. Never above
+  /// [HudTokens.familyCounterPillMaxWidth].
+  static double hugWidth(String label, {double k = 1}) {
     final painter = TextPainter(
-      text: TextSpan(text: label, style: _labelStyle),
+      text: TextSpan(text: label, style: labelStyleFor(k).textStyle()),
       textDirection: TextDirection.ltr,
-      textScaler: scaler,
+      textScaler: TextScaler.noScaling,
     )..layout();
     final textWidth = painter.width;
     painter.dispose();
-    return HudTokens.familyCounterPadding.horizontal +
-        HudTokens.familyCounterIconSize.width +
-        HudTokens.familyCounterGap +
-        textWidth;
+    return HudTokens.familyCounterPillChrome +
+        textWidth
+            .clamp(
+              HudTokens.familyCounterLabelMinWidth,
+              HudTokens.familyCounterLabelMaxWidth,
+            )
+            .toDouble();
   }
 
   /// LOTTIE.md "Completed": "a 1.5× `fx_sparkle` @1250".
@@ -147,17 +172,20 @@ class _FamilyCounterState extends State<FamilyCounter> {
     final l10n = context.localizations;
     final label = l10n.familyCounter(widget.done, widget.total);
     final previous = _previous;
-    final pillWidth = FamilyCounter.hugWidth(label);
+    final k = FamilyCounter.textScaleOf(context);
+    final labelStyle = FamilyCounter.labelStyleFor(k);
+    final pillWidth = FamilyCounter.hugWidth(label, k: k);
     _controller.params.pillWidth = pillWidth;
     final counter = LottieTextOverlay(
       label: label,
-      style: LottieLabelStyles.familyCounter,
+      style: labelStyle,
       semanticLabel: l10n.familyCounterSemantics(widget.done, widget.total),
       lottie: LottieFxView(
         id: FxId.uiFamilyCounter,
         controller: _controller,
         library: widget.library,
         label: label,
+        labelStyle: labelStyle,
         previousLabel: previous == null
             ? null
             : l10n.familyCounter(previous, widget.total),

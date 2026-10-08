@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart' show Matrix4;
 
 // Value types for the generated ui_tokens.gen.dart. Hand-written (and
 // editable) so helpers can live here while the values stay generated from
@@ -115,6 +116,57 @@ final class PxLinearGradient {
     colors: colors,
     stops: [for (final stop in stops) stop.resolve(extent)],
   );
+}
+
+/// Tokens v6 (m7-6) `gradient.figurinePanel*`: a CSS
+/// `radial-gradient(ellipse <rx>% <ry>% at <x>% <y>%, …)` on a
+/// [RadialGradient] whose `radius` is 0.5 and whose `center` is [center].
+/// Flutter's radial gradient is a circle of `radius × shortestSide`; this
+/// scales that circle about [center] into the CSS ellipse, [radiusX] of the
+/// box's width by [radiusY] of its height, so the stops land where the
+/// design's do on any box.
+@immutable
+final class EllipseGradientTransform extends GradientTransform {
+  const EllipseGradientTransform({
+    required this.center,
+    required this.radiusX,
+    required this.radiusY,
+  });
+
+  /// The gradient's centre (the same as its `center`).
+  final Alignment center;
+
+  /// The ellipse's horizontal radius ÷ the box width.
+  final double radiusX;
+
+  /// The ellipse's vertical radius ÷ the box height.
+  final double radiusY;
+
+  @override
+  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) {
+    final circle = bounds.shortestSide * 0.5;
+    if (circle <= 0) return Matrix4.identity();
+    final c = center.withinRect(bounds);
+    return Matrix4.identity()
+      ..translateByDouble(c.dx, c.dy, 0, 1)
+      ..scaleByDouble(
+        radiusX * bounds.width / circle,
+        radiusY * bounds.height / circle,
+        1,
+        1,
+      )
+      ..translateByDouble(-c.dx, -c.dy, 0, 1);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is EllipseGradientTransform &&
+      other.center == center &&
+      other.radiusX == radiusX &&
+      other.radiusY == radiusY;
+
+  @override
+  int get hashCode => Object.hash(center, radiusX, radiusY);
 }
 
 /// Repeating diagonal stripes (tokens.json `gradient.progressFill.stripes`).

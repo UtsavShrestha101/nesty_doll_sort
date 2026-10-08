@@ -462,5 +462,107 @@
 
   "giftA11yClaimed": "Hediye toplandı: {gift}.",
 
-  "giftA11yAdded": "{gift} eklendi. Toplam {count}."
+  "giftA11yAdded": "{gift} eklendi. Toplam {count}.",
+
+  "welcomeBackTitle": "Tekrar hoş geldin!",
+
+  "welcomeBackFreeze": "Bir koruma alevini yanık tuttu. Bugünün bulmacası hazır.",
+
+  "welcomeBackFreezeShort": "Bir koruma alevini yanık tuttu.",
+
+  "welcomeBackPaused": "{count} günlük serin dinleniyor. Bugünün bulmacası hazır.",
+
+  "welcomeBackPausedShort": "{count} günlük serin dinleniyor.",
+
+  "welcomeBackNew": "Bugünün bulmacası, ne zaman istersen hazır.",
+
+  "welcomeBackNewShort": "Bugünün bulmacası hazır.",
+
+  "welcomeBackPlay": "Oyna",
+
+  "welcomeBackPlaySemantics": "Bugünün bulmacasını oyna",
+
+  "welcomeBackHideSemantics": "Bu kartı gizle",
+
+  "dailyMonthTitle": "{month}",
+
+  "dailyMonthHint": "Son 7 günden birini oyna, tamamen eğlence için.",
+
+  "dailyMonthHintShort": "Son 7 gün oynanabilir.",
+
+  "dailyMonthKeyLit": "Gününde",
+
+  "dailyMonthKeyLater": "Sonradan oynandı",
+
+  "dailyMonthKeyFreeze": "Koruma",
+
+  "dailyMonthShowSemantics": "{month} ayını göster",
+
+  "dailyMonthDaySemantics": "{state, select, solved{{date}, çözüldü} later{{date}, sonradan oynandı} frozen{{date}, bir koruma kapsadı} today{{date}, bugün} todaySolved{{date}, bugün, çözüldü} future{{date}} other{{date}, oynanmadı}}",
+
+  "dailyMonthDayOpenSemantics": "{label}, oynanabilir",
+
+  "pastDailyTitle": "{date}",
+
+  "pastDailyNote": "Tamamen eğlence için. Serin olduğu gibi kalır.",
+
+  "pastDailySolvedOnDay": "Gününde çözüldü",
+
+  "pastDailySolvedLater": "Sonradan oynandı",
+
+  "pastDailyPlayAgain": "Tekrar oyna",
+
+  "pastDailyWinTitle": "Bulmaca çözüldü!",
+
+  "pastDailyWinTitleShort": "Çözüldü!",
+
+  "pastDailyWinDate": "{date}",
+
+  "pastDailyWinLine": "Sonradan oynandı, tamamen eğlence için.",
+
+  "pastDailyWinSemantics": "{date}, {moves} hamlede çözüldü. Sonradan oynandı, tamamen eğlence için.",
+
+  "dailyLockedTitle": "İlk günlük bulmacan çok yakın",
+
+  "dailyLockedBody": "{level}. seviyeyi kazan, burada her gün yeni bir bulmaca seni bekleyecek, herkes için aynı.",
+
+  "widgetGalleryName": "Günlük bulmaca",
+
+  "widgetGalleryDescription": "Serin ve bugünün bulmacası bir bakışta.",
+
+  "widgetPuzzleTitle": "{weekday} bulmacası",
+
+  "widgetStreakLabel": "{count, plural, other{günlük seri}}",
+
+  "widgetStreakResting": "{count, plural, other{günlük seri · dinleniyor}}",
+
+  "widgetStreakRestingShort": "dinleniyor",
+
+  "widgetFirstFlame": "İlk alevin",
+
+  "widgetReady": "Bugünün bulmacası hazır",
+
+  "widgetReadyShort": "Oynamaya hazır",
+
+  "widgetSolved": "Çözüldü. Yarın görüşürüz.",
+
+  "widgetSolvedShort": "Çözüldü!",
+
+  "widgetLockedTitle": "Günlük bulmaca",
+
+  "widgetLockedSmall": "{level}. seviyeden sonra açılır",
+
+  "widgetLockedMedium": "İlk günlük bulmacan {level}. seviyeden sonra açılır.",
+
+  "widgetReadySemantics": "Nesty günlük bulmacası. {count} günlük seri. Bugünün bulmacası hazır.",
+
+  "widgetSolvedSemantics": "Nesty günlük bulmacası. {count} günlük seri, alev yanıyor. Bugünün bulmacası çözüldü.",
+
+  "widgetPausedSemantics": "Nesty günlük bulmacası. {count} günlük seri, dinleniyor. Bugünün bulmacası hazır.",
+
+  "widgetZeroSemantics": "Nesty günlük bulmacası. Bugünün bulmacası hazır.",
+
+  "widgetLockedSemantics": "Nesty günlük bulmacası. {level}. seviyeden sonra açılır.",
+
+  "dailyFreezesShort": "{count}"
 }

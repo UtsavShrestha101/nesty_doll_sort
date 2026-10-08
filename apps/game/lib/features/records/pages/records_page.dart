@@ -168,9 +168,8 @@ class _RecordsBody extends StatelessWidget {
         const SizedBox(height: 16),
         RacesWonCard(wins: summary.raceWins, unlocked: state.rivalsUnlocked),
         const SizedBox(height: 12),
-        // TODO(design): the "Best moves by level" destination is in no frame
-        // (menus spec §11 gap 6): it keeps the stand-in target, Chapters,
-        // whose won cells show "Best N". BACKLOG "M7 phase 4 design gaps".
+        // "Best moves by level" opens Chapters, where each won level shows
+        // its best (m7-6 Choice 13).
         TactileSurface(
           style: _linkStyle,
           radius: BorderRadius.circular(20),

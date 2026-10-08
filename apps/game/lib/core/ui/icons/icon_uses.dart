@@ -103,13 +103,20 @@ abstract final class IconUses {
   /// `local_fire_department`: Records' Longest streak.
   static const IconData longestStreak = NestyIcons.localFireDepartment;
 
-  /// `sd_card_alert`: the splash's storage error (frame 12.10).
-  // TODO(design): ask Claude Design to add `storageError` and `contentError`
-  // to tokens.json `icons` (lead note 2; ui-spec-game C9).
+  /// `sd_card_alert`: the splash's storage error (frame 12.10;
+  /// `icons.storageError`).
   static const IconData storageError = NestyIcons.sdCardAlert;
 
   /// `inventory_2`: the splash's content error (frame 12.11).
   static const IconData contentError = NestyIcons.inventory2;
+
+  /// `chevron_left`: the month's previous-month chip (frames 14.2c/14.2d;
+  /// `habits.month.headerChipGlyphPrevious`).
+  static const IconData monthPrevious = NestyIcons.chevronLeft;
+
+  /// `chevron_right`: the month's next-month chip (frames 14.2c/14.2d;
+  /// `habits.month.headerChipGlyphNext`).
+  static const IconData monthNext = NestyIcons.chevronRight;
 
   /// Share's glyph on [platform]: `ios_share` on iOS and macOS (tokens
   /// `icons.shareIOS`), `share` elsewhere (Q151).

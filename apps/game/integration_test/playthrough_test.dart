@@ -30,6 +30,8 @@ import 'package:nesty_game/core/ui/widgets/race/versus_ribbon.dart';
 import 'package:nesty_game/features/chapters/pages/chapters_page.dart';
 import 'package:nesty_game/features/chapters/widgets/level_card.dart';
 import 'package:nesty_game/features/daily/pages/daily_page.dart';
+import 'package:nesty_game/features/daily/widgets/month_card.dart';
+import 'package:nesty_game/features/daily/widgets/streak_card.dart';
 import 'package:nesty_game/features/dev/level_picker_sheet.dart';
 import 'package:nesty_game/features/fx/chest/chest_reward_sequence.dart';
 import 'package:nesty_game/features/fx/fx_library.dart';
@@ -212,10 +214,10 @@ Future<void> _playthrough(
       routesSeen.addAll([for (final route in router.stackData) route.name]);
   noteRoutes();
   router.addListener(noteRoutes);
-  // Phase 5 F-SPL (decision 1 of architecture.md §6): the splash draws
-  // E.19's fallback dolls from its first frame and crossfades to the art.
-  // Shot about 100 ms after the splash is first on screen (the placeholder
-  // dolls, frame 1.1), again once the shelf dolls' art has landed, and
+  // m7-6 item 20 (`layout.fallbackDoll.splash`): the splash shows no dolls
+  // until the skin is ready, then fades them in over 200 ms; E.19's
+  // fallback dolls draw only when a skin can't load. Shot about 100 ms
+  // after the splash is first on screen (the empty plank, frame 1.1), and
   // about 1.5 s in if the splash is still up then. Each shot's time since the
   // splash appeared goes into the report (`splash`).
   final splashSeen = launch.elapsed;
@@ -1121,6 +1123,13 @@ Future<void> _playthrough(
   );
   expect(pending, isFalse, reason: 'nothing scheduled after No thanks');
   await shots.take('09a5b_daily_solved');
+  // Local habits 2 (plan-local-habits §2): the month of played days under
+  // the puzzle card, today's cell lit and ringed after the solve.
+  await tester.ensureVisible(find.byType(MonthCard));
+  await tester.pumpFor(const Duration(milliseconds: 600));
+  await shots.take('09a5c_daily_month');
+  await tester.ensureVisible(find.byType(StreakCard));
+  await tester.pumpFor(const Duration(milliseconds: 400));
   // 5.6's day-7 chest needs a 7-day streak, which one run with a fixed
   // `NESTY_FAKE_DATE` can't build: `daily_states_test.dart` (scenario
   // `chest`, a seeded 6-day streak) opens it on a device instead.

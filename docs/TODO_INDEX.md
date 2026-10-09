@@ -55,7 +55,7 @@ _None._
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
 - `apps/game/lib/features/welcome_back/cubit/welcome_back_cubit.dart:89` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
-- `docs/BACKLOG.md:992` — names `getString`
+- `docs/BACKLOG.md:993` — names `getString`
 
 ## M5 — Admin panel
 

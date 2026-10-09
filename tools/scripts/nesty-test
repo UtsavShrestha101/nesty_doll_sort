@@ -864,9 +864,19 @@ if wants widget; then
   section "The home-screen widget ($DAILY_DATE, fresh installs)"
   if [ "$PLATFORM" = ios ]; then
     # The widget's pure logic, in RunnerTests (by UDID, never a name).
+    # Without parallel testing: xcodebuild otherwise runs on a clone, and a
+    # clone needs its source shut down, so it shut this device down and
+    # every drive after it found no device (D314).
     run_step "xcodebuild test: RunnerTests (the widget's logic)" widget_runner_tests \
       xcodebuild test -workspace "$GAME/ios/Runner.xcworkspace" -scheme dev \
-      -configuration Debug-dev -destination "platform=iOS Simulator,id=$DEVICE_ID"
+      -configuration Debug-dev -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+      -parallel-testing-enabled NO
+    # Booted again by UDID if anything still shut it down.
+    if ! xcrun simctl list devices | grep -q "$DEVICE_ID) (Booted)"; then
+      echo "  booting $DEVICE_ID again after xcodebuild"
+      xcrun simctl boot "$DEVICE_ID" >/dev/null 2>&1 || true
+      xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || true
+    fi
   fi
   # `ready` runs last, so the save left on the device is a seeded, unlocked one.
   for scenario in locked paused solved ready; do

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
 import 'package:nesty_game/core/ui/date_skeleton.dart';
 import 'package:nesty_game/core/ui/tokens/ui_tokens.gen.dart';
 

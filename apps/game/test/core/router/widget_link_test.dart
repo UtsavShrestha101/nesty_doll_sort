@@ -209,7 +209,7 @@ void main() {
       final router = await pumpApp(tester);
       await pumpFor(tester, const Duration(seconds: 1));
       unawaited(
-        router.push(GameplayRoute(request: PlayRequest.daily(20261008))),
+        router.push(GameplayRoute(request: const PlayRequest.daily(20261008))),
       );
       await pumpFor(tester, const Duration(seconds: 1));
       expect(find.byType(GameplayPage), findsOneWidget);

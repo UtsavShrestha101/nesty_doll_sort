@@ -305,7 +305,7 @@ class _ThrowingWidget extends FakeHomeWidgetService {
 
 /// Counts [projection] calls: each composed snapshot asks for one.
 class _CountingDaily extends FakeDailyService {
-  _CountingDaily(FakeClock clock) : super(clock);
+  _CountingDaily(super.clock);
 
   int projections = 0;
 

@@ -5941,6 +5941,33 @@ covers the design foundation, M1 and M2, copied from its approved plan.
     Simulators need none of it; a real-iPhone build and an upload do.
   - The owner paused the session at this checkpoint. The resume steps are in
     `build/local-habits/checkpoints/stage3-lead.md` "Resume".
+- **D314. The full device run after stage 4, part one (2026-10-09).**
+  - The host gate on the merged tree passed once a stale TODO index and four
+    analyzer infos were fixed.
+  - The iPhone 16e passed every step except three areas, all fixed:
+    - `faults_test` race_failed, generating and bonus_failed: bootstrap
+      started the widget's bridge, which holds the `LevelResolver` and so the
+      generator, before the `beforeRunApp` seam, so the faulty generator was
+      never used. The bridge now starts after the seam
+      (`test/bootstrap_order_test.dart`). The app itself was not affected.
+    - the widget's drives: `xcodebuild test` ran RunnerTests (which passed)
+      on a clone, and a clone needs its source shut down, so the 16e was off.
+      `nesty-test` runs them without parallel testing and boots the device
+      again by UDID.
+    - d_43 against frame 14.3d: the Moves pill used the regular win's Nunito
+      15 chip; tokens.json `habits.pastDay.win` sets Fredoka 700 28. The date
+      cell's day is now Fredoka 700 22, and the card takes the frame's note,
+      colours and spacing. Both judges missed it; a judge now has to open
+      each frame and compare type with the token and the frame's CSS.
+  - `watch-run` now flags `nesty-test`'s own "FAIL <step>" lines: a device
+    run's failed step had stayed silent until the run's exit.
+  - Android passed the playthrough (E13: 3.9 s to level 1), then the emulator
+    wedged at resume phase B with the Mac out of memory (swap 16.3 of 17.4 GB
+    from another project's tests). `bin/device4-android.sh` waits for the
+    load under 20 and memory at least 40% free before it cold-boots the
+    emulator.
+  - The owner paused the session again. Left: the iOS reruns (daily_states,
+    faults, widget), the rest of Android, the judging, then the close.
 
 ## Package reasons (CLAUDE.md rule 9)
 

@@ -69,12 +69,15 @@ void bootstrap({@visibleForTesting Future<void> Function()? beforeRunApp}) {
       // frame, so the gap is read before anything overwrites lastOpenDate.
       get<WelcomeBackTracker>().start();
 
+      await beforeRunApp?.call();
+
       // The home-screen widget's snapshot (local habit 4): written now, on
       // each resume, when the daily changes and when the language does. It
-      // never throws and nothing waits on it.
+      // never throws and nothing waits on it. Started after the test seam:
+      // the bridge holds the LevelResolver, which takes the generator, so
+      // resolving it first kept faults_test's generator from ever being
+      // used (D314).
       get<HomeWidgetBridge>().start();
-
-      await beforeRunApp?.call();
 
       runApp(App(router: get<AppRouter>()));
     },

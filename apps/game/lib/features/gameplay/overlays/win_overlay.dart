@@ -582,7 +582,11 @@ class _WinOverlayState extends State<_WinOverlayBody>
     );
     final movesChip = movesCaption == null
         ? null
-        : WinMovesChip(text: movesCaption, newBest: summary.starsNewBest);
+        : WinMovesChip(
+            text: movesCaption,
+            newBest: summary.starsNewBest,
+            large: pastDate != null,
+          );
     final note = _showHelper
         ? l10n.starsHelperNote
         : _showTip

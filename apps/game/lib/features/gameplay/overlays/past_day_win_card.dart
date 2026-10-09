@@ -32,8 +32,9 @@ class PastDayWinCard extends StatelessWidget {
       excludeSemantics: true,
       child: NestySurface(
         style: winInfoCardStyle,
-        radius: const BorderRadius.all(Radius.circular(24)),
-        padding: const EdgeInsets.all(14),
+        // Frame 14.3d's date card: radius 22, padded 12 16 12 12.
+        radius: const BorderRadius.all(Radius.circular(22)),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 16, 12),
         child: Row(
           children: [
             NestySurface(
@@ -55,15 +56,19 @@ class PastDayWinCard extends StatelessWidget {
                 '${date.day}',
                 maxLines: 1,
                 softWrap: false,
-                style: context
-                    .scriptStyle(HabitsMonthTokens.gridNumber)
-                    .copyWith(
-                      color: HabitsDayCellTokens.laterNumberColor,
-                      fontWeight: HabitsDayCellTokens.laterNumberWeight,
-                    ),
+                // The cell grows to 52 dp, so its day does too: Fredoka 700
+                // 22 (frame 14.3d), in cell.later's colour.
+                style: context.scriptStyle(
+                  HabitsPastDayTokens.winDateText.copyWith(
+                    fontSize: 22,
+                    height: 1,
+                    color: HabitsDayCellTokens.laterNumberColor,
+                    fontWeight: HabitsDayCellTokens.laterNumberWeight,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,15 +78,15 @@ class PastDayWinCard extends StatelessWidget {
                     l10n.pastDailyWinDate(long),
                     style: context
                         .scriptStyle(HabitsPastDayTokens.winDateText)
-                        .copyWith(color: AppColorTokens.textBrown),
+                        .copyWith(
+                          color: AppColorTokens.textPrimary,
+                          height: 1.1,
+                        ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     l10n.pastDailyWinLine,
-                    style: HabitsPastDayTokens.cardNote.copyWith(
-                      fontSize: 15,
-                      height: 1.25,
-                    ),
+                    style: HabitsPastDayTokens.cardNote,
                   ),
                 ],
               ),

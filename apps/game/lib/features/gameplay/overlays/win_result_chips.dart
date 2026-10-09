@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nesty_game/core/extensions/a11y_join_extension.dart';
 import 'package:nesty_game/core/extensions/context_extension.dart';
 import 'package:nesty_game/core/ui/nesty_ui.dart';
+import 'package:nesty_game/core/ui/theme/locale_script.dart';
 
 /// The win card's moves chip (ui-spec-game §1 "ResultChips"; tokens.json
 /// `layout.winStars.movesChip`): a 38 dp `#F6E2C2` disc with the `route`
@@ -9,12 +10,34 @@ import 'package:nesty_game/core/ui/nesty_ui.dart';
 /// cream surface. [newBest] puts the green "New best!" chip on its top edge
 /// (a replay that raised the level's stars, frame 11.4).
 ///
+/// [large] is a past day's win (tokens.json `habits.pastDay.win`, frame
+/// 14.3d): the pill stands where the coins were, so "Moves 18" is in Fredoka
+/// 700 28 `#5B3A21`, padded 10 20 10 10 with a 10 dp gap.
+///
 /// One node for screen readers: the chip's text, then "New best!".
 class WinMovesChip extends StatelessWidget {
-  const WinMovesChip({required this.text, this.newBest = false, super.key});
+  const WinMovesChip({
+    required this.text,
+    this.newBest = false,
+    this.large = false,
+    super.key,
+  });
 
   final String text;
   final bool newBest;
+  final bool large;
+
+  static TextStyle get _largeText => DisplayFace.of(
+    const TextStyle(
+      fontFamily: 'Fredoka',
+      fontSize: 28,
+      fontWeight: FontWeight.w700,
+      height: 1,
+      color: AppColorTokens.textPrimary,
+      fontFamilyFallback: AppFontTokens.displayFallback,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
+  );
 
   static const _style = SurfaceStyle(
     gradient: AppGradientTokens.surface,
@@ -35,7 +58,9 @@ class WinMovesChip extends StatelessWidget {
       style: _style,
       radius: BorderRadius.circular(WinStarsTokens.movesChipRadius),
       height: WinStarsTokens.movesChipHeight,
-      padding: const EdgeInsetsDirectional.fromSTEB(10, 10, 18, 10),
+      padding: large
+          ? const EdgeInsetsDirectional.fromSTEB(10, 10, 20, 10)
+          : const EdgeInsetsDirectional.fromSTEB(10, 10, 18, 10),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -52,8 +77,13 @@ class WinMovesChip extends StatelessWidget {
               color: AppColors.iconBrown,
             ),
           ),
-          const SizedBox(width: 8),
-          Text(text, style: WinStarsTokens.movesChipText),
+          SizedBox(width: large ? 10 : 8),
+          Text(
+            text,
+            style: large
+                ? context.scriptStyle(_largeText)
+                : WinStarsTokens.movesChipText,
+          ),
         ],
       ),
     );

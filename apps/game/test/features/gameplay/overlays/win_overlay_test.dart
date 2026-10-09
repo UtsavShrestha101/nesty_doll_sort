@@ -231,6 +231,34 @@ void main() {
       expect(feedback.played.single.sound, SoundEffect.win);
     });
 
+    // tokens.json `habits.pastDay.win`: the Moves pill stands where the
+    // coins were, in Fredoka 700 28; the date cell's day is Fredoka 700 22.
+    testWidgets('Moves in the large pill, the day at 22', (tester) async {
+      await pumpScreen(
+        tester,
+        _overlay(reward: 0, pastDate: LocalDate(2026, 10, 10), winMoves: 18),
+      );
+      await tester.pump(const Duration(seconds: 2));
+      final moves = tester.widget<Text>(find.text('Moves 18'));
+      expect(moves.style?.fontSize, 28);
+      expect(moves.style?.fontWeight, FontWeight.w700);
+      expect(moves.style?.color, AppColorTokens.textPrimary);
+      expect(tester.widget<Text>(find.text('10')).style?.fontSize, 22);
+      expect(
+        tester.widget<Text>(find.text('Played later, just for fun.')).style,
+        HabitsPastDayTokens.cardNote,
+      );
+    });
+
+    testWidgets('any other win keeps the small Moves chip', (tester) async {
+      await pumpScreen(tester, _overlay(winMoves: 9));
+      await tester.pump(const Duration(seconds: 2));
+      expect(
+        tester.widget<Text>(find.text('Moves 9')).style,
+        WinStarsTokens.movesChipText,
+      );
+    });
+
     testWidgets('the screen reader hears one sentence', (tester) async {
       final handle = tester.ensureSemantics();
       await pumpScreen(

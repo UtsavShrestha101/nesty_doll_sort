@@ -39,7 +39,7 @@ _None._
 ## M4 — Firebase content
 
 - `apps/game/lib/bootstrap.dart:40` — Firebase + Crashlytics go here, before DI: await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, ); importing `firebase_options_<flavor>.dart` chosen by the flavor entry point. Those files are …
-- `apps/game/lib/bootstrap.dart:82` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
+- `apps/game/lib/bootstrap.dart:85` — FirebaseCrashlytics.instance.recordError(error, stackTrace).
 - `apps/game/lib/core/base/run_guarded.dart:29` — also report as a Crashlytics non-fatal (spec §14.4).
 - `apps/game/lib/core/repository/bundled_catalog_repository.dart:12` — overlay Firestore's `chapters`, `skins`, `themes` and `museumItems` (cached, offline-first; spec §13.5, §14.1).
 - `apps/game/lib/core/repository/default_level_resolver.dart:144` — this only sees the bundle it was resolved from, so a chapter the player already passed with fewer levels than `ChapterInfo.levels` never retroactively completes when sync adds the rest. Award that figurine and …

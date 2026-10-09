@@ -18,7 +18,8 @@
 #                "DONE")
 #   --fail       lines worth acting on while it runs (default: a failed test
 #                "[E]", "Some tests failed", FAILED, an unhandled exception,
-#                "Killed", "STOP:", or "exit N" with N > 0)
+#                "Killed", "STOP:", "exit N" with N > 0, or nesty-test's own
+#                "  FAIL <step>" line, all a device run's log holds)
 #   --stall      seconds without the log growing before STALLED (default 300)
 #   --every      poll interval in seconds (default 15)
 #   --heartbeat  seconds between PROGRESS lines, 0 for none (default 600)
@@ -33,7 +34,7 @@ set -u
 
 LOG= PID= MATCH= STALL=300 EVERY=15 HEARTBEAT=600 MAX=0 NEW_ONLY=0
 DONE='All tests passed!|Some tests failed\.|^DONE$'
-FAIL='\[E\]$|Some tests failed|FAILED|Unhandled exception|Killed|STOP:|exit [1-9][0-9]*'
+FAIL='\[E\]$|Some tests failed|FAILED|Unhandled exception|Killed|STOP:|exit [1-9][0-9]*|^ +FAIL '
 
 usage() { sed -n '2,34p' "$0" | sed 's/^# \{0,1\}//'; exit 64; }
 while [ $# -gt 0 ]; do

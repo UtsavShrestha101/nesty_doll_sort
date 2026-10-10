@@ -77,7 +77,8 @@
 #                   facts (iOS's App Group resolves, Android's prefs file)
 #                   and pushes the warm link nesty-dev://daily. Then the OS
 #                   checks flutter drive can't make, on the real dev app
-#                   installed over the last scenario's save: iOS, the
+#                   installed over the last scenario's save (`ready` keeps
+#                   the app with --keep-app-running): iOS, the
 #                   NestyWidget.appex inside the installed app and the cold
 #                   link (`simctl openurl`); Android, the provider in
 #                   `dumpsys appwidget` and the cold link (`am start`), each
@@ -218,6 +219,9 @@ APP_ID=com.futrix.nesty.dev
 STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT="${NESTY_TEST_OUT:-$GAME/build/nesty-test/$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/screenshots"
+# Absolute: flutter drive runs in $GAME, so a relative NESTY_TEST_OUT would
+# put the driver's screenshots under apps/game/<that path> (D315).
+OUT="$(cd "$OUT" && pwd)"
 ln -sfn "$OUT" "$GAME/build/nesty-test/latest" 2>/dev/null || true
 # Keep only the newest runs: each holds ~130 MB of screenshots and logs, and
 # the disk filling up is what failed the owner's run (2026-09-29).
@@ -554,7 +558,9 @@ drive() { # target extra-args...
   # data and grew to 1.1 GB in one run (the 2026-10-05 gate, under the disk
   # floor), so each step starts it empty; nothing reads it.
   : >"$GAME/build/flutter_driver_commands_0.log" 2>/dev/null || true
-  out="$(mktemp)"
+  # In the run's own logs, so a step stopped by kill_tree leaves nothing in
+  # the system's temp folder.
+  out="$OUT/logs/.drive.$$.$RANDOM"
   (cd "$GAME" && flutter drive --flavor dev \
     --driver test_driver/integration_test.dart \
     --target "integration_test/$target" -d "$DEVICE_ID" "$@") 2>&1 | tee "$out"
@@ -844,7 +850,10 @@ widget_cold_link_android() {
     -d nesty-dev://daily "$APP_ID" >"$log" 2>&1
   sleep 12
   adb -s "$DEVICE_ID" exec-out screencap -p >"$shot" 2>>"$log" || true
-  if grep -q 'Status: ok' "$log" && [ -s "$shot" ] &&
+  # A debug cold start can outlast `am start -W`'s wait ("Status: timeout"),
+  # so a timeout counts when its Activity line is the app's; the resumed
+  # activity below is what says it started (D315).
+  if { grep -q 'Status: ok' "$log" || grep -qF "Activity: $APP_ID/" "$log"; } && [ -s "$shot" ] &&
     adb -s "$DEVICE_ID" shell dumpsys activity activities 2>/dev/null | grep -E 'topResumedActivity|mResumedActivity' | grep -qF "$APP_ID"; then
     record "widget: the cold link nesty-dev://daily starts the app" PASS "screenshots/w_cold_link.png: a person judges that it shows the Daily"
   else
@@ -853,14 +862,15 @@ widget_cold_link_android() {
 }
 
 # Builds the real dev app (not a test target) and installs it over the last
-# scenario's save, so the cold link opens a seeded, unlocked game.
+# scenario's save, so the cold link opens a seeded, unlocked game. It runs on
+# the seeds' day (NESTY_FAKE_DATE), so the streak reads as they wrote it.
 widget_install_dev_app() {
   if [ "$PLATFORM" = ios ]; then
     run_step "build and install the dev app for the cold link" widget_install bash -c \
-      "cd '$GAME' && flutter build ios --simulator --debug --flavor dev -t lib/main_dev.dart && xcrun simctl install '$DEVICE_ID' build/ios/iphonesimulator/Runner.app"
+      "cd '$GAME' && flutter build ios --simulator --debug --flavor dev -t lib/main_dev.dart --dart-define=NESTY_FAKE_DATE=$DAILY_DATE && xcrun simctl install '$DEVICE_ID' build/ios/iphonesimulator/Runner.app"
   else
     run_step "build and install the dev app for the cold link" widget_install bash -c \
-      "cd '$GAME' && flutter build apk --debug --flavor dev -t lib/main_dev.dart && adb -s '$DEVICE_ID' install -r build/app/outputs/flutter-apk/app-dev-debug.apk"
+      "cd '$GAME' && flutter build apk --debug --flavor dev -t lib/main_dev.dart --dart-define=NESTY_FAKE_DATE=$DAILY_DATE && adb -s '$DEVICE_ID' install -r build/app/outputs/flutter-apk/app-dev-debug.apk"
   fi
 }
 
@@ -882,12 +892,16 @@ if wants widget; then
       xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || true
     fi
   fi
-  # `ready` runs last, so the save left on the device is a seeded, unlocked one.
+  # `ready` runs last, so the save left on the device is a seeded, unlocked
+  # one. flutter drive uninstalls the app when its test ends unless it keeps
+  # the app running, so `ready` keeps it (D315).
   for scenario in locked paused solved ready; do
+    keep=()
+    [ "$scenario" = ready ] && keep=(--keep-app-running)
     drive_fresh "home_widget_test $scenario (screenshots w_*)" \
       "home_widget_$scenario" "home_widget_$scenario" \
       home_widget_test.dart --dart-define=NESTY_FAKE_DATE="$DAILY_DATE" \
-      --dart-define=NESTY_WIDGET_SCENARIO="$scenario" --timeout 600
+      --dart-define=NESTY_WIDGET_SCENARIO="$scenario" ${keep[@]+"${keep[@]}"} --timeout 600
   done
   if widget_install_dev_app; then
     if [ "$PLATFORM" = ios ]; then widget_cold_link_ios; else widget_cold_link_android; fi

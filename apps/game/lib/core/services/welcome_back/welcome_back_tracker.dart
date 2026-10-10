@@ -27,6 +27,7 @@ class WelcomeBackTracker {
   final StreamController<LocalDate?> _changes = StreamController.broadcast();
 
   AppLifecycleListener? _lifecycle;
+  bool _started = false;
 
   // What the settings hold, kept here after the first read: a Hive put only
   // becomes readable once its write finishes, and Home's cubit asks in the
@@ -47,8 +48,14 @@ class WelcomeBackTracker {
 
   /// Notes the app start, then follows every resume. Once.
   void start() {
-    if (_lifecycle != null) return;
-    _lifecycle = AppLifecycleListener(onResume: note);
+    if (_started) return;
+    _started = true;
+    try {
+      _lifecycle = AppLifecycleListener(onResume: note);
+    } on Object {
+      // No binding (a bare unit test): resumes just aren't followed, as in
+      // HomeWidgetBridge.start.
+    }
     note();
   }
 
@@ -92,6 +99,7 @@ class WelcomeBackTracker {
   }
 
   /// Stops following resumes and closes [changes] (tests, DI reset).
+  @disposeMethod
   Future<void> dispose() async {
     _lifecycle?.dispose();
     _lifecycle = null;

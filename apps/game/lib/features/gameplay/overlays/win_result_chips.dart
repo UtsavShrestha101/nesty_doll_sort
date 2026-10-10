@@ -27,6 +27,9 @@ class WinMovesChip extends StatelessWidget {
   final bool newBest;
   final bool large;
 
+  // TODO(design): tokens.json gives this size only in `habits.pastDay.win`'s
+  // prose (and the frame's CSS); a typed token would let the generator own
+  // it (BACKLOG "Local habits" design gaps).
   static TextStyle get _largeText => DisplayFace.of(
     const TextStyle(
       fontFamily: 'Fredoka',

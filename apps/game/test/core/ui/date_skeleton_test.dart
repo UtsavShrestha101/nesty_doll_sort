@@ -11,6 +11,14 @@ void main() {
 
   final day = DateTime(2026, 11, 1);
 
+  // A letter outside intl's order (here `a`, am/pm) keeps its place
+  // among the unknown ones, after every known field: no token uses one
+  // today, and this pins what a new one would get.
+  test('a letter intl does not order goes last', () {
+    expect(intlSkeleton('aMMMd'), 'MMMda');
+    expect(intlSkeleton('jmaz'), 'jmaz');
+  });
+
   test('fields go in intl order', () {
     expect(intlSkeleton('EEEEdMMMM'), 'MMMMEEEEd');
     expect(intlSkeleton('MMMEd'), 'MMMEd');

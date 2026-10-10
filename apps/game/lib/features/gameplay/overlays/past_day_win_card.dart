@@ -58,6 +58,7 @@ class PastDayWinCard extends StatelessWidget {
                 softWrap: false,
                 // The cell grows to 52 dp, so its day does too: Fredoka 700
                 // 22 (frame 14.3d), in cell.later's colour.
+                // TODO(design): no typed token for the 22 (frame CSS only).
                 style: context.scriptStyle(
                   HabitsPastDayTokens.winDateText.copyWith(
                     fontSize: 22,

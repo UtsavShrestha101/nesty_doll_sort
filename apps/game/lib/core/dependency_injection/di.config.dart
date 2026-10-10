@@ -403,6 +403,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i376.AppClock>(),
         gh<_i567.RemoteConfigService>(),
       ),
+      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i1053.ShowcaseDolls>(
       () => _i1053.ShowcaseDolls(

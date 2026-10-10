@@ -19,10 +19,10 @@ Every tagged `TODO(<tag>)` / `FIXME(<tag>)` marker in first-party code and docs,
 | M7 | Art and polish | 0 |
 | M8 | Release prep | 4 |
 | v1.1 | After v1 (e.g. the golden doll, spec §3.5) | 5 |
-| design | Waiting on a design export or decision from the owner | 24 |
+| design | Waiting on a design export or decision from the owner | 26 |
 | later | Unscheduled (spec §19 "Later ideas") | 0 |
 
-Total: 85 markers.
+Total: 87 markers.
 
 ## M1 — Core (`nesty_core`)
 
@@ -55,7 +55,7 @@ _None._
 - `apps/game/lib/features/shop/widgets/skin_grid_card.dart:62` — a skin mid-download shows this instead of Equip/Buy; no bundled skin ever sets it (frame 7.5).
 - `apps/game/lib/features/splash/cubit/splash_cubit.dart:41` — kick off level sync and Remote Config refresh in the background here — unawaited, so the splash never waits on the network (rule 3).
 - `apps/game/lib/features/welcome_back/cubit/welcome_back_cubit.dart:89` — the kid path keeps this off for under-13s (BACKLOG M4 kid-path analytics).
-- `docs/BACKLOG.md:993` — names `getString`
+- `docs/BACKLOG.md:994` — names `getString`
 
 ## M5 — Admin panel
 
@@ -142,6 +142,8 @@ _None._
 - `apps/game/ios/NestyWidget/NestyWidgetViews.swift:237` — 1000+ relies on the 0.8 floor alone (gap 16).
 - `apps/game/ios/NestyWidget/NestyWidgetViews.swift:398` — more colours than fit show the first N, no "+N" (gap 15).
 - `apps/game/lib/features/daily/widgets/daily_locked_card.dart:11` — tokens.json holds no entry for this card's sizes; they are the scene's (card radius 32, 76 dp piece, title 26, body 16, 58 dp button).
+- `apps/game/lib/features/gameplay/overlays/past_day_win_card.dart:61` — no typed token for the 22 (frame CSS only).
+- `apps/game/lib/features/gameplay/overlays/win_result_chips.dart:30` — tokens.json gives this size only in `habits.pastDay.win`'s prose (and the frame's CSS); a typed token would let the generator own it (BACKLOG "Local habits" design gaps).
 
 ## later — Unscheduled (spec §19 "Later ideas")
 

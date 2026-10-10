@@ -877,7 +877,7 @@ stand-ins ship until Claude Design's section K lands.
 - [x] Optional E9 device check: kill the app during L1 and relaunch; it must reopen L1 — integrator-p1, m7 §13 (done 2026-10-05: `phase A (l1)`, the kill and `phase B (l1)` pass on both platforms in the gate (level 1, 2 free undos, 0 extra slots))
   - 2026-10-01 (phase 5A): `NESTY_RESUME_SCENARIO=l1` is built in `resume_phase_a/b_test` (one tutorial move, kill, relaunch into level 1 with the same board); its run is pending. If it isn't reliable, it moves to v1.1 with the reason.
 
-## Local habits — picked, after the daily gift and before any backend (D237, D274)
+## Local habits — code complete 2026-10-10; the widget's real-phone check waits on the owner (D237, D274, D315)
 
 Not a milestone. The reasoning is
 [plans/local-habits-brainstorm.md](plans/local-habits-brainstorm.md). The
@@ -890,7 +890,7 @@ and the design request is
 writes `plans/plan-local-habits.md`, with the archive rule (§7.5c) for the
 owner to approve. Spec §7.5 and GAME_SPEC.md stay as they are.
 
-- [ ] Claude Design's delivery for section 14 (`nesty-design-m7-6`: welcome back on 2.1/2.1b, the month, the past dailies, the widget, the `habits` tokens, the art and the copy), imported through BACKLOG M7 "Importing a Claude Design delivery", then the stand-ins swapped — the design request, D274 (2026-10-08: copied into `design/` at the owner's request, D301; imported the same day, D304–D308: tokens v6, the copy, the welcome card, the month and 12.14 on the final look, Part 2's items; passed on both devices with its fidelity judged, D309; the month's hint, chip and taps, the past day and the widget wait for stages 3 and 4)
+- [x] Claude Design's delivery for section 14 (`nesty-design-m7-6`: welcome back on 2.1/2.1b, the month, the past dailies, the widget, the `habits` tokens, the art and the copy), imported through BACKLOG M7 "Importing a Claude Design delivery", then the stand-ins swapped — the design request, D274 (2026-10-08: copied into `design/` at the owner's request, D301; imported the same day, D304–D308: tokens v6, the copy, the welcome card, the month and 12.14 on the final look, Part 2's items; passed on both devices with its fidelity judged, D309; the month's hint, chip and taps, the past day and the widget wait for stages 3 and 4; 2026-10-10: stages 3 and 4 built on m7-6's final look, their shots judged against 14.3 and the widget frames on both platforms, D311–D315)
 - [ ] design: 12.14's `DailyLockedCard` sizes (card radius 32, the 76 dp piece, title 26, body 16, the 58 dp button) have no tokens; they come from the NestyHabits `dailyLocked` scene. Ask Claude Design for a `layout` entry, then replace the `TODO(design)` in `apps/game/lib/features/daily/widgets/daily_locked_card.dart` — D306
 - [ ] design: the family counter's Fredoka metrics: the bundled Fredoka measures "12 / 12" at 37 dp at 1x where the design's pill draws 44, so ours is 71 dp against 78 (and 48 against 57 at 1.3x). Ask whether the design's font differs from the pinned cut, or accept the gap — D307, `build/m7-6/reports/b-game.md`
 - [ ] design (fidelity note): the figurine modal's count reads "0/20" (the shared `homeMuseumProgress`, "{done}/{total}") where NestyOverlay draws "15 / 20"; a spaced form needs its own key in nine catalogs. Predates m7-6 — stage E, `build/m7-6/reports/e-fidelity-android.md`
@@ -922,7 +922,7 @@ The plan is [plans/plan-local-habits.md](plans/plan-local-habits.md) (stage 0, 2
 - [x] About 7 strings in nine catalogs with the Opus review (D240); `welcome_back_overflow_test` in nine locales; `gen_font_subsets` (and `build_fonts.sh` if a hi or ja glyph is new) — plan §"Shared pieces" (done 2026-10-08: 2 new keys, the variant lines reused from the Daily; the Opus review fixed de, pt and ja; id "Halo lagi!", pt "Olá de novo!" and tr "Bulmacayı oyna" after the overflow suite's floor; the overflow suite passes in nine locales; `gen_font_subsets --check` passes, no new glyph)
 - [x] `welcome_back_play` through `AnalyticsService`, with its `TODO(M4)` to the kid-path item — plan §"Shared pieces" (done 2026-10-08: logged by `WelcomeBackCubit.play`, with the `TODO(M4)`)
 - [x] `test/ethics/local_habits_respect_test.dart` (code, streak-field, copy and pop-up scans) with welcome back's paths — plan §"Shared pieces" (done 2026-10-08: the code, streak-write, pop-up, navigation and red-mark scans, a 600-step clock walk, the copy in nine locales; `checkedPrefixes` gains `welcomeBack` and `dailyMonth`)
-- [ ] Device: the `daily_states` scenario `welcome` (Home with the card, then dismissed), the playthrough's Home shot with the card, `nesty-test`'s scenario loop, and the TEST_COVERAGE row `features/welcome_back` — D169 (2026-10-08: written and passing on the iPhone 16e, shots judged; Android with the stage-3 run)
+- [x] Device: the `daily_states` scenario `welcome` (Home with the card, then dismissed), the playthrough's Home shot with the card, `nesty-test`'s scenario loop, and the TEST_COVERAGE row `features/welcome_back` — D169 (2026-10-08: written and passing on the iPhone 16e, shots judged; Android with the stage-3 run) (2026-10-10: passed on Android too, run 20261010-084542, D315)
 
 ### Stage 2: a month of played days (local-habits 2)
 
@@ -931,7 +931,7 @@ The plan is [plans/plan-local-habits.md](plans/plan-local-habits.md) (stage 0, 2
 - [x] `MonthCard` under `PuzzleCard` on the Daily. It shows the title (`DateFormat.yMMMM`), the weekday header (`intl`), and lit, frozen (Q191), not-played and future days, with today marked. It has no red, no X and no "missed". `DayStrip` stays the streak's cycle. `TODO(design)` for 14.2; `month_card_test` — plan §2 (done 2026-10-08 on the stand-in: lit = the streak gradient, frozen = `acUnit`, today = a primary ring; `month_card_test` and `daily_page_test` pass)
 - [x] About 6 strings (the day cells' labels) in nine catalogs with the Opus review; `daily_month_overflow_test` in nine locales with the readability floor in ja and hi — plan §2 (done 2026-10-08: one `select` key with nine states; the month's overflow suite passes in nine locales, with the readability floor in ja and hi)
 - [x] The ethics test gains the month's copy and looks — plan §"Shared pieces" (done 2026-10-08)
-- [ ] Device: the `daily_states` scenario `month` (`NESTY_FAKE_DATE` 2026-10-31, lit, frozen and blank days), the playthrough's Daily shot, and the `features/daily` row in TEST_COVERAGE — D169 (2026-10-08: written and passing on the iPhone 16e, shots judged; Android with the stage-3 run)
+- [x] Device: the `daily_states` scenario `month` (`NESTY_FAKE_DATE` 2026-10-31, lit, frozen and blank days), the playthrough's Daily shot, and the `features/daily` row in TEST_COVERAGE — D169 (2026-10-08: written and passing on the iPhone 16e, shots judged; Android with the stage-3 run) (2026-10-10: passed on Android too, run 20261010-084542, D315)
 
 ### Stage 3: the last 7 dailies, playable (local-habits 3; §7.5c approved, D310)
 
@@ -944,8 +944,8 @@ The plan is [plans/plan-local-habits.md](plans/plan-local-habits.md) (stage 0, 2
 - [x] About 6 strings in nine catalogs with the Opus review; the overflow suite for the past day's card and win in nine locales — plan §3 (the strings came with m7-6's copy and its Opus review, D305; the overflow cases are in `daily_month_overflow_test` and `win_overlay_overflow_test`, D311)
 - [x] `past_daily_complete {days_ago, again}` through `AnalyticsService`, with its `TODO(M4)` — plan §"Shared pieces" (done 2026-10-08, D311)
 - [x] The ethics test gains a 400-step walk of past-day wins and replays that never changes the streak's fields or coins, and the archive's copy — plan §3 (done 2026-10-08, D311)
-- [ ] Device: the `daily_states` scenario `archive` (today's board in progress and a paused streak, a past day played to its win, the streak card unchanged, today's board resumable), its shots, and TEST_COVERAGE's "The past dailies" row — D169
-- [ ] The device run after stage 3: the full `nesty-test` on the iPhone 16e and the Android emulator, under `watch-run`, with every new shot judged against the plan's stand-in intent — the owner's brief
+- [x] Device: the `daily_states` scenario `archive` (today's board in progress and a paused streak, a past day played to its win, the streak card unchanged, today's board resumable), its shots, and TEST_COVERAGE's "The past dailies" row — D169 (done 2026-10-10: passed on both platforms, d_40–d_45 judged against 14.3a–e, D313–D315)
+- [x] The device run after stage 3: the full `nesty-test` on the iPhone 16e and the Android emulator, under `watch-run`, with every new shot judged against the plan's stand-in intent — the owner's brief (done 2026-10-10: D313–D315)
 
 ### Stage 4: the home-screen widget (local-habits 4; after 1–3 pass on both devices)
 
@@ -957,14 +957,14 @@ The plan is [plans/plan-local-habits.md](plans/plan-local-habits.md) (stage 0, 2
 - [x] `gen_widget_strings` (a new `nesty_tools` script with `--check` in CI): the gallery name, description and first-run line for iOS `.lproj` and Android `values-<lang>` from the ARBs. Also in README and CLAUDE.md Commands — plan §4 (2026-10-08: done, with `--check` in CI and `nesty-test`'s gates, D312)
 - [x] The package question recorded: no `home_widget` (D299). The test-only Gradle dependencies (JUnit 4, Robolectric if used) each get a rule-9 row in PROGRESS — rule 9 (2026-10-08: JUnit 4.13.2's row is in PROGRESS "Package reasons", D312)
 - [x] About 9 strings in nine catalogs with the Opus review — plan §4 (2026-10-08: none new: m7-6's copy held all 19 `widget…` keys with its Opus review, D305, D312)
-- [ ] Device: `integration_test/home_widget_test.dart` (`ready`, `solved`, `paused`, `locked`: the shared store read back, the App Group resolved, the in-app link). `nesty-test --only widget` adds the cold OS link (`simctl openurl` by UDID, `adb am start`) with judged shots, the embedded `.appex` and `dumpsys appwidget`. TEST_COVERAGE gets a row saying why a simulator can't place a widget — D169
-- [ ] The device run after stage 4: the full `nesty-test` on both devices, every new shot judged — the owner's brief
+- [x] Device: `integration_test/home_widget_test.dart` (`ready`, `solved`, `paused`, `locked`: the shared store read back, the App Group resolved, the in-app link). `nesty-test --only widget` adds the cold OS link (`simctl openurl` by UDID, `adb am start`) with judged shots, the embedded `.appex` and `dumpsys appwidget`. TEST_COVERAGE gets a row saying why a simulator can't place a widget — D169 (done 2026-10-10: iOS 10 PASS and the cold link SKIP behind the system's prompt; Android 11 PASS after `nesty-test` kept the `ready` save, D314, D315)
+- [x] The device run after stage 4: the full `nesty-test` on both devices, every new shot judged — the owner's brief (done 2026-10-10: D314, D315)
 
 ### Close
 
-- [ ] `/review` with the security scanner and the ethics lens, and its fixes — the owner's brief
-- [ ] PROGRESS (the decisions, the Status row, "Next step"), BACKLOG ticked, CLAUDE.md's Code map, Commands and Current state, `todo_index`, and `nesty-test --only gates` — the owner's brief
-- [ ] M4: the kid-path analytics item covers `welcome_back_play`, `past_daily_complete` and `widget_open`. M6: no interstitial or rewarded offer after a past day's win, or on the welcome-back and widget paths — D92, plan §"Shared pieces"
+- [x] `/review` with the security scanner and the ethics lens, and its fixes — the owner's brief (done 2026-10-10: no P0 or P1; the P2 fixes in, `build/local-habits/reports/close-review.md`, D315)
+- [x] PROGRESS (the decisions, the Status row, "Next step"), BACKLOG ticked, CLAUDE.md's Code map, Commands and Current state, `todo_index`, and `nesty-test --only gates` — the owner's brief (done 2026-10-10, D315)
+- [x] M4: the kid-path analytics item covers `welcome_back_play`, `past_daily_complete` and `widget_open`. M6: no interstitial or rewarded offer after a past day's win, or on the welcome-back and widget paths — D92, plan §"Shared pieces" (moved 2026-10-10 to M4's and M6's sections, which do them)
 - [ ] Today's visitor (optional, not in the Q162 default): the date picks one bundled skin, the same doll on every phone that day, drawn on the daily card and named in the share line. A greeting, not a collectible: missing the day does not lose a doll. No new core rule — local-habits "Wider concepts", D237
 - [ ] A spoiler-free picture share (optional, not in the Q162 default): a small local image of how many families were nested, with no board, beside E3's text share. No server — local-habits "Wider concepts", D237
 - [ ] Local player vs player (pass-and-play on one device), if the owner wants it offline: a proposal after vs Computer (the basis: alternating turns on one board, a family scoring for whoever completes it; brainstorm §6) — D90 (moved from M7, 2026-10-05: a local proposal waiting on the owner, not in M7's ✅ line; D237 orders local work after M7 (5c-classify))
@@ -1187,6 +1187,7 @@ playable. Levels published in the admin appear on the next app resume.
 - [ ] Airplane-mode tests with failing network services, plus a fresh-install device check — §18 M4
 - [ ] Install `firebase-tools` (it needs a JDK) and verify `firebase emulators:start` from `firebase/`, including the Auth emulator — PROGRESS M0 "Not verified yet"
 - [ ] Analytics and crash data by age (the kid path, D260): nothing is collected before the age answer, and ad-ID collection is off for everyone. For players under 13 and of unknown age, analytics stays off until the owner's legal check (every event, the daily gift's `login_gift_claim` included), and crash reports run only for the app's own operation. Play Families allows no AAID or other device identifier from them — engagement-research §6.2–§6.3, D260, Q174
+- [ ] The local habits' events (`welcome_back_play`, `past_daily_complete`, `widget_open`) follow the kid path's analytics rule above; a `widget_open` can come from any page that fires `nesty://daily`, so count it as a link open, not a widget tap — the local habits' close, D92, D315
 
 ## M5 — Admin panel — after Local habits (D90, D237)
 
@@ -1261,6 +1262,7 @@ Offline ad buttons fall back to coins correctly.
 - [ ] Rate prompt (`in_app_review`) after the `rate_prompt_level` win, if the player hasn't failed in the last 3 levels (frame 8.7) — §10.2 #16
 - [ ] `adCounters` in the save: winsSinceInterstitial, lastAdAt, interstitialsShown — §13.3
 - [ ] The interstitial counter skips a past daily: a past day's win leaves `adCounters` as it is today (D311), so `winsSinceInterstitial` must not count it when M6 starts counting, and no interstitial follows it — plan-local-habits §7.5c, D311
+- [ ] No interstitial or rewarded offer after a past day's win, or on the welcome-back and widget paths (the Daily opened from the widget's link included) — the local habits' close, D92, plan-local-habits §"Shared pieces"
 - [ ] `AdsService` calls `MusicService.pauseForAd()` before every interstitial or rewarded show and `resumeAfterAd()` in a `finally` when it closes; with the app's own trip to the background during an Android ad, the pause reasons don't double up — `TODO(M6)` in `music_service.dart`, audio A5
 - [ ] A completed purchase calls `JingleCues.reward()` — `TODO(M6)` in `jingle_cues.dart`, Q62
 - [ ] The respect rules hold for every ad and purchase surface (spec-prop §1.1):

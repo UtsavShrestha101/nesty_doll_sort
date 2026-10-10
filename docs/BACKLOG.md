@@ -1114,7 +1114,7 @@ The owner asked on 2026-10-05 for themes, animations and characters "like Marvel
   - the Remote Config key `story_beats_enabled` (default true).
 
   Admin-editable in M5, Firestore-served in M4 — themes-characters-story §9, D269
-- [ ] The Claude Design request for the picked items, paste-ready with a character bible and a babble voice — themes-characters-story §10
+- [x] The Claude Design request for the picked items, paste-ready with a character bible and a babble voice — themes-characters-story §10 (done 2026-10-10 for wave 1: `docs/plans/claude-design-request-m7-7.md` Part 2, with the kid path as Part 1, D316)
 
 ## Retention research, round 3 — proposals (D300, Q192–Q193)
 
